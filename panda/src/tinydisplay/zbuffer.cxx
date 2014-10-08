@@ -130,7 +130,7 @@ ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
   }
 }
 
-static void 
+static void
 ZB_copyBuffer(const ZBuffer * zb,
               void *buf,
               int linesize) {
@@ -210,7 +210,7 @@ static void ZB_copyFrameBufferRGB24(const ZBuffer * zb,
   int y, n;
 
   fprintf(stderr, "copyFrameBufferRGB24\n");
-    
+
   q = zb->pbuf;
   p1 = (unsigned char *) buf;
 
@@ -282,12 +282,12 @@ void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, int dest_xs
                         const ZBuffer *source, int source_xmin, int source_ymin, int source_xsize, int source_ysize) {
   int tyinc = dest->linesize / PSZB;
   int fyinc = source->linesize / PSZB;
-  
+
   int fyt = 0;
   for (int ty = 0; ty < dest_ysize; ++ty) {
     int fy = fyt / dest_ysize;
     fyt += source_ysize;
-    
+
     PIXEL *tp = dest->pbuf + dest_xmin + (dest_ymin + ty) * tyinc;
     PIXEL *fp = source->pbuf + source_xmin + (source_ymin + fy) * fyinc;
     ZPOINT *tz = dest->zbuf + dest_xmin + (dest_ymin + ty) * dest->xsize;
@@ -296,7 +296,7 @@ void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, int dest_xs
     for (int tx = 0; tx < dest_xsize; ++tx) {
       int fx = fxt / dest_xsize;
       fxt += source_xsize;
-      
+
       tp[tx] = fp[fx];
       tz[tx] = fz[fx];
     }
@@ -384,17 +384,14 @@ memset_RGB24(void *adr,int r, int v, int b,long count) {
 }
 
 void
-ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
-         int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a) {
-  unsigned int color;
+ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z, int clear_color, PIXEL color) {
   int y;
   PIXEL *pp;
-  
+
   if (clear_z) {
     memset(zb->zbuf, 0, zb->xsize * zb->ysize * sizeof(ZPOINT));
   }
   if (clear_color) {
-    color = RGBA_TO_PIXEL(r, g, b, a);
     pp = zb->pbuf;
     for (y = 0; y < zb->ysize; y++) {
       memset_l(pp, color, zb->xsize);
@@ -404,15 +401,13 @@ ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
 }
 
 void
-ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
-                  int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
+ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z, int clear_color, PIXEL color,
                   int xmin, int ymin, int xsize, int ysize) {
-  unsigned int color;
   int y;
   PIXEL *pp;
   ZPOINT *zz;
 
-  nassertv(xmin >= 0 && xmin < zb->xsize && 
+  nassertv(xmin >= 0 && xmin < zb->xsize &&
            ymin >= 0 && ymin < zb->ysize &&
            xmin + xsize >= 0 && xmin + xsize <= zb->xsize &&
            ymin + ysize >= 0 && ymin + ysize <= zb->ysize);
@@ -425,7 +420,6 @@ ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
     }
   }
   if (clear_color) {
-    color = RGBA_TO_PIXEL(r, g, b, a);
     pp = zb->pbuf + xmin + ymin * (zb->linesize / PSZB);
     for (y = 0; y < ysize; ++y) {
       memset_l(pp, color, xsize);

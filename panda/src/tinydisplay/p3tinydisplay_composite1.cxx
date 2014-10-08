@@ -6,6 +6,7 @@
 #include "td_light.cxx"
 #include "memory.cxx"
 #include "specbuf.cxx"
+#include "srgb_tables.cxx"
 #include "store_pixel.cxx"
 #include "td_texture.cxx"
 #include "tinyGeomMunger.cxx"

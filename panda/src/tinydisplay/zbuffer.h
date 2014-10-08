@@ -7,6 +7,7 @@
 
 #include "zfeatures.h"
 #include "pbitops.h"
+#include "srgb_tables.h"
 
 typedef unsigned int ZPOINT;
 #define ZB_Z_BITS 20
@@ -72,10 +73,19 @@ typedef unsigned int ZPOINT;
   ((((unsigned int)(a) << 16) & 0xff000000) | (((unsigned int)(r) << 8) & 0xff0000) | ((unsigned int)(g) & 0xff00) | ((unsigned int)(b) >> 8))
 #define RGBA8_TO_PIXEL(r,g,b,a)                                   \
   ((((unsigned int)(a) << 24) & 0xff000000) | (((unsigned int)(r) << 16) & 0xff0000) | (((unsigned int)(g) << 8) & 0xff00) | (unsigned int)(b))
+
+#define SRGB_TO_PIXEL(r,g,b) \
+  ((encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB10[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
+#define SRGBA_TO_PIXEL(r,g,b,a) \
+  ((((unsigned int)(a) << 16) & 0xff000000) | (encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
+
 #define PIXEL_R(p) (((unsigned int)(p) & 0xff0000) >> 8)
 #define PIXEL_G(p) ((unsigned int)(p) & 0xff00)
 #define PIXEL_B(p) (((unsigned int)(p) & 0x00ff) << 8)
 #define PIXEL_A(p) (((unsigned int)(p) & 0xff000000) >> 16)
+#define PIXEL_SR(p) (decode_sRGB[((unsigned int)(p) & 0xff0000) >> 16])
+#define PIXEL_SG(p) (decode_sRGB[((unsigned int)(p) & 0xff00) >> 8])
+#define PIXEL_SB(p) (decode_sRGB[((unsigned int)(p) & 0x00ff)])
 typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5
@@ -97,13 +107,24 @@ typedef unsigned int PIXEL;
 #define PCOMPONENT_BLEND(c1, c2, a2) \
   ((((unsigned int)(c1) * ((unsigned int)0xffff - (unsigned int)(a2)) + (unsigned int)(c2) * (unsigned int)(a2))) >> 16)
 
-#define PIXEL_BLEND(r1, g1, b1, r2, g2, b2, a2) \
+#define _BLEND_RGB(r1, g1, b1, r2, g2, b2, a2) \
   RGBA_TO_PIXEL(PCOMPONENT_BLEND(r1, r2, a2),   \
                 PCOMPONENT_BLEND(g1, g2, a2),   \
                 PCOMPONENT_BLEND(b1, b2, a2),   \
                 a2)
+
+#define _BLEND_SRGB(r1, g1, b1, r2, g2, b2, a2) \
+  SRGBA_TO_PIXEL(PCOMPONENT_BLEND(r1, r2, a2),   \
+                 PCOMPONENT_BLEND(g1, g2, a2),   \
+                 PCOMPONENT_BLEND(b1, b2, a2),   \
+                 a2)
+
 #define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
-  PIXEL_BLEND(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
+  _BLEND_RGB(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
+
+#define PIXEL_BLEND_SRGB(rgb, r, g, b, a) \
+  _BLEND_SRGB(PIXEL_SR(rgb), PIXEL_SG(rgb), PIXEL_SB(rgb), r, g, b, a)
+
 
 typedef struct {
   PIXEL *pixmap;
@@ -120,7 +141,7 @@ typedef void (*ZB_storePixelFunc)(ZBuffer *zb, PIXEL &result, int r, int g, int 
 
 typedef PIXEL (*ZB_lookupTextureFunc)(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
 
-typedef int (*ZB_texWrapFunc)(int coord, int max_coord); 
+typedef int (*ZB_texWrapFunc)(int coord, int max_coord);
 
 struct ZTextureDef {
   ZTextureLevel *levels;
@@ -138,11 +159,11 @@ struct ZBuffer {
   int xsize,ysize;
   int linesize; /* line size, in bytes */
   int mode;
-  
+
   ZPOINT *zbuf;
   PIXEL *pbuf;
   int frame_buffer_allocated;
-  
+
   int nb_colors;
   unsigned char *dctable;
   int *ctable;
@@ -156,14 +177,14 @@ struct ZBufferPoint {
   int x,y,z;     /* integer coordinates in the zbuffer */
   int s,t;       /* coordinates for the mapping */
   int r,g,b,a;     /* color indexes */
-  
+
   PN_stdfloat sz,tz;   /* temporary coordinates for mapping */
 
   int sa, ta;   /* mapping coordinates for optional second texture stage */
-  PN_stdfloat sza,tza; 
+  PN_stdfloat sza,tza;
 
   int sb, tb;   /* mapping coordinates for optional third texture stage */
-  PN_stdfloat szb,tzb; 
+  PN_stdfloat szb,tzb;
 };
 
 /* zbuffer.c */
@@ -200,10 +221,8 @@ ZBuffer *ZB_open(int xsize,int ysize,int mode,
 void ZB_close(ZBuffer *zb);
 
 void ZB_resize(ZBuffer *zb,void *frame_buffer,int xsize,int ysize);
-void ZB_clear(ZBuffer *zb, int clear_z, ZPOINT z,
-              int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
-void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
-                       int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
+void ZB_clear(ZBuffer *zb, int clear_z, ZPOINT z, int clear_color, PIXEL color);
+void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z, int clear_color, PIXEL color,
                        int xmin, int ymin, int xsize, int ysize);
 
 PIXEL lookup_texture_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);

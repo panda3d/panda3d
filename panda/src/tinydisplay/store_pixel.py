@@ -63,6 +63,9 @@ for op_a in Operands:
         for mask in range(0, 16):
             fname = getFname(op_a, op_b, mask)
             print >> code, '#define FNAME(name) %s' % (fname)
+            if mask & (1 | 2 | 3):
+                print >> code, '#define FNAME_S(name) %s_s' % (fname)
+
             print >> code, '#define OP_A(f, i) ((unsigned int)(%s))' % (CodeTable[op_a])
             print >> code, '#define OP_B(f, i) ((unsigned int)(%s))' % (CodeTable[op_b])
             for b in range(0, 4):
@@ -91,3 +94,22 @@ for op_a in Operands:
     print >> code, '  },'
 print >> code, '};'
 
+print >> code
+
+# Now do this again, but for the sRGB function pointers.
+print >> table, 'extern const ZB_storePixelFunc store_pixel_funcs_sRGB%s;' % (arraySize)
+print >> code, 'const ZB_storePixelFunc store_pixel_funcs_sRGB%s = {' % (arraySize)
+
+for op_a in Operands:
+    print >> code, '  {'
+    for op_b in Operands:
+        print >> code, '    {'
+        for mask in range(0, 16):
+            fname = getFname(op_a, op_b, mask)
+            if mask & (1 | 2 | 3):
+                print >> code, '      %s_s,' % (fname)
+            else:
+                print >> code, '      %s,' % (fname)
+        print >> code, '    },'
+    print >> code, '  },'
+print >> code, '};'

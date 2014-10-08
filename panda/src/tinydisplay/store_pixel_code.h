@@ -10,6 +10,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_r000
+#define FNAME_S(name) store_pixel_zero_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19,6 +20,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_0g00
+#define FNAME_S(name) store_pixel_zero_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28,6 +30,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_rg00
+#define FNAME_S(name) store_pixel_zero_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -46,6 +49,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_r0b0
+#define FNAME_S(name) store_pixel_zero_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -55,6 +59,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_0gb0
+#define FNAME_S(name) store_pixel_zero_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -64,6 +69,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_rgb0
+#define FNAME_S(name) store_pixel_zero_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -82,6 +88,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_r00a
+#define FNAME_S(name) store_pixel_zero_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -91,6 +98,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_0g0a
+#define FNAME_S(name) store_pixel_zero_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -100,6 +108,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_rg0a
+#define FNAME_S(name) store_pixel_zero_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -118,6 +127,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_r0ba
+#define FNAME_S(name) store_pixel_zero_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -127,6 +137,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_0gba
+#define FNAME_S(name) store_pixel_zero_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -136,6 +147,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_zero_rgba
+#define FNAME_S(name) store_pixel_zero_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -154,6 +166,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_r000
+#define FNAME_S(name) store_pixel_zero_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -163,6 +176,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_0g00
+#define FNAME_S(name) store_pixel_zero_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -172,6 +186,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_rg00
+#define FNAME_S(name) store_pixel_zero_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -190,6 +205,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_r0b0
+#define FNAME_S(name) store_pixel_zero_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -199,6 +215,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_0gb0
+#define FNAME_S(name) store_pixel_zero_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -208,6 +225,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_rgb0
+#define FNAME_S(name) store_pixel_zero_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -226,6 +244,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_r00a
+#define FNAME_S(name) store_pixel_zero_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -235,6 +254,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_0g0a
+#define FNAME_S(name) store_pixel_zero_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -244,6 +264,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_rg0a
+#define FNAME_S(name) store_pixel_zero_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -262,6 +283,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_r0ba
+#define FNAME_S(name) store_pixel_zero_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -271,6 +293,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_0gba
+#define FNAME_S(name) store_pixel_zero_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -280,6 +303,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_one_rgba
+#define FNAME_S(name) store_pixel_zero_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -298,6 +322,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_r000
+#define FNAME_S(name) store_pixel_zero_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -307,6 +332,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_0g00
+#define FNAME_S(name) store_pixel_zero_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -316,6 +342,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_rg00
+#define FNAME_S(name) store_pixel_zero_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -334,6 +361,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_r0b0
+#define FNAME_S(name) store_pixel_zero_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -343,6 +371,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_0gb0
+#define FNAME_S(name) store_pixel_zero_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -352,6 +381,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_rgb0
+#define FNAME_S(name) store_pixel_zero_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -370,6 +400,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_r00a
+#define FNAME_S(name) store_pixel_zero_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -379,6 +410,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_0g0a
+#define FNAME_S(name) store_pixel_zero_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -388,6 +420,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_rg0a
+#define FNAME_S(name) store_pixel_zero_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -406,6 +439,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_r0ba
+#define FNAME_S(name) store_pixel_zero_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -415,6 +449,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_0gba
+#define FNAME_S(name) store_pixel_zero_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -424,6 +459,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_icolor_rgba
+#define FNAME_S(name) store_pixel_zero_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -442,6 +478,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_r000
+#define FNAME_S(name) store_pixel_zero_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -451,6 +488,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_0g00
+#define FNAME_S(name) store_pixel_zero_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -460,6 +498,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_rg00
+#define FNAME_S(name) store_pixel_zero_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -478,6 +517,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_r0b0
+#define FNAME_S(name) store_pixel_zero_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -487,6 +527,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_0gb0
+#define FNAME_S(name) store_pixel_zero_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -496,6 +537,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_rgb0
+#define FNAME_S(name) store_pixel_zero_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -514,6 +556,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_r00a
+#define FNAME_S(name) store_pixel_zero_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -523,6 +566,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_0g0a
+#define FNAME_S(name) store_pixel_zero_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -532,6 +576,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_rg0a
+#define FNAME_S(name) store_pixel_zero_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -550,6 +595,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_r0ba
+#define FNAME_S(name) store_pixel_zero_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -559,6 +605,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_0gba
+#define FNAME_S(name) store_pixel_zero_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -568,6 +615,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_micolor_rgba
+#define FNAME_S(name) store_pixel_zero_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -586,6 +634,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_r000
+#define FNAME_S(name) store_pixel_zero_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -595,6 +644,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_0g00
+#define FNAME_S(name) store_pixel_zero_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -604,6 +654,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_rg00
+#define FNAME_S(name) store_pixel_zero_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -622,6 +673,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_r0b0
+#define FNAME_S(name) store_pixel_zero_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -631,6 +683,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_0gb0
+#define FNAME_S(name) store_pixel_zero_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -640,6 +693,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_rgb0
+#define FNAME_S(name) store_pixel_zero_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -658,6 +712,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_r00a
+#define FNAME_S(name) store_pixel_zero_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -667,6 +722,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_0g0a
+#define FNAME_S(name) store_pixel_zero_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -676,6 +732,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_rg0a
+#define FNAME_S(name) store_pixel_zero_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -694,6 +751,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_r0ba
+#define FNAME_S(name) store_pixel_zero_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -703,6 +761,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_0gba
+#define FNAME_S(name) store_pixel_zero_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -712,6 +771,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_fcolor_rgba
+#define FNAME_S(name) store_pixel_zero_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -730,6 +790,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_r000
+#define FNAME_S(name) store_pixel_zero_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -739,6 +800,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_0g00
+#define FNAME_S(name) store_pixel_zero_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -748,6 +810,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_rg00
+#define FNAME_S(name) store_pixel_zero_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -766,6 +829,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_zero_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -775,6 +839,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_zero_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -784,6 +849,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_zero_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -802,6 +868,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_r00a
+#define FNAME_S(name) store_pixel_zero_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -811,6 +878,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_zero_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -820,6 +888,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_zero_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -838,6 +907,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_zero_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -847,6 +917,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_0gba
+#define FNAME_S(name) store_pixel_zero_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -856,6 +927,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfcolor_rgba
+#define FNAME_S(name) store_pixel_zero_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -874,6 +946,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_r000
+#define FNAME_S(name) store_pixel_zero_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -883,6 +956,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_0g00
+#define FNAME_S(name) store_pixel_zero_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -892,6 +966,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_rg00
+#define FNAME_S(name) store_pixel_zero_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -910,6 +985,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_r0b0
+#define FNAME_S(name) store_pixel_zero_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -919,6 +995,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_0gb0
+#define FNAME_S(name) store_pixel_zero_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -928,6 +1005,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_rgb0
+#define FNAME_S(name) store_pixel_zero_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -946,6 +1024,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_r00a
+#define FNAME_S(name) store_pixel_zero_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -955,6 +1034,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_0g0a
+#define FNAME_S(name) store_pixel_zero_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -964,6 +1044,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_rg0a
+#define FNAME_S(name) store_pixel_zero_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -982,6 +1063,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_r0ba
+#define FNAME_S(name) store_pixel_zero_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -991,6 +1073,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_0gba
+#define FNAME_S(name) store_pixel_zero_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1000,6 +1083,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ialpha_rgba
+#define FNAME_S(name) store_pixel_zero_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1018,6 +1102,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_r000
+#define FNAME_S(name) store_pixel_zero_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1027,6 +1112,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_0g00
+#define FNAME_S(name) store_pixel_zero_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1036,6 +1122,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_rg00
+#define FNAME_S(name) store_pixel_zero_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1054,6 +1141,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_r0b0
+#define FNAME_S(name) store_pixel_zero_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1063,6 +1151,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_0gb0
+#define FNAME_S(name) store_pixel_zero_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1072,6 +1161,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_rgb0
+#define FNAME_S(name) store_pixel_zero_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1090,6 +1180,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_r00a
+#define FNAME_S(name) store_pixel_zero_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1099,6 +1190,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_0g0a
+#define FNAME_S(name) store_pixel_zero_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1108,6 +1200,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_rg0a
+#define FNAME_S(name) store_pixel_zero_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1126,6 +1219,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_r0ba
+#define FNAME_S(name) store_pixel_zero_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1135,6 +1229,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_0gba
+#define FNAME_S(name) store_pixel_zero_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1144,6 +1239,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mialpha_rgba
+#define FNAME_S(name) store_pixel_zero_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1162,6 +1258,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_r000
+#define FNAME_S(name) store_pixel_zero_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1171,6 +1268,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_0g00
+#define FNAME_S(name) store_pixel_zero_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1180,6 +1278,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_rg00
+#define FNAME_S(name) store_pixel_zero_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1198,6 +1297,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_r0b0
+#define FNAME_S(name) store_pixel_zero_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1207,6 +1307,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_0gb0
+#define FNAME_S(name) store_pixel_zero_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1216,6 +1317,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_rgb0
+#define FNAME_S(name) store_pixel_zero_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1234,6 +1336,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_r00a
+#define FNAME_S(name) store_pixel_zero_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1243,6 +1346,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_0g0a
+#define FNAME_S(name) store_pixel_zero_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1252,6 +1356,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_rg0a
+#define FNAME_S(name) store_pixel_zero_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1270,6 +1375,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_r0ba
+#define FNAME_S(name) store_pixel_zero_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1279,6 +1385,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_0gba
+#define FNAME_S(name) store_pixel_zero_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1288,6 +1395,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_falpha_rgba
+#define FNAME_S(name) store_pixel_zero_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1306,6 +1414,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_r000
+#define FNAME_S(name) store_pixel_zero_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1315,6 +1424,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_0g00
+#define FNAME_S(name) store_pixel_zero_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1324,6 +1434,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_rg00
+#define FNAME_S(name) store_pixel_zero_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1342,6 +1453,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_zero_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1351,6 +1463,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_zero_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1360,6 +1473,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_zero_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1378,6 +1492,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_r00a
+#define FNAME_S(name) store_pixel_zero_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1387,6 +1502,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_zero_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1396,6 +1512,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_zero_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1414,6 +1531,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_zero_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1423,6 +1541,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_0gba
+#define FNAME_S(name) store_pixel_zero_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1432,6 +1551,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mfalpha_rgba
+#define FNAME_S(name) store_pixel_zero_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1450,6 +1570,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_r000
+#define FNAME_S(name) store_pixel_zero_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1459,6 +1580,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_0g00
+#define FNAME_S(name) store_pixel_zero_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1468,6 +1590,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_rg00
+#define FNAME_S(name) store_pixel_zero_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1486,6 +1609,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_r0b0
+#define FNAME_S(name) store_pixel_zero_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1495,6 +1619,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_0gb0
+#define FNAME_S(name) store_pixel_zero_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1504,6 +1629,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_rgb0
+#define FNAME_S(name) store_pixel_zero_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1522,6 +1648,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_r00a
+#define FNAME_S(name) store_pixel_zero_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1531,6 +1658,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_0g0a
+#define FNAME_S(name) store_pixel_zero_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1540,6 +1668,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_rg0a
+#define FNAME_S(name) store_pixel_zero_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1558,6 +1687,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_r0ba
+#define FNAME_S(name) store_pixel_zero_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1567,6 +1697,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_0gba
+#define FNAME_S(name) store_pixel_zero_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1576,6 +1707,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_ccolor_rgba
+#define FNAME_S(name) store_pixel_zero_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1594,6 +1726,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_r000
+#define FNAME_S(name) store_pixel_zero_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1603,6 +1736,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_0g00
+#define FNAME_S(name) store_pixel_zero_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1612,6 +1746,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_rg00
+#define FNAME_S(name) store_pixel_zero_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1630,6 +1765,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_r0b0
+#define FNAME_S(name) store_pixel_zero_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1639,6 +1775,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_0gb0
+#define FNAME_S(name) store_pixel_zero_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1648,6 +1785,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_rgb0
+#define FNAME_S(name) store_pixel_zero_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1666,6 +1804,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_r00a
+#define FNAME_S(name) store_pixel_zero_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1675,6 +1814,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_0g0a
+#define FNAME_S(name) store_pixel_zero_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1684,6 +1824,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_rg0a
+#define FNAME_S(name) store_pixel_zero_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1702,6 +1843,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_r0ba
+#define FNAME_S(name) store_pixel_zero_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1711,6 +1853,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_0gba
+#define FNAME_S(name) store_pixel_zero_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1720,6 +1863,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mccolor_rgba
+#define FNAME_S(name) store_pixel_zero_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1738,6 +1882,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_r000
+#define FNAME_S(name) store_pixel_zero_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1747,6 +1892,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_0g00
+#define FNAME_S(name) store_pixel_zero_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1756,6 +1902,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_rg00
+#define FNAME_S(name) store_pixel_zero_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1774,6 +1921,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_r0b0
+#define FNAME_S(name) store_pixel_zero_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1783,6 +1931,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_0gb0
+#define FNAME_S(name) store_pixel_zero_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1792,6 +1941,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_rgb0
+#define FNAME_S(name) store_pixel_zero_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1810,6 +1960,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_r00a
+#define FNAME_S(name) store_pixel_zero_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1819,6 +1970,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_0g0a
+#define FNAME_S(name) store_pixel_zero_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1828,6 +1980,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_rg0a
+#define FNAME_S(name) store_pixel_zero_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1846,6 +1999,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_r0ba
+#define FNAME_S(name) store_pixel_zero_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1855,6 +2009,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_0gba
+#define FNAME_S(name) store_pixel_zero_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1864,6 +2019,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_calpha_rgba
+#define FNAME_S(name) store_pixel_zero_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1882,6 +2038,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_r000
+#define FNAME_S(name) store_pixel_zero_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1891,6 +2048,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_0g00
+#define FNAME_S(name) store_pixel_zero_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1900,6 +2058,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_rg00
+#define FNAME_S(name) store_pixel_zero_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1918,6 +2077,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_zero_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1927,6 +2087,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_zero_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1936,6 +2097,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_zero_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1954,6 +2116,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_r00a
+#define FNAME_S(name) store_pixel_zero_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1963,6 +2126,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_zero_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -1972,6 +2136,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_zero_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1990,6 +2155,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_zero_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -1999,6 +2165,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_0gba
+#define FNAME_S(name) store_pixel_zero_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2008,6 +2175,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_zero_mcalpha_rgba
+#define FNAME_S(name) store_pixel_zero_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2026,6 +2194,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_r000
+#define FNAME_S(name) store_pixel_one_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2035,6 +2204,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_0g00
+#define FNAME_S(name) store_pixel_one_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2044,6 +2214,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_rg00
+#define FNAME_S(name) store_pixel_one_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2062,6 +2233,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_r0b0
+#define FNAME_S(name) store_pixel_one_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2071,6 +2243,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_0gb0
+#define FNAME_S(name) store_pixel_one_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2080,6 +2253,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_rgb0
+#define FNAME_S(name) store_pixel_one_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2098,6 +2272,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_r00a
+#define FNAME_S(name) store_pixel_one_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2107,6 +2282,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_0g0a
+#define FNAME_S(name) store_pixel_one_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2116,6 +2292,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_rg0a
+#define FNAME_S(name) store_pixel_one_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2134,6 +2311,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_r0ba
+#define FNAME_S(name) store_pixel_one_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2143,6 +2321,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_0gba
+#define FNAME_S(name) store_pixel_one_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2152,6 +2331,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_zero_rgba
+#define FNAME_S(name) store_pixel_one_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2170,6 +2350,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_r000
+#define FNAME_S(name) store_pixel_one_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2179,6 +2360,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_0g00
+#define FNAME_S(name) store_pixel_one_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2188,6 +2370,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_rg00
+#define FNAME_S(name) store_pixel_one_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2206,6 +2389,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_r0b0
+#define FNAME_S(name) store_pixel_one_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2215,6 +2399,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_0gb0
+#define FNAME_S(name) store_pixel_one_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2224,6 +2409,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_rgb0
+#define FNAME_S(name) store_pixel_one_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2242,6 +2428,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_r00a
+#define FNAME_S(name) store_pixel_one_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2251,6 +2438,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_0g0a
+#define FNAME_S(name) store_pixel_one_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2260,6 +2448,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_rg0a
+#define FNAME_S(name) store_pixel_one_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2278,6 +2467,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_r0ba
+#define FNAME_S(name) store_pixel_one_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2287,6 +2477,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_0gba
+#define FNAME_S(name) store_pixel_one_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2296,6 +2487,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_one_rgba
+#define FNAME_S(name) store_pixel_one_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2314,6 +2506,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_r000
+#define FNAME_S(name) store_pixel_one_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2323,6 +2516,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_0g00
+#define FNAME_S(name) store_pixel_one_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2332,6 +2526,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_rg00
+#define FNAME_S(name) store_pixel_one_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2350,6 +2545,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_r0b0
+#define FNAME_S(name) store_pixel_one_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2359,6 +2555,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_0gb0
+#define FNAME_S(name) store_pixel_one_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2368,6 +2565,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_rgb0
+#define FNAME_S(name) store_pixel_one_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2386,6 +2584,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_r00a
+#define FNAME_S(name) store_pixel_one_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2395,6 +2594,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_0g0a
+#define FNAME_S(name) store_pixel_one_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2404,6 +2604,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_rg0a
+#define FNAME_S(name) store_pixel_one_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2422,6 +2623,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_r0ba
+#define FNAME_S(name) store_pixel_one_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2431,6 +2633,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_0gba
+#define FNAME_S(name) store_pixel_one_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2440,6 +2643,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_icolor_rgba
+#define FNAME_S(name) store_pixel_one_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2458,6 +2662,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_r000
+#define FNAME_S(name) store_pixel_one_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2467,6 +2672,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_0g00
+#define FNAME_S(name) store_pixel_one_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2476,6 +2682,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_rg00
+#define FNAME_S(name) store_pixel_one_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2494,6 +2701,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_r0b0
+#define FNAME_S(name) store_pixel_one_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2503,6 +2711,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_0gb0
+#define FNAME_S(name) store_pixel_one_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2512,6 +2721,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_rgb0
+#define FNAME_S(name) store_pixel_one_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2530,6 +2740,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_r00a
+#define FNAME_S(name) store_pixel_one_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2539,6 +2750,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_0g0a
+#define FNAME_S(name) store_pixel_one_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2548,6 +2760,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_rg0a
+#define FNAME_S(name) store_pixel_one_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2566,6 +2779,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_r0ba
+#define FNAME_S(name) store_pixel_one_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2575,6 +2789,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_0gba
+#define FNAME_S(name) store_pixel_one_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2584,6 +2799,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_micolor_rgba
+#define FNAME_S(name) store_pixel_one_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2602,6 +2818,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_r000
+#define FNAME_S(name) store_pixel_one_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2611,6 +2828,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_0g00
+#define FNAME_S(name) store_pixel_one_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2620,6 +2838,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_rg00
+#define FNAME_S(name) store_pixel_one_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2638,6 +2857,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_r0b0
+#define FNAME_S(name) store_pixel_one_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2647,6 +2867,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_0gb0
+#define FNAME_S(name) store_pixel_one_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2656,6 +2877,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_rgb0
+#define FNAME_S(name) store_pixel_one_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2674,6 +2896,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_r00a
+#define FNAME_S(name) store_pixel_one_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2683,6 +2906,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_0g0a
+#define FNAME_S(name) store_pixel_one_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2692,6 +2916,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_rg0a
+#define FNAME_S(name) store_pixel_one_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2710,6 +2935,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_r0ba
+#define FNAME_S(name) store_pixel_one_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2719,6 +2945,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_0gba
+#define FNAME_S(name) store_pixel_one_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2728,6 +2955,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_fcolor_rgba
+#define FNAME_S(name) store_pixel_one_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2746,6 +2974,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_r000
+#define FNAME_S(name) store_pixel_one_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2755,6 +2984,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_0g00
+#define FNAME_S(name) store_pixel_one_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2764,6 +2994,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_rg00
+#define FNAME_S(name) store_pixel_one_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2782,6 +3013,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_one_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2791,6 +3023,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_one_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2800,6 +3033,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_one_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2818,6 +3052,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_r00a
+#define FNAME_S(name) store_pixel_one_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2827,6 +3062,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_one_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2836,6 +3072,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_one_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2854,6 +3091,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_one_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2863,6 +3101,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_0gba
+#define FNAME_S(name) store_pixel_one_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2872,6 +3111,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfcolor_rgba
+#define FNAME_S(name) store_pixel_one_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2890,6 +3130,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_r000
+#define FNAME_S(name) store_pixel_one_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2899,6 +3140,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_0g00
+#define FNAME_S(name) store_pixel_one_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2908,6 +3150,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_rg00
+#define FNAME_S(name) store_pixel_one_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2926,6 +3169,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_r0b0
+#define FNAME_S(name) store_pixel_one_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2935,6 +3179,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_0gb0
+#define FNAME_S(name) store_pixel_one_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2944,6 +3189,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_rgb0
+#define FNAME_S(name) store_pixel_one_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2962,6 +3208,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_r00a
+#define FNAME_S(name) store_pixel_one_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2971,6 +3218,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_0g0a
+#define FNAME_S(name) store_pixel_one_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -2980,6 +3228,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_rg0a
+#define FNAME_S(name) store_pixel_one_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -2998,6 +3247,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_r0ba
+#define FNAME_S(name) store_pixel_one_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3007,6 +3257,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_0gba
+#define FNAME_S(name) store_pixel_one_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3016,6 +3267,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ialpha_rgba
+#define FNAME_S(name) store_pixel_one_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3034,6 +3286,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_r000
+#define FNAME_S(name) store_pixel_one_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3043,6 +3296,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_0g00
+#define FNAME_S(name) store_pixel_one_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3052,6 +3306,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_rg00
+#define FNAME_S(name) store_pixel_one_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3070,6 +3325,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_r0b0
+#define FNAME_S(name) store_pixel_one_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3079,6 +3335,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_0gb0
+#define FNAME_S(name) store_pixel_one_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3088,6 +3345,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_rgb0
+#define FNAME_S(name) store_pixel_one_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3106,6 +3364,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_r00a
+#define FNAME_S(name) store_pixel_one_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3115,6 +3374,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_0g0a
+#define FNAME_S(name) store_pixel_one_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3124,6 +3384,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_rg0a
+#define FNAME_S(name) store_pixel_one_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3142,6 +3403,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_r0ba
+#define FNAME_S(name) store_pixel_one_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3151,6 +3413,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_0gba
+#define FNAME_S(name) store_pixel_one_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3160,6 +3423,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mialpha_rgba
+#define FNAME_S(name) store_pixel_one_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3178,6 +3442,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_r000
+#define FNAME_S(name) store_pixel_one_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3187,6 +3452,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_0g00
+#define FNAME_S(name) store_pixel_one_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3196,6 +3462,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_rg00
+#define FNAME_S(name) store_pixel_one_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3214,6 +3481,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_r0b0
+#define FNAME_S(name) store_pixel_one_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3223,6 +3491,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_0gb0
+#define FNAME_S(name) store_pixel_one_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3232,6 +3501,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_rgb0
+#define FNAME_S(name) store_pixel_one_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3250,6 +3520,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_r00a
+#define FNAME_S(name) store_pixel_one_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3259,6 +3530,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_0g0a
+#define FNAME_S(name) store_pixel_one_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3268,6 +3540,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_rg0a
+#define FNAME_S(name) store_pixel_one_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3286,6 +3559,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_r0ba
+#define FNAME_S(name) store_pixel_one_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3295,6 +3569,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_0gba
+#define FNAME_S(name) store_pixel_one_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3304,6 +3579,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_falpha_rgba
+#define FNAME_S(name) store_pixel_one_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3322,6 +3598,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_r000
+#define FNAME_S(name) store_pixel_one_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3331,6 +3608,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_0g00
+#define FNAME_S(name) store_pixel_one_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3340,6 +3618,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_rg00
+#define FNAME_S(name) store_pixel_one_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3358,6 +3637,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_one_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3367,6 +3647,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_one_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3376,6 +3657,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_one_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3394,6 +3676,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_r00a
+#define FNAME_S(name) store_pixel_one_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3403,6 +3686,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_one_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3412,6 +3696,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_one_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3430,6 +3715,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_one_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3439,6 +3725,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_0gba
+#define FNAME_S(name) store_pixel_one_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3448,6 +3735,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mfalpha_rgba
+#define FNAME_S(name) store_pixel_one_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3466,6 +3754,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_r000
+#define FNAME_S(name) store_pixel_one_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3475,6 +3764,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_0g00
+#define FNAME_S(name) store_pixel_one_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3484,6 +3774,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_rg00
+#define FNAME_S(name) store_pixel_one_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3502,6 +3793,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_r0b0
+#define FNAME_S(name) store_pixel_one_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3511,6 +3803,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_0gb0
+#define FNAME_S(name) store_pixel_one_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3520,6 +3813,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_rgb0
+#define FNAME_S(name) store_pixel_one_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3538,6 +3832,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_r00a
+#define FNAME_S(name) store_pixel_one_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3547,6 +3842,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_0g0a
+#define FNAME_S(name) store_pixel_one_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3556,6 +3852,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_rg0a
+#define FNAME_S(name) store_pixel_one_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3574,6 +3871,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_r0ba
+#define FNAME_S(name) store_pixel_one_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3583,6 +3881,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_0gba
+#define FNAME_S(name) store_pixel_one_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3592,6 +3891,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_ccolor_rgba
+#define FNAME_S(name) store_pixel_one_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3610,6 +3910,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_r000
+#define FNAME_S(name) store_pixel_one_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3619,6 +3920,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_0g00
+#define FNAME_S(name) store_pixel_one_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3628,6 +3930,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_rg00
+#define FNAME_S(name) store_pixel_one_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3646,6 +3949,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_r0b0
+#define FNAME_S(name) store_pixel_one_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3655,6 +3959,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_0gb0
+#define FNAME_S(name) store_pixel_one_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3664,6 +3969,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_rgb0
+#define FNAME_S(name) store_pixel_one_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3682,6 +3988,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_r00a
+#define FNAME_S(name) store_pixel_one_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3691,6 +3998,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_0g0a
+#define FNAME_S(name) store_pixel_one_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3700,6 +4008,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_rg0a
+#define FNAME_S(name) store_pixel_one_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3718,6 +4027,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_r0ba
+#define FNAME_S(name) store_pixel_one_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3727,6 +4037,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_0gba
+#define FNAME_S(name) store_pixel_one_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3736,6 +4047,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mccolor_rgba
+#define FNAME_S(name) store_pixel_one_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3754,6 +4066,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_r000
+#define FNAME_S(name) store_pixel_one_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3763,6 +4076,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_0g00
+#define FNAME_S(name) store_pixel_one_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3772,6 +4086,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_rg00
+#define FNAME_S(name) store_pixel_one_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3790,6 +4105,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_r0b0
+#define FNAME_S(name) store_pixel_one_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3799,6 +4115,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_0gb0
+#define FNAME_S(name) store_pixel_one_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3808,6 +4125,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_rgb0
+#define FNAME_S(name) store_pixel_one_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3826,6 +4144,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_r00a
+#define FNAME_S(name) store_pixel_one_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3835,6 +4154,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_0g0a
+#define FNAME_S(name) store_pixel_one_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3844,6 +4164,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_rg0a
+#define FNAME_S(name) store_pixel_one_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3862,6 +4183,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_r0ba
+#define FNAME_S(name) store_pixel_one_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3871,6 +4193,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_0gba
+#define FNAME_S(name) store_pixel_one_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3880,6 +4203,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_calpha_rgba
+#define FNAME_S(name) store_pixel_one_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3898,6 +4222,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_r000
+#define FNAME_S(name) store_pixel_one_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3907,6 +4232,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_0g00
+#define FNAME_S(name) store_pixel_one_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3916,6 +4242,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_rg00
+#define FNAME_S(name) store_pixel_one_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3934,6 +4261,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_one_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3943,6 +4271,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_one_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3952,6 +4281,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_one_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3970,6 +4300,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_r00a
+#define FNAME_S(name) store_pixel_one_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -3979,6 +4310,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_one_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -3988,6 +4320,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_one_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4006,6 +4339,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_one_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4015,6 +4349,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_0gba
+#define FNAME_S(name) store_pixel_one_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4024,6 +4359,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_one_mcalpha_rgba
+#define FNAME_S(name) store_pixel_one_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0x10000))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4042,6 +4378,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_r000
+#define FNAME_S(name) store_pixel_icolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4051,6 +4388,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_0g00
+#define FNAME_S(name) store_pixel_icolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4060,6 +4398,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_rg00
+#define FNAME_S(name) store_pixel_icolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4078,6 +4417,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_r0b0
+#define FNAME_S(name) store_pixel_icolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4087,6 +4427,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_0gb0
+#define FNAME_S(name) store_pixel_icolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4096,6 +4437,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_rgb0
+#define FNAME_S(name) store_pixel_icolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4114,6 +4456,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_r00a
+#define FNAME_S(name) store_pixel_icolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4123,6 +4466,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_0g0a
+#define FNAME_S(name) store_pixel_icolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4132,6 +4476,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_rg0a
+#define FNAME_S(name) store_pixel_icolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4150,6 +4495,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_r0ba
+#define FNAME_S(name) store_pixel_icolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4159,6 +4505,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_0gba
+#define FNAME_S(name) store_pixel_icolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4168,6 +4515,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_zero_rgba
+#define FNAME_S(name) store_pixel_icolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4186,6 +4534,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_r000
+#define FNAME_S(name) store_pixel_icolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4195,6 +4544,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_0g00
+#define FNAME_S(name) store_pixel_icolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4204,6 +4554,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_rg00
+#define FNAME_S(name) store_pixel_icolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4222,6 +4573,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_r0b0
+#define FNAME_S(name) store_pixel_icolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4231,6 +4583,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_0gb0
+#define FNAME_S(name) store_pixel_icolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4240,6 +4593,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_rgb0
+#define FNAME_S(name) store_pixel_icolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4258,6 +4612,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_r00a
+#define FNAME_S(name) store_pixel_icolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4267,6 +4622,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_0g0a
+#define FNAME_S(name) store_pixel_icolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4276,6 +4632,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_rg0a
+#define FNAME_S(name) store_pixel_icolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4294,6 +4651,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_r0ba
+#define FNAME_S(name) store_pixel_icolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4303,6 +4661,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_0gba
+#define FNAME_S(name) store_pixel_icolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4312,6 +4671,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_one_rgba
+#define FNAME_S(name) store_pixel_icolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4330,6 +4690,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_r000
+#define FNAME_S(name) store_pixel_icolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4339,6 +4700,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_0g00
+#define FNAME_S(name) store_pixel_icolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4348,6 +4710,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_rg00
+#define FNAME_S(name) store_pixel_icolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4366,6 +4729,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4375,6 +4739,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4384,6 +4749,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4402,6 +4768,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_r00a
+#define FNAME_S(name) store_pixel_icolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4411,6 +4778,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4420,6 +4788,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4438,6 +4807,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4447,6 +4817,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_0gba
+#define FNAME_S(name) store_pixel_icolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4456,6 +4827,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_icolor_rgba
+#define FNAME_S(name) store_pixel_icolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4474,6 +4846,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_r000
+#define FNAME_S(name) store_pixel_icolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4483,6 +4856,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_0g00
+#define FNAME_S(name) store_pixel_icolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4492,6 +4866,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_rg00
+#define FNAME_S(name) store_pixel_icolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4510,6 +4885,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4519,6 +4895,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4528,6 +4905,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4546,6 +4924,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_r00a
+#define FNAME_S(name) store_pixel_icolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4555,6 +4934,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4564,6 +4944,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4582,6 +4963,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4591,6 +4973,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_0gba
+#define FNAME_S(name) store_pixel_icolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4600,6 +4983,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_micolor_rgba
+#define FNAME_S(name) store_pixel_icolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4618,6 +5002,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_r000
+#define FNAME_S(name) store_pixel_icolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4627,6 +5012,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_icolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4636,6 +5022,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_icolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4654,6 +5041,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4663,6 +5051,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4672,6 +5061,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4690,6 +5080,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_icolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4699,6 +5090,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4708,6 +5100,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4726,6 +5119,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4735,6 +5129,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_icolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4744,6 +5139,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_icolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4762,6 +5158,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_icolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4771,6 +5168,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_icolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4780,6 +5178,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_icolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4798,6 +5197,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4807,6 +5207,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4816,6 +5217,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4834,6 +5236,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_icolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4843,6 +5246,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4852,6 +5256,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4870,6 +5275,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4879,6 +5285,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_icolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4888,6 +5295,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_icolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4906,6 +5314,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_r000
+#define FNAME_S(name) store_pixel_icolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4915,6 +5324,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_icolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4924,6 +5334,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_icolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4942,6 +5353,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4951,6 +5363,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4960,6 +5373,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4978,6 +5392,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_icolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -4987,6 +5402,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -4996,6 +5412,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5014,6 +5431,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5023,6 +5441,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_icolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5032,6 +5451,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_icolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5050,6 +5470,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_r000
+#define FNAME_S(name) store_pixel_icolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5059,6 +5480,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_icolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5068,6 +5490,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_icolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5086,6 +5509,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5095,6 +5519,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5104,6 +5529,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5122,6 +5548,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_icolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5131,6 +5558,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5140,6 +5568,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5158,6 +5587,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5167,6 +5597,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_icolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5176,6 +5607,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_icolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5194,6 +5626,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_r000
+#define FNAME_S(name) store_pixel_icolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5203,6 +5636,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_0g00
+#define FNAME_S(name) store_pixel_icolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5212,6 +5646,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_rg00
+#define FNAME_S(name) store_pixel_icolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5230,6 +5665,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5239,6 +5675,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5248,6 +5685,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5266,6 +5704,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_r00a
+#define FNAME_S(name) store_pixel_icolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5275,6 +5714,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5284,6 +5724,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5302,6 +5743,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5311,6 +5753,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_0gba
+#define FNAME_S(name) store_pixel_icolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5320,6 +5763,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_falpha_rgba
+#define FNAME_S(name) store_pixel_icolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5338,6 +5782,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_icolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5347,6 +5792,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_icolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5356,6 +5802,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_icolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5374,6 +5821,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5383,6 +5831,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5392,6 +5841,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5410,6 +5860,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_icolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5419,6 +5870,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5428,6 +5880,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5446,6 +5899,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5455,6 +5909,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_icolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5464,6 +5919,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_icolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5482,6 +5938,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_r000
+#define FNAME_S(name) store_pixel_icolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5491,6 +5948,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_icolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5500,6 +5958,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_icolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5518,6 +5977,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5527,6 +5987,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5536,6 +5997,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5554,6 +6016,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_icolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5563,6 +6026,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5572,6 +6036,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5590,6 +6055,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5599,6 +6065,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_icolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5608,6 +6075,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_icolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5626,6 +6094,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_r000
+#define FNAME_S(name) store_pixel_icolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5635,6 +6104,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_icolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5644,6 +6114,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_icolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5662,6 +6133,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_icolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5671,6 +6143,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_icolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5680,6 +6153,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_icolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5698,6 +6172,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_icolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5707,6 +6182,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_icolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5716,6 +6192,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_icolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5734,6 +6211,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_icolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5743,6 +6221,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_icolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5752,6 +6231,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_icolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5770,6 +6250,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_r000
+#define FNAME_S(name) store_pixel_icolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5779,6 +6260,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_0g00
+#define FNAME_S(name) store_pixel_icolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5788,6 +6270,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_rg00
+#define FNAME_S(name) store_pixel_icolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5806,6 +6289,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5815,6 +6299,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5824,6 +6309,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5842,6 +6328,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_r00a
+#define FNAME_S(name) store_pixel_icolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5851,6 +6338,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5860,6 +6348,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5878,6 +6367,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5887,6 +6377,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_0gba
+#define FNAME_S(name) store_pixel_icolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5896,6 +6387,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_calpha_rgba
+#define FNAME_S(name) store_pixel_icolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5914,6 +6406,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_icolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5923,6 +6416,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_icolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5932,6 +6426,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_icolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5950,6 +6445,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_icolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5959,6 +6455,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_icolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -5968,6 +6465,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_icolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5986,6 +6484,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_icolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -5995,6 +6494,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_icolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6004,6 +6504,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_icolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6022,6 +6523,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_icolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6031,6 +6533,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_icolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6040,6 +6543,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_icolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_icolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6058,6 +6562,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_r000
+#define FNAME_S(name) store_pixel_micolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6067,6 +6572,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_0g00
+#define FNAME_S(name) store_pixel_micolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6076,6 +6582,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_rg00
+#define FNAME_S(name) store_pixel_micolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6094,6 +6601,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_r0b0
+#define FNAME_S(name) store_pixel_micolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6103,6 +6611,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_0gb0
+#define FNAME_S(name) store_pixel_micolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6112,6 +6621,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_rgb0
+#define FNAME_S(name) store_pixel_micolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6130,6 +6640,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_r00a
+#define FNAME_S(name) store_pixel_micolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6139,6 +6650,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_0g0a
+#define FNAME_S(name) store_pixel_micolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6148,6 +6660,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_rg0a
+#define FNAME_S(name) store_pixel_micolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6166,6 +6679,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_r0ba
+#define FNAME_S(name) store_pixel_micolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6175,6 +6689,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_0gba
+#define FNAME_S(name) store_pixel_micolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6184,6 +6699,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_zero_rgba
+#define FNAME_S(name) store_pixel_micolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6202,6 +6718,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_r000
+#define FNAME_S(name) store_pixel_micolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6211,6 +6728,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_0g00
+#define FNAME_S(name) store_pixel_micolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6220,6 +6738,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_rg00
+#define FNAME_S(name) store_pixel_micolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6238,6 +6757,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_r0b0
+#define FNAME_S(name) store_pixel_micolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6247,6 +6767,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_0gb0
+#define FNAME_S(name) store_pixel_micolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6256,6 +6777,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_rgb0
+#define FNAME_S(name) store_pixel_micolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6274,6 +6796,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_r00a
+#define FNAME_S(name) store_pixel_micolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6283,6 +6806,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_0g0a
+#define FNAME_S(name) store_pixel_micolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6292,6 +6816,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_rg0a
+#define FNAME_S(name) store_pixel_micolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6310,6 +6835,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_r0ba
+#define FNAME_S(name) store_pixel_micolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6319,6 +6845,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_0gba
+#define FNAME_S(name) store_pixel_micolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6328,6 +6855,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_one_rgba
+#define FNAME_S(name) store_pixel_micolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6346,6 +6874,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_r000
+#define FNAME_S(name) store_pixel_micolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6355,6 +6884,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_0g00
+#define FNAME_S(name) store_pixel_micolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6364,6 +6894,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_rg00
+#define FNAME_S(name) store_pixel_micolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6382,6 +6913,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6391,6 +6923,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6400,6 +6933,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6418,6 +6952,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_r00a
+#define FNAME_S(name) store_pixel_micolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6427,6 +6962,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6436,6 +6972,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6454,6 +6991,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6463,6 +7001,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_0gba
+#define FNAME_S(name) store_pixel_micolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6472,6 +7011,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_icolor_rgba
+#define FNAME_S(name) store_pixel_micolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6490,6 +7030,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_r000
+#define FNAME_S(name) store_pixel_micolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6499,6 +7040,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_0g00
+#define FNAME_S(name) store_pixel_micolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6508,6 +7050,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_rg00
+#define FNAME_S(name) store_pixel_micolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6526,6 +7069,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6535,6 +7079,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6544,6 +7089,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6562,6 +7108,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_r00a
+#define FNAME_S(name) store_pixel_micolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6571,6 +7118,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6580,6 +7128,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6598,6 +7147,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6607,6 +7157,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_0gba
+#define FNAME_S(name) store_pixel_micolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6616,6 +7167,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_micolor_rgba
+#define FNAME_S(name) store_pixel_micolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6634,6 +7186,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_r000
+#define FNAME_S(name) store_pixel_micolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6643,6 +7196,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_micolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6652,6 +7206,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_micolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6670,6 +7225,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6679,6 +7235,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6688,6 +7245,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6706,6 +7264,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_micolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6715,6 +7274,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6724,6 +7284,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6742,6 +7303,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6751,6 +7313,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_micolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6760,6 +7323,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_micolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6778,6 +7342,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_micolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6787,6 +7352,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_micolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6796,6 +7362,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_micolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6814,6 +7381,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6823,6 +7391,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6832,6 +7401,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6850,6 +7420,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_micolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6859,6 +7430,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6868,6 +7440,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6886,6 +7459,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6895,6 +7469,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_micolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6904,6 +7479,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_micolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6922,6 +7498,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_r000
+#define FNAME_S(name) store_pixel_micolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6931,6 +7508,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_micolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6940,6 +7518,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_micolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6958,6 +7537,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6967,6 +7547,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -6976,6 +7557,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -6994,6 +7576,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_micolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7003,6 +7586,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7012,6 +7596,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7030,6 +7615,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7039,6 +7625,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_micolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7048,6 +7635,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_micolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7066,6 +7654,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_r000
+#define FNAME_S(name) store_pixel_micolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7075,6 +7664,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_micolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7084,6 +7674,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_micolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7102,6 +7693,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7111,6 +7703,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7120,6 +7713,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7138,6 +7732,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_micolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7147,6 +7742,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7156,6 +7752,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7174,6 +7771,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7183,6 +7781,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_micolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7192,6 +7791,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_micolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7210,6 +7810,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_r000
+#define FNAME_S(name) store_pixel_micolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7219,6 +7820,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_0g00
+#define FNAME_S(name) store_pixel_micolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7228,6 +7830,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_rg00
+#define FNAME_S(name) store_pixel_micolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7246,6 +7849,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7255,6 +7859,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7264,6 +7869,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7282,6 +7888,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_r00a
+#define FNAME_S(name) store_pixel_micolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7291,6 +7898,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7300,6 +7908,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7318,6 +7927,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7327,6 +7937,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_0gba
+#define FNAME_S(name) store_pixel_micolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7336,6 +7947,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_falpha_rgba
+#define FNAME_S(name) store_pixel_micolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7354,6 +7966,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_micolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7363,6 +7976,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_micolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7372,6 +7986,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_micolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7390,6 +8005,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7399,6 +8015,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7408,6 +8025,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7426,6 +8044,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_micolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7435,6 +8054,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7444,6 +8064,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7462,6 +8083,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7471,6 +8093,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_micolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7480,6 +8103,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_micolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7498,6 +8122,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_r000
+#define FNAME_S(name) store_pixel_micolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7507,6 +8132,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_micolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7516,6 +8142,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_micolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7534,6 +8161,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7543,6 +8171,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7552,6 +8181,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7570,6 +8200,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_micolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7579,6 +8210,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7588,6 +8220,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7606,6 +8239,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7615,6 +8249,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_micolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7624,6 +8259,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_micolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7642,6 +8278,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_r000
+#define FNAME_S(name) store_pixel_micolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7651,6 +8288,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_micolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7660,6 +8298,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_micolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7678,6 +8317,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_micolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7687,6 +8327,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_micolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7696,6 +8337,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_micolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7714,6 +8356,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_micolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7723,6 +8366,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_micolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7732,6 +8376,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_micolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7750,6 +8395,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_micolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7759,6 +8405,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_micolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7768,6 +8415,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_micolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7786,6 +8434,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_r000
+#define FNAME_S(name) store_pixel_micolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7795,6 +8444,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_0g00
+#define FNAME_S(name) store_pixel_micolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7804,6 +8454,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_rg00
+#define FNAME_S(name) store_pixel_micolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7822,6 +8473,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7831,6 +8483,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7840,6 +8493,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7858,6 +8512,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_r00a
+#define FNAME_S(name) store_pixel_micolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7867,6 +8522,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7876,6 +8532,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7894,6 +8551,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7903,6 +8561,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_0gba
+#define FNAME_S(name) store_pixel_micolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7912,6 +8571,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_calpha_rgba
+#define FNAME_S(name) store_pixel_micolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7930,6 +8590,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_micolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7939,6 +8600,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_micolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7948,6 +8610,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_micolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7966,6 +8629,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_micolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -7975,6 +8639,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_micolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -7984,6 +8649,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_micolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8002,6 +8668,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_micolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8011,6 +8678,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_micolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8020,6 +8688,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_micolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8038,6 +8707,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_micolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8047,6 +8717,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_micolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8056,6 +8727,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_micolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_micolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8074,6 +8746,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_r000
+#define FNAME_S(name) store_pixel_fcolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8083,6 +8756,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_0g00
+#define FNAME_S(name) store_pixel_fcolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8092,6 +8766,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_rg00
+#define FNAME_S(name) store_pixel_fcolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8110,6 +8785,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_r0b0
+#define FNAME_S(name) store_pixel_fcolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8119,6 +8795,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_0gb0
+#define FNAME_S(name) store_pixel_fcolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8128,6 +8805,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_rgb0
+#define FNAME_S(name) store_pixel_fcolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8146,6 +8824,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_r00a
+#define FNAME_S(name) store_pixel_fcolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8155,6 +8834,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_0g0a
+#define FNAME_S(name) store_pixel_fcolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8164,6 +8844,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_rg0a
+#define FNAME_S(name) store_pixel_fcolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8182,6 +8863,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_r0ba
+#define FNAME_S(name) store_pixel_fcolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8191,6 +8873,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_0gba
+#define FNAME_S(name) store_pixel_fcolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8200,6 +8883,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_zero_rgba
+#define FNAME_S(name) store_pixel_fcolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8218,6 +8902,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_r000
+#define FNAME_S(name) store_pixel_fcolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8227,6 +8912,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_0g00
+#define FNAME_S(name) store_pixel_fcolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8236,6 +8922,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_rg00
+#define FNAME_S(name) store_pixel_fcolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8254,6 +8941,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_r0b0
+#define FNAME_S(name) store_pixel_fcolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8263,6 +8951,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_0gb0
+#define FNAME_S(name) store_pixel_fcolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8272,6 +8961,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_rgb0
+#define FNAME_S(name) store_pixel_fcolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8290,6 +8980,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_r00a
+#define FNAME_S(name) store_pixel_fcolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8299,6 +8990,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_0g0a
+#define FNAME_S(name) store_pixel_fcolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8308,6 +9000,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_rg0a
+#define FNAME_S(name) store_pixel_fcolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8326,6 +9019,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_r0ba
+#define FNAME_S(name) store_pixel_fcolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8335,6 +9029,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_0gba
+#define FNAME_S(name) store_pixel_fcolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8344,6 +9039,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_one_rgba
+#define FNAME_S(name) store_pixel_fcolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8362,6 +9058,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_r000
+#define FNAME_S(name) store_pixel_fcolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8371,6 +9068,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8380,6 +9078,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8398,6 +9097,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8407,6 +9107,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8416,6 +9117,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8434,6 +9136,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8443,6 +9146,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8452,6 +9156,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8470,6 +9175,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8479,6 +9185,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8488,6 +9195,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_icolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8506,6 +9214,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_r000
+#define FNAME_S(name) store_pixel_fcolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8515,6 +9224,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8524,6 +9234,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8542,6 +9253,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8551,6 +9263,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8560,6 +9273,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8578,6 +9292,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8587,6 +9302,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8596,6 +9312,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8614,6 +9331,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8623,6 +9341,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8632,6 +9351,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_micolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8650,6 +9370,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_r000
+#define FNAME_S(name) store_pixel_fcolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8659,6 +9380,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8668,6 +9390,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8686,6 +9409,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8695,6 +9419,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8704,6 +9429,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8722,6 +9448,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8731,6 +9458,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8740,6 +9468,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8758,6 +9487,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8767,6 +9497,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8776,6 +9507,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8794,6 +9526,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8803,6 +9536,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8812,6 +9546,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8830,6 +9565,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8839,6 +9575,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8848,6 +9585,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8866,6 +9604,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8875,6 +9614,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8884,6 +9624,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8902,6 +9643,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8911,6 +9653,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8920,6 +9663,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8938,6 +9682,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_r000
+#define FNAME_S(name) store_pixel_fcolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8947,6 +9692,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8956,6 +9702,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8974,6 +9721,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -8983,6 +9731,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -8992,6 +9741,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9010,6 +9760,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9019,6 +9770,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9028,6 +9780,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9046,6 +9799,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9055,6 +9809,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9064,6 +9819,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9082,6 +9838,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_r000
+#define FNAME_S(name) store_pixel_fcolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9091,6 +9848,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9100,6 +9858,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9118,6 +9877,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9127,6 +9887,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9136,6 +9897,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9154,6 +9916,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9163,6 +9926,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9172,6 +9936,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9190,6 +9955,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9199,6 +9965,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9208,6 +9975,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9226,6 +9994,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_r000
+#define FNAME_S(name) store_pixel_fcolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9235,6 +10004,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9244,6 +10014,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9262,6 +10033,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9271,6 +10043,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9280,6 +10053,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9298,6 +10072,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9307,6 +10082,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9316,6 +10092,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9334,6 +10111,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9343,6 +10121,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9352,6 +10131,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_falpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9370,6 +10150,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9379,6 +10160,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9388,6 +10170,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9406,6 +10189,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9415,6 +10199,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9424,6 +10209,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9442,6 +10228,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9451,6 +10238,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9460,6 +10248,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9478,6 +10267,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9487,6 +10277,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9496,6 +10287,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9514,6 +10306,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_r000
+#define FNAME_S(name) store_pixel_fcolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9523,6 +10316,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9532,6 +10326,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9550,6 +10345,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9559,6 +10355,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9568,6 +10365,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9586,6 +10384,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9595,6 +10394,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9604,6 +10404,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9622,6 +10423,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9631,6 +10433,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9640,6 +10443,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9658,6 +10462,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_r000
+#define FNAME_S(name) store_pixel_fcolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9667,6 +10472,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_fcolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9676,6 +10482,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_fcolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9694,6 +10501,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_fcolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9703,6 +10511,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_fcolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9712,6 +10521,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_fcolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9730,6 +10540,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_fcolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9739,6 +10550,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_fcolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9748,6 +10560,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_fcolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9766,6 +10579,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_fcolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9775,6 +10589,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_fcolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9784,6 +10599,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_fcolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9802,6 +10618,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_r000
+#define FNAME_S(name) store_pixel_fcolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9811,6 +10628,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9820,6 +10638,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9838,6 +10657,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9847,6 +10667,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9856,6 +10677,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9874,6 +10696,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9883,6 +10706,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9892,6 +10716,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9910,6 +10735,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9919,6 +10745,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9928,6 +10755,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_calpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9946,6 +10774,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9955,6 +10784,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -9964,6 +10794,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9982,6 +10813,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -9991,6 +10823,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10000,6 +10833,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10018,6 +10852,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10027,6 +10862,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10036,6 +10872,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10054,6 +10891,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10063,6 +10901,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10072,6 +10911,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_fcolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_fcolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10090,6 +10930,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_r000
+#define FNAME_S(name) store_pixel_mfcolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10099,6 +10940,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_0g00
+#define FNAME_S(name) store_pixel_mfcolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10108,6 +10950,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_rg00
+#define FNAME_S(name) store_pixel_mfcolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10126,6 +10969,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10135,6 +10979,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10144,6 +10989,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10162,6 +11008,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_r00a
+#define FNAME_S(name) store_pixel_mfcolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10171,6 +11018,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10180,6 +11028,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10198,6 +11047,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10207,6 +11057,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_0gba
+#define FNAME_S(name) store_pixel_mfcolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10216,6 +11067,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_zero_rgba
+#define FNAME_S(name) store_pixel_mfcolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10234,6 +11086,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_r000
+#define FNAME_S(name) store_pixel_mfcolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10243,6 +11096,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_0g00
+#define FNAME_S(name) store_pixel_mfcolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10252,6 +11106,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_rg00
+#define FNAME_S(name) store_pixel_mfcolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10270,6 +11125,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10279,6 +11135,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10288,6 +11145,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10306,6 +11164,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_r00a
+#define FNAME_S(name) store_pixel_mfcolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10315,6 +11174,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10324,6 +11184,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10342,6 +11203,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10351,6 +11213,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_0gba
+#define FNAME_S(name) store_pixel_mfcolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10360,6 +11223,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_one_rgba
+#define FNAME_S(name) store_pixel_mfcolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10378,6 +11242,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10387,6 +11252,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10396,6 +11262,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10414,6 +11281,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10423,6 +11291,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10432,6 +11301,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10450,6 +11320,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10459,6 +11330,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10468,6 +11340,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10486,6 +11359,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10495,6 +11369,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10504,6 +11379,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_icolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10522,6 +11398,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10531,6 +11408,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10540,6 +11418,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10558,6 +11437,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10567,6 +11447,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10576,6 +11457,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10594,6 +11476,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10603,6 +11486,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10612,6 +11496,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10630,6 +11515,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10639,6 +11525,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10648,6 +11535,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_micolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10666,6 +11554,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10675,6 +11564,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10684,6 +11574,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10702,6 +11593,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10711,6 +11603,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10720,6 +11613,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10738,6 +11632,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10747,6 +11642,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10756,6 +11652,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10774,6 +11671,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10783,6 +11681,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10792,6 +11691,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10810,6 +11710,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10819,6 +11720,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10828,6 +11730,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10846,6 +11749,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10855,6 +11759,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10864,6 +11769,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10882,6 +11788,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10891,6 +11798,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10900,6 +11808,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10918,6 +11827,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10927,6 +11837,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10936,6 +11847,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10954,6 +11866,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10963,6 +11876,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -10972,6 +11886,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10990,6 +11905,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -10999,6 +11915,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11008,6 +11925,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11026,6 +11944,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11035,6 +11954,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11044,6 +11964,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11062,6 +11983,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11071,6 +11993,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11080,6 +12003,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11098,6 +12022,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11107,6 +12032,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11116,6 +12042,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11134,6 +12061,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11143,6 +12071,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11152,6 +12081,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11170,6 +12100,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11179,6 +12110,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11188,6 +12120,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11206,6 +12139,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11215,6 +12149,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11224,6 +12159,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11242,6 +12178,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11251,6 +12188,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11260,6 +12198,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11278,6 +12217,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11287,6 +12227,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11296,6 +12237,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11314,6 +12256,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11323,6 +12266,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11332,6 +12276,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11350,6 +12295,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11359,6 +12305,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11368,6 +12315,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_falpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11386,6 +12334,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11395,6 +12344,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11404,6 +12354,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11422,6 +12373,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11431,6 +12383,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11440,6 +12393,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11458,6 +12412,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11467,6 +12422,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11476,6 +12432,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11494,6 +12451,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11503,6 +12461,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11512,6 +12471,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11530,6 +12490,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11539,6 +12500,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11548,6 +12510,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11566,6 +12529,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11575,6 +12539,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11584,6 +12549,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11602,6 +12568,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11611,6 +12578,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11620,6 +12588,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11638,6 +12607,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11647,6 +12617,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11656,6 +12627,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11674,6 +12646,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_r000
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11683,6 +12656,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11692,6 +12666,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11710,6 +12685,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11719,6 +12695,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11728,6 +12705,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11746,6 +12724,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11755,6 +12734,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11764,6 +12744,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11782,6 +12763,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11791,6 +12773,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11800,6 +12783,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_mfcolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11818,6 +12802,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11827,6 +12812,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11836,6 +12822,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11854,6 +12841,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11863,6 +12851,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11872,6 +12861,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11890,6 +12880,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11899,6 +12890,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11908,6 +12900,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11926,6 +12919,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11935,6 +12929,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11944,6 +12939,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_calpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11962,6 +12958,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11971,6 +12968,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -11980,6 +12978,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -11998,6 +12997,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12007,6 +13007,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12016,6 +13017,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12034,6 +13036,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12043,6 +13046,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12052,6 +13056,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12070,6 +13075,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12079,6 +13085,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12088,6 +13095,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfcolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_mfcolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - f))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12106,6 +13114,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_r000
+#define FNAME_S(name) store_pixel_ialpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12115,6 +13124,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_0g00
+#define FNAME_S(name) store_pixel_ialpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12124,6 +13134,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_rg00
+#define FNAME_S(name) store_pixel_ialpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12142,6 +13153,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_r0b0
+#define FNAME_S(name) store_pixel_ialpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12151,6 +13163,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_0gb0
+#define FNAME_S(name) store_pixel_ialpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12160,6 +13173,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_rgb0
+#define FNAME_S(name) store_pixel_ialpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12178,6 +13192,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_r00a
+#define FNAME_S(name) store_pixel_ialpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12187,6 +13202,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_0g0a
+#define FNAME_S(name) store_pixel_ialpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12196,6 +13212,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_rg0a
+#define FNAME_S(name) store_pixel_ialpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12214,6 +13231,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_r0ba
+#define FNAME_S(name) store_pixel_ialpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12223,6 +13241,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_0gba
+#define FNAME_S(name) store_pixel_ialpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12232,6 +13251,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_zero_rgba
+#define FNAME_S(name) store_pixel_ialpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12250,6 +13270,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_r000
+#define FNAME_S(name) store_pixel_ialpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12259,6 +13280,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_0g00
+#define FNAME_S(name) store_pixel_ialpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12268,6 +13290,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_rg00
+#define FNAME_S(name) store_pixel_ialpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12286,6 +13309,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_r0b0
+#define FNAME_S(name) store_pixel_ialpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12295,6 +13319,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_0gb0
+#define FNAME_S(name) store_pixel_ialpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12304,6 +13329,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_rgb0
+#define FNAME_S(name) store_pixel_ialpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12322,6 +13348,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_r00a
+#define FNAME_S(name) store_pixel_ialpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12331,6 +13358,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_0g0a
+#define FNAME_S(name) store_pixel_ialpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12340,6 +13368,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_rg0a
+#define FNAME_S(name) store_pixel_ialpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12358,6 +13387,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_r0ba
+#define FNAME_S(name) store_pixel_ialpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12367,6 +13397,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_0gba
+#define FNAME_S(name) store_pixel_ialpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12376,6 +13407,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_one_rgba
+#define FNAME_S(name) store_pixel_ialpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12394,6 +13426,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_r000
+#define FNAME_S(name) store_pixel_ialpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12403,6 +13436,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12412,6 +13446,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12430,6 +13465,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12439,6 +13475,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12448,6 +13485,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12466,6 +13504,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12475,6 +13514,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12484,6 +13524,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12502,6 +13543,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12511,6 +13553,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12520,6 +13563,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_icolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12538,6 +13582,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_r000
+#define FNAME_S(name) store_pixel_ialpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12547,6 +13592,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12556,6 +13602,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12574,6 +13621,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12583,6 +13631,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12592,6 +13641,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12610,6 +13660,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12619,6 +13670,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12628,6 +13680,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12646,6 +13699,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12655,6 +13709,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12664,6 +13719,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_micolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12682,6 +13738,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_r000
+#define FNAME_S(name) store_pixel_ialpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12691,6 +13748,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12700,6 +13758,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12718,6 +13777,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12727,6 +13787,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12736,6 +13797,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12754,6 +13816,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12763,6 +13826,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12772,6 +13836,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12790,6 +13855,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12799,6 +13865,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12808,6 +13875,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12826,6 +13894,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12835,6 +13904,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12844,6 +13914,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12862,6 +13933,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12871,6 +13943,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12880,6 +13953,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12898,6 +13972,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12907,6 +13982,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12916,6 +13992,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12934,6 +14011,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12943,6 +14021,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12952,6 +14031,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12970,6 +14050,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_r000
+#define FNAME_S(name) store_pixel_ialpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -12979,6 +14060,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -12988,6 +14070,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13006,6 +14089,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13015,6 +14099,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13024,6 +14109,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13042,6 +14128,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13051,6 +14138,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13060,6 +14148,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13078,6 +14167,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13087,6 +14177,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13096,6 +14187,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13114,6 +14206,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_r000
+#define FNAME_S(name) store_pixel_ialpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13123,6 +14216,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13132,6 +14226,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13150,6 +14245,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13159,6 +14255,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13168,6 +14265,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13186,6 +14284,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13195,6 +14294,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13204,6 +14304,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13222,6 +14323,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13231,6 +14333,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13240,6 +14343,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13258,6 +14362,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_r000
+#define FNAME_S(name) store_pixel_ialpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13267,6 +14372,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13276,6 +14382,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13294,6 +14401,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13303,6 +14411,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13312,6 +14421,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13330,6 +14440,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13339,6 +14450,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13348,6 +14460,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13366,6 +14479,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13375,6 +14489,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13384,6 +14499,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_falpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13402,6 +14518,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13411,6 +14528,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13420,6 +14538,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13438,6 +14557,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13447,6 +14567,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13456,6 +14577,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13474,6 +14596,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13483,6 +14606,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13492,6 +14616,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13510,6 +14635,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13519,6 +14645,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13528,6 +14655,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13546,6 +14674,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_r000
+#define FNAME_S(name) store_pixel_ialpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13555,6 +14684,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13564,6 +14694,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13582,6 +14713,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13591,6 +14723,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13600,6 +14733,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13618,6 +14752,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13627,6 +14762,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13636,6 +14772,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13654,6 +14791,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13663,6 +14801,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13672,6 +14811,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13690,6 +14830,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_r000
+#define FNAME_S(name) store_pixel_ialpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13699,6 +14840,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_ialpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13708,6 +14850,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_ialpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13726,6 +14869,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_ialpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13735,6 +14879,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_ialpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13744,6 +14889,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_ialpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13762,6 +14908,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_ialpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13771,6 +14918,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_ialpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13780,6 +14928,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_ialpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13798,6 +14947,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_ialpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13807,6 +14957,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_ialpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13816,6 +14967,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_ialpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13834,6 +14986,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_r000
+#define FNAME_S(name) store_pixel_ialpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13843,6 +14996,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13852,6 +15006,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13870,6 +15025,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13879,6 +15035,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13888,6 +15045,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13906,6 +15064,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13915,6 +15074,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13924,6 +15084,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13942,6 +15103,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13951,6 +15113,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13960,6 +15123,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_calpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13978,6 +15142,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -13987,6 +15152,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -13996,6 +15162,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14014,6 +15181,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14023,6 +15191,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14032,6 +15201,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14050,6 +15220,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14059,6 +15230,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14068,6 +15240,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14086,6 +15259,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14095,6 +15269,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14104,6 +15279,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ialpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_ialpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14122,6 +15298,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_r000
+#define FNAME_S(name) store_pixel_mialpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14131,6 +15308,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_0g00
+#define FNAME_S(name) store_pixel_mialpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14140,6 +15318,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_rg00
+#define FNAME_S(name) store_pixel_mialpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14158,6 +15337,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_r0b0
+#define FNAME_S(name) store_pixel_mialpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14167,6 +15347,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_0gb0
+#define FNAME_S(name) store_pixel_mialpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14176,6 +15357,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_rgb0
+#define FNAME_S(name) store_pixel_mialpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14194,6 +15376,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_r00a
+#define FNAME_S(name) store_pixel_mialpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14203,6 +15386,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_0g0a
+#define FNAME_S(name) store_pixel_mialpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14212,6 +15396,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_rg0a
+#define FNAME_S(name) store_pixel_mialpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14230,6 +15415,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_r0ba
+#define FNAME_S(name) store_pixel_mialpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14239,6 +15425,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_0gba
+#define FNAME_S(name) store_pixel_mialpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14248,6 +15435,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_zero_rgba
+#define FNAME_S(name) store_pixel_mialpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14266,6 +15454,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_r000
+#define FNAME_S(name) store_pixel_mialpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14275,6 +15464,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_0g00
+#define FNAME_S(name) store_pixel_mialpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14284,6 +15474,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_rg00
+#define FNAME_S(name) store_pixel_mialpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14302,6 +15493,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_r0b0
+#define FNAME_S(name) store_pixel_mialpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14311,6 +15503,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_0gb0
+#define FNAME_S(name) store_pixel_mialpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14320,6 +15513,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_rgb0
+#define FNAME_S(name) store_pixel_mialpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14338,6 +15532,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_r00a
+#define FNAME_S(name) store_pixel_mialpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14347,6 +15542,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_0g0a
+#define FNAME_S(name) store_pixel_mialpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14356,6 +15552,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_rg0a
+#define FNAME_S(name) store_pixel_mialpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14374,6 +15571,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_r0ba
+#define FNAME_S(name) store_pixel_mialpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14383,6 +15581,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_0gba
+#define FNAME_S(name) store_pixel_mialpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14392,6 +15591,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_one_rgba
+#define FNAME_S(name) store_pixel_mialpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14410,6 +15610,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_r000
+#define FNAME_S(name) store_pixel_mialpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14419,6 +15620,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14428,6 +15630,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14446,6 +15649,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14455,6 +15659,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14464,6 +15669,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14482,6 +15688,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14491,6 +15698,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14500,6 +15708,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14518,6 +15727,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14527,6 +15737,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14536,6 +15747,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_icolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14554,6 +15766,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_r000
+#define FNAME_S(name) store_pixel_mialpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14563,6 +15776,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14572,6 +15786,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14590,6 +15805,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14599,6 +15815,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14608,6 +15825,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14626,6 +15844,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14635,6 +15854,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14644,6 +15864,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14662,6 +15883,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14671,6 +15893,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14680,6 +15903,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_micolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14698,6 +15922,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_r000
+#define FNAME_S(name) store_pixel_mialpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14707,6 +15932,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14716,6 +15942,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14734,6 +15961,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14743,6 +15971,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14752,6 +15981,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14770,6 +16000,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14779,6 +16010,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14788,6 +16020,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14806,6 +16039,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14815,6 +16049,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14824,6 +16059,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14842,6 +16078,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14851,6 +16088,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14860,6 +16098,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14878,6 +16117,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14887,6 +16127,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14896,6 +16137,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14914,6 +16156,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14923,6 +16166,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14932,6 +16176,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14950,6 +16195,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14959,6 +16205,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -14968,6 +16215,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14986,6 +16234,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_r000
+#define FNAME_S(name) store_pixel_mialpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -14995,6 +16244,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15004,6 +16254,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15022,6 +16273,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15031,6 +16283,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15040,6 +16293,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15058,6 +16312,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15067,6 +16322,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15076,6 +16332,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15094,6 +16351,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15103,6 +16361,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15112,6 +16371,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15130,6 +16390,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_r000
+#define FNAME_S(name) store_pixel_mialpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15139,6 +16400,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15148,6 +16410,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15166,6 +16429,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15175,6 +16439,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15184,6 +16449,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15202,6 +16468,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15211,6 +16478,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15220,6 +16488,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15238,6 +16507,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15247,6 +16517,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15256,6 +16527,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15274,6 +16546,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_r000
+#define FNAME_S(name) store_pixel_mialpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15283,6 +16556,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15292,6 +16566,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15310,6 +16585,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15319,6 +16595,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15328,6 +16605,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15346,6 +16624,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15355,6 +16634,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15364,6 +16644,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15382,6 +16663,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15391,6 +16673,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15400,6 +16683,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_falpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15418,6 +16702,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15427,6 +16712,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15436,6 +16722,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15454,6 +16741,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15463,6 +16751,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15472,6 +16761,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15490,6 +16780,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15499,6 +16790,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15508,6 +16800,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15526,6 +16819,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15535,6 +16829,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15544,6 +16839,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15562,6 +16858,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_r000
+#define FNAME_S(name) store_pixel_mialpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15571,6 +16868,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15580,6 +16878,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15598,6 +16897,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15607,6 +16907,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15616,6 +16917,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15634,6 +16936,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15643,6 +16946,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15652,6 +16956,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15670,6 +16975,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15679,6 +16985,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15688,6 +16995,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15706,6 +17014,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_r000
+#define FNAME_S(name) store_pixel_mialpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15715,6 +17024,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_mialpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15724,6 +17034,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_mialpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15742,6 +17053,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_mialpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15751,6 +17063,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_mialpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15760,6 +17073,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_mialpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15778,6 +17092,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_mialpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15787,6 +17102,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_mialpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15796,6 +17112,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_mialpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15814,6 +17131,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_mialpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15823,6 +17141,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_mialpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15832,6 +17151,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_mialpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15850,6 +17170,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_r000
+#define FNAME_S(name) store_pixel_mialpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15859,6 +17180,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15868,6 +17190,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15886,6 +17209,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15895,6 +17219,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15904,6 +17229,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15922,6 +17248,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15931,6 +17258,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15940,6 +17268,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15958,6 +17287,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15967,6 +17297,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -15976,6 +17307,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_calpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -15994,6 +17326,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16003,6 +17336,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16012,6 +17346,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16030,6 +17365,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16039,6 +17375,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16048,6 +17385,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16066,6 +17404,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16075,6 +17414,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16084,6 +17424,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16102,6 +17443,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16111,6 +17453,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16120,6 +17463,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mialpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_mialpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16138,6 +17482,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_r000
+#define FNAME_S(name) store_pixel_falpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16147,6 +17492,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_0g00
+#define FNAME_S(name) store_pixel_falpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16156,6 +17502,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_rg00
+#define FNAME_S(name) store_pixel_falpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16174,6 +17521,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_r0b0
+#define FNAME_S(name) store_pixel_falpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16183,6 +17531,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_0gb0
+#define FNAME_S(name) store_pixel_falpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16192,6 +17541,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_rgb0
+#define FNAME_S(name) store_pixel_falpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16210,6 +17560,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_r00a
+#define FNAME_S(name) store_pixel_falpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16219,6 +17570,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_0g0a
+#define FNAME_S(name) store_pixel_falpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16228,6 +17580,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_rg0a
+#define FNAME_S(name) store_pixel_falpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16246,6 +17599,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_r0ba
+#define FNAME_S(name) store_pixel_falpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16255,6 +17609,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_0gba
+#define FNAME_S(name) store_pixel_falpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16264,6 +17619,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_zero_rgba
+#define FNAME_S(name) store_pixel_falpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16282,6 +17638,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_r000
+#define FNAME_S(name) store_pixel_falpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16291,6 +17648,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_0g00
+#define FNAME_S(name) store_pixel_falpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16300,6 +17658,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_rg00
+#define FNAME_S(name) store_pixel_falpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16318,6 +17677,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_r0b0
+#define FNAME_S(name) store_pixel_falpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16327,6 +17687,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_0gb0
+#define FNAME_S(name) store_pixel_falpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16336,6 +17697,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_rgb0
+#define FNAME_S(name) store_pixel_falpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16354,6 +17716,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_r00a
+#define FNAME_S(name) store_pixel_falpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16363,6 +17726,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_0g0a
+#define FNAME_S(name) store_pixel_falpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16372,6 +17736,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_rg0a
+#define FNAME_S(name) store_pixel_falpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16390,6 +17755,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_r0ba
+#define FNAME_S(name) store_pixel_falpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16399,6 +17765,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_0gba
+#define FNAME_S(name) store_pixel_falpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16408,6 +17775,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_one_rgba
+#define FNAME_S(name) store_pixel_falpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16426,6 +17794,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_r000
+#define FNAME_S(name) store_pixel_falpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16435,6 +17804,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_0g00
+#define FNAME_S(name) store_pixel_falpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16444,6 +17814,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_rg00
+#define FNAME_S(name) store_pixel_falpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16462,6 +17833,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16471,6 +17843,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16480,6 +17853,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16498,6 +17872,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_r00a
+#define FNAME_S(name) store_pixel_falpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16507,6 +17882,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16516,6 +17892,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16534,6 +17911,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16543,6 +17921,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_0gba
+#define FNAME_S(name) store_pixel_falpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16552,6 +17931,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_icolor_rgba
+#define FNAME_S(name) store_pixel_falpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16570,6 +17950,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_r000
+#define FNAME_S(name) store_pixel_falpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16579,6 +17960,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_0g00
+#define FNAME_S(name) store_pixel_falpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16588,6 +17970,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_rg00
+#define FNAME_S(name) store_pixel_falpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16606,6 +17989,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16615,6 +17999,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16624,6 +18009,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16642,6 +18028,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_r00a
+#define FNAME_S(name) store_pixel_falpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16651,6 +18038,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16660,6 +18048,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16678,6 +18067,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16687,6 +18077,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_0gba
+#define FNAME_S(name) store_pixel_falpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16696,6 +18087,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_micolor_rgba
+#define FNAME_S(name) store_pixel_falpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16714,6 +18106,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_r000
+#define FNAME_S(name) store_pixel_falpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16723,6 +18116,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_falpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16732,6 +18126,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_falpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16750,6 +18145,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16759,6 +18155,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16768,6 +18165,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16786,6 +18184,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_falpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16795,6 +18194,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16804,6 +18204,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16822,6 +18223,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16831,6 +18233,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_falpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16840,6 +18243,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_falpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16858,6 +18262,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_falpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16867,6 +18272,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_falpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16876,6 +18282,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_falpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16894,6 +18301,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16903,6 +18311,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16912,6 +18321,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16930,6 +18340,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_falpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16939,6 +18350,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16948,6 +18360,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16966,6 +18379,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -16975,6 +18389,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_falpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -16984,6 +18399,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_falpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17002,6 +18418,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_r000
+#define FNAME_S(name) store_pixel_falpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17011,6 +18428,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_falpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17020,6 +18438,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_falpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17038,6 +18457,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17047,6 +18467,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17056,6 +18477,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17074,6 +18496,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_falpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17083,6 +18506,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17092,6 +18516,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17110,6 +18535,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17119,6 +18545,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_falpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17128,6 +18555,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_falpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17146,6 +18574,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_r000
+#define FNAME_S(name) store_pixel_falpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17155,6 +18584,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_falpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17164,6 +18594,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_falpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17182,6 +18613,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17191,6 +18623,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17200,6 +18633,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17218,6 +18652,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_falpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17227,6 +18662,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17236,6 +18672,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17254,6 +18691,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17263,6 +18701,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_falpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17272,6 +18711,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_falpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17290,6 +18730,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_r000
+#define FNAME_S(name) store_pixel_falpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17299,6 +18740,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_0g00
+#define FNAME_S(name) store_pixel_falpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17308,6 +18750,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_rg00
+#define FNAME_S(name) store_pixel_falpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17326,6 +18769,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17335,6 +18779,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17344,6 +18789,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17362,6 +18808,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_r00a
+#define FNAME_S(name) store_pixel_falpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17371,6 +18818,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17380,6 +18828,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17398,6 +18847,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17407,6 +18857,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_0gba
+#define FNAME_S(name) store_pixel_falpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17416,6 +18867,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_falpha_rgba
+#define FNAME_S(name) store_pixel_falpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17434,6 +18886,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_falpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17443,6 +18896,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_falpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17452,6 +18906,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_falpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17470,6 +18925,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17479,6 +18935,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17488,6 +18945,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17506,6 +18964,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_falpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17515,6 +18974,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17524,6 +18984,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17542,6 +19003,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17551,6 +19013,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_falpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17560,6 +19023,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_falpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17578,6 +19042,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_r000
+#define FNAME_S(name) store_pixel_falpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17587,6 +19052,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_falpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17596,6 +19062,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_falpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17614,6 +19081,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17623,6 +19091,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17632,6 +19101,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17650,6 +19120,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_falpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17659,6 +19130,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17668,6 +19140,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17686,6 +19159,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17695,6 +19169,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_falpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17704,6 +19179,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_falpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17722,6 +19198,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_r000
+#define FNAME_S(name) store_pixel_falpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17731,6 +19208,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_falpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17740,6 +19218,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_falpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17758,6 +19237,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_falpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17767,6 +19247,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_falpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17776,6 +19257,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_falpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17794,6 +19276,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_falpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17803,6 +19286,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_falpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17812,6 +19296,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_falpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17830,6 +19315,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_falpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17839,6 +19325,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_falpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17848,6 +19335,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_falpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17866,6 +19354,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_r000
+#define FNAME_S(name) store_pixel_falpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17875,6 +19364,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_0g00
+#define FNAME_S(name) store_pixel_falpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17884,6 +19374,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_rg00
+#define FNAME_S(name) store_pixel_falpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17902,6 +19393,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17911,6 +19403,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17920,6 +19413,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17938,6 +19432,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_r00a
+#define FNAME_S(name) store_pixel_falpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17947,6 +19442,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17956,6 +19452,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17974,6 +19471,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -17983,6 +19481,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_0gba
+#define FNAME_S(name) store_pixel_falpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -17992,6 +19491,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_calpha_rgba
+#define FNAME_S(name) store_pixel_falpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18010,6 +19510,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_falpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18019,6 +19520,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_falpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18028,6 +19530,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_falpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18046,6 +19549,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_falpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18055,6 +19559,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_falpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18064,6 +19569,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_falpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18082,6 +19588,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_falpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18091,6 +19598,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_falpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18100,6 +19608,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_falpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18118,6 +19627,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_falpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18127,6 +19637,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_falpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18136,6 +19647,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_falpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_falpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18154,6 +19666,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_r000
+#define FNAME_S(name) store_pixel_mfalpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18163,6 +19676,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_0g00
+#define FNAME_S(name) store_pixel_mfalpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18172,6 +19686,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_rg00
+#define FNAME_S(name) store_pixel_mfalpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18190,6 +19705,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18199,6 +19715,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18208,6 +19725,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18226,6 +19744,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_r00a
+#define FNAME_S(name) store_pixel_mfalpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18235,6 +19754,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18244,6 +19764,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18262,6 +19783,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18271,6 +19793,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_0gba
+#define FNAME_S(name) store_pixel_mfalpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18280,6 +19803,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_zero_rgba
+#define FNAME_S(name) store_pixel_mfalpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18298,6 +19822,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_r000
+#define FNAME_S(name) store_pixel_mfalpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18307,6 +19832,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_0g00
+#define FNAME_S(name) store_pixel_mfalpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18316,6 +19842,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_rg00
+#define FNAME_S(name) store_pixel_mfalpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18334,6 +19861,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18343,6 +19871,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18352,6 +19881,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18370,6 +19900,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_r00a
+#define FNAME_S(name) store_pixel_mfalpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18379,6 +19910,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18388,6 +19920,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18406,6 +19939,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18415,6 +19949,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_0gba
+#define FNAME_S(name) store_pixel_mfalpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18424,6 +19959,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_one_rgba
+#define FNAME_S(name) store_pixel_mfalpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18442,6 +19978,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18451,6 +19988,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18460,6 +19998,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18478,6 +20017,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18487,6 +20027,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18496,6 +20037,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18514,6 +20056,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18523,6 +20066,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18532,6 +20076,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18550,6 +20095,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18559,6 +20105,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18568,6 +20115,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_icolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18586,6 +20134,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18595,6 +20144,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18604,6 +20154,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18622,6 +20173,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18631,6 +20183,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18640,6 +20193,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18658,6 +20212,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18667,6 +20222,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18676,6 +20232,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18694,6 +20251,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18703,6 +20261,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18712,6 +20271,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_micolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18730,6 +20290,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18739,6 +20300,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18748,6 +20310,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18766,6 +20329,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18775,6 +20339,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18784,6 +20349,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18802,6 +20368,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18811,6 +20378,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18820,6 +20388,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18838,6 +20407,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18847,6 +20417,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18856,6 +20427,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18874,6 +20446,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18883,6 +20456,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18892,6 +20466,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18910,6 +20485,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18919,6 +20495,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18928,6 +20505,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18946,6 +20524,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18955,6 +20534,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -18964,6 +20544,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18982,6 +20563,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -18991,6 +20573,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19000,6 +20583,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19018,6 +20602,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19027,6 +20612,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19036,6 +20622,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19054,6 +20641,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19063,6 +20651,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19072,6 +20661,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19090,6 +20680,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19099,6 +20690,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19108,6 +20700,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19126,6 +20719,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19135,6 +20729,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19144,6 +20739,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19162,6 +20758,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19171,6 +20768,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19180,6 +20778,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19198,6 +20797,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19207,6 +20807,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19216,6 +20817,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19234,6 +20836,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19243,6 +20846,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19252,6 +20856,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19270,6 +20875,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19279,6 +20885,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19288,6 +20895,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19306,6 +20914,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19315,6 +20924,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19324,6 +20934,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19342,6 +20953,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19351,6 +20963,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19360,6 +20973,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19378,6 +20992,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19387,6 +21002,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19396,6 +21012,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19414,6 +21031,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19423,6 +21041,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19432,6 +21051,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_falpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19450,6 +21070,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19459,6 +21080,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19468,6 +21090,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19486,6 +21109,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19495,6 +21119,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19504,6 +21129,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19522,6 +21148,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19531,6 +21158,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19540,6 +21168,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19558,6 +21187,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19567,6 +21197,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19576,6 +21207,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19594,6 +21226,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19603,6 +21236,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19612,6 +21246,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19630,6 +21265,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19639,6 +21275,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19648,6 +21285,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19666,6 +21304,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19675,6 +21314,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19684,6 +21324,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19702,6 +21343,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19711,6 +21353,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19720,6 +21363,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19738,6 +21382,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_r000
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19747,6 +21392,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19756,6 +21402,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19774,6 +21421,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19783,6 +21431,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19792,6 +21441,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19810,6 +21460,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19819,6 +21470,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19828,6 +21480,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19846,6 +21499,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19855,6 +21509,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19864,6 +21519,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_mfalpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19882,6 +21538,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19891,6 +21548,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19900,6 +21558,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19918,6 +21577,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19927,6 +21587,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19936,6 +21597,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19954,6 +21616,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19963,6 +21626,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -19972,6 +21636,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19990,6 +21655,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -19999,6 +21665,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20008,6 +21675,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_calpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20026,6 +21694,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20035,6 +21704,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20044,6 +21714,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20062,6 +21733,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20071,6 +21743,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20080,6 +21753,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20098,6 +21772,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20107,6 +21782,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20116,6 +21792,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20134,6 +21811,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20143,6 +21821,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20152,6 +21831,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mfalpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_mfalpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - fa))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20170,6 +21850,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_r000
+#define FNAME_S(name) store_pixel_ccolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20179,6 +21860,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_0g00
+#define FNAME_S(name) store_pixel_ccolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20188,6 +21870,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_rg00
+#define FNAME_S(name) store_pixel_ccolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20206,6 +21889,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_r0b0
+#define FNAME_S(name) store_pixel_ccolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20215,6 +21899,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_0gb0
+#define FNAME_S(name) store_pixel_ccolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20224,6 +21909,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_rgb0
+#define FNAME_S(name) store_pixel_ccolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20242,6 +21928,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_r00a
+#define FNAME_S(name) store_pixel_ccolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20251,6 +21938,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_0g0a
+#define FNAME_S(name) store_pixel_ccolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20260,6 +21948,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_rg0a
+#define FNAME_S(name) store_pixel_ccolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20278,6 +21967,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_r0ba
+#define FNAME_S(name) store_pixel_ccolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20287,6 +21977,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_0gba
+#define FNAME_S(name) store_pixel_ccolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20296,6 +21987,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_zero_rgba
+#define FNAME_S(name) store_pixel_ccolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20314,6 +22006,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_r000
+#define FNAME_S(name) store_pixel_ccolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20323,6 +22016,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_0g00
+#define FNAME_S(name) store_pixel_ccolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20332,6 +22026,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_rg00
+#define FNAME_S(name) store_pixel_ccolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20350,6 +22045,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_r0b0
+#define FNAME_S(name) store_pixel_ccolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20359,6 +22055,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_0gb0
+#define FNAME_S(name) store_pixel_ccolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20368,6 +22065,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_rgb0
+#define FNAME_S(name) store_pixel_ccolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20386,6 +22084,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_r00a
+#define FNAME_S(name) store_pixel_ccolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20395,6 +22094,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_0g0a
+#define FNAME_S(name) store_pixel_ccolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20404,6 +22104,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_rg0a
+#define FNAME_S(name) store_pixel_ccolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20422,6 +22123,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_r0ba
+#define FNAME_S(name) store_pixel_ccolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20431,6 +22133,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_0gba
+#define FNAME_S(name) store_pixel_ccolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20440,6 +22143,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_one_rgba
+#define FNAME_S(name) store_pixel_ccolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20458,6 +22162,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_r000
+#define FNAME_S(name) store_pixel_ccolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20467,6 +22172,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20476,6 +22182,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20494,6 +22201,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20503,6 +22211,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20512,6 +22221,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20530,6 +22240,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20539,6 +22250,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20548,6 +22260,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20566,6 +22279,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20575,6 +22289,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20584,6 +22299,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_icolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20602,6 +22318,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_r000
+#define FNAME_S(name) store_pixel_ccolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20611,6 +22328,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20620,6 +22338,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20638,6 +22357,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20647,6 +22367,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20656,6 +22377,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20674,6 +22396,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20683,6 +22406,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20692,6 +22416,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20710,6 +22435,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20719,6 +22445,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20728,6 +22455,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_micolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20746,6 +22474,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_r000
+#define FNAME_S(name) store_pixel_ccolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20755,6 +22484,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20764,6 +22494,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20782,6 +22513,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20791,6 +22523,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20800,6 +22533,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20818,6 +22552,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20827,6 +22562,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20836,6 +22572,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20854,6 +22591,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20863,6 +22601,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20872,6 +22611,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20890,6 +22630,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20899,6 +22640,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20908,6 +22650,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20926,6 +22669,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20935,6 +22679,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20944,6 +22689,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20962,6 +22708,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20971,6 +22718,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -20980,6 +22728,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -20998,6 +22747,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21007,6 +22757,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21016,6 +22767,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21034,6 +22786,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_r000
+#define FNAME_S(name) store_pixel_ccolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21043,6 +22796,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21052,6 +22806,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21070,6 +22825,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21079,6 +22835,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21088,6 +22845,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21106,6 +22864,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21115,6 +22874,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21124,6 +22884,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21142,6 +22903,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21151,6 +22913,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21160,6 +22923,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21178,6 +22942,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_r000
+#define FNAME_S(name) store_pixel_ccolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21187,6 +22952,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21196,6 +22962,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21214,6 +22981,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21223,6 +22991,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21232,6 +23001,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21250,6 +23020,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21259,6 +23030,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21268,6 +23040,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21286,6 +23059,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21295,6 +23069,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21304,6 +23079,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21322,6 +23098,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_r000
+#define FNAME_S(name) store_pixel_ccolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21331,6 +23108,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21340,6 +23118,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21358,6 +23137,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21367,6 +23147,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21376,6 +23157,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21394,6 +23176,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21403,6 +23186,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21412,6 +23196,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21430,6 +23215,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21439,6 +23225,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21448,6 +23235,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_falpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21466,6 +23254,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21475,6 +23264,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21484,6 +23274,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21502,6 +23293,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21511,6 +23303,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21520,6 +23313,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21538,6 +23332,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21547,6 +23342,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21556,6 +23352,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21574,6 +23371,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21583,6 +23381,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21592,6 +23391,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21610,6 +23410,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_r000
+#define FNAME_S(name) store_pixel_ccolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21619,6 +23420,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21628,6 +23430,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21646,6 +23449,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21655,6 +23459,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21664,6 +23469,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21682,6 +23488,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21691,6 +23498,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21700,6 +23508,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21718,6 +23527,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21727,6 +23537,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21736,6 +23547,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21754,6 +23566,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_r000
+#define FNAME_S(name) store_pixel_ccolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21763,6 +23576,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_ccolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21772,6 +23586,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_ccolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21790,6 +23605,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_ccolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21799,6 +23615,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_ccolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21808,6 +23625,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_ccolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21826,6 +23644,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_ccolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21835,6 +23654,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_ccolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21844,6 +23664,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_ccolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21862,6 +23683,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_ccolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21871,6 +23693,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_ccolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21880,6 +23703,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_ccolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21898,6 +23722,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_r000
+#define FNAME_S(name) store_pixel_ccolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21907,6 +23732,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21916,6 +23742,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21934,6 +23761,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21943,6 +23771,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21952,6 +23781,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21970,6 +23800,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -21979,6 +23810,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -21988,6 +23820,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22006,6 +23839,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22015,6 +23849,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22024,6 +23859,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_calpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22042,6 +23878,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22051,6 +23888,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22060,6 +23898,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22078,6 +23917,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22087,6 +23927,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22096,6 +23937,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22114,6 +23956,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22123,6 +23966,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22132,6 +23976,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22150,6 +23995,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22159,6 +24005,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22168,6 +24015,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_ccolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_ccolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22186,6 +24034,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_r000
+#define FNAME_S(name) store_pixel_mccolor_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22195,6 +24044,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_0g00
+#define FNAME_S(name) store_pixel_mccolor_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22204,6 +24054,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_rg00
+#define FNAME_S(name) store_pixel_mccolor_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22222,6 +24073,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_r0b0
+#define FNAME_S(name) store_pixel_mccolor_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22231,6 +24083,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_0gb0
+#define FNAME_S(name) store_pixel_mccolor_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22240,6 +24093,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_rgb0
+#define FNAME_S(name) store_pixel_mccolor_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22258,6 +24112,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_r00a
+#define FNAME_S(name) store_pixel_mccolor_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22267,6 +24122,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_0g0a
+#define FNAME_S(name) store_pixel_mccolor_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22276,6 +24132,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_rg0a
+#define FNAME_S(name) store_pixel_mccolor_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22294,6 +24151,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_r0ba
+#define FNAME_S(name) store_pixel_mccolor_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22303,6 +24161,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_0gba
+#define FNAME_S(name) store_pixel_mccolor_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22312,6 +24171,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_zero_rgba
+#define FNAME_S(name) store_pixel_mccolor_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22330,6 +24190,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_r000
+#define FNAME_S(name) store_pixel_mccolor_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22339,6 +24200,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_0g00
+#define FNAME_S(name) store_pixel_mccolor_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22348,6 +24210,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_rg00
+#define FNAME_S(name) store_pixel_mccolor_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22366,6 +24229,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_r0b0
+#define FNAME_S(name) store_pixel_mccolor_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22375,6 +24239,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_0gb0
+#define FNAME_S(name) store_pixel_mccolor_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22384,6 +24249,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_rgb0
+#define FNAME_S(name) store_pixel_mccolor_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22402,6 +24268,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_r00a
+#define FNAME_S(name) store_pixel_mccolor_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22411,6 +24278,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_0g0a
+#define FNAME_S(name) store_pixel_mccolor_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22420,6 +24288,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_rg0a
+#define FNAME_S(name) store_pixel_mccolor_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22438,6 +24307,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_r0ba
+#define FNAME_S(name) store_pixel_mccolor_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22447,6 +24317,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_0gba
+#define FNAME_S(name) store_pixel_mccolor_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22456,6 +24327,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_one_rgba
+#define FNAME_S(name) store_pixel_mccolor_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22474,6 +24346,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_r000
+#define FNAME_S(name) store_pixel_mccolor_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22483,6 +24356,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22492,6 +24366,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22510,6 +24385,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22519,6 +24395,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22528,6 +24405,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22546,6 +24424,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22555,6 +24434,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22564,6 +24444,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22582,6 +24463,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22591,6 +24473,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22600,6 +24483,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_icolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22618,6 +24502,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_r000
+#define FNAME_S(name) store_pixel_mccolor_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22627,6 +24512,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22636,6 +24522,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22654,6 +24541,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22663,6 +24551,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22672,6 +24561,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22690,6 +24580,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22699,6 +24590,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22708,6 +24600,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22726,6 +24619,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22735,6 +24629,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22744,6 +24639,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_micolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22762,6 +24658,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_r000
+#define FNAME_S(name) store_pixel_mccolor_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22771,6 +24668,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22780,6 +24678,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22798,6 +24697,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22807,6 +24707,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22816,6 +24717,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22834,6 +24736,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22843,6 +24746,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22852,6 +24756,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22870,6 +24775,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22879,6 +24785,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22888,6 +24795,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_fcolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22906,6 +24814,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_r000
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22915,6 +24824,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22924,6 +24834,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22942,6 +24853,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22951,6 +24863,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22960,6 +24873,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22978,6 +24892,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -22987,6 +24902,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -22996,6 +24912,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23014,6 +24931,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23023,6 +24941,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23032,6 +24951,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfcolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23050,6 +24970,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_r000
+#define FNAME_S(name) store_pixel_mccolor_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23059,6 +24980,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23068,6 +24990,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23086,6 +25009,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23095,6 +25019,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23104,6 +25029,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23122,6 +25048,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23131,6 +25058,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23140,6 +25068,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23158,6 +25087,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23167,6 +25097,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23176,6 +25107,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ialpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23194,6 +25126,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_r000
+#define FNAME_S(name) store_pixel_mccolor_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23203,6 +25136,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23212,6 +25146,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23230,6 +25165,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23239,6 +25175,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23248,6 +25185,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23266,6 +25204,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23275,6 +25214,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23284,6 +25224,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23302,6 +25243,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23311,6 +25253,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23320,6 +25263,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mialpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23338,6 +25282,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_r000
+#define FNAME_S(name) store_pixel_mccolor_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23347,6 +25292,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23356,6 +25302,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23374,6 +25321,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23383,6 +25331,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23392,6 +25341,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23410,6 +25360,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23419,6 +25370,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23428,6 +25380,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23446,6 +25399,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23455,6 +25409,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23464,6 +25419,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_falpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23482,6 +25438,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_r000
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23491,6 +25448,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23500,6 +25458,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23518,6 +25477,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23527,6 +25487,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23536,6 +25497,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23554,6 +25516,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23563,6 +25526,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23572,6 +25536,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23590,6 +25555,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23599,6 +25565,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23608,6 +25575,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mfalpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23626,6 +25594,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_r000
+#define FNAME_S(name) store_pixel_mccolor_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23635,6 +25604,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23644,6 +25614,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23662,6 +25633,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23671,6 +25643,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23680,6 +25653,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23698,6 +25672,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23707,6 +25682,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23716,6 +25692,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23734,6 +25711,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23743,6 +25721,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23752,6 +25731,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_ccolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23770,6 +25750,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_r000
+#define FNAME_S(name) store_pixel_mccolor_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23779,6 +25760,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_0g00
+#define FNAME_S(name) store_pixel_mccolor_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23788,6 +25770,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_rg00
+#define FNAME_S(name) store_pixel_mccolor_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23806,6 +25789,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_r0b0
+#define FNAME_S(name) store_pixel_mccolor_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23815,6 +25799,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_0gb0
+#define FNAME_S(name) store_pixel_mccolor_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23824,6 +25809,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_rgb0
+#define FNAME_S(name) store_pixel_mccolor_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23842,6 +25828,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_r00a
+#define FNAME_S(name) store_pixel_mccolor_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23851,6 +25838,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_0g0a
+#define FNAME_S(name) store_pixel_mccolor_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23860,6 +25848,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_rg0a
+#define FNAME_S(name) store_pixel_mccolor_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23878,6 +25867,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_r0ba
+#define FNAME_S(name) store_pixel_mccolor_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23887,6 +25877,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_0gba
+#define FNAME_S(name) store_pixel_mccolor_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23896,6 +25887,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mccolor_rgba
+#define FNAME_S(name) store_pixel_mccolor_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23914,6 +25906,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_r000
+#define FNAME_S(name) store_pixel_mccolor_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23923,6 +25916,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23932,6 +25926,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23950,6 +25945,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23959,6 +25955,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -23968,6 +25965,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23986,6 +25984,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -23995,6 +25994,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24004,6 +26004,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24022,6 +26023,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24031,6 +26033,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24040,6 +26043,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_calpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24058,6 +26062,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_r000
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24067,6 +26072,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_0g00
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24076,6 +26082,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_rg00
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24094,6 +26101,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24103,6 +26111,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24112,6 +26121,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24130,6 +26140,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_r00a
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24139,6 +26150,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24148,6 +26160,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24166,6 +26179,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24175,6 +26189,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_0gba
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24184,6 +26199,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mccolor_mcalpha_rgba
+#define FNAME_S(name) store_pixel_mccolor_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24202,6 +26218,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_r000
+#define FNAME_S(name) store_pixel_calpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24211,6 +26228,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_0g00
+#define FNAME_S(name) store_pixel_calpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24220,6 +26238,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_rg00
+#define FNAME_S(name) store_pixel_calpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24238,6 +26257,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_r0b0
+#define FNAME_S(name) store_pixel_calpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24247,6 +26267,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_0gb0
+#define FNAME_S(name) store_pixel_calpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24256,6 +26277,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_rgb0
+#define FNAME_S(name) store_pixel_calpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24274,6 +26296,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_r00a
+#define FNAME_S(name) store_pixel_calpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24283,6 +26306,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_0g0a
+#define FNAME_S(name) store_pixel_calpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24292,6 +26316,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_rg0a
+#define FNAME_S(name) store_pixel_calpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24310,6 +26335,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_r0ba
+#define FNAME_S(name) store_pixel_calpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24319,6 +26345,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_0gba
+#define FNAME_S(name) store_pixel_calpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24328,6 +26355,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_zero_rgba
+#define FNAME_S(name) store_pixel_calpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24346,6 +26374,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_r000
+#define FNAME_S(name) store_pixel_calpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24355,6 +26384,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_0g00
+#define FNAME_S(name) store_pixel_calpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24364,6 +26394,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_rg00
+#define FNAME_S(name) store_pixel_calpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24382,6 +26413,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_r0b0
+#define FNAME_S(name) store_pixel_calpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24391,6 +26423,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_0gb0
+#define FNAME_S(name) store_pixel_calpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24400,6 +26433,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_rgb0
+#define FNAME_S(name) store_pixel_calpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24418,6 +26452,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_r00a
+#define FNAME_S(name) store_pixel_calpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24427,6 +26462,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_0g0a
+#define FNAME_S(name) store_pixel_calpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24436,6 +26472,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_rg0a
+#define FNAME_S(name) store_pixel_calpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24454,6 +26491,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_r0ba
+#define FNAME_S(name) store_pixel_calpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24463,6 +26501,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_0gba
+#define FNAME_S(name) store_pixel_calpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24472,6 +26511,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_one_rgba
+#define FNAME_S(name) store_pixel_calpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24490,6 +26530,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_r000
+#define FNAME_S(name) store_pixel_calpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24499,6 +26540,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_0g00
+#define FNAME_S(name) store_pixel_calpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24508,6 +26550,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_rg00
+#define FNAME_S(name) store_pixel_calpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24526,6 +26569,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24535,6 +26579,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24544,6 +26589,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24562,6 +26608,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_r00a
+#define FNAME_S(name) store_pixel_calpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24571,6 +26618,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24580,6 +26628,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24598,6 +26647,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24607,6 +26657,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_0gba
+#define FNAME_S(name) store_pixel_calpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24616,6 +26667,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_icolor_rgba
+#define FNAME_S(name) store_pixel_calpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24634,6 +26686,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_r000
+#define FNAME_S(name) store_pixel_calpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24643,6 +26696,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_0g00
+#define FNAME_S(name) store_pixel_calpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24652,6 +26706,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_rg00
+#define FNAME_S(name) store_pixel_calpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24670,6 +26725,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24679,6 +26735,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24688,6 +26745,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24706,6 +26764,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_r00a
+#define FNAME_S(name) store_pixel_calpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24715,6 +26774,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24724,6 +26784,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24742,6 +26803,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24751,6 +26813,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_0gba
+#define FNAME_S(name) store_pixel_calpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24760,6 +26823,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_micolor_rgba
+#define FNAME_S(name) store_pixel_calpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24778,6 +26842,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_r000
+#define FNAME_S(name) store_pixel_calpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24787,6 +26852,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_calpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24796,6 +26862,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_calpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24814,6 +26881,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24823,6 +26891,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24832,6 +26901,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24850,6 +26920,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_calpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24859,6 +26930,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24868,6 +26940,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24886,6 +26959,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24895,6 +26969,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_calpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24904,6 +26979,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_calpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24922,6 +26998,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_calpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24931,6 +27008,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_calpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24940,6 +27018,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_calpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24958,6 +27037,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24967,6 +27047,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -24976,6 +27057,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -24994,6 +27076,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_calpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25003,6 +27086,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25012,6 +27096,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25030,6 +27115,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25039,6 +27125,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_calpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25048,6 +27135,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_calpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25066,6 +27154,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_r000
+#define FNAME_S(name) store_pixel_calpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25075,6 +27164,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_calpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25084,6 +27174,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_calpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25102,6 +27193,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25111,6 +27203,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25120,6 +27213,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25138,6 +27232,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_calpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25147,6 +27242,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25156,6 +27252,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25174,6 +27271,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25183,6 +27281,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_calpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25192,6 +27291,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_calpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25210,6 +27310,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_r000
+#define FNAME_S(name) store_pixel_calpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25219,6 +27320,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_calpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25228,6 +27330,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_calpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25246,6 +27349,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25255,6 +27359,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25264,6 +27369,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25282,6 +27388,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_calpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25291,6 +27398,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25300,6 +27408,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25318,6 +27427,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25327,6 +27437,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_calpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25336,6 +27447,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_calpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25354,6 +27466,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_r000
+#define FNAME_S(name) store_pixel_calpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25363,6 +27476,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_0g00
+#define FNAME_S(name) store_pixel_calpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25372,6 +27486,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_rg00
+#define FNAME_S(name) store_pixel_calpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25390,6 +27505,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25399,6 +27515,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25408,6 +27525,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25426,6 +27544,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_r00a
+#define FNAME_S(name) store_pixel_calpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25435,6 +27554,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25444,6 +27564,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25462,6 +27583,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25471,6 +27593,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_0gba
+#define FNAME_S(name) store_pixel_calpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25480,6 +27603,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_falpha_rgba
+#define FNAME_S(name) store_pixel_calpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25498,6 +27622,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_calpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25507,6 +27632,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_calpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25516,6 +27642,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_calpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25534,6 +27661,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25543,6 +27671,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25552,6 +27681,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25570,6 +27700,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_calpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25579,6 +27710,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25588,6 +27720,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25606,6 +27739,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25615,6 +27749,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_calpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25624,6 +27759,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_calpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25642,6 +27778,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_r000
+#define FNAME_S(name) store_pixel_calpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25651,6 +27788,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_calpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25660,6 +27798,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_calpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25678,6 +27817,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25687,6 +27827,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25696,6 +27837,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25714,6 +27856,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_calpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25723,6 +27866,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25732,6 +27876,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25750,6 +27895,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25759,6 +27905,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_calpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25768,6 +27915,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_calpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25786,6 +27934,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_r000
+#define FNAME_S(name) store_pixel_calpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25795,6 +27944,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_calpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25804,6 +27954,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_calpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25822,6 +27973,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_calpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25831,6 +27983,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_calpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25840,6 +27993,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_calpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25858,6 +28012,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_calpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25867,6 +28022,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_calpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25876,6 +28032,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_calpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25894,6 +28051,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_calpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25903,6 +28061,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_calpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25912,6 +28071,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_calpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25930,6 +28090,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_r000
+#define FNAME_S(name) store_pixel_calpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25939,6 +28100,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_0g00
+#define FNAME_S(name) store_pixel_calpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25948,6 +28110,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_rg00
+#define FNAME_S(name) store_pixel_calpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25966,6 +28129,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -25975,6 +28139,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -25984,6 +28149,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26002,6 +28168,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_r00a
+#define FNAME_S(name) store_pixel_calpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26011,6 +28178,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26020,6 +28188,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26038,6 +28207,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26047,6 +28217,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_0gba
+#define FNAME_S(name) store_pixel_calpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26056,6 +28227,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_calpha_rgba
+#define FNAME_S(name) store_pixel_calpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26074,6 +28246,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_calpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26083,6 +28256,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_calpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26092,6 +28266,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_calpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26110,6 +28285,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_calpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26119,6 +28295,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_calpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26128,6 +28305,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_calpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26146,6 +28324,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_calpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26155,6 +28334,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_calpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26164,6 +28344,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_calpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26182,6 +28363,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_calpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26191,6 +28373,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_calpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26200,6 +28383,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_calpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_calpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26218,6 +28402,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_r000
+#define FNAME_S(name) store_pixel_mcalpha_zero_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26227,6 +28412,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_0g00
+#define FNAME_S(name) store_pixel_mcalpha_zero_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26236,6 +28422,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_rg00
+#define FNAME_S(name) store_pixel_mcalpha_zero_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26254,6 +28441,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_zero_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26263,6 +28451,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_zero_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26272,6 +28461,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_zero_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26290,6 +28480,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_r00a
+#define FNAME_S(name) store_pixel_mcalpha_zero_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26299,6 +28490,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_zero_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26308,6 +28500,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_zero_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26326,6 +28519,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_zero_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26335,6 +28529,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_0gba
+#define FNAME_S(name) store_pixel_mcalpha_zero_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26344,6 +28539,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_zero_rgba
+#define FNAME_S(name) store_pixel_mcalpha_zero_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26362,6 +28558,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_r000
+#define FNAME_S(name) store_pixel_mcalpha_one_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26371,6 +28568,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_0g00
+#define FNAME_S(name) store_pixel_mcalpha_one_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26380,6 +28578,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_rg00
+#define FNAME_S(name) store_pixel_mcalpha_one_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26398,6 +28597,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_one_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26407,6 +28607,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_one_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26416,6 +28617,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_one_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26434,6 +28636,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_r00a
+#define FNAME_S(name) store_pixel_mcalpha_one_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26443,6 +28646,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_one_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26452,6 +28656,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_one_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26470,6 +28675,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_one_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26479,6 +28685,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_0gba
+#define FNAME_S(name) store_pixel_mcalpha_one_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26488,6 +28695,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_one_rgba
+#define FNAME_S(name) store_pixel_mcalpha_one_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0x10000))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26506,6 +28714,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_icolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26515,6 +28724,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_icolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26524,6 +28734,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_icolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26542,6 +28753,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_icolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26551,6 +28763,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_icolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26560,6 +28773,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_icolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26578,6 +28792,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_icolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26587,6 +28802,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_icolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26596,6 +28812,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_icolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26614,6 +28831,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_icolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26623,6 +28841,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_icolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26632,6 +28851,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_icolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_icolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26650,6 +28870,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_micolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26659,6 +28880,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_micolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26668,6 +28890,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_micolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26686,6 +28909,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_micolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26695,6 +28919,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_micolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26704,6 +28929,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_micolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26722,6 +28948,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_micolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26731,6 +28958,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_micolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26740,6 +28968,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_micolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26758,6 +28987,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_micolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26767,6 +28997,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_micolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26776,6 +29007,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_micolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_micolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26794,6 +29026,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26803,6 +29036,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26812,6 +29046,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26830,6 +29065,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26839,6 +29075,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26848,6 +29085,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26866,6 +29104,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26875,6 +29114,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26884,6 +29124,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26902,6 +29143,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26911,6 +29153,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26920,6 +29163,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_fcolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_fcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26938,6 +29182,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26947,6 +29192,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26956,6 +29202,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26974,6 +29221,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -26983,6 +29231,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -26992,6 +29241,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27010,6 +29260,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27019,6 +29270,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27028,6 +29280,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27046,6 +29299,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27055,6 +29309,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27064,6 +29319,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfcolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_mfcolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - f))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27082,6 +29338,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27091,6 +29348,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27100,6 +29358,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27118,6 +29377,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27127,6 +29387,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27136,6 +29397,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27154,6 +29416,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27163,6 +29426,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27172,6 +29436,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27190,6 +29455,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27199,6 +29465,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27208,6 +29475,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ialpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_ialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27226,6 +29494,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27235,6 +29504,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27244,6 +29514,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27262,6 +29533,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27271,6 +29543,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27280,6 +29553,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27298,6 +29572,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27307,6 +29582,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27316,6 +29592,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27334,6 +29611,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27343,6 +29621,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27352,6 +29631,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mialpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_mialpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27370,6 +29650,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_falpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27379,6 +29660,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_falpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27388,6 +29670,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_falpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27406,6 +29689,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_falpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27415,6 +29699,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_falpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27424,6 +29709,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_falpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27442,6 +29728,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_falpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27451,6 +29738,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_falpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27460,6 +29748,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_falpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27478,6 +29767,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_falpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27487,6 +29777,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_falpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27496,6 +29787,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_falpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_falpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27514,6 +29806,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27523,6 +29816,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27532,6 +29826,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27550,6 +29845,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27559,6 +29855,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27568,6 +29865,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27586,6 +29884,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27595,6 +29894,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27604,6 +29904,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27622,6 +29923,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27631,6 +29933,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27640,6 +29943,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mfalpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_mfalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - fa))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27658,6 +29962,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27667,6 +29972,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27676,6 +29982,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27694,6 +30001,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27703,6 +30011,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27712,6 +30021,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27730,6 +30040,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27739,6 +30050,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27748,6 +30060,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27766,6 +30079,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27775,6 +30089,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27784,6 +30099,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_ccolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_ccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27802,6 +30118,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_r000
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27811,6 +30128,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_0g00
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27820,6 +30138,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_rg00
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27838,6 +30157,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27847,6 +30167,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27856,6 +30177,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27874,6 +30196,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_r00a
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27883,6 +30206,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27892,6 +30216,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27910,6 +30235,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27919,6 +30245,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_0gba
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27928,6 +30255,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mccolor_rgba
+#define FNAME_S(name) store_pixel_mcalpha_mccolor_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_ ## i))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27946,6 +30274,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_calpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27955,6 +30284,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_calpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -27964,6 +30294,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_calpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27982,6 +30313,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_calpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -27991,6 +30323,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_calpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28000,6 +30333,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_calpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28018,6 +30352,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_calpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28027,6 +30362,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_calpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28036,6 +30372,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_calpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28054,6 +30391,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_calpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28063,6 +30401,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_calpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28072,6 +30411,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_calpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_calpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28090,6 +30430,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_r000
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_r000_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28099,6 +30440,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_0g00
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_0g00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28108,6 +30450,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_rg00
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_rg00_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28126,6 +30469,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_r0b0
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_r0b0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28135,6 +30479,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_0gb0
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_0gb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28144,6 +30489,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_rgb0
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_rgb0_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28162,6 +30508,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_r00a
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_r00a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28171,6 +30518,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_0g0a
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_0g0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28180,6 +30528,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_rg0a
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_rg0a_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28198,6 +30547,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_r0ba
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_r0ba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -28207,6 +30557,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_0gba
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_0gba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) (fr)
@@ -28216,6 +30567,7 @@
 #include "store_pixel.h"
 
 #define FNAME(name) store_pixel_mcalpha_mcalpha_rgba
+#define FNAME_S(name) store_pixel_mcalpha_mcalpha_rgba_s
 #define OP_A(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define OP_B(f, i) ((unsigned int)(0xffff - zb->blend_a))
 #define STORE_PIXEL_0(fr, r) STORE_PIX_CLAMP(r)
@@ -31779,6 +34131,3565 @@ const ZB_storePixelFunc store_pixel_funcs[14][14][16] = {
       store_pixel_mcalpha_mcalpha_r0ba,
       store_pixel_mcalpha_mcalpha_0gba,
       store_pixel_mcalpha_mcalpha_rgba,
+    },
+  },
+};
+
+const ZB_storePixelFunc store_pixel_funcs_sRGB[14][14][16] = {
+  {
+    {
+      store_pixel_zero_zero_0000,
+      store_pixel_zero_zero_r000_s,
+      store_pixel_zero_zero_0g00_s,
+      store_pixel_zero_zero_rg00_s,
+      store_pixel_zero_zero_00b0,
+      store_pixel_zero_zero_r0b0_s,
+      store_pixel_zero_zero_0gb0_s,
+      store_pixel_zero_zero_rgb0_s,
+      store_pixel_zero_zero_000a,
+      store_pixel_zero_zero_r00a_s,
+      store_pixel_zero_zero_0g0a_s,
+      store_pixel_zero_zero_rg0a_s,
+      store_pixel_zero_zero_00ba,
+      store_pixel_zero_zero_r0ba_s,
+      store_pixel_zero_zero_0gba_s,
+      store_pixel_zero_zero_rgba_s,
+    },
+    {
+      store_pixel_zero_one_0000,
+      store_pixel_zero_one_r000_s,
+      store_pixel_zero_one_0g00_s,
+      store_pixel_zero_one_rg00_s,
+      store_pixel_zero_one_00b0,
+      store_pixel_zero_one_r0b0_s,
+      store_pixel_zero_one_0gb0_s,
+      store_pixel_zero_one_rgb0_s,
+      store_pixel_zero_one_000a,
+      store_pixel_zero_one_r00a_s,
+      store_pixel_zero_one_0g0a_s,
+      store_pixel_zero_one_rg0a_s,
+      store_pixel_zero_one_00ba,
+      store_pixel_zero_one_r0ba_s,
+      store_pixel_zero_one_0gba_s,
+      store_pixel_zero_one_rgba_s,
+    },
+    {
+      store_pixel_zero_icolor_0000,
+      store_pixel_zero_icolor_r000_s,
+      store_pixel_zero_icolor_0g00_s,
+      store_pixel_zero_icolor_rg00_s,
+      store_pixel_zero_icolor_00b0,
+      store_pixel_zero_icolor_r0b0_s,
+      store_pixel_zero_icolor_0gb0_s,
+      store_pixel_zero_icolor_rgb0_s,
+      store_pixel_zero_icolor_000a,
+      store_pixel_zero_icolor_r00a_s,
+      store_pixel_zero_icolor_0g0a_s,
+      store_pixel_zero_icolor_rg0a_s,
+      store_pixel_zero_icolor_00ba,
+      store_pixel_zero_icolor_r0ba_s,
+      store_pixel_zero_icolor_0gba_s,
+      store_pixel_zero_icolor_rgba_s,
+    },
+    {
+      store_pixel_zero_micolor_0000,
+      store_pixel_zero_micolor_r000_s,
+      store_pixel_zero_micolor_0g00_s,
+      store_pixel_zero_micolor_rg00_s,
+      store_pixel_zero_micolor_00b0,
+      store_pixel_zero_micolor_r0b0_s,
+      store_pixel_zero_micolor_0gb0_s,
+      store_pixel_zero_micolor_rgb0_s,
+      store_pixel_zero_micolor_000a,
+      store_pixel_zero_micolor_r00a_s,
+      store_pixel_zero_micolor_0g0a_s,
+      store_pixel_zero_micolor_rg0a_s,
+      store_pixel_zero_micolor_00ba,
+      store_pixel_zero_micolor_r0ba_s,
+      store_pixel_zero_micolor_0gba_s,
+      store_pixel_zero_micolor_rgba_s,
+    },
+    {
+      store_pixel_zero_fcolor_0000,
+      store_pixel_zero_fcolor_r000_s,
+      store_pixel_zero_fcolor_0g00_s,
+      store_pixel_zero_fcolor_rg00_s,
+      store_pixel_zero_fcolor_00b0,
+      store_pixel_zero_fcolor_r0b0_s,
+      store_pixel_zero_fcolor_0gb0_s,
+      store_pixel_zero_fcolor_rgb0_s,
+      store_pixel_zero_fcolor_000a,
+      store_pixel_zero_fcolor_r00a_s,
+      store_pixel_zero_fcolor_0g0a_s,
+      store_pixel_zero_fcolor_rg0a_s,
+      store_pixel_zero_fcolor_00ba,
+      store_pixel_zero_fcolor_r0ba_s,
+      store_pixel_zero_fcolor_0gba_s,
+      store_pixel_zero_fcolor_rgba_s,
+    },
+    {
+      store_pixel_zero_mfcolor_0000,
+      store_pixel_zero_mfcolor_r000_s,
+      store_pixel_zero_mfcolor_0g00_s,
+      store_pixel_zero_mfcolor_rg00_s,
+      store_pixel_zero_mfcolor_00b0,
+      store_pixel_zero_mfcolor_r0b0_s,
+      store_pixel_zero_mfcolor_0gb0_s,
+      store_pixel_zero_mfcolor_rgb0_s,
+      store_pixel_zero_mfcolor_000a,
+      store_pixel_zero_mfcolor_r00a_s,
+      store_pixel_zero_mfcolor_0g0a_s,
+      store_pixel_zero_mfcolor_rg0a_s,
+      store_pixel_zero_mfcolor_00ba,
+      store_pixel_zero_mfcolor_r0ba_s,
+      store_pixel_zero_mfcolor_0gba_s,
+      store_pixel_zero_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_zero_ialpha_0000,
+      store_pixel_zero_ialpha_r000_s,
+      store_pixel_zero_ialpha_0g00_s,
+      store_pixel_zero_ialpha_rg00_s,
+      store_pixel_zero_ialpha_00b0,
+      store_pixel_zero_ialpha_r0b0_s,
+      store_pixel_zero_ialpha_0gb0_s,
+      store_pixel_zero_ialpha_rgb0_s,
+      store_pixel_zero_ialpha_000a,
+      store_pixel_zero_ialpha_r00a_s,
+      store_pixel_zero_ialpha_0g0a_s,
+      store_pixel_zero_ialpha_rg0a_s,
+      store_pixel_zero_ialpha_00ba,
+      store_pixel_zero_ialpha_r0ba_s,
+      store_pixel_zero_ialpha_0gba_s,
+      store_pixel_zero_ialpha_rgba_s,
+    },
+    {
+      store_pixel_zero_mialpha_0000,
+      store_pixel_zero_mialpha_r000_s,
+      store_pixel_zero_mialpha_0g00_s,
+      store_pixel_zero_mialpha_rg00_s,
+      store_pixel_zero_mialpha_00b0,
+      store_pixel_zero_mialpha_r0b0_s,
+      store_pixel_zero_mialpha_0gb0_s,
+      store_pixel_zero_mialpha_rgb0_s,
+      store_pixel_zero_mialpha_000a,
+      store_pixel_zero_mialpha_r00a_s,
+      store_pixel_zero_mialpha_0g0a_s,
+      store_pixel_zero_mialpha_rg0a_s,
+      store_pixel_zero_mialpha_00ba,
+      store_pixel_zero_mialpha_r0ba_s,
+      store_pixel_zero_mialpha_0gba_s,
+      store_pixel_zero_mialpha_rgba_s,
+    },
+    {
+      store_pixel_zero_falpha_0000,
+      store_pixel_zero_falpha_r000_s,
+      store_pixel_zero_falpha_0g00_s,
+      store_pixel_zero_falpha_rg00_s,
+      store_pixel_zero_falpha_00b0,
+      store_pixel_zero_falpha_r0b0_s,
+      store_pixel_zero_falpha_0gb0_s,
+      store_pixel_zero_falpha_rgb0_s,
+      store_pixel_zero_falpha_000a,
+      store_pixel_zero_falpha_r00a_s,
+      store_pixel_zero_falpha_0g0a_s,
+      store_pixel_zero_falpha_rg0a_s,
+      store_pixel_zero_falpha_00ba,
+      store_pixel_zero_falpha_r0ba_s,
+      store_pixel_zero_falpha_0gba_s,
+      store_pixel_zero_falpha_rgba_s,
+    },
+    {
+      store_pixel_zero_mfalpha_0000,
+      store_pixel_zero_mfalpha_r000_s,
+      store_pixel_zero_mfalpha_0g00_s,
+      store_pixel_zero_mfalpha_rg00_s,
+      store_pixel_zero_mfalpha_00b0,
+      store_pixel_zero_mfalpha_r0b0_s,
+      store_pixel_zero_mfalpha_0gb0_s,
+      store_pixel_zero_mfalpha_rgb0_s,
+      store_pixel_zero_mfalpha_000a,
+      store_pixel_zero_mfalpha_r00a_s,
+      store_pixel_zero_mfalpha_0g0a_s,
+      store_pixel_zero_mfalpha_rg0a_s,
+      store_pixel_zero_mfalpha_00ba,
+      store_pixel_zero_mfalpha_r0ba_s,
+      store_pixel_zero_mfalpha_0gba_s,
+      store_pixel_zero_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_zero_ccolor_0000,
+      store_pixel_zero_ccolor_r000_s,
+      store_pixel_zero_ccolor_0g00_s,
+      store_pixel_zero_ccolor_rg00_s,
+      store_pixel_zero_ccolor_00b0,
+      store_pixel_zero_ccolor_r0b0_s,
+      store_pixel_zero_ccolor_0gb0_s,
+      store_pixel_zero_ccolor_rgb0_s,
+      store_pixel_zero_ccolor_000a,
+      store_pixel_zero_ccolor_r00a_s,
+      store_pixel_zero_ccolor_0g0a_s,
+      store_pixel_zero_ccolor_rg0a_s,
+      store_pixel_zero_ccolor_00ba,
+      store_pixel_zero_ccolor_r0ba_s,
+      store_pixel_zero_ccolor_0gba_s,
+      store_pixel_zero_ccolor_rgba_s,
+    },
+    {
+      store_pixel_zero_mccolor_0000,
+      store_pixel_zero_mccolor_r000_s,
+      store_pixel_zero_mccolor_0g00_s,
+      store_pixel_zero_mccolor_rg00_s,
+      store_pixel_zero_mccolor_00b0,
+      store_pixel_zero_mccolor_r0b0_s,
+      store_pixel_zero_mccolor_0gb0_s,
+      store_pixel_zero_mccolor_rgb0_s,
+      store_pixel_zero_mccolor_000a,
+      store_pixel_zero_mccolor_r00a_s,
+      store_pixel_zero_mccolor_0g0a_s,
+      store_pixel_zero_mccolor_rg0a_s,
+      store_pixel_zero_mccolor_00ba,
+      store_pixel_zero_mccolor_r0ba_s,
+      store_pixel_zero_mccolor_0gba_s,
+      store_pixel_zero_mccolor_rgba_s,
+    },
+    {
+      store_pixel_zero_calpha_0000,
+      store_pixel_zero_calpha_r000_s,
+      store_pixel_zero_calpha_0g00_s,
+      store_pixel_zero_calpha_rg00_s,
+      store_pixel_zero_calpha_00b0,
+      store_pixel_zero_calpha_r0b0_s,
+      store_pixel_zero_calpha_0gb0_s,
+      store_pixel_zero_calpha_rgb0_s,
+      store_pixel_zero_calpha_000a,
+      store_pixel_zero_calpha_r00a_s,
+      store_pixel_zero_calpha_0g0a_s,
+      store_pixel_zero_calpha_rg0a_s,
+      store_pixel_zero_calpha_00ba,
+      store_pixel_zero_calpha_r0ba_s,
+      store_pixel_zero_calpha_0gba_s,
+      store_pixel_zero_calpha_rgba_s,
+    },
+    {
+      store_pixel_zero_mcalpha_0000,
+      store_pixel_zero_mcalpha_r000_s,
+      store_pixel_zero_mcalpha_0g00_s,
+      store_pixel_zero_mcalpha_rg00_s,
+      store_pixel_zero_mcalpha_00b0,
+      store_pixel_zero_mcalpha_r0b0_s,
+      store_pixel_zero_mcalpha_0gb0_s,
+      store_pixel_zero_mcalpha_rgb0_s,
+      store_pixel_zero_mcalpha_000a,
+      store_pixel_zero_mcalpha_r00a_s,
+      store_pixel_zero_mcalpha_0g0a_s,
+      store_pixel_zero_mcalpha_rg0a_s,
+      store_pixel_zero_mcalpha_00ba,
+      store_pixel_zero_mcalpha_r0ba_s,
+      store_pixel_zero_mcalpha_0gba_s,
+      store_pixel_zero_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_one_zero_0000,
+      store_pixel_one_zero_r000_s,
+      store_pixel_one_zero_0g00_s,
+      store_pixel_one_zero_rg00_s,
+      store_pixel_one_zero_00b0,
+      store_pixel_one_zero_r0b0_s,
+      store_pixel_one_zero_0gb0_s,
+      store_pixel_one_zero_rgb0_s,
+      store_pixel_one_zero_000a,
+      store_pixel_one_zero_r00a_s,
+      store_pixel_one_zero_0g0a_s,
+      store_pixel_one_zero_rg0a_s,
+      store_pixel_one_zero_00ba,
+      store_pixel_one_zero_r0ba_s,
+      store_pixel_one_zero_0gba_s,
+      store_pixel_one_zero_rgba_s,
+    },
+    {
+      store_pixel_one_one_0000,
+      store_pixel_one_one_r000_s,
+      store_pixel_one_one_0g00_s,
+      store_pixel_one_one_rg00_s,
+      store_pixel_one_one_00b0,
+      store_pixel_one_one_r0b0_s,
+      store_pixel_one_one_0gb0_s,
+      store_pixel_one_one_rgb0_s,
+      store_pixel_one_one_000a,
+      store_pixel_one_one_r00a_s,
+      store_pixel_one_one_0g0a_s,
+      store_pixel_one_one_rg0a_s,
+      store_pixel_one_one_00ba,
+      store_pixel_one_one_r0ba_s,
+      store_pixel_one_one_0gba_s,
+      store_pixel_one_one_rgba_s,
+    },
+    {
+      store_pixel_one_icolor_0000,
+      store_pixel_one_icolor_r000_s,
+      store_pixel_one_icolor_0g00_s,
+      store_pixel_one_icolor_rg00_s,
+      store_pixel_one_icolor_00b0,
+      store_pixel_one_icolor_r0b0_s,
+      store_pixel_one_icolor_0gb0_s,
+      store_pixel_one_icolor_rgb0_s,
+      store_pixel_one_icolor_000a,
+      store_pixel_one_icolor_r00a_s,
+      store_pixel_one_icolor_0g0a_s,
+      store_pixel_one_icolor_rg0a_s,
+      store_pixel_one_icolor_00ba,
+      store_pixel_one_icolor_r0ba_s,
+      store_pixel_one_icolor_0gba_s,
+      store_pixel_one_icolor_rgba_s,
+    },
+    {
+      store_pixel_one_micolor_0000,
+      store_pixel_one_micolor_r000_s,
+      store_pixel_one_micolor_0g00_s,
+      store_pixel_one_micolor_rg00_s,
+      store_pixel_one_micolor_00b0,
+      store_pixel_one_micolor_r0b0_s,
+      store_pixel_one_micolor_0gb0_s,
+      store_pixel_one_micolor_rgb0_s,
+      store_pixel_one_micolor_000a,
+      store_pixel_one_micolor_r00a_s,
+      store_pixel_one_micolor_0g0a_s,
+      store_pixel_one_micolor_rg0a_s,
+      store_pixel_one_micolor_00ba,
+      store_pixel_one_micolor_r0ba_s,
+      store_pixel_one_micolor_0gba_s,
+      store_pixel_one_micolor_rgba_s,
+    },
+    {
+      store_pixel_one_fcolor_0000,
+      store_pixel_one_fcolor_r000_s,
+      store_pixel_one_fcolor_0g00_s,
+      store_pixel_one_fcolor_rg00_s,
+      store_pixel_one_fcolor_00b0,
+      store_pixel_one_fcolor_r0b0_s,
+      store_pixel_one_fcolor_0gb0_s,
+      store_pixel_one_fcolor_rgb0_s,
+      store_pixel_one_fcolor_000a,
+      store_pixel_one_fcolor_r00a_s,
+      store_pixel_one_fcolor_0g0a_s,
+      store_pixel_one_fcolor_rg0a_s,
+      store_pixel_one_fcolor_00ba,
+      store_pixel_one_fcolor_r0ba_s,
+      store_pixel_one_fcolor_0gba_s,
+      store_pixel_one_fcolor_rgba_s,
+    },
+    {
+      store_pixel_one_mfcolor_0000,
+      store_pixel_one_mfcolor_r000_s,
+      store_pixel_one_mfcolor_0g00_s,
+      store_pixel_one_mfcolor_rg00_s,
+      store_pixel_one_mfcolor_00b0,
+      store_pixel_one_mfcolor_r0b0_s,
+      store_pixel_one_mfcolor_0gb0_s,
+      store_pixel_one_mfcolor_rgb0_s,
+      store_pixel_one_mfcolor_000a,
+      store_pixel_one_mfcolor_r00a_s,
+      store_pixel_one_mfcolor_0g0a_s,
+      store_pixel_one_mfcolor_rg0a_s,
+      store_pixel_one_mfcolor_00ba,
+      store_pixel_one_mfcolor_r0ba_s,
+      store_pixel_one_mfcolor_0gba_s,
+      store_pixel_one_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_one_ialpha_0000,
+      store_pixel_one_ialpha_r000_s,
+      store_pixel_one_ialpha_0g00_s,
+      store_pixel_one_ialpha_rg00_s,
+      store_pixel_one_ialpha_00b0,
+      store_pixel_one_ialpha_r0b0_s,
+      store_pixel_one_ialpha_0gb0_s,
+      store_pixel_one_ialpha_rgb0_s,
+      store_pixel_one_ialpha_000a,
+      store_pixel_one_ialpha_r00a_s,
+      store_pixel_one_ialpha_0g0a_s,
+      store_pixel_one_ialpha_rg0a_s,
+      store_pixel_one_ialpha_00ba,
+      store_pixel_one_ialpha_r0ba_s,
+      store_pixel_one_ialpha_0gba_s,
+      store_pixel_one_ialpha_rgba_s,
+    },
+    {
+      store_pixel_one_mialpha_0000,
+      store_pixel_one_mialpha_r000_s,
+      store_pixel_one_mialpha_0g00_s,
+      store_pixel_one_mialpha_rg00_s,
+      store_pixel_one_mialpha_00b0,
+      store_pixel_one_mialpha_r0b0_s,
+      store_pixel_one_mialpha_0gb0_s,
+      store_pixel_one_mialpha_rgb0_s,
+      store_pixel_one_mialpha_000a,
+      store_pixel_one_mialpha_r00a_s,
+      store_pixel_one_mialpha_0g0a_s,
+      store_pixel_one_mialpha_rg0a_s,
+      store_pixel_one_mialpha_00ba,
+      store_pixel_one_mialpha_r0ba_s,
+      store_pixel_one_mialpha_0gba_s,
+      store_pixel_one_mialpha_rgba_s,
+    },
+    {
+      store_pixel_one_falpha_0000,
+      store_pixel_one_falpha_r000_s,
+      store_pixel_one_falpha_0g00_s,
+      store_pixel_one_falpha_rg00_s,
+      store_pixel_one_falpha_00b0,
+      store_pixel_one_falpha_r0b0_s,
+      store_pixel_one_falpha_0gb0_s,
+      store_pixel_one_falpha_rgb0_s,
+      store_pixel_one_falpha_000a,
+      store_pixel_one_falpha_r00a_s,
+      store_pixel_one_falpha_0g0a_s,
+      store_pixel_one_falpha_rg0a_s,
+      store_pixel_one_falpha_00ba,
+      store_pixel_one_falpha_r0ba_s,
+      store_pixel_one_falpha_0gba_s,
+      store_pixel_one_falpha_rgba_s,
+    },
+    {
+      store_pixel_one_mfalpha_0000,
+      store_pixel_one_mfalpha_r000_s,
+      store_pixel_one_mfalpha_0g00_s,
+      store_pixel_one_mfalpha_rg00_s,
+      store_pixel_one_mfalpha_00b0,
+      store_pixel_one_mfalpha_r0b0_s,
+      store_pixel_one_mfalpha_0gb0_s,
+      store_pixel_one_mfalpha_rgb0_s,
+      store_pixel_one_mfalpha_000a,
+      store_pixel_one_mfalpha_r00a_s,
+      store_pixel_one_mfalpha_0g0a_s,
+      store_pixel_one_mfalpha_rg0a_s,
+      store_pixel_one_mfalpha_00ba,
+      store_pixel_one_mfalpha_r0ba_s,
+      store_pixel_one_mfalpha_0gba_s,
+      store_pixel_one_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_one_ccolor_0000,
+      store_pixel_one_ccolor_r000_s,
+      store_pixel_one_ccolor_0g00_s,
+      store_pixel_one_ccolor_rg00_s,
+      store_pixel_one_ccolor_00b0,
+      store_pixel_one_ccolor_r0b0_s,
+      store_pixel_one_ccolor_0gb0_s,
+      store_pixel_one_ccolor_rgb0_s,
+      store_pixel_one_ccolor_000a,
+      store_pixel_one_ccolor_r00a_s,
+      store_pixel_one_ccolor_0g0a_s,
+      store_pixel_one_ccolor_rg0a_s,
+      store_pixel_one_ccolor_00ba,
+      store_pixel_one_ccolor_r0ba_s,
+      store_pixel_one_ccolor_0gba_s,
+      store_pixel_one_ccolor_rgba_s,
+    },
+    {
+      store_pixel_one_mccolor_0000,
+      store_pixel_one_mccolor_r000_s,
+      store_pixel_one_mccolor_0g00_s,
+      store_pixel_one_mccolor_rg00_s,
+      store_pixel_one_mccolor_00b0,
+      store_pixel_one_mccolor_r0b0_s,
+      store_pixel_one_mccolor_0gb0_s,
+      store_pixel_one_mccolor_rgb0_s,
+      store_pixel_one_mccolor_000a,
+      store_pixel_one_mccolor_r00a_s,
+      store_pixel_one_mccolor_0g0a_s,
+      store_pixel_one_mccolor_rg0a_s,
+      store_pixel_one_mccolor_00ba,
+      store_pixel_one_mccolor_r0ba_s,
+      store_pixel_one_mccolor_0gba_s,
+      store_pixel_one_mccolor_rgba_s,
+    },
+    {
+      store_pixel_one_calpha_0000,
+      store_pixel_one_calpha_r000_s,
+      store_pixel_one_calpha_0g00_s,
+      store_pixel_one_calpha_rg00_s,
+      store_pixel_one_calpha_00b0,
+      store_pixel_one_calpha_r0b0_s,
+      store_pixel_one_calpha_0gb0_s,
+      store_pixel_one_calpha_rgb0_s,
+      store_pixel_one_calpha_000a,
+      store_pixel_one_calpha_r00a_s,
+      store_pixel_one_calpha_0g0a_s,
+      store_pixel_one_calpha_rg0a_s,
+      store_pixel_one_calpha_00ba,
+      store_pixel_one_calpha_r0ba_s,
+      store_pixel_one_calpha_0gba_s,
+      store_pixel_one_calpha_rgba_s,
+    },
+    {
+      store_pixel_one_mcalpha_0000,
+      store_pixel_one_mcalpha_r000_s,
+      store_pixel_one_mcalpha_0g00_s,
+      store_pixel_one_mcalpha_rg00_s,
+      store_pixel_one_mcalpha_00b0,
+      store_pixel_one_mcalpha_r0b0_s,
+      store_pixel_one_mcalpha_0gb0_s,
+      store_pixel_one_mcalpha_rgb0_s,
+      store_pixel_one_mcalpha_000a,
+      store_pixel_one_mcalpha_r00a_s,
+      store_pixel_one_mcalpha_0g0a_s,
+      store_pixel_one_mcalpha_rg0a_s,
+      store_pixel_one_mcalpha_00ba,
+      store_pixel_one_mcalpha_r0ba_s,
+      store_pixel_one_mcalpha_0gba_s,
+      store_pixel_one_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_icolor_zero_0000,
+      store_pixel_icolor_zero_r000_s,
+      store_pixel_icolor_zero_0g00_s,
+      store_pixel_icolor_zero_rg00_s,
+      store_pixel_icolor_zero_00b0,
+      store_pixel_icolor_zero_r0b0_s,
+      store_pixel_icolor_zero_0gb0_s,
+      store_pixel_icolor_zero_rgb0_s,
+      store_pixel_icolor_zero_000a,
+      store_pixel_icolor_zero_r00a_s,
+      store_pixel_icolor_zero_0g0a_s,
+      store_pixel_icolor_zero_rg0a_s,
+      store_pixel_icolor_zero_00ba,
+      store_pixel_icolor_zero_r0ba_s,
+      store_pixel_icolor_zero_0gba_s,
+      store_pixel_icolor_zero_rgba_s,
+    },
+    {
+      store_pixel_icolor_one_0000,
+      store_pixel_icolor_one_r000_s,
+      store_pixel_icolor_one_0g00_s,
+      store_pixel_icolor_one_rg00_s,
+      store_pixel_icolor_one_00b0,
+      store_pixel_icolor_one_r0b0_s,
+      store_pixel_icolor_one_0gb0_s,
+      store_pixel_icolor_one_rgb0_s,
+      store_pixel_icolor_one_000a,
+      store_pixel_icolor_one_r00a_s,
+      store_pixel_icolor_one_0g0a_s,
+      store_pixel_icolor_one_rg0a_s,
+      store_pixel_icolor_one_00ba,
+      store_pixel_icolor_one_r0ba_s,
+      store_pixel_icolor_one_0gba_s,
+      store_pixel_icolor_one_rgba_s,
+    },
+    {
+      store_pixel_icolor_icolor_0000,
+      store_pixel_icolor_icolor_r000_s,
+      store_pixel_icolor_icolor_0g00_s,
+      store_pixel_icolor_icolor_rg00_s,
+      store_pixel_icolor_icolor_00b0,
+      store_pixel_icolor_icolor_r0b0_s,
+      store_pixel_icolor_icolor_0gb0_s,
+      store_pixel_icolor_icolor_rgb0_s,
+      store_pixel_icolor_icolor_000a,
+      store_pixel_icolor_icolor_r00a_s,
+      store_pixel_icolor_icolor_0g0a_s,
+      store_pixel_icolor_icolor_rg0a_s,
+      store_pixel_icolor_icolor_00ba,
+      store_pixel_icolor_icolor_r0ba_s,
+      store_pixel_icolor_icolor_0gba_s,
+      store_pixel_icolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_micolor_0000,
+      store_pixel_icolor_micolor_r000_s,
+      store_pixel_icolor_micolor_0g00_s,
+      store_pixel_icolor_micolor_rg00_s,
+      store_pixel_icolor_micolor_00b0,
+      store_pixel_icolor_micolor_r0b0_s,
+      store_pixel_icolor_micolor_0gb0_s,
+      store_pixel_icolor_micolor_rgb0_s,
+      store_pixel_icolor_micolor_000a,
+      store_pixel_icolor_micolor_r00a_s,
+      store_pixel_icolor_micolor_0g0a_s,
+      store_pixel_icolor_micolor_rg0a_s,
+      store_pixel_icolor_micolor_00ba,
+      store_pixel_icolor_micolor_r0ba_s,
+      store_pixel_icolor_micolor_0gba_s,
+      store_pixel_icolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_fcolor_0000,
+      store_pixel_icolor_fcolor_r000_s,
+      store_pixel_icolor_fcolor_0g00_s,
+      store_pixel_icolor_fcolor_rg00_s,
+      store_pixel_icolor_fcolor_00b0,
+      store_pixel_icolor_fcolor_r0b0_s,
+      store_pixel_icolor_fcolor_0gb0_s,
+      store_pixel_icolor_fcolor_rgb0_s,
+      store_pixel_icolor_fcolor_000a,
+      store_pixel_icolor_fcolor_r00a_s,
+      store_pixel_icolor_fcolor_0g0a_s,
+      store_pixel_icolor_fcolor_rg0a_s,
+      store_pixel_icolor_fcolor_00ba,
+      store_pixel_icolor_fcolor_r0ba_s,
+      store_pixel_icolor_fcolor_0gba_s,
+      store_pixel_icolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_mfcolor_0000,
+      store_pixel_icolor_mfcolor_r000_s,
+      store_pixel_icolor_mfcolor_0g00_s,
+      store_pixel_icolor_mfcolor_rg00_s,
+      store_pixel_icolor_mfcolor_00b0,
+      store_pixel_icolor_mfcolor_r0b0_s,
+      store_pixel_icolor_mfcolor_0gb0_s,
+      store_pixel_icolor_mfcolor_rgb0_s,
+      store_pixel_icolor_mfcolor_000a,
+      store_pixel_icolor_mfcolor_r00a_s,
+      store_pixel_icolor_mfcolor_0g0a_s,
+      store_pixel_icolor_mfcolor_rg0a_s,
+      store_pixel_icolor_mfcolor_00ba,
+      store_pixel_icolor_mfcolor_r0ba_s,
+      store_pixel_icolor_mfcolor_0gba_s,
+      store_pixel_icolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_ialpha_0000,
+      store_pixel_icolor_ialpha_r000_s,
+      store_pixel_icolor_ialpha_0g00_s,
+      store_pixel_icolor_ialpha_rg00_s,
+      store_pixel_icolor_ialpha_00b0,
+      store_pixel_icolor_ialpha_r0b0_s,
+      store_pixel_icolor_ialpha_0gb0_s,
+      store_pixel_icolor_ialpha_rgb0_s,
+      store_pixel_icolor_ialpha_000a,
+      store_pixel_icolor_ialpha_r00a_s,
+      store_pixel_icolor_ialpha_0g0a_s,
+      store_pixel_icolor_ialpha_rg0a_s,
+      store_pixel_icolor_ialpha_00ba,
+      store_pixel_icolor_ialpha_r0ba_s,
+      store_pixel_icolor_ialpha_0gba_s,
+      store_pixel_icolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_icolor_mialpha_0000,
+      store_pixel_icolor_mialpha_r000_s,
+      store_pixel_icolor_mialpha_0g00_s,
+      store_pixel_icolor_mialpha_rg00_s,
+      store_pixel_icolor_mialpha_00b0,
+      store_pixel_icolor_mialpha_r0b0_s,
+      store_pixel_icolor_mialpha_0gb0_s,
+      store_pixel_icolor_mialpha_rgb0_s,
+      store_pixel_icolor_mialpha_000a,
+      store_pixel_icolor_mialpha_r00a_s,
+      store_pixel_icolor_mialpha_0g0a_s,
+      store_pixel_icolor_mialpha_rg0a_s,
+      store_pixel_icolor_mialpha_00ba,
+      store_pixel_icolor_mialpha_r0ba_s,
+      store_pixel_icolor_mialpha_0gba_s,
+      store_pixel_icolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_icolor_falpha_0000,
+      store_pixel_icolor_falpha_r000_s,
+      store_pixel_icolor_falpha_0g00_s,
+      store_pixel_icolor_falpha_rg00_s,
+      store_pixel_icolor_falpha_00b0,
+      store_pixel_icolor_falpha_r0b0_s,
+      store_pixel_icolor_falpha_0gb0_s,
+      store_pixel_icolor_falpha_rgb0_s,
+      store_pixel_icolor_falpha_000a,
+      store_pixel_icolor_falpha_r00a_s,
+      store_pixel_icolor_falpha_0g0a_s,
+      store_pixel_icolor_falpha_rg0a_s,
+      store_pixel_icolor_falpha_00ba,
+      store_pixel_icolor_falpha_r0ba_s,
+      store_pixel_icolor_falpha_0gba_s,
+      store_pixel_icolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_icolor_mfalpha_0000,
+      store_pixel_icolor_mfalpha_r000_s,
+      store_pixel_icolor_mfalpha_0g00_s,
+      store_pixel_icolor_mfalpha_rg00_s,
+      store_pixel_icolor_mfalpha_00b0,
+      store_pixel_icolor_mfalpha_r0b0_s,
+      store_pixel_icolor_mfalpha_0gb0_s,
+      store_pixel_icolor_mfalpha_rgb0_s,
+      store_pixel_icolor_mfalpha_000a,
+      store_pixel_icolor_mfalpha_r00a_s,
+      store_pixel_icolor_mfalpha_0g0a_s,
+      store_pixel_icolor_mfalpha_rg0a_s,
+      store_pixel_icolor_mfalpha_00ba,
+      store_pixel_icolor_mfalpha_r0ba_s,
+      store_pixel_icolor_mfalpha_0gba_s,
+      store_pixel_icolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_icolor_ccolor_0000,
+      store_pixel_icolor_ccolor_r000_s,
+      store_pixel_icolor_ccolor_0g00_s,
+      store_pixel_icolor_ccolor_rg00_s,
+      store_pixel_icolor_ccolor_00b0,
+      store_pixel_icolor_ccolor_r0b0_s,
+      store_pixel_icolor_ccolor_0gb0_s,
+      store_pixel_icolor_ccolor_rgb0_s,
+      store_pixel_icolor_ccolor_000a,
+      store_pixel_icolor_ccolor_r00a_s,
+      store_pixel_icolor_ccolor_0g0a_s,
+      store_pixel_icolor_ccolor_rg0a_s,
+      store_pixel_icolor_ccolor_00ba,
+      store_pixel_icolor_ccolor_r0ba_s,
+      store_pixel_icolor_ccolor_0gba_s,
+      store_pixel_icolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_mccolor_0000,
+      store_pixel_icolor_mccolor_r000_s,
+      store_pixel_icolor_mccolor_0g00_s,
+      store_pixel_icolor_mccolor_rg00_s,
+      store_pixel_icolor_mccolor_00b0,
+      store_pixel_icolor_mccolor_r0b0_s,
+      store_pixel_icolor_mccolor_0gb0_s,
+      store_pixel_icolor_mccolor_rgb0_s,
+      store_pixel_icolor_mccolor_000a,
+      store_pixel_icolor_mccolor_r00a_s,
+      store_pixel_icolor_mccolor_0g0a_s,
+      store_pixel_icolor_mccolor_rg0a_s,
+      store_pixel_icolor_mccolor_00ba,
+      store_pixel_icolor_mccolor_r0ba_s,
+      store_pixel_icolor_mccolor_0gba_s,
+      store_pixel_icolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_icolor_calpha_0000,
+      store_pixel_icolor_calpha_r000_s,
+      store_pixel_icolor_calpha_0g00_s,
+      store_pixel_icolor_calpha_rg00_s,
+      store_pixel_icolor_calpha_00b0,
+      store_pixel_icolor_calpha_r0b0_s,
+      store_pixel_icolor_calpha_0gb0_s,
+      store_pixel_icolor_calpha_rgb0_s,
+      store_pixel_icolor_calpha_000a,
+      store_pixel_icolor_calpha_r00a_s,
+      store_pixel_icolor_calpha_0g0a_s,
+      store_pixel_icolor_calpha_rg0a_s,
+      store_pixel_icolor_calpha_00ba,
+      store_pixel_icolor_calpha_r0ba_s,
+      store_pixel_icolor_calpha_0gba_s,
+      store_pixel_icolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_icolor_mcalpha_0000,
+      store_pixel_icolor_mcalpha_r000_s,
+      store_pixel_icolor_mcalpha_0g00_s,
+      store_pixel_icolor_mcalpha_rg00_s,
+      store_pixel_icolor_mcalpha_00b0,
+      store_pixel_icolor_mcalpha_r0b0_s,
+      store_pixel_icolor_mcalpha_0gb0_s,
+      store_pixel_icolor_mcalpha_rgb0_s,
+      store_pixel_icolor_mcalpha_000a,
+      store_pixel_icolor_mcalpha_r00a_s,
+      store_pixel_icolor_mcalpha_0g0a_s,
+      store_pixel_icolor_mcalpha_rg0a_s,
+      store_pixel_icolor_mcalpha_00ba,
+      store_pixel_icolor_mcalpha_r0ba_s,
+      store_pixel_icolor_mcalpha_0gba_s,
+      store_pixel_icolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_micolor_zero_0000,
+      store_pixel_micolor_zero_r000_s,
+      store_pixel_micolor_zero_0g00_s,
+      store_pixel_micolor_zero_rg00_s,
+      store_pixel_micolor_zero_00b0,
+      store_pixel_micolor_zero_r0b0_s,
+      store_pixel_micolor_zero_0gb0_s,
+      store_pixel_micolor_zero_rgb0_s,
+      store_pixel_micolor_zero_000a,
+      store_pixel_micolor_zero_r00a_s,
+      store_pixel_micolor_zero_0g0a_s,
+      store_pixel_micolor_zero_rg0a_s,
+      store_pixel_micolor_zero_00ba,
+      store_pixel_micolor_zero_r0ba_s,
+      store_pixel_micolor_zero_0gba_s,
+      store_pixel_micolor_zero_rgba_s,
+    },
+    {
+      store_pixel_micolor_one_0000,
+      store_pixel_micolor_one_r000_s,
+      store_pixel_micolor_one_0g00_s,
+      store_pixel_micolor_one_rg00_s,
+      store_pixel_micolor_one_00b0,
+      store_pixel_micolor_one_r0b0_s,
+      store_pixel_micolor_one_0gb0_s,
+      store_pixel_micolor_one_rgb0_s,
+      store_pixel_micolor_one_000a,
+      store_pixel_micolor_one_r00a_s,
+      store_pixel_micolor_one_0g0a_s,
+      store_pixel_micolor_one_rg0a_s,
+      store_pixel_micolor_one_00ba,
+      store_pixel_micolor_one_r0ba_s,
+      store_pixel_micolor_one_0gba_s,
+      store_pixel_micolor_one_rgba_s,
+    },
+    {
+      store_pixel_micolor_icolor_0000,
+      store_pixel_micolor_icolor_r000_s,
+      store_pixel_micolor_icolor_0g00_s,
+      store_pixel_micolor_icolor_rg00_s,
+      store_pixel_micolor_icolor_00b0,
+      store_pixel_micolor_icolor_r0b0_s,
+      store_pixel_micolor_icolor_0gb0_s,
+      store_pixel_micolor_icolor_rgb0_s,
+      store_pixel_micolor_icolor_000a,
+      store_pixel_micolor_icolor_r00a_s,
+      store_pixel_micolor_icolor_0g0a_s,
+      store_pixel_micolor_icolor_rg0a_s,
+      store_pixel_micolor_icolor_00ba,
+      store_pixel_micolor_icolor_r0ba_s,
+      store_pixel_micolor_icolor_0gba_s,
+      store_pixel_micolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_micolor_0000,
+      store_pixel_micolor_micolor_r000_s,
+      store_pixel_micolor_micolor_0g00_s,
+      store_pixel_micolor_micolor_rg00_s,
+      store_pixel_micolor_micolor_00b0,
+      store_pixel_micolor_micolor_r0b0_s,
+      store_pixel_micolor_micolor_0gb0_s,
+      store_pixel_micolor_micolor_rgb0_s,
+      store_pixel_micolor_micolor_000a,
+      store_pixel_micolor_micolor_r00a_s,
+      store_pixel_micolor_micolor_0g0a_s,
+      store_pixel_micolor_micolor_rg0a_s,
+      store_pixel_micolor_micolor_00ba,
+      store_pixel_micolor_micolor_r0ba_s,
+      store_pixel_micolor_micolor_0gba_s,
+      store_pixel_micolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_fcolor_0000,
+      store_pixel_micolor_fcolor_r000_s,
+      store_pixel_micolor_fcolor_0g00_s,
+      store_pixel_micolor_fcolor_rg00_s,
+      store_pixel_micolor_fcolor_00b0,
+      store_pixel_micolor_fcolor_r0b0_s,
+      store_pixel_micolor_fcolor_0gb0_s,
+      store_pixel_micolor_fcolor_rgb0_s,
+      store_pixel_micolor_fcolor_000a,
+      store_pixel_micolor_fcolor_r00a_s,
+      store_pixel_micolor_fcolor_0g0a_s,
+      store_pixel_micolor_fcolor_rg0a_s,
+      store_pixel_micolor_fcolor_00ba,
+      store_pixel_micolor_fcolor_r0ba_s,
+      store_pixel_micolor_fcolor_0gba_s,
+      store_pixel_micolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_mfcolor_0000,
+      store_pixel_micolor_mfcolor_r000_s,
+      store_pixel_micolor_mfcolor_0g00_s,
+      store_pixel_micolor_mfcolor_rg00_s,
+      store_pixel_micolor_mfcolor_00b0,
+      store_pixel_micolor_mfcolor_r0b0_s,
+      store_pixel_micolor_mfcolor_0gb0_s,
+      store_pixel_micolor_mfcolor_rgb0_s,
+      store_pixel_micolor_mfcolor_000a,
+      store_pixel_micolor_mfcolor_r00a_s,
+      store_pixel_micolor_mfcolor_0g0a_s,
+      store_pixel_micolor_mfcolor_rg0a_s,
+      store_pixel_micolor_mfcolor_00ba,
+      store_pixel_micolor_mfcolor_r0ba_s,
+      store_pixel_micolor_mfcolor_0gba_s,
+      store_pixel_micolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_ialpha_0000,
+      store_pixel_micolor_ialpha_r000_s,
+      store_pixel_micolor_ialpha_0g00_s,
+      store_pixel_micolor_ialpha_rg00_s,
+      store_pixel_micolor_ialpha_00b0,
+      store_pixel_micolor_ialpha_r0b0_s,
+      store_pixel_micolor_ialpha_0gb0_s,
+      store_pixel_micolor_ialpha_rgb0_s,
+      store_pixel_micolor_ialpha_000a,
+      store_pixel_micolor_ialpha_r00a_s,
+      store_pixel_micolor_ialpha_0g0a_s,
+      store_pixel_micolor_ialpha_rg0a_s,
+      store_pixel_micolor_ialpha_00ba,
+      store_pixel_micolor_ialpha_r0ba_s,
+      store_pixel_micolor_ialpha_0gba_s,
+      store_pixel_micolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_micolor_mialpha_0000,
+      store_pixel_micolor_mialpha_r000_s,
+      store_pixel_micolor_mialpha_0g00_s,
+      store_pixel_micolor_mialpha_rg00_s,
+      store_pixel_micolor_mialpha_00b0,
+      store_pixel_micolor_mialpha_r0b0_s,
+      store_pixel_micolor_mialpha_0gb0_s,
+      store_pixel_micolor_mialpha_rgb0_s,
+      store_pixel_micolor_mialpha_000a,
+      store_pixel_micolor_mialpha_r00a_s,
+      store_pixel_micolor_mialpha_0g0a_s,
+      store_pixel_micolor_mialpha_rg0a_s,
+      store_pixel_micolor_mialpha_00ba,
+      store_pixel_micolor_mialpha_r0ba_s,
+      store_pixel_micolor_mialpha_0gba_s,
+      store_pixel_micolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_micolor_falpha_0000,
+      store_pixel_micolor_falpha_r000_s,
+      store_pixel_micolor_falpha_0g00_s,
+      store_pixel_micolor_falpha_rg00_s,
+      store_pixel_micolor_falpha_00b0,
+      store_pixel_micolor_falpha_r0b0_s,
+      store_pixel_micolor_falpha_0gb0_s,
+      store_pixel_micolor_falpha_rgb0_s,
+      store_pixel_micolor_falpha_000a,
+      store_pixel_micolor_falpha_r00a_s,
+      store_pixel_micolor_falpha_0g0a_s,
+      store_pixel_micolor_falpha_rg0a_s,
+      store_pixel_micolor_falpha_00ba,
+      store_pixel_micolor_falpha_r0ba_s,
+      store_pixel_micolor_falpha_0gba_s,
+      store_pixel_micolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_micolor_mfalpha_0000,
+      store_pixel_micolor_mfalpha_r000_s,
+      store_pixel_micolor_mfalpha_0g00_s,
+      store_pixel_micolor_mfalpha_rg00_s,
+      store_pixel_micolor_mfalpha_00b0,
+      store_pixel_micolor_mfalpha_r0b0_s,
+      store_pixel_micolor_mfalpha_0gb0_s,
+      store_pixel_micolor_mfalpha_rgb0_s,
+      store_pixel_micolor_mfalpha_000a,
+      store_pixel_micolor_mfalpha_r00a_s,
+      store_pixel_micolor_mfalpha_0g0a_s,
+      store_pixel_micolor_mfalpha_rg0a_s,
+      store_pixel_micolor_mfalpha_00ba,
+      store_pixel_micolor_mfalpha_r0ba_s,
+      store_pixel_micolor_mfalpha_0gba_s,
+      store_pixel_micolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_micolor_ccolor_0000,
+      store_pixel_micolor_ccolor_r000_s,
+      store_pixel_micolor_ccolor_0g00_s,
+      store_pixel_micolor_ccolor_rg00_s,
+      store_pixel_micolor_ccolor_00b0,
+      store_pixel_micolor_ccolor_r0b0_s,
+      store_pixel_micolor_ccolor_0gb0_s,
+      store_pixel_micolor_ccolor_rgb0_s,
+      store_pixel_micolor_ccolor_000a,
+      store_pixel_micolor_ccolor_r00a_s,
+      store_pixel_micolor_ccolor_0g0a_s,
+      store_pixel_micolor_ccolor_rg0a_s,
+      store_pixel_micolor_ccolor_00ba,
+      store_pixel_micolor_ccolor_r0ba_s,
+      store_pixel_micolor_ccolor_0gba_s,
+      store_pixel_micolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_mccolor_0000,
+      store_pixel_micolor_mccolor_r000_s,
+      store_pixel_micolor_mccolor_0g00_s,
+      store_pixel_micolor_mccolor_rg00_s,
+      store_pixel_micolor_mccolor_00b0,
+      store_pixel_micolor_mccolor_r0b0_s,
+      store_pixel_micolor_mccolor_0gb0_s,
+      store_pixel_micolor_mccolor_rgb0_s,
+      store_pixel_micolor_mccolor_000a,
+      store_pixel_micolor_mccolor_r00a_s,
+      store_pixel_micolor_mccolor_0g0a_s,
+      store_pixel_micolor_mccolor_rg0a_s,
+      store_pixel_micolor_mccolor_00ba,
+      store_pixel_micolor_mccolor_r0ba_s,
+      store_pixel_micolor_mccolor_0gba_s,
+      store_pixel_micolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_micolor_calpha_0000,
+      store_pixel_micolor_calpha_r000_s,
+      store_pixel_micolor_calpha_0g00_s,
+      store_pixel_micolor_calpha_rg00_s,
+      store_pixel_micolor_calpha_00b0,
+      store_pixel_micolor_calpha_r0b0_s,
+      store_pixel_micolor_calpha_0gb0_s,
+      store_pixel_micolor_calpha_rgb0_s,
+      store_pixel_micolor_calpha_000a,
+      store_pixel_micolor_calpha_r00a_s,
+      store_pixel_micolor_calpha_0g0a_s,
+      store_pixel_micolor_calpha_rg0a_s,
+      store_pixel_micolor_calpha_00ba,
+      store_pixel_micolor_calpha_r0ba_s,
+      store_pixel_micolor_calpha_0gba_s,
+      store_pixel_micolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_micolor_mcalpha_0000,
+      store_pixel_micolor_mcalpha_r000_s,
+      store_pixel_micolor_mcalpha_0g00_s,
+      store_pixel_micolor_mcalpha_rg00_s,
+      store_pixel_micolor_mcalpha_00b0,
+      store_pixel_micolor_mcalpha_r0b0_s,
+      store_pixel_micolor_mcalpha_0gb0_s,
+      store_pixel_micolor_mcalpha_rgb0_s,
+      store_pixel_micolor_mcalpha_000a,
+      store_pixel_micolor_mcalpha_r00a_s,
+      store_pixel_micolor_mcalpha_0g0a_s,
+      store_pixel_micolor_mcalpha_rg0a_s,
+      store_pixel_micolor_mcalpha_00ba,
+      store_pixel_micolor_mcalpha_r0ba_s,
+      store_pixel_micolor_mcalpha_0gba_s,
+      store_pixel_micolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_fcolor_zero_0000,
+      store_pixel_fcolor_zero_r000_s,
+      store_pixel_fcolor_zero_0g00_s,
+      store_pixel_fcolor_zero_rg00_s,
+      store_pixel_fcolor_zero_00b0,
+      store_pixel_fcolor_zero_r0b0_s,
+      store_pixel_fcolor_zero_0gb0_s,
+      store_pixel_fcolor_zero_rgb0_s,
+      store_pixel_fcolor_zero_000a,
+      store_pixel_fcolor_zero_r00a_s,
+      store_pixel_fcolor_zero_0g0a_s,
+      store_pixel_fcolor_zero_rg0a_s,
+      store_pixel_fcolor_zero_00ba,
+      store_pixel_fcolor_zero_r0ba_s,
+      store_pixel_fcolor_zero_0gba_s,
+      store_pixel_fcolor_zero_rgba_s,
+    },
+    {
+      store_pixel_fcolor_one_0000,
+      store_pixel_fcolor_one_r000_s,
+      store_pixel_fcolor_one_0g00_s,
+      store_pixel_fcolor_one_rg00_s,
+      store_pixel_fcolor_one_00b0,
+      store_pixel_fcolor_one_r0b0_s,
+      store_pixel_fcolor_one_0gb0_s,
+      store_pixel_fcolor_one_rgb0_s,
+      store_pixel_fcolor_one_000a,
+      store_pixel_fcolor_one_r00a_s,
+      store_pixel_fcolor_one_0g0a_s,
+      store_pixel_fcolor_one_rg0a_s,
+      store_pixel_fcolor_one_00ba,
+      store_pixel_fcolor_one_r0ba_s,
+      store_pixel_fcolor_one_0gba_s,
+      store_pixel_fcolor_one_rgba_s,
+    },
+    {
+      store_pixel_fcolor_icolor_0000,
+      store_pixel_fcolor_icolor_r000_s,
+      store_pixel_fcolor_icolor_0g00_s,
+      store_pixel_fcolor_icolor_rg00_s,
+      store_pixel_fcolor_icolor_00b0,
+      store_pixel_fcolor_icolor_r0b0_s,
+      store_pixel_fcolor_icolor_0gb0_s,
+      store_pixel_fcolor_icolor_rgb0_s,
+      store_pixel_fcolor_icolor_000a,
+      store_pixel_fcolor_icolor_r00a_s,
+      store_pixel_fcolor_icolor_0g0a_s,
+      store_pixel_fcolor_icolor_rg0a_s,
+      store_pixel_fcolor_icolor_00ba,
+      store_pixel_fcolor_icolor_r0ba_s,
+      store_pixel_fcolor_icolor_0gba_s,
+      store_pixel_fcolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_micolor_0000,
+      store_pixel_fcolor_micolor_r000_s,
+      store_pixel_fcolor_micolor_0g00_s,
+      store_pixel_fcolor_micolor_rg00_s,
+      store_pixel_fcolor_micolor_00b0,
+      store_pixel_fcolor_micolor_r0b0_s,
+      store_pixel_fcolor_micolor_0gb0_s,
+      store_pixel_fcolor_micolor_rgb0_s,
+      store_pixel_fcolor_micolor_000a,
+      store_pixel_fcolor_micolor_r00a_s,
+      store_pixel_fcolor_micolor_0g0a_s,
+      store_pixel_fcolor_micolor_rg0a_s,
+      store_pixel_fcolor_micolor_00ba,
+      store_pixel_fcolor_micolor_r0ba_s,
+      store_pixel_fcolor_micolor_0gba_s,
+      store_pixel_fcolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_fcolor_0000,
+      store_pixel_fcolor_fcolor_r000_s,
+      store_pixel_fcolor_fcolor_0g00_s,
+      store_pixel_fcolor_fcolor_rg00_s,
+      store_pixel_fcolor_fcolor_00b0,
+      store_pixel_fcolor_fcolor_r0b0_s,
+      store_pixel_fcolor_fcolor_0gb0_s,
+      store_pixel_fcolor_fcolor_rgb0_s,
+      store_pixel_fcolor_fcolor_000a,
+      store_pixel_fcolor_fcolor_r00a_s,
+      store_pixel_fcolor_fcolor_0g0a_s,
+      store_pixel_fcolor_fcolor_rg0a_s,
+      store_pixel_fcolor_fcolor_00ba,
+      store_pixel_fcolor_fcolor_r0ba_s,
+      store_pixel_fcolor_fcolor_0gba_s,
+      store_pixel_fcolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_mfcolor_0000,
+      store_pixel_fcolor_mfcolor_r000_s,
+      store_pixel_fcolor_mfcolor_0g00_s,
+      store_pixel_fcolor_mfcolor_rg00_s,
+      store_pixel_fcolor_mfcolor_00b0,
+      store_pixel_fcolor_mfcolor_r0b0_s,
+      store_pixel_fcolor_mfcolor_0gb0_s,
+      store_pixel_fcolor_mfcolor_rgb0_s,
+      store_pixel_fcolor_mfcolor_000a,
+      store_pixel_fcolor_mfcolor_r00a_s,
+      store_pixel_fcolor_mfcolor_0g0a_s,
+      store_pixel_fcolor_mfcolor_rg0a_s,
+      store_pixel_fcolor_mfcolor_00ba,
+      store_pixel_fcolor_mfcolor_r0ba_s,
+      store_pixel_fcolor_mfcolor_0gba_s,
+      store_pixel_fcolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_ialpha_0000,
+      store_pixel_fcolor_ialpha_r000_s,
+      store_pixel_fcolor_ialpha_0g00_s,
+      store_pixel_fcolor_ialpha_rg00_s,
+      store_pixel_fcolor_ialpha_00b0,
+      store_pixel_fcolor_ialpha_r0b0_s,
+      store_pixel_fcolor_ialpha_0gb0_s,
+      store_pixel_fcolor_ialpha_rgb0_s,
+      store_pixel_fcolor_ialpha_000a,
+      store_pixel_fcolor_ialpha_r00a_s,
+      store_pixel_fcolor_ialpha_0g0a_s,
+      store_pixel_fcolor_ialpha_rg0a_s,
+      store_pixel_fcolor_ialpha_00ba,
+      store_pixel_fcolor_ialpha_r0ba_s,
+      store_pixel_fcolor_ialpha_0gba_s,
+      store_pixel_fcolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_fcolor_mialpha_0000,
+      store_pixel_fcolor_mialpha_r000_s,
+      store_pixel_fcolor_mialpha_0g00_s,
+      store_pixel_fcolor_mialpha_rg00_s,
+      store_pixel_fcolor_mialpha_00b0,
+      store_pixel_fcolor_mialpha_r0b0_s,
+      store_pixel_fcolor_mialpha_0gb0_s,
+      store_pixel_fcolor_mialpha_rgb0_s,
+      store_pixel_fcolor_mialpha_000a,
+      store_pixel_fcolor_mialpha_r00a_s,
+      store_pixel_fcolor_mialpha_0g0a_s,
+      store_pixel_fcolor_mialpha_rg0a_s,
+      store_pixel_fcolor_mialpha_00ba,
+      store_pixel_fcolor_mialpha_r0ba_s,
+      store_pixel_fcolor_mialpha_0gba_s,
+      store_pixel_fcolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_fcolor_falpha_0000,
+      store_pixel_fcolor_falpha_r000_s,
+      store_pixel_fcolor_falpha_0g00_s,
+      store_pixel_fcolor_falpha_rg00_s,
+      store_pixel_fcolor_falpha_00b0,
+      store_pixel_fcolor_falpha_r0b0_s,
+      store_pixel_fcolor_falpha_0gb0_s,
+      store_pixel_fcolor_falpha_rgb0_s,
+      store_pixel_fcolor_falpha_000a,
+      store_pixel_fcolor_falpha_r00a_s,
+      store_pixel_fcolor_falpha_0g0a_s,
+      store_pixel_fcolor_falpha_rg0a_s,
+      store_pixel_fcolor_falpha_00ba,
+      store_pixel_fcolor_falpha_r0ba_s,
+      store_pixel_fcolor_falpha_0gba_s,
+      store_pixel_fcolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_fcolor_mfalpha_0000,
+      store_pixel_fcolor_mfalpha_r000_s,
+      store_pixel_fcolor_mfalpha_0g00_s,
+      store_pixel_fcolor_mfalpha_rg00_s,
+      store_pixel_fcolor_mfalpha_00b0,
+      store_pixel_fcolor_mfalpha_r0b0_s,
+      store_pixel_fcolor_mfalpha_0gb0_s,
+      store_pixel_fcolor_mfalpha_rgb0_s,
+      store_pixel_fcolor_mfalpha_000a,
+      store_pixel_fcolor_mfalpha_r00a_s,
+      store_pixel_fcolor_mfalpha_0g0a_s,
+      store_pixel_fcolor_mfalpha_rg0a_s,
+      store_pixel_fcolor_mfalpha_00ba,
+      store_pixel_fcolor_mfalpha_r0ba_s,
+      store_pixel_fcolor_mfalpha_0gba_s,
+      store_pixel_fcolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_fcolor_ccolor_0000,
+      store_pixel_fcolor_ccolor_r000_s,
+      store_pixel_fcolor_ccolor_0g00_s,
+      store_pixel_fcolor_ccolor_rg00_s,
+      store_pixel_fcolor_ccolor_00b0,
+      store_pixel_fcolor_ccolor_r0b0_s,
+      store_pixel_fcolor_ccolor_0gb0_s,
+      store_pixel_fcolor_ccolor_rgb0_s,
+      store_pixel_fcolor_ccolor_000a,
+      store_pixel_fcolor_ccolor_r00a_s,
+      store_pixel_fcolor_ccolor_0g0a_s,
+      store_pixel_fcolor_ccolor_rg0a_s,
+      store_pixel_fcolor_ccolor_00ba,
+      store_pixel_fcolor_ccolor_r0ba_s,
+      store_pixel_fcolor_ccolor_0gba_s,
+      store_pixel_fcolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_mccolor_0000,
+      store_pixel_fcolor_mccolor_r000_s,
+      store_pixel_fcolor_mccolor_0g00_s,
+      store_pixel_fcolor_mccolor_rg00_s,
+      store_pixel_fcolor_mccolor_00b0,
+      store_pixel_fcolor_mccolor_r0b0_s,
+      store_pixel_fcolor_mccolor_0gb0_s,
+      store_pixel_fcolor_mccolor_rgb0_s,
+      store_pixel_fcolor_mccolor_000a,
+      store_pixel_fcolor_mccolor_r00a_s,
+      store_pixel_fcolor_mccolor_0g0a_s,
+      store_pixel_fcolor_mccolor_rg0a_s,
+      store_pixel_fcolor_mccolor_00ba,
+      store_pixel_fcolor_mccolor_r0ba_s,
+      store_pixel_fcolor_mccolor_0gba_s,
+      store_pixel_fcolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_fcolor_calpha_0000,
+      store_pixel_fcolor_calpha_r000_s,
+      store_pixel_fcolor_calpha_0g00_s,
+      store_pixel_fcolor_calpha_rg00_s,
+      store_pixel_fcolor_calpha_00b0,
+      store_pixel_fcolor_calpha_r0b0_s,
+      store_pixel_fcolor_calpha_0gb0_s,
+      store_pixel_fcolor_calpha_rgb0_s,
+      store_pixel_fcolor_calpha_000a,
+      store_pixel_fcolor_calpha_r00a_s,
+      store_pixel_fcolor_calpha_0g0a_s,
+      store_pixel_fcolor_calpha_rg0a_s,
+      store_pixel_fcolor_calpha_00ba,
+      store_pixel_fcolor_calpha_r0ba_s,
+      store_pixel_fcolor_calpha_0gba_s,
+      store_pixel_fcolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_fcolor_mcalpha_0000,
+      store_pixel_fcolor_mcalpha_r000_s,
+      store_pixel_fcolor_mcalpha_0g00_s,
+      store_pixel_fcolor_mcalpha_rg00_s,
+      store_pixel_fcolor_mcalpha_00b0,
+      store_pixel_fcolor_mcalpha_r0b0_s,
+      store_pixel_fcolor_mcalpha_0gb0_s,
+      store_pixel_fcolor_mcalpha_rgb0_s,
+      store_pixel_fcolor_mcalpha_000a,
+      store_pixel_fcolor_mcalpha_r00a_s,
+      store_pixel_fcolor_mcalpha_0g0a_s,
+      store_pixel_fcolor_mcalpha_rg0a_s,
+      store_pixel_fcolor_mcalpha_00ba,
+      store_pixel_fcolor_mcalpha_r0ba_s,
+      store_pixel_fcolor_mcalpha_0gba_s,
+      store_pixel_fcolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_mfcolor_zero_0000,
+      store_pixel_mfcolor_zero_r000_s,
+      store_pixel_mfcolor_zero_0g00_s,
+      store_pixel_mfcolor_zero_rg00_s,
+      store_pixel_mfcolor_zero_00b0,
+      store_pixel_mfcolor_zero_r0b0_s,
+      store_pixel_mfcolor_zero_0gb0_s,
+      store_pixel_mfcolor_zero_rgb0_s,
+      store_pixel_mfcolor_zero_000a,
+      store_pixel_mfcolor_zero_r00a_s,
+      store_pixel_mfcolor_zero_0g0a_s,
+      store_pixel_mfcolor_zero_rg0a_s,
+      store_pixel_mfcolor_zero_00ba,
+      store_pixel_mfcolor_zero_r0ba_s,
+      store_pixel_mfcolor_zero_0gba_s,
+      store_pixel_mfcolor_zero_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_one_0000,
+      store_pixel_mfcolor_one_r000_s,
+      store_pixel_mfcolor_one_0g00_s,
+      store_pixel_mfcolor_one_rg00_s,
+      store_pixel_mfcolor_one_00b0,
+      store_pixel_mfcolor_one_r0b0_s,
+      store_pixel_mfcolor_one_0gb0_s,
+      store_pixel_mfcolor_one_rgb0_s,
+      store_pixel_mfcolor_one_000a,
+      store_pixel_mfcolor_one_r00a_s,
+      store_pixel_mfcolor_one_0g0a_s,
+      store_pixel_mfcolor_one_rg0a_s,
+      store_pixel_mfcolor_one_00ba,
+      store_pixel_mfcolor_one_r0ba_s,
+      store_pixel_mfcolor_one_0gba_s,
+      store_pixel_mfcolor_one_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_icolor_0000,
+      store_pixel_mfcolor_icolor_r000_s,
+      store_pixel_mfcolor_icolor_0g00_s,
+      store_pixel_mfcolor_icolor_rg00_s,
+      store_pixel_mfcolor_icolor_00b0,
+      store_pixel_mfcolor_icolor_r0b0_s,
+      store_pixel_mfcolor_icolor_0gb0_s,
+      store_pixel_mfcolor_icolor_rgb0_s,
+      store_pixel_mfcolor_icolor_000a,
+      store_pixel_mfcolor_icolor_r00a_s,
+      store_pixel_mfcolor_icolor_0g0a_s,
+      store_pixel_mfcolor_icolor_rg0a_s,
+      store_pixel_mfcolor_icolor_00ba,
+      store_pixel_mfcolor_icolor_r0ba_s,
+      store_pixel_mfcolor_icolor_0gba_s,
+      store_pixel_mfcolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_micolor_0000,
+      store_pixel_mfcolor_micolor_r000_s,
+      store_pixel_mfcolor_micolor_0g00_s,
+      store_pixel_mfcolor_micolor_rg00_s,
+      store_pixel_mfcolor_micolor_00b0,
+      store_pixel_mfcolor_micolor_r0b0_s,
+      store_pixel_mfcolor_micolor_0gb0_s,
+      store_pixel_mfcolor_micolor_rgb0_s,
+      store_pixel_mfcolor_micolor_000a,
+      store_pixel_mfcolor_micolor_r00a_s,
+      store_pixel_mfcolor_micolor_0g0a_s,
+      store_pixel_mfcolor_micolor_rg0a_s,
+      store_pixel_mfcolor_micolor_00ba,
+      store_pixel_mfcolor_micolor_r0ba_s,
+      store_pixel_mfcolor_micolor_0gba_s,
+      store_pixel_mfcolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_fcolor_0000,
+      store_pixel_mfcolor_fcolor_r000_s,
+      store_pixel_mfcolor_fcolor_0g00_s,
+      store_pixel_mfcolor_fcolor_rg00_s,
+      store_pixel_mfcolor_fcolor_00b0,
+      store_pixel_mfcolor_fcolor_r0b0_s,
+      store_pixel_mfcolor_fcolor_0gb0_s,
+      store_pixel_mfcolor_fcolor_rgb0_s,
+      store_pixel_mfcolor_fcolor_000a,
+      store_pixel_mfcolor_fcolor_r00a_s,
+      store_pixel_mfcolor_fcolor_0g0a_s,
+      store_pixel_mfcolor_fcolor_rg0a_s,
+      store_pixel_mfcolor_fcolor_00ba,
+      store_pixel_mfcolor_fcolor_r0ba_s,
+      store_pixel_mfcolor_fcolor_0gba_s,
+      store_pixel_mfcolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_mfcolor_0000,
+      store_pixel_mfcolor_mfcolor_r000_s,
+      store_pixel_mfcolor_mfcolor_0g00_s,
+      store_pixel_mfcolor_mfcolor_rg00_s,
+      store_pixel_mfcolor_mfcolor_00b0,
+      store_pixel_mfcolor_mfcolor_r0b0_s,
+      store_pixel_mfcolor_mfcolor_0gb0_s,
+      store_pixel_mfcolor_mfcolor_rgb0_s,
+      store_pixel_mfcolor_mfcolor_000a,
+      store_pixel_mfcolor_mfcolor_r00a_s,
+      store_pixel_mfcolor_mfcolor_0g0a_s,
+      store_pixel_mfcolor_mfcolor_rg0a_s,
+      store_pixel_mfcolor_mfcolor_00ba,
+      store_pixel_mfcolor_mfcolor_r0ba_s,
+      store_pixel_mfcolor_mfcolor_0gba_s,
+      store_pixel_mfcolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_ialpha_0000,
+      store_pixel_mfcolor_ialpha_r000_s,
+      store_pixel_mfcolor_ialpha_0g00_s,
+      store_pixel_mfcolor_ialpha_rg00_s,
+      store_pixel_mfcolor_ialpha_00b0,
+      store_pixel_mfcolor_ialpha_r0b0_s,
+      store_pixel_mfcolor_ialpha_0gb0_s,
+      store_pixel_mfcolor_ialpha_rgb0_s,
+      store_pixel_mfcolor_ialpha_000a,
+      store_pixel_mfcolor_ialpha_r00a_s,
+      store_pixel_mfcolor_ialpha_0g0a_s,
+      store_pixel_mfcolor_ialpha_rg0a_s,
+      store_pixel_mfcolor_ialpha_00ba,
+      store_pixel_mfcolor_ialpha_r0ba_s,
+      store_pixel_mfcolor_ialpha_0gba_s,
+      store_pixel_mfcolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_mialpha_0000,
+      store_pixel_mfcolor_mialpha_r000_s,
+      store_pixel_mfcolor_mialpha_0g00_s,
+      store_pixel_mfcolor_mialpha_rg00_s,
+      store_pixel_mfcolor_mialpha_00b0,
+      store_pixel_mfcolor_mialpha_r0b0_s,
+      store_pixel_mfcolor_mialpha_0gb0_s,
+      store_pixel_mfcolor_mialpha_rgb0_s,
+      store_pixel_mfcolor_mialpha_000a,
+      store_pixel_mfcolor_mialpha_r00a_s,
+      store_pixel_mfcolor_mialpha_0g0a_s,
+      store_pixel_mfcolor_mialpha_rg0a_s,
+      store_pixel_mfcolor_mialpha_00ba,
+      store_pixel_mfcolor_mialpha_r0ba_s,
+      store_pixel_mfcolor_mialpha_0gba_s,
+      store_pixel_mfcolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_falpha_0000,
+      store_pixel_mfcolor_falpha_r000_s,
+      store_pixel_mfcolor_falpha_0g00_s,
+      store_pixel_mfcolor_falpha_rg00_s,
+      store_pixel_mfcolor_falpha_00b0,
+      store_pixel_mfcolor_falpha_r0b0_s,
+      store_pixel_mfcolor_falpha_0gb0_s,
+      store_pixel_mfcolor_falpha_rgb0_s,
+      store_pixel_mfcolor_falpha_000a,
+      store_pixel_mfcolor_falpha_r00a_s,
+      store_pixel_mfcolor_falpha_0g0a_s,
+      store_pixel_mfcolor_falpha_rg0a_s,
+      store_pixel_mfcolor_falpha_00ba,
+      store_pixel_mfcolor_falpha_r0ba_s,
+      store_pixel_mfcolor_falpha_0gba_s,
+      store_pixel_mfcolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_mfalpha_0000,
+      store_pixel_mfcolor_mfalpha_r000_s,
+      store_pixel_mfcolor_mfalpha_0g00_s,
+      store_pixel_mfcolor_mfalpha_rg00_s,
+      store_pixel_mfcolor_mfalpha_00b0,
+      store_pixel_mfcolor_mfalpha_r0b0_s,
+      store_pixel_mfcolor_mfalpha_0gb0_s,
+      store_pixel_mfcolor_mfalpha_rgb0_s,
+      store_pixel_mfcolor_mfalpha_000a,
+      store_pixel_mfcolor_mfalpha_r00a_s,
+      store_pixel_mfcolor_mfalpha_0g0a_s,
+      store_pixel_mfcolor_mfalpha_rg0a_s,
+      store_pixel_mfcolor_mfalpha_00ba,
+      store_pixel_mfcolor_mfalpha_r0ba_s,
+      store_pixel_mfcolor_mfalpha_0gba_s,
+      store_pixel_mfcolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_ccolor_0000,
+      store_pixel_mfcolor_ccolor_r000_s,
+      store_pixel_mfcolor_ccolor_0g00_s,
+      store_pixel_mfcolor_ccolor_rg00_s,
+      store_pixel_mfcolor_ccolor_00b0,
+      store_pixel_mfcolor_ccolor_r0b0_s,
+      store_pixel_mfcolor_ccolor_0gb0_s,
+      store_pixel_mfcolor_ccolor_rgb0_s,
+      store_pixel_mfcolor_ccolor_000a,
+      store_pixel_mfcolor_ccolor_r00a_s,
+      store_pixel_mfcolor_ccolor_0g0a_s,
+      store_pixel_mfcolor_ccolor_rg0a_s,
+      store_pixel_mfcolor_ccolor_00ba,
+      store_pixel_mfcolor_ccolor_r0ba_s,
+      store_pixel_mfcolor_ccolor_0gba_s,
+      store_pixel_mfcolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_mccolor_0000,
+      store_pixel_mfcolor_mccolor_r000_s,
+      store_pixel_mfcolor_mccolor_0g00_s,
+      store_pixel_mfcolor_mccolor_rg00_s,
+      store_pixel_mfcolor_mccolor_00b0,
+      store_pixel_mfcolor_mccolor_r0b0_s,
+      store_pixel_mfcolor_mccolor_0gb0_s,
+      store_pixel_mfcolor_mccolor_rgb0_s,
+      store_pixel_mfcolor_mccolor_000a,
+      store_pixel_mfcolor_mccolor_r00a_s,
+      store_pixel_mfcolor_mccolor_0g0a_s,
+      store_pixel_mfcolor_mccolor_rg0a_s,
+      store_pixel_mfcolor_mccolor_00ba,
+      store_pixel_mfcolor_mccolor_r0ba_s,
+      store_pixel_mfcolor_mccolor_0gba_s,
+      store_pixel_mfcolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_calpha_0000,
+      store_pixel_mfcolor_calpha_r000_s,
+      store_pixel_mfcolor_calpha_0g00_s,
+      store_pixel_mfcolor_calpha_rg00_s,
+      store_pixel_mfcolor_calpha_00b0,
+      store_pixel_mfcolor_calpha_r0b0_s,
+      store_pixel_mfcolor_calpha_0gb0_s,
+      store_pixel_mfcolor_calpha_rgb0_s,
+      store_pixel_mfcolor_calpha_000a,
+      store_pixel_mfcolor_calpha_r00a_s,
+      store_pixel_mfcolor_calpha_0g0a_s,
+      store_pixel_mfcolor_calpha_rg0a_s,
+      store_pixel_mfcolor_calpha_00ba,
+      store_pixel_mfcolor_calpha_r0ba_s,
+      store_pixel_mfcolor_calpha_0gba_s,
+      store_pixel_mfcolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_mfcolor_mcalpha_0000,
+      store_pixel_mfcolor_mcalpha_r000_s,
+      store_pixel_mfcolor_mcalpha_0g00_s,
+      store_pixel_mfcolor_mcalpha_rg00_s,
+      store_pixel_mfcolor_mcalpha_00b0,
+      store_pixel_mfcolor_mcalpha_r0b0_s,
+      store_pixel_mfcolor_mcalpha_0gb0_s,
+      store_pixel_mfcolor_mcalpha_rgb0_s,
+      store_pixel_mfcolor_mcalpha_000a,
+      store_pixel_mfcolor_mcalpha_r00a_s,
+      store_pixel_mfcolor_mcalpha_0g0a_s,
+      store_pixel_mfcolor_mcalpha_rg0a_s,
+      store_pixel_mfcolor_mcalpha_00ba,
+      store_pixel_mfcolor_mcalpha_r0ba_s,
+      store_pixel_mfcolor_mcalpha_0gba_s,
+      store_pixel_mfcolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_ialpha_zero_0000,
+      store_pixel_ialpha_zero_r000_s,
+      store_pixel_ialpha_zero_0g00_s,
+      store_pixel_ialpha_zero_rg00_s,
+      store_pixel_ialpha_zero_00b0,
+      store_pixel_ialpha_zero_r0b0_s,
+      store_pixel_ialpha_zero_0gb0_s,
+      store_pixel_ialpha_zero_rgb0_s,
+      store_pixel_ialpha_zero_000a,
+      store_pixel_ialpha_zero_r00a_s,
+      store_pixel_ialpha_zero_0g0a_s,
+      store_pixel_ialpha_zero_rg0a_s,
+      store_pixel_ialpha_zero_00ba,
+      store_pixel_ialpha_zero_r0ba_s,
+      store_pixel_ialpha_zero_0gba_s,
+      store_pixel_ialpha_zero_rgba_s,
+    },
+    {
+      store_pixel_ialpha_one_0000,
+      store_pixel_ialpha_one_r000_s,
+      store_pixel_ialpha_one_0g00_s,
+      store_pixel_ialpha_one_rg00_s,
+      store_pixel_ialpha_one_00b0,
+      store_pixel_ialpha_one_r0b0_s,
+      store_pixel_ialpha_one_0gb0_s,
+      store_pixel_ialpha_one_rgb0_s,
+      store_pixel_ialpha_one_000a,
+      store_pixel_ialpha_one_r00a_s,
+      store_pixel_ialpha_one_0g0a_s,
+      store_pixel_ialpha_one_rg0a_s,
+      store_pixel_ialpha_one_00ba,
+      store_pixel_ialpha_one_r0ba_s,
+      store_pixel_ialpha_one_0gba_s,
+      store_pixel_ialpha_one_rgba_s,
+    },
+    {
+      store_pixel_ialpha_icolor_0000,
+      store_pixel_ialpha_icolor_r000_s,
+      store_pixel_ialpha_icolor_0g00_s,
+      store_pixel_ialpha_icolor_rg00_s,
+      store_pixel_ialpha_icolor_00b0,
+      store_pixel_ialpha_icolor_r0b0_s,
+      store_pixel_ialpha_icolor_0gb0_s,
+      store_pixel_ialpha_icolor_rgb0_s,
+      store_pixel_ialpha_icolor_000a,
+      store_pixel_ialpha_icolor_r00a_s,
+      store_pixel_ialpha_icolor_0g0a_s,
+      store_pixel_ialpha_icolor_rg0a_s,
+      store_pixel_ialpha_icolor_00ba,
+      store_pixel_ialpha_icolor_r0ba_s,
+      store_pixel_ialpha_icolor_0gba_s,
+      store_pixel_ialpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_micolor_0000,
+      store_pixel_ialpha_micolor_r000_s,
+      store_pixel_ialpha_micolor_0g00_s,
+      store_pixel_ialpha_micolor_rg00_s,
+      store_pixel_ialpha_micolor_00b0,
+      store_pixel_ialpha_micolor_r0b0_s,
+      store_pixel_ialpha_micolor_0gb0_s,
+      store_pixel_ialpha_micolor_rgb0_s,
+      store_pixel_ialpha_micolor_000a,
+      store_pixel_ialpha_micolor_r00a_s,
+      store_pixel_ialpha_micolor_0g0a_s,
+      store_pixel_ialpha_micolor_rg0a_s,
+      store_pixel_ialpha_micolor_00ba,
+      store_pixel_ialpha_micolor_r0ba_s,
+      store_pixel_ialpha_micolor_0gba_s,
+      store_pixel_ialpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_fcolor_0000,
+      store_pixel_ialpha_fcolor_r000_s,
+      store_pixel_ialpha_fcolor_0g00_s,
+      store_pixel_ialpha_fcolor_rg00_s,
+      store_pixel_ialpha_fcolor_00b0,
+      store_pixel_ialpha_fcolor_r0b0_s,
+      store_pixel_ialpha_fcolor_0gb0_s,
+      store_pixel_ialpha_fcolor_rgb0_s,
+      store_pixel_ialpha_fcolor_000a,
+      store_pixel_ialpha_fcolor_r00a_s,
+      store_pixel_ialpha_fcolor_0g0a_s,
+      store_pixel_ialpha_fcolor_rg0a_s,
+      store_pixel_ialpha_fcolor_00ba,
+      store_pixel_ialpha_fcolor_r0ba_s,
+      store_pixel_ialpha_fcolor_0gba_s,
+      store_pixel_ialpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_mfcolor_0000,
+      store_pixel_ialpha_mfcolor_r000_s,
+      store_pixel_ialpha_mfcolor_0g00_s,
+      store_pixel_ialpha_mfcolor_rg00_s,
+      store_pixel_ialpha_mfcolor_00b0,
+      store_pixel_ialpha_mfcolor_r0b0_s,
+      store_pixel_ialpha_mfcolor_0gb0_s,
+      store_pixel_ialpha_mfcolor_rgb0_s,
+      store_pixel_ialpha_mfcolor_000a,
+      store_pixel_ialpha_mfcolor_r00a_s,
+      store_pixel_ialpha_mfcolor_0g0a_s,
+      store_pixel_ialpha_mfcolor_rg0a_s,
+      store_pixel_ialpha_mfcolor_00ba,
+      store_pixel_ialpha_mfcolor_r0ba_s,
+      store_pixel_ialpha_mfcolor_0gba_s,
+      store_pixel_ialpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_ialpha_0000,
+      store_pixel_ialpha_ialpha_r000_s,
+      store_pixel_ialpha_ialpha_0g00_s,
+      store_pixel_ialpha_ialpha_rg00_s,
+      store_pixel_ialpha_ialpha_00b0,
+      store_pixel_ialpha_ialpha_r0b0_s,
+      store_pixel_ialpha_ialpha_0gb0_s,
+      store_pixel_ialpha_ialpha_rgb0_s,
+      store_pixel_ialpha_ialpha_000a,
+      store_pixel_ialpha_ialpha_r00a_s,
+      store_pixel_ialpha_ialpha_0g0a_s,
+      store_pixel_ialpha_ialpha_rg0a_s,
+      store_pixel_ialpha_ialpha_00ba,
+      store_pixel_ialpha_ialpha_r0ba_s,
+      store_pixel_ialpha_ialpha_0gba_s,
+      store_pixel_ialpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_ialpha_mialpha_0000,
+      store_pixel_ialpha_mialpha_r000_s,
+      store_pixel_ialpha_mialpha_0g00_s,
+      store_pixel_ialpha_mialpha_rg00_s,
+      store_pixel_ialpha_mialpha_00b0,
+      store_pixel_ialpha_mialpha_r0b0_s,
+      store_pixel_ialpha_mialpha_0gb0_s,
+      store_pixel_ialpha_mialpha_rgb0_s,
+      store_pixel_ialpha_mialpha_000a,
+      store_pixel_ialpha_mialpha_r00a_s,
+      store_pixel_ialpha_mialpha_0g0a_s,
+      store_pixel_ialpha_mialpha_rg0a_s,
+      store_pixel_ialpha_mialpha_00ba,
+      store_pixel_ialpha_mialpha_r0ba_s,
+      store_pixel_ialpha_mialpha_0gba_s,
+      store_pixel_ialpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_ialpha_falpha_0000,
+      store_pixel_ialpha_falpha_r000_s,
+      store_pixel_ialpha_falpha_0g00_s,
+      store_pixel_ialpha_falpha_rg00_s,
+      store_pixel_ialpha_falpha_00b0,
+      store_pixel_ialpha_falpha_r0b0_s,
+      store_pixel_ialpha_falpha_0gb0_s,
+      store_pixel_ialpha_falpha_rgb0_s,
+      store_pixel_ialpha_falpha_000a,
+      store_pixel_ialpha_falpha_r00a_s,
+      store_pixel_ialpha_falpha_0g0a_s,
+      store_pixel_ialpha_falpha_rg0a_s,
+      store_pixel_ialpha_falpha_00ba,
+      store_pixel_ialpha_falpha_r0ba_s,
+      store_pixel_ialpha_falpha_0gba_s,
+      store_pixel_ialpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_ialpha_mfalpha_0000,
+      store_pixel_ialpha_mfalpha_r000_s,
+      store_pixel_ialpha_mfalpha_0g00_s,
+      store_pixel_ialpha_mfalpha_rg00_s,
+      store_pixel_ialpha_mfalpha_00b0,
+      store_pixel_ialpha_mfalpha_r0b0_s,
+      store_pixel_ialpha_mfalpha_0gb0_s,
+      store_pixel_ialpha_mfalpha_rgb0_s,
+      store_pixel_ialpha_mfalpha_000a,
+      store_pixel_ialpha_mfalpha_r00a_s,
+      store_pixel_ialpha_mfalpha_0g0a_s,
+      store_pixel_ialpha_mfalpha_rg0a_s,
+      store_pixel_ialpha_mfalpha_00ba,
+      store_pixel_ialpha_mfalpha_r0ba_s,
+      store_pixel_ialpha_mfalpha_0gba_s,
+      store_pixel_ialpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_ialpha_ccolor_0000,
+      store_pixel_ialpha_ccolor_r000_s,
+      store_pixel_ialpha_ccolor_0g00_s,
+      store_pixel_ialpha_ccolor_rg00_s,
+      store_pixel_ialpha_ccolor_00b0,
+      store_pixel_ialpha_ccolor_r0b0_s,
+      store_pixel_ialpha_ccolor_0gb0_s,
+      store_pixel_ialpha_ccolor_rgb0_s,
+      store_pixel_ialpha_ccolor_000a,
+      store_pixel_ialpha_ccolor_r00a_s,
+      store_pixel_ialpha_ccolor_0g0a_s,
+      store_pixel_ialpha_ccolor_rg0a_s,
+      store_pixel_ialpha_ccolor_00ba,
+      store_pixel_ialpha_ccolor_r0ba_s,
+      store_pixel_ialpha_ccolor_0gba_s,
+      store_pixel_ialpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_mccolor_0000,
+      store_pixel_ialpha_mccolor_r000_s,
+      store_pixel_ialpha_mccolor_0g00_s,
+      store_pixel_ialpha_mccolor_rg00_s,
+      store_pixel_ialpha_mccolor_00b0,
+      store_pixel_ialpha_mccolor_r0b0_s,
+      store_pixel_ialpha_mccolor_0gb0_s,
+      store_pixel_ialpha_mccolor_rgb0_s,
+      store_pixel_ialpha_mccolor_000a,
+      store_pixel_ialpha_mccolor_r00a_s,
+      store_pixel_ialpha_mccolor_0g0a_s,
+      store_pixel_ialpha_mccolor_rg0a_s,
+      store_pixel_ialpha_mccolor_00ba,
+      store_pixel_ialpha_mccolor_r0ba_s,
+      store_pixel_ialpha_mccolor_0gba_s,
+      store_pixel_ialpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_ialpha_calpha_0000,
+      store_pixel_ialpha_calpha_r000_s,
+      store_pixel_ialpha_calpha_0g00_s,
+      store_pixel_ialpha_calpha_rg00_s,
+      store_pixel_ialpha_calpha_00b0,
+      store_pixel_ialpha_calpha_r0b0_s,
+      store_pixel_ialpha_calpha_0gb0_s,
+      store_pixel_ialpha_calpha_rgb0_s,
+      store_pixel_ialpha_calpha_000a,
+      store_pixel_ialpha_calpha_r00a_s,
+      store_pixel_ialpha_calpha_0g0a_s,
+      store_pixel_ialpha_calpha_rg0a_s,
+      store_pixel_ialpha_calpha_00ba,
+      store_pixel_ialpha_calpha_r0ba_s,
+      store_pixel_ialpha_calpha_0gba_s,
+      store_pixel_ialpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_ialpha_mcalpha_0000,
+      store_pixel_ialpha_mcalpha_r000_s,
+      store_pixel_ialpha_mcalpha_0g00_s,
+      store_pixel_ialpha_mcalpha_rg00_s,
+      store_pixel_ialpha_mcalpha_00b0,
+      store_pixel_ialpha_mcalpha_r0b0_s,
+      store_pixel_ialpha_mcalpha_0gb0_s,
+      store_pixel_ialpha_mcalpha_rgb0_s,
+      store_pixel_ialpha_mcalpha_000a,
+      store_pixel_ialpha_mcalpha_r00a_s,
+      store_pixel_ialpha_mcalpha_0g0a_s,
+      store_pixel_ialpha_mcalpha_rg0a_s,
+      store_pixel_ialpha_mcalpha_00ba,
+      store_pixel_ialpha_mcalpha_r0ba_s,
+      store_pixel_ialpha_mcalpha_0gba_s,
+      store_pixel_ialpha_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_mialpha_zero_0000,
+      store_pixel_mialpha_zero_r000_s,
+      store_pixel_mialpha_zero_0g00_s,
+      store_pixel_mialpha_zero_rg00_s,
+      store_pixel_mialpha_zero_00b0,
+      store_pixel_mialpha_zero_r0b0_s,
+      store_pixel_mialpha_zero_0gb0_s,
+      store_pixel_mialpha_zero_rgb0_s,
+      store_pixel_mialpha_zero_000a,
+      store_pixel_mialpha_zero_r00a_s,
+      store_pixel_mialpha_zero_0g0a_s,
+      store_pixel_mialpha_zero_rg0a_s,
+      store_pixel_mialpha_zero_00ba,
+      store_pixel_mialpha_zero_r0ba_s,
+      store_pixel_mialpha_zero_0gba_s,
+      store_pixel_mialpha_zero_rgba_s,
+    },
+    {
+      store_pixel_mialpha_one_0000,
+      store_pixel_mialpha_one_r000_s,
+      store_pixel_mialpha_one_0g00_s,
+      store_pixel_mialpha_one_rg00_s,
+      store_pixel_mialpha_one_00b0,
+      store_pixel_mialpha_one_r0b0_s,
+      store_pixel_mialpha_one_0gb0_s,
+      store_pixel_mialpha_one_rgb0_s,
+      store_pixel_mialpha_one_000a,
+      store_pixel_mialpha_one_r00a_s,
+      store_pixel_mialpha_one_0g0a_s,
+      store_pixel_mialpha_one_rg0a_s,
+      store_pixel_mialpha_one_00ba,
+      store_pixel_mialpha_one_r0ba_s,
+      store_pixel_mialpha_one_0gba_s,
+      store_pixel_mialpha_one_rgba_s,
+    },
+    {
+      store_pixel_mialpha_icolor_0000,
+      store_pixel_mialpha_icolor_r000_s,
+      store_pixel_mialpha_icolor_0g00_s,
+      store_pixel_mialpha_icolor_rg00_s,
+      store_pixel_mialpha_icolor_00b0,
+      store_pixel_mialpha_icolor_r0b0_s,
+      store_pixel_mialpha_icolor_0gb0_s,
+      store_pixel_mialpha_icolor_rgb0_s,
+      store_pixel_mialpha_icolor_000a,
+      store_pixel_mialpha_icolor_r00a_s,
+      store_pixel_mialpha_icolor_0g0a_s,
+      store_pixel_mialpha_icolor_rg0a_s,
+      store_pixel_mialpha_icolor_00ba,
+      store_pixel_mialpha_icolor_r0ba_s,
+      store_pixel_mialpha_icolor_0gba_s,
+      store_pixel_mialpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_micolor_0000,
+      store_pixel_mialpha_micolor_r000_s,
+      store_pixel_mialpha_micolor_0g00_s,
+      store_pixel_mialpha_micolor_rg00_s,
+      store_pixel_mialpha_micolor_00b0,
+      store_pixel_mialpha_micolor_r0b0_s,
+      store_pixel_mialpha_micolor_0gb0_s,
+      store_pixel_mialpha_micolor_rgb0_s,
+      store_pixel_mialpha_micolor_000a,
+      store_pixel_mialpha_micolor_r00a_s,
+      store_pixel_mialpha_micolor_0g0a_s,
+      store_pixel_mialpha_micolor_rg0a_s,
+      store_pixel_mialpha_micolor_00ba,
+      store_pixel_mialpha_micolor_r0ba_s,
+      store_pixel_mialpha_micolor_0gba_s,
+      store_pixel_mialpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_fcolor_0000,
+      store_pixel_mialpha_fcolor_r000_s,
+      store_pixel_mialpha_fcolor_0g00_s,
+      store_pixel_mialpha_fcolor_rg00_s,
+      store_pixel_mialpha_fcolor_00b0,
+      store_pixel_mialpha_fcolor_r0b0_s,
+      store_pixel_mialpha_fcolor_0gb0_s,
+      store_pixel_mialpha_fcolor_rgb0_s,
+      store_pixel_mialpha_fcolor_000a,
+      store_pixel_mialpha_fcolor_r00a_s,
+      store_pixel_mialpha_fcolor_0g0a_s,
+      store_pixel_mialpha_fcolor_rg0a_s,
+      store_pixel_mialpha_fcolor_00ba,
+      store_pixel_mialpha_fcolor_r0ba_s,
+      store_pixel_mialpha_fcolor_0gba_s,
+      store_pixel_mialpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_mfcolor_0000,
+      store_pixel_mialpha_mfcolor_r000_s,
+      store_pixel_mialpha_mfcolor_0g00_s,
+      store_pixel_mialpha_mfcolor_rg00_s,
+      store_pixel_mialpha_mfcolor_00b0,
+      store_pixel_mialpha_mfcolor_r0b0_s,
+      store_pixel_mialpha_mfcolor_0gb0_s,
+      store_pixel_mialpha_mfcolor_rgb0_s,
+      store_pixel_mialpha_mfcolor_000a,
+      store_pixel_mialpha_mfcolor_r00a_s,
+      store_pixel_mialpha_mfcolor_0g0a_s,
+      store_pixel_mialpha_mfcolor_rg0a_s,
+      store_pixel_mialpha_mfcolor_00ba,
+      store_pixel_mialpha_mfcolor_r0ba_s,
+      store_pixel_mialpha_mfcolor_0gba_s,
+      store_pixel_mialpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_ialpha_0000,
+      store_pixel_mialpha_ialpha_r000_s,
+      store_pixel_mialpha_ialpha_0g00_s,
+      store_pixel_mialpha_ialpha_rg00_s,
+      store_pixel_mialpha_ialpha_00b0,
+      store_pixel_mialpha_ialpha_r0b0_s,
+      store_pixel_mialpha_ialpha_0gb0_s,
+      store_pixel_mialpha_ialpha_rgb0_s,
+      store_pixel_mialpha_ialpha_000a,
+      store_pixel_mialpha_ialpha_r00a_s,
+      store_pixel_mialpha_ialpha_0g0a_s,
+      store_pixel_mialpha_ialpha_rg0a_s,
+      store_pixel_mialpha_ialpha_00ba,
+      store_pixel_mialpha_ialpha_r0ba_s,
+      store_pixel_mialpha_ialpha_0gba_s,
+      store_pixel_mialpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_mialpha_mialpha_0000,
+      store_pixel_mialpha_mialpha_r000_s,
+      store_pixel_mialpha_mialpha_0g00_s,
+      store_pixel_mialpha_mialpha_rg00_s,
+      store_pixel_mialpha_mialpha_00b0,
+      store_pixel_mialpha_mialpha_r0b0_s,
+      store_pixel_mialpha_mialpha_0gb0_s,
+      store_pixel_mialpha_mialpha_rgb0_s,
+      store_pixel_mialpha_mialpha_000a,
+      store_pixel_mialpha_mialpha_r00a_s,
+      store_pixel_mialpha_mialpha_0g0a_s,
+      store_pixel_mialpha_mialpha_rg0a_s,
+      store_pixel_mialpha_mialpha_00ba,
+      store_pixel_mialpha_mialpha_r0ba_s,
+      store_pixel_mialpha_mialpha_0gba_s,
+      store_pixel_mialpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_mialpha_falpha_0000,
+      store_pixel_mialpha_falpha_r000_s,
+      store_pixel_mialpha_falpha_0g00_s,
+      store_pixel_mialpha_falpha_rg00_s,
+      store_pixel_mialpha_falpha_00b0,
+      store_pixel_mialpha_falpha_r0b0_s,
+      store_pixel_mialpha_falpha_0gb0_s,
+      store_pixel_mialpha_falpha_rgb0_s,
+      store_pixel_mialpha_falpha_000a,
+      store_pixel_mialpha_falpha_r00a_s,
+      store_pixel_mialpha_falpha_0g0a_s,
+      store_pixel_mialpha_falpha_rg0a_s,
+      store_pixel_mialpha_falpha_00ba,
+      store_pixel_mialpha_falpha_r0ba_s,
+      store_pixel_mialpha_falpha_0gba_s,
+      store_pixel_mialpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_mialpha_mfalpha_0000,
+      store_pixel_mialpha_mfalpha_r000_s,
+      store_pixel_mialpha_mfalpha_0g00_s,
+      store_pixel_mialpha_mfalpha_rg00_s,
+      store_pixel_mialpha_mfalpha_00b0,
+      store_pixel_mialpha_mfalpha_r0b0_s,
+      store_pixel_mialpha_mfalpha_0gb0_s,
+      store_pixel_mialpha_mfalpha_rgb0_s,
+      store_pixel_mialpha_mfalpha_000a,
+      store_pixel_mialpha_mfalpha_r00a_s,
+      store_pixel_mialpha_mfalpha_0g0a_s,
+      store_pixel_mialpha_mfalpha_rg0a_s,
+      store_pixel_mialpha_mfalpha_00ba,
+      store_pixel_mialpha_mfalpha_r0ba_s,
+      store_pixel_mialpha_mfalpha_0gba_s,
+      store_pixel_mialpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_mialpha_ccolor_0000,
+      store_pixel_mialpha_ccolor_r000_s,
+      store_pixel_mialpha_ccolor_0g00_s,
+      store_pixel_mialpha_ccolor_rg00_s,
+      store_pixel_mialpha_ccolor_00b0,
+      store_pixel_mialpha_ccolor_r0b0_s,
+      store_pixel_mialpha_ccolor_0gb0_s,
+      store_pixel_mialpha_ccolor_rgb0_s,
+      store_pixel_mialpha_ccolor_000a,
+      store_pixel_mialpha_ccolor_r00a_s,
+      store_pixel_mialpha_ccolor_0g0a_s,
+      store_pixel_mialpha_ccolor_rg0a_s,
+      store_pixel_mialpha_ccolor_00ba,
+      store_pixel_mialpha_ccolor_r0ba_s,
+      store_pixel_mialpha_ccolor_0gba_s,
+      store_pixel_mialpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_mccolor_0000,
+      store_pixel_mialpha_mccolor_r000_s,
+      store_pixel_mialpha_mccolor_0g00_s,
+      store_pixel_mialpha_mccolor_rg00_s,
+      store_pixel_mialpha_mccolor_00b0,
+      store_pixel_mialpha_mccolor_r0b0_s,
+      store_pixel_mialpha_mccolor_0gb0_s,
+      store_pixel_mialpha_mccolor_rgb0_s,
+      store_pixel_mialpha_mccolor_000a,
+      store_pixel_mialpha_mccolor_r00a_s,
+      store_pixel_mialpha_mccolor_0g0a_s,
+      store_pixel_mialpha_mccolor_rg0a_s,
+      store_pixel_mialpha_mccolor_00ba,
+      store_pixel_mialpha_mccolor_r0ba_s,
+      store_pixel_mialpha_mccolor_0gba_s,
+      store_pixel_mialpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_mialpha_calpha_0000,
+      store_pixel_mialpha_calpha_r000_s,
+      store_pixel_mialpha_calpha_0g00_s,
+      store_pixel_mialpha_calpha_rg00_s,
+      store_pixel_mialpha_calpha_00b0,
+      store_pixel_mialpha_calpha_r0b0_s,
+      store_pixel_mialpha_calpha_0gb0_s,
+      store_pixel_mialpha_calpha_rgb0_s,
+      store_pixel_mialpha_calpha_000a,
+      store_pixel_mialpha_calpha_r00a_s,
+      store_pixel_mialpha_calpha_0g0a_s,
+      store_pixel_mialpha_calpha_rg0a_s,
+      store_pixel_mialpha_calpha_00ba,
+      store_pixel_mialpha_calpha_r0ba_s,
+      store_pixel_mialpha_calpha_0gba_s,
+      store_pixel_mialpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_mialpha_mcalpha_0000,
+      store_pixel_mialpha_mcalpha_r000_s,
+      store_pixel_mialpha_mcalpha_0g00_s,
+      store_pixel_mialpha_mcalpha_rg00_s,
+      store_pixel_mialpha_mcalpha_00b0,
+      store_pixel_mialpha_mcalpha_r0b0_s,
+      store_pixel_mialpha_mcalpha_0gb0_s,
+      store_pixel_mialpha_mcalpha_rgb0_s,
+      store_pixel_mialpha_mcalpha_000a,
+      store_pixel_mialpha_mcalpha_r00a_s,
+      store_pixel_mialpha_mcalpha_0g0a_s,
+      store_pixel_mialpha_mcalpha_rg0a_s,
+      store_pixel_mialpha_mcalpha_00ba,
+      store_pixel_mialpha_mcalpha_r0ba_s,
+      store_pixel_mialpha_mcalpha_0gba_s,
+      store_pixel_mialpha_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_falpha_zero_0000,
+      store_pixel_falpha_zero_r000_s,
+      store_pixel_falpha_zero_0g00_s,
+      store_pixel_falpha_zero_rg00_s,
+      store_pixel_falpha_zero_00b0,
+      store_pixel_falpha_zero_r0b0_s,
+      store_pixel_falpha_zero_0gb0_s,
+      store_pixel_falpha_zero_rgb0_s,
+      store_pixel_falpha_zero_000a,
+      store_pixel_falpha_zero_r00a_s,
+      store_pixel_falpha_zero_0g0a_s,
+      store_pixel_falpha_zero_rg0a_s,
+      store_pixel_falpha_zero_00ba,
+      store_pixel_falpha_zero_r0ba_s,
+      store_pixel_falpha_zero_0gba_s,
+      store_pixel_falpha_zero_rgba_s,
+    },
+    {
+      store_pixel_falpha_one_0000,
+      store_pixel_falpha_one_r000_s,
+      store_pixel_falpha_one_0g00_s,
+      store_pixel_falpha_one_rg00_s,
+      store_pixel_falpha_one_00b0,
+      store_pixel_falpha_one_r0b0_s,
+      store_pixel_falpha_one_0gb0_s,
+      store_pixel_falpha_one_rgb0_s,
+      store_pixel_falpha_one_000a,
+      store_pixel_falpha_one_r00a_s,
+      store_pixel_falpha_one_0g0a_s,
+      store_pixel_falpha_one_rg0a_s,
+      store_pixel_falpha_one_00ba,
+      store_pixel_falpha_one_r0ba_s,
+      store_pixel_falpha_one_0gba_s,
+      store_pixel_falpha_one_rgba_s,
+    },
+    {
+      store_pixel_falpha_icolor_0000,
+      store_pixel_falpha_icolor_r000_s,
+      store_pixel_falpha_icolor_0g00_s,
+      store_pixel_falpha_icolor_rg00_s,
+      store_pixel_falpha_icolor_00b0,
+      store_pixel_falpha_icolor_r0b0_s,
+      store_pixel_falpha_icolor_0gb0_s,
+      store_pixel_falpha_icolor_rgb0_s,
+      store_pixel_falpha_icolor_000a,
+      store_pixel_falpha_icolor_r00a_s,
+      store_pixel_falpha_icolor_0g0a_s,
+      store_pixel_falpha_icolor_rg0a_s,
+      store_pixel_falpha_icolor_00ba,
+      store_pixel_falpha_icolor_r0ba_s,
+      store_pixel_falpha_icolor_0gba_s,
+      store_pixel_falpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_micolor_0000,
+      store_pixel_falpha_micolor_r000_s,
+      store_pixel_falpha_micolor_0g00_s,
+      store_pixel_falpha_micolor_rg00_s,
+      store_pixel_falpha_micolor_00b0,
+      store_pixel_falpha_micolor_r0b0_s,
+      store_pixel_falpha_micolor_0gb0_s,
+      store_pixel_falpha_micolor_rgb0_s,
+      store_pixel_falpha_micolor_000a,
+      store_pixel_falpha_micolor_r00a_s,
+      store_pixel_falpha_micolor_0g0a_s,
+      store_pixel_falpha_micolor_rg0a_s,
+      store_pixel_falpha_micolor_00ba,
+      store_pixel_falpha_micolor_r0ba_s,
+      store_pixel_falpha_micolor_0gba_s,
+      store_pixel_falpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_fcolor_0000,
+      store_pixel_falpha_fcolor_r000_s,
+      store_pixel_falpha_fcolor_0g00_s,
+      store_pixel_falpha_fcolor_rg00_s,
+      store_pixel_falpha_fcolor_00b0,
+      store_pixel_falpha_fcolor_r0b0_s,
+      store_pixel_falpha_fcolor_0gb0_s,
+      store_pixel_falpha_fcolor_rgb0_s,
+      store_pixel_falpha_fcolor_000a,
+      store_pixel_falpha_fcolor_r00a_s,
+      store_pixel_falpha_fcolor_0g0a_s,
+      store_pixel_falpha_fcolor_rg0a_s,
+      store_pixel_falpha_fcolor_00ba,
+      store_pixel_falpha_fcolor_r0ba_s,
+      store_pixel_falpha_fcolor_0gba_s,
+      store_pixel_falpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_mfcolor_0000,
+      store_pixel_falpha_mfcolor_r000_s,
+      store_pixel_falpha_mfcolor_0g00_s,
+      store_pixel_falpha_mfcolor_rg00_s,
+      store_pixel_falpha_mfcolor_00b0,
+      store_pixel_falpha_mfcolor_r0b0_s,
+      store_pixel_falpha_mfcolor_0gb0_s,
+      store_pixel_falpha_mfcolor_rgb0_s,
+      store_pixel_falpha_mfcolor_000a,
+      store_pixel_falpha_mfcolor_r00a_s,
+      store_pixel_falpha_mfcolor_0g0a_s,
+      store_pixel_falpha_mfcolor_rg0a_s,
+      store_pixel_falpha_mfcolor_00ba,
+      store_pixel_falpha_mfcolor_r0ba_s,
+      store_pixel_falpha_mfcolor_0gba_s,
+      store_pixel_falpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_ialpha_0000,
+      store_pixel_falpha_ialpha_r000_s,
+      store_pixel_falpha_ialpha_0g00_s,
+      store_pixel_falpha_ialpha_rg00_s,
+      store_pixel_falpha_ialpha_00b0,
+      store_pixel_falpha_ialpha_r0b0_s,
+      store_pixel_falpha_ialpha_0gb0_s,
+      store_pixel_falpha_ialpha_rgb0_s,
+      store_pixel_falpha_ialpha_000a,
+      store_pixel_falpha_ialpha_r00a_s,
+      store_pixel_falpha_ialpha_0g0a_s,
+      store_pixel_falpha_ialpha_rg0a_s,
+      store_pixel_falpha_ialpha_00ba,
+      store_pixel_falpha_ialpha_r0ba_s,
+      store_pixel_falpha_ialpha_0gba_s,
+      store_pixel_falpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_falpha_mialpha_0000,
+      store_pixel_falpha_mialpha_r000_s,
+      store_pixel_falpha_mialpha_0g00_s,
+      store_pixel_falpha_mialpha_rg00_s,
+      store_pixel_falpha_mialpha_00b0,
+      store_pixel_falpha_mialpha_r0b0_s,
+      store_pixel_falpha_mialpha_0gb0_s,
+      store_pixel_falpha_mialpha_rgb0_s,
+      store_pixel_falpha_mialpha_000a,
+      store_pixel_falpha_mialpha_r00a_s,
+      store_pixel_falpha_mialpha_0g0a_s,
+      store_pixel_falpha_mialpha_rg0a_s,
+      store_pixel_falpha_mialpha_00ba,
+      store_pixel_falpha_mialpha_r0ba_s,
+      store_pixel_falpha_mialpha_0gba_s,
+      store_pixel_falpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_falpha_falpha_0000,
+      store_pixel_falpha_falpha_r000_s,
+      store_pixel_falpha_falpha_0g00_s,
+      store_pixel_falpha_falpha_rg00_s,
+      store_pixel_falpha_falpha_00b0,
+      store_pixel_falpha_falpha_r0b0_s,
+      store_pixel_falpha_falpha_0gb0_s,
+      store_pixel_falpha_falpha_rgb0_s,
+      store_pixel_falpha_falpha_000a,
+      store_pixel_falpha_falpha_r00a_s,
+      store_pixel_falpha_falpha_0g0a_s,
+      store_pixel_falpha_falpha_rg0a_s,
+      store_pixel_falpha_falpha_00ba,
+      store_pixel_falpha_falpha_r0ba_s,
+      store_pixel_falpha_falpha_0gba_s,
+      store_pixel_falpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_falpha_mfalpha_0000,
+      store_pixel_falpha_mfalpha_r000_s,
+      store_pixel_falpha_mfalpha_0g00_s,
+      store_pixel_falpha_mfalpha_rg00_s,
+      store_pixel_falpha_mfalpha_00b0,
+      store_pixel_falpha_mfalpha_r0b0_s,
+      store_pixel_falpha_mfalpha_0gb0_s,
+      store_pixel_falpha_mfalpha_rgb0_s,
+      store_pixel_falpha_mfalpha_000a,
+      store_pixel_falpha_mfalpha_r00a_s,
+      store_pixel_falpha_mfalpha_0g0a_s,
+      store_pixel_falpha_mfalpha_rg0a_s,
+      store_pixel_falpha_mfalpha_00ba,
+      store_pixel_falpha_mfalpha_r0ba_s,
+      store_pixel_falpha_mfalpha_0gba_s,
+      store_pixel_falpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_falpha_ccolor_0000,
+      store_pixel_falpha_ccolor_r000_s,
+      store_pixel_falpha_ccolor_0g00_s,
+      store_pixel_falpha_ccolor_rg00_s,
+      store_pixel_falpha_ccolor_00b0,
+      store_pixel_falpha_ccolor_r0b0_s,
+      store_pixel_falpha_ccolor_0gb0_s,
+      store_pixel_falpha_ccolor_rgb0_s,
+      store_pixel_falpha_ccolor_000a,
+      store_pixel_falpha_ccolor_r00a_s,
+      store_pixel_falpha_ccolor_0g0a_s,
+      store_pixel_falpha_ccolor_rg0a_s,
+      store_pixel_falpha_ccolor_00ba,
+      store_pixel_falpha_ccolor_r0ba_s,
+      store_pixel_falpha_ccolor_0gba_s,
+      store_pixel_falpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_mccolor_0000,
+      store_pixel_falpha_mccolor_r000_s,
+      store_pixel_falpha_mccolor_0g00_s,
+      store_pixel_falpha_mccolor_rg00_s,
+      store_pixel_falpha_mccolor_00b0,
+      store_pixel_falpha_mccolor_r0b0_s,
+      store_pixel_falpha_mccolor_0gb0_s,
+      store_pixel_falpha_mccolor_rgb0_s,
+      store_pixel_falpha_mccolor_000a,
+      store_pixel_falpha_mccolor_r00a_s,
+      store_pixel_falpha_mccolor_0g0a_s,
+      store_pixel_falpha_mccolor_rg0a_s,
+      store_pixel_falpha_mccolor_00ba,
+      store_pixel_falpha_mccolor_r0ba_s,
+      store_pixel_falpha_mccolor_0gba_s,
+      store_pixel_falpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_falpha_calpha_0000,
+      store_pixel_falpha_calpha_r000_s,
+      store_pixel_falpha_calpha_0g00_s,
+      store_pixel_falpha_calpha_rg00_s,
+      store_pixel_falpha_calpha_00b0,
+      store_pixel_falpha_calpha_r0b0_s,
+      store_pixel_falpha_calpha_0gb0_s,
+      store_pixel_falpha_calpha_rgb0_s,
+      store_pixel_falpha_calpha_000a,
+      store_pixel_falpha_calpha_r00a_s,
+      store_pixel_falpha_calpha_0g0a_s,
+      store_pixel_falpha_calpha_rg0a_s,
+      store_pixel_falpha_calpha_00ba,
+      store_pixel_falpha_calpha_r0ba_s,
+      store_pixel_falpha_calpha_0gba_s,
+      store_pixel_falpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_falpha_mcalpha_0000,
+      store_pixel_falpha_mcalpha_r000_s,
+      store_pixel_falpha_mcalpha_0g00_s,
+      store_pixel_falpha_mcalpha_rg00_s,
+      store_pixel_falpha_mcalpha_00b0,
+      store_pixel_falpha_mcalpha_r0b0_s,
+      store_pixel_falpha_mcalpha_0gb0_s,
+      store_pixel_falpha_mcalpha_rgb0_s,
+      store_pixel_falpha_mcalpha_000a,
+      store_pixel_falpha_mcalpha_r00a_s,
+      store_pixel_falpha_mcalpha_0g0a_s,
+      store_pixel_falpha_mcalpha_rg0a_s,
+      store_pixel_falpha_mcalpha_00ba,
+      store_pixel_falpha_mcalpha_r0ba_s,
+      store_pixel_falpha_mcalpha_0gba_s,
+      store_pixel_falpha_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_mfalpha_zero_0000,
+      store_pixel_mfalpha_zero_r000_s,
+      store_pixel_mfalpha_zero_0g00_s,
+      store_pixel_mfalpha_zero_rg00_s,
+      store_pixel_mfalpha_zero_00b0,
+      store_pixel_mfalpha_zero_r0b0_s,
+      store_pixel_mfalpha_zero_0gb0_s,
+      store_pixel_mfalpha_zero_rgb0_s,
+      store_pixel_mfalpha_zero_000a,
+      store_pixel_mfalpha_zero_r00a_s,
+      store_pixel_mfalpha_zero_0g0a_s,
+      store_pixel_mfalpha_zero_rg0a_s,
+      store_pixel_mfalpha_zero_00ba,
+      store_pixel_mfalpha_zero_r0ba_s,
+      store_pixel_mfalpha_zero_0gba_s,
+      store_pixel_mfalpha_zero_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_one_0000,
+      store_pixel_mfalpha_one_r000_s,
+      store_pixel_mfalpha_one_0g00_s,
+      store_pixel_mfalpha_one_rg00_s,
+      store_pixel_mfalpha_one_00b0,
+      store_pixel_mfalpha_one_r0b0_s,
+      store_pixel_mfalpha_one_0gb0_s,
+      store_pixel_mfalpha_one_rgb0_s,
+      store_pixel_mfalpha_one_000a,
+      store_pixel_mfalpha_one_r00a_s,
+      store_pixel_mfalpha_one_0g0a_s,
+      store_pixel_mfalpha_one_rg0a_s,
+      store_pixel_mfalpha_one_00ba,
+      store_pixel_mfalpha_one_r0ba_s,
+      store_pixel_mfalpha_one_0gba_s,
+      store_pixel_mfalpha_one_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_icolor_0000,
+      store_pixel_mfalpha_icolor_r000_s,
+      store_pixel_mfalpha_icolor_0g00_s,
+      store_pixel_mfalpha_icolor_rg00_s,
+      store_pixel_mfalpha_icolor_00b0,
+      store_pixel_mfalpha_icolor_r0b0_s,
+      store_pixel_mfalpha_icolor_0gb0_s,
+      store_pixel_mfalpha_icolor_rgb0_s,
+      store_pixel_mfalpha_icolor_000a,
+      store_pixel_mfalpha_icolor_r00a_s,
+      store_pixel_mfalpha_icolor_0g0a_s,
+      store_pixel_mfalpha_icolor_rg0a_s,
+      store_pixel_mfalpha_icolor_00ba,
+      store_pixel_mfalpha_icolor_r0ba_s,
+      store_pixel_mfalpha_icolor_0gba_s,
+      store_pixel_mfalpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_micolor_0000,
+      store_pixel_mfalpha_micolor_r000_s,
+      store_pixel_mfalpha_micolor_0g00_s,
+      store_pixel_mfalpha_micolor_rg00_s,
+      store_pixel_mfalpha_micolor_00b0,
+      store_pixel_mfalpha_micolor_r0b0_s,
+      store_pixel_mfalpha_micolor_0gb0_s,
+      store_pixel_mfalpha_micolor_rgb0_s,
+      store_pixel_mfalpha_micolor_000a,
+      store_pixel_mfalpha_micolor_r00a_s,
+      store_pixel_mfalpha_micolor_0g0a_s,
+      store_pixel_mfalpha_micolor_rg0a_s,
+      store_pixel_mfalpha_micolor_00ba,
+      store_pixel_mfalpha_micolor_r0ba_s,
+      store_pixel_mfalpha_micolor_0gba_s,
+      store_pixel_mfalpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_fcolor_0000,
+      store_pixel_mfalpha_fcolor_r000_s,
+      store_pixel_mfalpha_fcolor_0g00_s,
+      store_pixel_mfalpha_fcolor_rg00_s,
+      store_pixel_mfalpha_fcolor_00b0,
+      store_pixel_mfalpha_fcolor_r0b0_s,
+      store_pixel_mfalpha_fcolor_0gb0_s,
+      store_pixel_mfalpha_fcolor_rgb0_s,
+      store_pixel_mfalpha_fcolor_000a,
+      store_pixel_mfalpha_fcolor_r00a_s,
+      store_pixel_mfalpha_fcolor_0g0a_s,
+      store_pixel_mfalpha_fcolor_rg0a_s,
+      store_pixel_mfalpha_fcolor_00ba,
+      store_pixel_mfalpha_fcolor_r0ba_s,
+      store_pixel_mfalpha_fcolor_0gba_s,
+      store_pixel_mfalpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_mfcolor_0000,
+      store_pixel_mfalpha_mfcolor_r000_s,
+      store_pixel_mfalpha_mfcolor_0g00_s,
+      store_pixel_mfalpha_mfcolor_rg00_s,
+      store_pixel_mfalpha_mfcolor_00b0,
+      store_pixel_mfalpha_mfcolor_r0b0_s,
+      store_pixel_mfalpha_mfcolor_0gb0_s,
+      store_pixel_mfalpha_mfcolor_rgb0_s,
+      store_pixel_mfalpha_mfcolor_000a,
+      store_pixel_mfalpha_mfcolor_r00a_s,
+      store_pixel_mfalpha_mfcolor_0g0a_s,
+      store_pixel_mfalpha_mfcolor_rg0a_s,
+      store_pixel_mfalpha_mfcolor_00ba,
+      store_pixel_mfalpha_mfcolor_r0ba_s,
+      store_pixel_mfalpha_mfcolor_0gba_s,
+      store_pixel_mfalpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_ialpha_0000,
+      store_pixel_mfalpha_ialpha_r000_s,
+      store_pixel_mfalpha_ialpha_0g00_s,
+      store_pixel_mfalpha_ialpha_rg00_s,
+      store_pixel_mfalpha_ialpha_00b0,
+      store_pixel_mfalpha_ialpha_r0b0_s,
+      store_pixel_mfalpha_ialpha_0gb0_s,
+      store_pixel_mfalpha_ialpha_rgb0_s,
+      store_pixel_mfalpha_ialpha_000a,
+      store_pixel_mfalpha_ialpha_r00a_s,
+      store_pixel_mfalpha_ialpha_0g0a_s,
+      store_pixel_mfalpha_ialpha_rg0a_s,
+      store_pixel_mfalpha_ialpha_00ba,
+      store_pixel_mfalpha_ialpha_r0ba_s,
+      store_pixel_mfalpha_ialpha_0gba_s,
+      store_pixel_mfalpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_mialpha_0000,
+      store_pixel_mfalpha_mialpha_r000_s,
+      store_pixel_mfalpha_mialpha_0g00_s,
+      store_pixel_mfalpha_mialpha_rg00_s,
+      store_pixel_mfalpha_mialpha_00b0,
+      store_pixel_mfalpha_mialpha_r0b0_s,
+      store_pixel_mfalpha_mialpha_0gb0_s,
+      store_pixel_mfalpha_mialpha_rgb0_s,
+      store_pixel_mfalpha_mialpha_000a,
+      store_pixel_mfalpha_mialpha_r00a_s,
+      store_pixel_mfalpha_mialpha_0g0a_s,
+      store_pixel_mfalpha_mialpha_rg0a_s,
+      store_pixel_mfalpha_mialpha_00ba,
+      store_pixel_mfalpha_mialpha_r0ba_s,
+      store_pixel_mfalpha_mialpha_0gba_s,
+      store_pixel_mfalpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_falpha_0000,
+      store_pixel_mfalpha_falpha_r000_s,
+      store_pixel_mfalpha_falpha_0g00_s,
+      store_pixel_mfalpha_falpha_rg00_s,
+      store_pixel_mfalpha_falpha_00b0,
+      store_pixel_mfalpha_falpha_r0b0_s,
+      store_pixel_mfalpha_falpha_0gb0_s,
+      store_pixel_mfalpha_falpha_rgb0_s,
+      store_pixel_mfalpha_falpha_000a,
+      store_pixel_mfalpha_falpha_r00a_s,
+      store_pixel_mfalpha_falpha_0g0a_s,
+      store_pixel_mfalpha_falpha_rg0a_s,
+      store_pixel_mfalpha_falpha_00ba,
+      store_pixel_mfalpha_falpha_r0ba_s,
+      store_pixel_mfalpha_falpha_0gba_s,
+      store_pixel_mfalpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_mfalpha_0000,
+      store_pixel_mfalpha_mfalpha_r000_s,
+      store_pixel_mfalpha_mfalpha_0g00_s,
+      store_pixel_mfalpha_mfalpha_rg00_s,
+      store_pixel_mfalpha_mfalpha_00b0,
+      store_pixel_mfalpha_mfalpha_r0b0_s,
+      store_pixel_mfalpha_mfalpha_0gb0_s,
+      store_pixel_mfalpha_mfalpha_rgb0_s,
+      store_pixel_mfalpha_mfalpha_000a,
+      store_pixel_mfalpha_mfalpha_r00a_s,
+      store_pixel_mfalpha_mfalpha_0g0a_s,
+      store_pixel_mfalpha_mfalpha_rg0a_s,
+      store_pixel_mfalpha_mfalpha_00ba,
+      store_pixel_mfalpha_mfalpha_r0ba_s,
+      store_pixel_mfalpha_mfalpha_0gba_s,
+      store_pixel_mfalpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_ccolor_0000,
+      store_pixel_mfalpha_ccolor_r000_s,
+      store_pixel_mfalpha_ccolor_0g00_s,
+      store_pixel_mfalpha_ccolor_rg00_s,
+      store_pixel_mfalpha_ccolor_00b0,
+      store_pixel_mfalpha_ccolor_r0b0_s,
+      store_pixel_mfalpha_ccolor_0gb0_s,
+      store_pixel_mfalpha_ccolor_rgb0_s,
+      store_pixel_mfalpha_ccolor_000a,
+      store_pixel_mfalpha_ccolor_r00a_s,
+      store_pixel_mfalpha_ccolor_0g0a_s,
+      store_pixel_mfalpha_ccolor_rg0a_s,
+      store_pixel_mfalpha_ccolor_00ba,
+      store_pixel_mfalpha_ccolor_r0ba_s,
+      store_pixel_mfalpha_ccolor_0gba_s,
+      store_pixel_mfalpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_mccolor_0000,
+      store_pixel_mfalpha_mccolor_r000_s,
+      store_pixel_mfalpha_mccolor_0g00_s,
+      store_pixel_mfalpha_mccolor_rg00_s,
+      store_pixel_mfalpha_mccolor_00b0,
+      store_pixel_mfalpha_mccolor_r0b0_s,
+      store_pixel_mfalpha_mccolor_0gb0_s,
+      store_pixel_mfalpha_mccolor_rgb0_s,
+      store_pixel_mfalpha_mccolor_000a,
+      store_pixel_mfalpha_mccolor_r00a_s,
+      store_pixel_mfalpha_mccolor_0g0a_s,
+      store_pixel_mfalpha_mccolor_rg0a_s,
+      store_pixel_mfalpha_mccolor_00ba,
+      store_pixel_mfalpha_mccolor_r0ba_s,
+      store_pixel_mfalpha_mccolor_0gba_s,
+      store_pixel_mfalpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_calpha_0000,
+      store_pixel_mfalpha_calpha_r000_s,
+      store_pixel_mfalpha_calpha_0g00_s,
+      store_pixel_mfalpha_calpha_rg00_s,
+      store_pixel_mfalpha_calpha_00b0,
+      store_pixel_mfalpha_calpha_r0b0_s,
+      store_pixel_mfalpha_calpha_0gb0_s,
+      store_pixel_mfalpha_calpha_rgb0_s,
+      store_pixel_mfalpha_calpha_000a,
+      store_pixel_mfalpha_calpha_r00a_s,
+      store_pixel_mfalpha_calpha_0g0a_s,
+      store_pixel_mfalpha_calpha_rg0a_s,
+      store_pixel_mfalpha_calpha_00ba,
+      store_pixel_mfalpha_calpha_r0ba_s,
+      store_pixel_mfalpha_calpha_0gba_s,
+      store_pixel_mfalpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_mfalpha_mcalpha_0000,
+      store_pixel_mfalpha_mcalpha_r000_s,
+      store_pixel_mfalpha_mcalpha_0g00_s,
+      store_pixel_mfalpha_mcalpha_rg00_s,
+      store_pixel_mfalpha_mcalpha_00b0,
+      store_pixel_mfalpha_mcalpha_r0b0_s,
+      store_pixel_mfalpha_mcalpha_0gb0_s,
+      store_pixel_mfalpha_mcalpha_rgb0_s,
+      store_pixel_mfalpha_mcalpha_000a,
+      store_pixel_mfalpha_mcalpha_r00a_s,
+      store_pixel_mfalpha_mcalpha_0g0a_s,
+      store_pixel_mfalpha_mcalpha_rg0a_s,
+      store_pixel_mfalpha_mcalpha_00ba,
+      store_pixel_mfalpha_mcalpha_r0ba_s,
+      store_pixel_mfalpha_mcalpha_0gba_s,
+      store_pixel_mfalpha_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_ccolor_zero_0000,
+      store_pixel_ccolor_zero_r000_s,
+      store_pixel_ccolor_zero_0g00_s,
+      store_pixel_ccolor_zero_rg00_s,
+      store_pixel_ccolor_zero_00b0,
+      store_pixel_ccolor_zero_r0b0_s,
+      store_pixel_ccolor_zero_0gb0_s,
+      store_pixel_ccolor_zero_rgb0_s,
+      store_pixel_ccolor_zero_000a,
+      store_pixel_ccolor_zero_r00a_s,
+      store_pixel_ccolor_zero_0g0a_s,
+      store_pixel_ccolor_zero_rg0a_s,
+      store_pixel_ccolor_zero_00ba,
+      store_pixel_ccolor_zero_r0ba_s,
+      store_pixel_ccolor_zero_0gba_s,
+      store_pixel_ccolor_zero_rgba_s,
+    },
+    {
+      store_pixel_ccolor_one_0000,
+      store_pixel_ccolor_one_r000_s,
+      store_pixel_ccolor_one_0g00_s,
+      store_pixel_ccolor_one_rg00_s,
+      store_pixel_ccolor_one_00b0,
+      store_pixel_ccolor_one_r0b0_s,
+      store_pixel_ccolor_one_0gb0_s,
+      store_pixel_ccolor_one_rgb0_s,
+      store_pixel_ccolor_one_000a,
+      store_pixel_ccolor_one_r00a_s,
+      store_pixel_ccolor_one_0g0a_s,
+      store_pixel_ccolor_one_rg0a_s,
+      store_pixel_ccolor_one_00ba,
+      store_pixel_ccolor_one_r0ba_s,
+      store_pixel_ccolor_one_0gba_s,
+      store_pixel_ccolor_one_rgba_s,
+    },
+    {
+      store_pixel_ccolor_icolor_0000,
+      store_pixel_ccolor_icolor_r000_s,
+      store_pixel_ccolor_icolor_0g00_s,
+      store_pixel_ccolor_icolor_rg00_s,
+      store_pixel_ccolor_icolor_00b0,
+      store_pixel_ccolor_icolor_r0b0_s,
+      store_pixel_ccolor_icolor_0gb0_s,
+      store_pixel_ccolor_icolor_rgb0_s,
+      store_pixel_ccolor_icolor_000a,
+      store_pixel_ccolor_icolor_r00a_s,
+      store_pixel_ccolor_icolor_0g0a_s,
+      store_pixel_ccolor_icolor_rg0a_s,
+      store_pixel_ccolor_icolor_00ba,
+      store_pixel_ccolor_icolor_r0ba_s,
+      store_pixel_ccolor_icolor_0gba_s,
+      store_pixel_ccolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_micolor_0000,
+      store_pixel_ccolor_micolor_r000_s,
+      store_pixel_ccolor_micolor_0g00_s,
+      store_pixel_ccolor_micolor_rg00_s,
+      store_pixel_ccolor_micolor_00b0,
+      store_pixel_ccolor_micolor_r0b0_s,
+      store_pixel_ccolor_micolor_0gb0_s,
+      store_pixel_ccolor_micolor_rgb0_s,
+      store_pixel_ccolor_micolor_000a,
+      store_pixel_ccolor_micolor_r00a_s,
+      store_pixel_ccolor_micolor_0g0a_s,
+      store_pixel_ccolor_micolor_rg0a_s,
+      store_pixel_ccolor_micolor_00ba,
+      store_pixel_ccolor_micolor_r0ba_s,
+      store_pixel_ccolor_micolor_0gba_s,
+      store_pixel_ccolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_fcolor_0000,
+      store_pixel_ccolor_fcolor_r000_s,
+      store_pixel_ccolor_fcolor_0g00_s,
+      store_pixel_ccolor_fcolor_rg00_s,
+      store_pixel_ccolor_fcolor_00b0,
+      store_pixel_ccolor_fcolor_r0b0_s,
+      store_pixel_ccolor_fcolor_0gb0_s,
+      store_pixel_ccolor_fcolor_rgb0_s,
+      store_pixel_ccolor_fcolor_000a,
+      store_pixel_ccolor_fcolor_r00a_s,
+      store_pixel_ccolor_fcolor_0g0a_s,
+      store_pixel_ccolor_fcolor_rg0a_s,
+      store_pixel_ccolor_fcolor_00ba,
+      store_pixel_ccolor_fcolor_r0ba_s,
+      store_pixel_ccolor_fcolor_0gba_s,
+      store_pixel_ccolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_mfcolor_0000,
+      store_pixel_ccolor_mfcolor_r000_s,
+      store_pixel_ccolor_mfcolor_0g00_s,
+      store_pixel_ccolor_mfcolor_rg00_s,
+      store_pixel_ccolor_mfcolor_00b0,
+      store_pixel_ccolor_mfcolor_r0b0_s,
+      store_pixel_ccolor_mfcolor_0gb0_s,
+      store_pixel_ccolor_mfcolor_rgb0_s,
+      store_pixel_ccolor_mfcolor_000a,
+      store_pixel_ccolor_mfcolor_r00a_s,
+      store_pixel_ccolor_mfcolor_0g0a_s,
+      store_pixel_ccolor_mfcolor_rg0a_s,
+      store_pixel_ccolor_mfcolor_00ba,
+      store_pixel_ccolor_mfcolor_r0ba_s,
+      store_pixel_ccolor_mfcolor_0gba_s,
+      store_pixel_ccolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_ialpha_0000,
+      store_pixel_ccolor_ialpha_r000_s,
+      store_pixel_ccolor_ialpha_0g00_s,
+      store_pixel_ccolor_ialpha_rg00_s,
+      store_pixel_ccolor_ialpha_00b0,
+      store_pixel_ccolor_ialpha_r0b0_s,
+      store_pixel_ccolor_ialpha_0gb0_s,
+      store_pixel_ccolor_ialpha_rgb0_s,
+      store_pixel_ccolor_ialpha_000a,
+      store_pixel_ccolor_ialpha_r00a_s,
+      store_pixel_ccolor_ialpha_0g0a_s,
+      store_pixel_ccolor_ialpha_rg0a_s,
+      store_pixel_ccolor_ialpha_00ba,
+      store_pixel_ccolor_ialpha_r0ba_s,
+      store_pixel_ccolor_ialpha_0gba_s,
+      store_pixel_ccolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_ccolor_mialpha_0000,
+      store_pixel_ccolor_mialpha_r000_s,
+      store_pixel_ccolor_mialpha_0g00_s,
+      store_pixel_ccolor_mialpha_rg00_s,
+      store_pixel_ccolor_mialpha_00b0,
+      store_pixel_ccolor_mialpha_r0b0_s,
+      store_pixel_ccolor_mialpha_0gb0_s,
+      store_pixel_ccolor_mialpha_rgb0_s,
+      store_pixel_ccolor_mialpha_000a,
+      store_pixel_ccolor_mialpha_r00a_s,
+      store_pixel_ccolor_mialpha_0g0a_s,
+      store_pixel_ccolor_mialpha_rg0a_s,
+      store_pixel_ccolor_mialpha_00ba,
+      store_pixel_ccolor_mialpha_r0ba_s,
+      store_pixel_ccolor_mialpha_0gba_s,
+      store_pixel_ccolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_ccolor_falpha_0000,
+      store_pixel_ccolor_falpha_r000_s,
+      store_pixel_ccolor_falpha_0g00_s,
+      store_pixel_ccolor_falpha_rg00_s,
+      store_pixel_ccolor_falpha_00b0,
+      store_pixel_ccolor_falpha_r0b0_s,
+      store_pixel_ccolor_falpha_0gb0_s,
+      store_pixel_ccolor_falpha_rgb0_s,
+      store_pixel_ccolor_falpha_000a,
+      store_pixel_ccolor_falpha_r00a_s,
+      store_pixel_ccolor_falpha_0g0a_s,
+      store_pixel_ccolor_falpha_rg0a_s,
+      store_pixel_ccolor_falpha_00ba,
+      store_pixel_ccolor_falpha_r0ba_s,
+      store_pixel_ccolor_falpha_0gba_s,
+      store_pixel_ccolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_ccolor_mfalpha_0000,
+      store_pixel_ccolor_mfalpha_r000_s,
+      store_pixel_ccolor_mfalpha_0g00_s,
+      store_pixel_ccolor_mfalpha_rg00_s,
+      store_pixel_ccolor_mfalpha_00b0,
+      store_pixel_ccolor_mfalpha_r0b0_s,
+      store_pixel_ccolor_mfalpha_0gb0_s,
+      store_pixel_ccolor_mfalpha_rgb0_s,
+      store_pixel_ccolor_mfalpha_000a,
+      store_pixel_ccolor_mfalpha_r00a_s,
+      store_pixel_ccolor_mfalpha_0g0a_s,
+      store_pixel_ccolor_mfalpha_rg0a_s,
+      store_pixel_ccolor_mfalpha_00ba,
+      store_pixel_ccolor_mfalpha_r0ba_s,
+      store_pixel_ccolor_mfalpha_0gba_s,
+      store_pixel_ccolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_ccolor_ccolor_0000,
+      store_pixel_ccolor_ccolor_r000_s,
+      store_pixel_ccolor_ccolor_0g00_s,
+      store_pixel_ccolor_ccolor_rg00_s,
+      store_pixel_ccolor_ccolor_00b0,
+      store_pixel_ccolor_ccolor_r0b0_s,
+      store_pixel_ccolor_ccolor_0gb0_s,
+      store_pixel_ccolor_ccolor_rgb0_s,
+      store_pixel_ccolor_ccolor_000a,
+      store_pixel_ccolor_ccolor_r00a_s,
+      store_pixel_ccolor_ccolor_0g0a_s,
+      store_pixel_ccolor_ccolor_rg0a_s,
+      store_pixel_ccolor_ccolor_00ba,
+      store_pixel_ccolor_ccolor_r0ba_s,
+      store_pixel_ccolor_ccolor_0gba_s,
+      store_pixel_ccolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_mccolor_0000,
+      store_pixel_ccolor_mccolor_r000_s,
+      store_pixel_ccolor_mccolor_0g00_s,
+      store_pixel_ccolor_mccolor_rg00_s,
+      store_pixel_ccolor_mccolor_00b0,
+      store_pixel_ccolor_mccolor_r0b0_s,
+      store_pixel_ccolor_mccolor_0gb0_s,
+      store_pixel_ccolor_mccolor_rgb0_s,
+      store_pixel_ccolor_mccolor_000a,
+      store_pixel_ccolor_mccolor_r00a_s,
+      store_pixel_ccolor_mccolor_0g0a_s,
+      store_pixel_ccolor_mccolor_rg0a_s,
+      store_pixel_ccolor_mccolor_00ba,
+      store_pixel_ccolor_mccolor_r0ba_s,
+      store_pixel_ccolor_mccolor_0gba_s,
+      store_pixel_ccolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_ccolor_calpha_0000,
+      store_pixel_ccolor_calpha_r000_s,
+      store_pixel_ccolor_calpha_0g00_s,
+      store_pixel_ccolor_calpha_rg00_s,
+      store_pixel_ccolor_calpha_00b0,
+      store_pixel_ccolor_calpha_r0b0_s,
+      store_pixel_ccolor_calpha_0gb0_s,
+      store_pixel_ccolor_calpha_rgb0_s,
+      store_pixel_ccolor_calpha_000a,
+      store_pixel_ccolor_calpha_r00a_s,
+      store_pixel_ccolor_calpha_0g0a_s,
+      store_pixel_ccolor_calpha_rg0a_s,
+      store_pixel_ccolor_calpha_00ba,
+      store_pixel_ccolor_calpha_r0ba_s,
+      store_pixel_ccolor_calpha_0gba_s,
+      store_pixel_ccolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_ccolor_mcalpha_0000,
+      store_pixel_ccolor_mcalpha_r000_s,
+      store_pixel_ccolor_mcalpha_0g00_s,
+      store_pixel_ccolor_mcalpha_rg00_s,
+      store_pixel_ccolor_mcalpha_00b0,
+      store_pixel_ccolor_mcalpha_r0b0_s,
+      store_pixel_ccolor_mcalpha_0gb0_s,
+      store_pixel_ccolor_mcalpha_rgb0_s,
+      store_pixel_ccolor_mcalpha_000a,
+      store_pixel_ccolor_mcalpha_r00a_s,
+      store_pixel_ccolor_mcalpha_0g0a_s,
+      store_pixel_ccolor_mcalpha_rg0a_s,
+      store_pixel_ccolor_mcalpha_00ba,
+      store_pixel_ccolor_mcalpha_r0ba_s,
+      store_pixel_ccolor_mcalpha_0gba_s,
+      store_pixel_ccolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_mccolor_zero_0000,
+      store_pixel_mccolor_zero_r000_s,
+      store_pixel_mccolor_zero_0g00_s,
+      store_pixel_mccolor_zero_rg00_s,
+      store_pixel_mccolor_zero_00b0,
+      store_pixel_mccolor_zero_r0b0_s,
+      store_pixel_mccolor_zero_0gb0_s,
+      store_pixel_mccolor_zero_rgb0_s,
+      store_pixel_mccolor_zero_000a,
+      store_pixel_mccolor_zero_r00a_s,
+      store_pixel_mccolor_zero_0g0a_s,
+      store_pixel_mccolor_zero_rg0a_s,
+      store_pixel_mccolor_zero_00ba,
+      store_pixel_mccolor_zero_r0ba_s,
+      store_pixel_mccolor_zero_0gba_s,
+      store_pixel_mccolor_zero_rgba_s,
+    },
+    {
+      store_pixel_mccolor_one_0000,
+      store_pixel_mccolor_one_r000_s,
+      store_pixel_mccolor_one_0g00_s,
+      store_pixel_mccolor_one_rg00_s,
+      store_pixel_mccolor_one_00b0,
+      store_pixel_mccolor_one_r0b0_s,
+      store_pixel_mccolor_one_0gb0_s,
+      store_pixel_mccolor_one_rgb0_s,
+      store_pixel_mccolor_one_000a,
+      store_pixel_mccolor_one_r00a_s,
+      store_pixel_mccolor_one_0g0a_s,
+      store_pixel_mccolor_one_rg0a_s,
+      store_pixel_mccolor_one_00ba,
+      store_pixel_mccolor_one_r0ba_s,
+      store_pixel_mccolor_one_0gba_s,
+      store_pixel_mccolor_one_rgba_s,
+    },
+    {
+      store_pixel_mccolor_icolor_0000,
+      store_pixel_mccolor_icolor_r000_s,
+      store_pixel_mccolor_icolor_0g00_s,
+      store_pixel_mccolor_icolor_rg00_s,
+      store_pixel_mccolor_icolor_00b0,
+      store_pixel_mccolor_icolor_r0b0_s,
+      store_pixel_mccolor_icolor_0gb0_s,
+      store_pixel_mccolor_icolor_rgb0_s,
+      store_pixel_mccolor_icolor_000a,
+      store_pixel_mccolor_icolor_r00a_s,
+      store_pixel_mccolor_icolor_0g0a_s,
+      store_pixel_mccolor_icolor_rg0a_s,
+      store_pixel_mccolor_icolor_00ba,
+      store_pixel_mccolor_icolor_r0ba_s,
+      store_pixel_mccolor_icolor_0gba_s,
+      store_pixel_mccolor_icolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_micolor_0000,
+      store_pixel_mccolor_micolor_r000_s,
+      store_pixel_mccolor_micolor_0g00_s,
+      store_pixel_mccolor_micolor_rg00_s,
+      store_pixel_mccolor_micolor_00b0,
+      store_pixel_mccolor_micolor_r0b0_s,
+      store_pixel_mccolor_micolor_0gb0_s,
+      store_pixel_mccolor_micolor_rgb0_s,
+      store_pixel_mccolor_micolor_000a,
+      store_pixel_mccolor_micolor_r00a_s,
+      store_pixel_mccolor_micolor_0g0a_s,
+      store_pixel_mccolor_micolor_rg0a_s,
+      store_pixel_mccolor_micolor_00ba,
+      store_pixel_mccolor_micolor_r0ba_s,
+      store_pixel_mccolor_micolor_0gba_s,
+      store_pixel_mccolor_micolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_fcolor_0000,
+      store_pixel_mccolor_fcolor_r000_s,
+      store_pixel_mccolor_fcolor_0g00_s,
+      store_pixel_mccolor_fcolor_rg00_s,
+      store_pixel_mccolor_fcolor_00b0,
+      store_pixel_mccolor_fcolor_r0b0_s,
+      store_pixel_mccolor_fcolor_0gb0_s,
+      store_pixel_mccolor_fcolor_rgb0_s,
+      store_pixel_mccolor_fcolor_000a,
+      store_pixel_mccolor_fcolor_r00a_s,
+      store_pixel_mccolor_fcolor_0g0a_s,
+      store_pixel_mccolor_fcolor_rg0a_s,
+      store_pixel_mccolor_fcolor_00ba,
+      store_pixel_mccolor_fcolor_r0ba_s,
+      store_pixel_mccolor_fcolor_0gba_s,
+      store_pixel_mccolor_fcolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_mfcolor_0000,
+      store_pixel_mccolor_mfcolor_r000_s,
+      store_pixel_mccolor_mfcolor_0g00_s,
+      store_pixel_mccolor_mfcolor_rg00_s,
+      store_pixel_mccolor_mfcolor_00b0,
+      store_pixel_mccolor_mfcolor_r0b0_s,
+      store_pixel_mccolor_mfcolor_0gb0_s,
+      store_pixel_mccolor_mfcolor_rgb0_s,
+      store_pixel_mccolor_mfcolor_000a,
+      store_pixel_mccolor_mfcolor_r00a_s,
+      store_pixel_mccolor_mfcolor_0g0a_s,
+      store_pixel_mccolor_mfcolor_rg0a_s,
+      store_pixel_mccolor_mfcolor_00ba,
+      store_pixel_mccolor_mfcolor_r0ba_s,
+      store_pixel_mccolor_mfcolor_0gba_s,
+      store_pixel_mccolor_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_ialpha_0000,
+      store_pixel_mccolor_ialpha_r000_s,
+      store_pixel_mccolor_ialpha_0g00_s,
+      store_pixel_mccolor_ialpha_rg00_s,
+      store_pixel_mccolor_ialpha_00b0,
+      store_pixel_mccolor_ialpha_r0b0_s,
+      store_pixel_mccolor_ialpha_0gb0_s,
+      store_pixel_mccolor_ialpha_rgb0_s,
+      store_pixel_mccolor_ialpha_000a,
+      store_pixel_mccolor_ialpha_r00a_s,
+      store_pixel_mccolor_ialpha_0g0a_s,
+      store_pixel_mccolor_ialpha_rg0a_s,
+      store_pixel_mccolor_ialpha_00ba,
+      store_pixel_mccolor_ialpha_r0ba_s,
+      store_pixel_mccolor_ialpha_0gba_s,
+      store_pixel_mccolor_ialpha_rgba_s,
+    },
+    {
+      store_pixel_mccolor_mialpha_0000,
+      store_pixel_mccolor_mialpha_r000_s,
+      store_pixel_mccolor_mialpha_0g00_s,
+      store_pixel_mccolor_mialpha_rg00_s,
+      store_pixel_mccolor_mialpha_00b0,
+      store_pixel_mccolor_mialpha_r0b0_s,
+      store_pixel_mccolor_mialpha_0gb0_s,
+      store_pixel_mccolor_mialpha_rgb0_s,
+      store_pixel_mccolor_mialpha_000a,
+      store_pixel_mccolor_mialpha_r00a_s,
+      store_pixel_mccolor_mialpha_0g0a_s,
+      store_pixel_mccolor_mialpha_rg0a_s,
+      store_pixel_mccolor_mialpha_00ba,
+      store_pixel_mccolor_mialpha_r0ba_s,
+      store_pixel_mccolor_mialpha_0gba_s,
+      store_pixel_mccolor_mialpha_rgba_s,
+    },
+    {
+      store_pixel_mccolor_falpha_0000,
+      store_pixel_mccolor_falpha_r000_s,
+      store_pixel_mccolor_falpha_0g00_s,
+      store_pixel_mccolor_falpha_rg00_s,
+      store_pixel_mccolor_falpha_00b0,
+      store_pixel_mccolor_falpha_r0b0_s,
+      store_pixel_mccolor_falpha_0gb0_s,
+      store_pixel_mccolor_falpha_rgb0_s,
+      store_pixel_mccolor_falpha_000a,
+      store_pixel_mccolor_falpha_r00a_s,
+      store_pixel_mccolor_falpha_0g0a_s,
+      store_pixel_mccolor_falpha_rg0a_s,
+      store_pixel_mccolor_falpha_00ba,
+      store_pixel_mccolor_falpha_r0ba_s,
+      store_pixel_mccolor_falpha_0gba_s,
+      store_pixel_mccolor_falpha_rgba_s,
+    },
+    {
+      store_pixel_mccolor_mfalpha_0000,
+      store_pixel_mccolor_mfalpha_r000_s,
+      store_pixel_mccolor_mfalpha_0g00_s,
+      store_pixel_mccolor_mfalpha_rg00_s,
+      store_pixel_mccolor_mfalpha_00b0,
+      store_pixel_mccolor_mfalpha_r0b0_s,
+      store_pixel_mccolor_mfalpha_0gb0_s,
+      store_pixel_mccolor_mfalpha_rgb0_s,
+      store_pixel_mccolor_mfalpha_000a,
+      store_pixel_mccolor_mfalpha_r00a_s,
+      store_pixel_mccolor_mfalpha_0g0a_s,
+      store_pixel_mccolor_mfalpha_rg0a_s,
+      store_pixel_mccolor_mfalpha_00ba,
+      store_pixel_mccolor_mfalpha_r0ba_s,
+      store_pixel_mccolor_mfalpha_0gba_s,
+      store_pixel_mccolor_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_mccolor_ccolor_0000,
+      store_pixel_mccolor_ccolor_r000_s,
+      store_pixel_mccolor_ccolor_0g00_s,
+      store_pixel_mccolor_ccolor_rg00_s,
+      store_pixel_mccolor_ccolor_00b0,
+      store_pixel_mccolor_ccolor_r0b0_s,
+      store_pixel_mccolor_ccolor_0gb0_s,
+      store_pixel_mccolor_ccolor_rgb0_s,
+      store_pixel_mccolor_ccolor_000a,
+      store_pixel_mccolor_ccolor_r00a_s,
+      store_pixel_mccolor_ccolor_0g0a_s,
+      store_pixel_mccolor_ccolor_rg0a_s,
+      store_pixel_mccolor_ccolor_00ba,
+      store_pixel_mccolor_ccolor_r0ba_s,
+      store_pixel_mccolor_ccolor_0gba_s,
+      store_pixel_mccolor_ccolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_mccolor_0000,
+      store_pixel_mccolor_mccolor_r000_s,
+      store_pixel_mccolor_mccolor_0g00_s,
+      store_pixel_mccolor_mccolor_rg00_s,
+      store_pixel_mccolor_mccolor_00b0,
+      store_pixel_mccolor_mccolor_r0b0_s,
+      store_pixel_mccolor_mccolor_0gb0_s,
+      store_pixel_mccolor_mccolor_rgb0_s,
+      store_pixel_mccolor_mccolor_000a,
+      store_pixel_mccolor_mccolor_r00a_s,
+      store_pixel_mccolor_mccolor_0g0a_s,
+      store_pixel_mccolor_mccolor_rg0a_s,
+      store_pixel_mccolor_mccolor_00ba,
+      store_pixel_mccolor_mccolor_r0ba_s,
+      store_pixel_mccolor_mccolor_0gba_s,
+      store_pixel_mccolor_mccolor_rgba_s,
+    },
+    {
+      store_pixel_mccolor_calpha_0000,
+      store_pixel_mccolor_calpha_r000_s,
+      store_pixel_mccolor_calpha_0g00_s,
+      store_pixel_mccolor_calpha_rg00_s,
+      store_pixel_mccolor_calpha_00b0,
+      store_pixel_mccolor_calpha_r0b0_s,
+      store_pixel_mccolor_calpha_0gb0_s,
+      store_pixel_mccolor_calpha_rgb0_s,
+      store_pixel_mccolor_calpha_000a,
+      store_pixel_mccolor_calpha_r00a_s,
+      store_pixel_mccolor_calpha_0g0a_s,
+      store_pixel_mccolor_calpha_rg0a_s,
+      store_pixel_mccolor_calpha_00ba,
+      store_pixel_mccolor_calpha_r0ba_s,
+      store_pixel_mccolor_calpha_0gba_s,
+      store_pixel_mccolor_calpha_rgba_s,
+    },
+    {
+      store_pixel_mccolor_mcalpha_0000,
+      store_pixel_mccolor_mcalpha_r000_s,
+      store_pixel_mccolor_mcalpha_0g00_s,
+      store_pixel_mccolor_mcalpha_rg00_s,
+      store_pixel_mccolor_mcalpha_00b0,
+      store_pixel_mccolor_mcalpha_r0b0_s,
+      store_pixel_mccolor_mcalpha_0gb0_s,
+      store_pixel_mccolor_mcalpha_rgb0_s,
+      store_pixel_mccolor_mcalpha_000a,
+      store_pixel_mccolor_mcalpha_r00a_s,
+      store_pixel_mccolor_mcalpha_0g0a_s,
+      store_pixel_mccolor_mcalpha_rg0a_s,
+      store_pixel_mccolor_mcalpha_00ba,
+      store_pixel_mccolor_mcalpha_r0ba_s,
+      store_pixel_mccolor_mcalpha_0gba_s,
+      store_pixel_mccolor_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_calpha_zero_0000,
+      store_pixel_calpha_zero_r000_s,
+      store_pixel_calpha_zero_0g00_s,
+      store_pixel_calpha_zero_rg00_s,
+      store_pixel_calpha_zero_00b0,
+      store_pixel_calpha_zero_r0b0_s,
+      store_pixel_calpha_zero_0gb0_s,
+      store_pixel_calpha_zero_rgb0_s,
+      store_pixel_calpha_zero_000a,
+      store_pixel_calpha_zero_r00a_s,
+      store_pixel_calpha_zero_0g0a_s,
+      store_pixel_calpha_zero_rg0a_s,
+      store_pixel_calpha_zero_00ba,
+      store_pixel_calpha_zero_r0ba_s,
+      store_pixel_calpha_zero_0gba_s,
+      store_pixel_calpha_zero_rgba_s,
+    },
+    {
+      store_pixel_calpha_one_0000,
+      store_pixel_calpha_one_r000_s,
+      store_pixel_calpha_one_0g00_s,
+      store_pixel_calpha_one_rg00_s,
+      store_pixel_calpha_one_00b0,
+      store_pixel_calpha_one_r0b0_s,
+      store_pixel_calpha_one_0gb0_s,
+      store_pixel_calpha_one_rgb0_s,
+      store_pixel_calpha_one_000a,
+      store_pixel_calpha_one_r00a_s,
+      store_pixel_calpha_one_0g0a_s,
+      store_pixel_calpha_one_rg0a_s,
+      store_pixel_calpha_one_00ba,
+      store_pixel_calpha_one_r0ba_s,
+      store_pixel_calpha_one_0gba_s,
+      store_pixel_calpha_one_rgba_s,
+    },
+    {
+      store_pixel_calpha_icolor_0000,
+      store_pixel_calpha_icolor_r000_s,
+      store_pixel_calpha_icolor_0g00_s,
+      store_pixel_calpha_icolor_rg00_s,
+      store_pixel_calpha_icolor_00b0,
+      store_pixel_calpha_icolor_r0b0_s,
+      store_pixel_calpha_icolor_0gb0_s,
+      store_pixel_calpha_icolor_rgb0_s,
+      store_pixel_calpha_icolor_000a,
+      store_pixel_calpha_icolor_r00a_s,
+      store_pixel_calpha_icolor_0g0a_s,
+      store_pixel_calpha_icolor_rg0a_s,
+      store_pixel_calpha_icolor_00ba,
+      store_pixel_calpha_icolor_r0ba_s,
+      store_pixel_calpha_icolor_0gba_s,
+      store_pixel_calpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_micolor_0000,
+      store_pixel_calpha_micolor_r000_s,
+      store_pixel_calpha_micolor_0g00_s,
+      store_pixel_calpha_micolor_rg00_s,
+      store_pixel_calpha_micolor_00b0,
+      store_pixel_calpha_micolor_r0b0_s,
+      store_pixel_calpha_micolor_0gb0_s,
+      store_pixel_calpha_micolor_rgb0_s,
+      store_pixel_calpha_micolor_000a,
+      store_pixel_calpha_micolor_r00a_s,
+      store_pixel_calpha_micolor_0g0a_s,
+      store_pixel_calpha_micolor_rg0a_s,
+      store_pixel_calpha_micolor_00ba,
+      store_pixel_calpha_micolor_r0ba_s,
+      store_pixel_calpha_micolor_0gba_s,
+      store_pixel_calpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_fcolor_0000,
+      store_pixel_calpha_fcolor_r000_s,
+      store_pixel_calpha_fcolor_0g00_s,
+      store_pixel_calpha_fcolor_rg00_s,
+      store_pixel_calpha_fcolor_00b0,
+      store_pixel_calpha_fcolor_r0b0_s,
+      store_pixel_calpha_fcolor_0gb0_s,
+      store_pixel_calpha_fcolor_rgb0_s,
+      store_pixel_calpha_fcolor_000a,
+      store_pixel_calpha_fcolor_r00a_s,
+      store_pixel_calpha_fcolor_0g0a_s,
+      store_pixel_calpha_fcolor_rg0a_s,
+      store_pixel_calpha_fcolor_00ba,
+      store_pixel_calpha_fcolor_r0ba_s,
+      store_pixel_calpha_fcolor_0gba_s,
+      store_pixel_calpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_mfcolor_0000,
+      store_pixel_calpha_mfcolor_r000_s,
+      store_pixel_calpha_mfcolor_0g00_s,
+      store_pixel_calpha_mfcolor_rg00_s,
+      store_pixel_calpha_mfcolor_00b0,
+      store_pixel_calpha_mfcolor_r0b0_s,
+      store_pixel_calpha_mfcolor_0gb0_s,
+      store_pixel_calpha_mfcolor_rgb0_s,
+      store_pixel_calpha_mfcolor_000a,
+      store_pixel_calpha_mfcolor_r00a_s,
+      store_pixel_calpha_mfcolor_0g0a_s,
+      store_pixel_calpha_mfcolor_rg0a_s,
+      store_pixel_calpha_mfcolor_00ba,
+      store_pixel_calpha_mfcolor_r0ba_s,
+      store_pixel_calpha_mfcolor_0gba_s,
+      store_pixel_calpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_ialpha_0000,
+      store_pixel_calpha_ialpha_r000_s,
+      store_pixel_calpha_ialpha_0g00_s,
+      store_pixel_calpha_ialpha_rg00_s,
+      store_pixel_calpha_ialpha_00b0,
+      store_pixel_calpha_ialpha_r0b0_s,
+      store_pixel_calpha_ialpha_0gb0_s,
+      store_pixel_calpha_ialpha_rgb0_s,
+      store_pixel_calpha_ialpha_000a,
+      store_pixel_calpha_ialpha_r00a_s,
+      store_pixel_calpha_ialpha_0g0a_s,
+      store_pixel_calpha_ialpha_rg0a_s,
+      store_pixel_calpha_ialpha_00ba,
+      store_pixel_calpha_ialpha_r0ba_s,
+      store_pixel_calpha_ialpha_0gba_s,
+      store_pixel_calpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_calpha_mialpha_0000,
+      store_pixel_calpha_mialpha_r000_s,
+      store_pixel_calpha_mialpha_0g00_s,
+      store_pixel_calpha_mialpha_rg00_s,
+      store_pixel_calpha_mialpha_00b0,
+      store_pixel_calpha_mialpha_r0b0_s,
+      store_pixel_calpha_mialpha_0gb0_s,
+      store_pixel_calpha_mialpha_rgb0_s,
+      store_pixel_calpha_mialpha_000a,
+      store_pixel_calpha_mialpha_r00a_s,
+      store_pixel_calpha_mialpha_0g0a_s,
+      store_pixel_calpha_mialpha_rg0a_s,
+      store_pixel_calpha_mialpha_00ba,
+      store_pixel_calpha_mialpha_r0ba_s,
+      store_pixel_calpha_mialpha_0gba_s,
+      store_pixel_calpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_calpha_falpha_0000,
+      store_pixel_calpha_falpha_r000_s,
+      store_pixel_calpha_falpha_0g00_s,
+      store_pixel_calpha_falpha_rg00_s,
+      store_pixel_calpha_falpha_00b0,
+      store_pixel_calpha_falpha_r0b0_s,
+      store_pixel_calpha_falpha_0gb0_s,
+      store_pixel_calpha_falpha_rgb0_s,
+      store_pixel_calpha_falpha_000a,
+      store_pixel_calpha_falpha_r00a_s,
+      store_pixel_calpha_falpha_0g0a_s,
+      store_pixel_calpha_falpha_rg0a_s,
+      store_pixel_calpha_falpha_00ba,
+      store_pixel_calpha_falpha_r0ba_s,
+      store_pixel_calpha_falpha_0gba_s,
+      store_pixel_calpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_calpha_mfalpha_0000,
+      store_pixel_calpha_mfalpha_r000_s,
+      store_pixel_calpha_mfalpha_0g00_s,
+      store_pixel_calpha_mfalpha_rg00_s,
+      store_pixel_calpha_mfalpha_00b0,
+      store_pixel_calpha_mfalpha_r0b0_s,
+      store_pixel_calpha_mfalpha_0gb0_s,
+      store_pixel_calpha_mfalpha_rgb0_s,
+      store_pixel_calpha_mfalpha_000a,
+      store_pixel_calpha_mfalpha_r00a_s,
+      store_pixel_calpha_mfalpha_0g0a_s,
+      store_pixel_calpha_mfalpha_rg0a_s,
+      store_pixel_calpha_mfalpha_00ba,
+      store_pixel_calpha_mfalpha_r0ba_s,
+      store_pixel_calpha_mfalpha_0gba_s,
+      store_pixel_calpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_calpha_ccolor_0000,
+      store_pixel_calpha_ccolor_r000_s,
+      store_pixel_calpha_ccolor_0g00_s,
+      store_pixel_calpha_ccolor_rg00_s,
+      store_pixel_calpha_ccolor_00b0,
+      store_pixel_calpha_ccolor_r0b0_s,
+      store_pixel_calpha_ccolor_0gb0_s,
+      store_pixel_calpha_ccolor_rgb0_s,
+      store_pixel_calpha_ccolor_000a,
+      store_pixel_calpha_ccolor_r00a_s,
+      store_pixel_calpha_ccolor_0g0a_s,
+      store_pixel_calpha_ccolor_rg0a_s,
+      store_pixel_calpha_ccolor_00ba,
+      store_pixel_calpha_ccolor_r0ba_s,
+      store_pixel_calpha_ccolor_0gba_s,
+      store_pixel_calpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_mccolor_0000,
+      store_pixel_calpha_mccolor_r000_s,
+      store_pixel_calpha_mccolor_0g00_s,
+      store_pixel_calpha_mccolor_rg00_s,
+      store_pixel_calpha_mccolor_00b0,
+      store_pixel_calpha_mccolor_r0b0_s,
+      store_pixel_calpha_mccolor_0gb0_s,
+      store_pixel_calpha_mccolor_rgb0_s,
+      store_pixel_calpha_mccolor_000a,
+      store_pixel_calpha_mccolor_r00a_s,
+      store_pixel_calpha_mccolor_0g0a_s,
+      store_pixel_calpha_mccolor_rg0a_s,
+      store_pixel_calpha_mccolor_00ba,
+      store_pixel_calpha_mccolor_r0ba_s,
+      store_pixel_calpha_mccolor_0gba_s,
+      store_pixel_calpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_calpha_calpha_0000,
+      store_pixel_calpha_calpha_r000_s,
+      store_pixel_calpha_calpha_0g00_s,
+      store_pixel_calpha_calpha_rg00_s,
+      store_pixel_calpha_calpha_00b0,
+      store_pixel_calpha_calpha_r0b0_s,
+      store_pixel_calpha_calpha_0gb0_s,
+      store_pixel_calpha_calpha_rgb0_s,
+      store_pixel_calpha_calpha_000a,
+      store_pixel_calpha_calpha_r00a_s,
+      store_pixel_calpha_calpha_0g0a_s,
+      store_pixel_calpha_calpha_rg0a_s,
+      store_pixel_calpha_calpha_00ba,
+      store_pixel_calpha_calpha_r0ba_s,
+      store_pixel_calpha_calpha_0gba_s,
+      store_pixel_calpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_calpha_mcalpha_0000,
+      store_pixel_calpha_mcalpha_r000_s,
+      store_pixel_calpha_mcalpha_0g00_s,
+      store_pixel_calpha_mcalpha_rg00_s,
+      store_pixel_calpha_mcalpha_00b0,
+      store_pixel_calpha_mcalpha_r0b0_s,
+      store_pixel_calpha_mcalpha_0gb0_s,
+      store_pixel_calpha_mcalpha_rgb0_s,
+      store_pixel_calpha_mcalpha_000a,
+      store_pixel_calpha_mcalpha_r00a_s,
+      store_pixel_calpha_mcalpha_0g0a_s,
+      store_pixel_calpha_mcalpha_rg0a_s,
+      store_pixel_calpha_mcalpha_00ba,
+      store_pixel_calpha_mcalpha_r0ba_s,
+      store_pixel_calpha_mcalpha_0gba_s,
+      store_pixel_calpha_mcalpha_rgba_s,
+    },
+  },
+  {
+    {
+      store_pixel_mcalpha_zero_0000,
+      store_pixel_mcalpha_zero_r000_s,
+      store_pixel_mcalpha_zero_0g00_s,
+      store_pixel_mcalpha_zero_rg00_s,
+      store_pixel_mcalpha_zero_00b0,
+      store_pixel_mcalpha_zero_r0b0_s,
+      store_pixel_mcalpha_zero_0gb0_s,
+      store_pixel_mcalpha_zero_rgb0_s,
+      store_pixel_mcalpha_zero_000a,
+      store_pixel_mcalpha_zero_r00a_s,
+      store_pixel_mcalpha_zero_0g0a_s,
+      store_pixel_mcalpha_zero_rg0a_s,
+      store_pixel_mcalpha_zero_00ba,
+      store_pixel_mcalpha_zero_r0ba_s,
+      store_pixel_mcalpha_zero_0gba_s,
+      store_pixel_mcalpha_zero_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_one_0000,
+      store_pixel_mcalpha_one_r000_s,
+      store_pixel_mcalpha_one_0g00_s,
+      store_pixel_mcalpha_one_rg00_s,
+      store_pixel_mcalpha_one_00b0,
+      store_pixel_mcalpha_one_r0b0_s,
+      store_pixel_mcalpha_one_0gb0_s,
+      store_pixel_mcalpha_one_rgb0_s,
+      store_pixel_mcalpha_one_000a,
+      store_pixel_mcalpha_one_r00a_s,
+      store_pixel_mcalpha_one_0g0a_s,
+      store_pixel_mcalpha_one_rg0a_s,
+      store_pixel_mcalpha_one_00ba,
+      store_pixel_mcalpha_one_r0ba_s,
+      store_pixel_mcalpha_one_0gba_s,
+      store_pixel_mcalpha_one_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_icolor_0000,
+      store_pixel_mcalpha_icolor_r000_s,
+      store_pixel_mcalpha_icolor_0g00_s,
+      store_pixel_mcalpha_icolor_rg00_s,
+      store_pixel_mcalpha_icolor_00b0,
+      store_pixel_mcalpha_icolor_r0b0_s,
+      store_pixel_mcalpha_icolor_0gb0_s,
+      store_pixel_mcalpha_icolor_rgb0_s,
+      store_pixel_mcalpha_icolor_000a,
+      store_pixel_mcalpha_icolor_r00a_s,
+      store_pixel_mcalpha_icolor_0g0a_s,
+      store_pixel_mcalpha_icolor_rg0a_s,
+      store_pixel_mcalpha_icolor_00ba,
+      store_pixel_mcalpha_icolor_r0ba_s,
+      store_pixel_mcalpha_icolor_0gba_s,
+      store_pixel_mcalpha_icolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_micolor_0000,
+      store_pixel_mcalpha_micolor_r000_s,
+      store_pixel_mcalpha_micolor_0g00_s,
+      store_pixel_mcalpha_micolor_rg00_s,
+      store_pixel_mcalpha_micolor_00b0,
+      store_pixel_mcalpha_micolor_r0b0_s,
+      store_pixel_mcalpha_micolor_0gb0_s,
+      store_pixel_mcalpha_micolor_rgb0_s,
+      store_pixel_mcalpha_micolor_000a,
+      store_pixel_mcalpha_micolor_r00a_s,
+      store_pixel_mcalpha_micolor_0g0a_s,
+      store_pixel_mcalpha_micolor_rg0a_s,
+      store_pixel_mcalpha_micolor_00ba,
+      store_pixel_mcalpha_micolor_r0ba_s,
+      store_pixel_mcalpha_micolor_0gba_s,
+      store_pixel_mcalpha_micolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_fcolor_0000,
+      store_pixel_mcalpha_fcolor_r000_s,
+      store_pixel_mcalpha_fcolor_0g00_s,
+      store_pixel_mcalpha_fcolor_rg00_s,
+      store_pixel_mcalpha_fcolor_00b0,
+      store_pixel_mcalpha_fcolor_r0b0_s,
+      store_pixel_mcalpha_fcolor_0gb0_s,
+      store_pixel_mcalpha_fcolor_rgb0_s,
+      store_pixel_mcalpha_fcolor_000a,
+      store_pixel_mcalpha_fcolor_r00a_s,
+      store_pixel_mcalpha_fcolor_0g0a_s,
+      store_pixel_mcalpha_fcolor_rg0a_s,
+      store_pixel_mcalpha_fcolor_00ba,
+      store_pixel_mcalpha_fcolor_r0ba_s,
+      store_pixel_mcalpha_fcolor_0gba_s,
+      store_pixel_mcalpha_fcolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_mfcolor_0000,
+      store_pixel_mcalpha_mfcolor_r000_s,
+      store_pixel_mcalpha_mfcolor_0g00_s,
+      store_pixel_mcalpha_mfcolor_rg00_s,
+      store_pixel_mcalpha_mfcolor_00b0,
+      store_pixel_mcalpha_mfcolor_r0b0_s,
+      store_pixel_mcalpha_mfcolor_0gb0_s,
+      store_pixel_mcalpha_mfcolor_rgb0_s,
+      store_pixel_mcalpha_mfcolor_000a,
+      store_pixel_mcalpha_mfcolor_r00a_s,
+      store_pixel_mcalpha_mfcolor_0g0a_s,
+      store_pixel_mcalpha_mfcolor_rg0a_s,
+      store_pixel_mcalpha_mfcolor_00ba,
+      store_pixel_mcalpha_mfcolor_r0ba_s,
+      store_pixel_mcalpha_mfcolor_0gba_s,
+      store_pixel_mcalpha_mfcolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_ialpha_0000,
+      store_pixel_mcalpha_ialpha_r000_s,
+      store_pixel_mcalpha_ialpha_0g00_s,
+      store_pixel_mcalpha_ialpha_rg00_s,
+      store_pixel_mcalpha_ialpha_00b0,
+      store_pixel_mcalpha_ialpha_r0b0_s,
+      store_pixel_mcalpha_ialpha_0gb0_s,
+      store_pixel_mcalpha_ialpha_rgb0_s,
+      store_pixel_mcalpha_ialpha_000a,
+      store_pixel_mcalpha_ialpha_r00a_s,
+      store_pixel_mcalpha_ialpha_0g0a_s,
+      store_pixel_mcalpha_ialpha_rg0a_s,
+      store_pixel_mcalpha_ialpha_00ba,
+      store_pixel_mcalpha_ialpha_r0ba_s,
+      store_pixel_mcalpha_ialpha_0gba_s,
+      store_pixel_mcalpha_ialpha_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_mialpha_0000,
+      store_pixel_mcalpha_mialpha_r000_s,
+      store_pixel_mcalpha_mialpha_0g00_s,
+      store_pixel_mcalpha_mialpha_rg00_s,
+      store_pixel_mcalpha_mialpha_00b0,
+      store_pixel_mcalpha_mialpha_r0b0_s,
+      store_pixel_mcalpha_mialpha_0gb0_s,
+      store_pixel_mcalpha_mialpha_rgb0_s,
+      store_pixel_mcalpha_mialpha_000a,
+      store_pixel_mcalpha_mialpha_r00a_s,
+      store_pixel_mcalpha_mialpha_0g0a_s,
+      store_pixel_mcalpha_mialpha_rg0a_s,
+      store_pixel_mcalpha_mialpha_00ba,
+      store_pixel_mcalpha_mialpha_r0ba_s,
+      store_pixel_mcalpha_mialpha_0gba_s,
+      store_pixel_mcalpha_mialpha_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_falpha_0000,
+      store_pixel_mcalpha_falpha_r000_s,
+      store_pixel_mcalpha_falpha_0g00_s,
+      store_pixel_mcalpha_falpha_rg00_s,
+      store_pixel_mcalpha_falpha_00b0,
+      store_pixel_mcalpha_falpha_r0b0_s,
+      store_pixel_mcalpha_falpha_0gb0_s,
+      store_pixel_mcalpha_falpha_rgb0_s,
+      store_pixel_mcalpha_falpha_000a,
+      store_pixel_mcalpha_falpha_r00a_s,
+      store_pixel_mcalpha_falpha_0g0a_s,
+      store_pixel_mcalpha_falpha_rg0a_s,
+      store_pixel_mcalpha_falpha_00ba,
+      store_pixel_mcalpha_falpha_r0ba_s,
+      store_pixel_mcalpha_falpha_0gba_s,
+      store_pixel_mcalpha_falpha_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_mfalpha_0000,
+      store_pixel_mcalpha_mfalpha_r000_s,
+      store_pixel_mcalpha_mfalpha_0g00_s,
+      store_pixel_mcalpha_mfalpha_rg00_s,
+      store_pixel_mcalpha_mfalpha_00b0,
+      store_pixel_mcalpha_mfalpha_r0b0_s,
+      store_pixel_mcalpha_mfalpha_0gb0_s,
+      store_pixel_mcalpha_mfalpha_rgb0_s,
+      store_pixel_mcalpha_mfalpha_000a,
+      store_pixel_mcalpha_mfalpha_r00a_s,
+      store_pixel_mcalpha_mfalpha_0g0a_s,
+      store_pixel_mcalpha_mfalpha_rg0a_s,
+      store_pixel_mcalpha_mfalpha_00ba,
+      store_pixel_mcalpha_mfalpha_r0ba_s,
+      store_pixel_mcalpha_mfalpha_0gba_s,
+      store_pixel_mcalpha_mfalpha_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_ccolor_0000,
+      store_pixel_mcalpha_ccolor_r000_s,
+      store_pixel_mcalpha_ccolor_0g00_s,
+      store_pixel_mcalpha_ccolor_rg00_s,
+      store_pixel_mcalpha_ccolor_00b0,
+      store_pixel_mcalpha_ccolor_r0b0_s,
+      store_pixel_mcalpha_ccolor_0gb0_s,
+      store_pixel_mcalpha_ccolor_rgb0_s,
+      store_pixel_mcalpha_ccolor_000a,
+      store_pixel_mcalpha_ccolor_r00a_s,
+      store_pixel_mcalpha_ccolor_0g0a_s,
+      store_pixel_mcalpha_ccolor_rg0a_s,
+      store_pixel_mcalpha_ccolor_00ba,
+      store_pixel_mcalpha_ccolor_r0ba_s,
+      store_pixel_mcalpha_ccolor_0gba_s,
+      store_pixel_mcalpha_ccolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_mccolor_0000,
+      store_pixel_mcalpha_mccolor_r000_s,
+      store_pixel_mcalpha_mccolor_0g00_s,
+      store_pixel_mcalpha_mccolor_rg00_s,
+      store_pixel_mcalpha_mccolor_00b0,
+      store_pixel_mcalpha_mccolor_r0b0_s,
+      store_pixel_mcalpha_mccolor_0gb0_s,
+      store_pixel_mcalpha_mccolor_rgb0_s,
+      store_pixel_mcalpha_mccolor_000a,
+      store_pixel_mcalpha_mccolor_r00a_s,
+      store_pixel_mcalpha_mccolor_0g0a_s,
+      store_pixel_mcalpha_mccolor_rg0a_s,
+      store_pixel_mcalpha_mccolor_00ba,
+      store_pixel_mcalpha_mccolor_r0ba_s,
+      store_pixel_mcalpha_mccolor_0gba_s,
+      store_pixel_mcalpha_mccolor_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_calpha_0000,
+      store_pixel_mcalpha_calpha_r000_s,
+      store_pixel_mcalpha_calpha_0g00_s,
+      store_pixel_mcalpha_calpha_rg00_s,
+      store_pixel_mcalpha_calpha_00b0,
+      store_pixel_mcalpha_calpha_r0b0_s,
+      store_pixel_mcalpha_calpha_0gb0_s,
+      store_pixel_mcalpha_calpha_rgb0_s,
+      store_pixel_mcalpha_calpha_000a,
+      store_pixel_mcalpha_calpha_r00a_s,
+      store_pixel_mcalpha_calpha_0g0a_s,
+      store_pixel_mcalpha_calpha_rg0a_s,
+      store_pixel_mcalpha_calpha_00ba,
+      store_pixel_mcalpha_calpha_r0ba_s,
+      store_pixel_mcalpha_calpha_0gba_s,
+      store_pixel_mcalpha_calpha_rgba_s,
+    },
+    {
+      store_pixel_mcalpha_mcalpha_0000,
+      store_pixel_mcalpha_mcalpha_r000_s,
+      store_pixel_mcalpha_mcalpha_0g00_s,
+      store_pixel_mcalpha_mcalpha_rg00_s,
+      store_pixel_mcalpha_mcalpha_00b0,
+      store_pixel_mcalpha_mcalpha_r0b0_s,
+      store_pixel_mcalpha_mcalpha_0gb0_s,
+      store_pixel_mcalpha_mcalpha_rgb0_s,
+      store_pixel_mcalpha_mcalpha_000a,
+      store_pixel_mcalpha_mcalpha_r00a_s,
+      store_pixel_mcalpha_mcalpha_0g0a_s,
+      store_pixel_mcalpha_mcalpha_rg0a_s,
+      store_pixel_mcalpha_mcalpha_00ba,
+      store_pixel_mcalpha_mcalpha_r0ba_s,
+      store_pixel_mcalpha_mcalpha_0gba_s,
+      store_pixel_mcalpha_mcalpha_rgba_s,
     },
   },
 };

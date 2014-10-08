@@ -226,31 +226,35 @@ clear(DrawableRegion *clearable) {
       (!clearable->get_clear_stencil_active())) {
     return;
   }
-  
+
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   bool clear_color = false;
-  int r, g, b, a;
+  PIXEL color = 0;
   if (clearable->get_clear_color_active()) {
     LColor v = clearable->get_clear_color();
-    r = (int)(v[0] * 0xffff);
-    g = (int)(v[1] * 0xffff);
-    b = (int)(v[2] * 0xffff);
-    a = (int)(v[3] * 0xffff);
+
+    if (_current_properties->get_srgb_color()) {
+      color = SRGBA_TO_PIXEL(
+        (v[0] * 0xffff), (v[1] * 0xffff),
+        (v[2] * 0xffff), (v[3] * 0xffff));
+    } else {
+      color = RGBA_TO_PIXEL(
+        (v[0] * 0xffff), (v[1] * 0xffff),
+        (v[2] * 0xffff), (v[3] * 0xffff));
+    }
     clear_color = true;
   }
-  
+
   bool clear_z = false;
-  int z;
+  int z = 0;
   if (clearable->get_clear_depth_active()) {
     // We ignore the specified depth clear value, since we don't
     // support alternate depth compare functions anyway.
-    z = 0;
     clear_z = true;
   }
 
-  ZB_clear_viewport(_c->zb, clear_z, z,
-                    clear_color, r, g, b, a,
+  ZB_clear_viewport(_c->zb, clear_z, z, clear_color, color,
                     _c->viewport.xmin, _c->viewport.ymin,
                     _c->viewport.xsize, _c->viewport.ysize);
 }
@@ -280,7 +284,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     if (_aux_frame_buffer == (ZBuffer *)NULL) {
       _aux_frame_buffer = ZB_open(xsize, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
     } else if (_aux_frame_buffer->xsize < xsize || _aux_frame_buffer->ysize < ysize) {
-      ZB_resize(_aux_frame_buffer, NULL, 
+      ZB_resize(_aux_frame_buffer, NULL,
                 max(_aux_frame_buffer->xsize, xsize),
                 max(_aux_frame_buffer->ysize, ysize));
     }
@@ -297,7 +301,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _c->viewport.ysize = ysize;
   set_scissor(0.0f, 1.0f, 0.0f, 1.0f);
 
-  nassertv(xmin >= 0 && xmin < _c->zb->xsize && 
+  nassertv(xmin >= 0 && xmin < _c->zb->xsize &&
            ymin >= 0 && ymin < _c->zb->ysize &&
            xmin + xsize >= 0 && xmin + xsize <= _c->zb->xsize &&
            ymin + ysize >= 0 && ymin + ysize <= _c->zb->ysize);
@@ -736,7 +740,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   for (i = 0; i < num_used_vertices; ++i) {
     GLVertex *v = &_vertices[i];
     const LVecBase4 &d = rvertex.get_data4();
-    
+
     v->coord.v[0] = d[0];
     v->coord.v[1] = d[1];
     v->coord.v[2] = d[2];
@@ -755,7 +759,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _c->current_color.v[1] = d[1] * s[1];
       _c->current_color.v[2] = d[2] * s[2];
       _c->current_color.v[3] = d[3] * s[3];
-      
+
       if (_color_material_flags) {
         if (_color_material_flags & CMF_ambient) {
           _c->materials[0].ambient = _c->current_color;
@@ -794,6 +798,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // Set up the appropriate function callback for filling triangles,
   // according to the current state.
 
+  bool srgb_blend = _current_properties->get_srgb_color();
+
   int depth_write_state = 0;  // zon
   const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
   if (target_depth_write->get_mode() != DepthWriteAttrib::M_on) {
@@ -805,11 +811,23 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
-  if (color_channels != ColorWriteAttrib::C_all) {
+
+  if (color_channels == ColorWriteAttrib::C_all) {
+    if (srgb_blend) {
+      color_write_state = 4;  // csstore
+    } else {
+      color_write_state = 0;  // cstore
+    }
+  } else {
     // Implement a color mask.
     int op_a = get_color_blend_op(ColorBlendAttrib::O_one);
     int op_b = get_color_blend_op(ColorBlendAttrib::O_zero);
-    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+
+    if (srgb_blend) {
+      _c->zb->store_pix_func = store_pixel_funcs_sRGB[op_a][op_b][color_channels];
+    } else {
+      _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+    }
     color_write_state = 2;   // cgeneral
   }
 
@@ -817,12 +835,22 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   switch (target_transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
-    color_write_state = 1;    // cblend
-    if (color_channels != ColorWriteAttrib::C_all) {
+    if (color_channels == ColorWriteAttrib::C_all) {
+      if (srgb_blend) {
+        color_write_state = 5;    // csblend
+      } else {
+        color_write_state = 1;    // cblend
+      }
+    } else {
       // Implement a color mask, with alpha blending.
       int op_a = get_color_blend_op(ColorBlendAttrib::O_incoming_alpha);
       int op_b = get_color_blend_op(ColorBlendAttrib::O_one_minus_incoming_alpha);
-      _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+
+      if (srgb_blend) {
+        _c->zb->store_pix_func = store_pixel_funcs_sRGB[op_a][op_b][color_channels];
+      } else {
+        _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+      }
       color_write_state = 2;   // cgeneral
     }
     break;
@@ -835,15 +863,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (target_color_blend->get_mode() == ColorBlendAttrib::M_add) {
     // If we have a color blend set that we can support, it overrides
     // the transparency set.
-    int op_a = get_color_blend_op(target_color_blend->get_operand_a());
-    int op_b = get_color_blend_op(target_color_blend->get_operand_b());
-    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
     LColor c = target_color_blend->get_color();
     _c->zb->blend_r = (int)(c[0] * ZB_POINT_RED_MAX);
     _c->zb->blend_g = (int)(c[1] * ZB_POINT_GREEN_MAX);
     _c->zb->blend_b = (int)(c[2] * ZB_POINT_BLUE_MAX);
     _c->zb->blend_a = (int)(c[3] * ZB_POINT_ALPHA_MAX);
 
+    int op_a = get_color_blend_op(target_color_blend->get_operand_a());
+    int op_b = get_color_blend_op(target_color_blend->get_operand_b());
+
+    if (srgb_blend) {
+      _c->zb->store_pix_func = store_pixel_funcs_sRGB[op_a][op_b][color_channels];
+    } else {
+      _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+    }
     color_write_state = 2;     // cgeneral
   }
 
@@ -882,7 +915,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     depth_test_state = 0;      // zless
     _c->depth_test = 0;
   }
-  
+
   const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
   ShadeModelAttrib::Mode shade_model = target_shade_model->get_mode();
   if (!needs_normal && !needs_color) {
@@ -939,7 +972,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   pixel_count_smooth_multitex2 = 0;
   pixel_count_smooth_multitex3 = 0;
 #endif  // DO_PSTATS
-  
+
   return true;
 }
 
