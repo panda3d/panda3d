@@ -4,10 +4,10 @@
 #include <list>
 #include "socket_base.h"
 
-enum CloseState 
+enum CloseState
 {
-        ConnectionDoNotClose,
-        ConnectionDoClose
+    ConnectionDoNotClose,
+    ConnectionDoClose
 };
 // RHH
 ////////////////////////////////////////////////////////////////////
@@ -20,15 +20,15 @@ enum CloseState
 //
 //  The general operation if get connection..
 //          do you have a message
-//          process message 
+//          process message
 //          go back to do you have a message or close connection
 //
 //
 ////////////////////////////////////////////////////////////////////
 template < class _INCLASS1,class _IN_LISTEN, class MESSAGE_READER_BUF, class MESSAGE_READER_UPPASS> class BaseIncomingSet : public  std::list<_INCLASS1 *>
 {
-        typedef std::list<_INCLASS1 *> BaseClass;
-        typedef TYPENAME BaseClass::iterator iterator;
+    typedef std::list<_INCLASS1 *> BaseClass;
+    typedef TYPENAME BaseClass::iterator iterator;
     _IN_LISTEN                  _Listener;
 
     inline void AddFromListener(void);
@@ -39,7 +39,7 @@ public:
 
 //  typedef typename BaseIncomingSet<_INCLASS1, _IN_LISTEN, MESSAGE_READER_BUF, MESSAGE_READER_UPPASS>::LinkNode LinkNode;
 
-//  typedef SentDblLinkListNode_Gm   SentDblLinkListNode_Gm; 
+//  typedef SentDblLinkListNode_Gm   SentDblLinkListNode_Gm;
     inline BaseIncomingSet(void);
     inline BaseIncomingSet(BaseIncomingSet &in);
     virtual ~BaseIncomingSet();
@@ -49,10 +49,6 @@ public:
     inline void PumpAll(Time_Clock  &currentTime);
     virtual CloseState ProcessNewConnection(SOCKET  socket);
     inline  void AddToFDSet(Socket_fdset &set);
-
-    
-
-
 
 //  inline  LinkNode *          GetRoot(void) {  return &this->sentenal; };
     BaseIncomingSet &operator=( BaseIncomingSet &inval);
