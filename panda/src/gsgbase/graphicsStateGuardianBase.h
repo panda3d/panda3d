@@ -124,6 +124,8 @@ PUBLISHED:
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_shadow_filter() const=0;
 
+  virtual bool get_supports_texture_srgb() const=0;
+
 public:
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory

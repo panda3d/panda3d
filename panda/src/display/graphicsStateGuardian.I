@@ -448,6 +448,16 @@ get_supports_tex_non_pow2() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_texture_srgb
+//       Access: Published
+//  Description: Returns true if this GSG can handle sRGB textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_texture_srgb() const {
+  return _supports_texture_srgb;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_compressed_texture
 //       Access: Published
 //  Description: Returns true if this GSG can compress textures as it

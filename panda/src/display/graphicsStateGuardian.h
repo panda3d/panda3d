@@ -127,6 +127,7 @@ PUBLISHED:
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_tex_non_pow2() const;
+  INLINE bool get_supports_texture_srgb() const;
 
   INLINE bool get_supports_compressed_texture() const;
   virtual INLINE bool get_supports_compressed_texture_format(int compression_mode) const;
@@ -476,6 +477,7 @@ protected:
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
   bool _supports_tex_non_pow2;
+  bool _supports_texture_srgb;
 
   bool _supports_compressed_texture;
   BitMask32 _compressed_texture_formats;

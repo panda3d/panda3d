@@ -828,6 +828,14 @@ reset() {
   }
 #endif
 
+  _supports_texture_srgb = false;
+  if (is_at_least_gl_version(2, 1) || has_extension("GL_EXT_texture_sRGB")) {
+    _supports_texture_srgb = true;
+
+  } else if (has_extension("GL_EXT_sRGB")) { // GLES case.
+    _supports_texture_srgb = true;
+  }
+
   _supports_compressed_texture = false;
 
 #ifdef OPENGLES
