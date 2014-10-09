@@ -53,8 +53,10 @@ public:
 private:
 #else // DO_PSTATS
 
-  INLINE PStatGPUTimer(GraphicsStateGuardian *, PStatCollector &) { }
-  INLINE PStatGPUTimer(GraphicsStateGuardian *, PStatCollector &, Thread *) { }
+  INLINE PStatGPUTimer(GraphicsStateGuardian *, PStatCollector &col)
+    : PStatTimer(col) { }
+  INLINE PStatGPUTimer(GraphicsStateGuardian *, PStatCollector &col, Thread *)
+    : PStatTimer(col) { }
   INLINE ~PStatGPUTimer() { }
 
 #endif  // DO_PSTATS
