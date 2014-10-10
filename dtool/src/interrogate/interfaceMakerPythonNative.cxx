@@ -3292,6 +3292,21 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       expected_params += "string";
       ++num_params;
 
+    } else if (TypeManager::is_pointer_to_PyUnicodeObject(type)) {
+      if (args_type == AT_single_arg) {
+        // This is a single-arg function, so there's no need
+        // to convert anything.
+        param_name = "arg";
+        extra_param_check += " && PyUnicode_Check(arg)";
+      } else {
+        indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        format_specifiers += "U";
+        parameter_list += ", &" + param_name;
+      }
+      pexpr_string = param_name;
+      expected_params += "unicode";
+      ++num_params;
+
     } else if (TypeManager::is_pointer_to_PyObject(type)) {
       if (args_type == AT_single_arg) {
         // This is a single-arg function, so there's no need

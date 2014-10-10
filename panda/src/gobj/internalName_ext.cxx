@@ -30,8 +30,13 @@ make(PyUnicodeObject *str) {
   if (!PyUnicode_CHECK_INTERNED(str)) {
     // Not an interned string; don't bother.
     Py_ssize_t len = 0;
-    char *c_str = PyUnicode_AsUTF8AndSize(str, &len);
-    return InternalName::make(name);
+    char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
+    if (c_str == NULL) {
+      return NULL;
+    }
+
+    string name(c_str, len);
+    return InternalName::make(c_str, len);
   }
 
   InternalName::PyInternTable::const_iterator it;
@@ -42,7 +47,7 @@ make(PyUnicodeObject *str) {
 
   } else {
     Py_ssize_t len = 0;
-    char *c_str = PyUnicode_AsUTF8AndSize(str, &len);
+    char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
     string name(c_str, len);
 
 #else

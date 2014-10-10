@@ -221,7 +221,7 @@ def ProgressOutput(progress, msg, target = None):
             prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
     else:
         global THREADS
-        
+
         ident = thread.get_ident()
         if (ident not in THREADS):
             THREADS[ident] = len(THREADS) + 1
@@ -469,7 +469,7 @@ def LocateBinary(binary):
         p = os.environ["PATH"]
 
     pathList = p.split(os.pathsep)
-    
+
     if GetHost() == 'windows':
         if not binary.endswith('.exe'):
             # Append .exe if necessary
@@ -871,7 +871,7 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
 ########################################################################
 
 if sys.platform == "win32":
-    # Note: not supported on cygwin. 
+    # Note: not supported on cygwin.
     if sys.version_info >= (3, 0):
         import winreg
     else:
@@ -1132,7 +1132,7 @@ def GetThirdpartyBase():
     THIRDPARTYBASE = "thirdparty"
     if "MAKEPANDA_THIRDPARTY" in os.environ:
         THIRDPARTYBASE = os.environ["MAKEPANDA_THIRDPARTY"]
-    
+
     return THIRDPARTYBASE
 
 def GetThirdpartyDir():
@@ -1853,7 +1853,7 @@ def SdkLocatePython(force_use_sys_executable = False):
         force_use_sys_executable = False
 
     if (GetTarget() == 'windows' and not force_use_sys_executable):
-        SDK["PYTHON"] = GetThirdpartyBase()+"/win-python"
+        SDK["PYTHON"] = GetThirdpartyBase() + "/win-python"
         if (GetOptimize() <= 2):
             SDK["PYTHON"] += "-dbg"
         if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
@@ -1881,6 +1881,8 @@ def SdkLocatePython(force_use_sys_executable = False):
 
         py_dll = os.path.basename(py_dlls[0])
         SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
+
+        os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
     elif CrossCompiling():
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -2804,4 +2806,4 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
 
     if target.endswith(".pz") and not CrossCompiling():
-        t.deps[FindLocation("pzip.exe", [])] = 1     
+        t.deps[FindLocation("pzip.exe", [])] = 1

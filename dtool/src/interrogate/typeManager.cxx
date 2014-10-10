@@ -1252,6 +1252,45 @@ is_PyStringObject(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_PyUnicodeObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyStringObject *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_PyUnicodeObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_PyUnicodeObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_PyUnicodeObject(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_PyUnicodeObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyUnicodeObject.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_PyUnicodeObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_PyUnicodeObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "PyUnicodeObject");
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_pointer_to_Py_buffer
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is Py_buffer *.
