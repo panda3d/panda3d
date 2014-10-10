@@ -771,22 +771,29 @@ read_args() {
 
   LPWSTR cmdline = GetCommandLineW();
   int argc = 0;
-  LPWSTR *argv = CommandLineToArgvW(cmdline, &argc);
+  LPWSTR *wargv = CommandLineToArgvW(cmdline, &argc);
 
-  TextEncoder encoder;
-  encoder.set_encoding(Filename::get_filesystem_encoding());
+  if (wargv == NULL) {
+    cerr << "CommandLineToArgvW failed; command-line arguments unavailable to config.\n";
 
-  for (int i = 0; i < argc; ++i) {
-    wstring wtext(argv[i]);
-    encoder.set_wtext(wtext);
+  } else {
+    TextEncoder encoder;
+    encoder.set_encoding(Filename::get_filesystem_encoding());
 
-    if (i == 0) {
-      if (_binary_name.empty()) {
-        _binary_name = encoder.get_text();
+    for (int i = 0; i < argc; ++i) {
+      wstring wtext(wargv[i]);
+      encoder.set_wtext(wtext);
+
+      if (i == 0) {
+        if (_binary_name.empty()) {
+          _binary_name = encoder.get_text();
+        }
+      } else {
+        _args.push_back(encoder.get_text());
       }
-    } else {
-      _args.push_back(encoder.get_text());
     }
+
+    LocalFree(wargv);
   }
 
 #elif defined(IS_FREEBSD)
