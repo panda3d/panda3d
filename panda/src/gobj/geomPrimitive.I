@@ -430,6 +430,17 @@ add_vertices(int v1, int v2, int v3, int v4) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_index_format
+//       Access: Public
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayFormat *GeomPrimitive::
+get_index_format() const {
+  return get_index_format(get_index_type());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::make_index_data
 //       Access: Public
 //  Description: Creates and returns a new, empty index table.
@@ -437,6 +448,22 @@ add_vertices(int v1, int v2, int v3, int v4) {
 INLINE PT(GeomVertexArrayData) GeomPrimitive::
 make_index_data() const {
   return new GeomVertexArrayData(get_index_format(), get_usage_hint());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::make_index_format
+//       Access: Private, Static
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexArrayFormat) GeomPrimitive::
+make_index_format(NumericType index_type) {
+  PT(GeomVertexArrayFormat) format = new GeomVertexArrayFormat;
+  // It's important that the index format *not* respect the global
+  // setting of vertex-column-alignment.  It needs to be tightly
+  // packed, so we specify an explict column_alignment of 1.
+  format->add_column(InternalName::get_index(), 1, index_type, C_index, 0, 1);
+  return GeomVertexArrayFormat::register_format(format);
 }
 
 ////////////////////////////////////////////////////////////////////

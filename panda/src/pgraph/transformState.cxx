@@ -2322,7 +2322,7 @@ do_calc_components() {
     _hpr.set(0.0f, 0.0f, 0.0f);
     _quat = LQuaternion::ident_quat();
     _pos.set(0.0f, 0.0f, 0.0f);
-    _flags |= F_has_components | F_components_known | F_hpr_known | F_quat_known | F_uniform_scale;
+    _flags |= F_has_components | F_components_known | F_hpr_known | F_quat_known | F_uniform_scale | F_identity_scale;
 
   } else {
     // If we don't have components and we're not identity, the only

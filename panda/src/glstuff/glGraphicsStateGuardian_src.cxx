@@ -538,7 +538,7 @@ reset() {
     }
   }
   if (_supports_point_parameters) {
-    _supported_geom_rendering |= Geom::GR_point_perspective;
+    _supported_geom_rendering |= Geom::GR_point_perspective | Geom::GR_point_scale;
   } else {
     _glPointParameterfv = null_glPointParameterfv;
   }
@@ -2764,7 +2764,7 @@ end_frame(Thread *current_thread) {
 
     // And deleted queries, too, unless we're using query timers
     // in which case we'll need to reuse lots of them.
-    if (!_timer_queries_active && !_deleted_queries.empty()) {
+    if (!get_timer_queries_active() && !_deleted_queries.empty()) {
       if (GLCAT.is_spam()) {
         DeletedNames::iterator dqi;
         for (dqi = _deleted_queries.begin();
@@ -11335,6 +11335,7 @@ do_point_size() {
     // matrix.
     LVector3 height(0.0f, _point_size, 1.0f);
     height = height * _projection_mat->get_mat();
+    height = height * _internal_transform->get_scale()[1];
     PN_stdfloat s = height[1] * _viewport_height / _point_size;
 
     if (_current_lens->is_orthographic()) {

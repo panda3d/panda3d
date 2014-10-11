@@ -1233,6 +1233,11 @@ set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
   cdata->_vertices = (GeomVertexArrayData *)vertices;
   cdata->_num_vertices = num_vertices;
 
+  // Validate the format and make sure to copy its numeric type.
+  const GeomVertexArrayFormat *format = vertices->get_array_format();
+  nassertv(format->get_num_columns() == 1);
+  cdata->_index_type = format->get_column(0)->get_numeric_type();
+
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;
 }
@@ -1564,18 +1569,41 @@ release_all() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_index_format
-//       Access: Public
-//  Description: Returns a registered format appropriate for using to
-//               store the index table.
+//       Access: Public, Static
+//  Description: Returns a registered GeomVertexArrayFormat of the
+//               indicated unsigned integer numeric type for storing
+//               index values.
 ////////////////////////////////////////////////////////////////////
-CPT(GeomVertexArrayFormat) GeomPrimitive::
-get_index_format() const {
-  PT(GeomVertexArrayFormat) format = new GeomVertexArrayFormat;
-  // It's important that the index format *not* respect the global
-  // setting of vertex-column-alignment.  It needs to be tightly
-  // packed, so we specify an explict column_alignment of 1.
-  format->add_column(InternalName::get_index(), 1, get_index_type(), C_index, 0, 1);
-  return GeomVertexArrayFormat::register_format(format);
+const GeomVertexArrayFormat *GeomPrimitive::
+get_index_format(NumericType index_type) {
+  switch (index_type) {
+  case NT_uint8:
+    {
+      static CPT(GeomVertexArrayFormat) cformat = NULL;
+      if (cformat == NULL) {
+        cformat = make_index_format(NT_uint8);
+      }
+      return cformat;
+    }
+  case NT_uint16:
+    {
+      static CPT(GeomVertexArrayFormat) cformat = NULL;
+      if (cformat == NULL) {
+        cformat = make_index_format(NT_uint16);
+      }
+      return cformat;
+    }
+  case NT_uint32:
+    {
+      static CPT(GeomVertexArrayFormat) cformat = NULL;
+      if (cformat == NULL) {
+        cformat = make_index_format(NT_uint32);
+      }
+      return cformat;
+    }
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

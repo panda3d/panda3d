@@ -185,15 +185,18 @@ public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
-  IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                   GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  CPT(GeomVertexArrayFormat) get_index_format() const;
+  static const GeomVertexArrayFormat *get_index_format(NumericType index_type);
+  INLINE const GeomVertexArrayFormat *get_index_format() const;
   INLINE PT(GeomVertexArrayData) make_index_data() const;
 
 private:
+  static CPT(GeomVertexArrayFormat) make_index_format(NumericType index_type);
+
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   static int get_highest_index_value(NumericType index_type);
   static int get_strip_cut_index(NumericType index_type);
@@ -204,7 +207,7 @@ public:
                     bool force) const=0;
 
   void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                         bool &found_any, 
+                         bool &found_any,
                          const GeomVertexData *vertex_data,
                          bool got_mat, const LMatrix4 &mat,
                          const InternalName *column_name,
@@ -216,7 +219,7 @@ protected:
   virtual CPT(GeomPrimitive) doubleside_impl() const;
   virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual bool requires_unused_vertices() const;
-  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
                                       int vertex);
 
 private:
