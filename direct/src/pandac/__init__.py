@@ -5,9 +5,7 @@ import __builtin__
 # Now import all extensions:
 from direct.extensions_native.extension_native_helpers import *
 extensions = [
-    'CInterval', 'EggGroupNode', 'EggPrimitive', 'HTTPChannel', 'Mat3',
-    'NodePath', 'NodePathCollection', 'OdeBody', 'OdeGeom', 'OdeJoint',
-    'OdeSpace', 'Ramfile', 'StreamReader', 'VBase3', 'VBase4'
+    'CInterval', 'HTTPChannel', 'Mat3', 'NodePath', 'VBase3', 'VBase4'
 ]
 
 # Prior to importing, we need to make the Dtool_funcToMethod function and
