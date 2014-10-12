@@ -23,6 +23,7 @@ set(P3DISPLAY_HEADERS
   lru.h
   nativeWindowHandle.I nativeWindowHandle.h
   parasiteBuffer.I parasiteBuffer.h
+  pStatGPUTimer.I pStatGPUTimer.h
   windowHandle.I windowHandle.h
   windowProperties.I windowProperties.h
   renderBuffer.h
