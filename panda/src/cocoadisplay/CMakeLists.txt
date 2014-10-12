@@ -4,13 +4,14 @@ if(APPLE AND HAVE_GL AND HAVE_COCOA)
       cocoaGraphicsPipe.h cocoaGraphicsPipe.I
       cocoaGraphicsWindow.h cocoaGraphicsWindow.I
       cocoaGraphicsStateGuardian.h cocoaGraphicsStateGuardian.I
-      cocoaPandaView.h cocoaPandaWindowDelegate.h)
+      cocoaPandaApp.h cocoaPandaView.h cocoaPandaWindowDelegate.h)
 
   set(P3COCOADISPLAY_SOURCES
       config_cocoadisplay.mm
       cocoaGraphicsPipe.mm
       cocoaGraphicsStateGuardian.mm
       cocoaGraphicsWindow.mm
+      cocoaPandaApp.mm
       cocoaPandaView.mm
       cocoaPandaWindow.mm
       cocoaPandaWindowDelegate.mm)
@@ -22,8 +23,9 @@ if(APPLE AND HAVE_GL AND HAVE_COCOA)
   # Frameworks:
   find_library(APPLICATIONSERVICES_LIBRARY ApplicationServices)
   find_library(APPKIT_LIBRARY AppKit)
+  find_library(CARBON_LIBRARY Carbon)
   target_link_libraries(p3cocoadisplay
-    ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY})
+    ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY} ${CARBON_LIBRARY})
 
   install(TARGETS p3cocoadisplay DESTINATION lib)
 endif()
