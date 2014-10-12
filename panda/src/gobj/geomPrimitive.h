@@ -118,6 +118,7 @@ PUBLISHED:
   int get_primitive_start(int n) const;
   int get_primitive_end(int n) const;
   int get_primitive_num_vertices(int n) const;
+  int get_num_used_vertices() const;
 
   INLINE int get_num_faces() const;
   INLINE int get_primitive_num_faces(int n) const;
@@ -163,6 +164,7 @@ PUBLISHED:
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
   INLINE int get_index_stride() const;
+  INLINE int get_strip_cut_index() const;
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
@@ -183,17 +185,21 @@ public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
-  IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                   GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  CPT(GeomVertexArrayFormat) get_index_format() const;
+  static const GeomVertexArrayFormat *get_index_format(NumericType index_type);
+  INLINE const GeomVertexArrayFormat *get_index_format() const;
   INLINE PT(GeomVertexArrayData) make_index_data() const;
 
 private:
+  static CPT(GeomVertexArrayFormat) make_index_format(NumericType index_type);
+
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   static int get_highest_index_value(NumericType index_type);
+  static int get_strip_cut_index(NumericType index_type);
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
@@ -201,7 +207,7 @@ public:
                     bool force) const=0;
 
   void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                         bool &found_any, 
+                         bool &found_any,
                          const GeomVertexData *vertex_data,
                          bool got_mat, const LMatrix4 &mat,
                          const InternalName *column_name,
@@ -213,7 +219,7 @@ protected:
   virtual CPT(GeomPrimitive) doubleside_impl() const;
   virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual bool requires_unused_vertices() const;
-  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
                                       int vertex);
 
 private:
@@ -358,6 +364,7 @@ public:
   INLINE int get_index_stride() const;
   INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
   INLINE const unsigned char *get_read_pointer(bool force) const;
+  INLINE int get_strip_cut_index() const;
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;

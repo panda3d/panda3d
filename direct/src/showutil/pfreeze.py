@@ -102,15 +102,16 @@ elif bl.endswith('.exe'):
     basename = os.path.splitext(basename)[0]
 
 startfile = args[0]
+startmod = startfile
 if startfile.endswith('.py') or startfile.endswith('.pyw') or \
    startfile.endswith('.pyc') or startfile.endswith('.pyo'):
-    startfile = os.path.splitext(startfile)[0]
+    startmod = os.path.splitext(startfile)[0]
 
 compileToExe = False
 if outputType == 'dll':
-    freezer.addModule(startfile)
+    freezer.addModule(startmod, filename = startfile)
 else:
-    freezer.addModule(startfile, newName = '__main__')
+    freezer.addModule('__main__', filename = startfile)
     compileToExe = True
 
 freezer.done(compileToExe = compileToExe)

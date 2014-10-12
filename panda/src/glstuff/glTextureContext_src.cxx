@@ -23,12 +23,14 @@ TypeHandle CLP(TextureContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CLP(TextureContext)::
 ~CLP(TextureContext)() {
+#ifndef OPENGLES
   if (gl_enable_memory_barriers) {
     _glgsg->_textures_needing_fetch_barrier.erase(this);
     _glgsg->_textures_needing_image_access_barrier.erase(this);
     _glgsg->_textures_needing_update_barrier.erase(this);
     _glgsg->_textures_needing_framebuffer_barrier.erase(this);
   }
+#endif
 
   glDeleteTextures(1, &_index);
   _index = 0;
@@ -53,12 +55,15 @@ void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
 
+#ifndef OPENGLES
   if (_handle != 0) {
     if (_handle_resident) {
       _glgsg->_glMakeTextureHandleNonResident(_handle);
     }
     _handle_resident = false;
-  } else {
+  } else
+#endif
+  {
     reset_data();
   }
 
@@ -74,9 +79,11 @@ evict_lru() {
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
 reset_data() {
+#ifndef OPENGLES
   if (_handle != 0 && _handle_resident) {
     _glgsg->_glMakeTextureHandleNonResident(_handle);
   }
+#endif
 
   // Free the texture resources.
   glDeleteTextures(1, &_index);
@@ -108,6 +115,7 @@ reset_data() {
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
 make_handle_resident() {
+#ifndef OPENGLES
   if (_handle != 0) {
     if (!_handle_resident) {
       _glgsg->_glMakeTextureHandleResident(_handle);
@@ -115,6 +123,7 @@ make_handle_resident() {
     }
     set_resident(true);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

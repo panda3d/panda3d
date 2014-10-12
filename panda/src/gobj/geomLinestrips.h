@@ -34,6 +34,7 @@ public:
   virtual PrimitiveType get_primitive_type() const;
   virtual int get_geom_rendering() const;
   virtual int get_min_num_vertices_per_primitive() const;
+  virtual int get_num_unused_vertices_per_primitive() const;
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
@@ -43,6 +44,9 @@ public:
 protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
+  virtual bool requires_unused_vertices() const;
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+                                      int vertex);
 
 public:
   static void register_with_read_factory();

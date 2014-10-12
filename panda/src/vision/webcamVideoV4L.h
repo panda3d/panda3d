@@ -33,9 +33,12 @@ private:
 
   friend class WebcamVideoCursorV4L;
   friend void find_all_webcams_v4l();
+  static void add_options_for_size(int fd, const string &dev, const char *name,
+                                   unsigned width, unsigned height,
+                                   unsigned pixelformat);
 
   string _device;
-  pvector<uint32_t> _pformats;
+  uint32_t _pformat;
 
 public:
   static TypeHandle get_class_type() {

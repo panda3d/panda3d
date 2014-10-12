@@ -1184,6 +1184,7 @@ string AIBehaviors::behavior_status(string ai_type) {
 
       default:
         cout<<"Invalid value!"<<endl;
+        return "invalid";
     }
   }
 

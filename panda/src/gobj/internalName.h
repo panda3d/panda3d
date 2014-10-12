@@ -43,11 +43,13 @@ class EXPCL_PANDA_GOBJ InternalName : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
 
+public:
+  INLINE static PT(InternalName) make(const string &name);
+
 PUBLISHED:
   virtual ~InternalName();
   virtual bool unref() const;
 
-  INLINE static PT(InternalName) make(const string &name);
   static PT(InternalName) make(const string &name, int index);
   PT(InternalName) append(const string &basename);
 
@@ -88,6 +90,22 @@ PUBLISHED:
   INLINE static PT(InternalName) get_model();
   INLINE static PT(InternalName) get_view();
 
+#ifdef HAVE_PYTHON
+#if PY_MAJOR_VERSION >= 3
+  EXTENSION(static PT(InternalName) make(PyUnicodeObject *str));
+#else
+  EXTENSION(static PT(InternalName) make(PyStringObject *str));
+#endif
+#endif
+
+public:
+#ifdef HAVE_PYTHON
+  // It's OK for us to define it here since these are just pointers of
+  // which the reference is maintained indefinitely.
+  typedef phash_map<PyObject *, InternalName *, pointer_hash> PyInternTable;
+  static PyInternTable _py_intern_table;
+#endif
+
 private:
   PT(InternalName) _parent;
   string _basename;
@@ -116,7 +134,7 @@ private:
   static PT(InternalName) _camera;
   static PT(InternalName) _model;
   static PT(InternalName) _view;
-  
+
 public:
   // Datagram stuff
   static void register_with_read_factory();
@@ -157,5 +175,3 @@ INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 
 #endif
 
-
-  

@@ -12,16 +12,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::get_filename
-//       Access: Public
+//       Access: Published
 //  Description: Return the Shader's filename for the given shader
 //               type.
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename Shader::
+INLINE Filename Shader::
 get_filename(const ShaderType &type) const {
-  if (_filename->_separate) {
-    nassertr(type != ST_none || !_filename->_shared.empty(), "");
+  if (_filename->_separate && type == ST_none) {
     switch (type) {
       case ST_vertex:
         return _filename->_vertex;
@@ -51,7 +51,7 @@ get_filename(const ShaderType &type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::get_text
-//       Access: Public
+//       Access: Published
 //  Description: Return the Shader's text for the given shader type.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Shader::
@@ -146,7 +146,7 @@ have_shader_utilization() {
 //  Description: Returns the shader language in which this shader
 //               was written.
 ////////////////////////////////////////////////////////////////////
-INLINE const Shader::ShaderLanguage Shader::
+INLINE Shader::ShaderLanguage Shader::
 get_language() const {
   return _language;
 }

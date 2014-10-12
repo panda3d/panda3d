@@ -2743,7 +2743,9 @@ int GetParnetDepth(CPPType *type) {
   } else if (TypeManager::is_wchar_pointer(type)) {
   } else if (TypeManager::is_pointer_to_PyObject(type)) {
   } else if (TypeManager::is_pointer_to_Py_buffer(type)) {
-  } else if (TypeManager::is_pointer(type) || TypeManager::is_reference(type) || TypeManager::is_struct(type)) {
+  } else if (TypeManager::is_pointer(type) ||
+             TypeManager::is_reference(type) ||
+             TypeManager::is_struct(type)) {
     ++answer;
     int deepest = 0;
     TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)), false);
@@ -3276,6 +3278,36 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       only_pyobjects = false;
       ++num_params;
 
+    } else if (TypeManager::is_pointer_to_PyStringObject(type)) {
+      if (args_type == AT_single_arg) {
+        // This is a single-arg function, so there's no need
+        // to convert anything.
+        param_name = "arg";
+        extra_param_check += " && PyString_Check(arg)";
+      } else {
+        indent(out, indent_level) << "PyStringObject *" << param_name << ";\n";
+        format_specifiers += "S";
+        parameter_list += ", &" + param_name;
+      }
+      pexpr_string = param_name;
+      expected_params += "string";
+      ++num_params;
+
+    } else if (TypeManager::is_pointer_to_PyUnicodeObject(type)) {
+      if (args_type == AT_single_arg) {
+        // This is a single-arg function, so there's no need
+        // to convert anything.
+        param_name = "arg";
+        extra_param_check += " && PyUnicode_Check(arg)";
+      } else {
+        indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        format_specifiers += "U";
+        parameter_list += ", &" + param_name;
+      }
+      pexpr_string = param_name;
+      expected_params += "unicode";
+      ++num_params;
+
     } else if (TypeManager::is_pointer_to_PyObject(type)) {
       if (args_type == AT_single_arg) {
         // This is a single-arg function, so there's no need
@@ -3605,7 +3637,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   if (true) {
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
-    delete_return_value(out, indent_level, remap, return_expr);
+    delete_return_value(out, indent_level + 2, remap, return_expr);
     indent(out, indent_level)
       << "  if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
     indent(out, indent_level)

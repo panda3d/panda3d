@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "pStatClient.h"
+#include "pStatFrameData.h"
 
 class Thread;
 
@@ -30,15 +31,16 @@ class Thread;
 class EXPCL_PANDA_PSTATCLIENT PStatThread {
 private:
   INLINE PStatThread();
-  INLINE PStatThread(PStatClient *client, int index);
 
 PUBLISHED:
+  INLINE PStatThread(PStatClient *client, int index);
   INLINE PStatThread(Thread *thread, PStatClient *client = NULL);
 
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);
 
   INLINE void new_frame();
+  INLINE void add_frame(const PStatFrameData &frame_data);
 
   Thread *get_thread() const;
   INLINE int get_index() const;

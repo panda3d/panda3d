@@ -119,3 +119,23 @@ INLINE string ExecutionEnvironment::
 get_dtool_name() {
   return get_ptr()->ns_get_dtool_name();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::set_binary_name
+//       Access: Public, Static
+//  Description: Do not use.
+////////////////////////////////////////////////////////////////////
+INLINE void ExecutionEnvironment::
+set_binary_name(const string &name) {
+  get_ptr()->_binary_name = name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::set_dtool_name
+//       Access: Public, Static
+//  Description: Do not use.
+////////////////////////////////////////////////////////////////////
+INLINE void ExecutionEnvironment::
+set_dtool_name(const string &name) {
+  get_ptr()->_dtool_name = name;
+}

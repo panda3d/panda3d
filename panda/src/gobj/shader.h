@@ -96,10 +96,10 @@ PUBLISHED:
                          const string &tess_evaluation = "");
   static PT(Shader) make_compute(const ShaderLanguage &lang, const string &body);
 
-  INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
+  INLINE Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
   INLINE const bool get_error_flag() const;
-  INLINE const ShaderLanguage get_language() const;
+  INLINE ShaderLanguage get_language() const;
 
   INLINE static ShaderUtilization get_shader_utilization();
   INLINE static void set_shader_utilization(ShaderUtilization utl);

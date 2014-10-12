@@ -43,6 +43,7 @@
     geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
+    internalName_ext.h internalName_ext.cxx \
     lens.h lens.I \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
@@ -66,6 +67,7 @@
     textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     textureStagePool.I textureStagePool.h \
+    timerQueryContext.I timerQueryContext.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
     transformTable.I transformTable.h \
@@ -136,6 +138,7 @@
     textureReloadRequest.cxx \
     textureStage.cxx \
     textureStagePool.cxx \
+    timerQueryContext.cxx \
     transformBlend.cxx \
     transformBlendTable.cxx \
     transformTable.cxx \
@@ -208,6 +211,7 @@
     textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     textureStagePool.I textureStagePool.h \
+    timerQueryContext.I timerQueryContext.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
     transformTable.I transformTable.h \

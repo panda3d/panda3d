@@ -72,6 +72,7 @@ public:
   INLINE void client_resume_after_pause();
 
   void new_frame(int thread_index);
+  void add_frame(int thread_index, const PStatFrameData &frame_data);
 
 private:
   void transmit_frame_data(int thread_index, int frame_number,
@@ -90,7 +91,7 @@ private:
   void report_new_threads();
   void handle_server_control_message(const PStatServerControlMessage &message);
 
-  virtual void connection_reset(const PT(Connection) &connection, 
+  virtual void connection_reset(const PT(Connection) &connection,
                                 bool okflag);
 
   PStatClient *_client;

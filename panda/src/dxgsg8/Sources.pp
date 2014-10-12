@@ -22,7 +22,7 @@
     wdxGraphicsPipe8.I wdxGraphicsPipe8.h \
     wdxGraphicsWindow8.I wdxGraphicsWindow8.h \
     dxgsg8base.h config_dxgsg8.h dxGraphicsStateGuardian8.I dxGraphicsStateGuardian8.h \
-    dxVertexBufferContext8.h dxVertexbufferContext8.I \
+    dxVertexBufferContext8.h dxVertexBufferContext8.I \
     dxIndexBufferContext8.h dxIndexBufferContext8.I \
     dxTextureContext8.h dxTextureContext8.I \
     dxGeomMunger8.h dxGeomMunger8.I \

@@ -31,5 +31,5 @@ VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path) :
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileMountAndroidAsset::AssetStream::
 AssetStream(AAsset *asset) :
-  istream(new AssetStreamBuf(asset)) {
+  istream(new VirtualFileMountAndroidAsset::AssetStreamBuf(asset)) {
 }

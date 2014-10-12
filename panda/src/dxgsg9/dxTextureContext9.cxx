@@ -135,13 +135,13 @@ create_texture(DXScreenData &scrn) {
   bool texture_wants_compressed = false;
   Texture::CompressionMode compression_mode = tex->get_ram_image_compression();
   bool texture_stored_compressed = compression_mode != Texture::CM_off;
-  
+
   if (texture_stored_compressed) {
-    texture_wants_compressed = true;  
+    texture_wants_compressed = true;
   } else {
     if (tex->get_compression() == Texture::CM_off) {
       // no compression
-    } else {    
+    } else {
       if (tex->get_compression() == Texture::CM_default) {
         // default = use "compressed-textures" config setting
         if (compressed_textures) {
@@ -150,9 +150,9 @@ create_texture(DXScreenData &scrn) {
       } else {
         texture_wants_compressed = true;
       }
-    }  
+    }
   }
-    
+
   switch (tex->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
@@ -197,7 +197,9 @@ create_texture(DXScreenData &scrn) {
 
   if ((tex->get_format() == Texture::F_luminance_alpha)||
       (tex->get_format() == Texture::F_luminance_alphamask) ||
-      (tex->get_format() == Texture::F_luminance)) {
+      (tex->get_format() == Texture::F_luminance) ||
+      (tex->get_format() == Texture::F_sluminance_alpha) ||
+      (tex->get_format() == Texture::F_sluminance)) {
     needs_luminance = true;
   }
 
@@ -232,7 +234,7 @@ create_texture(DXScreenData &scrn) {
     _d3d_format = D3DFMT_A8R8G8B8;
     break;
   }
-  
+
   // make sure we handled all the possible cases
   nassertr(_d3d_format != D3DFMT_UNKNOWN, false);
 
@@ -398,9 +400,9 @@ create_texture(DXScreenData &scrn) {
 
   if (compress_texture) {
     if (num_alpha_bits <= 1) {
-      CHECK_FOR_FMT(DXT1);    
+      CHECK_FOR_FMT(DXT1);
     } else if (num_alpha_bits <= 4) {
-      CHECK_FOR_FMT(DXT3);    
+      CHECK_FOR_FMT(DXT3);
     } else {
       CHECK_FOR_FMT(DXT5);
     }
@@ -425,7 +427,7 @@ create_texture(DXScreenData &scrn) {
     // array (the texture array contains num_color_channels*8bits)
 
   case 128:
-    // check if format is supported    
+    // check if format is supported
     if (scrn._supports_rgba32_texture_format) {
       target_pixel_format = D3DFMT_A32B32G32R32F;
     }
@@ -435,7 +437,7 @@ create_texture(DXScreenData &scrn) {
     goto found_matching_format;
 
   case 64:
-    // check if format is supported 
+    // check if format is supported
     if (scrn._supports_rgba16f_texture_format) {
       target_pixel_format = D3DFMT_A16B16G16R16F;
     }
@@ -443,7 +445,7 @@ create_texture(DXScreenData &scrn) {
       target_pixel_format = scrn._render_to_texture_d3d_format;
     }
     goto found_matching_format;
-    
+
   case 32:
     if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
@@ -502,7 +504,7 @@ create_texture(DXScreenData &scrn) {
 
     CHECK_FOR_FMT(X8R8G8B8);
     CHECK_FOR_FMT(A8R8G8B8);
-    
+
     // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
     CHECK_FOR_FMT(R5G6B5);
     CHECK_FOR_FMT(X1R5G5B5);
@@ -782,13 +784,13 @@ create_texture(DXScreenData &scrn) {
     // REQUIRED PARAMETERS
     _managed = false;
     _is_render_target = true;
-    
+
     pool = D3DPOOL_DEFAULT;
     usage = D3DUSAGE_RENDERTARGET;
     if (target_bpp <= 32 ) {
       target_pixel_format = scrn._render_to_texture_d3d_format;
     }
-    
+
     dxgsg9_cat.debug ()
       << "*** RENDER TO TEXTURE ***: format "
       << D3DFormatStr(target_pixel_format)
@@ -848,7 +850,7 @@ create_texture(DXScreenData &scrn) {
     data_size *= 6;
   }
   update_data_size_bytes(data_size);
-  
+
   int attempts;
 
   if (dxgsg9_cat.is_debug()) {
@@ -882,7 +884,7 @@ create_texture(DXScreenData &scrn) {
       hr = scrn._d3d_device->CreateTexture
         (target_width, target_height, mip_level_count, usage,
          target_pixel_format, pool, &_d3d_2d_texture, NULL);
-      _d3d_texture = _d3d_2d_texture;      
+      _d3d_texture = _d3d_2d_texture;
       break;
 
     case Texture::TT_3d_texture:
@@ -952,7 +954,7 @@ create_texture(DXScreenData &scrn) {
     scrn._dxgsg9->get_engine()->texture_uploaded(tex);
   }
   mark_loaded();
-  
+
   return true;
 
  error_exit:
@@ -967,7 +969,7 @@ create_texture(DXScreenData &scrn) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext9::create_simple_texture
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXTextureContext9::
 create_simple_texture(DXScreenData &scrn) {
@@ -993,7 +995,7 @@ create_simple_texture(DXScreenData &scrn) {
   hr = scrn._d3d_device->CreateTexture
     (target_width, target_height, mip_level_count, usage,
      target_pixel_format, pool, &_d3d_2d_texture, NULL);
-  _d3d_texture = _d3d_2d_texture;      
+  _d3d_texture = _d3d_2d_texture;
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "D3D create_simple_texture failed!" << D3DERRORSTRING(hr);
@@ -1032,13 +1034,13 @@ create_simple_texture(DXScreenData &scrn) {
 
     RELEASE(surface, dxgsg9, "create_simple_texture Surface", RELEASE_ONCE);
   }
-    
+
   if (FAILED(hr)) {
     dxgsg9_cat.debug ()
       << "*** fill_d3d_texture_pixels failed ***: format "
       << target_pixel_format
       << "\n";
-    
+
     goto error_exit;
   }
 
@@ -1084,7 +1086,7 @@ bool DXTextureContext9::
 extract_texture_data(DXScreenData &screen) {
   bool state;
   HRESULT hr;
-  
+
   state = false;
   Texture *tex = get_texture();
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
@@ -1147,7 +1149,7 @@ extract_texture_data(DXScreenData &screen) {
 
   default:
     dxgsg9_cat.error()
-      << "Cannot extract texture data: unhandled surface format " 
+      << "Cannot extract texture data: unhandled surface format "
       << desc.Format << "\n";
     return state;
   }
@@ -1164,13 +1166,13 @@ extract_texture_data(DXScreenData &screen) {
   if (_is_render_target) {
     IDirect3DSurface9* source_surface;
     IDirect3DSurface9* destination_surface;
-  
+
     source_surface = 0;
     destination_surface = 0;
-    
+
     hr = _d3d_2d_texture -> GetSurfaceLevel (0, &source_surface);
-    if (hr == D3D_OK) {    
-       
+    if (hr == D3D_OK) {
+
       D3DPOOL pool;
       D3DSURFACE_DESC surface_description;
 
@@ -1186,7 +1188,7 @@ extract_texture_data(DXScreenData &screen) {
         NULL);
       if (hr == D3D_OK) {
         if (source_surface && destination_surface) {
-          hr = screen._d3d_device -> GetRenderTargetData (source_surface, destination_surface);          
+          hr = screen._d3d_device -> GetRenderTargetData (source_surface, destination_surface);
           if (hr == D3D_OK) {
 
             D3DLOCKED_RECT rect;
@@ -1200,13 +1202,13 @@ extract_texture_data(DXScreenData &screen) {
 
               int surface_bytes_per_line;
               unsigned char *surface_pointer;
-              
+
               bytes_per_line = surface_description.Width * this -> d3d_format_to_bytes_per_pixel (surface_description.Format);
               size = bytes_per_line * surface_description.Height;
 
               surface_bytes_per_line = rect.Pitch;
               surface_pointer = (unsigned char *) rect.pBits;
-              
+
               PTA_uchar image = PTA_uchar::empty_array(size);
 
               int offset;
@@ -1217,29 +1219,29 @@ extract_texture_data(DXScreenData &screen) {
                 memcpy (&image [offset], surface_pointer, bytes_per_line);
 
                 offset += bytes_per_line;
-                surface_pointer += surface_bytes_per_line;  
+                surface_pointer += surface_bytes_per_line;
               }
 
               tex->set_ram_image(image, Texture::CM_off);
 
               state = true;
-              
+
               destination_surface -> UnlockRect();
             }
           }
-        }    
-        
+        }
+
         destination_surface -> Release ( );
       }
       else {
         dxgsg9_cat.error()
           << "CreateImageSurface failed in extract_texture_data()"
-          << D3DERRORSTRING(hr);      
-      }      
+          << D3DERRORSTRING(hr);
+      }
       source_surface -> Release ( );
     }
   }
-  else {  
+  else {
     for (int n = 0; n < num_levels; ++n) {
       D3DLOCKED_RECT rect;
       hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
@@ -1248,11 +1250,11 @@ extract_texture_data(DXScreenData &screen) {
           << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
         return state;
       }
-    
+
       int x_size = tex->get_expected_mipmap_x_size(n);
       int y_size = tex->get_expected_mipmap_y_size(n);
       PTA_uchar image;
-      
+
       if (compression == Texture::CM_off) {
         // Uncompressed, but we have to respect the pitch.
         int pitch = x_size * tex->get_num_components() * tex->get_component_width();
@@ -1273,7 +1275,7 @@ extract_texture_data(DXScreenData &screen) {
             source += rect.Pitch;
           }
         }
-        
+
       } else {
         // Compressed; just copy the data verbatim.
         int size = rect.Pitch * (y_size / div);
@@ -1288,10 +1290,10 @@ extract_texture_data(DXScreenData &screen) {
         tex->set_ram_mipmap_image(n, image);
       }
     }
-    
+
     state = true;
   }
-  
+
   return state;
 }
 
@@ -1560,7 +1562,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 ////////////////////////////////////////////////////////////////////
 //     Function: calculate_row_byte_length
 //       Access: Private, hidden
-//  Description: local helper function, which calculates the 
+//  Description: local helper function, which calculates the
 //               'row_byte_length' or 'pitch' needed for calling
 //               D3DXLoadSurfaceFromMemory.
 //               Takes compressed formats (DXTn) into account.
@@ -1596,12 +1598,12 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
 //       Access: Private
 //  Description: Called from fill_d3d_texture_pixels, this function
 //               fills a single mipmap with texture data.
-//               Takes care of all necessery conversions and error
+//               Takes care of all necessary conversions and error
 //               handling.
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format)
 {
-  // This whole function was refactored out of fill_d3d_texture_pixels to make the code 
+  // This whole function was refactored out of fill_d3d_texture_pixels to make the code
   // more readable and to avoid code duplication.
   IDirect3DSurface9 *mip_surface = NULL;
   bool using_temp_buffer = false;
@@ -1617,7 +1619,7 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   pixels += view_size * get_view();
   size_t page_size = get_texture()->get_expected_ram_mipmap_page_size(mip_level);
   pixels += page_size * depth_index;
-  
+
   if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
     nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
     hr = _d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)depth_index, mip_level, &mip_surface);
@@ -1645,6 +1647,10 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   // dithering)??)
   mip_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
 
+  if (Texture::is_srgb(get_texture()->get_format())) {
+    mip_filter |= D3DX_FILTER_SRGB;
+  }
+
   // D3DXLoadSurfaceFromMemory will load black luminance and we want
   // full white, so convert to explicit luminance-alpha format
   if (_d3d_format == D3DFMT_A8) {
@@ -1671,7 +1677,7 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
     source_format = D3DFMT_A8L8;
     source_row_byte_length = width * sizeof(USHORT);
     pixels = (BYTE*)temp_buffer;
-  } 
+  }
   else if (component_width != 1) {
     // Convert from 16-bit per channel (or larger) format down to
     // 8-bit per channel.  This throws away precision in the
@@ -1756,7 +1762,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
     // operations or something.
-    if (tex->get_render_to_texture()) {   
+    if (tex->get_render_to_texture()) {
       HRESULT result;
 
       if (_d3d_2d_texture) {
@@ -1777,7 +1783,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
               depth_stencil_surface = 0;
               if (device -> GetDepthStencilSurface (&depth_stencil_surface) == D3D_OK) {
                 if (device -> SetDepthStencilSurface (NULL) == D3D_OK) {
-      
+
                 }
               }
 
@@ -1791,7 +1797,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
                 }
               }
 
-              // restore depth stencil 
+              // restore depth stencil
               if (depth_stencil_surface) {
                 device -> SetDepthStencilSurface (depth_stencil_surface);
                 depth_stencil_surface -> Release();
@@ -1806,7 +1812,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
           surface -> Release();
         }
       }
-      
+
       return S_OK;
     }
     return E_FAIL;
@@ -1842,7 +1848,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
   }
 
   for (unsigned int di = 0; di < orig_depth; di++) {
-    
+
     // fill top level mipmap
     hr = fill_d3d_texture_mipmap_pixels(0, di, source_format);
     if (FAILED(hr)) {
@@ -1861,8 +1867,8 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
           if (FAILED(hr)) {
             return hr; // error message was already output in fill_d3d_texture_mipmap_pixels
           }
-        }        
-      } 
+        }
+      }
       else {
         // mipmaps need to be generated, either use autogen or d3dx functions
 
@@ -1886,6 +1892,10 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
             mip_filter_flags = D3DX_FILTER_BOX;
           } else {
             mip_filter_flags = D3DX_FILTER_TRIANGLE;
+          }
+
+          if (Texture::is_srgb(tex->get_format())) {
+            mip_filter_flags |= D3DX_FILTER_SRGB;
           }
 
           // mip_filter_flags |= D3DX_FILTER_DITHER;
@@ -1934,7 +1944,7 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   if (!scrn._dxgsg9->get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
-  }    
+  }
 
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
@@ -1990,6 +2000,10 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   // need filtering if size changes, (also if bitdepth reduced (need
   // dithering)??)
   level_0_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
+
+  if (Texture::is_srgb(tex->get_format())) {
+    level_0_filter |= D3DX_FILTER_SRGB;
+  }
 
   // D3DXLoadSurfaceFromMemory will load black luminance and we want
   // full white, so convert to explicit luminance-alpha format
@@ -2068,6 +2082,10 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
       mip_filter_flags = D3DX_FILTER_BOX;
     } else {
       mip_filter_flags = D3DX_FILTER_TRIANGLE;
+    }
+
+    if (Texture::is_srgb(tex->get_format())) {
+      mip_filter_flags |= D3DX_FILTER_SRGB;
     }
 
     //    mip_filter_flags| = D3DX_FILTER_DITHER;
@@ -2167,6 +2185,17 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   case Texture::F_rgba32:
     *alphbits = 32;
     return 128;
+
+  case Texture::F_srgb:
+    return 24;
+  case Texture::F_srgb_alpha:
+    *alphbits = 8;
+    return 32;
+  case Texture::F_sluminance:
+    return 8;
+  case Texture::F_sluminance_alpha:
+    *alphbits = 8;
+    return 16;
   }
   return 8;
 }
@@ -2180,7 +2209,7 @@ PN_stdfloat DXTextureContext9::
 d3d_format_to_bytes_per_pixel (D3DFORMAT format)
 {
   PN_stdfloat bytes_per_pixel;
-  
+
   bytes_per_pixel = 0.0f;
   switch (format)
   {
@@ -2246,6 +2275,6 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
       bytes_per_pixel = 1.0f;
       break;
   }
-  
+
   return bytes_per_pixel;
 }

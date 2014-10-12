@@ -18,7 +18,7 @@
 
 #include "Cg/cgGL.h"
 
-#include "pStatTimer.h"
+#include "pStatGPUTimer.h"
 
 TypeHandle CLP(CgShaderContext)::_type_handle;
 
@@ -50,7 +50,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
-  // Ask the shader to compile itself for us and 
+  // Ask the shader to compile itself for us and
   // to give us the resulting Cg program objects.
   if (!s->cg_compile_for(_glgsg->_shader_caps,
                          _cg_context,
@@ -223,7 +223,7 @@ unbind() {
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 issue_parameters(int altered) {
-  PStatTimer timer(_glgsg->_draw_set_state_shader_parameters_pcollector);
+  //PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
 
   if (!valid()) {
     return;
@@ -233,9 +233,9 @@ issue_parameters(int altered) {
   for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
     if (altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])) {
       const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-      Shader::ShaderPtrData* ptr_data = 
+      Shader::ShaderPtrData* ptr_data =
         const_cast< Shader::ShaderPtrData*>(_glgsg->fetch_ptr_parameter(_ptr));
-      
+
       if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
         release_resources();
         return;
@@ -249,14 +249,14 @@ issue_parameters(int altered) {
       int input_size = _ptr._dim[0] * _ptr._dim[1] * _ptr._dim[2];
 
       // dimension is negative only if the parameter had the (deprecated)k_ prefix.
-      if ((input_size > ptr_data->_size) && (_ptr._dim[0] > 0)) { 
-        GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected " 
+      if ((input_size > ptr_data->_size) && (_ptr._dim[0] > 0)) {
+        GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected "
                       <<  input_size <<" got " <<  ptr_data->_size << "\n";
         release_resources();
         return;
       }
       CGparameter p = _cg_parameter_map[_ptr._id._seqno];
-      
+
       switch (ptr_data->_type) {
       case Shader::SPT_float:
         switch(_ptr._info._class) {
@@ -271,7 +271,7 @@ issue_parameters(int altered) {
         case Shader::SAC_matrix: cgGLSetMatrixParameterfc(p,(float*)ptr_data->_ptr); continue;
         case Shader::SAC_array: {
           switch(_ptr._info._subclass) {
-          case Shader::SAC_scalar: 
+          case Shader::SAC_scalar:
             cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
           case Shader::SAC_vector:
             switch(_ptr._dim[2]) {
@@ -298,7 +298,7 @@ issue_parameters(int altered) {
         case Shader::SAC_matrix: cgGLSetMatrixParameterdc(p,(double*)ptr_data->_ptr); continue;
         case Shader::SAC_array: {
           switch(_ptr._info._subclass) {
-          case Shader::SAC_scalar: 
+          case Shader::SAC_scalar:
             cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
           case Shader::SAC_vector:
             switch(_ptr._dim[2]) {
@@ -323,8 +323,8 @@ issue_parameters(int altered) {
           case Shader::SAT_vec4: cgSetParameter4iv(p,(int*)ptr_data->_ptr); continue;
           }
         }
-      default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
-        release_resources(); 
+      default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n";
+        release_resources();
         return;
       }
     }

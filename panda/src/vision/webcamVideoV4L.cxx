@@ -26,6 +26,56 @@
 TypeHandle WebcamVideoV4L::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: add_options_for_size
+//       Access: Private, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void WebcamVideoV4L::
+add_options_for_size(int fd, const string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
+  struct v4l2_frmivalenum frmivalenum;
+  for (int k = 0;; k++) {
+    memset(&frmivalenum, 0, sizeof frmivalenum);
+    frmivalenum.index = k;
+    frmivalenum.pixel_format = pixelformat;
+    frmivalenum.width = width;
+    frmivalenum.height = height;
+    if (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmivalenum) == -1) {
+      break;
+    }
+    double fps = 0.0;
+    switch (frmivalenum.type) {
+    case V4L2_FRMIVAL_TYPE_DISCRETE:
+      fps = ((double) frmivalenum.discrete.denominator) / ((double) frmivalenum.discrete.numerator);
+      break;
+
+    case V4L2_FRMIVAL_TYPE_CONTINUOUS:
+    case V4L2_FRMIVAL_TYPE_STEPWISE:
+      {
+        // Select the maximum framerate.
+        double max_fps =  ((double) frmivalenum.stepwise.max.denominator) / ((double) frmivalenum.stepwise.max.numerator);
+        fps = max_fps;
+      }
+      break;
+
+    default:
+      continue;
+    }
+
+    // Create a new webcam video object
+    PT(WebcamVideoV4L) wc = new WebcamVideoV4L;
+    wc->set_name(name);
+    wc->_device = dev;
+    wc->_size_x = width;
+    wc->_size_y = height;
+    wc->_fps = fps;
+    wc->_pformat = pixelformat;
+    wc->_pixel_format = string((char*) &pixelformat, 4);
+
+    WebcamVideoV4L::_all_webcams.push_back(DCAST(WebcamVideo, wc));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: find_all_webcams_v4l
 //       Access: Public, Static
 //  Description: Finds all Video4Linux webcams and adds them to
@@ -52,6 +102,23 @@ void find_all_webcams_v4l() {
             if (ioctl(fd, VIDIOC_ENUM_FMT, &fmt) == -1) {
               break;
             }
+
+            // Only accept supported formats.
+            switch (fmt.pixelformat) {
+#ifdef HAVE_JPEG
+            case V4L2_PIX_FMT_MJPEG:
+#endif
+            case V4L2_PIX_FMT_YUYV:
+            case V4L2_PIX_FMT_BGR24:
+            case V4L2_PIX_FMT_BGR32:
+            case V4L2_PIX_FMT_RGB24:
+            case V4L2_PIX_FMT_RGB32:
+              break;
+
+            default:
+              continue;
+            }
+
             struct v4l2_frmsizeenum frmsizeenum;
             for (int j = 0;; j++) {
               memset(&frmsizeenum, 0, sizeof frmsizeenum);
@@ -60,51 +127,48 @@ void find_all_webcams_v4l() {
               if (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == -1) {
                 break;
               }
-              if (frmsizeenum.type != V4L2_FRMSIZE_TYPE_DISCRETE) {
-                continue;
-              }
-              struct v4l2_frmivalenum frmivalenum;
-              for (int k = 0;; k++) {
-                memset(&frmivalenum, 0, sizeof frmivalenum);
-                frmivalenum.index = k;
-                frmivalenum.pixel_format = fmt.pixelformat;
-                frmivalenum.width = frmsizeenum.discrete.width;
-                frmivalenum.height = frmsizeenum.discrete.height;
-                if (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmivalenum) == -1) {
-                  break;
-                }
-                if (frmivalenum.type != V4L2_FRMIVAL_TYPE_DISCRETE) {
-                  continue;
-                }
 
-                // Create a new webcam video object
-                PT(WebcamVideoV4L) wc = new WebcamVideoV4L;
-                wc->set_name((const char*) cap2.card);
-                wc->_device = *it;
-                wc->_size_x = frmsizeenum.discrete.width;
-                wc->_size_y = frmsizeenum.discrete.height;
-                wc->_fps = ((double) frmivalenum.discrete.denominator) / ((double) frmivalenum.discrete.numerator);
-                wc->_pformats.push_back(fmt.pixelformat);
+              switch (frmsizeenum.type) {
+              case V4L2_FRMSIZE_TYPE_DISCRETE:
+                // Easy, add the options with this discrete size.
+                WebcamVideoV4L::
+                add_options_for_size(fd, *it, (const char *)cap2.card,
+                                     frmsizeenum.discrete.width,
+                                     frmsizeenum.discrete.height,
+                                     fmt.pixelformat);
+                break;
 
-                // Iterate through the webcams to make sure we don't put any duplicates in there
-                pvector<PT(WebcamVideo)>::iterator wvi;
-                for (wvi = WebcamVideoV4L::_all_webcams.begin(); wvi != WebcamVideoV4L::_all_webcams.end(); ++wvi) {
-                  if ((*wvi)->is_of_type(WebcamVideoV4L::get_class_type())) {
-                    PT(WebcamVideoV4L) wv_v4l = DCAST(WebcamVideoV4L, *wvi);
-                    if (wv_v4l->_device == wc->_device &&
-                        wv_v4l->_size_x == wc->_size_x &&
-                        wv_v4l->_size_y == wc->_size_y &&
-                        wv_v4l->_fps == wc->_fps) {
-                      wv_v4l->_pformats.push_back(fmt.pixelformat);
-                      break;
+              case V4L2_FRMSIZE_TYPE_CONTINUOUS:
+                {
+                  // Okay, er, we don't have a proper handling of this,
+                  // so let's add all powers of two in this range.
+
+                  __u32 width = Texture::up_to_power_2(frmsizeenum.stepwise.min_width);
+                  for (; width <= frmsizeenum.stepwise.max_width; width *= 2) {
+                    __u32 height = Texture::up_to_power_2(frmsizeenum.stepwise.min_height);
+                    for (; height <= frmsizeenum.stepwise.max_height; height *= 2) {
+                      WebcamVideoV4L::
+                      add_options_for_size(fd, *it, (const char *)cap2.card, width, height, fmt.pixelformat);
                     }
                   }
                 }
-                // Did the loop finish, meaning that a webcam of these
-                // properties does not exist? Add it.
-                if (wvi == WebcamVideoV4L::_all_webcams.end()) {
-                  WebcamVideoV4L::_all_webcams.push_back(DCAST(WebcamVideo, wc));
+                break;
+
+              case V4L2_FRMSIZE_TYPE_STEPWISE:
+                {
+                  __u32 width = Texture::up_to_power_2(frmsizeenum.stepwise.min_width);
+                  for (; width <= frmsizeenum.stepwise.max_width; width *= 2) {
+                    __u32 height = Texture::up_to_power_2(frmsizeenum.stepwise.min_height);
+                    for (; height <= frmsizeenum.stepwise.max_height; height *= 2) {
+                      if ((width - frmsizeenum.stepwise.min_width) % frmsizeenum.stepwise.step_width == 0 &&
+                          (height - frmsizeenum.stepwise.min_height) % frmsizeenum.stepwise.step_height == 0) {
+                        WebcamVideoV4L::
+                        add_options_for_size(fd, *it, (const char *)cap2.card, width, height, fmt.pixelformat);
+                      }
+                    }
+                  }
                 }
+                break;
               }
             }
           }

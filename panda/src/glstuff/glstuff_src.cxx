@@ -22,6 +22,8 @@
 #include "glVertexBufferContext_src.cxx"
 #include "glIndexBufferContext_src.cxx"
 #include "glOcclusionQueryContext_src.cxx"
+#include "glTimerQueryContext_src.cxx"
+#include "glLatencyQueryContext_src.cxx"
 #include "glGeomContext_src.cxx"
 #include "glGeomMunger_src.cxx"
 #include "glShaderContext_src.cxx"

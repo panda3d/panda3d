@@ -44,6 +44,7 @@
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
+#include "timerQueryContext.h"
 #include "stencilRenderStates.h"
 #include "loader.h"
 #include "shaderAttrib.h"
@@ -126,6 +127,7 @@ PUBLISHED:
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_tex_non_pow2() const;
+  INLINE bool get_supports_texture_srgb() const;
 
   INLINE bool get_supports_compressed_texture() const;
   virtual INLINE bool get_supports_compressed_texture_format(int compression_mode) const;
@@ -150,6 +152,10 @@ PUBLISHED:
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
+
+  INLINE bool get_supports_occlusion_query() const;
+  INLINE bool get_supports_timer_query() const;
+  INLINE bool get_timer_queries_active() const;
 
   INLINE int get_max_color_targets() const;
   INLINE int get_maximum_simultaneous_render_targets() const;
@@ -200,7 +206,7 @@ PUBLISHED:
   virtual int get_driver_version_minor();
   virtual int get_driver_shader_version_major();
   virtual int get_driver_shader_version_minor();
-  
+
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
 
@@ -222,9 +228,10 @@ public:
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
-  virtual bool get_supports_occlusion_query() const;
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
+
+  virtual PT(TimerQueryContext) issue_timer_query(int pstats_index);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
@@ -239,7 +246,7 @@ public:
   virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *clearable);
-  
+
   const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
   const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4 &t);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
@@ -259,6 +266,8 @@ PUBLISHED:
   virtual void end_scene();
 public:
   virtual void end_frame(Thread *current_thread);
+
+  void flush_timer_queries();
 
   void set_current_properties(const FrameBufferProperties *properties);
 
@@ -375,7 +384,7 @@ protected:
   // This bitmask contains a 1 bit everywhere that _state_rs has a
   // known value.  If a bit is 0, the corresponding state must be
   // re-sent.
-  // 
+  //
   // Derived GSGs should initialize _inv_state_mask in reset() as a mask of
   // 1's where they don't care, and 0's where they do care, about the state.
   RenderState::SlotMask _state_mask;
@@ -406,7 +415,7 @@ protected:
 
   unsigned int _color_write_mask;
 
-  CPT(DisplayRegion) _current_display_region;
+  PT(DisplayRegion) _current_display_region;
   Lens::StereoChannel _current_stereo_channel;
   int _current_tex_view_offset;
   CPT(Lens) _current_lens;
@@ -468,6 +477,7 @@ protected:
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
   bool _supports_tex_non_pow2;
+  bool _supports_texture_srgb;
 
   bool _supports_compressed_texture;
   BitMask32 _compressed_texture_formats;
@@ -480,6 +490,19 @@ protected:
 
   bool _supports_occlusion_query;
   PT(OcclusionQueryContext) _current_occlusion_query;
+
+  bool _supports_timer_query;
+#ifdef DO_PSTATS
+  int _pstats_gpu_thread;
+  bool _timer_queries_active;
+  PStatFrameData _pstats_gpu_data;
+
+  int _last_query_frame;
+  int _last_num_queried;
+  //double _timer_delta;
+  typedef pdeque<PT(TimerQueryContext)> TimerQueryQueue;
+  TimerQueryQueue _pending_timer_queries;
+#endif
 
   bool _copy_texture_inverted;
   bool _supports_multisample;
@@ -520,13 +543,13 @@ protected:
 
   PN_stdfloat _gamma;
   Texture::QualityLevel _texture_quality_override;
-  
+
   ShaderGenerator* _shader_generator;
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
 #endif
-  
+
 public:
   // Statistics
   static PStatCollector _vertex_buffer_switch_pcollector;
@@ -558,7 +581,18 @@ public:
   static PStatCollector _draw_set_state_pcollector;
   static PStatCollector _clear_pcollector;
   static PStatCollector _flush_pcollector;
+  static PStatCollector _compute_dispatch_pcollector;
   static PStatCollector _wait_occlusion_pcollector;
+  static PStatCollector _wait_timer_pcollector;
+  static PStatCollector _timer_queries_pcollector;
+  static PStatCollector _command_latency_pcollector;
+
+  static PStatCollector _prepare_pcollector;
+  static PStatCollector _prepare_texture_pcollector;
+  static PStatCollector _prepare_geom_pcollector;
+  static PStatCollector _prepare_shader_pcollector;
+  static PStatCollector _prepare_vertex_buffer_pcollector;
+  static PStatCollector _prepare_index_buffer_pcollector;
 
   // A whole slew of collectors to measure the cost of individual
   // state changes.  These are disabled by default.

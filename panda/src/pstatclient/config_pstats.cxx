@@ -68,6 +68,17 @@ ConfigVariableDouble pstats_target_frame_rate
           "This frame rate is marked with a different-colored line; "
           "otherwise, this setting has no effect."));
 
+ConfigVariableBool pstats_gpu_timing
+("pstats-gpu-timing", false,
+ PRC_DESC("Set this true to query the graphics library for the actual time "
+          "that graphics operations take to execute on the video card.  "
+          "Enabling this will harm performance, but this information can "
+          "be more useful than the regular Draw information in tracking "
+          "down bottlenecks, because the CPU-based Draw collectors only "
+          "measure how long it takes for the API call to complete, which "
+          "is not usually an accurate reflectino of how long the actual "
+          "operation takes on the video card."));
+
 // The rest are different in that they directly control the server,
 // not the client.
 ConfigVariableBool pstats_scroll_mode

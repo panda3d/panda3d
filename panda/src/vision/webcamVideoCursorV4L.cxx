@@ -19,7 +19,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <linux/videodev2.h>
 
 #ifdef HAVE_JPEG
 extern "C" {
@@ -34,7 +33,7 @@ TypeHandle WebcamVideoCursorV4L::_type_handle;
 
 #define clamp(x) min(max(x, 0.0), 255.0)
 
-INLINE static void yuv_to_rgb(unsigned char *dest, const unsigned char *src) {
+INLINE static void yuv_to_bgr(unsigned char *dest, const unsigned char *src) {
   double y1 = (255 / 219.0) * (src[0] - 16);
   double pb = (255 / 224.0) * (src[1] - 128);
   double pr = (255 / 224.0) * (src[2] - 128);
@@ -43,20 +42,33 @@ INLINE static void yuv_to_rgb(unsigned char *dest, const unsigned char *src) {
   dest[0] = clamp(1.0 * y1 + 1.772 * pb + 0     * pr);
 }
 
-INLINE static void yuyv_to_rgbrgb(unsigned char *dest, const unsigned char *src) {
+INLINE static void yuyv_to_bgrbgr(unsigned char *dest, const unsigned char *src) {
   unsigned char yuv[] = {src[0], src[1], src[3]};
-  yuv_to_rgb(dest, yuv);
+  yuv_to_bgr(dest, yuv);
   yuv[0] = src[2];
-  yuv_to_rgb(dest + 3, yuv);
+  yuv_to_bgr(dest + 3, yuv);
 }
 
-INLINE static void yuyv_to_rgbargba(unsigned char *dest, const unsigned char *src) {
+INLINE static void yuyv_to_bgrabgra(unsigned char *dest, const unsigned char *src) {
   unsigned char yuv[] = {src[0], src[1], src[3]};
-  yuv_to_rgb(dest, yuv);
+  yuv_to_bgr(dest, yuv);
   yuv[0] = src[2];
-  yuv_to_rgb(dest + 4, yuv);
-  dest[3] = (unsigned char) -1;
-  dest[7] = (unsigned char) -1;
+  yuv_to_bgr(dest + 4, yuv);
+  dest[3] = 0xff;
+  dest[7] = 0xff;
+}
+
+INLINE static void rgb_to_bgr(unsigned char *dest, const unsigned char *src) {
+  dest[0] = src[2];
+  dest[1] = src[1];
+  dest[2] = src[0];
+}
+
+INLINE static void rgb_to_bgra(unsigned char *dest, const unsigned char *src) {
+  dest[0] = src[2];
+  dest[1] = src[1];
+  dest[2] = src[0];
+  dest[3] = 0xff;
 }
 
 #if defined(HAVE_JPEG) && !defined(CPPPARSER)
@@ -196,11 +208,8 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _aborted = false;
   _streaming = true;
   _ready = false;
-  _format = (struct v4l2_format *) malloc(sizeof(struct v4l2_format));
-  memset(_format, 0, sizeof(struct v4l2_format));
-#ifdef HAVE_JPEG
-  _cinfo = NULL;
-#endif
+  memset(&_format, 0, sizeof(struct v4l2_format));
+
   _buffers = NULL;
   _buflens = NULL;
   _fd = open(src->_device.c_str(), O_RDWR);
@@ -211,22 +220,38 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 
   // Find the best format in our _pformats vector.
   // MJPEG is preferred over YUYV, as it's much smaller.
-  _format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  pvector<uint32_t>::iterator it;
-  for (it = src->_pformats.begin(); it != src->_pformats.end(); ++it) {
+  _format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  _format.fmt.pix.pixelformat = src->_pformat;
+
+  switch (_format.fmt.pix.pixelformat) {
 #ifdef HAVE_JPEG
-    if (*it == V4L2_PIX_FMT_MJPEG) {
-      _format->fmt.pix.pixelformat = *it;
-      break;
-    } else
+  case V4L2_PIX_FMT_MJPEG:
+    _num_components = 3;
+    break;
 #endif
-    if (*it == V4L2_PIX_FMT_YUYV) {
-      _format->fmt.pix.pixelformat = *it;
-      break;
-    }
-  }
-  if (it == src->_pformats.end()) {
-    vision_cat.error() << "Failed to find a suitable pixel format!\n";
+
+  case V4L2_PIX_FMT_YUYV:
+    _num_components = 3;
+    break;
+
+  case V4L2_PIX_FMT_BGR24:
+    _num_components = 3;
+    break;
+
+  case V4L2_PIX_FMT_BGR32:
+    _num_components = 4;
+    break;
+
+  case V4L2_PIX_FMT_RGB24:
+    _num_components = 3;
+    break;
+
+  case V4L2_PIX_FMT_RGB32:
+    _num_components = 4;
+    break;
+
+  default:
+    vision_cat.error() << "Unsupported pixel format " << src->get_pixel_format() << "!\n";
     _ready = false;
     close(_fd);
     _fd = -1;
@@ -234,12 +259,12 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   }
 
   // Request a format of this size, and no interlacing
-  _format->fmt.pix.width = _size_x;
-  _format->fmt.pix.height = _size_y;
-  _format->fmt.pix.field = V4L2_FIELD_NONE;
+  _format.fmt.pix.width = _size_x;
+  _format.fmt.pix.height = _size_y;
+  _format.fmt.pix.field = V4L2_FIELD_NONE;
 
   // Now politely ask the driver to switch to this format
-  if (-1 == ioctl(_fd, VIDIOC_S_FMT, _format)) {
+  if (-1 == ioctl(_fd, VIDIOC_S_FMT, &_format)) {
     vision_cat.error() << "Driver rejected format!\n";
     _ready = false;
     close(_fd);
@@ -247,8 +272,8 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     return;
   }
 
-  _size_x = _format->fmt.pix.width;
-  _size_y = _format->fmt.pix.height;
+  _size_x = _format.fmt.pix.width;
+  _size_y = _format.fmt.pix.height;
 
   struct v4l2_streamparm streamparm;
   memset(&streamparm, 0, sizeof streamparm);
@@ -274,7 +299,7 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   }
 
   _bufcount = req.count;
-  _buffers = (void* *) calloc (req.count, sizeof (void*));
+  _buffers = (void **) calloc (req.count, sizeof (void*));
   _buflens = (size_t*) calloc (req.count, sizeof (size_t));
 
   if (!_buffers || !_buflens) {
@@ -312,19 +337,18 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 
 #ifdef HAVE_JPEG
   // Initialize the JPEG library, if necessary
-  if (_format->fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
-    _cinfo = (struct jpeg_decompress_struct *) malloc(sizeof(struct jpeg_decompress_struct));
-    jpeg_create_decompress(_cinfo);
+  if (_format.fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
+    jpeg_create_decompress(&_cinfo);
 
-    _cinfo->src = (struct jpeg_source_mgr *)
-      (*_cinfo->mem->alloc_small) ((j_common_ptr) _cinfo, JPOOL_PERMANENT,
+    _cinfo.src = (struct jpeg_source_mgr *)
+      (*_cinfo.mem->alloc_small) ((j_common_ptr) &_cinfo, JPOOL_PERMANENT,
                                           sizeof(struct jpeg_source_mgr));
     // Set up function pointers
-    _cinfo->src->init_source = my_init_source;
-    _cinfo->src->fill_input_buffer = my_fill_input_buffer;
-    _cinfo->src->skip_input_data = my_skip_input_data;
-    _cinfo->src->resync_to_restart = jpeg_resync_to_restart;
-    _cinfo->src->term_source = my_term_source;
+    _cinfo.src->init_source = my_init_source;
+    _cinfo.src->fill_input_buffer = my_fill_input_buffer;
+    _cinfo.src->skip_input_data = my_skip_input_data;
+    _cinfo.src->resync_to_restart = jpeg_resync_to_restart;
+    _cinfo.src->term_source = my_term_source;
   }
 #endif
   _ready = true;
@@ -338,14 +362,10 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 WebcamVideoCursorV4L::
 ~WebcamVideoCursorV4L() {
 #ifdef HAVE_JPEG
-  if (_cinfo != NULL) {
-    jpeg_destroy_decompress(_cinfo);
-    free(_cinfo);
+  if (_format.fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
+    jpeg_destroy_decompress(&_cinfo);
   }
 #endif
-  if (_format != NULL) {
-    free(_format);
-  }
   if (-1 != _fd) {
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     ioctl(_fd, VIDIOC_STREAMOFF, &type);
@@ -385,14 +405,15 @@ fetch_buffer() {
   }
   nassertr(vbuf.index < _bufcount, NULL);
   size_t bufsize = _buflens[vbuf.index];
-  size_t old_bpl = _format->fmt.pix.bytesperline;
-  size_t new_bpl = _size_x * 3;
+  size_t old_bpl = _format.fmt.pix.bytesperline;
+  size_t new_bpl = _size_x * _num_components;
   unsigned char *buf = (unsigned char *) _buffers[vbuf.index];
 
-  if (_format->fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
+  switch (_format.fmt.pix.pixelformat) {
+  case V4L2_PIX_FMT_MJPEG: {
 #ifdef HAVE_JPEG
     struct my_error_mgr jerr;
-    _cinfo->err = jpeg_std_error(&jerr.pub);
+    _cinfo.err = jpeg_std_error(&jerr.pub);
     jerr.pub.error_exit = my_error_exit;
     jerr.pub.output_message = my_output_message;
 
@@ -400,41 +421,41 @@ fetch_buffer() {
 
     // Establish the setjmp return context for my_error_exit to use
     if (setjmp(jerr.setjmp_buffer)) {
-      jpeg_abort_decompress(_cinfo);
+      jpeg_abort_decompress(&_cinfo);
     } else {
       // Set up data pointer
-      _cinfo->src->bytes_in_buffer = bufsize;
-      _cinfo->src->next_input_byte = buf;
+      _cinfo.src->bytes_in_buffer = bufsize;
+      _cinfo.src->next_input_byte = buf;
 
-      if (jpeg_read_header(_cinfo, TRUE) == JPEG_HEADER_OK) {
-        if (_cinfo->dc_huff_tbl_ptrs[0] == NULL) {
+      if (jpeg_read_header(&_cinfo, TRUE) == JPEG_HEADER_OK) {
+        if (_cinfo.dc_huff_tbl_ptrs[0] == NULL) {
           // Many MJPEG streams do not include huffman tables.  Remedy this.
-          _cinfo->dc_huff_tbl_ptrs[0] = &dc_luminance_tbl;
-          _cinfo->dc_huff_tbl_ptrs[1] = &dc_chrominance_tbl;
-          _cinfo->ac_huff_tbl_ptrs[0] = &ac_luminance_tbl;
-          _cinfo->ac_huff_tbl_ptrs[1] = &ac_chrominance_tbl;
+          _cinfo.dc_huff_tbl_ptrs[0] = &dc_luminance_tbl;
+          _cinfo.dc_huff_tbl_ptrs[1] = &dc_chrominance_tbl;
+          _cinfo.ac_huff_tbl_ptrs[0] = &ac_luminance_tbl;
+          _cinfo.ac_huff_tbl_ptrs[1] = &ac_chrominance_tbl;
         }
 
-        _cinfo->scale_num = 1;
-        _cinfo->scale_denom = 1;
-        _cinfo->out_color_space = JCS_RGB;
-        _cinfo->dct_method = JDCT_IFAST;
+        _cinfo.scale_num = 1;
+        _cinfo.scale_denom = 1;
+        _cinfo.out_color_space = JCS_RGB;
+        _cinfo.dct_method = JDCT_IFAST;
 
-        if (jpeg_start_decompress(_cinfo) && _cinfo->output_components == 3
-          && _size_x == _cinfo->output_width && _size_y == _cinfo->output_height) {
+        if (jpeg_start_decompress(&_cinfo) && _cinfo.output_components == 3
+          && _size_x == _cinfo.output_width && _size_y == _cinfo.output_height) {
 
-          JSAMPLE *buffer_end = newbuf + new_bpl * _cinfo->output_height;
+          JSAMPLE *buffer_end = newbuf + new_bpl * _cinfo.output_height;
           JSAMPLE *rowptr = newbuf;
-          while (_cinfo->output_scanline < _cinfo->output_height) {
+          while (_cinfo.output_scanline < _cinfo.output_height) {
             nassertd(rowptr + new_bpl <= buffer_end) break;
-            jpeg_read_scanlines(_cinfo, &rowptr, _cinfo->output_height);
+            jpeg_read_scanlines(&_cinfo, &rowptr, _cinfo.output_height);
             rowptr += new_bpl;
           }
 
-          if (_cinfo->output_scanline < _cinfo->output_height) {
-            jpeg_abort_decompress(_cinfo);
+          if (_cinfo.output_scanline < _cinfo.output_height) {
+            jpeg_abort_decompress(&_cinfo);
           } else {
-            jpeg_finish_decompress(_cinfo);
+            jpeg_finish_decompress(&_cinfo);
           }
         }
       }
@@ -454,16 +475,51 @@ fetch_buffer() {
       block[i + 2] = ex;
     }
 #else
-    nassertr(false, NULL); // Not compiled with JPEG support
+    nassertr(false /* Not compiled with JPEG support*/, NULL);
 #endif
-  } else {
+    break;
+  }
+  case V4L2_PIX_FMT_YUYV:
     for (size_t row = 0; row < _size_y; ++row) {
       size_t c = 0;
       for (size_t i = 0; i < old_bpl; i += 4) {
-        yuyv_to_rgbrgb(block + (_size_y - row - 1) * new_bpl + c, buf + row * old_bpl + i);
+        yuyv_to_bgrbgr(block + (_size_y - row - 1) * new_bpl + c, buf + row * old_bpl + i);
         c += 6;
       }
     }
+    break;
+
+  case V4L2_PIX_FMT_BGR24:
+  case V4L2_PIX_FMT_BGR32:
+    // Simplest case: copying every row verbatim.
+    nassertr(old_bpl == new_bpl, NULL);
+
+    for (size_t row = 0; row < _size_y; ++row) {
+      memcpy(block + (_size_y - row - 1) * new_bpl, buf + row * old_bpl, new_bpl);
+    }
+    break;
+
+  case V4L2_PIX_FMT_RGB24:
+    // Swap components.
+    nassertr(old_bpl == new_bpl, NULL);
+
+    for (size_t row = 0; row < _size_y; ++row) {
+      for (size_t i = 0; i < old_bpl; i += 3) {
+        rgb_to_bgr(block + (_size_y - row - 1) * old_bpl + i, buf + row * old_bpl + i);
+      }
+    }
+    break;
+
+  case V4L2_PIX_FMT_RGB32:
+    // Swap components.
+    nassertr(old_bpl == new_bpl, NULL);
+
+    for (size_t row = 0; row < _size_y; ++row) {
+      for (size_t i = 0; i < old_bpl; i += 4) {
+        rgb_to_bgra(block + (_size_y - row - 1) * old_bpl + i, buf + row * old_bpl + i + 1);
+      }
+    }
+    break;
   }
 
   if (-1 == ioctl(_fd, VIDIOC_QBUF, &vbuf)) {

@@ -16,7 +16,7 @@
 
 #ifndef OPENGLES_1
 
-#include "pStatTimer.h"
+#include "pStatGPUTimer.h"
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
@@ -35,19 +35,19 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //       Access: Public
 //  Description: The Panda CG shader syntax defines a useful set of shorthand notations for setting nodepath
 //               properties as shaderinputs. For example, float4 mspos_XXX refers to nodepath XXX's position
-//               in model space. This function is a rough attempt to reimplement some of the shorthand 
+//               in model space. This function is a rough attempt to reimplement some of the shorthand
 //               notations for GLSL. The code is ~99% composed of excerpts dealing with matrix shaderinputs
-//               from Shader::compile_parameter.  
-//               
-//               Given a uniform variable name queried from the compiled shader passed in via arg_id, 
+//               from Shader::compile_parameter.
+//
+//               Given a uniform variable name queried from the compiled shader passed in via arg_id,
 //                  1) parse the name
 //                  2a) if the name refers to a Panda shorthand notation
 //                        push the appropriate matrix into shader._mat_spec
 //                        returns True
 //                  2b) If the name doesn't refer to a Panda shorthand notation
 //                        returns False
-//               
-//               The boolean return is used to notify down-river processing whether the shader var/parm was 
+//
+//               The boolean return is used to notify down-river processing whether the shader var/parm was
 //               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
@@ -700,7 +700,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         }
       }
     }
-    
+
     // Now we've processed the uniforms, we'll process the attribs.
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
@@ -836,7 +836,7 @@ release_resources() {
   }
 
   _glsl_shaders.clear();
-  
+
   _glgsg->report_my_gl_errors();
 }
 
@@ -890,7 +890,7 @@ unbind() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 issue_parameters(int altered) {
-  PStatTimer timer(_glgsg->_draw_set_state_shader_parameters_pcollector);
+  //PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
 
   if (!valid()) {
     return;
@@ -1374,12 +1374,11 @@ glsl_report_shader_errors(GLuint shader) {
   _glgsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 1) {
-    info_log = (char *) malloc(length);
+    info_log = (char *) alloca(length);
     _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
-    free(info_log);
   }
 }
 
@@ -1397,19 +1396,18 @@ glsl_report_program_errors(GLuint program) {
   _glgsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 1) {
-    info_log = (char *) malloc(length);
+    info_log = (char *) alloca(length);
     _glgsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
-    free(info_log);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::glsl_compile_shader
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
 glsl_compile_shader(Shader::ShaderType type) {
@@ -1451,16 +1449,21 @@ glsl_compile_shader(Shader::ShaderType type) {
     return false;
   }
 
+  if (_glgsg->_use_object_labels) {
+    string name = _shader->get_filename(type);
+    _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
+  }
+
   string text_str = _shader->get_text(type);
   const char* text = text_str.c_str();
   _glgsg->_glShaderSource(handle, 1, &text, NULL);
   _glgsg->_glCompileShader(handle);
   GLint status;
   _glgsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
-  
+
   if (status != GL_TRUE) {
-    GLCAT.error() 
-      << "An error occurred while compiling shader " 
+    GLCAT.error()
+      << "An error occurred while compiling shader "
       << _shader->get_filename(type) << "\n";
     glsl_report_shader_errors(handle);
     _glgsg->_glDeleteShader(handle);
@@ -1485,6 +1488,12 @@ glsl_compile_and_link() {
   if (!_glsl_program) {
     return false;
   }
+
+  if (_glgsg->_use_object_labels) {
+    string name = _shader->get_filename();
+    _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
+  }
+
   bool valid = true;
 
   if (!_shader->get_text(Shader::ST_vertex).empty()) {
@@ -1507,7 +1516,7 @@ glsl_compile_and_link() {
     nassertr(_glgsg->_glProgramParameteri != NULL, false);
     GLint max_vertices;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
-    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices); 
+    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
   }
 #endif
 

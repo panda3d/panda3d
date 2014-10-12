@@ -152,9 +152,10 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Flush",                       { 0.9, 0.2, 0.7 } },
   { 1, "Draw:Sync",                        { 0.5, 0.7, 0.7 } },
   { 0, "Draw:Transform",                   { 0.0, 0.5, 0.0 } },
-  { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
-  { 0, "Draw:Set State",                   { 0.2, 0.6, 0.8 } },
+  { 1, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
+  { 1, "Draw:Set State",                   { 0.2, 0.6, 0.8 } },
   { 1, "Draw:Wait occlusion",              { 1.0, 0.5, 0.0 } },
+  { 1, "Draw:Bind FBO",                    { 0.0, 0.8, 0.8 } },
   { 0, NULL }
 };
 
@@ -226,6 +227,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Dirty PipelineCyclers",            { 0.2, 0.2, 0.2 },  "", 5000 },
   { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
   { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
+  { 1, "Command latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
   { 0, NULL }
 };
 
@@ -339,7 +341,7 @@ initialize_collector_def(const PStatClient *client, PStatCollectorDef *def) {
     ("pstats-factor-" + config_name, 1.0, "", ConfigVariable::F_dynamic);
   ConfigVariableDouble pstats_color
     ("pstats-color-" + config_name, 0.0, "", ConfigVariable::F_dynamic);
-  
+
   if (pstats_active.has_value()) {
     def->_is_active = pstats_active;
     def->_active_explicitly_set = true;

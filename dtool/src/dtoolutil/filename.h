@@ -263,6 +263,11 @@ protected:
   static TVOLATILE AtomicAdjust::Pointer _user_appdata_directory;
   static TVOLATILE AtomicAdjust::Pointer _common_appdata_directory;
 
+#ifdef ANDROID
+public:
+  static string _internal_data_dir;
+#endif
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

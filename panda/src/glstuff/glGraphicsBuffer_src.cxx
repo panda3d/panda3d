@@ -27,7 +27,10 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  _bind_texture_pcollector(_draw_window_pcollector, "Bind textures"),
+  _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
+  _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples")
 {
   CLP(GraphicsStateGuardian) *glgsg;
 
@@ -171,11 +174,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
     // In case of multisample rendering, we don't need to issue
     // the barrier until we call glBlitFramebuffer.
+#ifndef OPENGLES
     if (gl_enable_memory_barriers && _fbo_multisample == 0) {
       CLP(GraphicsStateGuardian) *glgsg;
       DCAST_INTO_R(glgsg, _gsg, false);
 
-      pvector<CLP(TextureContext)*>::iterator it;
+      TextureContexts::iterator it;
       for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
         CLP(TextureContext) *gtc = *it;
 
@@ -186,6 +190,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
         }
       }
     }
+#endif
   }
 
   _gsg->set_current_properties(&get_fb_properties());
@@ -273,6 +278,8 @@ rebuild_bitplanes() {
     }
     return;
   }
+
+  PStatGPUTimer timer(glgsg, _bind_texture_pcollector);
 
   // Calculate bitplane size.  This can be larger than the buffer.
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
@@ -437,6 +444,19 @@ rebuild_bitplanes() {
     // Bind the FBO
     if (_fbo[layer] == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo[layer]);
+
+#ifndef OPENGLES
+      if (glgsg->_use_object_labels) {
+        if (num_fbos > 1) {
+          GLchar name[128];
+          GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
+          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
+        } else {
+          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
+        }
+      }
+#endif
+
       if (_fbo[layer] == 0) {
         report_my_gl_errors();
         return;
@@ -469,7 +489,7 @@ rebuild_bitplanes() {
       _have_any_color = true;
     }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
       _have_any_color = true;
@@ -1131,6 +1151,8 @@ generate_mipmaps() {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
+  //PStatGPUTimer timer(glgsg, _generate_mipmap_pcollector);
+
   pvector<CLP(TextureContext)*>::iterator it;
   for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
     CLP(TextureContext) *gtc = *it;
@@ -1168,7 +1190,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
   }
 
-  // Unbind the FBO
+  // Unbind the FBO.  TODO: calling bind_fbo is slow, so we should
+  // probably move this to begin_frame to prevent unnecessary calls.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
   glgsg->bind_fbo(0);
@@ -1604,11 +1627,14 @@ check_host_valid() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 resolve_multisamples() {
+  nassertv(_fbo.size() > 0);
+
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  nassertv(_fbo.size() > 0);
+  PStatGPUTimer timer(glgsg, _resolve_multisample_pcollector);
 
+#ifndef OPENGLES
   if (gl_enable_memory_barriers) {
     // Issue memory barriers as necessary to make sure that the
     // texture memory is synchronized before we blit to it.
@@ -1623,6 +1649,7 @@ resolve_multisamples() {
       }
     }
   }
+#endif
 
   glgsg->report_my_gl_errors();
   GLuint fbo = _fbo[0];
@@ -1631,7 +1658,7 @@ resolve_multisamples() {
   }
   glgsg->_glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo);
   glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, _fbo_multisample);
-  
+
   // If the depth buffer is shared, resolve it only on the last to render FBO.
   bool do_depth_blit = false;
   if (_rbm[RTP_depth_stencil] != 0 || _rbm[RTP_depth] != 0) {
@@ -1671,6 +1698,7 @@ resolve_multisamples() {
                               GL_NEAREST);
   }
   // Now handle the other color buffers.
+#ifndef OPENGLES_1
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
     glReadBuffer(next);
@@ -1679,7 +1707,6 @@ resolve_multisamples() {
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
-#ifndef OPENGLES
   for (int i = 0; i < _fb_properties.get_aux_rgba(); ++i) {
     glReadBuffer(next);
     glDrawBuffer(next);

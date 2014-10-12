@@ -252,7 +252,7 @@ verify_window_sizes(int numsizes, int *dimen) {
 void wdxGraphicsWindow9::
 close_window() {
   if (wdxdisplay9_cat.is_debug()) {
-    wdxdisplay9_cat.debug() 
+    wdxdisplay9_cat.debug()
       << "wdxGraphicsWindow9::close_window() " << this << "\n";
   }
 
@@ -300,7 +300,7 @@ open_window() {
   // window.
   {
     WindowProperties resized_props;
-    resized_props.set_size(_wcontext._display_mode.Width, 
+    resized_props.set_size(_wcontext._display_mode.Width,
                            _wcontext._display_mode.Height);
     _properties.add_properties(resized_props);
   }
@@ -420,17 +420,17 @@ void wdxGraphicsWindow9::
 handle_reshape() {
   GdiFlush();
   WinGraphicsWindow::handle_reshape();
-  
-  if (_dxgsg != NULL) {
+
+  if (_dxgsg != NULL && _dxgsg->_d3d_device != NULL) {
     // create the new resized rendertargets
     WindowProperties props = get_properties();
     int x_size = props.get_x_size();
     int y_size = props.get_y_size();
-    
+
     if (_wcontext._presentation_params.BackBufferWidth != x_size ||
         _wcontext._presentation_params.BackBufferHeight != y_size) {
       bool resize_succeeded = reset_device_resize_window(x_size, y_size);
-      
+
       if (wdxdisplay9_cat.is_debug()) {
         if (!resize_succeeded) {
           wdxdisplay9_cat.debug()
@@ -708,7 +708,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   if (dx_disable_driver_management_ex) {
     dwBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT_EX;
   }
-  
+
   if (is_fullscreen()) {
     // CREATE FULLSCREEN BUFFERS
 
@@ -751,11 +751,11 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     }
 
     //From d3d8caps.h
-    //D3DPRESENT_INTERVAL_DEFAULT  = 0x00000000L 
+    //D3DPRESENT_INTERVAL_DEFAULT  = 0x00000000L
     //#define D3DPRESENT_INTERVAL_ONE         0x00000001L
     //Next line is really sloppy, should either be D3DPRESENT_INTERVAL_DEFAULT or D3DPRESENT_INTERVAL_ONE
     //not a direct number! but I'm not going to touch it because it's working as is. Zhao 12/15/2011
-    presentation_params->PresentationInterval = 0;    
+    presentation_params->PresentationInterval = 0;
 
     //ATI 5450 doesn't like D3DSWAPEFFECT_FLIP
     presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -803,7 +803,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   PRINT_REFCNT(wdxdisplay9, _wcontext._d3d_device);
 
-  if (presentation_params->EnableAutoDepthStencil) {    
+  if (presentation_params->EnableAutoDepthStencil) {
     int depth_bits;
     int stencil_bits;
 
@@ -846,7 +846,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
         wdxdisplay9_cat.error() << "unknown depth stencil format  " << presentation_params->AutoDepthStencilFormat;
         break;
     }
-      
+
     _fb_properties.set_stencil_bits(stencil_bits);
     _fb_properties.set_depth_bits(depth_bits);
   } else {
@@ -1118,16 +1118,16 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
   if (is_fullscreen()) {
     bool bCouldntFindValidZBuf;
-    
+
     dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
                                          bNeedZBuffer, bWantStencil,
                                          &_wcontext._supported_screen_depths_mask,
                                          &bCouldntFindValidZBuf,
                                          &pixFmt, dx_force_16bpp_zbuffer, true);
-    
+
     // note I'm not saving refresh rate, will just use adapter
     // default at given res for now
-    
+
     if (pixFmt == D3DFMT_UNKNOWN) {
       wdxdisplay9_cat.error()
         << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")

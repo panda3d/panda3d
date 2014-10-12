@@ -34,7 +34,7 @@
 //               * Can render onto a texture without clearing it first.
 //               * Supports multisample antialiased rendering.
 //
-//               Some of these deserve a little explanation. 
+//               Some of these deserve a little explanation.
 //               Auxiliary bitplanes are additional bitplanes above
 //               and beyond the normal depth,stencil,color.  One can
 //               use them to render out multiple textures in a single
@@ -43,14 +43,14 @@
 //               buffer will be equal to the texture's previous
 //               contents.  This alo means you can meaningfully
 //               share a bitplane between two buffers by binding
-//               the same texture to both buffers. 
+//               the same texture to both buffers.
 //
 //               If either of the necessary OpenGL extensions is not
 //               available, then the glGraphicsBuffer will not be
 //               available (although it may still be possible to
 //               create a wglGraphicsBuffer or glxGraphicsBuffer).
 //
-//               This class now also uses the extensions 
+//               This class now also uses the extensions
 //               EXT_framebuffer_multisample and EXT_framebuffer_blit
 //               to allow for multisample antialiasing these offscreen
 //               render targets.  If these extensions are unavailable
@@ -87,13 +87,13 @@ public:
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
-  
+
   void check_host_valid();
-  
+
   void report_my_errors(int line, const char *file);
 
 private:
-  
+
   void bind_slot(int layer, bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,
@@ -127,7 +127,8 @@ private:
 
   // List of textures for which we might have to generate mipmaps
   // after rendering one frame.
-  pvector<CLP(TextureContext)*> _texture_contexts;
+  typedef pvector<CLP(TextureContext)*> TextureContexts;
+  TextureContexts _texture_contexts;
 
   // The cube map face we are currently drawing to or have just
   // finished drawing to, or -1 if we are not drawing to a cube map.
@@ -136,10 +137,14 @@ private:
   bool _initial_clear;
   bool _needs_rebuild;
   UpdateSeq _last_textures_seq;
-  
+
   CLP(GraphicsBuffer) *_shared_depth_buffer;
   list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
-  
+
+  PStatCollector _bind_texture_pcollector;
+  PStatCollector _generate_mipmap_pcollector;
+  PStatCollector _resolve_multisample_pcollector;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

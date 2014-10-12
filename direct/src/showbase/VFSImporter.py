@@ -3,7 +3,6 @@ import sys
 import os
 import marshal
 import imp
-import struct
 import types
 import __builtin__
 
@@ -286,7 +285,8 @@ class VFSLoader:
         code = None
         data = vfile.readFile(True)
         if data[:4] == imp.get_magic():
-            t = struct.unpack('<I', data[4:8])[0]
+            t = ord(data[4]) + (ord(data[5]) << 8) + \
+               (ord(data[6]) << 16) + (ord(data[7]) << 24)
             if not timestamp or t == timestamp:
                 code = marshal.loads(data[8:])
             else:
@@ -314,7 +314,10 @@ class VFSLoader:
             pass
         else:
             f.write('\0\0\0\0')
-            f.write(struct.pack('<I', self.timestamp))
+            f.write(chr(self.timestamp & 0xff) +
+                    chr((self.timestamp >> 8) & 0xff) +
+                    chr((self.timestamp >> 16) & 0xff) +
+                    chr((self.timestamp >> 24) & 0xff))
             f.write(marshal.dumps(code))
             f.flush()
             f.seek(0, 0)

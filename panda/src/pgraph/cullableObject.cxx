@@ -78,11 +78,11 @@ munge_geom(GraphicsStateGuardianBase *gsg,
         nassertr(geom_reader.check_valid(&data_reader), false);
       }
 #endif  // _DEBUG
-      
+
       geom_rendering = geom_reader.get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
       geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
-      
+
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
           if (singular_points) {
@@ -92,7 +92,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
         }
       }
     }
-    
+
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
     if (!hardware_point_sprites) {
@@ -115,7 +115,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // _munged_data, and might also replace _state.
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
-          << "munge_points_to_quads() for geometry with bits: " 
+          << "munge_points_to_quads() for geometry with bits: "
           << hex << geom_rendering << ", unsupported: "
           << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
       }
@@ -130,7 +130,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // If we have to compute the light vector, we have to animate
       // the vertices in the CPU--and we have to do it before we call
       // munge_geom(), which might lose the tangent and binormal.
-      CPT(GeomVertexData) animated_vertices = 
+      CPT(GeomVertexData) animated_vertices =
         _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
@@ -156,7 +156,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // has been munged--that is, we couldn't arrange to handle the
       // animation in hardware--then we have to calculate that
       // animation now.
-      CPT(GeomVertexData) animated_vertices = 
+      CPT(GeomVertexData) animated_vertices =
         _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
@@ -240,7 +240,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   // Better get the animated vertices, in case we're showing sprites
   // on an animated model for some reason.
-  CPT(GeomVertexData) source_data = 
+  CPT(GeomVertexData) source_data =
     _munged_data->animate_vertices(force, current_thread);
 
   if (!force && !source_data->request_resident()) {
@@ -308,22 +308,22 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     FormatMap::iterator fmi = _format_map.find(sformat);
     if (fmi != _format_map.end()) {
       new_format = (*fmi).second;
-      
+
     } else {
       // We have to construct the format now.
       PT(GeomVertexArrayFormat) new_array_format;
       if (sformat._retransform_sprites) {
         // With retransform_sprites in effect, we will be sending ordinary
         // 3-D points to the graphics API.
-        new_array_format = 
-          new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
+        new_array_format =
+          new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
                                     Geom::NT_stdfloat,
                                     Geom::C_point);
       } else {
         // Without retransform_sprites, we will be sending 4-component
         // clip-space points.
-        new_array_format = 
-          new GeomVertexArrayFormat(InternalName::get_vertex(), 4, 
+        new_array_format =
+          new GeomVertexArrayFormat(InternalName::get_vertex(), 4,
                                     Geom::NT_stdfloat,
                                     Geom::C_clip_point);
       }
@@ -344,14 +344,14 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           (InternalName::get_texcoord(), 2,
            Geom::NT_stdfloat,
            Geom::C_texcoord);
-        
+
       } else if (has_texcoord) {
         const GeomVertexColumn *c = texcoord.get_column();
         new_array_format->add_column
           (InternalName::get_texcoord(), c->get_num_components(),
            c->get_numeric_type(), c->get_contents());
       }
-      
+
       new_format = GeomVertexFormat::register_format(new_array_format);
       _format_map[sformat] = new_format;
     }
@@ -408,7 +408,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       LPoint3 eye = modelview.xform_point(vertex.get_data3());
       points[vi]._eye = eye;
       points[vi]._dist = gsg->compute_distance_to(points[vi]._eye);
-    
+
       // The point in clip coordinates.
       LPoint4 p4 = LPoint4(eye[0], eye[1], eye[2], 1.0f) * projection;
 
@@ -433,7 +433,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           scale_y /= gsg->compute_distance_to(eye);
         }
       }
-      
+
       // Also factor in the homogeneous scale for being in clip
       // coordinates still.
       scale_y *= p4[3];
@@ -447,7 +447,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       LPoint2 c0(scale_x, scale_y);
       LPoint2 c1(-scale_x, scale_y);
 
-      if (has_rotate) { 
+      if (has_rotate) {
         // If we have a rotate factor, apply it to those two corners.
         PN_stdfloat r = rotate.get_data1f();
         LMatrix3 mat = LMatrix3::rotate_mat(r);
@@ -461,7 +461,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       PN_stdfloat ry = 1.0f / viewport_height;
       c0.set(c0[0] * rx, c0[1] * ry);
       c1.set(c1[0] * rx, c1[1] * ry);
-    
+
       if (retransform_sprites) {
         // With retransform_sprites in effect, we must reconvert the
         // resulting quad back into the original 3-D space.
@@ -469,7 +469,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3])));
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3])));
-      
+
         if (has_normal) {
           const LNormal &c = normal.get_data3();
           new_normal.set_data3(c);
@@ -477,7 +477,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           new_normal.set_data3(c);
           new_normal.set_data3(c);
         }
-      
+
       } else {
         // Without retransform_sprites, we can simply load the
         // clip-space coordinates.
@@ -485,7 +485,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         new_vertex.set_data4(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
         new_vertex.set_data4(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
         new_vertex.set_data4(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
-      
+
         if (has_normal) {
           LNormal c = render_transform.xform_vec(normal.get_data3());
           new_normal.set_data3(c);
@@ -521,17 +521,19 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     nassertr(new_data->get_num_rows() == new_verts, false);
   }
 
-  PT(Geom) new_geom = new Geom(new_data);
-    
-  // Create an appropriate GeomVertexArrayFormat for the primitive
-  // index.
-  static CPT(GeomVertexArrayFormat) new_prim_format;
-  if (new_prim_format == (GeomVertexArrayFormat *)NULL) {
-    new_prim_format =
-      GeomVertexArrayFormat::register_format
-      (new GeomVertexArrayFormat(InternalName::get_index(), 1, 
-                                 GeomEnums::NT_uint16, GeomEnums::C_index));
+  // Determine the format we should use to store the indices.
+  const GeomVertexArrayFormat *new_prim_format = NULL;
+  if (new_verts < 0xff) {
+    new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint8);
+
+  } else if (new_verts < 0xffff) {
+    new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
+
+  } else {
+    new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint32);
   }
+
+  PT(Geom) new_geom = new Geom(new_data);
 
   // Replace each primitive in the Geom (it's presumably a GeomPoints
   // primitive, although it might be some other kind of primitive if
@@ -575,11 +577,11 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
             vertices[i] = v;
           }
         }
-  
+
         // Now sort the points in order from back-to-front so they will
         // render properly with transparency, at least with each other.
         sort(vertices, vertices_end, SortPoints(points));
-  
+
         // Go through the points, now in sorted order, and generate a pair
         // of triangles for each one.  We generate indexed triangles
         // instead of two-triangle strips, since this seems to be
@@ -589,7 +591,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_stream);
         int new_prim_verts = 6 * num_vertices;  // two triangles per point.
 
-        PT(GeomVertexArrayData) new_index 
+        PT(GeomVertexArrayData) new_index
           = new GeomVertexArrayData(new_prim_format, GeomEnums::UH_stream);
         new_index->unclean_set_num_rows(new_prim_verts);
 
@@ -669,14 +671,14 @@ munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
       string source_name = tex_gen->get_source_name(stage);
       Light *light_obj = light.node()->as_light();
       nassertr(light_obj != (Light *)NULL, false);
-      
+
       // Determine the names of the tangent and binormal columns
       // associated with the stage's texcoord name.
       PT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
       PT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
-      
+
       PT(InternalName) texcoord_name = stage->get_texcoord_name();
-      
+
       if (_munged_data->has_column(tangent_name) &&
           _munged_data->has_column(binormal_name)) {
 

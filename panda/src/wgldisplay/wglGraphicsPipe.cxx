@@ -170,7 +170,7 @@ make_output(const string &name,
         _fbo_multisample = 16;
     }
     if ((flags & BF_fb_props_optional)==0) {
-      if ((fb_prop.get_indexed_color() > 0)||
+      if (fb_prop.get_indexed_color() ||
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
           (fb_prop.get_multisamples() > _fbo_multisample)) {

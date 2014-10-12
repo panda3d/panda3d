@@ -22,10 +22,12 @@
 #include "webcamVideo.h"
 #include "movieVideoCursor.h"
 
-struct v4l2_format;
+#include <linux/videodev2.h>
 
-#if defined(HAVE_JPEG)
-struct jpeg_decompress_struct;
+#ifdef HAVE_JPEG
+extern "C" {
+  #include <jpeglib.h>
+}
 #endif
 
 class WebcamVideoV4L;
@@ -45,9 +47,9 @@ private:
   void **_buffers;
   size_t *_buflens;
   size_t _bufcount;
-  struct v4l2_format *_format;
+  struct v4l2_format _format;
 #ifdef HAVE_JPEG
-  struct jpeg_decompress_struct *_cinfo;
+  struct jpeg_decompress_struct _cinfo;
 #endif
 
 public:

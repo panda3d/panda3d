@@ -40,7 +40,7 @@ parser.add_option('-l', '--license', dest = 'license',
                   default = None)
 parser.add_option('-w', '--website', dest = 'website',
                   help = 'The product website',
-                  default = 'http://www.panda3d.org')
+                  default = 'https://www.panda3d.org')
 parser.add_option('', '--start', dest = 'start',
                   help = 'Specify this option to add a start menu',
                   action = 'store_true', default = False)
@@ -64,6 +64,9 @@ parser.add_option('', '--pvk', dest = 'pvk',
                   default = None)
 parser.add_option('', '--mssdk', dest = 'mssdk',
                   help = 'The path to the MS Platform SDK directory (Windows only).  mssdk/bin should contain cabarc.exe and signcode.exe.',
+                  default = None)
+parser.add_option('', '--regview', dest = 'regview',
+                  help = 'Which registry view to use, 64 or 32.',
                   default = None)
 
 (options, args) = parser.parse_args()
@@ -221,7 +224,7 @@ def parseDependenciesUnix(tempFile):
         filenames.append(l.strip().split(' ', 1)[0])
     return filenames
 
-def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
+def addDependencies(path, pathname, file, pluginDependencies, dependentFiles, required=True):
     """ Checks the named file for DLL dependencies, and adds any
     appropriate dependencies found into pluginDependencies and
     dependentFiles. """
@@ -271,7 +274,10 @@ def addDependencies(path, pathname, file, pluginDependencies, dependentFiles):
                         break
                     pathname = None
                 if not pathname:
-                    sys.exit("Couldn't find %s." % (dfile))
+                    if required:
+                        sys.exit("Couldn't find %s." % (dfile))
+                    sys.stderr.write("Warning: couldn't find %s." % (dfile))
+                    continue
                 pathname = os.path.abspath(pathname)
                 dependentFiles[dfilelower] = pathname
 
@@ -552,6 +558,9 @@ def makeInstaller():
         CMD += '/DPANDA3D_PATH="' + pluginFiles[panda3d] + '" '
         CMD += '/DPANDA3DW="' + panda3dw + '" '
         CMD += '/DPANDA3DW_PATH="' + pluginFiles[panda3dw] + '" '
+
+        if options.regview:
+            CMD += '/DREGVIEW=%s ' % (options.regview)
 
         dependencies = dependentFiles.items()
         for i in range(len(dependencies)):
