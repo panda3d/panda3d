@@ -676,7 +676,8 @@ string_mfndata_type(MFnData::Type type) {
     return "kSubdSurface";
 
   case MFnData::kLast:
-    return "kLast";
+  default:
+    break;
   }
 
   return "**invalid**";

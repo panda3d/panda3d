@@ -138,5 +138,5 @@ save_file(const Filename &path, const LoaderOptions &options,
           PandaNode *node) const {
   loader_cat.error()
     << get_type() << " cannot save PandaNode objects.\n";
-  return NULL;
+  return false;
 }

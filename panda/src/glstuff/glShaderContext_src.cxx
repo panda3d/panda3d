@@ -928,6 +928,7 @@ issue_parameters(int altered) {
         }
       case Shader::SPT_double:
         GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
+      default:
         continue;
       }
     }
@@ -1441,6 +1442,8 @@ glsl_compile_shader(Shader::ShaderType type) {
       }
       break;
 #endif
+    default:
+      break;
   }
   if (!handle) {
     GLCAT.error()

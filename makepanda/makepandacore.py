@@ -1536,20 +1536,18 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         return
 
     elif (GetHost() == "darwin" and framework != None):
-        if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
-            os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
-            os.path.isdir("/Developer/Library/Frameworks/%s.framework" % framework) or
-            os.path.isdir("/Users/%s/System/Library/Frameworks/%s.framework" % (getpass.getuser(), framework))):
+        prefix = SDK["MACOSX"]
+        if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir(prefix + "/Developer/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir(prefix + "/Users/%s/System/Library/Frameworks/%s.framework" % (getpass.getuser(), framework))):
             LibName(target_pkg, "-framework " + framework)
             for d, v in defs.values():
                 DefSymbol(target_pkg, d, v)
-        elif (pkg in PkgListGet()):
-            print("%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework))
-            PkgDisable(pkg)
-        else:
-            print("%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework))
-            exit()
-        return
+            return
+
+        elif VERBOSE:
+            print(ColorText("cyan", "Couldn't find the framework %s" % (framework)))
 
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
@@ -2280,10 +2278,15 @@ def SetupBuildEnvironment(compiler):
         # Invoke gcc to determine the system library directories.
         global SYS_LIB_DIRS
 
-        # gcc doesn't add this one, but we do want it:
-        local_lib = SDK.get("SYSROOT", "") + "/usr/local/lib"
-        if os.path.isdir(local_lib):
-            SYS_LIB_DIRS.append(local_lib)
+        if sys.platform == "darwin":
+            # We need to add this one explicitly.
+            SYS_LIB_DIRS.append(SDK["MACOSX"] + "/usr/lib")
+
+        elif not SDK["MACOSX"]:
+            # gcc doesn't add this one, but we do want it:
+            local_lib = SDK.get("SYSROOT", "") + "/usr/local/lib"
+            if os.path.isdir(local_lib):
+                SYS_LIB_DIRS.append(local_lib)
 
         cmd = GetCXX() + " -print-search-dirs"
 

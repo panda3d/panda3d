@@ -123,6 +123,8 @@ typedef ios::seekdir ios_seekdir;
 #if defined(__has_extension) // Clang magic.
 #if __has_extension(cxx_constexpr)
 #define CONSTEXPR constexpr
+#else
+#define CONSTEXPR INLINE
 #endif
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
 #define CONSTEXPR constexpr

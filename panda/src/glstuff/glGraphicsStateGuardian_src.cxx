@@ -4892,6 +4892,9 @@ issue_timer_query(int pstats_index) {
   _pending_timer_queries.push_back(DCAST(TimerQueryContext, query));
 
   return DCAST(TimerQueryContext, query);
+
+#else
+  return NULL;
 #endif
 }
 
@@ -6838,6 +6841,10 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_float64:
     return GL_DOUBLE;
 #endif
+
+  case Geom::NT_stdfloat:
+    // Shouldn't happen, display error.
+    break;
   }
 
   GLCAT.error()
@@ -7123,6 +7130,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
+      case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
       case Texture::F_rg16:
@@ -7336,7 +7344,11 @@ get_internal_image_format(Texture *tex) const {
       switch (format) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
+      case Texture::F_depth_component16:
+      case Texture::F_depth_component24:
+      case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r32i:
         // Unsupported; fall through to below.
         break;
 
@@ -7428,8 +7440,6 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
         }
         return GL_COMPRESSED_LUMINANCE_ALPHA;
-      }
-      break;
 
       case Texture::F_srgb:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
@@ -7448,6 +7458,8 @@ get_internal_image_format(Texture *tex) const {
 
       case Texture::F_sluminance_alpha:
         return GL_COMPRESSED_SLUMINANCE_ALPHA;
+      }
+      break;
 #endif
 
     case Texture::CM_dxt1:
@@ -7802,6 +7814,9 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
   case TextureStage::M_blend_color_scale: return GL_BLEND;
   case TextureStage::M_modulate_glow: return GL_MODULATE;
   case TextureStage::M_modulate_gloss: return GL_MODULATE;
+  default:
+    // Other modes shouldn't get here.  Fall through and error.
+    break;
   }
 
   GLCAT.error()

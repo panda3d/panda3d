@@ -77,6 +77,6 @@ is_ready() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModelSaveRequest::
 get_success() const {
-  nassertr(_is_ready, NULL);
+  nassertr(_is_ready, false);
   return _success;
 }

@@ -1042,7 +1042,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       break;
 
     default:
-      break;
+      tinydisplay_cat.error()
+        << "Invalid index type " << reader->get_index_type() << "!\n";
+      return false;
     }
 
   } else {
@@ -1161,6 +1163,11 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
           }
         }
         break;
+
+      default:
+        tinydisplay_cat.error()
+          << "Invalid index type " << reader->get_index_type() << "!\n";
+        return false;
       }
 
       start = ends[i] + 2;
@@ -1258,7 +1265,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       break;
 
     default:
-      break;
+      tinydisplay_cat.error()
+        << "Invalid index type " << reader->get_index_type() << "!\n";
+      return false;
     }
 
   } else {
@@ -1332,7 +1341,9 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
       break;
 
     default:
-      break;
+      tinydisplay_cat.error()
+        << "Invalid index type " << reader->get_index_type() << "!\n";
+      return false;
     }
 
   } else {
@@ -2591,6 +2602,12 @@ upload_texture(TinyTextureContext *gtc, bool force) {
     case Texture::F_luminance_alpha:
       copy_la_image(dest, xsize, ysize, gtc, level);
       break;
+
+    default:
+      tinydisplay_cat.error()
+        << "Unsupported texture format "
+        << tex->get_format() << "!\n";
+      return false;
     }
 
     bytecount += xsize * ysize * 4;

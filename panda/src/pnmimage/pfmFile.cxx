@@ -1811,6 +1811,9 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
        LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
        LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z));
     break;
+
+  default:
+    nassertr(false, NULL);
   }
 
   // Rotate the bounding volume back into the original space of the

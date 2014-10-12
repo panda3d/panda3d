@@ -273,10 +273,10 @@ generate_block(unsigned short mx,
 double GeoMipTerrain::
 get_elevation(double x, double y) {
   y = (_ysize - 1) - y;
+  if (x < 0.0) x = 0.0;
+  if (y < 0.0) y = 0.0;
   unsigned int xlo = (unsigned int) x;
   unsigned int ylo = (unsigned int) y;
-  if (xlo < 0) xlo = 0;
-  if (ylo < 0) ylo = 0;
   if (xlo > _xsize - 2)
     xlo = _xsize - 2;
   if (ylo > _ysize - 2)
