@@ -11,7 +11,6 @@ set(P3EVENT_HEADERS
     genericAsyncTask.h genericAsyncTask.I
     pointerEvent.I pointerEvent.h
     pointerEventList.I pointerEventList.h
-    pythonTask.h pythonTask.I
     event.I event.h eventHandler.h eventHandler.I
     eventParameter.I eventParameter.h
     eventQueue.I eventQueue.h eventReceiver.h
@@ -30,16 +29,21 @@ set(P3EVENT_SOURCES
     genericAsyncTask.cxx
     pointerEvent.cxx
     pointerEventList.cxx
-    pythonTask.cxx
     config_event.cxx event.cxx eventHandler.cxx 
     eventParameter.cxx eventQueue.cxx eventReceiver.cxx
     pt_Event.cxx
 )
 
+set(P3EVENT_IGATEEXT
+  pythonTask.cxx
+  pythonTask.h
+  pythonTask.I
+)
+
 composite_sources(p3event P3EVENT_SOURCES)
 add_library(p3event ${P3EVENT_HEADERS} ${P3EVENT_SOURCES})
 target_link_libraries(p3event p3linmath p3pstatclient)
-target_interrogate(p3event ALL)
+target_interrogate(p3event ALL EXTENSIONS ${P3EVENT_IGATEEXT})
 
 install(TARGETS p3event DESTINATION lib)
 

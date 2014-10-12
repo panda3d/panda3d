@@ -24,9 +24,6 @@
 #include "graphicsBuffer.h"
 #include "graphicsWindow.h"
 #include "graphicsDevice.h"
-#ifdef HAVE_PYTHON
-#include "pythonGraphicsWindowProc.h"
-#endif
 #include "graphicsWindowProcCallbackData.h"
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
@@ -493,9 +490,6 @@ init_libdisplay() {
   GraphicsPipe::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsWindow::init_type();
-#ifdef HAVE_PYTHON
-  PythonGraphicsWindowProc::init_type();
-#endif
   GraphicsWindowProcCallbackData::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();

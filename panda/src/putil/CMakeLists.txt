@@ -50,7 +50,6 @@ set(P3PUTIL_HEADERS
   pbitops.I pbitops.h
   portalMask.h
   pta_ushort.h
-  pythonCallbackObject.h pythonCallbackObject.I
   simpleHashMap.I simpleHashMap.h
   sparseArray.I sparseArray.h
   timedCycle.I timedCycle.h typedWritable.I
@@ -99,7 +98,6 @@ set(P3PUTIL_SOURCES
   nodeCachedReferenceCount.cxx
   pbitops.cxx
   pta_ushort.cxx
-  pythonCallbackObject.cxx
   simpleHashMap.cxx
   sparseArray.cxx
   timedCycle.cxx typedWritable.cxx
@@ -113,6 +111,9 @@ set(P3PUTIL_SOURCES
 set(P3PUTIL_IGATEEXT
   typedWritable_ext.cxx
   typedWritable_ext.h
+  pythonCallbackObject.cxx
+  pythonCallbackObject.h
+  pythonCallbackObject.I
 )
 
 composite_sources(p3putil P3PUTIL_SOURCES)

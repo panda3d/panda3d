@@ -15,6 +15,11 @@
 #include "pythonGraphicsWindowProc.h"
 #include "graphicsWindowProcCallbackData.h"
 
+ConfigureDef(config_pythonGraphicsWindowProc);
+ConfigureFn(config_pythonGraphicsWindowProc) {
+  PythonGraphicsWindowProc::init_type();
+}
+
 TypeHandle PythonGraphicsWindowProc::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

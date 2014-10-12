@@ -20,6 +20,11 @@
 #include "callbackData.h"
 #include "config_util.h"
 
+ConfigureDef(config_pythonCallbackObject);
+ConfigureFn(config_pythonCallbackObject) {
+  PythonCallbackObject::init_type();
+}
+
 TypeHandle PythonCallbackObject::_type_handle;
 
 #ifndef CPPPARSER

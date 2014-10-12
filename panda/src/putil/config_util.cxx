@@ -34,7 +34,6 @@
 #include "factoryParam.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
-#include "pythonCallbackObject.h"
 #include "referenceCount.h"
 #include "sparseArray.h"
 #include "typedObject.h"
@@ -200,9 +199,6 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
-#ifdef HAVE_PYTHON
-  PythonCallbackObject::init_type();
-#endif
   QuadBitMaskNative::init_type();
   ReferenceCount::init_type();
   SparseArray::init_type();
