@@ -31,6 +31,7 @@
     graphicsStateGuardian_ext.cxx graphicsStateGuardian_ext.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindow.I graphicsWindow.h \
+    graphicsWindow_ext.cxx graphicsWindow_ext.h \
     graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
     graphicsWindowProc.h \

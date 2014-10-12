@@ -3276,6 +3276,7 @@ if (not RUNTIME):
   TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
   TargetAdd('libp3display_igate.obj', input='libp3display.in', opts=["DEPENDENCYONLY"])
   TargetAdd('p3display_graphicsStateGuardian_ext.obj', opts=OPTS, input='graphicsStateGuardian_ext.cxx')
+  TargetAdd('p3display_graphicsWindow_ext.obj', opts=OPTS, input='graphicsWindow_ext.cxx')
 
   if RTDIST and GetTarget() == 'darwin':
     OPTS=['DIR:panda/src/display']
@@ -3551,6 +3552,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3gobj_internalName_ext.obj')
   TargetAdd('libpanda.dll', input='p3pgraph_ext_composite.obj')
   TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian_ext.obj')
+  TargetAdd('libpanda.dll', input='p3display_graphicsWindow_ext.obj')
 
   if PkgSkip("FREETYPE")==0:
     TargetAdd('libpanda.dll', input="p3pnmtext_composite1.obj")
