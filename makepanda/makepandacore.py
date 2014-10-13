@@ -2282,7 +2282,7 @@ def SetupBuildEnvironment(compiler):
             # We need to add this one explicitly.
             SYS_LIB_DIRS.append(SDK["MACOSX"] + "/usr/lib")
 
-        elif not SDK["MACOSX"]:
+        if not SDK.get("MACOSX"):
             # gcc doesn't add this one, but we do want it:
             local_lib = SDK.get("SYSROOT", "") + "/usr/local/lib"
             if os.path.isdir(local_lib):
