@@ -23,12 +23,14 @@ TypeHandle CLP(TextureContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CLP(TextureContext)::
 ~CLP(TextureContext)() {
+#ifndef OPENGLES
   if (gl_enable_memory_barriers) {
     _glgsg->_textures_needing_fetch_barrier.erase(this);
     _glgsg->_textures_needing_image_access_barrier.erase(this);
     _glgsg->_textures_needing_update_barrier.erase(this);
     _glgsg->_textures_needing_framebuffer_barrier.erase(this);
   }
+#endif
 
   glDeleteTextures(1, &_index);
   _index = 0;
@@ -53,12 +55,15 @@ void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
 
+#ifndef OPENGLES
   if (_handle != 0) {
     if (_handle_resident) {
       _glgsg->_glMakeTextureHandleNonResident(_handle);
     }
     _handle_resident = false;
-  } else {
+  } else
+#endif
+  {
     reset_data();
   }
 
@@ -74,9 +79,11 @@ evict_lru() {
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
 reset_data() {
+#ifndef OPENGLES
   if (_handle != 0 && _handle_resident) {
     _glgsg->_glMakeTextureHandleNonResident(_handle);
   }
+#endif
 
   // Free the texture resources.
   glDeleteTextures(1, &_index);
@@ -87,7 +94,6 @@ reset_data() {
 
   _handle = 0;
   _handle_resident = false;
-  _needs_barrier = false;
   _has_storage = false;
   _immutable = false;
 
@@ -109,6 +115,7 @@ reset_data() {
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
 make_handle_resident() {
+#ifndef OPENGLES
   if (_handle != 0) {
     if (!_handle_resident) {
       _glgsg->_glMakeTextureHandleResident(_handle);
@@ -116,6 +123,7 @@ make_handle_resident() {
     }
     set_resident(true);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,15 +177,25 @@ needs_barrier(GLbitfield barrier) {
 //     Function: GLTextureContext::mark_incoherent
 //       Access: Public
 //  Description: Mark a texture as needing a memory barrier, since
-//               a non-coherent write just happened to it.
+//               a non-coherent read or write just happened to it.
+//               If 'wrote' is true, it was written to.
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
-mark_incoherent() {
+mark_incoherent(bool wrote) {
   if (!gl_enable_memory_barriers) {
     return;
   }
 
-  _glgsg->_textures_needing_fetch_barrier.insert(this);
+  // If we only read from it, the next read operation won't need
+  // another barrier, since it'll be reading the same data.
+  if (wrote) {
+    _glgsg->_textures_needing_fetch_barrier.insert(this);
+  }
+
+  // We could still write to it before we read from it, so we have
+  // to always insert these barriers.  This could be slightly
+  // optimized so that we don't issue a barrier between consecutive
+  // image reads, but that may not be worth the trouble.
   _glgsg->_textures_needing_image_access_barrier.insert(this);
   _glgsg->_textures_needing_update_barrier.insert(this);
   _glgsg->_textures_needing_framebuffer_barrier.insert(this);

@@ -17,15 +17,34 @@ All use of this software is subject to the terms of the revised BSD
 license.  You should have received a copy of this license along
 with this source code in a file named \"LICENSE.\"""".split("\n")
 
-libraries = {}
-for m, lib in panda3d.modules.items():
-    if not isinstance(lib, str):
-        for l in lib:
-            libraries[l.replace("lib", "")] = m
-    else:
-        libraries[lib.replace("lib", "")] = m
-
 def comment(code):
+    if not code:
+        return ""
+
+    comment = ''
+
+    empty_line = False
+    for line in code.splitlines(False):
+        line = line.strip('\t\n /')
+        if line:
+            if empty_line:
+                # New paragraph.
+                comment += '\n\n'
+            elif comment:
+                comment += '\n'
+            comment += '/// ' + line
+        else:
+            empty_line = True
+
+    if comment:
+        return comment
+    else:
+        return ''
+
+def block_comment(code):
+    if not code:
+        return ""
+
     lines = code.split("\n")
     newlines = []
     indent = 0
@@ -38,18 +57,18 @@ def comment(code):
         line = line.rstrip()
         strline = line.lstrip('/ \t')
         if reading_desc:
-            newlines.append(line[min(indent, len(line) - len(strline)):])
+            newlines.append('/// ' + line[min(indent, len(line) - len(strline)):])
         else:
             # A "Description:" text starts the description.
             if strline.startswith("Description"):
                 strline = strline[11:].lstrip(': \t')
                 indent = len(line) - len(strline)
                 reading_desc = True
-                newlines.append(strline)
+                newlines.append('/// ' + strline)
 
-    newcode = "\n".join(newlines)
+    newcode = '\n'.join(newlines)
     if len(newcode) > 0:
-        return "/** " + newcode + " */"
+        return newcode
     else:
         return ""
 
@@ -67,6 +86,11 @@ def translateFunctionName(name):
     return new
 
 def translated_type_name(type):
+    if interrogate_type_is_atomic(type):
+        token = interrogate_type_atomic_token(type)
+        if token == 7:
+            return 'str'
+
     typename = interrogate_type_name(type)
     typename = typename.replace("< ", "").replace(" >", "")
     return typename
@@ -76,13 +100,24 @@ def translateTypeSpec(name):
     name = name.replace("BitMask< unsigned int, 32 >", "BitMask32")
     name = name.replace("atomic ", "")
     name = name.replace("< ", "").replace(" >", "")
+    if name == '_object':
+        name = 'object'
+    elif name == '_typeobject':
+        name = 'type'
     return name
+
+def processElement(handle, element):
+    if interrogate_element_has_comment(element):
+        print >>handle, comment(interrogate_element_comment(element))
+
+    print >>handle, translateTypeSpec(translated_type_name(interrogate_element_type(element))),
+    print >>handle, interrogate_element_name(element) + ';'
 
 def processFunction(handle, function, isConstructor = False):
     for i_wrapper in xrange(interrogate_function_number_of_python_wrappers(function)):
         wrapper = interrogate_function_python_wrapper(function, i_wrapper)
         if interrogate_wrapper_has_comment(wrapper):
-            print >>handle, comment(interrogate_wrapper_comment(wrapper))
+            print >>handle, block_comment(interrogate_wrapper_comment(wrapper))
         
         if not isConstructor:
             if not interrogate_wrapper_number_of_parameters(wrapper) > 0 or not interrogate_wrapper_parameter_is_this(wrapper, 0):
@@ -114,11 +149,14 @@ def processType(handle, type):
     derivations = [ translated_type_name(interrogate_type_get_derivation(type, n)) for n in range(interrogate_type_number_of_derivations(type)) ]
     
     if interrogate_type_has_comment(type):
-        print >>handle, comment(interrogate_type_comment(type))
+        print >>handle, block_comment(interrogate_type_comment(type))
     
     if interrogate_type_is_enum(type):
         print >>handle, "enum %s {" % typename
         for i_value in range(interrogate_type_number_of_enum_values(type)):
+            docstring = comment(interrogate_type_enum_value_comment(type, i_value))
+            if docstring:
+                print >>handle, docstring
             print >>handle, translateFunctionName(interrogate_type_enum_value_name(type, i_value)), "=", interrogate_type_enum_value(type, i_value), ","
     else:
         if interrogate_type_is_struct(type):
@@ -148,6 +186,9 @@ def processType(handle, type):
     
     for i_method in xrange(interrogate_type_number_of_make_seqs(type)):
         print >>handle, "list", translateFunctionName(interrogate_make_seq_seq_name(interrogate_type_get_make_seq(type, i_method))), "();"
+
+    for i_element in xrange(interrogate_type_number_of_elements(type)):
+        processElement(handle, interrogate_type_get_element(type, i_element))
     
     print >>handle, "};"
 
@@ -161,20 +202,22 @@ if __name__ == "__main__":
     interrogate_add_search_directory(os.path.join(os.path.dirname(pandac.__file__), "..", "..", "etc"))
     interrogate_add_search_directory(os.path.join(os.path.dirname(pandac.__file__), "input"))
 
-    try:
-        panda3d.__load__()
-    except ImportError, msg:
-        print msg
+    import panda3d.core
+
+    for lib in os.listdir(os.path.dirname(panda3d.__file__)):
+        if lib.endswith(('.pyd', '.so')) and not lib.startswith('core.'):
+            __import__('panda3d.' + os.path.splitext(lib)[0])
 
     lastpkg = None
     for i_type in xrange(interrogate_number_of_global_types()):
         type = interrogate_get_global_type(i_type)
 
         if interrogate_type_has_module_name(type):
-            package = libraries[interrogate_type_module_name(type)]
+            package = interrogate_type_module_name(type)
             if lastpkg != package:
-                print >>handle, "}"
-                print >>handle, "namespace panda3d.%s {" % package
+                if lastpkg is not None:
+                    print >>handle, "}"
+                print >>handle, "namespace %s {" % package
                 lastpkg = package
 
             processType(handle, type)
@@ -184,4 +227,3 @@ if __name__ == "__main__":
     if lastpkg is not None:
         print >>handle, "}"
     handle.close()
-

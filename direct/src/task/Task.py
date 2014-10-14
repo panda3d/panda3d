@@ -136,6 +136,7 @@ class TaskManager:
 
     def destroy(self):
         # This should be safe to call multiple times.
+        self.running = False
         self.notify.info("TaskManager.destroy()")
         self.destroyed = True
         self._frameProfileQueue.clear()

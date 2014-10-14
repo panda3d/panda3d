@@ -14,6 +14,7 @@
 #include "cppEnumType.h"
 #include "cppFunctionType.h"
 #include "cppTBDType.h"
+#include "cppMakeProperty.h"
 #include "cppMakeSeq.h"
 #include "cppParameterList.h"
 #include "cppInstance.h"
@@ -234,7 +235,6 @@ pop_struct() {
 %token XOREQUAL
 %token LSHIFTEQUAL
 %token RSHIFTEQUAL
-%token TOKENPASTE
 
 %token KW_BEGIN_PUBLISH
 %token KW_BLOCKING
@@ -264,6 +264,7 @@ pop_struct() {
 %token KW_INT
 %token KW_LONG
 %token KW_LONGLONG
+%token KW_MAKE_PROPERTY
 %token KW_MAKE_SEQ
 %token KW_MUTABLE
 %token KW_NAMESPACE
@@ -475,7 +476,35 @@ declaration:
 {
   current_scope->set_current_vis(V_private);
 }
-	| KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
+        | KW_MAKE_PROPERTY '(' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+
+  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+  }
+
+  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
+  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+}
+        | KW_MAKE_PROPERTY '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+  }
+
+  CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @1);
+  }
+
+  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                           setter->as_function_group(),
+                                                           current_scope, @1.file);
+  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+}
+         | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
 {
   CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
   current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
@@ -1828,32 +1857,34 @@ named_enum:
 }
         ;
 
-enum_body:
+enum_body_trailing_comma:
         empty
-        | enum_body_no_trailing_comma
-        | enum_body_no_trailing_comma ','
-        ;
+        | enum_body_trailing_comma name ','
+{
+  assert(current_enum != NULL);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
+  current_scope->add_enum_value(inst, current_lexer, @2);
+}
+        | enum_body_trailing_comma name '=' const_expr ','
+{
+  assert(current_enum != NULL);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
+  current_scope->add_enum_value(inst, current_lexer, @2);
+};
 
-enum_body_no_trailing_comma:
-        name
+enum_body:
+        enum_body_trailing_comma
+        | enum_body_trailing_comma name
 {
   assert(current_enum != NULL);
-  current_enum->add_element($1->get_simple_name(), current_scope);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
+  current_scope->add_enum_value(inst, current_lexer, @2);
 }
-        | name '=' const_expr
+        | enum_body_trailing_comma name '=' const_expr
 {
   assert(current_enum != NULL);
-  current_enum->add_element($1->get_simple_name(), current_scope, $3);
-}
-        | enum_body_no_trailing_comma ',' name
-{
-  assert(current_enum != NULL);
-  current_enum->add_element($3->get_simple_name(), current_scope);
-}
-        | enum_body_no_trailing_comma ',' name '=' const_expr
-{
-  assert(current_enum != NULL);
-  current_enum->add_element($3->get_simple_name(), current_scope, $5);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
+  current_scope->add_enum_value(inst, current_lexer, @2);
 }
         ;
 
@@ -2086,7 +2117,7 @@ element:
         | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_CAST
         | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF | KW_TYPENAME
         | KW_UNION | KW_UNSIGNED | KW_VIRTUAL | KW_VOID | KW_VOLATILE
-        | KW_WHILE | TOKENPASTE
+        | KW_WHILE
         | KW_OPERATOR
 {
 }

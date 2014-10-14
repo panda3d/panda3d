@@ -114,7 +114,7 @@ enable (bool enable) {
 //  Description: Set the GeomNode.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-set_geom_node (PT(GeomNode) geom_node) {
+set_geom_node (GeomNode *geom_node) {
   _geom_node = geom_node;
 }
 

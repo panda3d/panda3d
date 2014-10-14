@@ -33,6 +33,7 @@ public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
   virtual int get_geom_rendering() const;
+  virtual int get_min_num_vertices_per_primitive() const;
   virtual int get_num_unused_vertices_per_primitive() const;
 
 public:

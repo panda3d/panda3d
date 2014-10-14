@@ -31,6 +31,9 @@
 // And this is for GetModuleFileName().
 #include <windows.h>
 
+// And this is for CommandLineToArgvW.
+#include <shellapi.h>
+
 // SHGetSpecialFolderPath()
 #include <shlobj.h>
 #endif
@@ -74,12 +77,11 @@ extern char **environ;
 #define PREREAD_ENVIRONMENT
 #endif
 
-
 // We define the symbol HAVE_GLOBAL_ARGV if we have global variables
 // named GLOBAL_ARGC/GLOBAL_ARGV that we can read at static init time
 // to determine our command-line arguments.
 
-#if defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
+#if !defined(WIN32_VC) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
 extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
@@ -298,7 +300,7 @@ ns_get_environment_variable(const string &var) const {
 #endif
         }
       }
-      
+
       PyGILState_Release(state);
 
       if (main_dir.empty()) {
@@ -613,7 +615,7 @@ read_environment_variables() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_args() {
-
+#ifndef ANDROID
   // First, we need to fill in _dtool_name.  This contains
   // the full path to the p3dtool library.
 
@@ -762,7 +764,39 @@ read_args() {
   // Next we need to fill in _args, which is a vector containing
   // the command-line arguments that the executable was invoked with.
 
-#if defined(IS_FREEBSD)
+#if defined(WIN32_VC)
+
+  // We cannot rely on __argv when Python is linked in Unicode mode.
+  // Instead, let's use GetCommandLine.
+
+  LPWSTR cmdline = GetCommandLineW();
+  int argc = 0;
+  LPWSTR *wargv = CommandLineToArgvW(cmdline, &argc);
+
+  if (wargv == NULL) {
+    cerr << "CommandLineToArgvW failed; command-line arguments unavailable to config.\n";
+
+  } else {
+    TextEncoder encoder;
+    encoder.set_encoding(Filename::get_filesystem_encoding());
+
+    for (int i = 0; i < argc; ++i) {
+      wstring wtext(wargv[i]);
+      encoder.set_wtext(wtext);
+
+      if (i == 0) {
+        if (_binary_name.empty()) {
+          _binary_name = encoder.get_text();
+        }
+      } else {
+        _args.push_back(encoder.get_text());
+      }
+    }
+
+    LocalFree(wargv);
+  }
+
+#elif defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
   size_t bufsize = 4096;
@@ -786,13 +820,17 @@ read_args() {
 #elif defined(HAVE_GLOBAL_ARGV)
   int argc = GLOBAL_ARGC;
 
-  if (_binary_name.empty() && argc > 0) {
-    _binary_name = GLOBAL_ARGV[0];
-    // This really needs to be resolved against PATH.
-  }
+  // On Windows, __argv can be NULL when the main entry point is
+  // compiled in Unicode mode (as is the case with Python 3)
+  if (GLOBAL_ARGV != NULL) {
+    if (_binary_name.empty() && argc > 0) {
+      _binary_name = GLOBAL_ARGV[0];
+      // This really needs to be resolved against PATH.
+    }
 
-  for (int i = 1; i < argc; i++) {
-    _args.push_back(GLOBAL_ARGV[i]);
+    for (int i = 1; i < argc; i++) {
+      _args.push_back(GLOBAL_ARGV[i]);
+    }
   }
 
 #elif defined(HAVE_PROC_SELF_CMDLINE) || defined(HAVE_PROC_CURPROC_CMDLINE)
@@ -835,7 +873,7 @@ read_args() {
   }
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
   // Try to use realpath to get cleaner paths.
 
   if (!_binary_name.empty()) {
@@ -851,7 +889,9 @@ read_args() {
       _dtool_name = newpath;
     }
   }
-#endif
+#endif  // _WIN32
+
+#endif  // ANDROID
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

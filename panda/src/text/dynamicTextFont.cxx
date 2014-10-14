@@ -539,6 +539,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       render_polygon_contours(glyph, true, true);
       return glyph;
 
+    case RM_texture:
     default:
       break;
     }
@@ -610,7 +611,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
         copy_pnmimage_to_texture(reduced, glyph);
       }
     }
-      
+
     glyph->make_geom((int)floor(slot->bitmap_top + outline * _scale_factor + 0.5f),
                      (int)floor(slot->bitmap_left - outline * _scale_factor + 0.5f),
                      advance, _poly_margin,

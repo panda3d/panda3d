@@ -20,7 +20,7 @@ Options = [
     [ 'zon', 'zoff' ],
 
     # color write
-    [ 'cstore', 'cblend', 'cgeneral', 'coff' ],
+    [ 'cstore', 'cblend', 'cgeneral', 'coff', 'csstore', 'csblend' ],
 
     # alpha test
     [ 'anone', 'aless', 'amore' ],
@@ -63,6 +63,10 @@ CodeTable = {
     'cblend' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)',
     'cgeneral' : '#define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)',
     'coff' : '#define STORE_PIX(pix, rgb, r, g, b, a)',
+
+    # color write, sRGB
+    'csstore' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = SRGBA_TO_PIXEL(r, g, b, a)',
+    'csblend' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_SRGB(pix, r, g, b, a)',
 
     # alpha test
     'anone' : '#define ACMP(zb, a) 1',
@@ -264,6 +268,3 @@ print >> table_decl, 'extern const ZB_fillTriangleFunc fill_tri_funcs%s;' % (arr
 writeTableEntry([])
 print >> table_def, '};'
 
-
-        
-        

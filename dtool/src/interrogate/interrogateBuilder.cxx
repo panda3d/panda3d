@@ -44,6 +44,7 @@
 #include "cppTypeDeclaration.h"
 #include "cppEnumType.h"
 #include "cppCommentBlock.h"
+#include "cppMakeProperty.h"
 #include "cppMakeSeq.h"
 #include "pnotify.h"
 
@@ -1357,6 +1358,11 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
   ielement._name = element->get_local_name(scope);
   ielement._scoped_name = descope(element->get_local_name(&parser));
 
+  // See if there happens to be a comment before the element.
+  if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+    ielement._comment = trim_blanks(element->_leading_comment->_comment);
+  }
+
   ielement._type = get_type(TypeManager::unwrap_reference(element_type), false);
   if (ielement._type == 0) {
     // If we can't understand what type it is, forget it.
@@ -1641,6 +1647,7 @@ get_function(CPPInstance *function, string description,
              CPPStructType *struct_type,
              CPPScope *scope, int flags,
              const string &expression) {
+
   // Get a unique function signature.  Make sure we tell the function
   // where its native scope is, so we get a fully-scoped signature.
 
@@ -1769,6 +1776,90 @@ get_function(CPPInstance *function, string description,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::get_make_property
+//       Access: Private
+//  Description: Adds the indicated make_property to the database,
+//               if it is not already present.  In either case,
+//               returns the MakeSeqIndex of the make_seq within the
+//               database.
+////////////////////////////////////////////////////////////////////
+ElementIndex InterrogateBuilder::
+get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
+  string property_name = make_property->get_local_name(&parser);
+
+  // First, check to see if it's already there.
+  PropertiesByName::const_iterator tni =
+    _properties_by_name.find(property_name);
+  if (tni != _properties_by_name.end()) {
+    ElementIndex index = (*tni).second;
+    return index;
+  }
+
+  // Find the getter so we can get its return type.
+  CPPInstance *getter = NULL;
+  CPPType *return_type = NULL;
+
+  CPPFunctionGroup *fgroup = make_property->_getter;
+  CPPFunctionGroup::Instances::const_iterator fi;
+  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+    CPPInstance *function = (*fi);
+    CPPFunctionType *ftype =
+      function->_type->as_function_type();
+    if (ftype != NULL && ftype->_parameters->_parameters.size() == 0) {
+      getter = function;
+      return_type = ftype->_return_type;
+
+      // The return type of the non-const method probably better represents
+      // the type of the property we are creating.
+      if ((ftype->_flags & CPPFunctionType::F_const_method) == 0) {
+        break;
+      }
+    }
+  }
+
+  if (getter == NULL || return_type == NULL) {
+    cerr << "No instance of getter '"
+         << make_property->_getter->_name << "' is suitable!\n";
+    return 0;
+  }
+
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+  // It isn't here, so we'll have to define it.
+  ElementIndex index = idb->get_next_index();
+  _properties_by_name[property_name] = index;
+
+  InterrogateElement iproperty;
+  iproperty._name = make_property->get_simple_name();
+  iproperty._scoped_name = descope(make_property->get_local_name(&parser));
+
+  iproperty._type = get_type(return_type, false);
+
+  iproperty._flags |= InterrogateElement::F_has_getter;
+  iproperty._getter = get_function(getter, "", struct_type,
+                                   struct_type->get_scope(), 0);
+
+  // See if there happens to be a comment before the MAKE_PROPERTY macro.
+  if (make_property->_leading_comment != (CPPCommentBlock *)NULL) {
+    iproperty._comment = trim_blanks(make_property->_leading_comment->_comment);
+  }
+
+  // Now look for setters.
+  fgroup = make_property->_setter;
+  if (fgroup != NULL) {
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      iproperty._flags |= InterrogateElement::F_has_setter;
+      iproperty._setter = get_function(function, "", struct_type,
+                                       struct_type->get_scope(), 0);
+    }
+  }
+
+  idb->add_element(index, iproperty);
+
+  return index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::get_make_seq
 //       Access: Private
 //  Description: Adds the indicated make_seq to the database, if it is
@@ -1863,26 +1954,34 @@ get_type(CPPType *type, bool global) {
 
   // First, check to see if it's already there.
   string true_name = type->get_local_name(&parser);
-  TypesByName::const_iterator tni = _types_by_name.find(true_name);
-  if (tni != _types_by_name.end()) {
-    // It's already here, so update the global flag.
-    index = (*tni).second;
-    if (index == 0) {
-      // This is an invalid type; we don't know anything about it.
-      return 0;
-    }
 
-    InterrogateType &itype = InterrogateDatabase::get_ptr()->update_type(index);
-    if (global) {
-      itype._flags |= InterrogateType::F_global;
-    }
+  if (true_name.empty()) {
+    // Whoops, it's an anonymous type.  That's okay, because we'll
+    // usually only encounter them once anyway, so let's go ahead and
+    // define it without checking in _types_by_name.
 
-    if ((itype._flags & InterrogateType::F_fully_defined) != 0) {
-      return index;
-    }
+  } else {
+    TypesByName::const_iterator tni = _types_by_name.find(true_name);
+    if (tni != _types_by_name.end()) {
+      // It's already here, so update the global flag.
+      index = (*tni).second;
+      if (index == 0) {
+        // This is an invalid type; we don't know anything about it.
+        return 0;
+      }
 
-    // But wait--it's not fully defined yet!  We'll go ahead and
-    // define it now.
+      InterrogateType &itype = InterrogateDatabase::get_ptr()->update_type(index);
+      if (global) {
+        itype._flags |= InterrogateType::F_global;
+      }
+
+      if ((itype._flags & InterrogateType::F_fully_defined) != 0) {
+        return index;
+      }
+
+      // But wait--it's not fully defined yet!  We'll go ahead and
+      // define it now.
+    }
   }
 
   bool forced = in_forcetype(true_name);
@@ -1890,7 +1989,9 @@ get_type(CPPType *type, bool global) {
   if (index == 0) {
     // It isn't already there, so we have to define it.
     index = InterrogateDatabase::get_ptr()->get_next_index();
-    _types_by_name[true_name] = index;
+    if (!true_name.empty()) {
+      _types_by_name[true_name] = index;
+    }
 
     InterrogateType itype;
     if (global) {
@@ -1904,7 +2005,7 @@ get_type(CPPType *type, bool global) {
     InterrogateDatabase::get_ptr()->update_type(index);
 
   itype._name = get_preferred_name(type);
-  
+
   int num_alt_names = type->get_num_alt_names();
   if (num_alt_names != 0) {
     itype._alt_names.clear();
@@ -1954,23 +2055,19 @@ get_type(CPPType *type, bool global) {
     }
   }
 
-  if (forced || !in_ignoretype(true_name)) 
-  {
+  if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 
-    if (type->as_simple_type() != (CPPSimpleType *)NULL) 
-    {
+    if (type->as_simple_type() != (CPPSimpleType *)NULL) {
       define_atomic_type(itype, type->as_simple_type());
 
-    } else if (type->as_pointer_type() != (CPPPointerType *)NULL)
-    {
+    } else if (type->as_pointer_type() != (CPPPointerType *)NULL) {
       define_wrapped_type(itype, type->as_pointer_type());
 
     } else if (type->as_const_type() != (CPPConstType *)NULL) {
       define_wrapped_type(itype, type->as_const_type());
 
-    } else if (type->as_struct_type() != (CPPStructType *)NULL) 
-    {
+    } else if (type->as_struct_type() != (CPPStructType *)NULL) {
       define_struct_type(itype, type->as_struct_type(), index, forced);
 
     } else if (type->as_enum_type() != (CPPEnumType *)NULL) {
@@ -1984,7 +2081,9 @@ get_type(CPPType *type, bool global) {
 
       // Remove the type from the database.
       InterrogateDatabase::get_ptr()->remove_type(index);
-      _types_by_name[true_name] = 0;
+      if (!true_name.empty()) {
+        _types_by_name[true_name] = 0;
+      }
       index = 0;
     }
   }
@@ -2229,6 +2328,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
   for (di = scope->_declarations.begin();
        di != scope->_declarations.end();
        ++di) {
+
     if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
@@ -2243,15 +2343,12 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         }
       }
 
-    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) 
-    {
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
       CPPType *type = (*di)->as_type_declaration()->_type;
 
-      if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) 
-      {
+      if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) {
         if (type->as_struct_type() != (CPPStructType *)NULL ||
-            type->as_enum_type() != (CPPEnumType *)NULL) 
-        {
+            type->as_enum_type() != (CPPEnumType *)NULL) {
           // Here's a nested class or enum definition.
           type->_vis = (*di)->_vis;
 
@@ -2259,13 +2356,24 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           assert(nested_type != (CPPExtensionType *)NULL);
 
           // Only try to export named types.
-          if (nested_type->_ident != (CPPIdentifier *)NULL) 
-          {
+          if (nested_type->_ident != (CPPIdentifier *)NULL) {
             TypeIndex nested_index = get_type(nested_type, false);
             itype._nested_types.push_back(nested_index);
           }
         }
       }
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_enum) {
+      CPPType *type = (*di)->as_enum_type();
+
+      // An anonymous enum type.
+      if ((*di)->_vis <= min_vis) {
+        TypeIndex nested_index = get_type(type, false);
+        itype._nested_types.push_back(nested_index);
+      }
+
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
+      ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype);
+      itype._elements.push_back(element_index);
     }
   }
 
@@ -2552,6 +2660,10 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
     InterrogateType::EnumValue evalue;
     evalue._name = element->get_simple_name();
     evalue._scoped_name = descope(element->get_local_name(&parser));
+
+    if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+      evalue._comment = trim_blanks(element->_leading_comment->_comment);
+    }
 
     if (element->_initializer != (CPPExpression *)NULL) {
       CPPExpression::Result result = element->_initializer->evaluate();

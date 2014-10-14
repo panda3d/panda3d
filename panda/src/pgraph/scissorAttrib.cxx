@@ -22,7 +22,7 @@
 
 TypeHandle ScissorAttrib::_type_handle;
 int ScissorAttrib::_attrib_slot;
-CPT(RenderAttrib) ScissorAttrib::_off;
+CPT(RenderAttrib) ScissorAttrib::_off_attrib;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ScissorAttrib::Constructor
@@ -32,7 +32,8 @@ CPT(RenderAttrib) ScissorAttrib::_off;
 ////////////////////////////////////////////////////////////////////
 ScissorAttrib::
 ScissorAttrib(const LVecBase4 &frame) :
-  _frame(frame)
+  _frame(frame),
+  _off(false)
 {
   // Impose sensible bounds.
   _frame[0] = max(min(_frame[0], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
@@ -49,12 +50,13 @@ ScissorAttrib(const LVecBase4 &frame) :
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ScissorAttrib::
 make_off() {
-  if (_off != 0) {
-    return _off;
+  if (_off_attrib != NULL) {
+    return _off_attrib;
   }
   ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
-  _off = return_new(attrib);
-  return _off;
+  attrib->_off = true;
+  _off_attrib = return_new(attrib);
+  return _off_attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,13 +82,14 @@ make(const LVecBase4 &frame) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ScissorAttrib::
 make_default() {
-  return return_new(new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f)));
+  return make_off();
+  //return return_new(new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ScissorAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ScissorAttrib::
 output(ostream &out) const {
@@ -112,6 +115,19 @@ int ScissorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ScissorAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
+
+  if (!_off && !ta->_off) {
+    return 0;
+  }
+
+  if (_off && !ta->_off) {
+    return -1;
+  }
+
+  if (!_off && ta->_off) {
+    return 1;
+  }
+
   return _frame.compare_to(ta->_frame);
 }
 
@@ -128,7 +144,9 @@ compare_to_impl(const RenderAttrib *other) const {
 size_t ScissorAttrib::
 get_hash_impl() const {
   size_t hash = 0;
-  hash = _frame.add_hash(hash);
+  if (!_off) {
+    hash = _frame.add_hash(hash);
+  }
   return hash;
 }
 
@@ -151,14 +169,22 @@ get_hash_impl() const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ScissorAttrib::
 compose_impl(const RenderAttrib *other) const {
+  if (_off) {
+    return other;
+  }
+
   const ScissorAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
+
+  if (ta->_off) {
+    return this;
+  }
 
   LVecBase4 new_frame(max(ta->_frame[0], _frame[0]),
                        min(ta->_frame[1], _frame[1]),
                        max(ta->_frame[2], _frame[2]),
                        min(ta->_frame[3], _frame[3]));
-  
+
   ScissorAttrib *attrib = new ScissorAttrib(new_frame);
   return return_new(attrib);
 }
@@ -185,6 +211,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   _frame.write_datagram(dg);
+  dg.add_bool(_off);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,4 +246,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _frame.read_datagram(scan);
+  _off = false;
+
+  if (manager->get_file_minor_ver() >= 34) {
+    _off = scan.get_bool();
+  }
 }

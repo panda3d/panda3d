@@ -58,6 +58,7 @@ extern ConfigVariableEnum<GeomEnums::UsageHint> gl_min_buffer_usage_hint;
 extern ConfigVariableBool gl_debug;
 extern ConfigVariableBool gl_debug_synchronous;
 extern ConfigVariableEnum<NotifySeverity> gl_debug_abort_level;
+extern ConfigVariableBool gl_debug_object_labels;
 extern ConfigVariableBool gl_debug_buffers;
 extern ConfigVariableBool gl_finish;
 extern ConfigVariableBool gl_force_depth_stencil;

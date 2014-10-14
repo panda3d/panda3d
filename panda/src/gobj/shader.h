@@ -28,6 +28,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "epvector.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a
@@ -93,10 +94,10 @@ PUBLISHED:
                          const string &tess_evaluation = "");
   static PT(Shader) make_compute(const ShaderLanguage &lang, const string &body);
 
-  INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
+  INLINE Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
   INLINE const bool get_error_flag() const;
-  INLINE const ShaderLanguage get_language() const;
+  INLINE ShaderLanguage get_language() const;
 
   INLINE static ShaderUtilization get_shader_utilization();
   INLINE static void set_shader_utilization(ShaderUtilization utl);
@@ -234,6 +235,7 @@ public:
     SMP_row3x3,
     SMP_upper3x3,
     SMP_transpose3x3,
+    SMP_cell15,
   };
 
   enum ShaderStateDep {
@@ -354,6 +356,7 @@ public:
     ShaderArgId       _id;
     PT(InternalName)  _name;
     int               _append_uv;
+    bool              _integer;
   };
 
   struct ShaderPtrSpec {
@@ -362,6 +365,7 @@ public:
     int               _dep[2];
     PT(InternalName)  _arg;
     ShaderArgInfo     _info;
+    ShaderPtrType     _type;
   };
 
   class ShaderCaps {

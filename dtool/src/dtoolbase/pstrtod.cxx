@@ -16,7 +16,11 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <limits>
 
+#ifdef _WIN32
+#define strncasecmp _strnicmp
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: pstrtod
@@ -45,67 +49,100 @@ pstrtod(const char *nptr, char **endptr) {
   double value = 0.0;
 
   if (isalpha(*p)) {
-    // For special cases like "inf" and "nan", pass these up to the
-    // system implementation of strtod.
-    return strtod(nptr, endptr);
-  }
+    // Windows' implementation of strtod doesn't support "inf" or
+    // "nan", so check for those here.
+    if (strncasecmp(p, "inf", 3) == 0) {
+      p += 3;
+      if (strncasecmp(p, "inity", 5) == 0) {
+        p += 5;
+      }
+      value = std::numeric_limits<double>::infinity();
 
-  // Start reading decimal digits to the left of the decimal point.
-  bool found_digits = false;
-  while (isdigit(*p)) {
-    value = (value * 10.0) + (*p - '0');
-    found_digits = true;
-    ++p;
-  }
-  
-  if (*p == '.') {
-    ++p;
-    // Read decimal digits to the right of the decimal point.
-    double multiplicand = 0.1;
-    while (isdigit(*p)) {
-      value += (*p - '0') * multiplicand;
-      ++p;
-      found_digits = true;
-      multiplicand *= 0.1;
-    }
-  }
-  
-  if (!found_digits) {
-    // Not a valid float.
-    if (endptr != NULL) {
-      *endptr = (char *)nptr;
-    }
-    return 0.0;
-  }
-  
-  if (tolower(*p) == 'e') {
-    // There's an exponent.
-    ++p;
-    
-    char esign = '+';
-    if (*p == '+' || *p == '-') {
-      esign = *p;
-      ++p;
-    }
-    
-    // Start reading decimal digits to the left of the decimal point.
-    double evalue = 0.0;
-    while (isdigit(*p)) {
-      evalue = (evalue * 10.0) + (*p - '0');
-      ++p;
-    }
-    
-    if (esign == '-') {
-      value /= pow(evalue, 10.0);
+    } else if (strncasecmp(p, "nan", 3) == 0) {
+      p += 3;
+
+      if (*p == 's' || *p == 'S') {
+        value = std::numeric_limits<double>::signaling_NaN();
+        ++p;
+      } else {
+        if (*p == 'q' || *p == 'Q') {
+          ++p;
+        }
+        value = std::numeric_limits<double>::quiet_NaN();
+      }
+
+      // It is optionally possible to include a character sequence
+      // between parentheses after "nan", to be passed to the new
+      // nan() function.  Since it isn't supported universally, we
+      // will only accept a pair of empty parentheses.
+      if (strncmp(p, "()", 2) == 0) {
+        p += 2;
+      }
+
     } else {
-      value *= pow(evalue, 10.0);
+      // Pass it up to the system implementation of strtod;
+      // perhaps it knows how to deal with this string.
+      return strtod(nptr, endptr);
     }
-  }        
+
+  } else {
+    // Start reading decimal digits to the left of the decimal point.
+    bool found_digits = false;
+    while (isdigit(*p)) {
+      value = (value * 10.0) + (*p - '0');
+      found_digits = true;
+      ++p;
+    }
+
+    if (*p == '.') {
+      ++p;
+      // Read decimal digits to the right of the decimal point.
+      double multiplicand = 0.1;
+      while (isdigit(*p)) {
+        value += (*p - '0') * multiplicand;
+        ++p;
+        found_digits = true;
+        multiplicand *= 0.1;
+      }
+    }
+
+    if (!found_digits) {
+      // Not a valid float.
+      if (endptr != NULL) {
+        *endptr = (char *)nptr;
+      }
+      return 0.0;
+    }
+
+    if (tolower(*p) == 'e') {
+      // There's an exponent.
+      ++p;
+
+      char esign = '+';
+      if (*p == '+' || *p == '-') {
+        esign = *p;
+        ++p;
+      }
+
+      // Start reading decimal digits to the left of the decimal point.
+      double evalue = 0.0;
+      while (isdigit(*p)) {
+        evalue = (evalue * 10.0) + (*p - '0');
+        ++p;
+      }
+
+      if (esign == '-') {
+        value /= pow(evalue, 10.0);
+      } else {
+        value *= pow(evalue, 10.0);
+      }
+    }
+  }
 
   if (sign == '-') {
     value = -value;
   }
-  
+
   if (endptr != NULL) {
     *endptr = (char *)p;
   }

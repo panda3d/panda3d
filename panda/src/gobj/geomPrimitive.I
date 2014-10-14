@@ -129,7 +129,7 @@ get_first_vertex() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_num_vertices
 //       Access: Published
-//  Description: Returns the number of vertices used by all the
+//  Description: Returns the number of indices used by all the
 //               primitives in this object.
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
@@ -311,6 +311,20 @@ get_index_stride() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_strip_cut_index
+//       Access: Published
+//  Description: If relevant, returns the index value that may be
+//               used in some cases to signify the end of a
+//               primitive.  This is typically the highest value
+//               that the numeric type can store.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPrimitive::
+get_strip_cut_index() const {
+  CDReader cdata(_cycler);
+  return get_strip_cut_index(cdata->_index_type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_ends
 //       Access: Published
 //  Description: Returns a const pointer to the primitive ends
@@ -416,6 +430,17 @@ add_vertices(int v1, int v2, int v3, int v4) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_index_format
+//       Access: Public
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayFormat *GeomPrimitive::
+get_index_format() const {
+  return get_index_format(get_index_type());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::make_index_data
 //       Access: Public
 //  Description: Creates and returns a new, empty index table.
@@ -423,6 +448,22 @@ add_vertices(int v1, int v2, int v3, int v4) {
 INLINE PT(GeomVertexArrayData) GeomPrimitive::
 make_index_data() const {
   return new GeomVertexArrayData(get_index_format(), get_usage_hint());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::make_index_format
+//       Access: Private, Static
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexArrayFormat) GeomPrimitive::
+make_index_format(NumericType index_type) {
+  PT(GeomVertexArrayFormat) format = new GeomVertexArrayFormat;
+  // It's important that the index format *not* respect the global
+  // setting of vertex-column-alignment.  It needs to be tightly
+  // packed, so we specify an explict column_alignment of 1.
+  format->add_column(InternalName::get_index(), 1, index_type, C_index, 0, 1);
+  return GeomVertexArrayFormat::register_format(format);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -677,6 +718,16 @@ get_vertices_reader() const {
 INLINE const unsigned char *GeomPrimitivePipelineReader::
 get_read_pointer(bool force) const {
   return _vertices_reader->get_read_pointer(force);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_strip_cut_index
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPrimitivePipelineReader::
+get_strip_cut_index() const {
+  return GeomPrimitive::get_strip_cut_index(_cdata->_index_type);
 }
 
 ////////////////////////////////////////////////////////////////////

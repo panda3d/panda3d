@@ -16,6 +16,7 @@
 #include "config_util.h"
 #include "virtualFileMountAndroidAsset.h"
 #include "virtualFileSystem.h"
+#include "filename.h"
 
 #include "config_display.h"
 //#define OPENGLES_1
@@ -45,9 +46,36 @@ void android_main(struct android_app* app) {
     return;
   }
 
+  // Fetch the data directory.
+  jclass activity_class = env->GetObjectClass(activity->clazz);
+  jmethodID get_appinfo = env->GetMethodID(activity_class, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+
+  jobject appinfo = env->CallObjectMethod(activity->clazz, get_appinfo);
+  jclass appinfo_class = env->GetObjectClass(appinfo);
+
+  // Fetch the path to the data directory.
+  jfieldID datadir_field = env->GetFieldID(appinfo_class, "dataDir", "Ljava/lang/String;");
+  jstring datadir = (jstring) env->GetObjectField(appinfo, datadir_field);
+  const char *data_path = env->GetStringUTFChars(datadir, NULL);
+
+  Filename::_internal_data_dir = data_path;
+  android_cat.info() << "Path to data: " << data_path << "\n";
+
+  env->ReleaseStringUTFChars(datadir, data_path);
+
+  // Fetch the path to the library directory.
+  jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
+  jstring libdir = (jstring) env->GetObjectField(appinfo, libdir_field);
+  const char *lib_path = env->GetStringUTFChars(libdir, NULL);
+
+  string dtool_name = string(lib_path) + "/libp3dtool.so";
+  ExecutionEnvironment::set_dtool_name(dtool_name);
+  android_cat.info() << "Path to dtool: " << dtool_name << "\n";
+
+  env->ReleaseStringUTFChars(libdir, lib_path);
+
   // Get the path to the APK.
-  jclass clazz = env->GetObjectClass(activity->clazz);
-  jmethodID methodID = env->GetMethodID(clazz, "getPackageCodePath", "()Ljava/lang/String;");
+  jmethodID methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
 
   const char* apk_path;

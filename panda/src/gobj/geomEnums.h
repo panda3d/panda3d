@@ -125,6 +125,9 @@ PUBLISHED:
     // The union of all of the above composite types.
     GR_composite_bits       = 0x01c00,
 
+    // If strip-cut indices are used to restart a composite primitive.
+    GR_strip_cut_index      = 0x20000,
+
     // If the shade model requires a particular vertex for flat shading.
     GR_flat_first_vertex    = 0x02000,
     GR_flat_last_vertex     = 0x04000,
@@ -216,4 +219,3 @@ EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::NumericType nume
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::Contents contents);
 
 #endif
-

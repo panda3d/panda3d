@@ -170,8 +170,7 @@ request_properties(const WindowProperties &requested_properties) {
     // stick.  This is helpful for the MultitexReducer, which needs to
     // know the size of the textures that it will be working with,
     // even if the texture hasn't been fully generated yet.
-    _x_size = _requested_properties.get_x_size();
-    _y_size = _requested_properties.get_y_size();
+    _size = _requested_properties.get_size();
 
     // Don't set _has_size yet, because we don't really know yet.
   }

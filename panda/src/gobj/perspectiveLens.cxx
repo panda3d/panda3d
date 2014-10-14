@@ -137,10 +137,17 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
     LVector3 iod = lens_cdata->_interocular_distance * 0.5f * LVector3::left(lens_cdata->_cs);
     lens_cdata->_projection_mat_left = do_get_lens_mat_inv(lens_cdata) * LMatrix4::translate_mat(-iod) * canonical * do_get_film_mat(lens_cdata);
     lens_cdata->_projection_mat_right = do_get_lens_mat_inv(lens_cdata) * LMatrix4::translate_mat(iod) * canonical * do_get_film_mat(lens_cdata);
-    
-    if (lens_cdata->_user_flags & UF_convergence_distance) {
+
+    if ((lens_cdata->_user_flags & UF_convergence_distance) != 0 &&
+        !cinf(lens_cdata->_convergence_distance)) {
       nassertv(lens_cdata->_convergence_distance != 0.0f);
-      LVector3 cd = (0.25f / lens_cdata->_convergence_distance) * LVector3::left(lens_cdata->_cs);
+      LVector3 cd;
+      if (stereo_lens_old_convergence) { // The old, incorrect calculation was requested.
+        cd = (0.25f / lens_cdata->_convergence_distance) * LVector3::left(lens_cdata->_cs);
+      } else {
+        const LVecBase2 &fov = do_get_fov(lens_cdata);
+        cd = (2.0f / fov_to_film(fov[0], lens_cdata->_convergence_distance, true)) * iod;
+      }
       lens_cdata->_projection_mat_left *= LMatrix4::translate_mat(cd);
       lens_cdata->_projection_mat_right *= LMatrix4::translate_mat(-cd);
     }

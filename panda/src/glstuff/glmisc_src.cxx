@@ -151,6 +151,13 @@ ConfigVariableEnum<NotifySeverity> gl_debug_abort_level
             "that triggered the error message.  "
             "This feature is not available when NDEBUG has been defined."));
 
+ConfigVariableBool gl_debug_object_labels
+  ("gl-debug-object-labels", true,
+   PRC_DESC("When gl-debug is set to true, this will tell OpenGL the "
+            "name of textures, shaders, and other objects, so that OpenGL "
+            "can display those in error messages.  There's usually no "
+            "reason to disable this."));
+
 ConfigVariableBool gl_debug_buffers
   ("gl-debug-buffers", false,
    PRC_DESC("Set this true, in addition to enabling debug notify for "
@@ -162,7 +169,8 @@ ConfigVariableBool gl_finish
    PRC_DESC("Set this true to force a call to glFinish() after every major "
             "graphics operation.  This is likely to slow down rendering "
             "performance substantially, but it will make PStats graphs "
-            "more accurately reflect where the graphics bottlenecks are.  "
+            "more accurately reflect where the graphics bottlenecks are, "
+            "although it is better to use timer queries when available. "
             "This variable is enabled only if PStats is compiled in."));
 
 ConfigVariableBool gl_force_depth_stencil
@@ -252,6 +260,8 @@ void CLP(init_classes)() {
 
 #ifndef OPENGLES
   CLP(OcclusionQueryContext)::init_type();
+  CLP(TimerQueryContext)::init_type();
+  CLP(LatencyQueryContext)::init_type();
 #endif
 
   PandaSystem *ps = PandaSystem::get_global_ptr();

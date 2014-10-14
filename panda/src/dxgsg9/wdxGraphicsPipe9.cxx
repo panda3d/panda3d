@@ -139,7 +139,7 @@ make_output(const string &name,
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
-      if ((fb_prop.get_indexed_color() > 0)||
+      if (fb_prop.get_indexed_color() ||
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
           (fb_prop.get_multisamples() > 0)) {
@@ -649,7 +649,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
         continue;
       }
 
-      // disable refresh rate checking since SLI video cards may use 
+      // disable refresh rate checking since SLI video cards may use
       // refresh rates less than 60
       if (0) {
         if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
@@ -663,7 +663,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
           continue;
         }
       }
-      
+
       // Note no attempt is made to verify if format will work at
       // requested size, so even if this call succeeds, could still get
       // an out-of-video-mem error
@@ -956,7 +956,7 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
     CASESTR(D3DFMT_D24X4S4);
     CASESTR(D3DFMT_VERTEXDATA);
     CASESTR(D3DFMT_INDEX16);
-    CASESTR(D3DFMT_INDEX32);    
+    CASESTR(D3DFMT_INDEX32);
     CASESTR(D3DFMT_A16B16G16R16F);
     CASESTR(D3DFMT_A32B32G32R32F);
   }

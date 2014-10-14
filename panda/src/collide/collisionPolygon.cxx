@@ -37,6 +37,7 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 #include "renderState.h"
+#include "epvector.h"
 
 #include <algorithm>
 
@@ -1490,14 +1491,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     if (_points.size() >= 3) {
       LMatrix4 to_3d_mat;
       rederive_to_3d_mat(to_3d_mat);
-      
+
       epvector<LPoint3> verts;
       verts.reserve(_points.size());
       Points::const_iterator pi;
       for (pi = _points.begin(); pi != _points.end(); ++pi) {
         verts.push_back(to_3d((*pi)._p, to_3d_mat));
       }
-      
+
       const LPoint3 *verts_begin = &verts[0];
       const LPoint3 *verts_end = verts_begin + verts.size();
       setup_points(verts_begin, verts_end);

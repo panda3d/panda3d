@@ -46,7 +46,7 @@ PNMTextMaker(const char *font_data, int data_length, int face_index) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMTextMaker::
 PNMTextMaker(const PNMTextMaker &copy) :
@@ -60,9 +60,22 @@ PNMTextMaker(const PNMTextMaker &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PNMTextMaker::
+PNMTextMaker(const FreetypeFont &copy) :
+  FreetypeFont(copy),
+  _is_valid(true)
+{
+  initialize();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMTextMaker::
 ~PNMTextMaker() {

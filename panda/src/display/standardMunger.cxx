@@ -178,7 +178,10 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
     // Even beyond munging the vertex format, we have to convert the
     // Geom itself into a new primitive type the GSG can render
     // directly.
-    if ((unsupported_bits & Geom::GR_composite_bits) != 0) {
+    // If we don't support a strip cut index, it might be faster to
+    // just decompose it rather than draw them one by one.
+    if ((unsupported_bits & Geom::GR_composite_bits) != 0 ||
+        (unsupported_bits & Geom::GR_strip_cut_index) != 0) {
       // This decomposes everything in the primitive, so that if (for
       // instance) the primitive contained both strips and fans, but
       // the GSG didn't support fans, it would decompose the strips
@@ -224,7 +227,10 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
     // Even beyond munging the vertex format, we have to convert the
     // Geom itself into a new primitive type the GSG can render
     // directly.
-    if ((unsupported_bits & Geom::GR_composite_bits) != 0) {
+    // If we don't support a strip cut index, it might be faster to
+    // just decompose it rather than draw them one by one.
+    if ((unsupported_bits & Geom::GR_composite_bits) != 0 ||
+        (unsupported_bits & Geom::GR_strip_cut_index) != 0) {
       // This decomposes everything in the primitive, so that if (for
       // instance) the primitive contained both strips and fans, but
       // the GSG didn't support fans, it would decompose the strips

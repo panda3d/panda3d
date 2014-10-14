@@ -1,6 +1,6 @@
 // Filename: indexedFaceSet.h
 // Created by:  drose (24Jun99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
@@ -15,6 +15,7 @@
 
 #include "pandatoolbase.h"
 #include "pvector.h"
+#include "epvector.h"
 #include "pset.h"
 #include "eggPolygon.h"
 #include "eggVertex.h"
@@ -43,9 +44,9 @@ private:
   void get_polys();
   void get_vrml_colors(const VrmlNode *color_node, double transparency,
                        pvector<UnalignedLVecBase4> &color_list);
-  void get_vrml_normals(const VrmlNode *normal_node, 
+  void get_vrml_normals(const VrmlNode *normal_node,
                         pvector<LNormald> &normal_list);
-  void get_vrml_uvs(const VrmlNode *texCoord_node, 
+  void get_vrml_uvs(const VrmlNode *texCoord_node,
                     pvector<LTexCoordd> &uv_list);
 
   bool get_colors();

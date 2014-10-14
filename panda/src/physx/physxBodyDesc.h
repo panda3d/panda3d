@@ -46,8 +46,8 @@ PUBLISHED:
   void set_solver_iteration_count(unsigned int count);
   void set_sleep_energy_threshold(float threshold);
   void set_sleep_damping(float damping);
-  void set_mass_local_mat(const LMatrix4f mat);
-  void set_mass_space_inertia(const LVector3f inertia);
+  void set_mass_local_mat(const LMatrix4f &mat);
+  void set_mass_space_inertia(const LVector3f &inertia);
   void set_flag(PhysxBodyFlag flag, bool value);
   void set_ccd_motion_threshold(float threshold);
   void set_wake_up_counter(float value);

@@ -332,6 +332,32 @@ get_target_tex_page() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_scissor_enabled
+//       Access: Published
+//  Description: Sets whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_scissor_enabled(bool scissor_enabled) {
+  CDWriter cdata(_cycler);
+  cdata->_scissor_enabled = scissor_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_scissor_enabled
+//       Access: Published
+//  Description: Returns whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegion::
+get_scissor_enabled() const {
+  CDReader cdata(_cycler);
+  return cdata->_scissor_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_callback
 //       Access: Published
 //  Description: Sets the CallbackObject that will be notified when
@@ -554,9 +580,9 @@ get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
   const Region &region = cdata->_regions[i];
   xo = region._pixels_i[0];
-  yo = region._pixels_i[2];
+  yo = region._pixels_i[3];
   w = region._pixels_i[1] - xo;
-  h = region._pixels_i[3] - yo;
+  h = region._pixels_i[2] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -942,6 +968,18 @@ get_target_tex_page() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_scissor_enabled
+//       Access: Published
+//  Description: Returns whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegionPipelineReader::
+get_scissor_enabled() const {
+  return _cdata->_scissor_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::get_draw_callback
 //       Access: Published
 //  Description: Returns the CallbackObject set by set_draw_callback().
@@ -1030,9 +1068,9 @@ INLINE void DisplayRegionPipelineReader::
 get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
   const DisplayRegion::Region &region = _cdata->_regions[i];
   xo = region._pixels_i[0];
-  yo = region._pixels_i[2];
+  yo = region._pixels_i[3];
   w = region._pixels_i[1] - xo;
-  h = region._pixels_i[3] - yo;
+  h = region._pixels_i[2] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////

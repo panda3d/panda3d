@@ -41,10 +41,24 @@ private:
   INLINE DynamicTextGlyph(const DynamicTextGlyph &copy);
   INLINE void operator = (const DynamicTextGlyph &copy);
 
-public:
+PUBLISHED:
   virtual ~DynamicTextGlyph();
 
+  INLINE DynamicTextPage *get_page() const;
+
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
+
+  INLINE PN_stdfloat get_top() const;
+  INLINE PN_stdfloat get_left() const;
+  INLINE PN_stdfloat get_bottom() const;
+  INLINE PN_stdfloat get_right() const;
+
+  INLINE PN_stdfloat get_uv_top() const;
+  INLINE PN_stdfloat get_uv_left() const;
+  INLINE PN_stdfloat get_uv_bottom() const;
+  INLINE PN_stdfloat get_uv_right() const;
+
+public:
   unsigned char *get_row(int y);
   void erase(DynamicTextFont *font);
   void make_geom(int top, int left, PN_stdfloat advance, PN_stdfloat poly_margin,
@@ -60,6 +74,25 @@ public:
   int _x, _y;
   int _x_size, _y_size;
   int _margin;
+  PN_stdfloat _top, _left, _bottom, _right;
+  PN_stdfloat _uv_top, _uv_left, _uv_bottom, _uv_right;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TextGlyph::init_type();
+    register_type(_type_handle, "DynamicTextGlyph",
+                  TextGlyph::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "dynamicTextGlyph.I"

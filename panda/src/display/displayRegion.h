@@ -38,6 +38,7 @@
 #include "cullTraverser.h"
 #include "callbackObject.h"
 #include "luse.h"
+#include "epvector.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -120,6 +121,9 @@ PUBLISHED:
   virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
 
+  INLINE void set_scissor_enabled(bool scissor_enabled);
+  INLINE bool get_scissor_enabled() const;
+
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
@@ -172,7 +176,7 @@ public:
     LVecBase4i _pixels;
     LVecBase4i _pixels_i;
   };
-  typedef pvector<Region> Regions;
+  typedef epvector<Region> Regions;
 
 private:
   class CData;
@@ -214,15 +218,16 @@ private:
     Regions _regions;
 
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
-    
+
     NodePath _camera;
     Camera *_camera_node;
-    
+
     bool _active;
     int _sort;
     Lens::StereoChannel _stereo_channel;
     int _tex_view_offset;
     int _target_tex_page;
+    bool _scissor_enabled;
 
     PT(CallbackObject) _cull_callback;
     PT(CallbackObject) _draw_callback;
@@ -323,6 +328,7 @@ public:
   INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_target_tex_page() const;
+  INLINE bool get_scissor_enabled() const;
   INLINE CallbackObject *get_draw_callback() const;
 
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;

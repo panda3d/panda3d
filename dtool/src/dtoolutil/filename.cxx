@@ -57,6 +57,10 @@ TVOLATILE AtomicAdjust::Pointer Filename::_user_appdata_directory;
 TVOLATILE AtomicAdjust::Pointer Filename::_common_appdata_directory;
 TypeHandle Filename::_type_handle;
 
+#ifdef ANDROID
+string Filename::_internal_data_dir;
+#endif
+
 #ifdef WIN32
 /* begin Win32-specific code */
 
@@ -459,7 +463,7 @@ Filename Filename::
 temporary(const string &dirname, const string &prefix, const string &suffix,
           Type type) {
   Filename fdirname = dirname;
-#ifdef WIN32
+#if defined(_WIN32) || defined(ANDROID)
   // The Windows tempnam() function doesn't do a good job of choosing
   // a temporary directory.  Choose one ourselves.
   if (fdirname.empty()) {
@@ -523,7 +527,7 @@ get_home_directory() {
     if (home_directory.empty()) {
 #ifdef WIN32
       wchar_t buffer[MAX_PATH];
-      
+
       // On Windows, fall back to the "My Documents" folder.
       if (SHGetSpecialFolderPathW(NULL, buffer, CSIDL_PERSONAL, true)) {
         Filename dirname = from_os_specific_w(buffer);
@@ -534,15 +538,22 @@ get_home_directory() {
         }
       }
 
+#elif defined(ANDROID)
+      // Temporary hack.
+      home_directory = "/data/data/org.panda3d.sdk";
+
 #elif defined(IS_OSX)
       home_directory = get_osx_home_directory();
-      
+
+#elif defined(ANDROID)
+      home_directory = _internal_data_dir;
+
 #else
       // Posix case: check /etc/passwd?
-      
+
 #endif  // WIN32
     }
-      
+
     if (home_directory.empty()) {
       // Fallback case.
       home_directory = ExecutionEnvironment::get_cwd();
@@ -555,7 +566,7 @@ get_home_directory() {
       delete newdir;
     }
   }
-  
+
   return (*(Filename *)_home_directory);
 }
 
@@ -584,6 +595,10 @@ get_temp_directory() {
 
 #elif defined(IS_OSX)
     temp_directory = get_osx_temp_directory();
+
+#elif defined(ANDROID)
+    temp_directory.set_dirname(_internal_data_dir);
+    temp_directory.set_basename("cache");
 
 #else
     // Posix case.
@@ -634,6 +649,10 @@ get_user_appdata_directory() {
 #elif defined(IS_OSX)
     user_appdata_directory = get_osx_user_appdata_directory();
 
+#elif defined(ANDROID)
+    user_appdata_directory.set_dirname(_internal_data_dir);
+    user_appdata_directory.set_basename("files");
+
 #else
     // Posix case.
     user_appdata_directory = get_home_directory();
@@ -682,6 +701,10 @@ get_common_appdata_directory() {
 
 #elif defined(IS_OSX)
     common_appdata_directory = get_osx_common_appdata_directory();
+
+#elif defined(ANDROID)
+    common_appdata_directory.set_dirname(_internal_data_dir);
+    common_appdata_directory.set_basename("files");
 
 #else
     // Posix case.

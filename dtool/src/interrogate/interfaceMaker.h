@@ -29,8 +29,9 @@ class ParameterRemap;
 class CPPType;
 class CPPInstance;
 class InterrogateBuilder;
-class InterrogateType;
+class InterrogateElement;
 class InterrogateFunction;
+class InterrogateType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InterfaceMaker
@@ -69,6 +70,28 @@ public:
   static ostream &indent(ostream &out, int indent_level);
 
 public:
+  // This contains information about the number
+  // of arguments that the wrapping function should take.
+  enum ArgsType {
+    // This is deliberately engineered such that these
+    // values can be OR'ed together to produce another
+    // valid enum value.
+    AT_unknown      = 0x00,
+
+    // The method or function takes no arguments.
+    AT_no_args      = 0x01,
+
+    // There is only a single argument.
+    AT_single_arg   = 0x02,
+
+    // The method takes a variable number of arguments.
+    AT_varargs      = 0x03,
+
+    // The method may take keyword arguments, if appropriate
+    // in the scripting language.  Implies AT_varargs.
+    AT_keyword_args = 0x07,
+  };
+
   class Function {
   public:
     Function(const string &name,
@@ -83,9 +106,11 @@ public:
     Remaps _remaps;
     bool _has_this;
     int _flags;
+    ArgsType _args_type;
   };
+  typedef map<FunctionIndex, Function *> FunctionsByIndex;
   typedef vector<Function *> Functions;
-  Functions _functions;
+  FunctionsByIndex _functions;
 
   class MakeSeq {
   public:
@@ -97,6 +122,16 @@ public:
     string _element_name;
   };
   typedef vector<MakeSeq *> MakeSeqs;
+
+  class Property {
+  public:
+    Property(const InterrogateElement &ielement);
+
+    const InterrogateElement &_ielement;
+    Function *_getter;
+    Function *_setter;
+  };
+  typedef vector<Property *> Properties;
 
   class Object {
   public:
@@ -110,6 +145,7 @@ public:
     Functions _constructors;
     Functions _methods;
     MakeSeqs _make_seqs;
+    Properties _properties;
 
     enum ProtocolTypes {
       PT_sequence         = 0x0001,
@@ -154,8 +190,14 @@ public:
   manage_return_value(ostream &out, int indent_level,
                       FunctionRemap *remap, const string &return_expr) const;
 
+  void
+  delete_return_value(ostream &out, int indent_level,
+                      FunctionRemap *remap, const string &return_expr) const;
+
   void output_ref(ostream &out, int indent_level, FunctionRemap *remap, 
                   const string &varname) const;
+  void output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+                    const string &varname) const;
   void write_spam_message(ostream &out, FunctionRemap *remap) const;
 
 protected:

@@ -587,6 +587,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     ShaderVarSpec bind;
     bind._id = arg_id;
     bind._append_uv = -1;
+    bind._integer = false;
 
     if (pieces.size() == 2) {
       if (pieces[1] == "position") {

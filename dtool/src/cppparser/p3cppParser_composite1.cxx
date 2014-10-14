@@ -4,6 +4,7 @@
 #include "cppCommentBlock.cxx"
 #include "cppConstType.cxx"
 #include "cppDeclaration.cxx"
+#include "cppMakeProperty.cxx"
 #include "cppMakeSeq.cxx"
 #include "cppParameterList.cxx"
 #include "cppParser.cxx"

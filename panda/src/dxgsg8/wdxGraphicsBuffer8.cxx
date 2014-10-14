@@ -229,14 +229,13 @@ rebuild_bitplanes() {
   // Decide how big the bitplanes should be.
 
   if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
+    if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   }
-  int bitplane_x = _x_size;
-  int bitplane_y = _y_size;
+  int bitplane_x = get_x_size();
+  int bitplane_y = get_y_size();
   if (Texture::get_textures_power_2() != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
@@ -350,7 +349,7 @@ rebuild_bitplanes() {
           << "Unable to re-create texture " << *depth_ctx->get_texture() << endl;
         return false;
       }
-      
+
       if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
         depth_d3d_tex = depth_ctx->_d3d_2d_texture;
         nassertr(depth_d3d_tex != 0, false);

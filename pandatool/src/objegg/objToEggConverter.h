@@ -25,6 +25,8 @@
 #include "geomPrimitive.h"
 #include "geomNode.h"
 #include "pandaNode.h"
+#include "pvector.h"
+#include "epvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ObjToEggConverter
@@ -83,7 +85,7 @@ protected:
   Vec2Table _xvt_table;
   Vec3Table _synth_vn_table;
   UniqueVec3Table _unique_synth_vn_table;
-  LVecBase2 _ref_plane_res;  
+  LVecBase2 _ref_plane_res;
   bool _v4_given, _vt3_given;
   bool _f_given;
 
@@ -122,8 +124,8 @@ protected:
     VertexData(PandaNode *parent, const string &name);
 
     int add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry);
-    void add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0, 
-                      const VertexEntry &v1, const VertexEntry &v2, 
+    void add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0,
+                      const VertexEntry &v1, const VertexEntry &v2,
                       int synth_vni);
     void close_geom(const ObjToEggConverter *converter);
 

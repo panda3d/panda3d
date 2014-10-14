@@ -352,6 +352,23 @@ load(const PfmFile &pfm, int z, int n, const LoaderOptions &options) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::load_sub_image
+//       Access: Published
+//  Description: Stores the indicated image in a region of the
+//               texture.  The texture properties remain unchanged.
+//               This can be more efficient than updating an entire
+//               texture, but has a few restrictions: for one, you
+//               must ensure that the texture is still in RAM (eg.
+//               using set_keep_ram_image) and it may not be
+//               compressed.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+load_sub_image(const PNMImage &image, int x, int y, int z, int n) {
+  CDWriter cdata(_cycler, true);
+  return do_load_sub_image(cdata, image, x, y, z, n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::store
 //       Access: Published
 //  Description: Saves the texture to the indicated PNMImage, but does

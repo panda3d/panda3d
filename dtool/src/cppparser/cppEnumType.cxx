@@ -38,8 +38,8 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CPPEnumType::
-add_element(const string &name, CPPScope *scope, CPPExpression *value) {
+CPPInstance *CPPEnumType::
+add_element(const string &name, CPPExpression *value) {
   CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_unsigned));
@@ -47,7 +47,7 @@ add_element(const string &name, CPPScope *scope, CPPExpression *value) {
   CPPInstance *inst = new CPPInstance(type, ident);
   inst->_initializer = value;
   _elements.push_back(inst);
-  scope->add_enum_value(inst);
+  return inst;
 }
 
 ////////////////////////////////////////////////////////////////////

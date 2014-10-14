@@ -1,6 +1,5 @@
 !include "MUI.nsh"
 !include LogicLib.nsh
-!include FileAssociation.nsh
 
 ; Several variables are assumed to be pre-defined by the caller.  See
 ; make_installer.py in this directory.
@@ -9,17 +8,17 @@
 !define UNINSTALL_CONFIRM "Are you sure you want to completely remove $(^Name) and all of its components?"
 !define UNINSTALL_LINK_NAME "Uninstall"
 !define WEBSITE_LINK_NAME "Website"
-!define PLID "@panda3d.org/Panda3D Runtime,version=0.0"
+!define PLID "@panda3d.org/Panda3D Runtime"
 
 ; HM NIS Edit Wizard helper defines
 !define APP_INTERNAL_NAME "Panda3D"
 
-!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${OCX}"
+!define PRODUCT_DIR_REGKEY_PANDA3D "Software\Microsoft\Windows\CurrentVersion\App Paths\${PANDA3D}"
+!define PRODUCT_DIR_REGKEY_PANDA3DW "Software\Microsoft\Windows\CurrentVersion\App Paths\${PANDA3DW}"
+!define PRODUCT_DIR_REGKEY_OCX "Software\Microsoft\Windows\CurrentVersion\App Paths\${OCX}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PROG_GROUPNAME "${PRODUCT_NAME}"
-
-!define FIREFOX_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe"
 
 SetCompressor lzma
 
@@ -60,16 +59,32 @@ InstallDir "${INSTALL_DIR}"
   UninstallIcon "${INSTALL_ICON}"
 !endif
 WindowIcon on
-InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
+
 ShowInstDetails show
 ShowUnInstDetails show
+
+Function .onInit
+!ifdef REGVIEW
+  SetRegView ${REGVIEW}
+!endif
+
+  ClearErrors
+
+  ReadRegStr $0 ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation"
+
+  IfErrors +2 0
+  StrCpy $INSTDIR $0
+
+FunctionEnd
 
 Section "MainSection" SEC01
   SetShellVarContext all
   SetOutPath "$INSTDIR"
   SetOverwrite ifdiff
 
+!ifdef OCX_PATH
   File "${OCX_PATH}"
+!endif
   File "${NPAPI_PATH}"
   File "${PANDA3D_PATH}"
   File "${PANDA3DW_PATH}"
@@ -100,8 +115,6 @@ Section "MainSection" SEC01
 !ifdef DEP7P
   File "${DEP7P}"
 !endif
-
-  ${registerExtension} "$INSTDIR\${PANDA3DW}" ".p3d" "Panda3D applet"
  
 !ifdef ADD_START_MENU
 ; Start->Programs links
@@ -127,14 +140,41 @@ Section -AdditionalIcons
 SectionEnd
 
 Section -Post
+!ifdef REGVIEW
+  SetRegView ${REGVIEW}
+!endif
+
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\${OCX}"
+
+  WriteRegStr HKCR ".p3d" "" "Panda3D applet"
+  WriteRegStr HKCR ".p3d" "Content Type" "application/x-panda3d"
+  WriteRegStr HKCR ".p3d" "PerceivedType" "application"
+  WriteRegStr HKCR "Panda3D applet" "" "Panda3D applet"
+  WriteRegStr HKCR "Panda3D applet\DefaultIcon" "" "$INSTDIR\${PANDA3DW}"
+  WriteRegStr HKCR "Panda3D applet\shell" "" "open"
+  WriteRegStr HKCR "Panda3D applet\shell\open\command" "" '"$INSTDIR\${PANDA3DW}" "%1"'
+  WriteRegExpandStr HKCR "Panda3D applet\shell\open2" "" "Open &with Command Prompt"
+  ;WriteRegExpandStr HKCR "Panda3D applet\shell\open2" "MUIVerb" "@%SystemRoot%\System32\wshext.dll,-4511"
+  WriteRegExpandStr HKCR "Panda3D applet\shell\open2\command" "" '"$INSTDIR\${PANDA3D}" "%1"'
+
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY_PANDA3D}" "" "$INSTDIR\${PANDA3D}"
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY_PANDA3DW}" "" "$INSTDIR\${PANDA3DW}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\${OCX}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\${PANDA3D}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
+
+  SectionGetSize SEC01 $0
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" $0
+
+  # Delete keys we used in older versions
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY_OCX}"
+  DeleteRegKey HKCR "Panda3D applet\shell\edit"
 SectionEnd
 
 
@@ -149,16 +189,23 @@ Function un.onInit
 FunctionEnd
 
 Function .onInstSuccess
- # Register ActiveX
- ExecWait 'regsvr32 /s "$INSTDIR/${OCX}"'
+  # Register ActiveX
+  ExecWait 'regsvr32 /s "$INSTDIR/${OCX}"'
 
- # Register Mozilla Plugin
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Description" "Runs 3-D games and interactive applets"
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Path" "$INSTDIR\${NPAPI}"
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "ProductName" "${PRODUCT_NAME_SHORT}"
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Vendor" "${PRODUCT_PUBLISHER}"
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Version" "${PRODUCT_VERSION}"
- WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}\MimeTypes" "application/x-panda3d" ""
+!ifdef REGVIEW
+  SetRegView ${REGVIEW}
+!endif
+
+  # Register Mozilla Plugin
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Description" "Runs 3-D games and interactive applets"
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Path" "$INSTDIR\${NPAPI}"
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "ProductName" "${PRODUCT_NAME_SHORT}"
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Vendor" "${PRODUCT_PUBLISHER}"
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}" "Version" "${PRODUCT_VERSION}"
+  WriteRegStr HKLM "SOFTWARE\MozillaPlugins\${PLID}\MimeTypes\application/x-panda3d" "Description" "Panda3D applet"
+
+  # Remove old stuff
+  DeleteRegKey HKLM "SOFTWARE\MozillaPlugins\${PLID},version=0.0"
 
 FunctionEnd
 
@@ -196,6 +243,10 @@ Section Uninstall
   Delete "$INSTDIR\${DEP7}"
 !endif
 
+!ifdef REGVIEW
+  SetRegView ${REGVIEW}
+!endif
+
 # The following loop uninstalls the plugin where it may have been
 # copied into one of the Mozilla Extensions dirs.  Older versions of
 # the installer would have done this, but now we just update the
@@ -215,8 +266,10 @@ Mozilla-Uninstall-Loop:
 Mozilla-Uninstall-End:
 
   DeleteRegKey HKLM "SOFTWARE\MozillaPlugins\${PLID}"
+  DeleteRegKey HKLM "SOFTWARE\MozillaPlugins\${PLID},version=0.0"
 
-  ${unregisterExtension} ".p3d" "Panda3D applet"
+  DeleteRegKey HKCR ".p3d"
+  DeleteRegKey HKCR "Panda3D applet"
 
   # Remove the user's "Panda3D" directory, where all of the downloaded
   # contents are installed.  Too bad we can't do this for every system
@@ -239,7 +292,9 @@ Mozilla-Uninstall-End:
   RMDir "$INSTDIR"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY_PANDA3D}"
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY_PANDA3DW}"
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY_OCX}"
   SetAutoClose true
 SectionEnd
 

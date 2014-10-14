@@ -96,7 +96,7 @@ make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
 CPT(RenderAttrib) LightRampAttrib::
 make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1, PN_stdfloat val1) {
   LightRampAttrib *attrib = new LightRampAttrib();
-  attrib->_mode = LRT_single_threshold;
+  attrib->_mode = LRT_double_threshold;
   attrib->_threshold[0] = thresh0;
   attrib->_level[0] = val0;
   attrib->_threshold[1] = thresh1;

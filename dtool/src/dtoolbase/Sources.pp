@@ -39,7 +39,8 @@
     typeRegistryNode.I typeRegistryNode.h \
     typedObject.I typedObject.h \
     pallocator.T pallocator.h \
-    pdeque.h plist.h pmap.h pset.h pvector.h \
+    pdeque.h plist.h pmap.h pset.h \
+    pvector.h epvector.h \
     lookup3.h lookup3.c \
     dlmalloc_src.cxx ptmalloc2_smp_src.cxx
 
@@ -97,7 +98,8 @@
     typeRegistryNode.I typeRegistryNode.h \
     typedObject.I typedObject.h \
     pallocator.T pallocator.h \
-    pdeque.h plist.h pmap.h pset.h pvector.h \
+    pdeque.h plist.h pmap.h pset.h \
+    pvector.h epvector.h \
     lookup3.h
 
 #end lib_target

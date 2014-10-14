@@ -244,6 +244,6 @@ save_file(const Filename &path, const LoaderOptions &options,
   saver->set_egg_data(egg_data);
 
   bool result = saver->write_file(path);
-
   delete saver;
+  return result;
 }

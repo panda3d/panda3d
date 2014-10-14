@@ -43,6 +43,10 @@ PT(InternalName) InternalName::_view;
 TypeHandle InternalName::_type_handle;
 TypeHandle InternalName::_texcoord_type_handle;
 
+#ifdef HAVE_PYTHON
+InternalName::PyInternTable InternalName::_py_intern_table;
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::Constructor
 //       Access: Private

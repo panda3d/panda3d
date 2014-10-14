@@ -18,6 +18,7 @@ extern "C" {
   EXPCL_PYSTUB int PyArg_Parse(...);
   EXPCL_PYSTUB int PyArg_ParseTuple(...);
   EXPCL_PYSTUB int PyArg_ParseTupleAndKeywords(...);
+  EXPCL_PYSTUB int PyArg_UnpackTuple(...);
   EXPCL_PYSTUB int PyBool_FromLong(...);
   EXPCL_PYSTUB int PyBuffer_Release(...);
   EXPCL_PYSTUB int PyBytes_AsString(...);
@@ -39,6 +40,7 @@ extern "C" {
   EXPCL_PYSTUB int PyErr_ExceptionMatches(...);
   EXPCL_PYSTUB int PyErr_Fetch(...);
   EXPCL_PYSTUB int PyErr_Format(...);
+  EXPCL_PYSTUB int PyErr_NoMemory(...);
   EXPCL_PYSTUB int PyErr_Occurred(...);
   EXPCL_PYSTUB int PyErr_Print(...);
   EXPCL_PYSTUB int PyErr_Restore(...);
@@ -84,12 +86,14 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddObject(...);
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
   EXPCL_PYSTUB int PyModule_Create2(...);
+  EXPCL_PYSTUB int PyNumber_Check(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
   EXPCL_PYSTUB int PyNumber_Int(...);
   EXPCL_PYSTUB int PyNumber_Long(...);
   EXPCL_PYSTUB int PyObject_ASCII(...);
   EXPCL_PYSTUB int PyObject_Call(...);
   EXPCL_PYSTUB int PyObject_CallFunction(...);
+  EXPCL_PYSTUB int PyObject_CallFunctionObjArgs(...);
   EXPCL_PYSTUB int PyObject_CallMethod(...);
   EXPCL_PYSTUB int PyObject_CallMethodObjArgs(...);
   EXPCL_PYSTUB int PyObject_CallObject(...);
@@ -117,6 +121,8 @@ extern "C" {
   EXPCL_PYSTUB int PyString_AsStringAndSize(...);
   EXPCL_PYSTUB int PyString_FromString(...);
   EXPCL_PYSTUB int PyString_FromStringAndSize(...);
+  EXPCL_PYSTUB int PyString_InternFromString(...);
+  EXPCL_PYSTUB int PyString_InternInPlace(...);
   EXPCL_PYSTUB int PyString_Size(...);
   EXPCL_PYSTUB int PyString_Type(...);
   EXPCL_PYSTUB int PySys_GetObject(...);
@@ -148,13 +154,21 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicode_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicode_GetSize(...);
+  EXPCL_PYSTUB int PyUnicode_InternFromString(...);
+  EXPCL_PYSTUB int PyUnicode_InternInPlace(...);
   EXPCL_PYSTUB int PyUnicode_Type(...);
   EXPCL_PYSTUB int Py_BuildValue(...);
   EXPCL_PYSTUB int Py_InitModule4(...);
   EXPCL_PYSTUB int Py_InitModule4_64(...);
   EXPCL_PYSTUB int Py_InitModule4TraceRefs(...);
+  EXPCL_PYSTUB int _PyArg_ParseTuple_SizeT(...);
+  EXPCL_PYSTUB int _PyArg_ParseTupleAndKeywords_SizeT(...);
+  EXPCL_PYSTUB int _PyArg_Parse_SizeT(...);
+  EXPCL_PYSTUB int _PyObject_CallFunction_SizeT(...);
+  EXPCL_PYSTUB int _PyObject_CallMethod_SizeT(...);
   EXPCL_PYSTUB int _PyObject_DebugFree(...);
   EXPCL_PYSTUB int _PyObject_Del(...);
+  EXPCL_PYSTUB int _Py_BuildValue_SizeT(...);
   EXPCL_PYSTUB int _Py_Dealloc(...);
   EXPCL_PYSTUB int _Py_NegativeRefcount(...);
   EXPCL_PYSTUB int _Py_RefTotal(...);
@@ -183,6 +197,7 @@ extern "C" {
 int PyArg_Parse(...) { return 0; };
 int PyArg_ParseTuple(...) { return 0; }
 int PyArg_ParseTupleAndKeywords(...) { return 0; }
+int PyArg_UnpackTuple(...) { return 0; };
 int PyBool_FromLong(...) { return 0; }
 int PyBuffer_Release(...) { return 0; }
 int PyBytes_AsString(...) { return 0; }
@@ -204,6 +219,7 @@ int PyErr_Clear(...) { return 0; };
 int PyErr_ExceptionMatches(...) { return 0; };
 int PyErr_Fetch(...) { return 0; }
 int PyErr_Format(...) { return 0; };
+int PyErr_NoMemory(...) { return 0; }
 int PyErr_Occurred(...) { return 0; }
 int PyErr_Print(...) { return 0; }
 int PyErr_Restore(...) { return 0; }
@@ -249,12 +265,14 @@ int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
 int PyModule_Create2(...) { return 0; };
+int PyNumber_Check(...) { return 0; }
 int PyNumber_Float(...) { return 0; }
 int PyNumber_Int(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_ASCII(...) { return 0; }
 int PyObject_Call(...) { return 0; }
 int PyObject_CallFunction(...) { return 0; }
+int PyObject_CallFunctionObjArgs(...) { return 0; }
 int PyObject_CallMethod(...) { return 0; }
 int PyObject_CallMethodObjArgs(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
@@ -282,6 +300,8 @@ int PyString_AsString(...) { return 0; }
 int PyString_AsStringAndSize(...) { return 0; }
 int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
+int PyString_InternFromString(...) { return 0; }
+int PyString_InternInPlace(...) { return 0; }
 int PyString_Size(...) { return 0; }
 int PyString_Type(...) { return 0; }
 int PySys_GetObject(...) { return 0; }
@@ -313,13 +333,21 @@ int PyUnicode_FromString(...) { return 0; }
 int PyUnicode_FromStringAndSize(...) { return 0; }
 int PyUnicode_FromWideChar(...) { return 0; }
 int PyUnicode_GetSize(...) { return 0; }
+int PyUnicode_InternFromString(...) { return 0; }
+int PyUnicode_InternInPlace(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
 int Py_InitModule4_64(...) { return 0; }
 int Py_InitModule4TraceRefs(...) { return 0; };
+int _PyArg_ParseTuple_SizeT(...) { return 0; };
+int _PyArg_ParseTupleAndKeywords_SizeT(...) { return 0; };
+int _PyArg_Parse_SizeT(...) { return 0; };
+int _PyObject_CallFunction_SizeT(...) { return 0; };
+int _PyObject_CallMethod_SizeT(...) { return 0; };
 int _PyObject_DebugFree(...) { return 0; };
 int _PyObject_Del(...) { return 0; };
+int _Py_BuildValue_SizeT(...) { return 0; };
 int _Py_Dealloc(...) { return 0; };
 int _Py_NegativeRefcount(...) { return 0; };
 int _Py_RefTotal(...) { return 0; };

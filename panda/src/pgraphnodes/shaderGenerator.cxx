@@ -718,7 +718,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
-    text << "\t in float4 vtx_normal : NORMAL,\n";
+    text << "\t in float3 vtx_normal : NORMAL,\n";
   }
   if (_map_index_height >= 0) {
     text << "\t uniform float4 mspos_view,\n";
@@ -763,13 +763,13 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
   }
   if (_need_world_normal) {
-    text << "\t l_world_normal = mul(trans_model_to_world, vtx_normal);\n";
+    text << "\t l_world_normal = mul(trans_model_to_world, float4(vtx_normal, 0));\n";
   }
   if (_need_eye_position) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
   if (_need_eye_normal) {
-    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
+    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
   pmap<const InternalName *, char *>::const_iterator it;
@@ -804,7 +804,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t float3 eyedir = mspos_view.xyz - vtx_position.xyz;\n";
     text << "\t l_eyevec.x = dot(vtx_" << tangent_input << ".xyz, eyedir);\n";
     text << "\t l_eyevec.y = dot(vtx_" << binormal_input << ".xyz, eyedir);\n";
-    text << "\t l_eyevec.z = dot(vtx_normal.xyz, eyedir);\n";
+    text << "\t l_eyevec.z = dot(vtx_normal, eyedir);\n";
     text << "\t l_eyevec = normalize(l_eyevec);\n";
   }
   text << "}\n\n";
@@ -1160,7 +1160,7 @@ synthesize_shader(const RenderState *rs) {
       }
     }
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-    if(_auto_ramp_on) {
+    if (_auto_ramp_on && _have_diffuse) {
       switch (light_ramp->get_mode()) {
       case LightRampAttrib::LRT_single_threshold:
         {
@@ -1178,12 +1178,11 @@ synthesize_shader(const RenderState *rs) {
           PN_stdfloat t1 = light_ramp->get_threshold(1);
           PN_stdfloat l0 = light_ramp->get_level(0);
           PN_stdfloat l1 = light_ramp->get_level(1);
-          PN_stdfloat l2 = light_ramp->get_level(2);
           text << "\t // Double-threshold light ramp\n";
           text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-          text << "\t float lr_out = " << l0 << "\n";
-          text << "\t if (lr_in > " << t0 << ") lr_out=" << l1 << ";\n";
-          text << "\t if (lr_in > " << t1 << ") lr_out=" << l2 << ";\n";
+          text << "\t float lr_out = 0.0;\n";
+          text << "\t if (lr_in > " << t0 << ") lr_out=" << l0 << ";\n";
+          text << "\t if (lr_in > " << t1 << ") lr_out=" << l1 << ";\n";
           text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
           break;
         }
@@ -1406,7 +1405,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
   }
-  if(_auto_ramp_on) {
+  if (_auto_ramp_on) {
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
     switch (light_ramp->get_mode()) {
     case LightRampAttrib::LRT_hdr0:

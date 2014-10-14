@@ -120,6 +120,18 @@ interrogate_element_scoped_name(ElementIndex element) {
   return InterrogateDatabase::get_ptr()->get_element(element).get_scoped_name().c_str();
 }
 
+bool
+interrogate_element_has_comment(ElementIndex element) {
+  //cerr << "interrogate_element_has_comment(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_comment();
+}
+
+const char *
+interrogate_element_comment(ElementIndex element) {
+  //cerr << "interrogate_element_comment(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_comment().c_str();
+}
+
 ElementIndex
 interrogate_get_element_by_name(const char *element_name) {
   //cerr << "interrogate_get_element_by_name(" << element_name << ")\n";
@@ -629,6 +641,12 @@ const char *
 interrogate_type_enum_value_scoped_name(TypeIndex type, int n) {
   //cerr << "interrogate_type_enum_value_scoped_name(" << type << ", " << n << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).get_enum_value_scoped_name(n).c_str();
+}
+
+const char *
+interrogate_type_enum_value_comment(TypeIndex type, int n) {
+  //cerr << "interrogate_type_enum_value_comment(" << type << ", " << n << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).get_enum_value_comment(n).c_str();
 }
 
 int

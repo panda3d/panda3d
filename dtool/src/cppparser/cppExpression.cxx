@@ -132,10 +132,10 @@ void *CPPExpression::Result::
 as_pointer() const {
   switch (_type) {
   case RT_integer:
-    return (void *)_u._integer;
+    return reinterpret_cast<void*>((long)_u._integer);
 
   case RT_real:
-    return (void *)(int)_u._real;
+    return reinterpret_cast<void*>((long)_u._real);
 
   case RT_pointer:
     return _u._pointer;
@@ -400,6 +400,16 @@ evaluate() const {
     return Result();
 
   case T_variable:
+    if (_u._variable->_type != NULL &&
+        _u._variable->_initializer != NULL) {
+      // A const variable.  Fetch its assigned value.
+      CPPConstType *const_type = _u._variable->_type->as_const_type();
+      if (const_type != NULL) {
+        return _u._variable->_initializer->evaluate();
+      }
+    }
+    return Result();
+
   case T_function:
     return Result();
 
@@ -889,6 +899,14 @@ bool CPPExpression::
 is_tbd() const {
   switch (_type) {
   case T_variable:
+    if (_u._variable->_type != NULL &&
+        _u._variable->_initializer != NULL) {
+      CPPConstType *const_type = _u._variable->_type->as_const_type();
+      if (const_type != NULL) {
+        return false;
+      }
+    }
+
     return true;
 
   case T_typecast:
@@ -978,6 +996,15 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_variable:
+    if (_u._variable->_type != NULL &&
+        _u._variable->_initializer != NULL) {
+      // A const variable.  Fetch its assigned value.
+      CPPConstType *const_type = _u._variable->_type->as_const_type();
+      if (const_type != NULL) {
+        _u._variable->_initializer->output(out, indent_level, scope, false);
+        break;
+      }
+    }
     _u._variable->_ident->output(out, scope);
     break;
 

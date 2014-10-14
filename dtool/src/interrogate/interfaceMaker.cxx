@@ -57,6 +57,7 @@ Function(const string &name,
 {
   _has_this = false;
   _flags = 0;
+  _args_type = AT_unknown;
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +84,19 @@ MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq) :
   _seq_name(cpp_make_seq->_seq_name),
   _num_name(cpp_make_seq->_num_name),
   _element_name(cpp_make_seq->_element_name)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::Property::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+InterfaceMaker::Property::
+Property(const InterrogateElement &ielement) :
+  _ielement(ielement),
+  _getter(NULL),
+  _setter(NULL)
 {
 }
 
@@ -154,6 +168,8 @@ check_protocols() {
   if (flags & FunctionRemap::F_iter) {
     _protocol_types |= PT_iter;
   }
+
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   // Now are there any make_seq requests within this class?
   if (_itype._cpptype != NULL) {
@@ -229,9 +245,9 @@ InterfaceMaker::
     Object *object = (*oi).second;
     delete object;
   }
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    delete (*fi);
+    delete (*fi).second;
   }
 }
 
@@ -500,9 +516,9 @@ wrap_global_functions() {
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
 get_function_remaps(vector<FunctionRemap *> &remaps) {
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     Function::Remaps::const_iterator ri;
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
@@ -616,12 +632,17 @@ get_unique_prefix() {
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::Function *InterfaceMaker::
 record_function(const InterrogateType &itype, FunctionIndex func_index) {
+  if (_functions.count(func_index)) {
+    // Already exists.
+    return _functions[func_index];
+  }
+
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   const InterrogateFunction &ifunc = idb->get_function(func_index);
 
   string wrapper_name = get_wrapper_name(itype, ifunc, func_index);
   Function *func = new Function(wrapper_name, itype, ifunc);
-  _functions.push_back(func);
+  _functions[func_index] = func;
 
 //  printf(" Function Name = %s\n", ifunc.get_name().c_str());
 
@@ -632,13 +653,13 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
       CPPInstance *cppfunc = (*ii).second;
       CPPFunctionType *ftype = cppfunc->_type->as_function_type();
       int max_default_parameters = 0;
-      
+
       if (separate_overloading()) {
         // Count up the number of default parameters this function might
         // take.
         CPPParameterList *parameters = ftype->_parameters;
         CPPParameterList::Parameters::reverse_iterator pi;
-        for (pi = parameters->_parameters.rbegin(); 
+        for (pi = parameters->_parameters.rbegin();
              pi != parameters->_parameters.rend();
              ++pi) {
           CPPInstance *param = (*pi);
@@ -651,7 +672,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           }
         }
       }
-      
+
       // Now make a different wrapper for each combination of default
       // parameters.  This will happen only if separate_overloading(),
       // tested above, returned true; otherwise, max_default_parameters
@@ -663,7 +684,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
         if (remap != (FunctionRemap *)NULL) {
           func->_remaps.push_back(remap);
-          
+
           // If *any* of the variants of this function has a "this"
           // pointer, the entire set of functions is deemed to have a
           // "this" pointer.
@@ -672,9 +693,10 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           }
 
           func->_flags |= remap->_flags;
-          
+          func->_args_type = (ArgsType)((int)func->_args_type | (int)remap->_args_type);
+
           // Make a wrapper for the function.
-          FunctionWrapperIndex wrapper_index = 
+          FunctionWrapperIndex wrapper_index =
             remap->make_wrapper_entry(func_index);
           if (wrapper_index != 0) {
             InterrogateFunction &mod_ifunc = idb->update_function(func_index);
@@ -836,6 +858,27 @@ manage_return_value(ostream &out, int indent_level,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::delete_return_value
+//       Access: Protected
+//  Description: Cleans up the given return value by deleting it or
+//               decrementing its reference count or whatever is
+//               appropriate.
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::
+delete_return_value(ostream &out, int indent_level,
+                    FunctionRemap *remap, const string &return_expr) const {
+  if (remap->_manage_reference_count) {
+    // If we're managing reference counts, and we're about to return a
+    // reference countable object, then decrement its count.
+    output_unref(out, indent_level, remap, return_expr);
+
+  } else if (remap->_return_value_needs_management) {
+    // We should just delete it directly.
+    indent(out, indent_level) << "delete " << return_expr << ";\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::output_ref
 //       Access: Protected
 //  Description: Outputs the code to increment the reference count for
@@ -857,9 +900,39 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
 
     indent(out, indent_level)
       << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
     indent(out, indent_level + 2)
       << varname << "->ref();\n";
+    indent(out, indent_level)
+      << "}\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::output_unref
+//       Access: Protected
+//  Description: Outputs the code to decrement the reference count for
+//               the indicated variable name.
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::
+output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+             const string &varname) const {
+  if (remap->_type == FunctionRemap::T_constructor ||
+      remap->_type == FunctionRemap::T_typecast) {
+    // In either of these cases, we can safely assume the pointer will
+    // never be NULL.
+    indent(out, indent_level)
+      << "unref_delete(" << varname << ");\n";
+
+  } else {
+    // However, in the general case, we have to check for that before
+    // we attempt to ref it.
+
+    indent(out, indent_level)
+      << "if (" << varname << " != ("
+      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+    indent(out, indent_level + 2)
+      << "unref_delete(" << varname << ");\n";
     indent(out, indent_level)
       << "}\n";
   }

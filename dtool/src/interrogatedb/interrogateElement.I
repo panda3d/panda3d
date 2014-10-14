@@ -48,6 +48,7 @@ operator = (const InterrogateElement &copy) {
   InterrogateComponent::operator = (copy);
   _flags = copy._flags;
   _scoped_name = copy._scoped_name;
+  _comment = copy._comment;
   _type = copy._type;
   _getter = copy._getter;
   _setter = copy._setter;
@@ -83,6 +84,26 @@ has_scoped_name() const {
 INLINE const string &InterrogateElement::
 get_scoped_name() const {
   return _scoped_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::has_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateElement::
+has_comment() const {
+  return !_comment.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::get_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const string &InterrogateElement::
+get_comment() const {
+  return _comment;
 }
 
 ////////////////////////////////////////////////////////////////////

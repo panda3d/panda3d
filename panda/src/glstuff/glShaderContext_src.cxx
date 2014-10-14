@@ -16,7 +16,7 @@
 
 #ifndef OPENGLES_1
 
-#include "pStatTimer.h"
+#include "pStatGPUTimer.h"
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
@@ -35,19 +35,19 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //       Access: Public
 //  Description: The Panda CG shader syntax defines a useful set of shorthand notations for setting nodepath
 //               properties as shaderinputs. For example, float4 mspos_XXX refers to nodepath XXX's position
-//               in model space. This function is a rough attempt to reimplement some of the shorthand 
+//               in model space. This function is a rough attempt to reimplement some of the shorthand
 //               notations for GLSL. The code is ~99% composed of excerpts dealing with matrix shaderinputs
-//               from Shader::compile_parameter.  
-//               
-//               Given a uniform variable name queried from the compiled shader passed in via arg_id, 
+//               from Shader::compile_parameter.
+//
+//               Given a uniform variable name queried from the compiled shader passed in via arg_id,
 //                  1) parse the name
 //                  2a) if the name refers to a Panda shorthand notation
 //                        push the appropriate matrix into shader._mat_spec
 //                        returns True
 //                  2b) If the name doesn't refer to a Panda shorthand notation
 //                        returns False
-//               
-//               The boolean return is used to notify down-river processing whether the shader var/parm was 
+//
+//               The boolean return is used to notify down-river processing whether the shader var/parm was
 //               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
@@ -267,6 +267,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
           if (size > 6 && matrix_name.compare(size - 6, 6, "Matrix") == 0) {
             Shader::ShaderMatSpec bind;
             bind._id = arg_id;
+            bind._func = Shader::SMF_compose;
             if (transpose) {
               bind._piece = Shader::SMP_transpose;
             } else {
@@ -274,9 +275,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             }
             bind._arg[0] = NULL;
             bind._arg[1] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             if (matrix_name == "ModelViewProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -284,11 +286,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ModelViewMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -296,11 +295,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -308,12 +304,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "NormalMatrix") {
               // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -321,13 +314,38 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
               if (transpose) {
                 bind._piece = Shader::SMP_upper3x3;
               } else {
                 bind._piece = Shader::SMP_transpose3x3;
+              }
+
+            } else if (matrix_name == "ModelMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_model;
+              } else {
+                bind._part[0] = Shader::SMO_model_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              }
+
+            } else if (matrix_name == "ViewMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiview_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiview;
+              }
+
+            } else if (matrix_name == "ViewProjectionMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiclip_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiclip;
               }
 
             } else {
@@ -374,6 +392,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._piece = Shader::SMP_row3x3;
               s->_mat_spec.push_back(bind);
               continue;
+            } else if (noprefix == "Material.shininess") {
+              bind._piece = Shader::SMP_cell15;
+              s->_mat_spec.push_back(bind);
+              continue;
             }
           }
           if (noprefix == "ColorScale") {
@@ -406,21 +428,21 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
           if (param_name == "osg_ViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
+            bind._func = Shader::SMF_compose;
             bind._part[0] = Shader::SMO_world_to_view;
-            bind._part[1] = Shader::SMO_identity;
+            bind._part[1] = Shader::SMO_view_to_apiview;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
           } else if (param_name == "osg_InverseViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
-            bind._part[0] = Shader::SMO_view_to_world;
-            bind._part[1] = Shader::SMO_identity;
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_apiview_to_view;
+            bind._part[1] = Shader::SMO_view_to_world;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
@@ -678,7 +700,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         }
       }
     }
-    
+
     // Now we've processed the uniforms, we'll process the attribs.
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
@@ -723,6 +745,19 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       } else {
         noprefix = "";
       }
+
+      bind._integer = (param_type == GL_BOOL ||
+                       param_type == GL_BOOL_VEC2 ||
+                       param_type == GL_BOOL_VEC3 ||
+                       param_type == GL_BOOL_VEC4 ||
+                       param_type == GL_INT ||
+                       param_type == GL_INT_VEC2 ||
+                       param_type == GL_INT_VEC3 ||
+                       param_type == GL_INT_VEC4 ||
+                       param_type == GL_UNSIGNED_INT ||
+                       param_type == GL_UNSIGNED_INT_VEC2 ||
+                       param_type == GL_UNSIGNED_INT_VEC3 ||
+                       param_type == GL_UNSIGNED_INT_VEC4);
 
       if (noprefix.empty()) {
         // Arbitrarily named attribute.
@@ -801,7 +836,7 @@ release_resources() {
   }
 
   _glsl_shaders.clear();
-  
+
   _glgsg->report_my_gl_errors();
 }
 
@@ -855,7 +890,7 @@ unbind() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 issue_parameters(int altered) {
-  PStatTimer timer(_glgsg->_draw_set_state_shader_parameters_pcollector);
+  //PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
 
   if (!valid()) {
     return;
@@ -938,6 +973,9 @@ issue_parameters(int altered) {
           _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
           continue;
         }
+      case Shader::SMP_cell15:
+        _glgsg->_glUniform1fv(p, 1, data+15);
+        continue;
       }
     }
   }
@@ -957,7 +995,9 @@ disable_shader_vertex_arrays() {
   }
 
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
-    _glgsg->_glDisableVertexAttribArray(i);
+    const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+    const GLint p = _glsl_parameter_map[bind._id._seqno];
+    _glgsg->_glDisableVertexAttribArray(p);
   }
 
   _glgsg->report_my_gl_errors();
@@ -993,9 +1033,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     int nvarying = _shader->_var_spec.size();
+
     for (int i = 0; i < nvarying; ++i) {
-      InternalName *name = _shader->_var_spec[i]._name;
-      int texslot = _shader->_var_spec[i]._append_uv;
+      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+      InternalName *name = bind._name;
+      int texslot = bind._append_uv;
+
       if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
         InternalName *texname = stage->get_texcoord_name();
@@ -1006,17 +1049,24 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
+      const GLint p = _glsl_parameter_map[bind._id._seqno];
+
       if (_glgsg->_data_reader->get_array_info(name,
-                                            array_reader, num_values, numeric_type,
-                                            start, stride)) {
+                                               array_reader, num_values, numeric_type,
+                                               start, stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
 
-        const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
         _glgsg->_glEnableVertexAttribArray(p);
 
+#ifndef OPENGLES
+        if (bind._integer) {
+          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                          stride, client_pointer + start);
+        } else
+#endif
         if (numeric_type == GeomEnums::NT_packed_dabc) {
           _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                          GL_TRUE, stride, client_pointer + start);
@@ -1024,6 +1074,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
                                          GL_TRUE, stride, client_pointer + start);
         }
+      } else {
+        _glgsg->_glDisableVertexAttribArray(p);
       }
     }
   }
@@ -1101,9 +1153,14 @@ disable_shader_texture_bindings() {
 
     if (gl_enable_memory_barriers) {
       for (int i = 0; i < num_image_units; ++i) {
-        // We don't distinguish between read-only and read-write/write-only
-        // image access, so we have to assume that the shader wrote to it.
-        _glsl_img_textures[i]->mark_incoherent();
+        const InternalName *name = _glsl_img_inputs[i];
+        const ShaderInput *input = _glgsg->_target_shader->get_shader_input(name);
+
+        if ((input->_access & ShaderInput::A_write) != 0) {
+          _glsl_img_textures[i]->mark_incoherent(true);
+        } else {
+          _glsl_img_textures[i]->mark_incoherent(false);
+        }
         _glsl_img_textures[i] = NULL;
       }
     }
@@ -1141,21 +1198,18 @@ update_shader_texture_bindings(ShaderContext *prev) {
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
 
   if (num_image_units > 0) {
-    GLuint *multi_img = NULL;
-    // If we support multi-bind, prepare an array.
-    if (_glgsg->_supports_multi_bind) {
-      multi_img = new GLuint[num_image_units];
-    }
-
     for (int i = 0; i < num_image_units; ++i) {
       const InternalName *name = _glsl_img_inputs[i];
-      Texture *tex = _glgsg->_target_shader->get_shader_input_texture(name);
+      const ShaderInput *input = _glgsg->_target_shader->get_shader_input(name);
+      Texture *tex = input->get_texture();
 
       GLuint gl_tex = 0;
+      CLP(TextureContext) *gtc;
+
       if (tex != NULL) {
         int view = _glgsg->get_current_tex_view_offset();
 
-        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+        gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
         if (gtc != (TextureContext*)NULL) {
           _glsl_img_textures[i] = gtc;
 
@@ -1168,26 +1222,44 @@ update_shader_texture_bindings(ShaderContext *prev) {
         }
       }
 
-      if (multi_img != NULL) {
-        // Put in array so we can multi-bind later.
-        multi_img[i] = gl_tex;
-
+      if (gl_tex == 0) {
+        _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
       } else {
-        // We don't support multi-bind, so bind now in the same way that multi-bind would have done it.
-        if (gl_tex == 0) {
-          _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
-        } else {
-          //TODO: automatically convert to sized type instead of plain GL_RGBA
-          // If a base type is used, it will crash.
-          GLint internal_format = _glgsg->get_internal_image_format(tex);
-          _glgsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
-        }
-      }
-    }
+        //TODO: automatically convert to sized type instead of plain GL_RGBA
+        // If a base type is used, it will crash.
+        if (gtc->_internal_format == GL_RGBA || gtc->_internal_format == GL_RGB) {
+          GLCAT.error()
+            << "Texture " << tex->get_name() << " has an unsized format.  Textures bound "
+            << "to a shader as an image need a sized format.\n";
 
-    if (multi_img != NULL) {
-      _glgsg->_glBindImageTextures(0, num_image_units, multi_img);
-      delete[] multi_img;
+          // This may not actually be right, but may still prevent a crash.
+          if (gtc->_internal_format == GL_RGBA) {
+            gtc->_internal_format = GL_RGBA8;
+          } else {
+            gtc->_internal_format = GL_RGB8;
+          }
+        }
+
+        GLenum access = GL_READ_ONLY;
+        GLboolean layered = (input->_access & ShaderInput::A_layered) != 0;
+
+        if ((input->_access & ShaderInput::A_read) != 0 &&
+            (input->_access & ShaderInput::A_write) != 0) {
+          access = GL_READ_WRITE;
+
+        } else if ((input->_access & ShaderInput::A_read) != 0) {
+          access = GL_READ_ONLY;
+
+        } else if ((input->_access & ShaderInput::A_write) != 0) {
+          access = GL_WRITE_ONLY;
+
+        } else {
+          access = GL_READ_ONLY;
+          gl_tex = 0;
+        }
+        _glgsg->_glBindImageTexture(i, gl_tex, input->_bind_level, layered,
+                                    input->_bind_layer, access, gtc->_internal_format);
+      }
     }
   }
 #endif
@@ -1280,7 +1352,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
 #ifndef OPENGLES
   if (barriers != 0) {
-    // Issue a memory barrier.
+    // Issue a memory barrier prior to this shader's execution.
     _glgsg->issue_memory_barrier(barriers);
   }
 #endif
@@ -1302,12 +1374,11 @@ glsl_report_shader_errors(GLuint shader) {
   _glgsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 1) {
-    info_log = (char *) malloc(length);
+    info_log = (char *) alloca(length);
     _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
-    free(info_log);
   }
 }
 
@@ -1325,19 +1396,18 @@ glsl_report_program_errors(GLuint program) {
   _glgsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 1) {
-    info_log = (char *) malloc(length);
+    info_log = (char *) alloca(length);
     _glgsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
-    free(info_log);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::glsl_compile_shader
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
 glsl_compile_shader(Shader::ShaderType type) {
@@ -1379,16 +1449,21 @@ glsl_compile_shader(Shader::ShaderType type) {
     return false;
   }
 
+  if (_glgsg->_use_object_labels) {
+    string name = _shader->get_filename(type);
+    _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
+  }
+
   string text_str = _shader->get_text(type);
   const char* text = text_str.c_str();
   _glgsg->_glShaderSource(handle, 1, &text, NULL);
   _glgsg->_glCompileShader(handle);
   GLint status;
   _glgsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
-  
+
   if (status != GL_TRUE) {
-    GLCAT.error() 
-      << "An error occurred while compiling shader " 
+    GLCAT.error()
+      << "An error occurred while compiling shader "
       << _shader->get_filename(type) << "\n";
     glsl_report_shader_errors(handle);
     _glgsg->_glDeleteShader(handle);
@@ -1413,6 +1488,12 @@ glsl_compile_and_link() {
   if (!_glsl_program) {
     return false;
   }
+
+  if (_glgsg->_use_object_labels) {
+    string name = _shader->get_filename();
+    _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
+  }
+
   bool valid = true;
 
   if (!_shader->get_text(Shader::ST_vertex).empty()) {
@@ -1435,7 +1516,7 @@ glsl_compile_and_link() {
     nassertr(_glgsg->_glProgramParameteri != NULL, false);
     GLint max_vertices;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
-    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices); 
+    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
   }
 #endif
 

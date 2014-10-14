@@ -128,10 +128,11 @@ PUBLISHED:
   INLINE RenderTexturePlane get_texture_plane(int i=0) const;
   INLINE RenderTextureMode get_rtm_mode(int i=0) const;
   void clear_render_textures();
-  void add_render_texture(Texture *tex, RenderTextureMode mode, 
+  void add_render_texture(Texture *tex, RenderTextureMode mode,
                           RenderTexturePlane bitplane=RTP_COUNT);
   void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
 
+  INLINE const LVecBase2i &get_size() const;
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE int get_fb_x_size() const;
@@ -290,7 +291,7 @@ protected:
 
 private:
   PT(GeomVertexData) create_texture_card_vdata(int x, int y);
-  
+
   DisplayRegion *add_display_region(DisplayRegion *display_region);
   bool do_remove_display_region(DisplayRegion *display_region);
 
@@ -323,7 +324,7 @@ protected:
     RenderTextureMode _rtm_mode;
   };
   typedef pvector<RenderTexture> RenderTextures;
-  
+
 private:
   int _sort;
   int _child_sort;
@@ -346,9 +347,9 @@ protected:
   // have, we don't auto-close the buffer (since that would deallocate
   // the memory associated with the texture).
   pvector<WPT(Texture)> _hold_textures;
-  
+
 protected:
-  LightMutex _lock; 
+  LightMutex _lock;
   // protects _display_regions.
   PT(DisplayRegion) _overlay_display_region;
   typedef pvector< PT(DisplayRegion) > TotalDisplayRegions;
@@ -382,8 +383,7 @@ protected:
 
 protected:
   int _creation_flags;
-  int _x_size;
-  int _y_size;
+  LVecBase2i _size;
   bool _has_size;
   bool _is_valid;
   bool _is_nonzero_size;
@@ -394,7 +394,7 @@ protected:
   static PStatCollector _draw_pcollector;
   PStatCollector _cull_window_pcollector;
   PStatCollector _draw_window_pcollector;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

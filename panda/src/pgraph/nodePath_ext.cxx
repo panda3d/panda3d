@@ -168,7 +168,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
-  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), bam_stream.size());
+  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
   Py_DECREF(func);
   Py_DECREF(this_class);
   return result;

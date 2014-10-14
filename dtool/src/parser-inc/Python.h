@@ -20,7 +20,15 @@
 #ifndef PYTHON_H
 #define PYTHON_H
 
-class PyObject;
+struct _object;
+typedef _object PyObject;
+
+struct _typeobject;
+typedef _typeobject PyTypeObject;
+
+struct PyStringObject;
+struct PyUnicodeObject;
+
 class PyThreadState;
 typedef int Py_ssize_t;
 struct Py_buffer;

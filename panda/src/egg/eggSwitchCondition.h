@@ -73,11 +73,11 @@ PUBLISHED:
 
   virtual void transform(const LMatrix4d &mat);
 
+public:
   double _switch_in, _switch_out, _fade;
   LPoint3d _center;
 
 public:
-
   static TypeHandle get_class_type() {
     return _type_handle;
   }

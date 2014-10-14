@@ -32,7 +32,6 @@ class GraphicsOutputBase;
 
 class VertexBufferContext;
 class IndexBufferContext;
-class OcclusionQueryContext;
 class GeomContext;
 class GeomNode;
 class Geom;
@@ -123,8 +122,9 @@ PUBLISHED:
 
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
-  virtual bool get_supports_occlusion_query() const=0;
   virtual bool get_supports_shadow_filter() const=0;
+
+  virtual bool get_supports_texture_srgb() const=0;
 
 public:
   // These are some general interface functions; they're defined here
@@ -153,15 +153,12 @@ public:
 
   virtual ShaderContext *prepare_shader(Shader *shader)=0;
   virtual void release_shader(ShaderContext *sc)=0;
-  
+
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;
   virtual void release_vertex_buffer(VertexBufferContext *vbc)=0;
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
-
-  virtual void begin_occlusion_query()=0;
-  virtual PT(OcclusionQueryContext) end_occlusion_query()=0;
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z)=0;
 

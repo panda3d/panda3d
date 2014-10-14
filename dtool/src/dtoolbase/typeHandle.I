@@ -276,6 +276,17 @@ none() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::operator bool
+//       Access: Published
+//  Description: TypeHandle::none() evaluates to false, everything
+//               else evaluates to true.
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle::
+operator bool () const {
+  return (_index != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_best_parent_from_Set
 //       Access: Published
 //  Description: Return the Index of the BEst fit Classs from a set
@@ -295,4 +306,3 @@ INLINE  int TypeHandle::get_best_parent_from_Set(const std::set< int > &legal_va
     }
     return -1;
 }
-

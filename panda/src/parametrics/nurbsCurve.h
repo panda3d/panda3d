@@ -20,6 +20,7 @@
 #include "piecewiseCurve.h"
 #include "nurbsCurveInterface.h"
 #include "cubicCurveseg.h"
+#include "epvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsCurve
@@ -111,7 +112,6 @@ protected:
   };
 
   epvector<CV> _cvs;
-
 
 // TypedWritable stuff
 public:
