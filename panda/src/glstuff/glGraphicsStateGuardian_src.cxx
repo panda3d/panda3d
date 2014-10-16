@@ -2429,9 +2429,17 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   set_draw_buffer(_draw_buffer_type);
 
   if (dr->get_scissor_enabled()) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glEnable(GL_SCISSOR_TEST)\n";
+    }
     glEnable(GL_SCISSOR_TEST);
     _scissor_enabled = true;
   } else {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glDisable(GL_SCISSOR_TEST)\n";
+    }
     glDisable(GL_SCISSOR_TEST);
     _scissor_enabled = false;
   }
@@ -2455,6 +2463,24 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     if (dr->get_scissor_enabled()) {
       _glScissorArrayv(0, count, scissors);
     }
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glViewportArrayv(0, " << count << ", [\n";
+      for (int i = 0; i < count; ++i) {
+        GLfloat *vr = viewports + i * 4;
+        GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
+      }
+      GLCAT.spam(false) << "])\n";
+      if (dr->get_scissor_enabled()) {
+        GLCAT.spam()
+          << "glScissorArrayv(0, " << count << ", [\n";
+        for (int i = 0; i < count; ++i) {
+          GLint *sr = scissors + i * 4;
+          GLCAT.spam(false) << sr[0] << ", " << sr[1] << ", " << sr[2] << ", " << sr[3] << ",\n";
+        }
+      }
+      GLCAT.spam(false) << "])\n";
+    }
 
   } else
 #endif  // OPENGLES
@@ -2462,6 +2488,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     glViewport(x, y, width, height);
     if (dr->get_scissor_enabled()) {
       glScissor(x, y, width, height);
+    }
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glViewport(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+      if (dr->get_scissor_enabled()) {
+        GLCAT.spam()
+          << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+      }
     }
   }
 
@@ -11676,13 +11710,21 @@ void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
 
-  if (target_scissor->is_off()) {
+  if (target_scissor->is_off() && !_current_display_region->get_scissor_enabled()) {
     if (_scissor_enabled) {
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glDisable(GL_SCISSOR_TEST)\n";
+      }
       glDisable(GL_SCISSOR_TEST);
       _scissor_enabled = false;
     }
   } else {
     if (!_scissor_enabled) {
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glEnable(GL_SCISSOR_TEST)\n";
+      }
       glEnable(GL_SCISSOR_TEST);
       _scissor_enabled = true;
     }
@@ -11694,6 +11736,10 @@ do_issue_scissor() {
     int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
     int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
 
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+    }
     glScissor(x, y, width, height);
   }
 }
