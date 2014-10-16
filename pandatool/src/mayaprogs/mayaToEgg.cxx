@@ -108,6 +108,11 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_convert_cameras);
 
   add_option
+    ("convert-lights", "", 0,
+     "Convert all light nodes to locators. Will preserve position and rotation only.",
+     &MayaToEgg::dispatch_none, &_convert_lights);
+
+  add_option
     ("keep-uvs", "", 0,
      "Convert all UV sets on all vertices, even those that do not appear "
      "to be referenced by any textures.",
@@ -248,6 +253,7 @@ run() {
   converter._always_show_vertex_color = !_suppress_vertex_color;
   converter._keep_all_uvsets = _keep_all_uvsets;
   converter._convert_cameras = _convert_cameras;
+  converter._convert_lights = _convert_lights;
   converter._round_uvs = _round_uvs;
   converter._transform_type = _transform_type;
   converter._legacy_shader = _legacy_shader;
