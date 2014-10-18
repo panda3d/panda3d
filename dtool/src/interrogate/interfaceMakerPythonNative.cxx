@@ -2452,6 +2452,9 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   case AT_single_arg:
     fname += ", PyObject *arg";
     break;
+
+  default:
+    break;
   }
   fname += ")";
 
@@ -3499,6 +3502,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         ++open_scopes;
         indent_level += 2;
       }
+
+    default:
+      break;
     }
   }
 

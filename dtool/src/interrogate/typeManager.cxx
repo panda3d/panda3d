@@ -1644,6 +1644,9 @@ get_template_parameter_type(CPPType *source_type, int i) {
 
   case CPPDeclaration::ST_reference:
     return get_template_parameter_type(source_type->as_reference_type()->_pointing_at, i);
+
+  default:
+    break;
   }
 
   CPPStructType *type = source_type->as_struct_type();

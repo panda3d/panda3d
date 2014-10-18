@@ -574,7 +574,7 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
     keycode = os_code & 0xff;
   }
   
-#endif __APPLE__
+#endif  // __APPLE__
 
   return nk;
 }

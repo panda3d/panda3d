@@ -1003,6 +1003,9 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
           case Texture::F_depth_component32:
             format = GL_DEPTH_COMPONENT32;
             break;
+          default:
+            format = GL_DEPTH_COMPONENT;
+            break;
         }
       }
       if (_requested_coverage_samples) {
@@ -1046,7 +1049,10 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       case RTP_aux_float_3:
         gl_format = GL_RGBA32F_ARB;
         break;
-    };
+      default:
+        gl_format = GL_RGBA;
+        break;
+    }
 #endif
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
     if (_requested_coverage_samples) {

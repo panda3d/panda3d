@@ -370,7 +370,7 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
         char end = (*pi);
         ++pi;
 
-        if (ch >= start && ch <= end || 
+        if ((ch >= start && ch <= end) || 
             (!_case_sensitive && 
              ((tolower(ch) >= start && tolower(ch) <= end) ||
               (toupper(ch) >= start && toupper(ch) <= end)))) {

@@ -263,7 +263,7 @@ output(ostream &out) const {
     }
 
     if ((*ei)._parm_number >= 0) {
-      if (stringify) {
+      if ((*ei)._stringify) {
         out << "#";
       }
       if ((*ei)._parm_number == _variadic_param) {
@@ -345,7 +345,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
       // Here's the start of an identifier.  Find the end of it.
       size_t q = p;
       p++;
-      while (p < exp.size() && isalnum(exp[p]) || exp[p] == '_') {
+      while (p < exp.size() && (isalnum(exp[p]) || exp[p] == '_')) {
         p++;
       }
 
