@@ -195,7 +195,7 @@ pop_struct() {
 /* This is a bison-specific declaration to enable recursive calls to
    yyparse().  It changes the calling sequence to yylex(), passing
    pointers to the current yylval and yylloc. */
-%pure-parser
+%pure_parser
 
 %token <u.real> REAL
 %token <u.integer> INTEGER

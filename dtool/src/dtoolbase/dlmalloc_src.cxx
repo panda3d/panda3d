@@ -597,15 +597,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
   malloc does support the following options.
 */
 
-#ifndef M_TRIM_THRESHOLD
 #define M_TRIM_THRESHOLD     (-1)
-#endif
-
 #define M_GRANULARITY        (-2)
-
-#ifndef M_MMAP_THRESHOLD
 #define M_MMAP_THRESHOLD     (-3)
-#endif
 
 /* ------------------------ Mallinfo declarations ------------------------ */
 
@@ -1186,7 +1180,6 @@ int mspace_mallopt(int, int);
 #include <assert.h>
 #endif /* ABORT_ON_ASSERT_FAILURE */
 #else  /* DEBUG */
-#undef assert
 #define assert(x)
 #endif /* DEBUG */
 #ifndef LACKS_STRING_H

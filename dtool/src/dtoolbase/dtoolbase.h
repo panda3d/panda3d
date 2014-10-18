@@ -104,21 +104,9 @@
 #endif
 
 #ifdef HAVE_PYTHON
-#  undef _POSIX_C_SOURCE
-#  undef _XOPEN_SOURCE
-// Some versions of python also define HAVE_LOCKF
-#  ifdef HAVE_LOCKF
-#    define PANDA_HAVE_LOCKF
-#    undef HAVE_LOCKF
-#  endif
-#  include "pyconfig.h"
-// Restore our HAVE_LOCKF if python didn't define it
-#  ifdef PANDA_HAVE_LOCKF
-#    undef PANDA_HAVE_LOCKF
-#    ifndef HAVE_LOCKF
-#      define HAVE_LOCKF 1
-#    endif
-#  endif
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
+#include "pyconfig.h"
 #endif
 
 #ifndef HAVE_EIGEN
