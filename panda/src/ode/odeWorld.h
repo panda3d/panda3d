@@ -95,10 +95,10 @@ PUBLISHED:
   operator bool () const;
     
 public:
-  INLINE sSurfaceParams& get_surface(PN_uint8 surface1, PN_uint8 surface2);
-  INLINE void set_surface(int pos1, int pos2, sSurfaceParams& entry);
-  INLINE sBodyParams get_surface_body(dBodyID id);
-  INLINE void set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp);
+  sSurfaceParams& get_surface(PN_uint8 surface1, PN_uint8 surface2);
+  void set_surface(int pos1, int pos2, sSurfaceParams& entry);
+  sBodyParams get_surface_body(dBodyID id);
+  void set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp);
 
   
 private:
