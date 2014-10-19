@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableBase.h"
+#include "config_prc.h"
 
 ConfigVariableBase::Unconstructed *ConfigVariableBase::_unconstructed;
 

@@ -13,6 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "threadPriority.h"
+#include "pnotify.h" // nassertr
+#include "pipeline.h"
 
 ostream &
 operator << (ostream &out, ThreadPriority pri) {

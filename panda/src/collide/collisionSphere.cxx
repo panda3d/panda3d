@@ -19,6 +19,7 @@
 #include "collisionSegment.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
+#include "collisionParabola.h"
 #include "config_collide.h"
 #include "boundingSphere.h"
 #include "datagram.h"

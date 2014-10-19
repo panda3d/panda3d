@@ -14,6 +14,18 @@
 
 #include "config_ode.h"
 #include "odeJoint.h"
+#include "odeBallJoint.h"
+#include "odeHingeJoint.h"
+#include "odeHinge2Joint.h"
+#include "odeSliderJoint.h"
+#include "odeContactJoint.h"
+#include "odeUniversalJoint.h"
+#include "odeFixedJoint.h"
+#include "odeNullJoint.h"
+#include "odePlane2dJoint.h"
+#include "odeAMotorJoint.h"
+#include "odeLMotorJoint.h"
+#include "odeBody.h"
 
 TypeHandle OdeJoint::_type_handle;
 

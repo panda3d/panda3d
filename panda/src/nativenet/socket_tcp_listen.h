@@ -3,6 +3,7 @@
 
 #include "pandabase.h"
 #include "socket_ip.h"
+#include "socket_tcp.h"
 
 /////////////////////////////////////////////////////////////////////
 // Class : Socket_TCP_Listen

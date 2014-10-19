@@ -15,6 +15,7 @@
 #include "vertexDataSaveFile.h"
 #include "mutexHolder.h"
 #include "clockObject.h"
+#include "config_gobj.h"
 
 #ifndef _WIN32
 #include <sys/types.h>

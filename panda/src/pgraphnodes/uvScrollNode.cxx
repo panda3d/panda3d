@@ -15,6 +15,7 @@
 #include "uvScrollNode.h"
 
 #include "bamReader.h"
+#include "cullTraverserData.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "luse.h"

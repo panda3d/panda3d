@@ -14,6 +14,7 @@
 
 #include "parameterRemapToString.h"
 #include "interrogate.h"
+#include "typeManager.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapToString::Constructor

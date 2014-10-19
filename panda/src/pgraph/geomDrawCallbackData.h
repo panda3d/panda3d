@@ -18,6 +18,10 @@
 #include "pandabase.h"
 #include "callbackData.h"
 
+// Forward declarations
+class CullableObject;
+class GraphicsStateGuardianBase;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomDrawCallbackData
 // Description : This specialization on CallbackData is passed when

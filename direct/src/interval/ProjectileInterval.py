@@ -3,6 +3,7 @@
 __all__ = ['ProjectileInterval']
 
 from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 from Interval import Interval
 from direct.showbase.PythonUtil import lerp
 from direct.showbase import PythonUtil

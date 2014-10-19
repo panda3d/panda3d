@@ -20,6 +20,7 @@
 #include "geomPoints.h"
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
+#include "colorAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Constructor

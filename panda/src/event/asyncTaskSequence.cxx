@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "asyncTaskSequence.h"
+#include "asyncTaskManager.h"
 
 TypeHandle AsyncTaskSequence::_type_handle;
 

@@ -28,6 +28,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "boundingBox.h"
 #include "boundingPlane.h"
 #include "geom.h"
 #include "geomTriangles.h"

@@ -77,6 +77,7 @@
 
 #include "audioSound.h"
 #include "reMutex.h"
+#include "fmodAudioManager.h"
 
 #include <fmod.hpp>
 #include <fmod_errors.h>

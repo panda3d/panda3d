@@ -16,8 +16,11 @@
 #include "configVariableInt.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
+#include "vertexDataBlock.h"
 #include "pStatTimer.h"
 #include "memoryHook.h"
+#include "config_gobj.h"
+#include <algorithm>
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>

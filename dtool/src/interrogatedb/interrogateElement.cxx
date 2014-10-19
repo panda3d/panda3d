@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "interrogateElement.h"
+#include "interrogateDatabase.h"
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 

@@ -22,6 +22,7 @@
 #include "geomVertexAnimationSpec.h"
 #include "sceneGraphReducer.h"
 #include "omniBoundingVolume.h"
+#include "cullTraverserData.h"
 
 TypeHandle RigidBodyCombiner::_type_handle;
 

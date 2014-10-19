@@ -2,6 +2,7 @@
 #define __SOCKET_TCP_SSL_H__ 
 
 #include "pandabase.h"
+#include "config_nativenet.h"
 #include "socket_ip.h"
 #include "numeric_types.h"
 

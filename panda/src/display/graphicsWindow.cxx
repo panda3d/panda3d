@@ -903,54 +903,6 @@ mouse_mode_absolute() {
 
 }
 
-#ifdef HAVE_PYTHON
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::add_custom_event_handler
-//       Access: Published
-//  Description: Adds a python event handler to be called
-//               when a window event occurs.
-//               
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-add_python_event_handler(PyObject* handler, PyObject* name){
-  PythonGraphicsWindowProc* pgwp = new PythonGraphicsWindowProc(handler, name);
-  _python_window_proc_classes.insert(pgwp);
-  add_window_proc(pgwp);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::remove_custom_event_handler
-//       Access: Published
-//  Description: Removes the specified python event handler.
-//               
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-remove_python_event_handler(PyObject* name){
-  list<PythonGraphicsWindowProc*> toRemove;
-  PythonWinProcClasses::iterator iter;
-  for (iter = _python_window_proc_classes.begin(); iter != _python_window_proc_classes.end(); ++iter) {
-    PythonGraphicsWindowProc* pgwp = *iter;
-    if (PyObject_RichCompareBool(pgwp->get_name(), name, Py_EQ) == 1) {
-      toRemove.push_back(pgwp);
-    }
-#if PY_MAJOR_VERSION < 3
-    else if (PyObject_Compare(pgwp->get_name(), name) == 0) {
-      toRemove.push_back(pgwp);
-    }
-#endif
-  }
-  list<PythonGraphicsWindowProc*>::iterator iter2;
-  for (iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2) {
-    PythonGraphicsWindowProc* pgwp = *iter2;
-    remove_window_proc(pgwp);
-    _python_window_proc_classes.erase(pgwp);
-    delete pgwp;
-  }
-}
-
-#endif // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::is_touch_event
 //       Access: Published, Virtual

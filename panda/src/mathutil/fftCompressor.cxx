@@ -25,7 +25,7 @@
 #ifdef HAVE_FFTW
 
 //  hack.....
-// this is a hack to help interigate sort out a macro 
+// this is a hack to help interrogate sort out a macro
 // in the system poll and select definitions 
 //    
 #ifdef howmany

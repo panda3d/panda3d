@@ -20,6 +20,7 @@
 #include "pStatClient.h"
 #include "pStatTimer.h"
 #include "clockObject.h"
+#include "config_event.h"
 #include <algorithm>
 #include <stdio.h>  // For sprintf/snprintf
 

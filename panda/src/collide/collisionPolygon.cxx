@@ -19,6 +19,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
+#include "collisionParabola.h"
 #include "config_collide.h"
 #include "cullTraverserData.h"
 #include "boundingBox.h"

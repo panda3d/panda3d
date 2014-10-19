@@ -25,6 +25,7 @@
 #include "audioSound.h"
 #include "movieAudioCursor.h"
 #include "trueClock.h"
+#include "openalAudioManager.h"
 
 // OSX uses the OpenAL framework
 #ifdef IS_OSX

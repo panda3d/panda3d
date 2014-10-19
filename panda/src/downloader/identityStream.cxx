@@ -16,6 +16,7 @@
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
+#include "httpChannel.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IIdentityStream::Destructor

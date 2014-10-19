@@ -38,6 +38,7 @@
 #import <AppKit/NSEvent.h>
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
+#import <AppKit/NSText.h>
 #import <OpenGL/OpenGL.h>
 #import <Carbon/Carbon.h>
 

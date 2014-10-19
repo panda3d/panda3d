@@ -14,6 +14,8 @@
 
 #include "bamCache.h"
 #include "bamCacheIndex.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 #include "hashVal.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"

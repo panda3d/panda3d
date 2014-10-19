@@ -28,6 +28,8 @@
 #include "lightMutex.h"
 #include "lightMutexHolder.h"
 
+// Forward declarations
+class GraphicsWindow;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindowInputDevice

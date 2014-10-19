@@ -47,6 +47,7 @@
 #include "config_pgraph.h"
 #include "displayRegionCullCallbackData.h"
 #include "displayRegionDrawCallbackData.h"
+#include "callbackGraphicsWindow.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN

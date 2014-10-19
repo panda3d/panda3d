@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #import <AppKit/NSApplication.h>
+#import <AppKit/NSEvent.h>
 
 // This class solely exists so that we can override sendEvent in order
 // to prevent NSApplication from eating certain keyboard events.

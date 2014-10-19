@@ -92,16 +92,16 @@ open_framework(int &argc, char **&argv) {
 #ifdef LINK_ALL_STATIC
   // If we're statically linking, we need to explicitly link with
   // at least one of the available renderers.
-  #ifdef HAVE_GL
+  #if defined(HAVE_GL)
   extern EXPCL_PANDAGL void init_libpandagl();
   init_libpandagl();
-  #elif HAVE_DX9
+  #elif defined(HAVE_DX9)
   extern EXPCL_PANDADX9 void init_libpandadx9();
   init_libpandadx9();
-  #elif HAVE_DX8
+  #elif defined(HAVE_DX8)
   extern EXPCL_PANDADX8 void init_libpandadx8();
   init_libpandadx8();
-  #elif HAVE_TINYDISPLAY
+  #elif defined(HAVE_TINYDISPLAY)
   extern EXPCL_TINYDISPLAY void init_libtinydisplay();
   init_libtinydisplay();
   #endif
