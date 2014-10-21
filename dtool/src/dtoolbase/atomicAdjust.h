@@ -39,14 +39,19 @@ typedef AtomicAdjustI386Impl AtomicAdjust;
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
 
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
+#elif (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (defined(__clang__) && (__clang_major__ >= 3))
 // GCC 4.7 and above has built-in __atomic functions for atomic operations.
+// Clang 3.0 and above also supports them.
 
 #include "atomicAdjustGccImpl.h"
 typedef AtomicAdjustGccImpl AtomicAdjust;
 
+#if (__GCC_ATOMIC_INT_LOCK_FREE + __GCC_ATOMIC_INT_LOCK_FREE) > 0
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#endif
+#if __GCC_ATOMIC_POINTER_LOCK_FREE > 0
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
+#endif
 
 #elif defined(THREAD_WIN32_IMPL)
 
