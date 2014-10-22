@@ -371,7 +371,7 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
     return true;
   }
 
-  if (method_name == "operator << ") {
+  if (method_name == "operator <<") {
     def._answer_location = "tp_as_number->nb_lshift";
     def._wrapper_type = WT_numeric_operator;
     return true;

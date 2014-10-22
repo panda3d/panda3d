@@ -21,7 +21,6 @@
 //       Access: Published
 //  Description: Adds a python event handler to be called
 //               when a window event occurs.
-//               
 ////////////////////////////////////////////////////////////////////
 void Extension<GraphicsWindow>::
 add_python_event_handler(PyObject* handler, PyObject* name){
@@ -34,7 +33,6 @@ add_python_event_handler(PyObject* handler, PyObject* name){
 //     Function: Extension<GraphicsWindow>::remove_custom_event_handler
 //       Access: Published
 //  Description: Removes the specified python event handler.
-//               
 ////////////////////////////////////////////////////////////////////
 void Extension<GraphicsWindow>::
 remove_python_event_handler(PyObject* name){

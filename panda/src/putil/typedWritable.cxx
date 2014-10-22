@@ -20,8 +20,6 @@
 #include "lightMutexHolder.h"
 #include "bam.h"
 
-LightMutex TypedWritable::_bam_writers_lock;
-
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 
@@ -33,19 +31,22 @@ TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 TypedWritable::
 ~TypedWritable() {
   // Remove the object pointer from the BamWriters that reference it.
-  if (_bam_writers != (BamWriters *)NULL) {
-    BamWriters temp;
-    {
-      LightMutexHolder holder(_bam_writers_lock);
-      _bam_writers->swap(temp);
-      delete _bam_writers;
-      _bam_writers = NULL;
+  BamWriterLink *link;
+  do {
+    link = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    if (link == (BamWriterLink *)NULL) {
+      // List is unlocked and empty - no writers to remove.
+      return;
     }
-    BamWriters::iterator wi;
-    for (wi = temp.begin(); wi != temp.end(); ++wi) {
-      BamWriter *writer = (*wi);
-      writer->object_destructs(this);
-    }
+    link = (BamWriterLink *)(((uintptr_t)link) & ~(uintptr_t)0x1);
+  } while (link != AtomicAdjust::
+    compare_and_exchange_ptr(_bam_writers, (void *)link, (void *)NULL));
+
+  while (link != (BamWriterLink *)NULL) {
+    BamWriterLink *next_link = link->_next;
+    link->_writer->object_destructs(this);
+    delete link;
+    link = next_link;
   }
 }
 
@@ -307,4 +308,83 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
   // the caller to manage the reference count from this point on.
   ref_ptr->unref();
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::add_bam_writer
+//       Access: Private
+//  Description: Called by the BamWriter to add itself to this
+//               TypedWritable's list of BamWriters, so that it can
+//               receive notification whenever this object destructs.
+//               This method may be safely called from any thread.
+////////////////////////////////////////////////////////////////////
+void TypedWritable::
+add_bam_writer(BamWriter *writer) {
+  nassertv(writer != (BamWriter *)NULL);
+
+  BamWriterLink *begin;
+  BamWriterLink *new_link = new BamWriterLink;
+  new_link->_writer = writer;
+
+  // Assert that we got at least a 2-byte aligned pointer from new.
+  nassertv(((uintptr_t)new_link & (uintptr_t)0x1) == 0);
+
+  // This spins if the lower bit is 1, ie. if the pointer is locked.
+  do {
+    begin = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    begin = (BamWriterLink *)(((uintptr_t)begin) & ~(uintptr_t)0x1);
+    new_link->_next = begin;
+  } while (begin != AtomicAdjust::
+    compare_and_exchange_ptr(_bam_writers, (void *)begin, (void *)new_link));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::remove_bam_writer
+//       Access: Private
+//  Description: The converse of add_bam_writer.
+//               This method may be safely called from any thread.
+////////////////////////////////////////////////////////////////////
+void TypedWritable::
+remove_bam_writer(BamWriter *writer) {
+  nassertv(writer != (BamWriter *)NULL);
+
+  BamWriterLink *begin;
+
+  // Grab the head pointer and lock it in one atomic operation.
+  // We lock it by tagging the pointer.
+  do {
+    begin = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    begin = (BamWriterLink *)(((uintptr_t)begin) & ~(uintptr_t)0x1);
+    if (begin == NULL) {
+      // The list is empty, nothing to remove.
+      return;
+    }
+  } while (begin != AtomicAdjust::
+    compare_and_exchange_ptr(_bam_writers, (void *)begin,
+                       (void *)((uintptr_t)begin | (uintptr_t)0x1)));
+
+  // Find the writer in the list.
+  BamWriterLink *prev_link = (BamWriterLink *)NULL;
+  BamWriterLink *link = begin;
+
+  while (link != NULL && link->_writer != writer) {
+    prev_link = link;
+    link = link->_next;
+  }
+
+  if (link == (BamWriterLink *)NULL) {
+    // Not found.  Just unlock and leave.
+    _bam_writers = (void *)begin;
+    return;
+  }
+
+  if (prev_link == (BamWriterLink *)NULL) {
+    // It's the first link.  Replace and unlock in one atomic op.
+    _bam_writers = (void *)link->_next;
+  } else {
+    prev_link->_next = link->_next;
+    _bam_writers = (void *)begin; // Unlock
+  }
+
+  delete link;
 }

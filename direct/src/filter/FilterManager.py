@@ -298,6 +298,7 @@ class FilterManager(DirectObject):
         props.setBackBuffers(0)
         props.setRgbColor(1)
         props.setDepthBits(depthbits)
+        props.setStereo(self.win.isStereo())
         depthtex, colortex, auxtex0, auxtex1 = texgroup
         if (auxtex0 != None):
             props.setAuxRgba(1)
