@@ -265,7 +265,7 @@ ConfigVariableBool depth_offset_decals
           "their depth offset implementation."));
 
 ConfigVariableInt max_collect_vertices
-("max-collect-vertices", 65535,
+("max-collect-vertices", 65534,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "
           "accumulated into any one GeomVertexData structure as a result "
           "of collecting objects together during a flatten operation.  "
