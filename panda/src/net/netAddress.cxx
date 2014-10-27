@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Constructs an unspecified address.
 ////////////////////////////////////////////////////////////////////
 NetAddress::
@@ -27,7 +27,7 @@ NetAddress() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Constructs an address from a given Socket_Address.
 //               Normally, this constructor should not be used by user
 //               code; instead, create a default NetAddress and use
@@ -40,7 +40,7 @@ NetAddress(const Socket_Address &addr) : _addr(addr) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_any
-//       Access: Public
+//       Access: Published
 //  Description: Sets the address up to refer to a particular port,
 //               but not to any particular IP.  Returns true if
 //               successful, false otherwise (currently, this only
@@ -53,7 +53,7 @@ set_any(int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_localhost
-//       Access: Public
+//       Access: Published
 //  Description: Sets the address up to refer to a particular port,
 //               on this host.
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ set_localhost(int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_broadcast
-//       Access: Public
+//       Access: Published
 //  Description: Sets the address to the broadcast address.
 ////////////////////////////////////////////////////////////////////
 bool NetAddress::
@@ -74,7 +74,7 @@ set_broadcast(int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_host
-//       Access: Public
+//       Access: Published
 //  Description: Sets the address up to refer to a particular port
 //               on a particular host.  Returns true if the hostname
 //               is known, false otherwise.
@@ -86,7 +86,7 @@ set_host(const string &hostname, int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::clear
-//       Access: Public
+//       Access: Published
 //  Description: Resets the NetAddress to its initial state.
 ////////////////////////////////////////////////////////////////////
 void NetAddress::
@@ -96,7 +96,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_port
-//       Access: Public
+//       Access: Published
 //  Description: Returns the port number to which this address refers.
 ////////////////////////////////////////////////////////////////////
 int NetAddress::
@@ -106,7 +106,7 @@ get_port() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_port
-//       Access: Public
+//       Access: Published
 //  Description: Resets the port number without otherwise changing the
 //               address.
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ set_port(int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_ip_string
-//       Access: Public
+//       Access: Published
 //  Description: Returns the IP address to which this address refers,
 //               formatted as a string.
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ get_ip_string() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_ip
-//       Access: Public
+//       Access: Published
 //  Description: Returns the IP address to which this address refers,
 //               as a 32-bit integer, in host byte order.
 ////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ get_ip() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_ip_component
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth 8-bit component of the IP address.
 //               An IP address has four components; component 0 is the
 //               first (leftmost), and component 3 is the last
@@ -156,7 +156,7 @@ get_ip_component(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_addr
-//       Access: Public
+//       Access: Published
 //  Description: Returns the Socket_Address for this address.
 ////////////////////////////////////////////////////////////////////
 const Socket_Address &NetAddress::
@@ -166,10 +166,40 @@ get_addr() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void NetAddress::
 output(ostream &out) const {
   out << get_ip_string();
+}
+
+//////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_hash
+//       Access: Published
+//  Description:
+//////////////////////////////////////////////////////////////
+size_t NetAddress::
+get_hash() const {
+  return  (size_t)(((int)get_ip()) ^ ((int)get_port() << 16));
+}
+
+//////////////////////////////////////////////////////////////
+//     Function: NetAddress::operator ==
+//       Access: Published
+//  Description:
+//////////////////////////////////////////////////////////////
+bool NetAddress::
+operator == (const NetAddress &other) const {
+  return _addr == other._addr;
+}
+
+//////////////////////////////////////////////////////////////
+//     Function: NetAddress::operator !=
+//       Access: Published
+//  Description:
+//////////////////////////////////////////////////////////////
+bool NetAddress::
+operator != (const NetAddress &other) const {
+  return _addr != other._addr;
 }

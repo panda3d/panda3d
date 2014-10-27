@@ -46,6 +46,10 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  size_t get_hash() const;
+  bool operator == (const NetAddress &other) const;
+  bool operator != (const NetAddress &other) const;
+
 private:
   Socket_Address _addr;
 };
