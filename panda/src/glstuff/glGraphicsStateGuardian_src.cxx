@@ -4357,15 +4357,18 @@ prepare_shader(Shader *se) {
   ShaderContext *result = NULL;
 
   switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    result = new CLP(ShaderContext)(this, se);
-    break;
-
 #if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
     result = new CLP(CgShaderContext)(this, se);
     break;
 #endif
+
+  case Shader::SL_GLSL:
+    if (_supports_glsl) {
+      result = new CLP(ShaderContext)(this, se);
+      break;
+    }
+    // Fall through.
 
   default:
     GLCAT.error()
@@ -11710,16 +11713,9 @@ void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
 
-  if (target_scissor->is_off() && !_current_display_region->get_scissor_enabled()) {
-    if (_scissor_enabled) {
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
-          << "glDisable(GL_SCISSOR_TEST)\n";
-      }
-      glDisable(GL_SCISSOR_TEST);
-      _scissor_enabled = false;
-    }
-  } else {
+  if (!target_scissor->is_off()) {
+    // A non-off ScissorAttrib means to override the scissor setting
+    // that was specified by the DisplayRegion.
     if (!_scissor_enabled) {
       if (GLCAT.is_spam()) {
         GLCAT.spam()
