@@ -1245,6 +1245,38 @@ operator /= (FLOATTYPE scalar) {
   return operator *= (recip_scalar);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::componentwise_mult
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+componentwise_mult(const FLOATNAME(LMatrix4) &other) {
+#ifdef HAVE_EIGEN
+  _v = _v.cwiseProduct(other._v);
+#else
+  _m(0, 0) *= other._m(0, 0);
+  _m(0, 1) *= other._m(0, 1);
+  _m(0, 2) *= other._m(0, 2);
+  _m(0, 3) *= other._m(0, 3);
+
+  _m(1, 0) *= other._m(1, 0);
+  _m(1, 1) *= other._m(1, 1);
+  _m(1, 2) *= other._m(1, 2);
+  _m(1, 3) *= other._m(1, 3);
+
+  _m(2, 0) *= other._m(2, 0);
+  _m(2, 1) *= other._m(2, 1);
+  _m(2, 2) *= other._m(2, 2);
+  _m(2, 3) *= other._m(2, 3);
+
+  _m(3, 0) *= other._m(3, 0);
+  _m(3, 1) *= other._m(3, 1);
+  _m(3, 2) *= other._m(3, 2);
+  _m(3, 3) *= other._m(3, 3);
+#endif  // HAVE_EIGEN
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::transpose_from

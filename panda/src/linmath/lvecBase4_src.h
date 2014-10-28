@@ -135,6 +135,8 @@ PUBLISHED:
   INLINE_LINMATH void operator *= (FLOATTYPE scalar);
   INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
+  INLINE_LINMATH void componentwise_mult(const FLOATNAME(LVecBase4) &other);
+
   EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase4) __pow__(FLOATTYPE exponent) const);
   EXTENSION(INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent));
 

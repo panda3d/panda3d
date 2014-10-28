@@ -910,6 +910,22 @@ operator /= (FLOATTYPE scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::componentwise_mult
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase3)::
+componentwise_mult(const FLOATNAME(LVecBase3) &other) {
+#ifdef HAVE_EIGEN
+  _v = _v.cwiseProduct(other._v);
+#else
+  _v(0) *= other._v(0);
+  _v(1) *= other._v(1);
+  _v(2) *= other._v(2);
+#endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::fmax
 //       Access: Public
 //  Description:

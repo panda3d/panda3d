@@ -944,6 +944,30 @@ operator /= (FLOATTYPE scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::componentwise_mult
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+componentwise_mult(const FLOATNAME(LMatrix3) &other) {
+#ifdef HAVE_EIGEN
+  _v = _v.cwiseProduct(other._v);
+#else
+  _m(0, 0) *= other._m(0, 0);
+  _m(0, 1) *= other._m(0, 1);
+  _m(0, 2) *= other._m(0, 2);
+
+  _m(1, 0) *= other._m(1, 0);
+  _m(1, 1) *= other._m(1, 1);
+  _m(1, 2) *= other._m(1, 2);
+
+  _m(2, 0) *= other._m(2, 0);
+  _m(2, 1) *= other._m(2, 1);
+  _m(2, 2) *= other._m(2, 2);
+#endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::transpose_from
 //       Access: Published
 //  Description:
