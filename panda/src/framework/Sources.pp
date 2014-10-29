@@ -37,6 +37,7 @@
     rock_floor.rgb_src.c shuttle_controls.bam_src.c
 
   #define INSTALL_HEADERS \
+    config_framework.h \
     pandaFramework.I pandaFramework.h \
     windowFramework.I windowFramework.h    
 
