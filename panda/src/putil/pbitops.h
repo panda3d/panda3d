@@ -18,6 +18,10 @@
 #include "pandabase.h"
 #include "numeric_types.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 // This file defines a few low-level bit-operation routines, optimized
 // all to heck.

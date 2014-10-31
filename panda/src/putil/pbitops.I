@@ -145,7 +145,10 @@ flood_bits_up(PN_uint64 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_lowest_on_bit(PN_uint16 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER)
+  unsigned long result;
+  return (_BitScanForward(&result, (unsigned long) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return __builtin_ffs((unsigned int) x) - 1;
 #else
   if (x == 0) {
@@ -164,7 +167,10 @@ get_lowest_on_bit(PN_uint16 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_lowest_on_bit(PN_uint32 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER)
+  unsigned long result;
+  return (_BitScanForward(&result, (unsigned long) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return __builtin_ffs((unsigned int) x) - 1;
 #else
   if (x == 0) {
@@ -183,7 +189,10 @@ get_lowest_on_bit(PN_uint32 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_lowest_on_bit(PN_uint64 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER) && defined(_M_X64)
+  unsigned long result;
+  return (_BitScanForward64(&result, (unsigned __int64) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return __builtin_ffsll((unsigned long long) x) - 1;
 #else
   if (x == 0) {
@@ -202,7 +211,10 @@ get_lowest_on_bit(PN_uint64 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_highest_on_bit(PN_uint16 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER)
+  unsigned long result;
+  return (_BitScanReverse(&result, (unsigned long) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return (x == 0) ? -1 : 31 - __builtin_clz((unsigned int) x);
 #else
   PN_uint16 w = flood_bits_down(x);
@@ -217,7 +229,10 @@ get_highest_on_bit(PN_uint16 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_highest_on_bit(PN_uint32 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER)
+  unsigned long result;
+  return (_BitScanReverse(&result, (unsigned long) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return (x == 0) ? -1 : 31 - __builtin_clz((unsigned int) x);
 #else
   PN_uint32 w = flood_bits_down(x);
@@ -232,7 +247,10 @@ get_highest_on_bit(PN_uint32 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_highest_on_bit(PN_uint64 x) {
-#ifdef __GNUC__
+#if defined(_MSC_VER) && defined(_M_X64)
+  unsigned long result;
+  return (_BitScanReverse64(&result, (unsigned __int64) x) == 0) ? -1 : result;
+#elif defined(__GNUC__)
   return (x == 0) ? -1 : 63 - __builtin_clzll((unsigned long long) x);
 #else
   PN_uint64 w = flood_bits_down(x);
