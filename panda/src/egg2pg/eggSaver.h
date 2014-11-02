@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "luse.h"
+#include "eggData.h"
 #include "eggTextureCollection.h"
 #include "eggMaterialCollection.h"
 

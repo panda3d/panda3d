@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ffmpegVideoCursor.h"
-#include "config_movies.h"
+#include "config_ffmpeg.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 #include "mutexHolder.h"

@@ -262,19 +262,20 @@ issue_parameters(int altered) {
         switch(_ptr._info._class) {
         case Shader::SAC_scalar: cgSetParameter1fv(p,(float*)ptr_data->_ptr); continue;
         case Shader::SAC_vector:
-          switch(_ptr._info._type) {
+          switch (_ptr._info._type) {
           case Shader::SAT_vec1: cgSetParameter1fv(p,(float*)ptr_data->_ptr); continue;
           case Shader::SAT_vec2: cgSetParameter2fv(p,(float*)ptr_data->_ptr); continue;
           case Shader::SAT_vec3: cgSetParameter3fv(p,(float*)ptr_data->_ptr); continue;
           case Shader::SAT_vec4: cgSetParameter4fv(p,(float*)ptr_data->_ptr); continue;
+          default: nassertd(false) continue;
           }
         case Shader::SAC_matrix: cgGLSetMatrixParameterfc(p,(float*)ptr_data->_ptr); continue;
         case Shader::SAC_array: {
-          switch(_ptr._info._subclass) {
+          switch (_ptr._info._subclass) {
           case Shader::SAC_scalar:
             cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
           case Shader::SAC_vector:
-            switch(_ptr._dim[2]) {
+            switch (_ptr._dim[2]) {
             case 1: cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
             case 2: cgGLSetParameterArray2f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
             case 3: cgGLSetParameterArray3f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
@@ -294,6 +295,7 @@ issue_parameters(int altered) {
           case Shader::SAT_vec2: cgSetParameter2dv(p,(double*)ptr_data->_ptr); continue;
           case Shader::SAT_vec3: cgSetParameter3dv(p,(double*)ptr_data->_ptr); continue;
           case Shader::SAT_vec4: cgSetParameter4dv(p,(double*)ptr_data->_ptr); continue;
+          default: nassertd(false) continue;
           }
         case Shader::SAC_matrix: cgGLSetMatrixParameterdc(p,(double*)ptr_data->_ptr); continue;
         case Shader::SAC_array: {

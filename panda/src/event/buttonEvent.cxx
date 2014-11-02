@@ -79,6 +79,8 @@ write_datagram(Datagram &dg) const {
   case T_resume_down:
   case T_up:
   case T_repeat:
+  case T_raw_down:
+  case T_raw_up:
     // We write the button name.  This is not particularly compact, but
     // presumably we don't get thousands of button events per frame, and
     // it is robust as the button index may change between sessions but
@@ -118,6 +120,8 @@ read_datagram(DatagramIterator &scan) {
   case T_resume_down:
   case T_up:
   case T_repeat:
+  case T_raw_down:
+  case T_raw_up:
     _button = ButtonRegistry::ptr()->get_button(scan.get_string());
     break;
 

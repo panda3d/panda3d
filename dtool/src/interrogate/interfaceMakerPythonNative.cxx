@@ -17,6 +17,7 @@
 #include "parameterRemapUnchanged.h"
 #include "typeManager.h"
 
+#include "pnotify.h" // For nout
 #include "interrogateDatabase.h"
 #include "interrogateType.h"
 #include "interrogateFunction.h"
@@ -370,7 +371,7 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
     return true;
   }
 
-  if (method_name == "operator << ") {
+  if (method_name == "operator <<") {
     def._answer_location = "tp_as_number->nb_lshift";
     def._wrapper_type = WT_numeric_operator;
     return true;
@@ -2451,6 +2452,9 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   case AT_single_arg:
     fname += ", PyObject *arg";
     break;
+
+  default:
+    break;
   }
   fname += ")";
 
@@ -3498,6 +3502,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         ++open_scopes;
         indent_level += 2;
       }
+
+    default:
+      break;
     }
   }
 

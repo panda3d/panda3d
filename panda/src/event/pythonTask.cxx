@@ -14,6 +14,7 @@
 
 #include "pythonTask.h"
 #include "pnotify.h"
+#include "config_event.h"
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"  

@@ -14,6 +14,7 @@
 
 
 #include "graphicsWindowInputDevice.h"
+#include "graphicsWindow.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
 

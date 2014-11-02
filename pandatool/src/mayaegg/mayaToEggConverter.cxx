@@ -101,6 +101,7 @@ MayaToEggConverter(const string &program_name) :
   _round_uvs = false;
   _legacy_shader = false;
   _convert_cameras = false;
+  _convert_lights = false;
 
   _transform_type = TT_model;
 }
@@ -127,6 +128,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _always_show_vertex_color(copy._always_show_vertex_color),
   _keep_all_uvsets(copy._keep_all_uvsets),
   _convert_cameras(copy._convert_cameras),
+  _convert_lights(copy._convert_lights),
   _round_uvs(copy._round_uvs),
   _legacy_shader(copy._legacy_shader),
   _transform_type(copy._transform_type)
@@ -837,6 +839,9 @@ convert_hierarchy(EggGroupNode *egg_root) {
   if (_convert_cameras) {
     mayaegg_cat.info() << "will convert camera nodes to locators" << endl;
   }
+  if (_convert_lights) {
+    mayaegg_cat.info() << "will convert light nodes to locators" << endl;
+  }
   // give some feedback about whether special options are on
   if (_legacy_shader) {
     mayaegg_cat.info() << "will disable modern Phong shader path. using legacy" << endl;
@@ -964,11 +969,40 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
 
   } else if (dag_path.hasFn(MFn::kLight)) {
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.debug()
-        << "Ignoring light node " << path
-        << "\n";
-    }
+    if (_convert_lights) {
+      MFnLight light (dag_path, &status);
+      if ( !status ) {
+        status.perror("MFnLight constructor");
+        return false;
+      }
+
+      EggGroup *egg_group = _tree.get_egg_group(node_desc);
+
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.warning() << "Saving light node as a locator: " << path << endl;
+      }
+
+      if (node_desc->is_tagged()) {
+        // Presumably, the lighht's position has some meaning to the
+        // end-user, so we will implicitly tag it with the DCS flag so it
+        // won't get flattened out.
+        if (_animation_convert != AC_model) {
+          // For now, don't set the DCS flag on lights within
+          // character models, since egg-optchar doesn't understand
+          // this.  Perhaps there's no reason to ever change this, since
+          // lights within character models may not be meaningful.
+          egg_group->set_dcs_type(EggGroup::DC_net);
+        }
+        get_transform(node_desc, dag_path, egg_group);
+        make_light_locator(dag_path, dag_node, egg_group);
+      } else {
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug()
+            << "Ignoring light node " << path
+            << "\n";
+          }
+        }
+      }
  
     MFnLight light (dag_path, &status);
     if ( !status ) {
@@ -976,9 +1010,9 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.error() << "light extraction failed" << endl;
       return false;
     }
-    mayaegg_cat.debug() << "-- Light found -- tranlations in cm, rotations in rads\n";
+    mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
 
-    mayaegg_cat.debug() << "\"" << dag_path.partialPathName() << "\" : \n";
+    mayaegg_cat.info() << "\"" << dag_path.partialPathName() << "\" : \n";
 
     // Get the translation/rotation/scale data
     MObject transformNode = dag_path.transform(&status);
@@ -1003,18 +1037,18 @@ process_model_node(MayaNodeDesc *node_desc) {
       tl.z = 0;
     }
     // We swap Y and Z in the next few bits cuz Panda is Z-up by default and Maya is Y-up
-    mayaegg_cat.debug() << "  \"translation\" : (" << tl.x << ", " << tl.z << ", " << tl.y << ")"
+    mayaegg_cat.info() << "  \"translation\" : (" << tl.x << ", " << tl.z << ", " << tl.y << ")"
          << endl;
     double threeDoubles[3];
     MTransformationMatrix::RotationOrder	rOrder;
     
     matrix.getRotation (threeDoubles, rOrder, MSpace::kWorld);
-    mayaegg_cat.debug() << "  \"rotation\": ("
+    mayaegg_cat.info() << "  \"rotation\": ("
          << threeDoubles[0] << ", "
          << threeDoubles[2] << ", "
          << threeDoubles[1] << ")\n";
     matrix.getScale (threeDoubles, MSpace::kWorld);
-    mayaegg_cat.debug() << "  \"scale\" : ("
+    mayaegg_cat.info() << "  \"scale\" : ("
          << threeDoubles[0] << ", "
          << threeDoubles[2] << ", "
          << threeDoubles[1] << ")\n";
@@ -1022,12 +1056,12 @@ process_model_node(MayaNodeDesc *node_desc) {
     // Extract some interesting Light data
     MColor color;
     color = light.color();
-    mayaegg_cat.debug() << "  \"color\" : ("
+    mayaegg_cat.info() << "  \"color\" : ("
          << color.r << ", "
          << color.g << ", "
          << color.b << ")\n";
     color = light.shadowColor();
-    mayaegg_cat.debug() << "  \"intensity\" : " << light.intensity() << endl;
+    mayaegg_cat.info() << "  \"intensity\" : " << light.intensity() << endl;
 
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
@@ -2322,7 +2356,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_locator
+//     Function: MayaToEggConverter::make_camera_locator
 //       Access: Private
 //  Description: Locators are used in Maya to indicate a particular
 //               position in space to the user or the modeler.  We
@@ -2357,6 +2391,62 @@ make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   }
   MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
   LPoint3d p3d (eyePoint.x, eyePoint.y, eyePoint.z);
+
+  // Now convert the locator point into the group's space.
+  p3d = p3d * egg_group->get_node_frame_inv();
+
+  egg_group->add_translate3d(p3d);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_light_locator
+//       Access: Private
+//  Description: Locators are used in Maya to indicate a particular
+//               position in space to the user or the modeler.  We
+//               represent that in egg with an ordinary Group node,
+//               which we transform by the locator's position, so that
+//               the indicated point becomes the origin at this node
+//               and below.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+make_light_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
+             EggGroup *egg_group) {
+  MStatus status;
+
+  unsigned int num_children = dag_node.childCount();
+  MObject locator;
+  bool found_alight = false;
+  bool found_dlight = false;
+  bool found_plight = false;
+  for (unsigned int ci = 0; ci < num_children && !found_alight && !found_dlight && !found_plight; ci++) {
+    locator = dag_node.child(ci);
+    found_alight = (locator.apiType() == MFn::kAmbientLight);
+    found_dlight = (locator.apiType() == MFn::kDirectionalLight);
+    found_plight = (locator.apiType() == MFn::kPointLight);
+  }
+
+  if (!found_alight && !found_dlight && !found_plight) {
+    mayaegg_cat.error()
+      << "Couldn't find light within locator node " 
+      << dag_path.fullPathName().asChar() << "\n";
+    return;
+  }
+
+  LPoint3d p3d;
+
+  // We need to convert the position to world coordinates.  For some
+  // reason, Maya can only tell it to us in local coordinates.
+  MMatrix mat = dag_path.inclusiveMatrix(&status);
+  if (!status) {
+    status.perror("Can't get coordinate space for light");
+    return;
+  }
+  LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+  p3d = p3d * n2w;
 
   // Now convert the locator point into the group's space.
   p3d = p3d * egg_group->get_node_frame_inv();
@@ -2722,14 +2812,14 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
     }
     if (color_def->_has_texture || trans_def._has_texture) {
       EggTexture tex(shader.get_name(), "");
-      if (mayaegg_cat.is_debug()) {
-        mayaegg_cat.debug() << "got shader name:" << shader.get_name() << endl;
-        mayaegg_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam() << "got shader name:" << shader.get_name() << endl;
+        mayaegg_cat.spam() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
       }
 
       string uvset_name = _shaders.find_uv_link(color_def->_texture_name);
-      if (mayaegg_cat.is_debug()) {
-        mayaegg_cat.debug() << "ssa:corresponding uvset name is " << uvset_name << endl;
+      if (mayaegg_cat.is_spam()) {
+        mayaegg_cat.spam() << "ssa:corresponding uvset name is " << uvset_name << endl;
       }
 
       if (color_def->_has_texture) {

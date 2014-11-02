@@ -177,6 +177,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator /= (FLOATTYPE scalar);
 
+  INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix4) &other);
+
   INLINE_LINMATH void transpose_from(const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH void transpose_in_place();
 

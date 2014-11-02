@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wavAudioCursor.h"
+#include "config_movies.h"
 #include "virtualFileSystem.h"
+#include "wavAudio.h"
 
 // Tables for decompressing mu-law and A-law wav files.
 static PN_int16 mulaw_table[256] = {

@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bamCacheIndex.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "config_util.h" // util_cat
 #include "indent.h"
 #include <algorithm>
 

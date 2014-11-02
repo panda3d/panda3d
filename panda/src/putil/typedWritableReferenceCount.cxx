@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "typedWritableReferenceCount.h"
+#include "dcast.h"
 
 TypeHandle TypedWritableReferenceCount::_type_handle;
 

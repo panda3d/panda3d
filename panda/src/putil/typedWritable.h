@@ -70,12 +70,17 @@ PUBLISHED:
                                          BamReader *reader = NULL);
 
 private:
+  void add_bam_writer(BamWriter *writer);
+  void remove_bam_writer(BamWriter *writer);
+
   // We may need to store a list of the BamWriter(s) that have a
   // reference to this object, so that we can remove the object from
   // those tables when it destructs.
-  typedef pvector<BamWriter *> BamWriters;
-  BamWriters *_bam_writers;
-  static LightMutex _bam_writers_lock;
+  struct BamWriterLink {
+    BamWriter *_writer;
+    BamWriterLink *_next;
+  };
+  AtomicAdjust::Pointer _bam_writers; // Tagged pointer
 
   UpdateSeq _bam_modified;
 

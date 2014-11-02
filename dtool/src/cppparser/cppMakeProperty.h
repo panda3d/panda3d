@@ -18,6 +18,7 @@
 #include "dtoolbase.h"
 
 #include "cppDeclaration.h"
+#include "cppIdentifier.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPMakeProperty

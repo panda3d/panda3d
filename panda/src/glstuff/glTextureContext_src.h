@@ -37,7 +37,7 @@ public:
   GLuint64 get_handle();
 
 #ifdef OPENGLES
-  CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
+  static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);
   void mark_incoherent(bool wrote);

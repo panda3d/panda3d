@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmBrush.h"
+#include "pnmImage.h"
 #include "config_pnmimage.h"
 #include "cmath.h"
 

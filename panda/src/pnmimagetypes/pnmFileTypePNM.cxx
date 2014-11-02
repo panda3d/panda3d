@@ -556,7 +556,7 @@ pgm_writepgminit(ostream * const fileP,
 
   (*fileP) 
     << (char)PGM_MAGIC1
-    << (char)(plainFormat || maxval >= 1<<16 ? PGM_MAGIC2 : RPGM_MAGIC2)
+    << (char)(plainFormat /*|| maxval >= 1<<16*/ ? PGM_MAGIC2 : RPGM_MAGIC2)
     << '\n'
     << cols << ' ' << rows << '\n' << maxval << '\n';
 }
@@ -577,7 +577,7 @@ ppm_writeppminit(ostream*  const fileP,
 
   (*fileP) 
     << (char)PPM_MAGIC1
-    << (char)(plainFormat || maxval >= 1<<16 ? PPM_MAGIC2 : RPPM_MAGIC2)
+    << (char)(plainFormat /*|| maxval >= 1<<16*/ ? PPM_MAGIC2 : RPPM_MAGIC2)
     << '\n'
     << cols << ' ' << rows << '\n' << maxval << '\n';
 }
@@ -806,7 +806,7 @@ pgm_writepgmrow(ostream* const fileP,
                 gray  const maxval, 
                 int   const forceplain) {
 
-  if (forceplain || pm_plain_output || maxval >= 1<<16)
+  if (forceplain || pm_plain_output /*|| maxval >= 1<<16*/)
     pgm_writepgmrowplain(fileP, grayrow, cols, maxval);
   else
     pgm_writepgmrowraw(fileP, grayrow, cols, maxval);
@@ -893,7 +893,7 @@ ppm_writeppmrow(ostream *  const fileP,
                 pixval  const maxval, 
                 int     const forceplain) {
 
-  if (forceplain || pm_plain_output || maxval >= 1<<16) 
+  if (forceplain || pm_plain_output /*|| maxval >= 1<<16*/)
     ppm_writeppmrowplain(fileP, pixelrow, cols, maxval);
   else 
     ppm_writeppmrowraw(fileP, pixelrow, cols, maxval);

@@ -22,6 +22,7 @@
 #include "queuedReturn.h"
 #include "pmutex.h"
 #include "conditionVar.h"
+#include "netDatagram.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<Datagram>);
 

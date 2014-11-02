@@ -14,6 +14,7 @@
 
 #include "config_ode.h"
 #include "odeWorld.h"
+#include "odeBody.h"
 
 TypeHandle OdeWorld::_type_handle;
 

@@ -14,6 +14,7 @@
 
 #include "dynamicTextPage.h"
 #include "dynamicTextFont.h"
+#include "config_text.h"
 
 #ifdef HAVE_FREETYPE
 

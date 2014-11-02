@@ -20,6 +20,7 @@
 
 #include "pnotify.h"
 #include "openssl/evp.h"
+#include "memoryHook.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: password_hash

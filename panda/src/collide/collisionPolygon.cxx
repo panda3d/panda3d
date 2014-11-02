@@ -19,6 +19,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
+#include "collisionParabola.h"
 #include "config_collide.h"
 #include "cullTraverserData.h"
 #include "boundingBox.h"
@@ -473,7 +474,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3 normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
-  if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
+  if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001)) {
     collide_cat.info()
       << "polygon within " << entry.get_into_node_path()
       << " has normal " << normal << " of length " << normal.length()

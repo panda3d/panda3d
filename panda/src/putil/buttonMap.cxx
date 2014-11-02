@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "buttonMap.h"
+#include "indent.h"
 
 TypeHandle ButtonMap::_type_handle;
 

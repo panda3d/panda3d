@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsWindowProcCallbackData.h"
+#include "graphicsWindow.h"
 
 TypeHandle GraphicsWindowProcCallbackData::_type_handle;
 

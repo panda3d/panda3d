@@ -153,7 +153,7 @@ process(const Filename &filename) {
 
   write_faces(*file, _egg_data);
 
-  bool success = (void *)(*file) != NULL;
+  bool success = (file != (ostream *)NULL);
   vfs->close_write_file(file);
 
   return success;

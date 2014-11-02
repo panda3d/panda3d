@@ -16,6 +16,12 @@
 #include "finiteBoundingVolume.h"
 #include "unionBoundingVolume.h"
 #include "intersectionBoundingVolume.h"
+#include "boundingBox.h"
+#include "boundingLine.h"
+#include "boundingPlane.h"
+#include "boundingSphere.h"
+#include "boundingHexahedron.h"
+#include "config_mathutil.h"
 
 #include "indent.h"
 

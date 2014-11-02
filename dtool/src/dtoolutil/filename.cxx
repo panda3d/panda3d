@@ -3055,7 +3055,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     return false;
   }
     
-  size_t bytes_read = read(fd, buf, buf_size);
+  ssize_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
     orig_contents += string(buf, bytes_read);
     bytes_read = read(fd, buf, buf_size);
@@ -3176,7 +3176,7 @@ atomic_read_contents(string &contents) const {
     return false;
   }
     
-  size_t bytes_read = read(fd, buf, buf_size);
+  ssize_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
     contents += string(buf, bytes_read);
     bytes_read = read(fd, buf, buf_size);

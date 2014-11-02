@@ -1811,6 +1811,9 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
        LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
        LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z));
     break;
+
+  default:
+    nassertr(false, NULL);
   }
 
   // Rotate the bounding volume back into the original space of the
@@ -1896,7 +1899,9 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
     {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          set_point1(x, y, copy.get_point1(x - xmin + xfrom, y - ymin + yfrom));
+          if (copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point1(x, y, copy.get_point1(x - xmin + xfrom, y - ymin + yfrom));
+          }
         }
       }
     }
@@ -1906,7 +1911,9 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
     {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          set_point2(x, y, copy.get_point2(x - xmin + xfrom, y - ymin + yfrom));
+          if (copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point2(x, y, copy.get_point2(x - xmin + xfrom, y - ymin + yfrom));
+          }
         }
       }
     }
@@ -1916,7 +1923,9 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
     {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          set_point(x, y, copy.get_point(x - xmin + xfrom, y - ymin + yfrom));
+          if (copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point(x, y, copy.get_point(x - xmin + xfrom, y - ymin + yfrom));
+          }
         }
       }
     }
@@ -1926,12 +1935,214 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
     {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          set_point4(x, y, copy.get_point4(x - xmin + xfrom, y - ymin + yfrom));
+          if (copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point4(x, y, copy.get_point4(x - xmin + xfrom, y - ymin + yfrom));
+          }
         }
       }
     }
     break;
   } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::add_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), except the copy pixels
+//               are added to the pixels of the destination, after
+//               scaling by the specified pixel_scale.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+add_sub_image(const PfmFile &copy, int xto, int yto,
+              int xfrom, int yfrom, int x_size, int y_size,
+              double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  int x, y;
+  switch (_num_channels) {
+  case 1:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point1(x, y, get_point1(x, y) + copy.get_point1(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point2(x, y, get_point2(x, y) + copy.get_point2(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point3(x, y, get_point3(x, y) + copy.get_point3(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point4(x, y, get_point4(x, y) + copy.get_point4(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::mult_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), except the copy pixels
+//               are multiplied to the pixels of the destination, after
+//               scaling by the specified pixel_scale.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+mult_sub_image(const PfmFile &copy, int xto, int yto,
+               int xfrom, int yfrom, int x_size, int y_size,
+               double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  int x, y;
+  switch (_num_channels) {
+  case 1:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point1(x, y, get_point1(x, y) * (copy.get_point1(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale));
+          }
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            modify_point2(x, y).componentwise_mult(copy.get_point2(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            modify_point3(x, y).componentwise_mult(copy.get_point3(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            modify_point4(x, y).componentwise_mult(copy.get_point4(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::operator *=
+//       Access: Published
+//  Description: Multiplies every point value in the image by
+//               a constant floating-point multiplier value.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+operator *= (double multiplier) {
+  nassertv(is_valid());
+
+  switch (_num_channels) {
+  case 1:
+    {
+      for (int y = 0; y < _y_size; ++y) {
+        for (int x = 0; x < _x_size; ++x) {
+          if (has_point(x, y)) {
+            PN_float32 p = get_point1(x, y);
+            p *= multiplier;
+            set_point1(x, y, p);
+          }
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (int y = 0; y < _y_size; ++y) {
+        for (int x = 0; x < _x_size; ++x) {
+          if (has_point(x, y)) {
+            LPoint2f &p = modify_point2(x, y);
+            p *= multiplier;
+          }
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (int y = 0; y < _y_size; ++y) {
+        for (int x = 0; x < _x_size; ++x) {
+          if (has_point(x, y)) {
+            LPoint3f &p = modify_point3(x, y);
+            p *= multiplier;
+          }
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (int y = 0; y < _y_size; ++y) {
+        for (int x = 0; x < _x_size; ++x) {
+          if (has_point(x, y)) {
+            LPoint4f &p = modify_point4(x, y);
+            p *= multiplier;
+          }
+        }
+      }
+    }
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2429,9 +2429,17 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   set_draw_buffer(_draw_buffer_type);
 
   if (dr->get_scissor_enabled()) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glEnable(GL_SCISSOR_TEST)\n";
+    }
     glEnable(GL_SCISSOR_TEST);
     _scissor_enabled = true;
   } else {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glDisable(GL_SCISSOR_TEST)\n";
+    }
     glDisable(GL_SCISSOR_TEST);
     _scissor_enabled = false;
   }
@@ -2455,6 +2463,24 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     if (dr->get_scissor_enabled()) {
       _glScissorArrayv(0, count, scissors);
     }
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glViewportArrayv(0, " << count << ", [\n";
+      for (int i = 0; i < count; ++i) {
+        GLfloat *vr = viewports + i * 4;
+        GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
+      }
+      GLCAT.spam(false) << "])\n";
+      if (dr->get_scissor_enabled()) {
+        GLCAT.spam()
+          << "glScissorArrayv(0, " << count << ", [\n";
+        for (int i = 0; i < count; ++i) {
+          GLint *sr = scissors + i * 4;
+          GLCAT.spam(false) << sr[0] << ", " << sr[1] << ", " << sr[2] << ", " << sr[3] << ",\n";
+        }
+      }
+      GLCAT.spam(false) << "])\n";
+    }
 
   } else
 #endif  // OPENGLES
@@ -2462,6 +2488,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     glViewport(x, y, width, height);
     if (dr->get_scissor_enabled()) {
       glScissor(x, y, width, height);
+    }
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glViewport(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+      if (dr->get_scissor_enabled()) {
+        GLCAT.spam()
+          << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+      }
     }
   }
 
@@ -4323,15 +4357,18 @@ prepare_shader(Shader *se) {
   ShaderContext *result = NULL;
 
   switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    result = new CLP(ShaderContext)(this, se);
-    break;
-
 #if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
     result = new CLP(CgShaderContext)(this, se);
     break;
 #endif
+
+  case Shader::SL_GLSL:
+    if (_supports_glsl) {
+      result = new CLP(ShaderContext)(this, se);
+      break;
+    }
+    // Fall through.
 
   default:
     GLCAT.error()
@@ -4892,6 +4929,9 @@ issue_timer_query(int pstats_index) {
   _pending_timer_queries.push_back(DCAST(TimerQueryContext, query));
 
   return DCAST(TimerQueryContext, query);
+
+#else
+  return NULL;
 #endif
 }
 
@@ -6838,6 +6878,10 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_float64:
     return GL_DOUBLE;
 #endif
+
+  case Geom::NT_stdfloat:
+    // Shouldn't happen, display error.
+    break;
   }
 
   GLCAT.error()
@@ -7123,6 +7167,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
+      case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
       case Texture::F_rg16:
@@ -7336,7 +7381,11 @@ get_internal_image_format(Texture *tex) const {
       switch (format) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
+      case Texture::F_depth_component16:
+      case Texture::F_depth_component24:
+      case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r32i:
         // Unsupported; fall through to below.
         break;
 
@@ -7428,8 +7477,6 @@ get_internal_image_format(Texture *tex) const {
           return GL_COMPRESSED_RGBA_FXT1_3DFX;
         }
         return GL_COMPRESSED_LUMINANCE_ALPHA;
-      }
-      break;
 
       case Texture::F_srgb:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
@@ -7448,6 +7495,8 @@ get_internal_image_format(Texture *tex) const {
 
       case Texture::F_sluminance_alpha:
         return GL_COMPRESSED_SLUMINANCE_ALPHA;
+      }
+      break;
 #endif
 
     case Texture::CM_dxt1:
@@ -7592,6 +7641,8 @@ get_internal_image_format(Texture *tex) const {
 #ifndef OPENGLES_1
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGBA16F;
+    } else if (tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_RGBA16;
     } else
 #endif
     {
@@ -7614,7 +7665,11 @@ get_internal_image_format(Texture *tex) const {
 #endif  // OPENGLES
 #ifndef OPENGLES_1
   case Texture::F_rgba16:
-    return GL_RGBA16F;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_RGBA16F;
+    } else {
+      return GL_RGBA16;
+    }
   case Texture::F_rgba32:
     return GL_RGBA32F;
 #endif  // OPENGLES
@@ -7698,10 +7753,20 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_alpha:
     return GL_ALPHA;
   case Texture::F_luminance:
-    return GL_LUMINANCE;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_LUMINANCE16F_ARB;
+    } else if (tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_LUMINANCE16;
+    } else {
+      return GL_LUMINANCE;
+    }
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-    return GL_LUMINANCE_ALPHA;
+    if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_LUMINANCE_ALPHA16F_ARB;
+    } else {
+      return GL_LUMINANCE_ALPHA;
+    }
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
@@ -7802,6 +7867,9 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
   case TextureStage::M_blend_color_scale: return GL_BLEND;
   case TextureStage::M_modulate_glow: return GL_MODULATE;
   case TextureStage::M_modulate_gloss: return GL_MODULATE;
+  default:
+    // Other modes shouldn't get here.  Fall through and error.
+    break;
   }
 
   GLCAT.error()
@@ -10895,6 +10963,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RGB12:
     format = Texture::F_rgb12;
     break;
+  case GL_RGBA16:
+    format = Texture::F_rgba16;
+    break;
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
@@ -10978,10 +11049,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_alpha;
     break;
   case GL_LUMINANCE:
+  case GL_LUMINANCE16:
+  case GL_LUMINANCE16F_ARB:
   case 1:
     format = Texture::F_luminance;
     break;
   case GL_LUMINANCE_ALPHA:
+  case GL_LUMINANCE_ALPHA16F_ARB:
   case 2:
     format = Texture::F_luminance_alpha;
     break;
@@ -11661,13 +11735,14 @@ void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
 
-  if (target_scissor->is_off()) {
-    if (_scissor_enabled) {
-      glDisable(GL_SCISSOR_TEST);
-      _scissor_enabled = false;
-    }
-  } else {
+  if (!target_scissor->is_off()) {
+    // A non-off ScissorAttrib means to override the scissor setting
+    // that was specified by the DisplayRegion.
     if (!_scissor_enabled) {
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glEnable(GL_SCISSOR_TEST)\n";
+      }
       glEnable(GL_SCISSOR_TEST);
       _scissor_enabled = true;
     }
@@ -11679,6 +11754,10 @@ do_issue_scissor() {
     int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
     int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
 
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
+    }
     glScissor(x, y, width, height);
   }
 }

@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "connectionReader.h"
+#include "dcast.h"
 #include "connectionManager.h"
 #include "netDatagram.h"
 #include "datagramTCPHeader.h"

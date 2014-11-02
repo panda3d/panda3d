@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexBufferContext.h"
+#include "config_gobj.h"
 
 TypeHandle VertexBufferContext::_type_handle;
 

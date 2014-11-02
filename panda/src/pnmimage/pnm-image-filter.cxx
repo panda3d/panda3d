@@ -35,6 +35,7 @@
 #include "pandabase.h"
 #include <math.h>
 #include "cmath.h"
+#include "thread.h"
 
 #include "pnmImage.h"
 #include "pfmFile.h"

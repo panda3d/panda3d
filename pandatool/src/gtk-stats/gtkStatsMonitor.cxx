@@ -26,21 +26,21 @@
 typedef void vc();
 
 GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {
-  { "/Options", NULL, NULL, 0, "<Branch>" },
-  { "/Options/Units", NULL, NULL, 0, "<Branch>" },
-  { "/Options/Units/ms", NULL, (vc *)&handle_menu_command, MI_time_ms, "<RadioItem>" },
-  { "/Options/Units/Hz", NULL, (vc *)&handle_menu_command, MI_time_hz, "/Options/Units/ms" },
-  { "/Speed", NULL, NULL, 0, "<Branch>" },
-  { "/Speed/1", NULL, (vc *)&handle_menu_command, MI_speed_1, "<RadioItem>" },
-  { "/Speed/2", NULL, (vc *)&handle_menu_command, MI_speed_2, "/Speed/1" },
-  { "/Speed/3", NULL, (vc *)&handle_menu_command, MI_speed_3, "/Speed/1" },
-  { "/Speed/6", NULL, (vc *)&handle_menu_command, MI_speed_6, "/Speed/1" },
-  { "/Speed/12", NULL, (vc *)&handle_menu_command, MI_speed_12, "/Speed/1" },
-  { "/Speed/sep", NULL, NULL, 0, "<Separator>" },
-  { "/Speed/pause", NULL, (vc *)&handle_menu_command, MI_pause, "<CheckItem>" },
+  { (gchar *)"/Options", NULL, NULL, 0, (gchar *)"<Branch>" },
+  { (gchar *)"/Options/Units", NULL, NULL, 0, (gchar *)"<Branch>" },
+  { (gchar *)"/Options/Units/ms", NULL, (vc *)&handle_menu_command, MI_time_ms, (gchar *)"<RadioItem>" },
+  { (gchar *)"/Options/Units/Hz", NULL, (vc *)&handle_menu_command, MI_time_hz, (gchar *)"/Options/Units/ms" },
+  { (gchar *)"/Speed", NULL, NULL, 0, (gchar *)"<Branch>" },
+  { (gchar *)"/Speed/1", NULL, (vc *)&handle_menu_command, MI_speed_1, (gchar *)"<RadioItem>" },
+  { (gchar *)"/Speed/2", NULL, (vc *)&handle_menu_command, MI_speed_2, (gchar *)"/Speed/1" },
+  { (gchar *)"/Speed/3", NULL, (vc *)&handle_menu_command, MI_speed_3, (gchar *)"/Speed/1" },
+  { (gchar *)"/Speed/6", NULL, (vc *)&handle_menu_command, MI_speed_6, (gchar *)"/Speed/1" },
+  { (gchar *)"/Speed/12", NULL, (vc *)&handle_menu_command, MI_speed_12, (gchar *)"/Speed/1" },
+  { (gchar *)"/Speed/sep", NULL, NULL, 0, (gchar *)"<Separator>" },
+  { (gchar *)"/Speed/pause", NULL, (vc *)&handle_menu_command, MI_pause, (gchar *)"<CheckItem>" },
 };
-int GtkStatsMonitor::num_menu_entries = sizeof(menu_entries) / sizeof(GtkItemFactoryEntry);
 
+int GtkStatsMonitor::num_menu_entries = sizeof(menu_entries) / sizeof(GtkItemFactoryEntry);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMonitor::Constructor
@@ -122,9 +122,9 @@ void GtkStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
   ostringstream str;
-  str << "Unable to honor connection attempt from " 
-      << get_client_progname() << " on " << get_client_hostname() 
-      << ": unsupported PStats version " 
+  str << "Unable to honor connection attempt from "
+      << get_client_progname() << " on " << get_client_hostname()
+      << ": unsupported PStats version "
       << client_major << "." << client_minor;
 
   if (server_minor == 0) {
@@ -134,14 +134,14 @@ got_bad_version(int client_major, int client_minor,
     str << " (server understands versions " << server_major
         << ".0 through " << server_major << "." << server_minor << ").";
   }
-    
+
   string message = str.str();
-  GtkWidget *dialog = 
+  GtkWidget *dialog =
     gtk_message_dialog_new(GTK_WINDOW(main_window),
-			   GTK_DIALOG_DESTROY_WITH_PARENT,
-			   GTK_MESSAGE_ERROR,
-			   GTK_BUTTONS_CLOSE,
-			   message.c_str());
+                           GTK_DIALOG_DESTROY_WITH_PARENT,
+                           GTK_MESSAGE_ERROR,
+                           GTK_BUTTONS_CLOSE,
+                           "%s", message.c_str());
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 }

@@ -14,6 +14,7 @@
 
 #include "virtualFileMount.h"
 #include "virtualFileSimple.h"
+#include "virtualFileSystem.h"
 #include "zStream.h"
 
 TypeHandle VirtualFileMount::_type_handle;

@@ -23,6 +23,7 @@
 #include "boundingPlane.h"
 #include "billboardEffect.h"
 #include "compassEffect.h"
+#include "occluderEffect.h"
 #include "polylightEffect.h"
 #include "renderState.h"
 

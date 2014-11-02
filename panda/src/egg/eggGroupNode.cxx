@@ -13,11 +13,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggGroupNode.h"
+#include "eggGroup.h"
 #include "eggCoordinateSystem.h"
 #include "eggData.h"
 #include "eggFilenameNode.h"
 #include "eggExternalReference.h"
 #include "eggPrimitive.h"
+#include "eggPoint.h"
 #include "eggPolygon.h"
 #include "eggCompositePrimitive.h"
 #include "eggMesher.h"
@@ -31,6 +33,7 @@
 #include "config_egg.h"
 
 #include "dSearchPath.h"
+#include "virtualFileSystem.h"
 #include "deg_2_rad.h"
 #include "dcast.h"
 #include "bamCacheRecord.h"

@@ -53,6 +53,7 @@ extern ConfigVariableDouble text_default_underscore_height;
 extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
 extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
 extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
+extern ConfigVariableEnum<Texture::QualityLevel> text_quality_level;
 extern ConfigVariableEnum<TextFont::RenderMode> text_render_mode;
 
 extern EXPCL_PANDA_TEXT void init_libtext();

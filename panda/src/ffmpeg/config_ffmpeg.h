@@ -26,6 +26,13 @@
 ConfigureDecl(config_ffmpeg, EXPCL_FFMPEG, EXPTP_FFMPEG);
 NotifyCategoryDecl(ffmpeg, EXPCL_FFMPEG, EXPTP_FFMPEG);
 
+extern ConfigVariableInt ffmpeg_max_readahead_frames;
+extern ConfigVariableBool ffmpeg_show_seek_frames;
+extern ConfigVariableBool ffmpeg_support_seek;
+extern ConfigVariableBool ffmpeg_global_lock;
+extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;
+extern ConfigVariableInt ffmpeg_read_buffer_size;
+
 extern EXPCL_FFMPEG void init_libffmpeg();
 
 #endif /* CONFIG_FFMPEG_H */

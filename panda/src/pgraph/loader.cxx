@@ -396,12 +396,13 @@ save_file(const Filename &filename, const LoaderOptions &options,
         << "Cannot save " << this_filename
         << " without filename extension.\n";
     }
-    return NULL;
+    return false;
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
+
   if (requested_type == (LoaderFileType *)NULL) {
     if (report_errors) {
       loader_cat.error()
@@ -411,21 +412,23 @@ save_file(const Filename &filename, const LoaderOptions &options,
         << "Currently known scene file types are:\n";
       reg->write(loader_cat.error(false), 2);
     }
-    return NULL;
+    return false;
+
   } else if (!requested_type->supports_save()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."
         << extension << ") does not support saving.\n";
     }
-    return NULL;
+    return false;
+
   } else if (pz_file && !requested_type->supports_compressed()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."
         << extension << ") does not support in-line compression.\n";
     }
-    return NULL;
+    return false;
   }
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();

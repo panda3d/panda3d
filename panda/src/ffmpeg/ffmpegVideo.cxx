@@ -14,7 +14,7 @@
 
 #include "ffmpegVideo.h"
 #include "ffmpegVideoCursor.h"
-#include "config_movies.h"
+#include "config_ffmpeg.h"
 #include "bamReader.h"
 #include "dcast.h"
 

@@ -16,10 +16,12 @@
 #define SHADER_H
 
 #include "pandabase.h"
+#include "config_gobj.h"
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
 #include "internalName.h"
+#include "pta_int.h"
 #include "pta_float.h"
 #include "pta_double.h"
 #include "pta_stdfloat.h"

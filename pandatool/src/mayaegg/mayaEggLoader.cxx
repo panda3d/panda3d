@@ -175,7 +175,7 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
                                    0, &stat );
   if ( MS::kSuccess != stat ) {
     mayaloader_cat.error()
-      << "Could not create new enum attribute " << fullName << "\n";
+      << "Could not create new enum attribute " << fullName.asChar() << "\n";
     return stat;
   }
   for (unsigned i = 0; i < fieldNames.length(); i++){
@@ -185,7 +185,7 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
   stat = fnAttr.setDefault(fieldIndex);
   if ( MS::kSuccess != stat ) {
     mayaloader_cat.error()
-      << "Could not set value for enum attribute " << fullName << "\n";
+      << "Could not set value for enum attribute " << fullName.asChar() << "\n";
     return stat;
   }
 
@@ -195,10 +195,10 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
   fnAttr.setStorable( true ); 
 
   // Now add the new attribute to this dependency node
-  stat = fnDN.addAttribute(newAttr,MFnDependencyNode::kLocalDynamicAttr);
+  stat = fnDN.addAttribute(newAttr, MFnDependencyNode::kLocalDynamicAttr);
   if ( MS::kSuccess != stat ) {
     mayaloader_cat.error()
-      << "Could not add new enum attribute " << fullName << "\n";
+      << "Could not add new enum attribute " << fullName.asChar() << "\n";
     return stat;
   }
 
