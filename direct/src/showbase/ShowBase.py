@@ -1624,6 +1624,7 @@ class ShowBase(DirectObject.DirectObject):
 
             if not self.physicsMgr:
                 from PhysicsManagerGlobal import physicsMgr
+                from panda3d.physics import LinearEulerIntegrator
                 self.physicsMgr = physicsMgr
                 integrator = LinearEulerIntegrator()
                 self.physicsMgr.attachLinearIntegrator(integrator)

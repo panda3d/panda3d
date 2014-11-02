@@ -145,7 +145,7 @@ ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode
           "or because of a four-channel texture."));
 
 ConfigVariableInt egg_max_vertices
-("egg-max-vertices", 65535,
+("egg-max-vertices", 65534,
  PRC_DESC("Specifies the maximum number of vertices that will be "
           "added to any one GeomVertexData by the egg loader."));
 

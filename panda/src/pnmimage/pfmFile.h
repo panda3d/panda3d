@@ -140,6 +140,16 @@ PUBLISHED:
   void copy_sub_image(const PfmFile &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1);
+  void add_sub_image(const PfmFile &copy, int xto, int yto,
+                     int xfrom = 0, int yfrom = 0,
+                     int x_size = -1, int y_size = -1,
+                     double pixel_scale = 1.0);
+  void mult_sub_image(const PfmFile &copy, int xto, int yto,
+                      int xfrom = 0, int yfrom = 0,
+                      int x_size = -1, int y_size = -1,
+                      double pixel_scale = 1.0);
+
+  void operator *= (double multiplier);
 
   void output(ostream &out) const;
 

@@ -21,11 +21,11 @@
 INLINE_LINMATH FLOATNAME(LMatrix4)::Row::
 Row(FLOATTYPE *row) : _row(row) {
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Row::operator []
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::Row::
 operator [](int i) const {
@@ -36,7 +36,7 @@ operator [](int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Row::operator []
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::Row::
 operator [](int i) {
@@ -62,11 +62,11 @@ size() {
 INLINE_LINMATH FLOATNAME(LMatrix4)::CRow::
 CRow(const FLOATTYPE *row) : _row(row) {
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::CRow::operator []
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::CRow::
 operator [](int i) const {
@@ -831,7 +831,7 @@ xform(const FLOATNAME(LVecBase4) &v) const {
 
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m;
-#else  
+#else 
   VECTOR4_MATRIX4_PRODUCT(v_res, v,(*this));
 #endif  // HAVE_EIGEN
   return v_res;
@@ -853,12 +853,12 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m.block<3, 3>(0, 0) + _m.block<1, 3>(3, 0);
-#else  
+#else 
   v_res._v(0) = v._v(0)*_m(0, 0) + v._v(1)*_m(1, 0) + v._v(2)*_m(2, 0) + _m(3, 0);
   v_res._v(1) = v._v(0)*_m(0, 1) + v._v(1)*_m(1, 1) + v._v(2)*_m(2, 1) + _m(3, 1);
   v_res._v(2) = v._v(0)*_m(0, 2) + v._v(1)*_m(1, 2) + v._v(2)*_m(2, 2) + _m(3, 2);
 #endif  // HAVE_EIGEN
-  
+ 
   return v_res;
 }
 
@@ -888,17 +888,17 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_vec(const LVecBase3 &)", " ", TAU_USER);
   FLOATNAME(LVecBase3) v_res;
-  
+ 
   // v._v(3) == 0.0f for this case
-  
+ 
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m.block<3, 3>(0, 0);
-#else  
+#else 
   v_res._v(0) = v._v(0)*_m(0, 0) + v._v(1)*_m(1, 0) + v._v(2)*_m(2, 0);
   v_res._v(1) = v._v(0)*_m(0, 1) + v._v(1)*_m(1, 1) + v._v(2)*_m(2, 1);
   v_res._v(2) = v._v(0)*_m(0, 2) + v._v(1)*_m(1, 2) + v._v(2)*_m(2, 2);
 #endif  // HAVE_EIGEN
-  
+ 
   return v_res;
 }
 
@@ -934,7 +934,7 @@ xform_in_place(FLOATNAME(LVecBase4) &v) const {
 
 #ifdef HAVE_EIGEN
   v._v = v._v * _m;
-#else  
+#else 
   v = xform(v);
 #endif  // HAVE_EIGEN
 }
@@ -953,7 +953,7 @@ xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
 
 #ifdef HAVE_EIGEN
   v._v = v._v * _m.block<3, 3>(0, 0) + _m.block<1, 3>(3, 0);
-#else  
+#else 
   v = xform_point(v);
 #endif  // HAVE_EIGEN
 }
@@ -981,10 +981,10 @@ INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_vec_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_vec_in_place(LVecBase3 &)", " ", TAU_USER);
   // v._v(3) == 0.0f for this case
-  
+ 
 #ifdef HAVE_EIGEN
   v._v = v._v * _m.block<3, 3>(0, 0);
-#else  
+#else 
   v = xform_vec(v);
 #endif  // HAVE_EIGEN
 }
@@ -1069,7 +1069,7 @@ operator * (FLOATTYPE scalar) const {
 #ifdef HAVE_EIGEN
   t._m = _m * scalar;
 
-#else 
+#else
   t._m(0, 0) = _m(0, 0) * scalar;
   t._m(0, 1) = _m(0, 1) * scalar;
   t._m(0, 2) = _m(0, 2) * scalar;
@@ -1245,6 +1245,38 @@ operator /= (FLOATTYPE scalar) {
   return operator *= (recip_scalar);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::componentwise_mult
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+componentwise_mult(const FLOATNAME(LMatrix4) &other) {
+#ifdef HAVE_EIGEN
+  _m = _m.cwiseProduct(other._m);
+#else
+  _m(0, 0) *= other._m(0, 0);
+  _m(0, 1) *= other._m(0, 1);
+  _m(0, 2) *= other._m(0, 2);
+  _m(0, 3) *= other._m(0, 3);
+
+  _m(1, 0) *= other._m(1, 0);
+  _m(1, 1) *= other._m(1, 1);
+  _m(1, 2) *= other._m(1, 2);
+  _m(1, 3) *= other._m(1, 3);
+
+  _m(2, 0) *= other._m(2, 0);
+  _m(2, 1) *= other._m(2, 1);
+  _m(2, 2) *= other._m(2, 2);
+  _m(2, 3) *= other._m(2, 3);
+
+  _m(3, 0) *= other._m(3, 0);
+  _m(3, 1) *= other._m(3, 1);
+  _m(3, 2) *= other._m(3, 2);
+  _m(3, 3) *= other._m(3, 3);
+#endif  // HAVE_EIGEN
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::transpose_from
@@ -1409,11 +1441,11 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   _m(3, 0) = -(other._m(3, 0) * _m(0, 0) +
                other._m(3, 1) * _m(1, 0) +
                other._m(3, 2) * _m(2, 0));
-  
+ 
   _m(3, 1) = -(other._m(3, 0) * _m(0, 1) +
                other._m(3, 1) * _m(1, 1) +
                other._m(3, 2) * _m(2, 1));
-  
+ 
   _m(3, 2) = -(other._m(3, 0) * _m(0, 2) +
                other._m(3, 1) * _m(1, 2) +
                other._m(3, 2) * _m(2, 2));
@@ -1449,17 +1481,17 @@ accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {
   _m(0, 1) += other._m(0, 1) * weight;
   _m(0, 2) += other._m(0, 2) * weight;
   _m(0, 3) += other._m(0, 3) * weight;
-  
+ 
   _m(1, 0) += other._m(1, 0) * weight;
   _m(1, 1) += other._m(1, 1) * weight;
   _m(1, 2) += other._m(1, 2) * weight;
   _m(1, 3) += other._m(1, 3) * weight;
-  
+ 
   _m(2, 0) += other._m(2, 0) * weight;
   _m(2, 1) += other._m(2, 1) * weight;
   _m(2, 2) += other._m(2, 2) * weight;
   _m(2, 3) += other._m(2, 3) * weight;
-  
+ 
   _m(3, 0) += other._m(3, 0) * weight;
   _m(3, 1) += other._m(3, 1) * weight;
   _m(3, 2) += other._m(3, 2) * weight;
@@ -1653,7 +1685,7 @@ shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
 //               shear in each of the three planes.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
-shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
           CoordinateSystem cs) {
   FLOATNAME(LMatrix4) mat;
   mat.set_shear_mat(FLOATNAME(LVecBase3)(shxy, shxz, shyz), cs);

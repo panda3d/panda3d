@@ -4357,15 +4357,18 @@ prepare_shader(Shader *se) {
   ShaderContext *result = NULL;
 
   switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    result = new CLP(ShaderContext)(this, se);
-    break;
-
 #if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
     result = new CLP(CgShaderContext)(this, se);
     break;
 #endif
+
+  case Shader::SL_GLSL:
+    if (_supports_glsl) {
+      result = new CLP(ShaderContext)(this, se);
+      break;
+    }
+    // Fall through.
 
   default:
     GLCAT.error()
@@ -7638,6 +7641,8 @@ get_internal_image_format(Texture *tex) const {
 #ifndef OPENGLES_1
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGBA16F;
+    } else if (tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_RGBA16;
     } else
 #endif
     {
@@ -7660,7 +7665,11 @@ get_internal_image_format(Texture *tex) const {
 #endif  // OPENGLES
 #ifndef OPENGLES_1
   case Texture::F_rgba16:
-    return GL_RGBA16F;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_RGBA16F;
+    } else {
+      return GL_RGBA16;
+    }
   case Texture::F_rgba32:
     return GL_RGBA32F;
 #endif  // OPENGLES
@@ -7744,10 +7753,20 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_alpha:
     return GL_ALPHA;
   case Texture::F_luminance:
-    return GL_LUMINANCE;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_LUMINANCE16F_ARB;
+    } else if (tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_LUMINANCE16;
+    } else {
+      return GL_LUMINANCE;
+    }
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-    return GL_LUMINANCE_ALPHA;
+    if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
+      return GL_LUMINANCE_ALPHA16F_ARB;
+    } else {
+      return GL_LUMINANCE_ALPHA;
+    }
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
@@ -10944,6 +10963,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RGB12:
     format = Texture::F_rgb12;
     break;
+  case GL_RGBA16:
+    format = Texture::F_rgba16;
+    break;
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
@@ -11027,10 +11049,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_alpha;
     break;
   case GL_LUMINANCE:
+  case GL_LUMINANCE16:
+  case GL_LUMINANCE16F_ARB:
   case 1:
     format = Texture::F_luminance;
     break;
   case GL_LUMINANCE_ALPHA:
+  case GL_LUMINANCE_ALPHA16F_ARB:
   case 2:
     format = Texture::F_luminance_alpha;
     break;
@@ -11710,16 +11735,9 @@ void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
 
-  if (target_scissor->is_off() && !_current_display_region->get_scissor_enabled()) {
-    if (_scissor_enabled) {
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
-          << "glDisable(GL_SCISSOR_TEST)\n";
-      }
-      glDisable(GL_SCISSOR_TEST);
-      _scissor_enabled = false;
-    }
-  } else {
+  if (!target_scissor->is_off()) {
+    // A non-off ScissorAttrib means to override the scissor setting
+    // that was specified by the DisplayRegion.
     if (!_scissor_enabled) {
       if (GLCAT.is_spam()) {
         GLCAT.spam()

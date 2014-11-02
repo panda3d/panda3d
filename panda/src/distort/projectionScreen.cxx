@@ -596,8 +596,14 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
       LPoint3f p;
       if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
-        uvw.set(0, 0, 0);
+
+        // We're better off keeping the point where it is,
+        // undistorted--it's probably close to where it should
+        // be--than we are changing it arbitrarily to (0, 0), which
+        // might be far away from where it should be.
+        //uvw.set(0, 0, 0);
         good = false;
+
       } else {
         uvw = LCAST(PN_stdfloat, p);
         uvw[1] = 1.0 - uvw[1];

@@ -214,13 +214,4 @@ init_libputil() {
 
   BamCacheIndex::register_with_read_factory();
   BamCacheRecord::register_with_read_factory();
-
-  // Initialize the num_bits_on table, for BitMask::get_num_on_bits().
-  for (int bit = 0; bit < 16; ++bit) {
-    int w = (1 << bit);
-    for (int i = 0; i < w; ++i) {
-      num_bits_on[i + w] = num_bits_on[i] + 1;
-    }
-  }
 }
-

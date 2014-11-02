@@ -4,7 +4,7 @@ if(WANT_NATIVE_NET)
       buffered_datagramreader.h buffered_datagramreader.i
       ringbuffer.h ringbuffer.i socket_ip.h
       socket_tcp_listen.h time_accumulator.h time_out.h
-      socket_address.h
+      socket_address.I socket_address.h
       socket_portable.h  time_base.h time_span.h buffered_datagramwriter.h
       socket_base.h socket_selector.h
       socket_udp.h

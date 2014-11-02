@@ -175,6 +175,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
 
+  INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix3) &other);
+
   INLINE_LINMATH FLOATTYPE determinant() const;
 
   INLINE_LINMATH void transpose_from(const FLOATNAME(LMatrix3) &other);

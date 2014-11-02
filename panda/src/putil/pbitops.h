@@ -18,6 +18,10 @@
 #include "pandabase.h"
 #include "numeric_types.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 // This file defines a few low-level bit-operation routines, optimized
 // all to heck.
@@ -46,7 +50,7 @@ INLINE int get_next_higher_bit(PN_uint32 x);
 INLINE int get_next_higher_bit(PN_uint64 x);
 
 // This table precomputes the number of on bits in each 16-bit word.
-extern EXPCL_PANDA_PUTIL unsigned char num_bits_on[65536];
+extern EXPCL_PANDA_PUTIL const unsigned char num_bits_on[65536];
 
 #include "pbitops.I"
 

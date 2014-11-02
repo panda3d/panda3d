@@ -69,7 +69,7 @@ PUBLISHED:
                                          const string &data,
                                          BamReader *reader = NULL);
 
-public:
+private:
   void add_bam_writer(BamWriter *writer);
   void remove_bam_writer(BamWriter *writer);
 
