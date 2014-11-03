@@ -555,26 +555,30 @@ reset() {
 #ifndef OPENGLES
   _glPrimitiveRestartIndex = NULL;
 
-  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
+  /*if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
     // As long as we enable this, OpenGL will always use the highest possible index
     // for a numeric type as strip cut index, which coincides with our convention.
     // This saves us a call to glPrimitiveRestartIndex.
     glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
     _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
-  } else if (is_at_least_gl_version(3, 1)) {
-    glEnable(GL_PRIMITIVE_RESTART);
-    _supported_geom_rendering |= Geom::GR_strip_cut_index;
+  } else
+  */
+  if (gl_support_primitive_restart_index) {
+    if (is_at_least_gl_version(3, 1)) {
+      glEnable(GL_PRIMITIVE_RESTART);
+      _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
-    _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
-      get_extension_func("glPrimitiveRestartIndex");
+      _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
+        get_extension_func("glPrimitiveRestartIndex");
 
-  } else if (has_extension("GL_NV_primitive_restart")) {
-    glEnable(GL_PRIMITIVE_RESTART_NV);
-    _supported_geom_rendering |= Geom::GR_strip_cut_index;
+    } else if (has_extension("GL_NV_primitive_restart")) {
+      glEnable(GL_PRIMITIVE_RESTART_NV);
+      _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
-    _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
-      get_extension_func("glPrimitiveRestartIndexNV");
+      _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
+        get_extension_func("glPrimitiveRestartIndexNV");
+    }
   }
 #endif
 
@@ -4357,18 +4361,31 @@ prepare_shader(Shader *se) {
   ShaderContext *result = NULL;
 
   switch (se->get_language()) {
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  case Shader::SL_Cg:
-    result = new CLP(CgShaderContext)(this, se);
-    break;
-#endif
-
   case Shader::SL_GLSL:
     if (_supports_glsl) {
       result = new CLP(ShaderContext)(this, se);
       break;
+    } else {
+      GLCAT.error()
+        << "Tried to load GLSL shader, but GLSL shaders not supported.\n";
+      return NULL;
     }
-    // Fall through.
+
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  case Shader::SL_Cg:
+    if (_supports_basic_shaders) {
+      result = new CLP(CgShaderContext)(this, se);
+      break;
+    } else {
+      GLCAT.error()
+        << "Tried to load Cg shader, but basic shaders not supported.\n";
+      return NULL;
+    }
+#else
+    GLCAT.error()
+      << "Tried to load Cg shader, but Cg support not compiled in.\n";
+    return NULL;
+#endif
 
   default:
     GLCAT.error()
@@ -5157,7 +5174,9 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   if (uses_mipmaps && _glGenerateMipmap != NULL) {
+    glEnable(target);
     _glGenerateMipmap(target);
+    glDisable(target);
   }
 
   gtc->_has_storage = true;
@@ -6668,7 +6687,6 @@ void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
 #ifndef OPENGLES  // Draw buffers not supported by OpenGL ES.
   if (_current_fbo) {
-
     GLuint buffers[16];
     int nbuffers = 0;
     int index = 0;
@@ -6705,7 +6723,6 @@ set_draw_buffer(int rbtype) {
     _glDrawBuffers(nbuffers, buffers);
 
   } else {
-
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glDrawBuffer(GL_FRONT);

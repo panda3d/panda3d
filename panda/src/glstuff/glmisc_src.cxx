@@ -244,6 +244,21 @@ ConfigVariableBool gl_enable_memory_barriers
             "this off may give a slight performance increase, but you "
             "have to know what you're doing."));
 
+ConfigVariableBool gl_vertex_array_objects
+  ("gl-vertex-array-objects", true,
+   PRC_DESC("Setting this causes Panda to make use of vertex array "
+            "objects to more efficiently switch between sets of "
+            "vertex arrays.  This only has effect when vertex-arrays "
+            "and vertex-buffers are both set.  This should usually be "
+            "true unless you suspect a bug in the implementation. "));
+
+ConfigVariableBool gl_support_primitive_restart_index
+  ("gl-support-primitive-restart-index", true,
+   PRC_DESC("Setting this causes Panda to make use of primitive "
+            "restart indices to more efficiently render line "
+            "segment primitives.  Set to false if you suspect a bug "
+            "in the driver implementation."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {
