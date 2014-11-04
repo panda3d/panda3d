@@ -553,27 +553,27 @@ reset() {
   }
 
 #ifndef OPENGLES
+  _primitive_restart_gl3 = false;
+  _primitive_restart_nv = false;
   _glPrimitiveRestartIndex = NULL;
 
-  /*if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
-    // As long as we enable this, OpenGL will always use the highest possible index
-    // for a numeric type as strip cut index, which coincides with our convention.
-    // This saves us a call to glPrimitiveRestartIndex.
-    glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
-    _supported_geom_rendering |= Geom::GR_strip_cut_index;
-
-  } else
-  */
   if (gl_support_primitive_restart_index) {
-    if (is_at_least_gl_version(3, 1)) {
-      glEnable(GL_PRIMITIVE_RESTART);
+    if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
+      // As long as we enable this, OpenGL will always use the highest possible index
+      // for a numeric type as strip cut index, which coincides with our convention.
+      // This saves us a call to glPrimitiveRestartIndex.
+      glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+      _supported_geom_rendering |= Geom::GR_strip_cut_index;
+
+    } else if (is_at_least_gl_version(3, 1)) {
+      _primitive_restart_gl3 = true;
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
       _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
         get_extension_func("glPrimitiveRestartIndex");
 
     } else if (has_extension("GL_NV_primitive_restart")) {
-      glEnable(GL_PRIMITIVE_RESTART_NV);
+      _primitive_restart_nv = true;
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
       _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
@@ -3892,10 +3892,16 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
       // One long triangle strip, connected by strip cut indices.
 #ifndef OPENGLES
-      if (_glPrimitiveRestartIndex != NULL) {
+      if (_primitive_restart_gl3) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+
+      } else if (_primitive_restart_nv) {
+        glEnableClientState(GL_PRIMITIVE_RESTART_NV);
         _glPrimitiveRestartIndex(reader->get_strip_cut_index());
       }
-#endif
+#endif  // !OPENGLES
+     cerr << "yeahp\n";
 
       int num_vertices = reader->get_num_vertices();
       _vertices_other_pcollector.add_level(num_vertices);
@@ -3911,7 +3917,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
       } else
-#endif
+#endif  // !OPENGLES
       {
         _glDrawRangeElements(GL_LINE_STRIP,
                              reader->get_min_vertex(),
@@ -3920,6 +3926,15 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
                              get_numeric_type(reader->get_index_type()),
                              client_pointer);
       }
+
+#ifndef OPENGLES
+      if (_primitive_restart_gl3) {
+        glDisable(GL_PRIMITIVE_RESTART);
+
+      } else if (_primitive_restart_nv) {
+        glDisableClientState(GL_PRIMITIVE_RESTART_NV);
+      }
+#endif  // !OPENGLES
     } else {
       // Send the individual line strips, stepping over the
       // strip-cut indices.
