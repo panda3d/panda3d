@@ -3901,7 +3901,6 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         _glPrimitiveRestartIndex(reader->get_strip_cut_index());
       }
 #endif  // !OPENGLES
-     cerr << "yeahp\n";
 
       int num_vertices = reader->get_num_vertices();
       _vertices_other_pcollector.add_level(num_vertices);
