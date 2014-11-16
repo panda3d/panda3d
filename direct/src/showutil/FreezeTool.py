@@ -1383,7 +1383,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             # A special case: map a reference to the "panda3d.blah"
             # module into the appropriate Panda3D dll.
             m = getattr(panda3d, partname, None)
-            if m:
+            if m and hasattr(m, '__libraries__'):
                 libname = m.__libraries__[-1]
                 partname = libname
                 fqname = libname

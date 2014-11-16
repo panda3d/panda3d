@@ -71,6 +71,8 @@ extern ConfigVariableBool gl_dump_compiled_shaders;
 extern ConfigVariableBool gl_immutable_texture_storage;
 extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;
+extern ConfigVariableBool gl_vertex_array_objects;
+extern ConfigVariableBool gl_support_primitive_restart_index;
 
 extern EXPCL_GL void CLP(init_classes)();
 
