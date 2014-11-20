@@ -98,7 +98,7 @@ PUBLISHED:
 
   INLINE Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
-  INLINE const bool get_error_flag() const;
+  INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
   INLINE static ShaderUtilization get_shader_utilization();

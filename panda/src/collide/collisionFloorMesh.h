@@ -41,19 +41,18 @@ public:
     PN_stdfloat max_y;
   } TriangleIndices;
 
-
 PUBLISHED:
 
   INLINE CollisionFloorMesh();
-  
+
   INLINE void add_vertex(const LPoint3 &vert);
   void add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC);
 
-  INLINE const unsigned int get_num_vertices() const;
-  INLINE const LPoint3 get_vertex(unsigned int index) const;
+  INLINE unsigned int get_num_vertices() const;
+  INLINE const LPoint3 &get_vertex(unsigned int index) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
-  INLINE const unsigned int get_num_triangles() const;
-  INLINE const LPoint3d get_triangle(unsigned int index) const;
+  INLINE unsigned int get_num_triangles() const;
+  INLINE LPoint3i get_triangle(unsigned int index) const;
   MAKE_SEQ(get_triangles, get_num_triangles, get_triangle);
 
   virtual LPoint3 get_collision_origin() const;
@@ -63,7 +62,7 @@ public:
   virtual CollisionSolid *make_copy();
 
 public:
-  
+
   virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
@@ -90,7 +89,7 @@ private:
 
   Vertices _vertices;
   Triangles _triangles;
-  
+
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;
 
@@ -101,7 +100,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
-  static TypedWritable *make_CollisionFloorMesh(const FactoryParams &params);  
+  static TypedWritable *make_CollisionFloorMesh(const FactoryParams &params);
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -122,5 +121,3 @@ private:
 #include "collisionFloorMesh.I"
 
 #endif
-
-

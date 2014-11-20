@@ -235,8 +235,8 @@ get_num_colliders() const {
 ////////////////////////////////////////////////////////////////////
 NodePath CollisionTraverser::
 get_collider(int n) const {
-  nassertr(_ordered_colliders.size() == _colliders.size(), NULL);
-  nassertr(n >= 0 && n < (int)_ordered_colliders.size(), NULL);
+  nassertr(_ordered_colliders.size() == _colliders.size(), NodePath());
+  nassertr(n >= 0 && n < (int)_ordered_colliders.size(), NodePath());
   return _ordered_colliders[n]._node_path;
 }
 
