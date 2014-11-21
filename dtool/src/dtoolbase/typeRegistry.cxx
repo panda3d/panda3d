@@ -204,11 +204,15 @@ record_alternate_name(TypeHandle type, const string &name) {
   if (rnode != (TypeRegistryNode *)NULL) {
     NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
+
     if ((*ri).second != rnode) {
+      _lock->release();
       cerr
         << "Name " << name << " already assigned to TypeHandle "
         << rnode->_name << "; cannot reassign to " << type << "\n";
+      return;
     }
+
   }
 
   _lock->release();
@@ -303,8 +307,10 @@ is_derived_from(TypeHandle child, TypeHandle base,
 
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
-  assert(child_node != (TypeRegistryNode *)NULL &&
-         base_node != (TypeRegistryNode *)NULL);
+
+  assert(child_node != (TypeRegistryNode *)NULL);
+  assert(base_node != (TypeRegistryNode *)NULL);
+
   freshen_derivations();
 
   bool result = TypeRegistryNode::is_derived_from(child_node, base_node);
@@ -622,7 +628,7 @@ rebuild_derivations() {
       node->clear_subtree();
     }
   }
-  
+
   // Start by getting the list of root classes: those classes which do
   // not derive from anything.
   for (hi = _handle_registry.begin();
@@ -709,24 +715,41 @@ look_up(TypeHandle handle, TypedObject *object) const {
       _lock->release();
       handle = object->force_init_type();
       _lock->acquire();
+
       if (handle._index == 0) {
         // Strange.
         cerr
           << "Unable to force_init_type() on unregistered TypeHandle.\n";
         return NULL;
       }
+
+      // Now get the name for printing.  We can't use TypeHandle::
+      // get_name() since that recursively calls look_up().
+      ostringstream name;
+      if (handle._index > 0 && handle._index < (int)_handle_registry.size()) {
+        TypeRegistryNode *rnode = _handle_registry[handle._index];
+        if (rnode != (TypeRegistryNode *)NULL) {
+          name << rnode->_name;
+          name << " (index " << handle._index << ")";
+        } else {
+          name << "NULL (index " << handle._index << ")";
+        }
+      } else {
+        name << "index " << handle._index;
+      }
+
       if (handle == object->get_type()) {
         // Problem solved!
         cerr
-          << "Type " << handle << " was unregistered!\n";
+          << "Type " << name.str() << " was unregistered!\n";
       } else {
         // No good; it looks like the TypeHandle belongs to a class
         // that defined get_type(), but didn't define
         // force_init_type().
         cerr
           << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
-          << "class derived from " << handle << " that doesn't define a good\n"
-          << "force_init_type() method.\n";
+          << "class derived from type " << name.str() << " that doesn't define\n"
+          << "a good force_init_type() method.\n";
         return NULL;
       }
 
@@ -736,7 +759,7 @@ look_up(TypeHandle handle, TypedObject *object) const {
       cerr
         << "Attempt to reference unregistered TypeHandle!\n"
         << "Registered TypeHandles are:\n";
-      write(cerr);
+      do_write(cerr);
       return NULL;
     }
   }
@@ -757,7 +780,7 @@ look_up(TypeHandle handle, TypedObject *object) const {
 //     Function: get_best_parent_from_Set
 //       Access: Private
 ///////////////////////////////////////////////////////////////////
-extern "C" int 
+extern "C" int
 get_best_parent_from_Set(int id, const std::set<int> &this_set) {
   // most common case..
   if (this_set.find(id) != this_set.end()) {
@@ -771,4 +794,3 @@ get_best_parent_from_Set(int id, const std::set<int> &this_set) {
 
   return th.get_best_parent_from_Set(this_set);
 }
-
