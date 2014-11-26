@@ -194,7 +194,7 @@ private:
 
 #endif  // NDEBUG
 
-#if __cplusplus >= 201103 || (defined(__has_extension) && __has_extension(cxx_static_assert))
+#if __cplusplus >= 201103
 #define __nassert_static(condition, line, file) static_assert((condition), #condition " at line " #line " of " file)
 #define _nassert_static(condition, line, file) __nassert_static(condition, line, file)
 #define nassert_static(condition) _nassert_static(condition, __LINE__, __FILE__)
