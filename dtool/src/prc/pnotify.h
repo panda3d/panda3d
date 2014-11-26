@@ -127,6 +127,10 @@ private:
 // checking user input parameters, where optimal performance is not
 // paramount.
 
+// nassert_static() is a compile-time assertion.  It should only be
+// used with constant expressions and compilation will fail if the
+// assertion is not true.
+
 #ifdef NDEBUG
 
 #define nassertr(condition, return_value)
@@ -190,6 +194,15 @@ private:
 
 #endif  // NDEBUG
 
+#if __cplusplus >= 201103 || (defined(__has_extension) && __has_extension(cxx_static_assert))
+#define __nassert_static(condition, line, file) static_assert((condition), #condition " at line " #line " of " file)
+#define _nassert_static(condition, line, file) __nassert_static(condition, line, file)
+#define nassert_static(condition) _nassert_static(condition, __LINE__, __FILE__)
+#else
+#define __nassert_static(condition, suffix) typedef char nassert_static_ ## suffix [(condition) ? 1 : -1];
+#define _nassert_static(condition, suffix) __nassert_static(condition, suffix)
+#define nassert_static(condition) _nassert_static(condition, __COUNTER__)
+#endif
 
 #include "pnotify.I"
 

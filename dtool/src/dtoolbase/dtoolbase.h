@@ -184,6 +184,9 @@
 
 #ifdef CPPPARSER
 #include <stdtypedefs.h>
+
+// Also pick up the forward declaration of PyObject.
+#include <Python.h>
 #endif
 
 #ifdef USE_TAU
@@ -322,14 +325,17 @@
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
-#elif defined(WIN32_VC)
+#define ALIGN_64BYTE
+#elif defined(_MSC_VER)
 #define ALIGN_4BYTE __declspec(align(4))
 #define ALIGN_8BYTE __declspec(align(8))
 #define ALIGN_16BYTE __declspec(align(16))
+#define ALIGN_64BYTE __declspec(align(64))
 #elif defined(__GNUC__)
 #define ALIGN_4BYTE __attribute__ ((aligned (4)))
 #define ALIGN_8BYTE __attribute__ ((aligned (8)))
 #define ALIGN_16BYTE __attribute__ ((aligned (16)))
+#define ALIGN_64BYTE __attribute__ ((aligned (64)))
 #else
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE

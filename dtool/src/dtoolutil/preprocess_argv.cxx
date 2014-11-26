@@ -35,6 +35,8 @@ void
 preprocess_argv(int &argc, char **&argv) {
 #ifndef _WIN32
   // Not Windows: do nothing.
+  (void) argc;
+  (void) argv;
 #else  // _WIN32
   // Temporarily commenting out to fix build.  Revisit shortly.
   static Win32ArgParser parser;

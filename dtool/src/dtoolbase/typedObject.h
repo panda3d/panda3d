@@ -32,7 +32,7 @@
 //               return the specific type of the derived class.
 //               Inheriting from this automatically provides support
 //               for is_of_type() and is_exact_type().
-//               
+//
 //               All classes that inherit directly or indirectly from
 //               TypedObject should redefine get_type() and
 //               force_init_type(), as shown below.  Some classes that
@@ -44,7 +44,7 @@
 //               do not inherit from TypedObject need not define the
 //               virtual functions get_type() and force_init_type()
 //               (or any other virtual functions).
-//               
+//
 //               There is a specific layout for defining the
 //               overrides from this class.  Keeping the definitions
 //               formatted just like these examples will allow
@@ -53,10 +53,10 @@
 //               rearranging the braces or the order of the functions
 //               unless you're ready to change them in every file all
 //               at once.
-//               
+//
 //               What follows are some examples that can be used in
 //               new classes that you create.
-//               
+//
 //               @par In the class definition (.h file):
 //               @code
 //               public:
@@ -76,16 +76,16 @@
 //                   return get_class_type();
 //                 }
 //                 virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-//               
+//
 //               private:
 //                 static TypeHandle _type_handle;
 //               @endcode
-//               
+//
 //               @par In the class .cxx file:
 //               @code
 //               TypeHandle <<<ThisClassStringName>>>::_type_handle;
 //               @endcode
-//               
+//
 //               @par In the class config_<<<PackageName>>>.cxx file:
 //               @code
 //               ConfigureFn(config_<<<PackageName>>>) {
@@ -124,7 +124,7 @@ public:
   // This pair of methods exists mainly for the convenience of
   // unambiguous upcasting.  Interrogate generates code to call this
   // method instead of making an explicit cast to (TypedObject *);
-  // this allows classes who multiply inherit from TypedObejct to
+  // this allows classes who multiply inherit from TypedObject to
   // override these methods and disambiguate the cast.  It doesn't
   // have to be a virtual method, since this is just a static upcast.
   INLINE TypedObject *as_typed_object();
