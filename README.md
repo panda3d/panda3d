@@ -1,7 +1,7 @@
 Panda3D
 =======
 
-Panda3D is a game engine that includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games.[1]
+Panda3D is a game engine that includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games
 
 Panda3D is open source and is, as of May 28, 2008, free software under the revised BSD license. Releases prior to that date are not considered Free Software due to certain errors in the design of the old Panda3D license. Despite this, those older releases of Panda3D can also be used for both free and commercial game development at no financial cost.
 
@@ -9,6 +9,7 @@ Panda3D's intended game-development language is Python. The engine itself is wri
 
 Building Panda3D
 =======
+
 At the present, we are providing two completely unrelated systems for
 building Panda.  The original build system, ppremake, is still in
 active use by the VR Studio, and is useful if you want advanced build
@@ -44,6 +45,7 @@ are three pieces:
 1. Source code from Github.
 2. Third-party tools (not strictly necessary for Unix)
 3. Sample programs.
+
 You will need all three to use makepanda. You can download all three
 pieces from the panda website. Look for the files labeled "Panda3D
 source, piecewise, X of 3". You can also obtain the first piece
@@ -65,4 +67,24 @@ makepanda/makepanda.py
 The easy way to build panda is to type:
 makepanda --everything
 
-For more options and info read documents in ./doc in root of source.
+For more options and info about building be sure to read documents in ./doc in root of source.
+
+Panda3D licence
+=======
+
+
+
+What follows is the Modified BSD License. See also http://www.opensource.org/licenses/BSD-3-Clause
+
+Copyright (c) 2008, Carnegie Mellon University. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+    3. Neither the name of Carnegie Mellon University nor the names of other contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
