@@ -1,3 +1,4 @@
+![Logo](http://i.imgur.com/233Z0ok.png)
 Panda3D
 =======
 
