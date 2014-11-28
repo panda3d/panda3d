@@ -92,7 +92,7 @@ get_text(const ShaderType &type) const {
 //               error.  This doesn't tell you whether or not the
 //               shader is supported on the current video card.
 ////////////////////////////////////////////////////////////////////
-INLINE const bool Shader::
+INLINE bool Shader::
 get_error_flag() const {
   return _error_flag;
 }

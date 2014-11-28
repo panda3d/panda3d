@@ -52,6 +52,10 @@
 #ifdef _DEBUG
   #define DEBUG 1
 #endif
+#ifdef assert
+  // dlmalloc defines its own assert, which clashes.
+  #undef assert
+#endif
 #include "dlmalloc.h"
 #include "dlmalloc_src.cxx"
 

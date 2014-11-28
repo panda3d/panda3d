@@ -24,7 +24,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletContact
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 struct EXPCL_PANDABULLET BulletContact {
 
@@ -36,10 +36,10 @@ PUBLISHED:
   INLINE BulletManifoldPoint &get_manifold_point();
   INLINE PandaNode *get_node0() const;
   INLINE PandaNode *get_node1() const;
-  INLINE const int get_idx0() const;
-  INLINE const int get_idx1() const;
-  INLINE const int get_part_id0() const;
-  INLINE const int get_part_id1() const;
+  INLINE int get_idx0() const;
+  INLINE int get_idx1() const;
+  INLINE int get_part_id0() const;
+  INLINE int get_part_id1() const;
 
 private:
   static btManifoldPoint _empty;
@@ -59,7 +59,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletContactResult
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 struct EXPCL_PANDABULLET BulletContactResult : public btCollisionWorld::ContactResultCallback {
 

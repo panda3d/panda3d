@@ -97,20 +97,11 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\directscripts
-        !ifdef PPGAME
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\directscripts\*"
+        File /r /x CVS /x Opt?-Win32 "${PANDA}\direct\directscripts\*"
         SetOutPath $INSTDIR\direct\filter
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\filter\*.sha"
+        File /r /x CVS /x Opt?-Win32 "${PANDA}\direct\filter\*.sha"
         SetOutPath $INSTDIR\direct
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\*.py"
-        !else
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
-        SetOutPath $INSTDIR\direct\filter
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\filter\*.sha"
-        SetOutPath $INSTDIR\direct
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\*.py"
-        File "${PANDA}\tmp\__init__.py"
-        !endif
+        File /r /x CVS /x Opt?-Win32 "${PANDA}\direct\*.py"
         Delete "$INSTDIR\panda3d.py"
         Delete "$INSTDIR\panda3d.pyc"
         Delete "$INSTDIR\panda3d.pyo"

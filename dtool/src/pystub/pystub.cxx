@@ -28,6 +28,7 @@ extern "C" {
   EXPCL_PYSTUB int PyCFunction_New(...);
   EXPCL_PYSTUB int PyCFunction_NewEx(...);
   EXPCL_PYSTUB int PyCallable_Check(...);
+  EXPCL_PYSTUB int PyDict_DelItem(...);
   EXPCL_PYSTUB int PyDict_DelItemString(...);
   EXPCL_PYSTUB int PyDict_GetItem(...);
   EXPCL_PYSTUB int PyDict_GetItemString(...);
@@ -63,6 +64,7 @@ extern "C" {
   EXPCL_PYSTUB int PyInt_AsLong(...);
   EXPCL_PYSTUB int PyInt_AsSsize_t(...);
   EXPCL_PYSTUB int PyInt_FromLong(...);
+  EXPCL_PYSTUB int PyInt_FromSize_t(...);
   EXPCL_PYSTUB int PyInt_Type(...);
   EXPCL_PYSTUB int PyList_Append(...);
   EXPCL_PYSTUB int PyList_AsTuple(...);
@@ -81,6 +83,7 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_Type(...);
   EXPCL_PYSTUB int PyMapping_GetItemString(...);
+  EXPCL_PYSTUB int PyMem_Free(...);
   EXPCL_PYSTUB int PyMemoryView_FromObject(...);
   EXPCL_PYSTUB int PyModule_AddIntConstant(...);
   EXPCL_PYSTUB int PyModule_AddObject(...);
@@ -191,6 +194,8 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_ValueError;
   EXPCL_PYSTUB extern void *_Py_NoneStruct;
   EXPCL_PYSTUB extern void *_Py_NotImplementedStruct;
+  EXPCL_PYSTUB extern void *_Py_TrueStruct;
+  EXPCL_PYSTUB extern void *_Py_ZeroStruct;
 };
 
 
@@ -207,6 +212,7 @@ int PyBytes_Size(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
+int PyDict_DelItem(...) { return 0; }
 int PyDict_DelItemString(...) { return 0; }
 int PyDict_GetItem(...) { return 0; }
 int PyDict_GetItemString(...) { return 0; }
@@ -242,6 +248,7 @@ int PyImport_GetModuleDict(...) { return 0; }
 int PyInt_AsLong(...) { return 0; }
 int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
+int PyInt_FromSize_t(...) { return 0; }
 int PyInt_Type(...) { return 0; }
 int PyList_Append(...) { return 0; }
 int PyList_AsTuple(...) { return 0; }
@@ -260,6 +267,7 @@ int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
 int PyMapping_GetItemString(...) { return 0; }
+int PyMem_Free(...) { return 0; }
 int PyMemoryView_FromObject(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
@@ -375,6 +383,8 @@ void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
 void *_Py_NotImplementedStruct = (void *)NULL;
+void *_Py_TrueStruct = (void *)NULL;
+void *_Py_ZeroStruct = (void *)NULL;
 
 
 void
