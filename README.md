@@ -1,4 +1,6 @@
 ![Logo](http://i.imgur.com/233Z0ok.png)
+This is not official Panda3D. What you are looking for can be found on panda3d.org
+=======
 Panda3D
 =======
 
