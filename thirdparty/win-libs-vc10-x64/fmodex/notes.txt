@@ -1,0 +1,9 @@
+Mon, 26 Aug 2013 08:59:50 +0200
+
+This is FMod Ex 4.44.19, downloaded from:
+http://www.fmod.org/download/fmodex/api/Win/fmodapi44419win-installer.exe
+
+FMod is free for non-commercial use, but requires additional credit.
+See LICENSE.TXT for the details.
+
+~rdb

@@ -1,0 +1,12 @@
+Sun, 25 Aug 2013 12:23:02 +0200
+
+This is libjpeg-turbo 1.3.0, downloaded from:
+https://sourceforge.net/projects/libjpeg-turbo/files/1.3.0/libjpeg-turbo-1.3.0.tar.gz
+
+Compiled in Release mode using CMake 2.8.9 and Visual Studio 2010 on Windows 7.
+libjpeg-turbo is a fork of libjpeg that uses SIMD extensions to speed up JPEG decoding.
+Because all x86-64 processors support SSE2, this should not break for anyone.
+
+License is permissive.  Not sure if I've included the right license file.
+
+~rdb

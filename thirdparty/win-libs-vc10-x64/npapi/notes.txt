@@ -1,0 +1,8 @@
+Sun, 25 Aug 2013 12:03:06 +0200
+
+These four headers were downloaded from SVN r23 at:
+https://code.google.com/p/npapi-sdk/source/browse/#svn%2Ftrunk%2Fheaders
+
+License is MPL 1.1.
+
+~rdb

@@ -1,0 +1,13 @@
+Sun, 25 Aug 2013 11:57:53 +0200
+
+This is FreeType 2.5.01, downloaded from:
+http://download.savannah.gnu.org/releases/freetype/ft2501.zip
+
+Compiled in Release mode using the supplied vc2010 sln on Windows 7.
+I had to add a configuration for x64 to the project.
+lib/freetype.lib was compiled as freetype250.lib.
+
+FreeType is licensed permissively, however, its use must be mentioned in product documentation,
+or you may choose to use FreeType under the terms of the GPLv2 instead.
+
+~rdb

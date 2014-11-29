@@ -1,0 +1,9 @@
+Sun, 25 Aug 2013 12:35:52 +0200
+
+This is the OculusVR SDK 0.2.4.b, downloaded from:
+https://developer.oculusvr.com/?action=dl&p=sdk&f=53
+
+The files in the include directory require the src
+directory to exist in the parent directory.
+
+~rdb

@@ -1,0 +1,27 @@
+Sun, 25 Aug 2013 15:03:41 +0200
+
+Contains Boost 1.54.0, downloaded from:
+http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.7z
+
+After running "bootstrap" on the WinSDK 7.1 Command Prompt, add this to project-config.jam:
+using python : 2.7 : C:\\cygwin\\home\\rdb\\panda3d\\thirdparty\\win-python-x64 ;
+
+Command to build:
+b2 toolset=msvc-10.0 variant=release threading=multi link=shared runtime-link=shared --build-type=complete --with-python architecture=x86 address-model=64
+
+Then call ..\..\bjam.exe in the tools\bcp directory to build bcp.  Then use:
+dist\bin\bcp python somenewdir
+and copy the "boost" directory in "somenewdir" to thirdparty/win-libs-vc10/rocket/include/.
+
+libRocket is revision c95b8f4a1895340e1b847cba2d29a529601bb151 from git:
+https://github.com/lloydw/libRocket.git
+I used CMake version 2.8.11.2 with Microsoft Visual C++ 2010 Express and Windows SDK 7.1.
+In CMake, set BUILD_PYTHON_BINDINGS on and set the location of Python and Boost-Python and Freetype.
+Alter the CMakeLists.txt to find Boost 1.54.0 instead of 1.40.0.
+Comment out lines 162-163 to work around error.
+
+I had to edit the resulting VS2010 solution to include the Python libs directory in the linker path.
+
+These libs were built in Release mode.  Rename the _rocketcore and _rocketcontrols DLLs to .pyd.
+
+~rdb

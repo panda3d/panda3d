@@ -1,0 +1,14 @@
+Sun, 25 Aug 2013 11:10:09 +0200
+
+This is Bullet 2.81, downloaded from:
+https://bullet.googlecode.com/files/bullet-2.81-rev2613.zip
+Built in Release mode using the supplied VS2010 solution.
+
+There was no supplied include dir, so I had to copy the src
+directory recursively and remove all non-header files.
+
+The .lib files were stripped of their suffices except for _x64.
+
+License is permissive (ZLib license).
+
+~rdb

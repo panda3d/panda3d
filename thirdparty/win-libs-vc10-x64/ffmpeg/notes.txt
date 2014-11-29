@@ -1,0 +1,24 @@
+Thu, 22 Aug 2013 08:53:20 +0200
+
+This is FFmpeg git-920046a (2013-08-21), downloaded from:
+http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-20130821-git-920046a-win64-shared.7z
+http://ffmpeg.zeranoe.com/builds/win64/dev/ffmpeg-20130821-git-920046a-win64-dev.7z
+
+Compiled in GPLv3 mode, apparently.  Licenses can be found in the licenses directory.  (Phoo!  Have fun reading.)
+
+This also includes inttypes.h from https://code.google.com/p/msinttypes/ (r29).
+(stdint.h would also have to be copied for MSVC versions before 2010.)
+These files are licensed under the New BSD License.
+
+I regenerated the .lib files using the following commands:
+lib /def:avcodec-55.def /out:avcodec.lib /machine:x64
+lib /def:avdevice-55.def /out:avdevice.lib /machine:x64
+lib /def:avformat-55.def /out:avformat.lib /machine:x64
+lib /def:avutil-52.def /out:avutil.lib /machine:x64
+lib /def:postproc-52.def /out:postproc.lib /machine:x64
+lib /def:swscale-2.def /out:swscale.lib /machine:x64
+lib /def:swresample-0.def /out:swresample.lib /machine:x64
+lib /def:avfilter-3.def /out:avfilter.lib /machine:x64
+This is necessary to allow linking from VC2010.
+
+~rdb

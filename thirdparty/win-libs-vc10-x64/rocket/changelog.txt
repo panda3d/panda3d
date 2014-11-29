@@ -1,0 +1,213 @@
+libRocket changelog
+
+v1.2.1
+1 December 2010
+
+Features:
+ * Added SFML sample (Thanks to Nuno Silva)
+ * Added CMake files for Mac, Linux and Windows (not fully tested on Windows, Thanks to Hilton Medeiro)
+ * Added Xcode project for iOS and OSX
+ * Upgraded to Freetype 2.4.3
+ * Upgraded Ogre sample for Ogre 1.7.2
+
+API Changes:
+ * All handle types have been changed for void*'s to uintptr_t's for better 64bit support
+
+Fixes:
+ * Fixed stack overflow in treeview
+ * Fixed Rocket::Core::Variant trample in 64bit version, due to Rocket::Core::String being bigger than 16 bytes (Thanks to Hilton Medeiro)
+ * Fixed 64bit pointer to string conversion used in the Font system
+
+v1.2.0
+8th September 2010
+==========================================
+Features:
+ * Licensing requirements removed, entire library switched to MIT license
+ * Upgraded to Freetype 2.4.1
+ 
+API Changes:
+ * All of EMP::Core moved into Rocket::Core, except EMP::Data* which has moved into Rocket::Controls
+ * License key removed.
+
+v1.1.3008
+29th September 2009
+==========================================
+Features:
+ * Added the 'focus' property, which can be set to 'auto' (the default) or 'none'. Elements which are set to 'none' can never have focus.
+ * Added the 'text-transform' property, which can be set to 'auto' (the default), 'uppercase' or 'lowercase'. It currently only supports transformations on ASCII characters.
+ * Added the ClearStyleSheetCache() function to Rocket::Core::Factory.
+ * Upgraded to Freetype 2.3.9.
+ * Upgraded to Python 2.6.2.
+ * Upgraded to Boost 1.40.0.
+ 
+Fixes:
+ * Fixed a rounding error when offsetting an element with a relative position.
+ * Fixed the Ogre3D sample to render properly with the Ogre's compositing system.
+ * When an element is unparented, it is now also removed from its context's focus and hover chains if appropriate.
+
+v1.1.2979
+29th October 2008
+==========================================
+API changes:
+ * The 'source_path' parameter has been removed from the Rocket::Core::RenderInterface::LoadTexture() function. Custom path concatenation is now achieved through the new JoinPath() function on Rocket::Core::SystemInterface (see below).
+
+Features:
+ * Added the JoinPath() function to Rocket::Core::SystemInterface. This allows an application to customise the way a resource path is concatenated onto the path of the RML / RCSS document that specified it. It is an optional override, the default implementation simply adds the paths together and normalises the paths.
+ * Installing a render interface into libRocket before initialisation through Rocket::Core::SetRenderInterface() is now optional. If one isn't specified, all contexts must have a custom render interface provided in Rocket::Core::CreateContext().
+ * If a context has a custom render interface, textures used by that context will now be loaded and release through that context instead of the default context.
+ * Changed the Ogre3D sample to more correctly support resource locations.
+ * Upgraded libRocket Python to boost 1.36.
+ * Text controls (text input fields and multi-line text areas) now support selection with the mouse or keyboard, and content can be copied and pasted from a clipboard.
+ * The 'change' event dispatched by a scrollbar has been changed to 'scrollchange' to distinguish it from events sent by input elements.
+ * Added the 'button' input type (ie, '<input type="button" ...'). Buttons can be disabled to prevent click and double-click events from being dispatched.
+
+Fixes:
+ * Image elements now properly regenerate their geometry under DirectX.
+ * Fixed a reference counting issue when unloading documents multiple times.
+ * Added to-python by-value converters for Context, Element and ElementDocument.
+
+v1.1.2964
+12th September 2008
+==========================================
+Features:
+ * Elements are now no longer hovered over if they're in a document that isn't modal while a modal document is open.
+ * Contexts can now have a unique RenderInterface; pass the RenderInterface into the Rocket::Core::CreateContext() function.
+ * The interface classes now have a virtual Release() function which is called when they are no longer required by any libRocket resources.
+ * Added the treeview sample.
+ * Ogre3D sample has been updated to work with Shoggoth (1.6).
+
+Fixes:
+ * The behaviour of em-relative dimensions is now consistent across all scenarios.
+ * Changing an element from relative to static position now removes the relative offset.
+ * Clipping behaves more correctly.
+
+v1.1.2948
+8th July 2008
+==========================================
+Features:
+ * ProcessKeyDown(), ProcessKeyUp(), ProcessTextInput() and ProcessMouseWheel() on Rocket::Core::Context now return the final propagation state of the event they generate (ie, true if the event was not consumed by an element, false if it was).
+
+Fixes:
+ * Fixed Ogre sample's mouse wheel processing.
+ * Numerous fixes to 'textarea' element.
+
+v1.1.2946
+2nd July 2008
+==========================================
+Features:
+ * Added the 'OnLayout()' function to Rocket::Core::Element, which is called whenever the element is laid out.
+ * Text input elements now dispatch the 'change' event every time they are changed, not just when enter is pressed.
+
+Fixes:
+ * The select element now reformats its option elements whenever their contents are changed.
+ * Texel offsets are properly catered for.
+ * Fixed underline positions and thicknesses.
+
+v1.1.2937
+5th June 2008
+==========================================
+Fixes:
+ * The selectvalue child element on a select are pseudo-classed 'checked' as appropriate, similarly to selectarrow.
+ * Fixed minor issues with structural selectors.
+ * Stability fixes for the dataselect element.
+ * Fix to dropdowns adding elements in the wrong index if you passed in a 'before' of the second-to-last element (thanks to Ron Hashimshony).
+ * Fix to a bug in the Ogre sample's key map (thanks for Ron Hashimshony).
+ * Fixed a crash bug when setting a new 'src' attribute on an 'img' element.
+
+v1.1.2931
+28th April 2008
+==========================================
+Fixes:
+ * Fixed VC8 build incorrectly linking against a VC9 lib (introduced in 2929 with VC9 fix).
+ * HTML-coded characters are now processed properly in preformatted strings.
+
+v1.1.2929
+22nd April 2008
+==========================================
+Features:
+ * Exposed Context::LoadDocumentFromMemory to Python
+
+Fixes:
+ * Fixed a bug with specificities when merging style sheets.
+ * Fixed incorrect clipping with nested elements.
+ * Fixed incorrect layout when top-level elements cause scrolling overflow.
+ * Fixed DataGrid incorrectly querying old data from a source in certain conditions
+ * Fixed VC9 build, was still incorrectly referencing VC8 libs.
+ * Fixed reference counting when cyclic dependencies occur with Python EventListeners.
+
+v1.1.2848
+4th April 2008
+==========================================
+Features:
+ * Added Get/SetActiveTab() to ElementTabSet, exposed as .active_tab to Python.
+ * Added GetHoverElement() to Rocket::Core::Context.
+ * Added hover_element and root_element Python properties to contexts.
+ * Exposed .SetClass and .IsClassSet to Python.
+ * Upgraded to boost 1.35.
+
+Fixes:
+ * Fixed Python reference leak when an error occured during an event dispatch.
+ * Fixed a bug with specificities around rule ordering.
+ * Fixed events not being passed down to the base element for datagridexpand elements.
+ * Fixed mouse-over detection for clipped elements.
+ * Child datagridrow elements are now hidden by default (introduced in 1.1).
+ * Setting a new data source on a datagrid now clears all existing rows.
+
+v1.1.2744
+25th March 2008
+==========================================
+Features:
+ * API change: RenderInterface changed; all references to 'Texture' class removed, replaced with TextureHandle and dimensions where appropriate.
+ * API change: Texture class changed from simple structure to a more usable class with a shared TextureHandle. The handle and dimensions are now accessed with the GetHandle() and GetDimensions() functions.
+ * API change: Removed the GetContext() function from the Python interface, use the rocket.contexts property instead (see below).
+ * API change: Removed the attribute accessor on context.documents.
+ * API change: Removed the 'text-shadow', 'text-shadow-x', 'text-shadow-y' and 'text-shadow-color' properties; text shadowing is now implemented with the font effect system.
+ * Added the font effect system, for generating and applying effects to text.
+ * Added the 'shadow' and 'outline' font effects.
+ * Added the 'clone' value for the 'drag' property.
+ * Added the LoadDocumentFromMemory() function on Rocket::Core::Context.
+ * Added the Rocket::Core::ReleaseCompiledGeometries() functions and Rocket::Core::ReleaseTextures() functions. These will force libRocket to release its assets, causing a reload when next used.
+ * Added the Rocket::Core::GetNumContexts() and Rocket::Core::GetContext(int index) functions for enumerating dynamically-created contexts.
+ * Added the rocket.contexts object for accessing and enumerating contexts with Python. Individual contexts are accessed from the object using the array operator with either a string (looking up by name) or integer (looking up by index).
+ * Rocket::Core::Plugin has three new functions, OnDocumentOpen(), OnDocumentLoad(), OnDocumentUnload().
+ * Exposed Rocket::Core::Log::Message to Python, accessible from rocket.Log().
+ * Debugger's event log now adds lines top to bottom, is resizable and supports enabling/disabling of different log types.
+ * Python functions bound with AddEventListener() now correctly get their document, event and self global variables.
+ * Error messages are more detailed.
+ * Added rowadd and rowremove events to DataGrid, exposed a .rows[] accessor to python interface of DataGrid.
+ * Added GetParentRelativeIndex(), GetTableRelativeIndex(), GetParentRow(), GetParentGrid() functions to DataGridRow, and .parent_relative_index, .table_relative_index, .parent_row and .parent_grid to Python interface of DataGridRow.
+ * Enhanced DropDownSelect, now supports unselectable rows (thanks to Ron Hashimshony).
+
+Fixes:
+ * Fix to Python's AddEventListener when called with a free function, was causing warning message.
+ * Fix to Python's AddEventListener so that the 3rd parameter is indeed optional as per documentation.
+ * Initialising the C++ controls library AFTER initialising Python will no longer cause the controls to be inaccessible from Python.
+ * Fixed a bug with the specificity of rules using pseudo-classes.
+ * Fixed the Ogre3D sample for use when rendering shadows (thanks to spacedude).
+
+
+v1.0.2619
+7th Feburary 2008
+==========================================
+ * API change: LoadDocument(), CreateDocument() and LoadMouseCursor() now return documents with a reference owned by the caller; be sure to update your document loading code to remove the reference as appropriate!
+ * API change: GetID() and SetID() renamed to GetId() and SetId() to maintain consistency.
+ * Fixed a bug with resizing contexts.
+ * The 'handle' tag now supports a move_target of "#self" to reference itself.
+ * The 'img' tag supports the 'coords' attribute for specifying a rectangular region of the source texture to render.
+ * Debugger log window now has support for a horizontal scrollbar.
+ * libRocket now compiles cleanly with level 4 warnings under Visual Studio.
+ * Added the 'drag' tutorial.
+
+
+v1.0.2582
+18th January 2008
+==========================================
+ * Added support for non anti-aliased fonts.
+ * Improved compatability with STL libraries.
+ * Improved error reporting when using Python data sources.
+
+
+v1.0.2535
+9th January 2008
+==========================================
+ * Initial release.

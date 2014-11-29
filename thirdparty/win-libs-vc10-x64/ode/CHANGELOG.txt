@@ -1,0 +1,1006 @@
+ODE CHANGELOG
+-------------
+
+the rules for this file:
+  * entries are sorted newest-first.
+  * summarize sets of changes - dont reproduce every CVS log comment here.
+  * don't ever delete anything.
+  * keep the format consistent (79 char width, M/D/Y date format).
+
+------------------------------------------------------------------------------
+12/18/11 Oleh Derevenko
+        * dIVERIFY macro added (same as dIASSERT in debug mode but evaluates its
+          expression in release mode) to be used to assert variable value 
+          which is not used further in text while avoiding compiler warning.
+        * dICHECK macro added (same as dIASSERT but evaluates its expression and 
+          raises assertion fault regardless of compilation mode) to be used to
+          generate a fault in cases when error is very unlikely but must be 
+          handled and handling is very troublesome (e.g. failure to lock a mutex
+          due to lack of resources).
+
+12/07/11 Oleh Derevenko
+        * Partially fixed size_t to integer conversion warnings
+        * Fixed type signedness and added casts to size_t wherever necessary 
+          in Step/QuickStep
+
+11/04/11 Daniel K. O.
+        * Applied patch #3429454 - fix compilation on some platforms.
+
+10/28/11 Daniel K. O.
+        * Fixed a box-capsule bug: more reasonable normal for deep penetrations
+          (contributed by Georg Martius.)
+
+10/27/11 Daniel K. O.
+        * Disabled merging of contacts for trimesh-sphere by default.
+        * Added new demo: demo_tracks.
+
+10/17/11 Daniel K. O.
+        * Added python bindings, contributed by Gideon Klompje.
+        * Updated some build scripts.
+        * Changed spheres distribution in demo_space_stress.
+
+05/17/11 Oleh Derevenko
+        * A typo in step.cpp fixed (assignment operator in a conditional 
+          instead of comparison) (reported by Bram Stolk)
+
+01/29/11 Oleh Derevenko
+        * Heightfield zone boundaries calculation code fixed to also consider
+          whole next cell after the AABB if the AABB ends exactly at the cell
+          boundary.
+
+01/23/11 Daniel K. O.
+        * Applied patch from Daniel Fiser, add libccd collider for
+          box-cylinder.
+
+01/20/11 Daniel K. O.
+        * Applied patch from Daniel Fiser, fix infinite loop in libccd caused
+          by numerical problems.
+
+01/06/11 Daniel K. O.
+        * Applied patch from Daniel Fiser, efficient libccd tests when using
+          CONTACTS_UNIMPORTANT.
+
+12/17/10 Daniel K. O.
+        * Applied patches from Daniel Fiser for new colliders based on libccd.
+
+11/08/10 Daniel K. O.
+        * Applied patches from Daniel Fiser to incorporate libccd for
+          Cylinder-Cylinder collision tests.
+
+08/21/10 Oleh Derevenko
+        * Fix applied to dxReallocateTemporayWorldProcessContext() to remove typo 
+          which caused segmentation fault (by Kyle McKay).
+          dTestSolveLCP() fixed to avoid exceeding allocated memory pool 
+          (by Kyle McKay).
+
+07/19/10 Oleh Derevenko
+        * Patch applied (#3030783) to fix drawstuff dimensions being ignored
+          in OSX GLUT port (by Danny Price).
+
+         Daniel K. O.
+        * Applied patch #2991622: dGeomGetRelPointPos, dGeomGetPosRelPoint,
+          dGeomVectorToWorld, and dGeomVectorFromWorld.
+
+07/16/10 Daniel K. O.
+        * Fixed bug #2937076: don't try to build demos if drawstuff is disabled.
+
+05/02/10 Oleh Derevenko
+        * Missing extern "C" wrapper has been added to include/ode/export-dif.h
+          (reported by Danny Price). The change affects dWorldExportDIF() public 
+          function.
+
+05/02/10 Oleh Derevenko
+        * Patch applied (#2995450) to generate up to four contacts for box-
+          plane collision test (by alexdu) and fix contact depths.
+
+05/02/10 Oleh Derevenko
+        * dGeomLowLevelControl function added with ability to change/query OPCODE 
+          trimesh-sphere contact merging behavior at runtime.
+
+02/18/10 Daniel K. O.
+        * Fixed bug affecting disabled joints and dWorldStep.
+
+01/16/10 Oleh Derevenko
+        * Patch applied (#2931174) to make demos work for recent MacOS.
+        * Patch applied (#2931177) to fix the demos' framerate on X11.
+
+12/20/09 Oleh Derevenko
+        * QuadTreeSpace implementation corrected to avoid object-block relation 
+          ambiguity due to numeric errors.
+
+12/04/09 Oleh Derevenko
+        * odecpp classes changed to be inheritable and easily expandable
+
+11/29/09 Oleh Derevenko
+        * Improvement for trimesh-plane collision (also used in trimesh-heightfield)
+          to exclude mesh vertices that have already generated contacts from further
+          examination and contact generation in other triangles (suggested by LR).
+
+10/25/09 Oleh Derevenko
+        * Macros changed to static inline functions in odemath.h and related files.
+          Some code duplication has been eliminated across the files.
+
+        * Fixed handling of --disable-asserts and --enable-double-precision 
+          (absence of --enable-double-precision) in configure script. The script
+          was not appending compiler defines correctly.
+
+        * dWorldStep implementation changed to remove allocation on stack. 
+          dUSE_MALLOC_FOR_ALLOCA define has been removed as well as corresponding
+          configuration parameter. Also dMemoryFlag public variable has been removed.
+          (look for presence of ODE_EXT_malloc_not_alloca configuration string if
+          your application is dependent on that variable).
+
+09/05/09 Oleh Derevenko
+        * dWorldStepFast1 API removed along with dWorld[Get/Set]AutoEnableDepthSF1
+
+08/29/09 Oleh Derevenko
+        * Fixed uninitialized floating point array used in computations.
+
+08/12/09 Oleh Derevenko
+        * A typo fixed in dGeomCopyOffsetRotation() (final_posr was used instead 
+          of offset_posr). Reported by Tilmann.
+
+08/11/09 Daniel K. O.
+        * Made sure neither dSINGLE or dDOUBLE is defined by default; the user
+          should always explicitly specify the precision.
+
+06/27/09 Oleh Derevenko
+        * New functions have been added:
+           - dWorldUseSharedWorkingMemory
+           - dWorldCleanupWorkingMemory
+           - dWorldSetStepMemoryReservationPolicy
+           - dWorldSetStepMemoryManager
+		
+06/25/09 Remi Ricard (papaDoc)
+        * Add limit to the to the second axis of the universal joint
+         for the pu joint.
+
+06/14/09 Oleh Derevenko
+		* dWorldQuickStep re-implemented to avoid memory allocation on stack.
+		  Also several optimizations have been made to decrease memory 
+		  requirements and optimize algorithm implementation of dWorldQuickStep.
+		  dWorldStep still remains with old memory allocation however new APIs
+		  mentioned below are fully functional for it.
+		  Both dWorldStep and dWorldQuickStep have been changed to return boolean
+		  success status.
+
+		* dInitODE2() changed to automatically call 
+		  AllocateODEDataForThread(dAllocateFlagBasicData) after library 
+		  initialization as this is a required initialization minimum that
+		  must always be performed anyway.
+
+06/05/09 Daniel K. O.
+         * Removed aliasing issues from OPCODE/Ice, plus some other warnings.
+           Now it builds on gcc 4.3.2 with '-Wall -Werror -O3".
+
+05/30/09 Oleh Derevenko
+         * A minor memory usage optimization for QuickStep.
+
+05/24/09 Daniel K. O.
+         * Made the new trimesh collider the default.
+         * Added a "-texturepath" option to drawstuff.
+
+05/18/09 Oleh Derevenko
+        * Heightfield rotation fixed to avoid NaNs while rotating infinite
+          MIN/MAX heights.
+
+05/03/09 Oleh Derevenko
+        * Incorrect parameter order fixed on contact merging in Sphere-Trimesh
+          collisions. The bug resulted in merged contact remaining with normal
+          of first contact found. Thanks to Dimitris Papavasiliou for reporting.
+
+04/23/09 Daniel K. O.
+        * Fixed bug #2685170: use the C99 __func__ instead of __FUNCTION__ when
+          a C99 implementation is available.
+
+04/07/09 Remi Ricard (papaDoc)
+        * Remove unused code in demo_joints.cpp, reported by Tilmann.
+
+04/07/09 Remi Ricard (papaDoc)
+        * Fix bug in collision categories in demo_jointPU, reported by Tilmann
+
+03/14/09 Oleh Derevenko
+        * A possibility to initialize/close ODE multiple times recursively has 
+          been added.
+          Also, now a call to dSpaceSetManualCleanup() is required for each 
+          space right after creation if ODE has been initialized in thread data
+          manual cleanup mode.
+           
+03/07/09 Oleh Derevenko
+        * Thread local data has been cleaned up from OPCODE and OdeTls as it is
+          not used (OPC_SweepAndPrune.* and OPC_BoxPruning.* have been removed
+          - rebuilding project files is necessary).
+
+02/07/09 Daniel K. O.
+        * New house of cards demo, which stresses the friction handling stability.
+
+01/29/09 Remi Ricard (papaDoc)
+        * Fix bug: Fix problem when attaching no body to a joint. Before calling
+          setRelativeValues a check is made for bodies.
+        * Add unittest
+
+01/28/09 Daniel K. O.
+        * Applied patch #2538046: Heightfield AABB bounds patch.
+
+01/23/09 Remi Ricard (papaDoc)
+         * Add new function dJointSetUniversalAxis1Offset and dJointSetUniversalAxis2Offset
+         * Add unittest for those funcitons.
+
+01/23/09 Remi Ricard (papaDoc)
+         * Fix problem with dJointGetUniversalAngle2 when the joint is attached to
+           only a body 2. The sign was inverted.
+         * Add unit test to verify for this problem
+
+01/21/09 Remi Ricard (papaDoc)
+         * Fix bug reported by Tilman: dxJointPU::getInfo1 was setting twice the
+           limit of limot1 to zero and not limot2
+
+01/17/09 Daniel K. O.
+        * Fixed a bug in dSpaceCollide2: if both geoms are not in spaces they would
+          not have valid AABBs.
+
+12/20/08 Daniel K. O.
+        * New functions: dJointEnable, dJointDisable, dJointIsEnabled
+          (patch #2454764).
+
+12/19/08 Daniel K. O.
+        * Removed inline asm statements that break builds on 64-bit VC++.
+
+12/09/08 Daniel K. O.
+        * Applied patch #2381592, which adds support for Kinematic Bodies.
+
+12/06/08 Oleh Derevenko
+
+       * Applied a patch by Martijn Buijs to make GIMPACT trimesh-ray collisions to
+         be consistent with those in OPCODE.
+       * Swapped geometries returned in contacts for OPCODE Trimesh-Plane collisions
+         as they were returned in unnatural order being different from that in GIMPACT
+       * Applied a patch by Martijn Buijs to make side1, side2 fields of contact 
+         structure be always initialized, either with -1 for non-trmesh geometries
+         or with triangle index for trimeshes. These fields were only assigned for
+         trimesh-trimesh collisions before.
+       * dGeomTriMeshSetTriMergeCallback/dGeomTriMeshGetTriMergeCallback API added
+         to set/get user defined callback procedure for trimeshes that would be 
+         invoked when contacts are merged to let user code accumulate attributes of
+         original contact triangles and generate a fake index by which it would 
+         later be able to determine those attributes. If the callback is not 
+         assigned (the default) -1 is generated as triangle index for merged 
+         contacts (there was an index of first of merged triangles before!!!).
+         The callback is currently used within OPCODE trimesh-sphere and OPCODE
+         new trimesh-trimesh collisions.
+
+11/20/08 Remi Ricard (papaDoc)
+       * Fix problem with dJointGetPUPosition and
+         dJointGetPUPositionRate when the joint is attached to only
+         a body 2. The sign was inverted.
+       * Fix bug: When a pu joint had only one body attached to position 2,
+         dJointAttach(jId, 0, bId). The body was not push in the right direction to
+         move back between the limits.
+       * Add unit test to check the above problem
+       * Add the function void dJointSetPUAnchorOffset
+       * Make the function void dJointSetPUAnchorDelta deprecated
+
+11/19/08 Remi Ricard (papaDoc)
+       * Fix bug: When a pr joint had only one body attached to position 2,
+         dJointAttach(jId, 0, bId). The body was not push in the right direction to
+         move back between the limits.
+       * Add unit test to check the above problem
+
+11/19/08 Remi Ricard (papaDoc)
+        * Fix problem with dJointGetPRPosition and
+          dJointGetPRPositionRate when the joint is attached to only
+          a body 2. The sign was inverted.
+        * Add unit test to check the above problem
+        * Increase the tolerance to remove failure in unit test
+        * Remove compilation warning in unit test with the use of REAL()
+
+11/18/08 Remi Ricard (papaDoc)
+       * Fix bug: When a piston joint had only one body attached to position 2,
+         dJointAttach(jId, 0, bId). The body was not push in the right direction to
+         move back between the limits.
+       * Add more functionality to demo_piston.cpp
+       * Run astyle on modified files.
+
+11/18/08 Remi Ricard (papaDoc)
+        * Fix bug: When a slider joint had only one body attached to position 2,
+         dJointAttach(jId, 0, bId). The body was not push in the right direction to
+         move back between the limits.
+
+10/29/08 Oleh_Derevenko
+
+        * Premake scripts changed to only include chosen collision library
+          sources in project on Windows. --all-collis-libs premake option 
+          added to allow inclusion of all collision library sources into the 
+          project
+
+10/15/08 Remi Ricard (papaDoc)
+        * Applying patch #2158425 64-bit GIMPACT provided by Mark
+          William. This patch enable GIMPACT to works on 64-bit machine.
+
+10/15/08 Remi Ricard (papaDoc)
+        * Add function dJointGetPRAngle and dJointGetPRAngleRate
+
+10/15/08 Remi Ricard (papaDoc)
+        * Enable the motor on the rotoide part of the PR joint
+
+10/15/08 Remi Ricard (papaDoc)
+        * Add unit test to check if using directly a joint
+          or using after setting with default values is the same.
+        * Add function setRelativeValues called in dJointAttach for
+          all joints.
+
+10/10/08 Remi Ricard (papaDoc)
+        * Fix bug in dJointGetPUAxis2. The axis was not multiplied with the
+          the rotation matrix of the good body.
+        * Fix bug if there is only one body on the PU joint the axis returned
+          was not the right one.
+        * Add unit test to verify previous bug.
+
+10/03/08 Rodrigo Hernandez (Kwizatz)
+	* Added Blender script to create ODE convex geoms under tools.
+
+10/01/08 Rodrigo Hernandez (Kwizatz)
+	* Convex-Convex collision detection code is finally stable.
+
+08/31/08 Daniel K. O.
+        * Applied patch 2080674: Improved dBodySetRotation; now exact rotation
+          matrices are preserved until the next simulation step.
+
+08/07/08 Daniel K. O.
+        * Fixed strict aliasing issue that was breaking the new trimesh collider.
+
+07/24/08 Daniel K. O.
+        * New functions: dBodyGetGyroscopicMode and dBodySetGyroscopicMode
+          (patch #2019242).
+
+07/15/08  Remi Ricard (papaDoc)
+        * Add a new define ODE_API_DEPRECATED to mark function as deprecated
+          when necessary.
+
+07/14/08 Remi Ricard (papaDoc)
+        * Finish adding patch 1336066: Joint feedback in quickstep by jsinecky
+        * demo_boxstack.cpp can now print joint feedback
+
+07/11/08 Daniel K. O.
+        * Bumped version for 0.10.1
+        * Added proper usage of libtool's version info.
+
+07/10/08 Remi Ricard (papaDoc)
+        * Add new function dJointSetPistonAnchorOffset
+        * Add unittest for the piston joint
+        * Fix problem with dJointGetPistonPosition and 
+          dJointGetPistonPositionRate when the joint is attached to only
+          a body 2. The sign was inverted.
+
+07/09/08 Remi Ricard (papaDoc)
+        * Optimize function Multiply1_12q1 in quickstep
+          Patch proposed by Riemer v.d. Zee and modified by Patrick Baggett
+
+07/08/08 Remi Ricard (papaDoc)
+        * Update the slider joint to have the same behavior as the other joint
+          when there is only a body2 attached to it.
+        * Update documentation for the slider joint.
+        * Remove warning by using REAL()
+        * Add new unittest for dJointGetSliderPositionRate
+
+07/08/08 Remi Ricard (papaDoc)
+        * Update unittest for the slider.
+        * Rename the new function dJointSetHingeAxisDelta to 
+          dJointSetHingeAxisOffset. This remove will remove confusion with 
+          the old function dJointSetHingeAnchorDelta
+        * Update documentation for the Hinge unittest
+        * Remove warning by using REAL()
+
+07/07/08 Daniel K. O.
+        * Max Correcting Vel doesn't affect bounciness, as before.
+
+07/03/08 Remi Ricard (papaDoc)
+        * Add new function dJointSetHingeAxisDelta
+        * Add unittest for this new function
+
+06/17/08 Remi Ricard (papaDoc)
+
+        *  Move the computation of the Relative Rotation for the slider joint
+           into a function.
+        * Add unittest for to check qrel 
+
+06/17/08 Remi Ricard (papaDoc)
+
+       * Remove unused variables. 
+       * Remove a conversion warning between unsigned int and int
+        
+06/17/08 Remi Ricard (papaDoc)
+
+        * Move the function hingeComputeRelativeRotation as a member of 
+          the hinge structure/class.
+
+06/17/08 Remi Ricard (papaDoc)
+
+        *  Move the computation of the Relative Rotation for the fixed joint
+           into a function.
+
+06/16/08 Remi Ricard (papaDoc)
+
+        * Add testunit for the dxJointFixed
+
+06/04/08 Daniel K. O.
+
+        * Moved joints to ode/src/joints, converted them to true virtual
+          methods.
+
+06/02/08 Daniel K. O.
+
+        * Added an Auto<T> template to step.cpp to handle memory deallocation.
+
+05/09/08 Daniel K. O.
+
+        * Applied patch #1335202: Contact Joint Motion (with some corrections),
+          and added demo_motion.
+
+05/01/08 Oleh_Derevenko
+
+        * Memory leak in GIMPACT fixed (reported by Derek)
+
+04/28/08 Oleh_Derevenko
+
+        * Added possibility to collide a space of lower sublevel as a geometry
+          against another space of a higher level with dSpaceCollide2.
+          dSpaceSetSublevel/dSpaceGetSublevel are used for sublevel assignment/
+          retrieval.
+
+04/27/08 Oleh_Derevenko
+
+        * Fixed incorrect memory copying which could lead to memory corruption
+          in GIMPACT (luckily, in unused code)
+        * Fixed possible memory read beyond the end of allocated buffer along
+          with unnecessary extra memory copying in GIMPACT.
+        * Fixed buffer reserve being incorrectly reset to zero for bitsets 
+          what resulted in unnecessary memory reallocations in GIMPACT.
+        * Implemented support for ability to run collision detection from
+          multiple threads for separate spaces.
+           
+04/14/08 Oleh_Derevenko
+
+        * Fixed possible memory corruption in new trimesh-trimesh collider
+          in case if two degenerated triangles are checked against each other.
+
+04/12/08 Oleh_Derevenko
+
+        * Fixed sporadic assertion failure on vector normalization caused
+          by small triangles degenerating into segments during space 
+          transformations.
+
+03/28/08 Remi
+
+        * Fix a bug in dJointXXXGetInfo. The value in limot.limit was not
+          always updated. (Ex: If hi and lo limit were changed). 
+
+03/27/08 Remi
+
+        * Added a new Joint: Prismatic Universal (patch #1828454).
+
+         Daniel K. O.
+
+        * Fixed bug #1841309: collide2() method buggy.
+
+03/18/08 Rodrigo
+
+        * New function: dVector4Copy.
+
+03/14/08 david
+
+        * Added stub calls for trimesh functions.
+        * Applied patch #1914232: dGetConfiguration.
+        * Applied patch #1655333: Optimize the function dNormalize3.
+        * New function: dSetColliderOverride.
+        * New function: dCheckConfiguration.
+        
+         Daniel K. O.
+
+        * Disabled building shared library by default with autotools.
+
+03/13/08 david
+
+        * New function: dJointGetNumBodies (patch #1901550).
+        * New function: dSpaceGetClass (patch #1901637).
+        * Applied patch #1901649: Add missing function in the export
+
+03/12/08 Rodrigo
+
+        * Fixed drawstuff build issues on OSX.
+
+01/12/08 Daniel K. O.
+
+	* Fixed a typedef bug in configure.in.
+	* Added dCylinder to the C++ wrappers.
+	* Applied patch 1851394: support for GIMPACT with double precision,
+	  dCollide fix.
+	* Moved bunny geometry to bunny_geom.h.
+
+12/11/07 Daniel K. O.
+
+	* Added damping and MaxAngularVel() functions.
+	* Const-correctness: added const qualifier to some dWorldGet and dBodyGet
+	  functions.
+	* Updated the odecpp.h header.
+
+12/07/07 Daniel K. O.
+
+	* Removed most of the compiler warnings from Drawstuff, ODE and
+	  OPCODE
+	* Upgraded automake requirement to 1.10, and change some Makefile.am
+
+12/06/07 Rodrigo
+
+	* Modified autotools to use libtool for
+	  library generation and administration
+	* Removed release and debug flags for configure.in
+	  CPPFLAGS, CFLAGS, CXXFLAGS should be set by the
+	  user to their liking, respecting autotools policies.
+
+11/30/07 Daniel K. O.
+	* Applied patch 1813079 (moved callback)
+	* Replaced moveAndRotateBody by dxStepBody in stepfast.cpp
+
+11/10/07 david
+
+	* Added 'Sweep and Prune' collision space.
+	* New Piston joint type with demo, by Remi Ricard
+	* Added build option to use 16-bit indices for OPCODE trimesh
+
+11/03/06 david
+
+	* Integrated Christoph Beyer's average based sampling system for body
+	  disabling.
+
+10/26/06 Francisco Leon
+
+	* Totally refactored trimesh collision system.
+	  Using GIMPACT instead of OPCODE. Now works correctly, and faster.
+	  Visit http://gimpact.sourceforge.net.
+	  
+	* Finally, test_moving_trimesh.exe works nicely.   
+	  
+	* Fixed autodisable system. Now is possible to set bigger sleeping 
+	  threshold values and objects won't be sleeping on the air. They will
+	  rest on the floor properly.
+	  	  
+	* dInitODE function added.
+	
+	* Is Obligatory to call dInitODE() at the beginning for initialize ODE,
+	  and calling dCloseODE() when the program ends.
+
+09/20/06 bram
+
+	* Fixed two bugs in cyl/plane collision test.
+
+09/13/06 Remi
+
+	* New Rotoide - Prismatic joint type
+	* dJointGetUniversalAngles for efficient angle retrieval.
+
+08/09/06 david
+
+	* Integrated plane2d joint type which constrains bodies to z == 0.
+
+07/06/06 david
+
+	* Added heightfield primitive collision code. Simple test available in
+	  ode/test/test_heightfield
+
+04/03/06 rodrigo
+
+	* Added Convex primitive collision code,
+	  currently only convex-sphere and convex-plane work
+
+04/01/06 bram
+
+	* Added program to test trimesh vs sphere: ode/test/test_basket
+
+03/20/06 jason379
+
+	* Added new autogenerated Visual Studio projects, with Premake scripts
+
+03/17/06 bram
+
+	* Added plane/cyl intersection test
+	* Renamed CCylinder to Capsule
+	
+02/04/06 gcarlton
+
+	* Added support for geom offsets.
+
+10/26/05 rodrigo
+
+	* Removed LIBTOOL from autotools since it was not really required.
+	* Added a target to build ODE as a shared library, this shared
+	  library gets build alongside the static one, no flags required.
+
+10/24/05 tfautre
+
+	(Backported patches from STABLE branch, applied by Adam)
+	
+	* dRandInt changed for a non-double all-int version.
+	* mics minor fixes and improvements.
+
+04/05/05 tfautre
+
+	* Fixed segmentation fault with OPCODE on 64 bits systems.
+
+03/31/05 tfautre
+
+	* Fixed timer.cpp compiler error on x86-64 using GCC.
+
+03/29/05 colin
+
+	* Added trimesh preprocessing to mark unneeded edges and verts.  Also
+	  added support for preprocessed info to the ccylinder-trimesh
+	  collider.
+
+12/07/04 adam
+
+        * Important AMotors bugfix
+
+09/22/04 jeff
+
+	* Assorted small bugfixes and tweaks for
+	  trimesh_{box,ccylinder,trimesh} collisions
+
+09/21/04 jeff
+
+	* added functions to joint.cpp to allow joint attachment to moving
+	  geoms.
+
+	* added malloc-based memory allocation in step.cpp & lcp.cpp (turned
+	  on with a #define switch in common.h)
+	
+05/29/04 russ
+
+	* added joint feedback to the QuickStep solver
+
+05/18/04 russ
+
+	* added warm starting to the QuickStep solver
+
+05/18/04 russ
+
+	* added the QuickStep solver
+	
+	* added contact parameter functions.
+
+05/05/04 adam
+
+        * use dRandInt instead of rand() in stepfast.
+
+04/21/04 russ
+
+	* added auto-disable support from Aras Pranckevicius (with
+	  modifications by russ). this useful feature can speed up
+	  simulation significantly in some cases.
+	
+	* various internal tidyups.
+
+04/20/04 russ
+
+	* changed the meaning of the 'index' argument to dJointGetBody():
+	  it was the only remaining API function that does not respect
+	  dJOINT_REVERSE (spotted by Matthew D. Hancher).
+	
+	* updated the C++ headers: fixed two minor bugs and added
+	  support for dQuadTreeSpace, dRay, and the dGeom::getSpace() method
+	  (from Matthew D. Hancher).
+
+04/18/04 russ
+
+	* changed the way that the dInfinity constant is implemented: now it
+	  is #defined to be one of: FLT_MAX, DBL_MAX, HUGE_VAL, HUGE_VALF, or
+	  a large numeric constant. previously it was a variable that was
+	  exported from the library. this simplifies the configuration and
+	  build process quite a bit, especially in the case of DLLs.
+	
+	* removed the old, deprecated collision system (geom.cpp,space.cpp,
+	  geom.h,space.h,odecpp_old_collision.h). the ODE_OLD_COLLISION
+	  configuration setting no longer has any meaning.
+	
+	* removed support for dGeomGroups, which have been deprecated for
+	  a while and are equivalent to 'spaces' anyway.
+
+04/13/04 russ
+
+	* bug fix in dMassSetCappedCylinder(), from Matthew D. Hancher.
+
+04/08/04 russ
+
+	* added trimesh-CCylinder capability, from Vadim Macagon
+	  <vadim_mcagon@hotmail.com>.
+
+04/04/04 adam
+
+        * yet another rewrite of triangle-box collision code, this
+        time based on code donated by Croteam, ported by asko@jetti.org
+        and tweaked by Erwin.
+
+04/04/04 adam
+
+        * merged trimesh-trimesh collision code by
+        Jeffrey Smith <jeffreys@Softimage.com>.
+
+        * changed it to not break the trimesh interface, fix
+        some GCC compilation problems, bring it up to date with
+        ODE changes from 2003-11-15 -> 2004-04-04.
+
+        * add ability to drop meshes on meshes in test_moving_trimesh,
+        not as good as it could be but it's illustrative.
+
+01/16/04 adam
+
+	* implement a bunch of ultra-simple TriMesh functions that were
+	in the headers but not in the code -- patch by
+	Vadim Macagon <vadim_mcagon@hotmail.com>
+
+	* disable temporal coherence on trimeshes by default, since
+	it has scaleability issues that don't make it a general clear win.
+
+12/01/03 adam
+
+	* implement dxHashSpace::collide2(), not particularly efficiently.
+
+11/14/03 adam
+
+	* applied several Trimesh fixes and improvements from
+	Aras Pranckevicius <nearaz@interamotion.com>
+
+10/22/03 adam
+
+	* apply Nguyen Binh's work for removing many dSetZero() calls
+	and some other extraneous initializations.
+
+07/29/03 martin
+
+	* added dJointAdd*Torque/Force().
+
+07/10/03 russ
+
+	* added the StepFast code, by David Whittaker.
+
+07/02/03 martin
+
+	* added dMassSet*Total().
+
+07/01/03 martin
+
+	* added joint limits and motors to universal joints.
+
+	* reversed the polarity of the dJOINT_REVERSE flag.
+
+06/30/03 russ
+
+	* added the TriMesh geom class and the quad tree space to the ODE
+	  core. both of these were developed by Erwin de Vries. added OPCODE
+	  to the ODE distribution, this is required by TriMesh.
+
+06/23/03 martin
+
+	* added dGeomSetQuaternion() and dGeomGetQuaternion()
+	
+	* added dJointGet*Anchor2()
+
+05/07/03 russ
+
+	* added dGeomGetSpace().
+
+02/05/03 russ
+
+	* added dMassSetCylinder().
+
+12/07/02 russ
+
+	* added dAreConnectedExcluding().
+
+11/30/02 russ
+
+	* added the ray geom class.
+
+	* added the dGeomXXXPointDepth() functions.
+
+	* added a collision test infrastructure, and some more tests.
+
+11/24/02 russ
+
+	* added support for multiple box-box contacts.
+
+11/10/02 russ
+
+	* added new collision system. select between the old/new system by
+	  setting the ODE_OLD_COLLISION variable in config/user-settings.
+
+10/28/02 russ
+
+	* fixed two problems in the LCP code to improve the reliability of
+	  the dContactApprox1 contact mode.
+
+	* added a FAQ question about rolling bodies getting stuck when they
+	  hit multiple geoms.
+
+09/08/02 russ
+
+	* added dClosestLineSegmentPoints().
+	* implemented dCollideCB().
+
+08/28/02 russ
+
+	* added dJointSetFeedback() and dJointGetFeedback().
+
+08/05/02 russ
+
+	* added dGeomTransformSetInfo() and dGeomTransformGetInfo().
+
+07/13/02 russ
+
+	* added dBodySetForce(), dBodySetTorque(), dWorldImpulseToForce(),
+	  dBodyGetPosRelPoint(), dBodyGetPosRelPoint(), dBodyVectorToWorld(),
+	  dBodyVectorFromWorld().
+
+	* added dBodyGetPointVel() (thanks to Colin Reed).
+
+	* added a new C++ interface (from Martin C. Martin, with modifications
+	  by russ). the old C++ interface is now in odecpp_old.h.
+
+06/25/02 russ
+
+	* added an additional BSD-style licensing option for ODE.
+
+06/23/02 russ
+
+	* added dCloseODE(), contributed by Nate Waddoups and David McClurg.
+
+05/16/02 russ
+
+	* added dSpaceQuery(), contributed by Nate Waddoups.
+
+04/07/02 russ
+
+	* added a section to the documentation for universal joints.
+	  this includes a picture of the joint.
+
+04/05/02 russ
+
+	* added a universal joint class (generously contributed by
+	  Martin C. Martin). it doesn't (yet) have a motor or joint limits,
+	  but it does come with tests.
+
+03/11/02 russ
+
+	* makefile changes to accomodate OSs with command line length
+	  limitations (thanks to Norman Lin).
+
+01/06/02 russ
+
+	* added the dBodySetGravityMode() and dBodyGetGravityMode()
+	  functions, which change the dxBodyNoGravity body flag.
+
+	* added support for building a DLL with MSVC - there is now a
+	  msvc-dll target. thanks to Norman Lin for doing this.
+
+12/28/01 russ
+
+	* added the dParamCFM joint parameter.
+
+12/24/01 russ
+
+	* reworked the build system to make it more cross-platform.
+	  there is now a single top-level makefile and a configurator.c
+	  program. see the INSTALL file for details.
+
+12/04/01 russ
+
+	* the "angular motor" joint has been completed, and a new section
+	  has been added to the documentation.
+
+11/26/01 russ
+
+	* added a new joint type: "angular motor". using this joint is a good
+	  way to get ball-joint motors and limits. this is work in progress -
+	  it has not been fully implemented or tested yet.
+
+11/22/01 russ
+
+	* replaced the mmap()-based joint group stack (stack.cpp) with a
+	  malloc()-based arena stack (obstack.cpp). this will be more
+	  portable and should not impact performance.
+
+11/12/01 russ
+
+	* changed the meaning of the 'flags' parameter to dCollide() and
+	  related functions: now the size of the contact buffer is kept in
+	  the lower 16 bits. this change will be backward compatible.
+
+	* added dBodyGetFiniteRotationMode() and dBodyGetFiniteRotationAxis().
+
+	* added dBodyAddForceAtRelPos() function.
+
+11/11/01 russ
+
+	* added the ability to manually enable and disable bodies.
+	  see dBodyEnable(), dBodyDisable(), dBodyIsEnabled().
+
+	* fixed a potential bug: when a world is destroyed that contains
+	  joints in joint groups, those joints are marked as "deactivated" in
+	  the joint group, so when the joint group is destroyed they can be
+	  ignored.
+
+	* the test_boxstack demo has new options to enable and disable bodies.
+
+	* new configuration parameter in config.h: dEFFICIENT_SIZE.
+
+11/11/01 russ
+
+	* started the change log for ODE. changes older than today were added
+	  to this file by inspecting the CVS logs.
+
+11/05/01 russ
+
+	* added REAL() constructions for floating point numbers, to prevent
+	  many warnings when compiling under VC++.
+
+11/03/01 russ
+
+	* added geometry transform class, documented composite objects.
+
+	* added collision rule: no contacts if both geoms on the same body.
+	  this is not the best rule, may have to remove this in the future.
+
+	* new dMassAdd() function.
+
+	* capped cylinder to capped cylinder collision function.
+
+10/31/01 russ
+
+	* increase CFM in some demos to make them more robust.
+
+10/29/01 russ
+
+	* added new accessor functions.
+
+10/19/01 russ
+
+	* added the dJOINT_TWOBODIES flag to the joint, that says it can not
+	  be attached to just one body.
+
+10/12/01 russ
+
+	* fixed a collision bug in dCollide() that was causing memory
+	  corruption when multiple contacts were being returned.
+
+10/11/01 russ
+
+	* joints can now return m=0 to be "inactive". added a "null" joint
+	  to test this.
+
+10/09/01 russ
+
+	* in the LCP solver, try to fail gracefully when s <= 0.
+
+	* dAABBTestFn() API change.
+
+10/08/01 russ
+
+	* fixed a contact swapping bug in dCollide().
+
+10/07/01 russ
+
+	* added capped cylinder geometry object.
+
+09/30/01 russ
+
+	* the test_buggy demo now uses geometry groups.
+
+	* added a dAABBTestFn field in the geometry classes.
+
+09/29/01 russ
+
+	* added geometry groups.
+
+09/20/01 russ
+
+	* added finite rotation stuff.

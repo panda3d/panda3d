@@ -1,0 +1,28 @@
+Fri, 04 Oct 2013 11:26:29 +0200
+
+This is libtiff 4.0.3, downloaded from:
+ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.3.zip
+Built using Visual C++ 2010 Express and Windows SDK 7.1 on Windows 7.
+
+First edit nmake.opt as such:
+JPEG_SUPPORT	= 1
+JPEGDIR 	= c:/cygwin/home/rdb/panda3d/thirdparty/win-libs-vc10-x64/jpeg
+JPEG_INCLUDE	= -I$(JPEGDIR)/include
+JPEG_LIB 	=
+
+ZIP_SUPPORT	= 1
+ZLIBDIR 	= c:/cygwin/home/rdb/panda3d/thirdparty/win-libs-vc10-x64/zlib
+ZLIB_INCLUDE	= -I$(ZLIBDIR)/include
+ZLIB_LIB 	=
+
+Then build on the Windows SDK 7.1 Command Prompt as follows:
+nmake /f makefile.vc
+
+(We don't let it link with the zlib and jpeg libraries because it would
+otherwise unnecessarily include them in libtiff.lib.  This means that it'll
+error out when compiling libtiff.dll, but at that point, it has already
+compiled libtiff.lib, which is the one we need.)
+
+License is permissive, see COPYRIGHT file.
+
+~rdb

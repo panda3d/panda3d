@@ -1,0 +1,45 @@
+//Cg
+//
+//Cg profile arbvp1 arbfp1
+
+void vshader(float4 vtx_position : POSITION,
+             out float4 l_position : POSITION,
+             out float4 l_pos : TEXCOORD0,
+             uniform float4x4 mat_modelproj,
+             uniform float4x4 trans_model_to_clip)
+{
+  l_position=mul(mat_modelproj, vtx_position);
+  l_pos=mul(trans_model_to_clip, vtx_position);
+  l_pos.z = l_pos.w;
+}
+
+void fshader(float4 l_pos: TEXCOORD0,
+             float4 l_scale: TEXCOORD1,
+             uniform sampler2D k_texnormal : TEXUNIT0,
+             uniform sampler2D k_texalbedo : TEXUNIT1,
+             uniform sampler2D k_texdepth  : TEXUNIT2,
+             uniform float4 texpad_texnormal,
+             uniform float4 k_proj,
+             uniform float4 vspos_model,
+             uniform float4 k_lightcolor,
+             uniform float4 row0_model_to_view,
+             out float4 o_color: COLOR)
+{
+  float3 screen = l_pos.xyz / l_pos.w;
+  float2 texcoords = float2(screen.xy) * texpad_texnormal.xy + texpad_texnormal.xy;
+
+  float4 albedo = tex2D(k_texalbedo, texcoords);
+  float4 normal = tex2D(k_texnormal, texcoords);
+  float  depth = tex2D(k_texdepth, texcoords);
+
+  float3 view = (screen.xzy * k_proj.xyz) / (depth + k_proj.w);
+
+  float3 lightvec = float3(vspos_model) - view;
+  float  lightdist = length(lightvec);
+  float3 lightdir = lightvec / lightdist;
+  float  scaledist = (lightdist / row0_model_to_view.x);
+  float  falloff = saturate(1.0 - scaledist);
+  float  brite = falloff * falloff * dot(lightdir, float3(normal));
+  o_color = albedo * k_lightcolor * brite;
+  o_color.a = 1;
+}

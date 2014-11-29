@@ -1,0 +1,15 @@
+Sat, 24 Aug 2013 17:58:29 +0200
+
+This is OpenAL Soft 1.15.1, downloaded from:
+http://kcat.strangesoft.net/openal-soft-1.15.1.tar.bz2
+Built in Release mode using Visual C++ 2010 Express and Windows 7.1 SDK.
+
+Note that the library is named OpenAL32 even on 64-bits.
+
+License is LGPL, see the COPYING file.
+
+#The OpenAL32.dll and wrap_oal.dll files are from Creative, downloaded from:
+#http://connect.creativelabs.com/openal/Downloads/oalinst.zip
+#These dll files were copied from C:/Windows/SysWOW64 after installation.
+
+~rdb

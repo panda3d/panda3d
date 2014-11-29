@@ -1,0 +1,10 @@
+
+                       Python megawidgets
+
+    Pmw is a toolkit for building high-level compound widgets in
+    Python using the Tkinter module.
+
+    All documentation about Pmw is in the form of html files stored in
+    the 'doc' directory of each release of Pmw.  Please use your Web
+    browser to view the file 'doc/index.html' in the directory
+    containing the most recent release.
