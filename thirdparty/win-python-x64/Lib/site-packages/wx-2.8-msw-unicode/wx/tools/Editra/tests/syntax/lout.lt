@@ -1,0 +1,34 @@
+ # Lexer Test File for Basser Lout
+ # http://en.wikipedia.org/wiki/Lout
+ # Some Comments about this file
+ 
+ # Use the `doc' document class and its default style.
+ @SysInclude { doc }
+ 
+ @Document
+   @InitialFont { Times Base 10p }
+ //
+ 
+ # Beginning of document contents.
+ @Text @Begin
+ 
+ # Paragraph with a number of differen't keywords, symbols and strings in it
+ @PP
+ Hello Word this is a paragraph.  One can easily embed @B { bold } or
+ @I { italic } text.  One can also easily change the style of 
+ text, such as { Helvetica Base } @Font { changing the font
+ being used } Here is a string @Code "@Font" and a string that
+ is not closed @Code "@Font.
+ 
+ @BeginSections
+ @Section @Title { The First Section }
+ @Begin
+ 
+ @PP
+ This is the content of a section.
+ 
+ @End @Section
+ @EndSections
+ 
+ @End @Text
+ # End of the document.

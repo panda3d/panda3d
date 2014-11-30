@@ -1,0 +1,717 @@
+
+<html>
+<title>sprite - Pygame Documentation</title>
+<body bgcolor=#aaeebb text=#000000 link=#331111 vlink=#331111>
+
+
+<table cellpadding=0 cellspacing=0 border=0 style='border: 3px solid black;' width='100%'>
+<tr>
+<td bgcolor='#c2fc20' style='padding: 6px;' align=center valign=center><a href='http://www.pygame.org/'><img src='../pygame_tiny.gif' border=0 width=200 height=60></a><br><b>pygame documentation</b></td>
+<td bgcolor='#6aee28' style='border-left: 3px solid black; padding: 6px;' align=center valign=center>
+	||&nbsp;
+	<a href=http://www.pygame.org>Pygame Home</a> &nbsp;||&nbsp;
+	<a href=../index.html>Help Contents</a> &nbsp;||
+	<a href=index.html>Reference Index</a> &nbsp;||
+	<br>&nbsp;<br>
+	
+<a href="camera.html">Camera</a>&nbsp;||&nbsp;
+<a href="cdrom.html">Cdrom</a>&nbsp;||&nbsp;
+<a href="color.html">Color</a>&nbsp;||&nbsp;
+<a href="cursors.html">Cursors</a>&nbsp;||&nbsp;
+<a href="display.html">Display</a>&nbsp;||&nbsp;
+<a href="draw.html">Draw</a>&nbsp;||&nbsp;
+<a href="event.html">Event</a>&nbsp;||&nbsp;
+<a href="examples.html">Examples</a>&nbsp;||&nbsp;
+<a href="font.html">Font</a>&nbsp;||&nbsp;
+<a href="freetype.html">Freetype</a>&nbsp;||&nbsp;
+<a href="gfxdraw.html">Gfxdraw</a>&nbsp;||&nbsp;
+<a href="image.html">Image</a>&nbsp;||&nbsp;
+<a href="joystick.html">Joystick</a>&nbsp;||&nbsp;
+<a href="key.html">Key</a>&nbsp;||&nbsp;
+<a href="locals.html">Locals</a>&nbsp;||&nbsp;
+<a href="mask.html">Mask</a>&nbsp;||&nbsp;
+<a href="math.html">Math</a>&nbsp;||&nbsp;
+<a href="midi.html">Midi</a>&nbsp;||&nbsp;
+<a href="mixer.html">Mixer</a>&nbsp;||&nbsp;
+<a href="mouse.html">Mouse</a>&nbsp;||&nbsp;
+<a href="movie.html">Movie</a>&nbsp;||&nbsp;
+<a href="music.html">Music</a>&nbsp;||&nbsp;
+<a href="overlay.html">Overlay</a>&nbsp;||&nbsp;
+<a href="pixelarray.html">Pixelarray</a>&nbsp;||&nbsp;
+<a href="pixelcopy.html">Pixelcopy</a>&nbsp;||&nbsp;
+<a href="pygame.html">Pygame</a>&nbsp;||&nbsp;
+<a href="rect.html">Rect</a>&nbsp;||&nbsp;
+<a href="scrap.html">Scrap</a>&nbsp;||&nbsp;
+<a href="sndarray.html">Sndarray</a>&nbsp;||&nbsp;
+<a href="sprite.html">Sprite</a>&nbsp;||&nbsp;
+<a href="surface.html">Surface</a>&nbsp;||&nbsp;
+<a href="surfarray.html">Surfarray</a>&nbsp;||&nbsp;
+<a href="tests.html">Tests</a>&nbsp;||&nbsp;
+<a href="time.html">Time</a>&nbsp;||&nbsp;
+<a href="transform.html">Transform</a>
+</td></tr></table>
+<br>
+
+
+<a name="pygame.sprite">
+<big><b>pygame.sprite</big></b><br><ul>
+  <i>pygame module with basic game object classes</i><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#pygame.sprite.Sprite">pygame.sprite.Sprite</a></td><td> &mdash; simple base class for visible game objects</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.DirtySprite">pygame.sprite.DirtySprite</a></td><td> &mdash; a more featureful subclass of Sprite with more attributes</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.Group">pygame.sprite.Group</a></td><td> &mdash; container class for many Sprites</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.RenderUpdates">pygame.sprite.RenderUpdates</a></td><td> &mdash; Group class that tracks dirty updates</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.OrderedUpdates">pygame.sprite.OrderedUpdates</a></td><td> &mdash; RenderUpdates class that draws Sprites in order of addition</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.LayeredUpdates">pygame.sprite.LayeredUpdates</a></td><td> &mdash; LayeredUpdates Group handles layers, that draws like OrderedUpdates.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.LayeredDirty">pygame.sprite.LayeredDirty</a></td><td> &mdash; LayeredDirty Group is for DirtySprites.  Subclasses LayeredUpdates.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.GroupSingle">pygame.sprite.GroupSingle</a></td><td> &mdash; Group container that holds a single Sprite</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.spritecollide">pygame.sprite.spritecollide</a></td><td> &mdash; find Sprites in a Group that intersect another Sprite</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.collide_rect">pygame.sprite.collide_rect</a></td><td> &mdash; collision detection between two sprites, using rects.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.collide_rect_ratio">pygame.sprite.collide_rect_ratio</a></td><td> &mdash; collision detection between two sprites, using rects scaled to a ratio.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.collide_circle">pygame.sprite.collide_circle</a></td><td> &mdash; collision detection between two sprites, using circles.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.collide_circle_ratio">pygame.sprite.collide_circle_ratio</a></td><td> &mdash; collision detection between two sprites, using circles scaled to a ratio.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.collide_mask">pygame.sprite.collide_mask</a></td><td> &mdash; collision detection between two sprites, using masks.</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.groupcollide">pygame.sprite.groupcollide</a></td><td> &mdash; find all Sprites that collide between two Groups</td></tr>
+  <tr><td><a href="sprite.html#pygame.sprite.spritecollideany">pygame.sprite.spritecollideany</a></td><td> &mdash; simple test if a Sprite intersects anything in a Group</td></tr>
+  <tr><td>None</td><td> &mdash; </td></tr>
+</table></small></ul>
+<p>This module contains several simple classes to be used within games. There is the main Sprite class and several Group classes that contain Sprites. The use of these classes is entirely optional when using Pygame. The classes are fairly lightweight and only provide a starting place for the code that is common to most games. </p>
+<p>The Sprite class is intended to be used as a base class for the different types of objects in the game. There is also a base Group class that simply stores sprites. A game could create new types of Group classes that operate on specially customized Sprite instances they contain. </p>
+<p>The basic Sprite class can draw the Sprites it contains to a Surface. The <tt><a href="sprite.html#Group.draw">Group.draw</a></tt>&nbsp;&ndash;<font size=-1>blit the Sprite images</font>&ndash; method requires that each Sprite have a <tt>Surface.image</tt> attribute and a <tt>Surface.rect</tt>. The <tt><a href="sprite.html#Group.clear">Group.clear</a></tt>&nbsp;&ndash;<font size=-1>draw a background over the Sprites</font>&ndash; method requires these same attributes, and can be used to erase all the Sprites with background. There are also more advanced Groups: <tt><a href="sprite.html#pygame.sprite.RenderUpdates">pygame.sprite.RenderUpdates</a></tt>&nbsp;&ndash;<font size=-1>Group class that tracks dirty updates</font>&ndash; and <tt><a href="sprite.html#pygame.sprite.OrderedUpdates">pygame.sprite.OrderedUpdates</a></tt>&nbsp;&ndash;<font size=-1>RenderUpdates class that draws Sprites in order of addition</font>. </p>
+<p>Lastly, this module contains several collision functions. These help find sprites inside multiple groups that have intersecting bounding rectangles. To find the collisions, the Sprites are required to have a <tt>Surface.rect</tt> attribute assigned. </p>
+<p>The groups are designed for high efficiency in removing and adding Sprites to them. They also allow cheap testing to see if a Sprite already exists in a Group. A given Sprite can exist in any number of groups. A game could use some groups to control object rendering, and a completely separate set of groups to control interaction or player movement. Instead of adding type attributes or bools to a derived Sprite class, consider keeping the Sprites inside organized Groups. This will allow for easier lookup later in the game. </p>
+<p>Sprites and Groups manage their relationships with the <tt>add()</tt> and <tt>remove()</tt> methods. These methods can accept a single or multiple targets for membership. The default initializers for these classes also takes a single or list of targets for initial membership. It is safe to repeatedly add and remove the same Sprite from a Group. </p>
+<p>While it is possible to design sprite and group classes that don't derive from the Sprite and AbstractGroup classes below, it is strongly recommended that you extend those when you add a Sprite or Group class. </p>
+<p>Sprites are not thread safe. So lock them yourself if using threads. </p>
+<!--COMMENTS:pygame.sprite--> &nbsp;<br> 
+
+
+<a name="pygame.sprite.Sprite">
+<big><b>pygame.sprite.Sprite</big></b><br><ul>
+  <i>simple base class for visible game objects</i><br>
+  <tt>pygame.sprite.Sprite(*groups): return Sprite</tt><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#Sprite.update">Sprite.update</a></td><td> &mdash; method to control sprite behavior</td></tr>
+  <tr><td><a href="sprite.html#Sprite.add">Sprite.add</a></td><td> &mdash; add the sprite to groups</td></tr>
+  <tr><td><a href="sprite.html#Sprite.remove">Sprite.remove</a></td><td> &mdash; remove the sprite from groups</td></tr>
+  <tr><td><a href="sprite.html#Sprite.kill">Sprite.kill</a></td><td> &mdash; remove the Sprite from all Groups</td></tr>
+  <tr><td><a href="sprite.html#Sprite.alive">Sprite.alive</a></td><td> &mdash; does the sprite belong to any groups</td></tr>
+  <tr><td><a href="sprite.html#Sprite.groups">Sprite.groups</a></td><td> &mdash; list of Groups that contain this Sprite</td></tr>
+</table></small></ul>
+<p>The base class for visible game objects. Derived classes will want to override the <tt><a href="sprite.html#Sprite.update">Sprite.update</a></tt>&nbsp;&ndash;<font size=-1>method to control sprite behavior</font>&ndash; and assign a <tt>Sprite.image</tt> and <tt>Sprite.rect</tt> attributes. The initializer can accept any number of Group instances to be added to. </p>
+<p>When subclassing the Sprite, be sure to call the base initializer before adding the Sprite to Groups. </p>
+<!--COMMENTS:pygame.sprite.Sprite--> &nbsp;<br> 
+
+
+<a name="Sprite.update">
+<big><b>Sprite.update</big></b><br><ul>
+  <i>method to control sprite behavior</i><br>
+  <tt>Sprite.update(*args):</tt><br>
+<p>The default implementation of this method does nothing; it's just a convenient "hook" that you can override. This method is called by <tt><a href="sprite.html#Group.update">Group.update</a></tt>&nbsp;&ndash;<font size=-1>call the update method on contained Sprites</font>&ndash; with whatever arguments you give it. </p>
+<p>There is no need to use this method if not using the convenience method by the same name in the Group class. </p>
+<!--COMMENTS:Sprite.update--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Sprite.add">
+<big><b>Sprite.add</big></b><br><ul>
+  <i>add the sprite to groups</i><br>
+  <tt>Sprite.add(*groups): return None</tt><br>
+<p>Any number of Group instances can be passed as arguments. The Sprite will be added to the Groups it is not already a member of. </p>
+<!--COMMENTS:Sprite.add--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Sprite.remove">
+<big><b>Sprite.remove</big></b><br><ul>
+  <i>remove the sprite from groups</i><br>
+  <tt>Sprite.remove(*groups): return None</tt><br>
+<p>Any number of Group instances can be passed as arguments. The Sprite will be removed from the Groups it is currently a member of. </p>
+<!--COMMENTS:Sprite.remove--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Sprite.kill">
+<big><b>Sprite.kill</big></b><br><ul>
+  <i>remove the Sprite from all Groups</i><br>
+  <tt>Sprite.kill(): return None</tt><br>
+<p>The Sprite is removed from all the Groups that contain it. This won't change anything about the state of the Sprite. It is possible to continue to use the Sprite after this method has been called, including adding it to Groups. </p>
+<!--COMMENTS:Sprite.kill--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Sprite.alive">
+<big><b>Sprite.alive</big></b><br><ul>
+  <i>does the sprite belong to any groups</i><br>
+  <tt>Sprite.alive(): return bool</tt><br>
+<p>Returns True when the Sprite belongs to one or more Groups. </p>
+<!--COMMENTS:Sprite.alive--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Sprite.groups">
+<big><b>Sprite.groups</big></b><br><ul>
+  <i>list of Groups that contain this Sprite</i><br>
+  <tt>Sprite.groups(): return group_list</tt><br>
+<p>Return a list of all the Groups that contain this Sprite. </p>
+<!--COMMENTS:Sprite.groups--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.DirtySprite">
+<big><b>pygame.sprite.DirtySprite</big></b><br><ul>
+  <i>a more featureful subclass of Sprite with more attributes</i><br>
+  <tt>pygame.sprite.DirtySprite(*groups): return DirtySprite</tt><br>
+<ul><small><table>
+  <tr><td>None</td><td> &mdash; </td></tr>
+</table></small></ul>
+<p>Extra DirtySprite attributes with their default values: </p>
+<p>dirty = 1 </p>
+<pre>    if set to 1, it is repainted and then set to 0 again
+    if set to 2 then it is always dirty ( repainted each frame,
+    flag is not reset)
+    0 means that it is not dirty and therefor not repainted again
+</pre><p>blendmode = 0 </p>
+<pre>    its the special_flags argument of blit, blendmodes
+</pre><p>source_rect = None </p>
+<pre>    source rect to use, remember that it is relative to
+    topleft (0,0) of self.image
+</pre><p>visible = 1 </p>
+<pre>    normally 1, if set to 0 it will not be repainted
+    (you must set it dirty too to be erased from screen)
+</pre><p>layer = 0 </p>
+<pre>    (READONLY value, it is read when adding it to the
+    LayeredRenderGroup, for details see doc of LayeredRenderGroup)
+</pre>
+<!--COMMENTS:pygame.sprite.DirtySprite--> &nbsp;<br> 
+
+
+<a name="">
+<big><b></big></b><br><ul>
+ &nbsp;<br> 
+<!--COMMENTS:--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.Group">
+<big><b>pygame.sprite.Group</big></b><br><ul>
+  <i>container class for many Sprites</i><br>
+  <tt>pygame.sprite.Group(*sprites): return Group</tt><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#Group.sprites">Group.sprites</a></td><td> &mdash; list of the Sprites this Group contains</td></tr>
+  <tr><td><a href="sprite.html#Group.copy">Group.copy</a></td><td> &mdash; duplicate the Group</td></tr>
+  <tr><td><a href="sprite.html#Group.add">Group.add</a></td><td> &mdash; add Sprites to this Group</td></tr>
+  <tr><td><a href="sprite.html#Group.remove">Group.remove</a></td><td> &mdash; remove Sprites from the Group</td></tr>
+  <tr><td><a href="sprite.html#Group.has">Group.has</a></td><td> &mdash; test if a Group contains Sprites</td></tr>
+  <tr><td><a href="sprite.html#Group.update">Group.update</a></td><td> &mdash; call the update method on contained Sprites</td></tr>
+  <tr><td><a href="sprite.html#Group.draw">Group.draw</a></td><td> &mdash; blit the Sprite images</td></tr>
+  <tr><td><a href="sprite.html#Group.clear">Group.clear</a></td><td> &mdash; draw a background over the Sprites</td></tr>
+  <tr><td><a href="sprite.html#Group.empty">Group.empty</a></td><td> &mdash; remove all Sprites</td></tr>
+</table></small></ul>
+<p>A simple container for Sprite objects. This class can be inherited to create containers with more specific behaviors. The constructor takes any number of Sprite arguments to add to the Group. The group supports the following standard Python operations: </p>
+<pre>    in      test if a Sprite is contained
+    len     the number of Sprites contained
+    bool    test if any Sprites are contained
+    iter    iterate through all the Sprites
+</pre><p>The Sprites in the Group are not ordered, so drawing and iterating the Sprites is in no particular order. </p>
+<!--COMMENTS:pygame.sprite.Group--> &nbsp;<br> 
+
+
+<a name="Group.sprites">
+<big><b>Group.sprites</big></b><br><ul>
+  <i>list of the Sprites this Group contains</i><br>
+  <tt>Group.sprites(): return sprite_list</tt><br>
+<p>Return a list of all the Sprites this group contains. You can also get an iterator from the group, but you cannot iterator over a Group while modifying it. </p>
+<!--COMMENTS:Group.sprites--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.copy">
+<big><b>Group.copy</big></b><br><ul>
+  <i>duplicate the Group</i><br>
+  <tt>Group.copy(): return Group</tt><br>
+<p>Creates a new Group with all the same Sprites as the original. If you have subclassed Group, the new object will have the same (sub-)class as the original. This only works if the derived class's constructor takes the same arguments as the Group class's. </p>
+<!--COMMENTS:Group.copy--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.add">
+<big><b>Group.add</big></b><br><ul>
+  <i>add Sprites to this Group</i><br>
+  <tt>Group.add(*sprites): return None</tt><br>
+<p>Add any number of Sprites to this Group. This will only add Sprites that are not already members of the Group. </p>
+<p>Each sprite argument can also be a iterator containing Sprites. </p>
+<!--COMMENTS:Group.add--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.remove">
+<big><b>Group.remove</big></b><br><ul>
+  <i>remove Sprites from the Group</i><br>
+  <tt>Group.remove(*sprites): return None</tt><br>
+<p>Remove any number of Sprites from the Group. This will only remove Sprites that are already members of the Group. </p>
+<p>Each sprite argument can also be a iterator containing Sprites. </p>
+<!--COMMENTS:Group.remove--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.has">
+<big><b>Group.has</big></b><br><ul>
+  <i>test if a Group contains Sprites</i><br>
+  <tt>Group.has(*sprites): return None</tt><br>
+<p>Return True if the Group contains all of the given sprites. This is similar to using the "in" operator on the Group ("if sprite in group: ..."), which tests if a single Sprite belongs to a Group. </p>
+<p>Each sprite argument can also be a iterator containing Sprites. </p>
+<!--COMMENTS:Group.has--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.update">
+<big><b>Group.update</big></b><br><ul>
+  <i>call the update method on contained Sprites</i><br>
+  <tt>Group.update(*args): return None</tt><br>
+<p>Calls the <tt>update()</tt> method on all Sprites in the Group. The base Sprite class has an update method that takes any number of arguments and does nothing. The arguments passed to <tt><a href="sprite.html#Group.update">Group.update</a></tt>&nbsp;&ndash;<font size=-1>call the update method on contained Sprites</font>&ndash; will be passed to each Sprite. </p>
+<p>There is no way to get the return value from the <tt><a href="sprite.html#Sprite.update">Sprite.update</a></tt>&nbsp;&ndash;<font size=-1>method to control sprite behavior</font>&ndash; methods. </p>
+<!--COMMENTS:Group.update--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.draw">
+<big><b>Group.draw</big></b><br><ul>
+  <i>blit the Sprite images</i><br>
+  <tt>Group.draw(Surface): return None</tt><br>
+<p>Draws the contained Sprites to the Surface argument. This uses the <tt>Sprite.image</tt> attribute for the source surface, and <tt>Sprite.rect</tt> for the position. </p>
+<p>The Group does not keep sprites in any order, so the draw order is arbitrary. </p>
+<!--COMMENTS:Group.draw--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.clear">
+<big><b>Group.clear</big></b><br><ul>
+  <i>draw a background over the Sprites</i><br>
+  <tt>Group.clear(Surface_dest, background): return None</tt><br>
+<p>Erases the Sprites used in the last <tt><a href="sprite.html#Group.draw">Group.draw</a></tt>&nbsp;&ndash;<font size=-1>blit the Sprite images</font>&ndash; call. The destination Surface is cleared by filling the drawn Sprite positions with the background. </p>
+<p>The background is usually a Surface image the same dimensions as the destination Surface. However, it can also be a callback function that takes two arguments; the destination Surface and an area to clear. The background callback function will be called several times each clear. </p>
+<p>Here is an example callback that will clear the Sprites with solid red: </p>
+<pre>    def clear_callback(surf, rect):
+        color = 255, 0, 0
+        surf.fill(color, rect)
+</pre>
+<!--COMMENTS:Group.clear--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Group.empty">
+<big><b>Group.empty</big></b><br><ul>
+  <i>remove all Sprites</i><br>
+  <tt>Group.empty(): return None</tt><br>
+<p>Removes all Sprites from this Group. </p>
+<!--COMMENTS:Group.empty--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.RenderUpdates">
+<big><b>pygame.sprite.RenderUpdates</big></b><br><ul>
+  <i>Group class that tracks dirty updates</i><br>
+  <tt>pygame.sprite.RenderUpdates(*sprites): return RenderUpdates</tt><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#RenderUpdates.draw">RenderUpdates.draw</a></td><td> &mdash; blit the Sprite images and track changed areas</td></tr>
+</table></small></ul>
+<p>This class is derived from <tt><a href="sprite.html#pygame.sprite.Group">pygame.sprite.Group</a></tt>&nbsp;&ndash;<font size=-1>container class for many Sprites</font>. It has an extended <tt>draw()</tt> method that tracks the changed areas of the screen. </p>
+<!--COMMENTS:pygame.sprite.RenderUpdates--> &nbsp;<br> 
+
+
+<a name="RenderUpdates.draw">
+<big><b>RenderUpdates.draw</big></b><br><ul>
+  <i>blit the Sprite images and track changed areas</i><br>
+  <tt>RenderUpdates.draw(surface): return Rect_list</tt><br>
+<p>Draws all the Sprites to the surface, the same as <tt><a href="sprite.html#Group.draw">Group.draw</a></tt>&nbsp;&ndash;<font size=-1>blit the Sprite images</font>. This method also returns a list of Rectangular areas on the screen that have been changed. The returned changes include areas of the screen that have been affected by previous <tt><a href="sprite.html#Group.clear">Group.clear</a></tt>&nbsp;&ndash;<font size=-1>draw a background over the Sprites</font>&ndash; calls. </p>
+<p>The returned Rect list should be passed to <tt><a href="display.html#pygame.display.update">pygame.display.update</a></tt>&nbsp;&ndash;<font size=-1>update portions of the screen for software displays</font>. This will help performance on software driven display modes. This type of updating is usually only helpful on destinations with non-animating backgrounds. </p>
+<!--COMMENTS:RenderUpdates.draw--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.OrderedUpdates">
+<big><b>pygame.sprite.OrderedUpdates</big></b><br><ul>
+  <i>RenderUpdates class that draws Sprites in order of addition</i><br>
+  <tt>pygame.sprite.OrderedUpdates(*spites): return OrderedUpdates</tt><br>
+<p>This class derives from <tt><a href="sprite.html#pygame.sprite.RenderUpdates">pygame.sprite.RenderUpdates</a></tt>&nbsp;&ndash;<font size=-1>Group class that tracks dirty updates</font>. It maintains the order in which the Sprites were added to the Group for rendering. This makes adding and removing Sprites from the Group a little slower than regular Groups. </p>
+<!--COMMENTS:pygame.sprite.OrderedUpdates--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.LayeredUpdates">
+<big><b>pygame.sprite.LayeredUpdates</big></b><br><ul>
+  <i>LayeredUpdates Group handles layers, that draws like OrderedUpdates.</i><br>
+  <tt>pygame.sprite.LayeredUpdates(*spites, **kwargs): return LayeredUpdates</tt><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#LayeredUpdates.add">LayeredUpdates.add</a></td><td> &mdash; add a sprite or sequence of sprites to a group</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.sprites">LayeredUpdates.sprites</a></td><td> &mdash; returns a ordered list of sprites (first back, last top).</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.draw">LayeredUpdates.draw</a></td><td> &mdash; draw all sprites in the right order onto the passed surface.</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_sprites_at">LayeredUpdates.get_sprites_at</a></td><td> &mdash; returns a list with all sprites at that position.</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_sprite">LayeredUpdates.get_sprite</a></td><td> &mdash; returns the sprite at the index idx from the groups sprites</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.remove_sprites_of_layer">LayeredUpdates.remove_sprites_of_layer</a></td><td> &mdash; removes all sprites from a layer and returns them as a list.</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.layers">LayeredUpdates.layers</a></td><td> &mdash; returns a list of layers defined (unique), sorted from botton up.</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.change_layer">LayeredUpdates.change_layer</a></td><td> &mdash; changes the layer of the sprite</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_layer_of_sprite">LayeredUpdates.get_layer_of_sprite</a></td><td> &mdash; returns the layer that sprite is currently in.</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_top_layer">LayeredUpdates.get_top_layer</a></td><td> &mdash; returns the top layer</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_bottom_layer">LayeredUpdates.get_bottom_layer</a></td><td> &mdash; returns the bottom layer</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.move_to_front">LayeredUpdates.move_to_front</a></td><td> &mdash; brings the sprite to front layer</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.move_to_back">LayeredUpdates.move_to_back</a></td><td> &mdash; moves the sprite to the bottom layer</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_top_sprite">LayeredUpdates.get_top_sprite</a></td><td> &mdash; returns the topmost sprite</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.get_sprites_from_layer">LayeredUpdates.get_sprites_from_layer</a></td><td> &mdash; returns all sprites from a layer, ordered by how they where added</td></tr>
+  <tr><td><a href="sprite.html#LayeredUpdates.switch_layer">LayeredUpdates.switch_layer</a></td><td> &mdash; switches the sprites from layer1 to layer2</td></tr>
+</table></small></ul>
+<p>This group is fully compatible with <tt>pygame.sprite.Sprite</tt>. </p>
+<p>You can set the default layer through kwargs using 'default_layer' and an integer for the layer. The default layer is 0. </p>
+<p>If the sprite you add has an attribute layer then that layer will be used. If the **kwarg contains 'layer' then the sprites passed will be added to that layer (overriding the <tt>sprite.layer</tt> attribute). If neither sprite has attribute layer nor **kwarg then the default layer is used to add the sprites. </p>
+<p>New in pygame 1.8.0 </p>
+<!--COMMENTS:pygame.sprite.LayeredUpdates--> &nbsp;<br> 
+
+
+<a name="LayeredUpdates.add">
+<big><b>LayeredUpdates.add</big></b><br><ul>
+  <i>add a sprite or sequence of sprites to a group</i><br>
+  <tt>LayeredUpdates.add(*sprites, **kwargs): return None</tt><br>
+<p>If the <tt>sprite(s)</tt> have an attribute layer then that is used for the layer. If **kwargs contains 'layer' then the <tt>sprite(s)</tt> will be added to that argument (overriding the sprite layer attribute). If neither is passed then the <tt>sprite(s)</tt> will be added to the default layer. </p>
+<!--COMMENTS:LayeredUpdates.add--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.sprites">
+<big><b>LayeredUpdates.sprites</big></b><br><ul>
+  <i>returns a ordered list of sprites (first back, last top).</i><br>
+  <tt>LayeredUpdates.sprites(): return sprites</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.sprites--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.draw">
+<big><b>LayeredUpdates.draw</big></b><br><ul>
+  <i>draw all sprites in the right order onto the passed surface.</i><br>
+  <tt>LayeredUpdates.draw(surface): return Rect_list</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.draw--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_sprites_at">
+<big><b>LayeredUpdates.get_sprites_at</big></b><br><ul>
+  <i>returns a list with all sprites at that position.</i><br>
+  <tt>LayeredUpdates.get_sprites_at(pos): return colliding_sprites</tt><br>
+<p>Bottom sprites first, top last. </p>
+<!--COMMENTS:LayeredUpdates.get_sprites_at--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_sprite">
+<big><b>LayeredUpdates.get_sprite</big></b><br><ul>
+  <i>returns the sprite at the index idx from the groups sprites</i><br>
+  <tt>LayeredUpdates.get_sprite(idx): return sprite</tt><br>
+<p>Raises IndexOutOfBounds if the idx is not within range. </p>
+<!--COMMENTS:LayeredUpdates.get_sprite--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.remove_sprites_of_layer">
+<big><b>LayeredUpdates.remove_sprites_of_layer</big></b><br><ul>
+  <i>removes all sprites from a layer and returns them as a list.</i><br>
+  <tt>LayeredUpdates.remove_sprites_of_layer(layer_nr): return sprites</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.remove_sprites_of_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.layers">
+<big><b>LayeredUpdates.layers</big></b><br><ul>
+  <i>returns a list of layers defined (unique), sorted from botton up.</i><br>
+  <tt>LayeredUpdates.layers(): return layers</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.layers--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.change_layer">
+<big><b>LayeredUpdates.change_layer</big></b><br><ul>
+  <i>changes the layer of the sprite</i><br>
+  <tt>LayeredUpdates.change_layer(sprite, new_layer): return None</tt><br>
+<p>sprite must have been added to the renderer. It is not checked. </p>
+<!--COMMENTS:LayeredUpdates.change_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_layer_of_sprite">
+<big><b>LayeredUpdates.get_layer_of_sprite</big></b><br><ul>
+  <i>returns the layer that sprite is currently in.</i><br>
+  <tt>LayeredUpdates.get_layer_of_sprite(sprite): return layer</tt><br>
+<p>If the sprite is not found then it will return the default layer. </p>
+<!--COMMENTS:LayeredUpdates.get_layer_of_sprite--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_top_layer">
+<big><b>LayeredUpdates.get_top_layer</big></b><br><ul>
+  <i>returns the top layer</i><br>
+  <tt>LayeredUpdates.get_top_layer(): return layer</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.get_top_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_bottom_layer">
+<big><b>LayeredUpdates.get_bottom_layer</big></b><br><ul>
+  <i>returns the bottom layer</i><br>
+  <tt>LayeredUpdates.get_bottom_layer(): return layer</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.get_bottom_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.move_to_front">
+<big><b>LayeredUpdates.move_to_front</big></b><br><ul>
+  <i>brings the sprite to front layer</i><br>
+  <tt>LayeredUpdates.move_to_front(sprite): return None</tt><br>
+<p>Brings the sprite to front, changing sprite layer to topmost layer (added at the end of that layer). </p>
+<!--COMMENTS:LayeredUpdates.move_to_front--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.move_to_back">
+<big><b>LayeredUpdates.move_to_back</big></b><br><ul>
+  <i>moves the sprite to the bottom layer</i><br>
+  <tt>LayeredUpdates.move_to_back(sprite): return None</tt><br>
+<p>Moves the sprite to the bottom layer, moving it behind all other layers and adding one additional layer. </p>
+<!--COMMENTS:LayeredUpdates.move_to_back--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_top_sprite">
+<big><b>LayeredUpdates.get_top_sprite</big></b><br><ul>
+  <i>returns the topmost sprite</i><br>
+  <tt>LayeredUpdates.get_top_sprite(): return Sprite</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredUpdates.get_top_sprite--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.get_sprites_from_layer">
+<big><b>LayeredUpdates.get_sprites_from_layer</big></b><br><ul>
+  <i>returns all sprites from a layer, ordered by how they where added</i><br>
+  <tt>LayeredUpdates.get_sprites_from_layer(layer): return sprites</tt><br>
+<p>Returns all sprites from a layer, ordered by how they where added. It uses linear search and the sprites are not removed from layer. </p>
+<!--COMMENTS:LayeredUpdates.get_sprites_from_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredUpdates.switch_layer">
+<big><b>LayeredUpdates.switch_layer</big></b><br><ul>
+  <i>switches the sprites from layer1 to layer2</i><br>
+  <tt>LayeredUpdates.switch_layer(layer1_nr, layer2_nr): return None</tt><br>
+<p>The layers number must exist, it is not checked. </p>
+<!--COMMENTS:LayeredUpdates.switch_layer--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.LayeredDirty">
+<big><b>pygame.sprite.LayeredDirty</big></b><br><ul>
+  <i>LayeredDirty Group is for DirtySprites.  Subclasses LayeredUpdates.</i><br>
+  <tt>pygame.sprite.LayeredDirty(*spites, **kwargs): return LayeredDirty</tt><br>
+<ul><small><table>
+  <tr><td><a href="sprite.html#LayeredDirty.draw">LayeredDirty.draw</a></td><td> &mdash; draw all sprites in the right order onto the passed surface.</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.clear">LayeredDirty.clear</a></td><td> &mdash; used to set background</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.repaint_rect">LayeredDirty.repaint_rect</a></td><td> &mdash; repaints the given area</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.set_clip">LayeredDirty.set_clip</a></td><td> &mdash; clip the area where to draw. Just pass None (default) to reset the clip</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.get_clip">LayeredDirty.get_clip</a></td><td> &mdash; clip the area where to draw. Just pass None (default) to reset the clip</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.change_layer">LayeredDirty.change_layer</a></td><td> &mdash; changes the layer of the sprite</td></tr>
+  <tr><td><a href="sprite.html#LayeredDirty.set_timing_treshold">LayeredDirty.set_timing_treshold</a></td><td> &mdash; sets the treshold in milliseconds</td></tr>
+</table></small></ul>
+<p>This group requires <tt>pygame.sprite.DirtySprite</tt> or any sprite that has the following attributes: </p>
+<pre>    image, rect, dirty, visible, blendmode (see doc of DirtySprite).
+</pre><p>It uses the dirty flag technique and is therefore faster than the <tt>pygame.sprite.RenderUpdates</tt> if you have many static sprites. It also switches automatically between dirty rect update and full screen drawing, so you do no have to worry what would be faster. </p>
+<p>Same as for the <tt>pygame.sprite.Group</tt>. You can specify some additional attributes through kwargs: </p>
+<pre>    _use_update: True/False   default is False
+    _default_layer: default layer where sprites without a layer are added.
+    _time_threshold: treshold time for switching between dirty rect mode
+        and fullscreen mode, defaults to 1000./80  == 1000./fps
+</pre><p>New in pygame 1.8.0 </p>
+<!--COMMENTS:pygame.sprite.LayeredDirty--> &nbsp;<br> 
+
+
+<a name="LayeredDirty.draw">
+<big><b>LayeredDirty.draw</big></b><br><ul>
+  <i>draw all sprites in the right order onto the passed surface.</i><br>
+  <tt>LayeredDirty.draw(surface, bgd=None): return Rect_list</tt><br>
+<p>You can pass the background too. If a background is already set, then the bgd argument has no effect. </p>
+<!--COMMENTS:LayeredDirty.draw--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.clear">
+<big><b>LayeredDirty.clear</big></b><br><ul>
+  <i>used to set background</i><br>
+  <tt>LayeredDirty.clear(surface, bgd): return None</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredDirty.clear--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.repaint_rect">
+<big><b>LayeredDirty.repaint_rect</big></b><br><ul>
+  <i>repaints the given area</i><br>
+  <tt>LayeredDirty.repaint_rect(screen_rect): return None</tt><br>
+<p>screen_rect is in screencoordinates. </p>
+<!--COMMENTS:LayeredDirty.repaint_rect--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.set_clip">
+<big><b>LayeredDirty.set_clip</big></b><br><ul>
+  <i>clip the area where to draw. Just pass None (default) to reset the clip</i><br>
+  <tt>LayeredDirty.set_clip(screen_rect=None): return None</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredDirty.set_clip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.get_clip">
+<big><b>LayeredDirty.get_clip</big></b><br><ul>
+  <i>clip the area where to draw. Just pass None (default) to reset the clip</i><br>
+  <tt>LayeredDirty.get_clip(): return Rect</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:LayeredDirty.get_clip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.change_layer">
+<big><b>LayeredDirty.change_layer</big></b><br><ul>
+  <i>changes the layer of the sprite</i><br>
+  <tt>change_layer(sprite, new_layer): return None</tt><br>
+<p>sprite must have been added to the renderer. It is not checked. </p>
+<!--COMMENTS:LayeredDirty.change_layer--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="LayeredDirty.set_timing_treshold">
+<big><b>LayeredDirty.set_timing_treshold</big></b><br><ul>
+  <i>sets the treshold in milliseconds</i><br>
+  <tt>set_timing_treshold(time_ms): return None</tt><br>
+<p>Default is 1000./80 where 80 is the fps I want to switch to full screen mode. </p>
+<!--COMMENTS:LayeredDirty.set_timing_treshold--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.sprite.GroupSingle">
+<big><b>pygame.sprite.GroupSingle</big></b><br><ul>
+  <i>Group container that holds a single Sprite</i><br>
+  <tt>pygame.sprite.GroupSingle(sprite=None): return GroupSingle</tt><br>
+<p>The GroupSingle container only holds a single Sprite. When a new Sprite is added, the old one is removed. </p>
+<p>There is a special property, GroupSingle.sprite, that accesses the Sprite that this Group contains. It can be None when the Group is empty. The property can also be assigned to add a Sprite into the GroupSingle container. </p>
+<!--COMMENTS:pygame.sprite.GroupSingle--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.spritecollide">
+<big><b>pygame.sprite.spritecollide</big></b><br><ul>
+  <i>find Sprites in a Group that intersect another Sprite</i><br>
+  <tt>pygame.sprite.spritecollide(sprite, group, dokill, collided = None): return Sprite_list</tt><br>
+<p>Return a list containing all Sprites in a Group that intersect with another Sprite. Intersection is determined by comparing the <tt>Sprite.rect</tt> attribute of each Sprite. </p>
+<p>The dokill argument is a bool. If set to True, all Sprites that collide will be removed from the Group. </p>
+<p>The collided argument is a callback function used to calculate if two sprites are colliding. it should take two sprites as values, and return a bool value indicating if they are colliding. If collided is not passed, all sprites must have a "rect" value, which is a rectangle of the sprite area, which will be used to calculate the collision. </p>
+<p>collided callables: </p>
+<pre>    collide_rect, collide_rect_ratio, collide_circle,
+    collide_circle_ratio, collide_mask
+</pre>
+<!--COMMENTS:pygame.sprite.spritecollide--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.collide_rect">
+<big><b>pygame.sprite.collide_rect</big></b><br><ul>
+  <i>collision detection between two sprites, using rects.</i><br>
+  <tt>pygame.sprite.collide_rect(left, right): return bool</tt><br>
+<p>Tests for collision between two sprites. Uses the pygame rect colliderect function to calculate the collision. Intended to be passed as a collided callback function to the *collide functions. Sprites must have a "rect" attributes. </p>
+<p>New in pygame 1.8.0 </p>
+<!--COMMENTS:pygame.sprite.collide_rect--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.collide_rect_ratio">
+<big><b>pygame.sprite.collide_rect_ratio</big></b><br><ul>
+  <i>collision detection between two sprites, using rects scaled to a ratio.</i><br>
+  <tt>pygame.sprite.collide_rect_ratio(ratio): return collided_callable</tt><br>
+<p>A callable class that checks for collisions between two sprites, using a scaled version of the sprites rects. </p>
+<p>Is created with a ratio, the instance is then intended to be passed as a collided callback function to the *collide functions. </p>
+<p>A ratio is a floating point number - 1.0 is the same size, 2.0 is twice as big, and 0.5 is half the size. </p>
+<p>New in pygame 1.8.1 </p>
+<!--COMMENTS:pygame.sprite.collide_rect_ratio--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.collide_circle">
+<big><b>pygame.sprite.collide_circle</big></b><br><ul>
+  <i>collision detection between two sprites, using circles.</i><br>
+  <tt>pygame.sprite.collide_circle(left, right): return bool</tt><br>
+<p>Tests for collision between two sprites, by testing to see if two circles centered on the sprites overlap. If the sprites have a "radius" attribute, that is used to create the circle, otherwise a circle is created that is big enough to completely enclose the sprites rect as given by the "rect" attribute. Intended to be passed as a collided callback function to the *collide functions. Sprites must have a "rect" and an optional "radius" attribute. </p>
+<p>New in pygame 1.8.1 </p>
+<!--COMMENTS:pygame.sprite.collide_circle--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.collide_circle_ratio">
+<big><b>pygame.sprite.collide_circle_ratio</big></b><br><ul>
+  <i>collision detection between two sprites, using circles scaled to a ratio.</i><br>
+  <tt>pygame.sprite.collide_circle_ratio(ratio): return collided_callable</tt><br>
+<p>A callable class that checks for collisions between two sprites, using a scaled version of the sprites radius. </p>
+<p>Is created with a floating point ratio, the instance is then intended to be passed as a collided callback function to the *collide functions. </p>
+<p>A ratio is a floating point number - 1.0 is the same size, 2.0 is twice as big, and 0.5 is half the size. </p>
+<p>The created callable tests for collision between two sprites, by testing to see if two circles centered on the sprites overlap, after scaling the circles radius by the stored ratio. If the sprites have a "radius" attribute, that is used to create the circle, otherwise a circle is created that is big enough to completely enclose the sprites rect as given by the "rect" attribute. Intended to be passed as a collided callback function to the *collide functions. Sprites must have a "rect" and an optional "radius" attribute. </p>
+<p>New in pygame 1.8.1 </p>
+<!--COMMENTS:pygame.sprite.collide_circle_ratio--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.collide_mask">
+<big><b>pygame.sprite.collide_mask</big></b><br><ul>
+  <i>collision detection between two sprites, using masks.</i><br>
+  <tt>pygame.sprite.collide_mask(SpriteLeft, SpriteRight): return bool</tt><br>
+<p>Tests for collision between two sprites, by testing if thier bitmasks overlap. If the sprites have a "mask" attribute, that is used as the mask, otherwise a mask is created from the sprite image. Intended to be passed as a collided callback function to the *collide functions. Sprites must have a "rect" and an optional "mask" attribute. </p>
+<p>New in pygame 1.8.0 </p>
+<!--COMMENTS:pygame.sprite.collide_mask--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.groupcollide">
+<big><b>pygame.sprite.groupcollide</big></b><br><ul>
+  <i>find all Sprites that collide between two Groups</i><br>
+  <tt>pygame.sprite.groupcollide(group1, group2, dokill1, dokill2): return Sprite_dict</tt><br>
+<p>This will find intersections between all the Sprites in two groups. Intersection is determined by comparing the <tt>Sprite.rect</tt> attribute of each Sprite. </p>
+<p>Every Sprite inside group1 is added to the return dictionary. The value for each item is the list of Sprites in group2 that intersect. </p>
+<p>If either dokill argument is True, the intersecting Sprites will be removed from their respective Group. </p>
+<!--COMMENTS:pygame.sprite.groupcollide--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sprite.spritecollideany">
+<big><b>pygame.sprite.spritecollideany</big></b><br><ul>
+  <i>simple test if a Sprite intersects anything in a Group</i><br>
+  <tt>pygame.sprite.spritecollideany(sprite, group): return bool</tt><br>
+<p>Test if the given Sprite intersects with any Sprites in a Group. Intersection is determined by comparing of the <tt>Sprite.rect</tt> attribute of each Sprite. </p>
+<p>This collision test can be faster than <tt><a href="sprite.html#pygame.sprite.spritecollide">pygame.sprite.spritecollide</a></tt>&nbsp;&ndash;<font size=-1>find Sprites in a Group that intersect another Sprite</font>&ndash; since it has less work to do. </p>
+<!--COMMENTS:pygame.sprite.spritecollideany--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="">
+<big><b></big></b><br><ul>
+ &nbsp;<br> 
+<!--COMMENTS:--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+</body></html>

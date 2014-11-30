@@ -1,0 +1,70 @@
+// Syntax Highlighting test file for Edje
+// Some comments about this file
+/********************************************************************
+ * Multi line comments are like this.
+ ********************************************************************/
+#define FRAME LOSSY 60
+
+images {
+   image: "eracnid.png"  LOSSY 80;
+   image: "shadow.png"   COMP;
+   image: "E-wavy_000001.png" FRAME;
+   image: "E-wavy_000002.png" FRAME;
+   image: "E-wavy_000003.png" FRAME;
+}
+
+collections {
+    group {
+        name: "desktop/background";
+        parts {
+            part {
+                name: "background_image";
+                mouse_events: 0;
+                description {
+                    state: "default" 0.0;
+                    align: 0.5 0.5;
+                    image {
+                        normal: "eracnid.png";
+                    }
+                }
+            }
+            part {
+                name: "logo";
+                mouse_events: 0;
+                description {
+                    aspect: 3.33 3.33;
+                    state: "default" 0.0;
+                    min: 112 148;
+                    max: 200 269;
+                    align: 1.0 1.0;
+                    rel1 {
+                        relative: 0.796 0.355;
+                        offset: 0 0;
+                        to, "background_image";
+                    }
+                    rel2 {
+                        relative: 0.796 0.355;
+                        offset: 0 0;
+                        to, "background_image";
+                    }
+                    image {
+                        normal: "E-wavy_000001.png";
+                        tween:  "E-wavy_000002.png";
+                        tween:  "E-wavy_000003.png";
+                    }
+                }
+            }
+        }
+        programs {
+            program {
+                name: "logo_animate";
+                signal: "show";
+                source: "";
+                action: STATE_SET "default" 0.0;
+                transition: LINEAR 4.0;
+                target: "logo";
+                after: "logo_animate";
+            }
+        }
+    }
+}

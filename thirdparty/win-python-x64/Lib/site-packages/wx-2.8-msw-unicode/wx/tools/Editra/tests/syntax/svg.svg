@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Some Comments about this file -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="744.09448"
+   height="1052.3622"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <g
+     id="layer1">
+    <rect
+       width="282.85715"
+       height="260"
+       x="245.71428"
+       y="249.50504"
+       style="fill:#efefef;fill-opacity:1;stroke:#373131;stroke-opacity:1"
+       id="rect2160" />
+    <path
+       d="M 288.57142 749.50507 A 62.857143 74.285713 0 1 1  162.85714,749.50507 A 62.857143 74.285713 0 1 1  288.57142 749.50507 z"
+       style="fill:#efefef;fill-opacity:1;stroke:#373131;stroke-opacity:1"
+       id="path2162" />
+    <text
+       x="91.428574"
+       y="169.50504"
+       style="font-size:36px;font-style:normal;font-weight:bold;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       id="text2164"
+       xml:space="preserve"><tspan
+         x="91.428574"
+         y="169.50504"
+         id="tspan2166">Hello World</tspan></text>
+    <path
+       d="M 137.14286,303.79075 L 104.79416,323.98742 L 103.09272,362.08531 L 73.888247,337.56098 L 37.129231,347.71572 L 51.428572,312.36218 L 30.411685,280.54026 L 68.453639,283.2149 L 92.223505,253.39314 L 101.43538,290.39969 L 137.14286,303.79075 z "
+       style="fill:#efefef;fill-opacity:1;stroke:#373131;stroke-opacity:1"
+       id="path2168" />
+  </g>
+</svg>

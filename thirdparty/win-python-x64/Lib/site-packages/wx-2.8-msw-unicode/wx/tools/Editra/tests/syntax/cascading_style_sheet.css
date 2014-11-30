@@ -1,0 +1,52 @@
+/* Comments About This File */
+
+/* Directive */
+@charset "iso-8859-1";
+
+/*** Plain tag definition  ***/
+a { text-decoration : none; }
+
+/** Tag:psuedo class def **/
+a:link { color : #456; }
+
+/** Tag/Attribute def **/
+input[type="submit"] {
+  border: 2px #369 outset;
+  background-color: #369;
+  color: white;
+}
+
+/** Class def **/
+.tiny {
+   font-family  : "Bitstream Vera", "Vera", "Trebuchet MS", sans-serif;
+   color        : #666;
+   font-size    : 10px;
+   line-height  : 10px;
+}
+
+/*** Ids defs ***/
+#docpane {
+	width: 98%;
+	padding-top: 10px;
+	margin: 5px;
+}
+
+/*** uses some css 2 keywords ****/
+form input.objectA {
+    position: absolute;
+    text-align: left;
+    width: 550px;
+    z-index: 2;
+}
+
+/** Syntax Error/Non WC3 compliant css **/
+a:what { color: red; }
+
+/** Important **/
+.hide { display: none !important; }
+
+.hide p { color: blue; }
+
+.hide .hidedecendant { color: red; }
+
+.hide #someID { color: yellow; }

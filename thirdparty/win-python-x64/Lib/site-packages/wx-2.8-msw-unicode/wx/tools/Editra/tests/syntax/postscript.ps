@@ -1,0 +1,11 @@
+%!PS
+% Syntax Higlighting Test File for Postscript
+% Comments are like this
+% Hello World in Postscript
+1.00000 0.99083 scale
+/Courier findfont 12 scalefont setfont
+0 0 translate
+/row 769 def
+85 {/col 18 def 6 {col row moveto (Hello World)show /col col 90 add def}
+repeat /row row 9 sub def} repeat
+showpage save restore

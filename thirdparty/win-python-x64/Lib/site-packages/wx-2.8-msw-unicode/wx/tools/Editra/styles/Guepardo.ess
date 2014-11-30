@@ -1,0 +1,110 @@
+/* Guepardo Style Sheet ( Inspired by OSX 10.5 color scheme )
+ * Name: Guepardo
+ * Author: Omar Gomez <omar.gomez@gmail.com>
+ * License: wxWindows License
+ */
+ 
+default_style {
+        fore:#000000;
+        back:#FCFCFC;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+error_style {
+    fore:#FFD7D7;
+}
+
+stringeol_style {
+        fore:#FFFFFF;
+        back:#4900CC;
+        face:%(secondary)s;
+        modifiers:eol bold;
+}
+
+caret_line {
+        back:#DEEFFF;
+}
+
+comment_style {
+        fore:#5181AB;
+        modifiers:italic;
+}
+
+keyword_style {
+        fore:#0086B5;
+        modifiers:bold;
+}
+
+keyword3_style {
+        fore:#d66715;
+        modifiers:bold;
+}
+
+ideol_style {
+        fore:#FFFFFF;
+        back:#4900CC;
+        face:%(secondary)s;
+        modifiers:eol bold;
+}
+
+line_num {
+        fore:#FFFFFF;
+        back:#5181AB;
+        face:%(secondary)s;
+        size:%(size3)d;
+}
+
+string_style {
+        fore:#4900CC;
+}
+
+class_style {
+        fore:#1CA330;
+        modifiers:bold;
+}
+
+keyword2_style {
+        fore:#1ca330;
+        modifiers:bold;
+}
+
+class2_style {
+        fore:#0086B5;
+        modifiers:bold;
+}
+
+number_style {
+        fore:#5181AB;
+}
+
+pre_style {
+        fore:#894C24;
+        modifiers:bold;
+}
+
+decor_style {
+        fore:#894C24;
+        modifiers:bold italic;
+}
+
+brace_good {
+        fore:#FFFFFF;
+        back:#FF8D03;
+        modifiers:bold;
+}
+
+char_style {
+        fore:#4900CC;
+}
+
+brace_bad {
+        back:#FF0000;
+        modifiers:bold;
+}
+
+dockey_style {
+        fore:#0064F3;
+        modifiers:bold;
+}
+

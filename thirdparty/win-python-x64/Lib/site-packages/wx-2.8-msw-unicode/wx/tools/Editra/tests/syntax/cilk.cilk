@@ -1,0 +1,15 @@
+// Syntax Highlighting Test file for Cilk
+// Comments are like this
+/* And This */
+
+cilk int fib (int n) {
+    if (n<2) return (n);
+    else {
+        int x,y;
+        spawn x = fib(n-1);
+        spawn y = fib(n-2);
+        sync;
+        return (x+y);
+    }
+}
+

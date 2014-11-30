@@ -1,0 +1,178 @@
+#define CALLCONV __stdcall
+[
+    //Regenerate this, stolen from GetObj.odl
+    uuid(99AB80C4-5E19-4fd5-B3CA-5EF62FC3F765),
+    helpstring("My Ole Guid and interface definitions"),
+    lcid(0x0),
+    version(1.0)
+    ] 
+
+library myole4ax
+{  
+
+    importlib("stdole2.tlb");
+    interface IOleInPlaceUIWindow;
+
+//     typedef struct
+//     {
+//         LONG    Left;
+//         LONG    Top;
+//         LONG    Right;
+//         LONG    Bottom;
+//     }RECT;
+
+//     typedef struct
+//     {
+//         LONG  x;
+//         LONG  y;
+//     }POINT;
+
+//     typedef struct
+//     {
+//         float  x;
+//         float  y;
+//     }POINTF;
+
+//     typedef struct {
+//         long hWnd;
+//         long message;
+//         long wParam;
+//         long lParam;
+//         long time;
+//         POINT pt;
+//     }MSG;
+
+//     typedef [public] RECT BORDERWIDTHS;
+//     typedef [public] long StructPtr;
+
+//     typedef struct
+//     {
+//         LONG        cx;
+//         LONG        cy;
+//     }SIZE;
+
+    typedef struct
+    {
+        long cb;
+        long fMDIApp;
+        OLE_HANDLE hwndFrame;
+        OLE_HANDLE haccel;
+        LONG cAccelEntries;
+    }   OLEINPLACEFRAMEINFO;
+
+        
+//      [
+//              uuid(00000000-0000-0000-C000-000000000046),
+//              odl,
+//              hidden
+//      ]
+//      interface IUnknownUnrestricted
+//      {
+//                 long QueryInterface([in] long priid, [out,in] long* pvObj);
+//                 long AddRef();
+//                 long Release();
+//      }; 
+
+        
+    [
+        uuid(00000114-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleWindow : IUnknown
+    {
+        HRESULT GetWindow([out,retval] long *phwnd);
+        HRESULT ContextSensitiveHelp([in] long fEnterMode);
+    };
+
+    [
+        uuid(00000118-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleClientSite : IUnknown
+    {
+    };
+
+    [
+        uuid(00000112-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleObject : IUnknown
+    {
+        HRESULT SetClientSite([in] IOleClientSite *pClientSite);
+        HRESULT GetClientSite([out,retval] IOleClientSite **ppClientSite);
+        //Lots more.
+    };
+
+    [
+        uuid(B196B289-BAB4-101A-B69C-00AA00341D07),
+        odl
+    ]
+    interface IOleControlSite : IUnknown
+    {
+        HRESULT OnControlInfoChanged();
+        HRESULT LockInPlaceActive([in] long fLock);
+        HRESULT GetExtendedControl([out,retval] IDispatch** ppDisp);
+        HRESULT TransformCoords([in] StructPtr pPtlHimetric, [in] StructPtr pPtfContainer, [in] long dwFlags);
+        long TranslateAccelerator([in] StructPtr lpmsg, [in] long grfModifiers);
+        HRESULT OnFocus([in] long fGotFocus);
+        HRESULT ShowPropertyFrame();
+    };
+
+    [
+        uuid(00000117-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleInPlaceActiveObject : IOleWindow
+    {
+        long TranslateAccelerator([in] long lpmsg);
+        long OnFrameWindowActivate([in] long fActivate);
+        long OnDocWindowActivate([in] long fActivate);
+        long ResizeBorder([in] StructPtr prcBorder, 
+                          [in] IOleInPlaceUIWindow* pUIWindow,
+                          [in] long fFrameWindow);
+        long EnableModeless([in] long fEnable);
+    };
+
+    [
+        uuid(00000115-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleInPlaceUIWindow : IOleWindow
+    {
+        HRESULT GetBorder([in] StructPtr lprectBorder);
+        HRESULT RequestBorderSpace([in] StructPtr pborderwidths);
+        HRESULT SetBorderSpace([in] StructPtr pborderwidths);
+        HRESULT SetActiveObject([in] IOleInPlaceActiveObject *pActiveObject, [in] LPWSTR pszObjName);
+    };
+
+    [
+        uuid(00000116-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleInPlaceFrame : IOleInPlaceUIWindow
+    {
+        //Not done, placeholder only
+    };
+
+    [
+        uuid(00000119-0000-0000-C000-000000000046),
+        odl
+    ]
+    interface IOleInPlaceSite : IOleWindow
+    {
+        long CanInPlaceActivate();
+        HRESULT OnInPlaceActivate();
+        HRESULT OnUIActivate();
+        HRESULT GetWindowContext([out] IOleInPlaceFrame** ppFrame,
+                                 [out] IOleInPlaceUIWindow** ppDoc,
+                                 [in] StructPtr lprcPosRect,
+                                 [in] StructPtr lprcClipRect,
+                                 [in] StructPtr lpFrameInfo);
+        HRESULT Scroll([in] CURRENCY scrollExtant);
+        HRESULT OnUIDeactivate([in] long fUndoable);
+        HRESULT OnInPlaceDeactivate();
+        HRESULT DiscardUndoState();
+        HRESULT DeactivateAndUndo();
+        HRESULT OnPosRectChange([in] long lprcPosRect);
+    }
+}

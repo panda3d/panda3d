@@ -1,0 +1,182 @@
+SPECIFICATION: Editra Style Sheet
+REVISION: 1.6
+
+PURPOSE: Define the format for writing custom style sheets that allow for the
+         customization of the color scheme used to highlight text in the editor
+         when Syntax Highlighting is enabled.
+
+VERSION INFO: In this initial incarnation the style sheets will only allow you
+              use the "Standard Tags" and "Standard Attributes" all other
+              definitions will be ignored by the parser. There are however
+              plans to make the style sheets extensible in the future to allow
+              for the setting of custom tags and subclassing styles to only
+              apply to a particular lexer. These features will likely be
+              introduced in the version 2 of this specification.
+
+FILE EXTENSION: ess
+
+SYNTAX: The syntax of an Editra Style Sheet is very similar to that of a
+        Cascading Style Sheet (CSS). It uses "tags" followed by the style
+        definition enclosed in {}'s. Attribute keywords are followed by a
+        colon and then the attribute values. A semicolon is used at the end of
+        each attribute definition as a delimiter between definitions. Comments
+        can be specified by placing text in between '/* */'.
+
+BEHAVIOR: The 'default_style' tag must be defined and must define all four of
+          the default attributes (fore, back, face, size). All other tags with
+          undefined values will inherit them from this style definition.
+
+STATEMENT FORMAT:
+
+        tag_name {
+                    attribute1: value;
+                    attribute2: value modifier;
+        }
+
+STYLE GUIDELINES:
+        Although the parser is rather flexible and will allow you to define
+        your entire set of style definitions on one line this is very poor for
+        readability, so the following specifications are suggested.
+
+        Tags should be un-indented and all in lower case. Following the tag
+        should be 1 space and an opening curly bracket '{'. The following
+        line should contain the first attribute definition. This definition
+        should start indented 1-4 spaces past the opening curly bracket and
+        be all in lower case. All following attribute definitions should be
+        on their own line and indented to the same level as first attribute
+        definition. The line immediately following the last attribute definition
+        contains the closing curly bracket '}' which should be unindented and
+        lined up with the beginning of the Tag definition.
+
+STANDARD TAGS:
+        - brace_good: This tag defines the style for highlighting matching braces
+        - brace_bad: This tag defines the style for highlighting unmatched braces
+        - calltip: Style to color calltip windows in
+        - ctrl_char: Style for control characters (Tabs, Spaces, ect...)
+        - line_num: Style of the line numbers in the outer left margin
+        - array_style: Style of arrays (currently used in perl documents)
+        - btick_style: Style of Back Ticks
+        - default_style: Style of all text not styled by other definitions
+        - caret_line: Sets caret line background highlight color
+        - char_style: Style of characters (i.e 'c')
+        - class_style: Style of class defs (i.e def MyClass)
+        - class2_style: Currently unused
+        - clear: Sets foreground to black, background to white
+        - comment_style: Style of code comment blocs
+        - decor_style: Style for decorators
+        - directive_style: Style of directives
+        - dockey_style: Style of documentation keywords
+        - error_style: Style of errors
+        - foldmargin_style: Style of code folding margin and markers
+        - funct_style: Style of Functions
+        - global_style: Style of global variables
+        - guide_style: indentation guide style
+        - here_style: Used to highlight HERE statements
+        - ideol_style: Id End of Line (used in Makefiles)
+        - keyword_style: Style of Primary Keywords
+        - keyword2_style: Style of Secondary/Type Keywords
+        - keyword3_style: Style of extra keywords
+        - keyword4_style: Style of extra/user defined keywords
+        - marker_style: Style for bookmarks/margin markers
+        - number_style: Style of numbers
+        - number2_style: Alternate style for numbers/verbatim defs
+        - operator_style: Style of Operators (i.e + = *)
+        - pre_style: Style of Preprocessor
+        - pre2_style: Alternate Preprocessor style
+        - regex_style: Style of Regular Expressions
+        - scalar_style: Style of Scalar Variables
+        - scalar2_style: Alternate style for Scalar Variables
+        - select_style: Style of text selection background
+        - string_style: Style of Strings (i.e "hello")
+        - stringeol_style: Style of unclosed strings (i.e "hello )
+        - unknown_style: Style of unknown statements
+        - userkw_style: Style for some builins and user defined keywords
+        - whitespace_style: Style of whitespace indicators
+
+STANDARD ATTRIBUTES:
+        - back: Defines the style of the background for the tags text area. The
+                acceptable values are any 6 digit HEX color code (i.e #123456)
+                optionally followed by a modifier (see MODIFIERS).
+        - face: Defines the Font used by a fonts face name. The values accepted
+                by this attribute are either a Face name (i.e Monaco) or a
+                format expression (recommended) (i.e %(mono)s). The use of
+                format expressions is recommended because it will allow your
+                style sheet to work on all platforms, as it will let Editra's
+                Style Manager look up an appropriate/available system font.
+                See FONT KEYS for more information on available format
+                expressions.
+        - fore: Defines the foreground/face color/style of the tags text area.
+                The acceptable values are any 6 digit HEX color code (i.e #123456)
+                optionally followed by a modifier (see MODIFIERS).
+        - size: Defines the Point Size of the font in the tags text area. The
+                acceptable values are any system supported font size (i.e 12)
+                or a format expression (i.e %(size)d). See FONT KEYS for more
+                information on available format expressions.
+        - modifiers: Defines style modifiers 'bold underline italic eol'
+
+FONT KEYS:
+        The listed values below are used in format expressions to define what
+        font is used. To use these keys use the following expression in your
+        face definitions and substitute the 'xxx' with your chosen key.
+
+                Standard Expression: %(xxx)s
+
+        - primary: Users prefered primary font
+        - secondary: Users prefered secondary font
+
+        The next set of values are used in font size format expressions. To
+        use these values replace the 'xxx' in the following expression with
+        the chosen value.
+
+                Standard Expression: %(xxx)d
+
+        - size: The point size of the primary font
+        - size2: The point size of the secondary font
+        - size3: 2 point sizes smaller than "size"
+
+MODIFIERS:
+        These keywords are used to modify style attributes.
+
+        - bold: Makes the text in the tags text area bold
+        - italic: Makes the text in the tags text area italicized
+        - eol: Extends the given attributes style to the end of the line
+        - underline: Enables underlining for a text area
+
+        Modifiers can be either appended to the values defined in a standard
+        attribute or specifed in the _modifiers_ attribute.
+
+SPECIAL TAGS:
+        These tags are part of the standard tags but behave differently than
+        a typical tag. The differences in behavior are mostly transparent but
+        here is an explanation of each.
+
+        - calltip: Only Foreground and Background attributes are used
+        - caret_line: Only Background attribute is used
+        - clear: Used internally any definitions will be ignored
+        - foldmargin_style: Only Foreground and Background attributes are used
+        - marker_style: Only Foreground and Background attributes are used
+        - select_style: When defined only the Background attribute is used. If
+                        this style is not defined then the default system colour
+                        for selection highlight is used in its place.
+        - whitespace_style: Only Foreground and Background attributes are used
+
+EXAMPLES:
+
+        /* Comment about this style */
+        default_style {
+                        fore: #000000;
+                        back: #FFFFFF; /* use a white background */
+                        face: %(primary)s;
+                        size: %(size)d;
+        }
+
+        keyword_style {
+                        fore: #A52B2B bold;
+                        face: Courier;
+                        size: 14;
+        }
+
+        keyword2_style {
+                        fore: #F0F660;
+                        modifiers: italic underline;
+        }

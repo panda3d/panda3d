@@ -1,0 +1,25 @@
+# Syntax Highlighting Test file for YAML
+# Some Comments about this file
+
+---!myDocument
+logEvent:    Hello World
+date:        2007-08-06
+customer:
+    given:   Joe
+    family:  Bazooka
+
+greet:  &id001
+    location: | 
+              In Front of you
+
+greeting:
+    - first: Hello
+      second: World
+
+    - first: Buy my gum
+      second: I give you Comics
+
+specialGreeting:  >
+    This is a text section of a yaml document all
+    the (xxx:) items are identifiers.
+...

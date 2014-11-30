@@ -1,0 +1,185 @@
+/* Editra Style Sheet
+ * Name: BlueMonday
+ * Author: Thomas Keul
+ * License: N/A
+ */
+ 
+default_style {
+           fore:#FFFFFF;
+           back:#233B5A;
+           face:%(primary)s;
+           size:%(size)d;
+}
+
+array_style {
+           fore:#000000;
+}
+
+brace_good {
+           fore:#000000;
+}
+
+btick_style {
+           fore:#000000;
+}
+
+calltip {
+           fore:#000000;
+           back:#FFFFFF;
+}
+
+caret_line {
+        back: #3F6BA5;
+}
+
+char_style {
+           fore:#00B000;
+}
+
+class_style {
+           fore:#FF8040;
+}
+
+class2_style {
+           fore:#000000;
+}
+
+comment_style {
+           fore:#C0C0C0;
+           back:#1E324D;
+}
+
+ctrl_char {
+           fore:#000000;
+}
+
+directive_style {
+           fore:#FF4242;
+}
+
+error_style {
+           fore:#000000;
+}
+
+foldmargin_style {
+           fore:#000000;
+}
+
+funct_style {
+           fore:#FF8000;
+}
+
+global_style {
+           fore:#000000;
+}
+
+here_style {
+           fore:#000000;
+}
+
+ideol_style {
+           fore:#000000;
+}
+
+keyword_style {
+           fore:#F1B411;
+}
+
+keyword2_style {
+           fore:#FF8040;
+}
+
+keyword3_style {
+           fore:#FF8040;
+}
+
+keyword4_style {
+           fore:#FFFF64;
+}
+
+keyword5_style {
+           fore:#19C864;
+}
+
+keyword6_style {
+           fore:#FF8000;
+}
+
+keyword7_style {
+           fore:#FFFF64;
+}
+
+keyword8_style {
+           fore:#FFFF64;
+}
+
+line_num {
+           fore:#000000;
+           back:#C0C0C0;
+           size:8;
+}
+
+margin_style {
+           back:#000000;
+}
+
+marker_style {
+           fore:#000000;
+}
+
+number_style {
+           fore:#00FFFF;
+}
+
+number2_style {
+           fore:#800000;
+}
+
+operator_style {
+           fore:#FFFFFF;
+}
+
+pre_style {
+           fore:#000000;
+}
+
+pre2_style {
+           fore:#000000;
+}
+
+regex_style {
+           fore:#000000;
+}
+
+scalar_style {
+           fore:#FF8000;
+}
+
+scalar2_style {
+           fore:#000000;
+}
+
+select_style {
+           back:#8699C4;
+}
+
+string_style {
+           fore:#00C800;
+}
+
+stringeol_style {
+           fore:#FF00FF;
+}
+
+unknown_style {
+           fore:#000000;
+}
+
+brace_bad {
+           fore:#000000;
+}
+
+dockey_style {
+           fore:#876D92;
+           back:#1E324D;
+}

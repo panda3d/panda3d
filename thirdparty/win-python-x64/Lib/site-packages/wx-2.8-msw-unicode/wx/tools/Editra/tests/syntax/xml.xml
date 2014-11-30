@@ -1,0 +1,20 @@
+<!-- Syntax Highlighting Test File for XML -->
+<!-- Comments are like this -->
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+   <channel>
+	<title>Editra.org</title>
+	<link>http://editra.org/index.php</link>
+	<description>Editra Text Editor</description>
+	<language>en-us</language>
+	<generator>Editra.org</generator>
+	<item>
+ 	   <title>Cleanup Round 2</title>
+ 	   <link>http://editra.org/index.php?artical=helloWorld</link>
+  	   <description>Hello XML</description>
+	   <author>admin@editra.org (cody)</author>
+	   <pubDate>Sat, 11 Nov 2006 17:47:39 -0800</pubDate>
+	   <guid isPermaLink="true">http://editra.org/index.php?artical=helloWorld</guid>
+	</item>
+   </channel>
+</rss>

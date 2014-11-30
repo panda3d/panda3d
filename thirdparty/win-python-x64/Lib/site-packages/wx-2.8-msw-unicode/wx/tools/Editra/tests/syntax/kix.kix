@@ -1,0 +1,27 @@
+; Syntax Highighting test file for KIXtart scripts
+; Some comments about this file
+
+Dim $Type, $S, $J, $R
+
+If KeyExist("HKCU\Software\Hello") = 1
+    $Type = Readtype("HKCU\Software\Hello","World")
+    $R = ReadValue("HKCU\Software\Hello", "World2")
+	     
+     Select 
+         Case $Type = "Reg_Multi_SZ"
+                 $S = Split($R,"|")
+                 $J = Join($S," ")
+         Case $Type = "Reg_SZ"
+                 $J = $R
+         Case 1
+                 @Error = 5
+     EndSelect
+
+    If $J = "HelloWorld"
+         ? "We have a match. The string returned was: " $J
+    Else
+         ? "No match found. The string returned was: " $J
+    EndIf
+Else
+	     Exit 1
+EndIf

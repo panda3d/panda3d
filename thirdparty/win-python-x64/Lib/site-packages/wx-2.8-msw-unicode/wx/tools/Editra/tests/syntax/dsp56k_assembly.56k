@@ -1,0 +1,31 @@
+;*****************************************************************************
+; DSP56K Highlighting Test File
+; Comments look like this
+;*****************************************************************************
+    PAGE    110,60,1,1
+    TABS    4
+;*****************************************************************************
+;   DEFINITIONS & POINTERS
+;*****************************************************************************
+START       EQU     $000100                 ; program start location
+SERIAL      EQU     $2                      ; serial number location
+
+TXD         EQU     $FFFFBC                 ; ESSI0 Transmit Data Register 0
+RXD         EQU     $FFFFB8                 ; ESSI0 Receive Data Register
+SSISR       EQU     $FFFFB7                 ; ESSI0 Status Register
+CRB         EQU     $FFFFB6                 ; ESSI0 Control Register B
+CRA         EQU     $FFFFB5                 ; ESSI0 Control Register A
+PCRC        EQU     $FFFFBF                 ; Port C (ESSI_0) control register
+PCTL        EQU     $FFFFFD                 ; PLL control register
+TXREG       EQU     $FFFF89                 ; external TX register
+RXREG       EQU     $FFFF8A                 ; external RX register
+
+PDRB        EQU     $FFFFC9                 ; Port B (HOST) GPIO data
+PRRB        EQU     $FFFFC8                 ; Port B (HOST) GPIO direction
+PCRB        EQU     $FFFFC4                 ; Port B (HOST) control register
+
+PCRE        EQU     $FFFF9F                 ; Port E (SCI) control register
+PRRE        EQU     $FFFF9E                 ; Port E (SCI) data direction
+PDRE        EQU     $FFFF9D                 ; Port E (SCI) data
+
+

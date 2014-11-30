@@ -1,0 +1,25 @@
+# Syntax Highlighting Test File for Cobra
+# Comments look like this
+
+"""
+DocString
+
+"""
+
+class Hello
+
+    # Class variables
+    var _name as String
+    var _verbosity = 1
+
+    def init(name as String, verbosity as Int)
+        _name = name
+        _verbosity = verbosity
+
+        .define('quit', 'built-in:quit')
+
+    def main is shared
+        print 'Hello, world.'
+
+    def quit
+        _didQuit = true

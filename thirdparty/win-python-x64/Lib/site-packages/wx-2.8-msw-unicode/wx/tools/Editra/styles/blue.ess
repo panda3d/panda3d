@@ -1,0 +1,202 @@
+/* Editra Style Sheet
+ * Name: Blue
+ * Author: Cody Precord <cprecord@editra.org>
+ * License: wxWindows License
+ */
+ 
+default_style {
+        fore:#FFEEDD;
+        back:#000A87;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+array_style {
+        fore:#CC1313;
+}
+
+brace_bad {
+        fore:#000A87;
+        back:#FF0024;
+}
+
+brace_good {
+        fore:#EEFFDD;
+        back:#0093FF;
+}
+
+btick_style {
+        fore:#008AC1;
+}
+
+calltip {
+        fore:#4D4D4D;
+        back:#009FFF;
+}
+
+caret_line {
+        back: #000FD6;
+}
+
+char_style {
+        fore:#00CDCD;
+}
+
+class_style {
+        fore:#F33C33;
+        modifiers: bold;
+}
+
+class2_style {
+        fore:#F33C33;
+}
+
+comment_style {
+        fore:#9B9BA7;
+}
+
+ctrl_char {
+        fore:#000000;
+}
+
+decor_style {
+        fore:#00A709;
+        modifiers: italic;
+}
+
+directive_style {
+        fore:#00FFA2;
+}
+
+dockey_style {
+        fore:#80007B;
+}
+
+error_style {
+        fore:#000A87;
+        back:#FE5252;
+}
+
+foldmargin_style {
+        fore:#FFEEDD;
+}
+
+funct_style {
+        fore:#DF5900;
+        modifiers:italic;
+}
+
+global_style {
+        fore:#00D00F;
+        modifiers:bold;
+}
+
+guide_style {
+        fore: #FFEEDD;
+}
+
+here_style {
+        fore:#ED0088;
+        back:#121A97;
+}
+
+ideol_style {
+        fore:#FFDDEE;
+        back:#00F8FF;
+        modifiers:eol;
+}
+
+keyword_style {
+        fore:#FFCF20;
+}
+
+keyword2_style {
+        fore:#00F639;
+        modifiers:bold;
+}
+
+keyword3_style {
+        fore:#E94F0B;
+}
+
+keyword4_style {
+        fore:#0062AF;
+        modifiers:bold;
+}
+
+line_num {
+        fore:#FFEEDD;
+        back:#242787;
+        size:%(size3)d;
+}
+
+margin_style {
+        fore:#000000;
+        back:#FFFFFF;
+}
+
+marker_style {
+        fore:#000000;
+        back:#FFFFFF;
+}
+
+number_style {
+        fore:#ED0088;
+}
+
+number2_style {
+        fore:#ED0088;
+        modifiers:bold;
+}
+
+operator_style {
+        fore:#FFEEDD;
+        modifiers:bold;
+}
+
+pre_style {
+        fore:#EE5507;
+        modifiers:bold;
+}
+
+pre2_style {
+        fore:#EE5507;
+}
+
+select_style {
+        back:#067B40;
+}
+
+string_style {
+        fore:#00CDCD;
+}
+
+stringeol_style {
+        fore:#000A87;
+        back:#00CDCD;
+        modifiers:bold eol;
+}
+
+regex_style {
+        fore:#00BFFF;
+        back:#000A87;
+        modifiers:italic bold;
+}
+
+scalar_style {
+        fore:#B037FF;
+        modifiers:bold;
+}
+
+scalar2_style {
+        fore:#B037FF;
+}
+
+unknown_style {
+        fore:#000000;
+        back:#FF0000;
+}
+
+whitespace_style {
+        fore: #DDCCBB;
+}

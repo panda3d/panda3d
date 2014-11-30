@@ -1,0 +1,210 @@
+/* Mocha.ess
+ *
+ */
+
+default_style {
+        fore:#BDAE9D;
+        back:#2A211C;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+number2_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+stringeol_style {
+        fore:#FF0000;
+}
+
+caret_line {
+        fore:#CCCCCC;
+        back:#382C25;
+}
+
+error_style {
+        fore:#CD5C5C;
+        back:#333333;
+}
+
+comment_style {
+        fore:#80756A;
+        size:%(size)d;
+        modifiers:italic;
+}
+
+foldmargin_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+keyword_style {
+        fore:#43A8ED;
+}
+
+keyword3_style {
+        fore:#CD5C5C;
+        back:#333333;
+}
+
+guide_style {
+        fore:#665E55;
+        back:#333333;
+}
+
+keyword4_style {
+        fore:#CCCCCC;
+}
+
+ideol_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+array_style {
+        fore:#87CEEB;
+        back:#333333;
+}
+
+global_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+line_num {
+        fore:#80756A;
+        back:#333333;
+}
+
+pre2_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+select_style {
+        fore:#CCCCCC;
+        back:#482C25;
+}
+
+string_style {
+        fore:#049B0A;
+}
+
+class_style {
+        fore:#87CEEB;
+        back:#333333;
+}
+
+ctrl_char {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+marker_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+keyword2_style {
+        fore:#327FB3;
+}
+
+class2_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+operator_style {
+        fore:#8C8175;
+}
+
+unknown_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+calltip {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+scalar_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+char_style {
+        fore:#98FB98;
+        back:#333333;
+}
+
+here_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+regex_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+folder_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+decor_style {
+        fore:#87CEEB;
+        back:#333333;
+}
+
+scalar2_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+funct_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+brace_good {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+pre_style {
+        fore:#AB39F2;
+        modifiers:bold;
+}
+
+directive_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+btick_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+number_style {
+        fore:#44AA43;
+}
+
+margin_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+brace_bad {
+        fore:#CCCCCC;
+        back:#333333;
+}
+
+dockey_style {
+        fore:#CCCCCC;
+        back:#333333;
+}
+

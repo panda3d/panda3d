@@ -1,0 +1,33 @@
+TODO for XRCed with plugins
+===========================
+
+- copy/paste for multiple items
+
++ better help
+
+- undo/redo (op-specific)
+
+- put some default values in tree ctrl etc.
+
+- special (fast) update for some values: pos/size, value/content, sizeritem
+  stuff (?), well, as much as possible
+
++ highlighting with better method
+
+- import XRC files
+
+- selecting object by clicking in test window
+
++ fix DnD highlight for miniframe
+
++ fix integer parameter text edit (not updated)
+
+- panel scroll update after page change with AUI
+
++ test without frame: bind size to main sizer
+
++ test with frame: use Fit
+
+- test with non-top-level: add resizing
+
+- implement templates
