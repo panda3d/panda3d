@@ -1,0 +1,19 @@
+Fri, 23 Aug 2013 22:19:04 +0200
+
+This is libsquish 1.11, downloaded from:
+http://libsquish.googlecode.com/files/squish-1.11.zip
+Compiled in Release mode using the supplied vs9 solution on Windows 7.
+I imported the vs9 solution into Visual Studio 2010 Express.
+
+SSE2 support has been enabled for the x64 build by changing the
+appropriate #define statement in the config.h header file.
+
+For the record, libsquish 1.11 is functionally identical to 1.10, the
+difference being that 1.11 includes Visual Studio solution files.
+
+License is MIT.
+
+~rdb
+
+Addendum: I've also compiled the project in debug mode and added
+squishd.lib to the lib directory.

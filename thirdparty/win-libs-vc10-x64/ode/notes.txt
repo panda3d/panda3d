@@ -1,0 +1,17 @@
+Sun, 25 Aug 2013 15:11:27 +0200
+
+This is ODE 0.12, downloaded from:
+http://downloads.sourceforge.net/project/opende/ODE/0.12/ode-0.12.tar.bz2
+
+Downloaded premake4.exe version 4.3 from:
+http://sourceforge.net/projects/premake/files/Premake/4.3/premake-4.3-windows.zip
+(The version of premake shipped with ODE does not support VS2010)
+
+Run "premake4.exe vs2010" in the build directory to generate the VS2010 solution.
+
+Compiled in ReleaseSingleLib and ReleaseDoubleLib modes using
+Microsoft Visual C++ 2010 Express and Windows SDK 7.1 on Windows 7 x64.
+
+ODE is dual licensed; you may choose between the LGPLv2 or BSD License.
+
+~rdb

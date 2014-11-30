@@ -1,0 +1,40 @@
+Project Name: Editra
+Author: Cody Precord
+Email: cprecord@editra.org
+Licence: wxWindows (see COPYING)
+
+#----------------------------------------------------------------------------#
+
+Info:
+
+#----------------------------------------------------------------------------#
+
+Compatibility:
+It has been tested on the following systems, but it should run on any system
+that supports python and wxpython.
+
+Linux:
+Tested on Gentoo, Suse, and Ubuntu
+Recieves testing when ever my vm doesn't eat my install
+
+Macintosh OS X:
+Primary development is on OS X so it recieves the most direct testing.
+
+Windows XP
+Recieves regression testing for before each release
+
+Dependancies:
+If you wish to run the source code you will need to have the following
+libraries installed.
+
+Required for all systems:
+Python 2.4 and higher ( http://python.org )
+wxPython 2.8 ( http://wxpython.org ) (Unicode version suggested)
+setuptools 0.6 or higher (http://peak.telecommunity.com/DevCenter/setuptools)
+#----------------------------------------------------------------------------#
+
+INSTALLATION:
+
+see INSTALL
+
+#----------------------------------------------------------------------------#

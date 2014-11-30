@@ -1,0 +1,172 @@
+/* File: BlackBoard.ess
+ * Author: Cody Precord
+ * License: wxWidgets
+ */
+
+default_style {
+        fore:#F8F8F8;
+        back:#0C1021;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+array_style {
+        fore:#B86214;
+}
+
+brace_bad {
+        fore:#0000FF;
+        back:#FFFFFF;
+        modifiers:bold;
+}
+
+brace_good {
+        fore:#FF0000;
+        back:#000000;
+        modifiers:bold;
+}
+
+btick_style {
+        fore:#cc33ee;
+        back:#000000;
+}
+
+calltip {
+        back:#1c2131;
+}
+
+caret_line {
+        back:#1a1e2e;
+}
+
+char_style {
+        fore:#E19618;
+}
+
+class_style {
+        fore:#FF0404;
+        modifiers:bold;
+}
+
+class2_style {
+        fore:#FF0404;
+}
+
+comment_style {
+        fore:#626262;
+        modifiers:italic;
+}
+
+decor_style {
+        fore:#C35E21;
+        modifiers:italic;
+}
+
+directive_style {
+        fore:#2DE1CB;
+}
+
+dockey_style {
+        fore:#39EAE1;
+}
+
+error_style {
+        fore:#FE5252;
+}
+
+foldmargin_style {
+        back:#2d3243;
+}
+
+funct_style {
+        fore:#49DE38;
+        modifiers:italic;
+}
+
+global_style {
+        fore:#2F86F0;
+        modifiers:bold;
+}
+
+here_style {
+        fore:#41ce77;
+}
+
+keyword_style {
+        fore:#FBDE2D;
+}
+
+keyword2_style {
+        fore:#4179C5;
+        modifiers:bold;
+}
+
+keyword3_style {
+        fore:#4179C5;
+        modifiers:bold;
+}
+
+keyword4_style {
+        fore:#64DA3D;
+}
+
+line_num {
+        back:#1c2131;
+}
+
+marker_style {
+        fore:#F8F8F8;
+}
+
+number_style {
+        fore:#D8FA3C;
+}
+
+number2_style {
+        fore:#D8Fa3C;
+}
+
+operator_style {
+        fore:#BBBBBB;
+}
+
+pre_style {
+        fore:#27E71D;
+}
+
+pre2_style {
+        fore:#CC33EE;
+}
+
+regex_style {
+        fore:#22eeff;
+        modifiers:italic;
+}
+
+scalar_style {
+        fore:#cc33ee;
+}
+
+scalar2_style {
+        fore:#cc33ee;
+        modifiers:bold;
+}
+
+select_style {
+        back:#142DD6;
+}
+
+string_style {
+        fore:#61CE3C;
+}
+
+stringeol_style {
+        fore:#408080;
+        back:#E0C0E0;
+        modifiers:eol;
+}
+
+unknown_style {
+        fore:#F8F8f8;
+        back:#FF0000;
+}

@@ -1,0 +1,11 @@
+Sun, 25 Aug 2013 13:39:21 +0200
+
+This is ZLib 1.2.8, downloaded from:
+http://zlib.net/zlib128.zip
+Compiled in Release mode using CMake 2.8.11.2, MSVC 2010 Express, WinSDK 7.1.
+
+Don't forget to copy zconf.h!
+
+License is permissive (ZLib license).
+
+~rdb

@@ -1,0 +1,16 @@
+Sun, 25 Aug 2013 14:10:03 +0200
+
+This is libpng 1.6.3, downloaded from:
+http://download.sourceforge.net/libpng/lpng163.zip
+Built in Release mode using CMake 2.8.11.2, MSVC 2010 Express and WinSDK 7.1.
+
+I copied libpng16_static.lib to libpng_static.lib for easier upgrading later.
+
+I pointed ZLIB_INCLUDE_DIR and ZLIB_LIBRARY to the location of the zlib
+thirdparty pcakage.  I disabled PNG_SHARED since we want a static only build.
+
+Don't forget to copy pnglibconf.h from the CMake build directory.
+
+License is permissive, see LICENSE file.
+
+~rdb

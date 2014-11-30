@@ -1,0 +1,21 @@
+//Cg
+//
+
+void vshader(float4 vtx_position : POSITION, 
+             float2 vtx_texcoord0 : TEXCOORD0,
+             uniform float4x4 mat_modelproj,
+	     out float4 l_position : POSITION,
+	     out float2 l_texcoord0 : TEXCOORD0)
+{
+	l_position=mul(mat_modelproj, vtx_position);
+	l_texcoord0=vtx_texcoord0;
+}
+
+void fshader(float2 l_texcoord0 : TEXCOORD0,
+       	     uniform sampler2D tex_0 : TEXUNIT0,
+	     out float4 o_color : COLOR)
+{
+	float4 texColor=tex2D(tex_0, l_texcoord0);
+	o_color=texColor*2*(texColor.w - 0.5);
+}
+

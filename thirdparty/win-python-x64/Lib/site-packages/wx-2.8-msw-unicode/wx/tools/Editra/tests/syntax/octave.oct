@@ -1,0 +1,15 @@
+# Syntax Highlight Test File for Octave
+# Some comments about this file
+
+# HelloWorld in Octave
+printf("Hello World\n")
+
+a = [ 1, 1, 2; 3, 5, 8; 13, 21, 34 ]
+
+function s = plus (varargin)
+  if (nargin==0)
+    s = 0;
+  else
+    s = varargin{1} + plus (varargin{2:nargin});
+  endif
+endfunction

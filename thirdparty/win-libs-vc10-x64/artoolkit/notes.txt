@@ -1,0 +1,13 @@
+Sun, 25 Aug 2013 11:25:01 +0200
+
+This is ARToolKit 2.72.1, downloaded from:
+https://sourceforge.net/projects/artoolkit/files/artoolkit/2.72.1/ARToolKit-2.72.1.tgz
+Compiled in Release mode using Visual Studio 2010 on Windows 7, using the supplied .sln.
+I had to create another build configuration to make it compile for x64.
+I've only built libAR, as that's the only library we use.
+
+Configure.win32.bat must be run first, to generate the AR/config.h header file.
+
+License is GPL.
+
+~rdb

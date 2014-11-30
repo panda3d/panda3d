@@ -1,0 +1,39 @@
+--- Syntax Highlighting Test File for Diff results
+--- Comment Lines are like this
+--- cpp.cpp     2007-06-26 07:14:22.000000000 -0500
++++ hello_diff.cpp      2007-08-06 17:01:47.000000000 -0500
+@@ -2,24 +2,29 @@
+  *
+  */
+ #include<iostream>
+-#include<cstdlib>
+ 
+ using namespace std;
+ 
+ int main(void)
+ {
+-    cout << "\nHello World" << endl;
++    cout << "\nHello World!" << endl;
+     cout << "\nUnclosed String << endl;
+ 
+     // One line comment
+     int a = 0;
+-    
+-    exit(a);
++    cout << add(a, 22) << endl;
+ }
+ 
+-int add(x, y)
++// Add two numbers
++int add(int x, int y)
+ {
+     return x + y;
+ }
+ 
++// Subtract two numbers
++int sub(int x, int y)
++{
++    return x - y;
++}
++
+ // EOF

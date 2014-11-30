@@ -1,0 +1,4 @@
+Here is some plain text to test the editor with highlighting in an in active state. This is rather boring isn't it?
+
+Hello World
+

@@ -1,0 +1,10 @@
+This directory contains contributed Pmw megawidgets.
+
+DirBrowser.py             directory selection dialog
+MCListbox.py              multi-column selectable listbox
+PmwFileDialog.py          file selection dialog
+PmwFullTimeCounter.py     time counter which includes year, month and day
+PmwVerticalGauge.py       a simple gauge indicating a value and a threshold
+TreeBrowser.py            generic hierarchical tree browser
+
+Each file can be executed and will display a demo of its megawidget.

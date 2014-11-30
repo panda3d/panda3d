@@ -1,0 +1,18 @@
+The next line should show some Japanese characters
+こにちは　今晩は
+
+The next lines should show a bunch of other special characters, the description
+of the character is o the left and should be directly followed by the actual
+character to the right of the ':'.
+
+Trademark symbol: ™
+Infinity: ∞
+Bullet: •
+Not Equal: ≠
+Yen Symbol: ¥
+Triangle: ∆
+Greater than equal to: ≥
+Less than equal to: ≤
+Checkmark: √
+Pi: π
+Copyright: ©

@@ -1,0 +1,20 @@
+// Syntax Highlighting test file for Gui4Cli
+// Some Comments about this file
+// Note lexer only works correctly with CRLF eol chars
+
+WINDOW 10 10 180 20 'IconBar'
+    Winattr style clear/topmost/move/remsize/noborder/border/tool
+    winattr background color 200/200/220
+
+// Control
+if $test = 0 
+    cutvar buff cut char $wrapWidth buff2
+else
+    cutvar buff cut char $test buff2
+endif
+
+// Event
+xOnKey F1
+	run :somthing
+    lv add $somthing
+    add

@@ -1,0 +1,174 @@
+/* Editra Style Sheet
+ * Name: Midnight
+ * Author: Cody Precord <cprecord@editra.org>
+ * License: wxWindows License
+ */
+
+default_style {
+        fore: #FFFFFF;
+        back: #000000;
+        face: %(primary)s;
+        size: %(size)d;
+}
+
+array_style {
+        fore: #EE8B02 bold;
+}
+
+brace_good {
+        fore: #FFFFFF;
+        back: #0000FF bold;
+}
+
+brace_bad {
+        back: #FF0000 bold;
+}
+
+btick_style {
+        fore: #8959F6 bold;
+}
+
+calltip { 
+        fore: #FFE200;
+        back: #09026A;
+}
+
+caret_line {
+        back: #262626;
+}
+
+char_style {
+        fore: #FF3AFF;
+}
+
+class_style {
+        fore: #2E8B57 bold;
+}
+
+class2_style {
+        fore: #2E8B57 bold;
+}
+
+ctrl_char {
+        fore: #FFFFFF;
+        back: #000000;
+        face: %(primary)s;
+}
+
+comment_style {
+        fore: #0033CC;
+        face: %(primary)s;
+}
+
+decor_style {
+        fore: #BA0EEA italic;
+        face: %(secondary)s;
+}
+
+directive_style {
+        fore: #0000FF bold;
+}
+
+dockey_style {
+        fore: #00A6FF;
+}
+
+error_style {
+        fore: #FE5252;
+}
+
+funct_style {
+        fore: #008B8B italic;
+}
+
+global_style {
+        fore: #007F7F bold;
+}
+
+guide_style {
+        fore: #F6F6F6;
+}
+
+here_style {
+        fore: #CA61CA bold;
+}
+
+ideol_style {
+        fore: #E0C0E0;
+}
+
+keyword_style {
+        fore: #A52B2B bold;
+}
+
+keyword2_style {
+        fore: #2E8B57 bold;
+}
+
+keyword3_style {
+        fore: #008B8B bold;
+}
+
+keyword4_style {
+        fore: #9D2424;
+}
+
+line_num {
+        size: %(size3)d;
+}
+
+number_style {
+        fore: #DD0101;
+}
+
+number2_style {
+        fore: #DD0101 bold;
+}
+
+operator_style {
+        fore: #FFFFFF bold;
+}
+
+pre_style {
+        fore: #AB39F2 bold;
+}
+
+pre2_style {
+        fore: #AB39F2 bold;
+        back: #101010;
+}
+
+regex_style {
+        fore: #008B8B bold;
+}
+
+scalar_style {
+        fore: #AB37F2 bold;
+}
+
+scalar2_style {
+        fore: #AB37F2;
+}
+
+select_style {
+        back: #03087D;
+}
+
+string_style {
+        fore: #FF3AFF bold;
+}
+
+stringeol_style {
+        fore: #000000 bold;
+        back: #EEC0EE;
+        size: %(size)d eol;
+}
+
+unknown_style {
+        fore: #FFFFFF bold;
+        back: #DD0101 eol;
+}
+
+whitespace_style {
+        fore: #626262;
+}

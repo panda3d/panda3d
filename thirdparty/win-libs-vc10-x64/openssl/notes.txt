@@ -1,0 +1,14 @@
+Sun, 07 Oct 2012 17:49:42 +0200
+
+This is Win64 OpenSSL v1.0.1c, downloaded from:
+http://slproweb.com/download/Win64OpenSSL-1_0_1c.exe
+libpandaeay is copied from lib/VC/static/libeay64MD.lib
+libpandassl is copied from lib/VC/static/ssleay64MD.lib
+
+Note: OpenSSL nowadays has dependencies on gdi32.dll and user32.dll.
+Make sure that these dependencies are added in makepanda when linking to OpenSSL.
+
+OpenSSL is dual licensed, see license.txt for details.
+Patents may apply, see readme.txt or faq.txt for details.
+
+~rdb

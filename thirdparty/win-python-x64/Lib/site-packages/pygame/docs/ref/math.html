@@ -1,0 +1,586 @@
+
+<html>
+<title>math - Pygame Documentation</title>
+<body bgcolor=#aaeebb text=#000000 link=#331111 vlink=#331111>
+
+
+<table cellpadding=0 cellspacing=0 border=0 style='border: 3px solid black;' width='100%'>
+<tr>
+<td bgcolor='#c2fc20' style='padding: 6px;' align=center valign=center><a href='http://www.pygame.org/'><img src='../pygame_tiny.gif' border=0 width=200 height=60></a><br><b>pygame documentation</b></td>
+<td bgcolor='#6aee28' style='border-left: 3px solid black; padding: 6px;' align=center valign=center>
+	||&nbsp;
+	<a href=http://www.pygame.org>Pygame Home</a> &nbsp;||&nbsp;
+	<a href=../index.html>Help Contents</a> &nbsp;||
+	<a href=index.html>Reference Index</a> &nbsp;||
+	<br>&nbsp;<br>
+	
+<a href="camera.html">Camera</a>&nbsp;||&nbsp;
+<a href="cdrom.html">Cdrom</a>&nbsp;||&nbsp;
+<a href="color.html">Color</a>&nbsp;||&nbsp;
+<a href="cursors.html">Cursors</a>&nbsp;||&nbsp;
+<a href="display.html">Display</a>&nbsp;||&nbsp;
+<a href="draw.html">Draw</a>&nbsp;||&nbsp;
+<a href="event.html">Event</a>&nbsp;||&nbsp;
+<a href="examples.html">Examples</a>&nbsp;||&nbsp;
+<a href="font.html">Font</a>&nbsp;||&nbsp;
+<a href="freetype.html">Freetype</a>&nbsp;||&nbsp;
+<a href="gfxdraw.html">Gfxdraw</a>&nbsp;||&nbsp;
+<a href="image.html">Image</a>&nbsp;||&nbsp;
+<a href="joystick.html">Joystick</a>&nbsp;||&nbsp;
+<a href="key.html">Key</a>&nbsp;||&nbsp;
+<a href="locals.html">Locals</a>&nbsp;||&nbsp;
+<a href="mask.html">Mask</a>&nbsp;||&nbsp;
+<a href="math.html">Math</a>&nbsp;||&nbsp;
+<a href="midi.html">Midi</a>&nbsp;||&nbsp;
+<a href="mixer.html">Mixer</a>&nbsp;||&nbsp;
+<a href="mouse.html">Mouse</a>&nbsp;||&nbsp;
+<a href="movie.html">Movie</a>&nbsp;||&nbsp;
+<a href="music.html">Music</a>&nbsp;||&nbsp;
+<a href="overlay.html">Overlay</a>&nbsp;||&nbsp;
+<a href="pixelarray.html">Pixelarray</a>&nbsp;||&nbsp;
+<a href="pixelcopy.html">Pixelcopy</a>&nbsp;||&nbsp;
+<a href="pygame.html">Pygame</a>&nbsp;||&nbsp;
+<a href="rect.html">Rect</a>&nbsp;||&nbsp;
+<a href="scrap.html">Scrap</a>&nbsp;||&nbsp;
+<a href="sndarray.html">Sndarray</a>&nbsp;||&nbsp;
+<a href="sprite.html">Sprite</a>&nbsp;||&nbsp;
+<a href="surface.html">Surface</a>&nbsp;||&nbsp;
+<a href="surfarray.html">Surfarray</a>&nbsp;||&nbsp;
+<a href="tests.html">Tests</a>&nbsp;||&nbsp;
+<a href="time.html">Time</a>&nbsp;||&nbsp;
+<a href="transform.html">Transform</a>
+</td></tr></table>
+<br>
+
+
+<a name="pygame.math">
+<big><b>pygame.math</big></b><br><ul>
+  <i>pygame module for vector classes</i><br>
+<ul><small><table>
+  <tr><td><a href="math.html#pygame.math.enable_swizzling">pygame.math.enable_swizzling</a></td><td> &mdash; globally enables swizzling for vectors.</td></tr>
+  <tr><td><a href="math.html#pygame.math.disable_swizzling">pygame.math.disable_swizzling</a></td><td> &mdash; globally disables swizzling for vectors.</td></tr>
+  <tr><td><a href="math.html#pygame.math.Vector2">pygame.math.Vector2</a></td><td> &mdash; a 2-Dimensional Vector</td></tr>
+  <tr><td><a href="math.html#pygame.math.Vector3">pygame.math.Vector3</a></td><td> &mdash; a 3-Dimensional Vector</td></tr>
+</table></small></ul>
+<p>!!!EXPERIMENTAL!!! Note: This Modul is still in development and the <tt>API</tt> might change. Please report bug and suggestions to pygame-users@seul.org </p>
+<p>The pygame math module currently provides Vector classes in two and three dimensions, Vector2 and Vector3 respectively. </p>
+<p>They support the following numerical operations: vec+vec, vec-vec, vec*number, number*vec, vec/number, vec//number, vec+=vec, vec-=vec, vec*=number, vec/=number, vec//=number. All these operations will be performed elementwise. In addition vec*vec will perform a scalar-product (a.k.a. dot-product). If you want to multiply every element from vector v with every element from vector w you can use the elementwise method: <tt>v.elementwise()</tt> * w </p>
+<p>New in Pygame 1.10 </p>
+<!--COMMENTS:pygame.math--> &nbsp;<br> 
+
+
+<a name="pygame.math.enable_swizzling">
+<big><b>pygame.math.enable_swizzling</big></b><br><ul>
+  <i>globally enables swizzling for vectors.</i><br>
+  <tt>math.enable_swizzling(): return None</tt><br>
+<p>Enables swizzling for all vectors until <tt>disable_swizzling()</tt> is called. By default swizzling is disabled. </p>
+<!--COMMENTS:pygame.math.enable_swizzling--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.math.disable_swizzling">
+<big><b>pygame.math.disable_swizzling</big></b><br><ul>
+  <i>globally disables swizzling for vectors.</i><br>
+  <tt>math.disable_swizzling(): return None</tt><br>
+<p>Disables swizzling for all vectors until <tt>enable_swizzling()</tt> is called. By default swizzling is disabled. </p>
+<!--COMMENTS:pygame.math.disable_swizzling--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.math.Vector2">
+<big><b>pygame.math.Vector2</big></b><br><ul>
+  <i>a 2-Dimensional Vector</i><br>
+  <tt>pygame.math.Vector2(): return Vector2</tt><br>
+  <tt>pygame.math.Vector2(Vector2): return Vector2</tt><br>
+  <tt>pygame.math.Vector2(x, y): return Vector2</tt><br>
+  <tt>pygame.math.Vector2((x, y)): return Vector2</tt><br>
+<ul><small><table>
+  <tr><td><a href="math.html#Vector2.dot">Vector2.dot</a></td><td> &mdash; calculates the dot- or scalar-product with the other vector</td></tr>
+  <tr><td><a href="math.html#Vector2.cross">Vector2.cross</a></td><td> &mdash; calculates the cross- or vector-product</td></tr>
+  <tr><td><a href="math.html#Vector2.length">Vector2.length</a></td><td> &mdash; returns the euclidic length of the vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.length_squared">Vector2.length_squared</a></td><td> &mdash; returns the squared euclidic length of the vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.normalize">Vector2.normalize</a></td><td> &mdash; returns a vector with the same direction but length 1.</td></tr>
+  <tr><td><a href="math.html#Vector2.normalize_ip">Vector2.normalize_ip</a></td><td> &mdash; normalizes the vector in place so that its length is 1.</td></tr>
+  <tr><td><a href="math.html#Vector2.is_normalized">Vector2.is_normalized</a></td><td> &mdash; tests if the vector is normalized i.e. has length == 1.</td></tr>
+  <tr><td><a href="math.html#Vector2.scale_to_length">Vector2.scale_to_length</a></td><td> &mdash; scales the vector to a given length.</td></tr>
+  <tr><td><a href="math.html#Vector2.reflect">Vector2.reflect</a></td><td> &mdash; returns a vector reflected of a given normal.</td></tr>
+  <tr><td><a href="math.html#Vector2.reflect_ip">Vector2.reflect_ip</a></td><td> &mdash; reflect the vector of a given normal in place.</td></tr>
+  <tr><td><a href="math.html#Vector2.distance_to">Vector2.distance_to</a></td><td> &mdash; calculates the euclidic distance to a given vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.distance_squared_to">Vector2.distance_squared_to</a></td><td> &mdash; calculates the squared euclidic distance to a given vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.lerp">Vector2.lerp</a></td><td> &mdash; returns a linear interpolation to the given vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.slerp">Vector2.slerp</a></td><td> &mdash; returns a spherical interpolation to the given vector.</td></tr>
+  <tr><td><a href="math.html#Vector2.elementwise">Vector2.elementwise</a></td><td> &mdash; The next operation will be performed elementwize.</td></tr>
+  <tr><td><a href="math.html#Vector2.rotate">Vector2.rotate</a></td><td> &mdash; rotates a vector by a given angle in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector2.rotate_ip">Vector2.rotate_ip</a></td><td> &mdash; rotates the vector by a given angle in degrees in place.</td></tr>
+  <tr><td><a href="math.html#Vector2.angle_to">Vector2.angle_to</a></td><td> &mdash; calculates the angle to a given vector in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector2.as_polar">Vector2.as_polar</a></td><td> &mdash; returns a tuple with radial distance and azimuthal angle.</td></tr>
+  <tr><td><a href="math.html#Vector2.from_polar">Vector2.from_polar</a></td><td> &mdash; Sets x and y from a polar coordinates tuple.</td></tr>
+</table></small></ul>
+<p>Some general information about the Vector2 class. </p>
+<!--COMMENTS:pygame.math.Vector2--> &nbsp;<br> 
+
+
+<a name="Vector2.dot">
+<big><b>Vector2.dot</big></b><br><ul>
+  <i>calculates the dot- or scalar-product with the other vector</i><br>
+  <tt>Vector2.dot(Vector2): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector2.dot--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.cross">
+<big><b>Vector2.cross</big></b><br><ul>
+  <i>calculates the cross- or vector-product</i><br>
+  <tt>Vector2.cross(Vector2): return float</tt><br>
+<p>calculates the third component of the cross-product. </p>
+<!--COMMENTS:Vector2.cross--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.length">
+<big><b>Vector2.length</big></b><br><ul>
+  <i>returns the euclidic length of the vector.</i><br>
+  <tt>Vector2.length(): return float</tt><br>
+<p>calculates the euclidic length of the vector which follows from the Pythagorean theorem: <tt>vec.length()</tt> == <tt>math.sqrt(vec.x**2 + vec.y**2)</tt> </p>
+<!--COMMENTS:Vector2.length--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.length_squared">
+<big><b>Vector2.length_squared</big></b><br><ul>
+  <i>returns the squared euclidic length of the vector.</i><br>
+  <tt>Vector2.length_squared(): return float</tt><br>
+<p>calculates the euclidic length of the vector which follows from the Pythagorean theorem: <tt>vec.length_squared()</tt> == vec.x**2 + vec.y**2 This is faster than <tt>vec.length()</tt> because it avoids the square root. </p>
+<!--COMMENTS:Vector2.length_squared--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.normalize">
+<big><b>Vector2.normalize</big></b><br><ul>
+  <i>returns a vector with the same direction but length 1.</i><br>
+  <tt>Vector2.normalize(): return Vector2</tt><br>
+<p>Returns a new vector that has length == 1 and the same direction as self. </p>
+<!--COMMENTS:Vector2.normalize--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.normalize_ip">
+<big><b>Vector2.normalize_ip</big></b><br><ul>
+  <i>normalizes the vector in place so that its length is 1.</i><br>
+  <tt>Vector2.normalize_ip(): return None</tt><br>
+<p>Normalizes the vector so that it has length == 1. The direction of the vector is not changed. </p>
+<!--COMMENTS:Vector2.normalize_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.is_normalized">
+<big><b>Vector2.is_normalized</big></b><br><ul>
+  <i>tests if the vector is normalized i.e. has length == 1.</i><br>
+  <tt>Vector2.is_normalized(): return Bool</tt><br>
+<p>Returns True if the vector has length == 1. Otherwise it returns False. </p>
+<!--COMMENTS:Vector2.is_normalized--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.scale_to_length">
+<big><b>Vector2.scale_to_length</big></b><br><ul>
+  <i>scales the vector to a given length.</i><br>
+  <tt>Vector2.scale_to_length(float): return None</tt><br>
+<p>Scales the vector so that it has the given length. The direction of the vector is not changed. You can also scale to length 0. If the vector is the zero vector (i.e. has length 0 thus no direction) an ZeroDivisionError is raised. </p>
+<!--COMMENTS:Vector2.scale_to_length--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.reflect">
+<big><b>Vector2.reflect</big></b><br><ul>
+  <i>returns a vector reflected of a given normal.</i><br>
+  <tt>Vector2.reflect(Vector2): return Vector2</tt><br>
+<p>Returns a new vector that points in the direction as if self would bounce of a surface characterized by the given surface normal. The length of the new vector is the same as self's. </p>
+<!--COMMENTS:Vector2.reflect--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.reflect_ip">
+<big><b>Vector2.reflect_ip</big></b><br><ul>
+  <i>reflect the vector of a given normal in place.</i><br>
+  <tt>Vector2.reflect_ip(Vector2): return None</tt><br>
+<p>Changes the direction of self as if it would have been reflected of a surface with the given surface normal. </p>
+<!--COMMENTS:Vector2.reflect_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.distance_to">
+<big><b>Vector2.distance_to</big></b><br><ul>
+  <i>calculates the euclidic distance to a given vector.</i><br>
+  <tt>Vector2.distance_to(Vector2): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector2.distance_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.distance_squared_to">
+<big><b>Vector2.distance_squared_to</big></b><br><ul>
+  <i>calculates the squared euclidic distance to a given vector.</i><br>
+  <tt>Vector2.distance_squared_to(Vector2): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector2.distance_squared_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.lerp">
+<big><b>Vector2.lerp</big></b><br><ul>
+  <i>returns a linear interpolation to the given vector.</i><br>
+  <tt>Vector2.lerp(Vector2, float): return Vector2</tt><br>
+<p>Returns a Vector which is a linear interpolation between self and the given Vector. The second parameter determines how far between self an other the result is going to be. It must be a value between 0 and 1 where 0 means self an 1 means other will be returned. </p>
+<!--COMMENTS:Vector2.lerp--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.slerp">
+<big><b>Vector2.slerp</big></b><br><ul>
+  <i>returns a spherical interpolation to the given vector.</i><br>
+  <tt>Vector2.slerp(Vector2, float): return Vector2</tt><br>
+<p>Calculates the spherical interpolation from self to the given Vector. The second argument - often called t - must be in the range [-1, 1]. It parametrizes where - in between the two vectors - the result should be. If a negative value is given the interpolation will not take the complement of the shortest path. </p>
+<!--COMMENTS:Vector2.slerp--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.elementwise">
+<big><b>Vector2.elementwise</big></b><br><ul>
+  <i>The next operation will be performed elementwize.</i><br>
+  <tt>Vector2.elementwise(): return VectorElementwizeProxy</tt><br>
+<p>Applies the following operation to each element of the vector. </p>
+<!--COMMENTS:Vector2.elementwise--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.rotate">
+<big><b>Vector2.rotate</big></b><br><ul>
+  <i>rotates a vector by a given angle in degrees.</i><br>
+  <tt>Vector2.rotate(float): return Vector2</tt><br>
+<p>Returns a vector which has the same length as self but is rotated counterclockwise by the given angle in degrees. </p>
+<!--COMMENTS:Vector2.rotate--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.rotate_ip">
+<big><b>Vector2.rotate_ip</big></b><br><ul>
+  <i>rotates the vector by a given angle in degrees in place.</i><br>
+  <tt>Vector2.rotate_ip(float): return None</tt><br>
+<p>Rotates the vector counterclockwise by the given angle in degrees. The length of the vector is not changed. </p>
+<!--COMMENTS:Vector2.rotate_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.angle_to">
+<big><b>Vector2.angle_to</big></b><br><ul>
+  <i>calculates the angle to a given vector in degrees.</i><br>
+  <tt>Vector2.angle_to(Vector2): return float</tt><br>
+<p>Returns the angle between self and the given vector. </p>
+<!--COMMENTS:Vector2.angle_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.as_polar">
+<big><b>Vector2.as_polar</big></b><br><ul>
+  <i>returns a tuple with radial distance and azimuthal angle.</i><br>
+  <tt>Vector2.as_polar(): return (r, phi)</tt><br>
+<p>Returns a tuple (r, phi) where r is the radial distance, and phi is the azimuthal angle. </p>
+<!--COMMENTS:Vector2.as_polar--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector2.from_polar">
+<big><b>Vector2.from_polar</big></b><br><ul>
+  <i>Sets x and y from a polar coordinates tuple.</i><br>
+  <tt>Vector2.from_polar((r, phi)): return None</tt><br>
+<p>Sets x and y from a tuple (r, phi) where r is the radial distance, and phi is the azimuthal angle. </p>
+<!--COMMENTS:Vector2.from_polar--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+
+<a name="pygame.math.Vector3">
+<big><b>pygame.math.Vector3</big></b><br><ul>
+  <i>a 3-Dimensional Vector</i><br>
+  <tt>pygame.math.Vector3(): return Vector3</tt><br>
+  <tt>pygame.math.Vector3(Vector3): return Vector3</tt><br>
+  <tt>pygame.math.Vector3(x, y, z): return Vector3</tt><br>
+  <tt>pygame.math.Vector3((x, y, z)): return Vector3</tt><br>
+<ul><small><table>
+  <tr><td><a href="math.html#Vector3.dot">Vector3.dot</a></td><td> &mdash; calculates the dot- or scalar-product with the other vector</td></tr>
+  <tr><td><a href="math.html#Vector3.cross">Vector3.cross</a></td><td> &mdash; calculates the cross- or vector-product</td></tr>
+  <tr><td><a href="math.html#Vector3.length">Vector3.length</a></td><td> &mdash; returns the euclidic length of the vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.length_squared">Vector3.length_squared</a></td><td> &mdash; returns the squared euclidic length of the vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.normalize">Vector3.normalize</a></td><td> &mdash; returns a vector with the same direction but length 1.</td></tr>
+  <tr><td><a href="math.html#Vector3.normalize_ip">Vector3.normalize_ip</a></td><td> &mdash; normalizes the vector in place so that its length is 1.</td></tr>
+  <tr><td><a href="math.html#Vector3.is_normalized">Vector3.is_normalized</a></td><td> &mdash; tests if the vector is normalized i.e. has length == 1.</td></tr>
+  <tr><td><a href="math.html#Vector3.scale_to_length">Vector3.scale_to_length</a></td><td> &mdash; scales the vector to a given length.</td></tr>
+  <tr><td><a href="math.html#Vector3.reflect">Vector3.reflect</a></td><td> &mdash; returns a vector reflected of a given normal.</td></tr>
+  <tr><td><a href="math.html#Vector3.reflect_ip">Vector3.reflect_ip</a></td><td> &mdash; reflect the vector of a given normal in place.</td></tr>
+  <tr><td><a href="math.html#Vector3.distance_to">Vector3.distance_to</a></td><td> &mdash; calculates the euclidic distance to a given vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.distance_squared_to">Vector3.distance_squared_to</a></td><td> &mdash; calculates the squared euclidic distance to a given vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.lerp">Vector3.lerp</a></td><td> &mdash; returns a linear interpolation to the given vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.slerp">Vector3.slerp</a></td><td> &mdash; returns a spherical interpolation to the given vector.</td></tr>
+  <tr><td><a href="math.html#Vector3.elementwise">Vector3.elementwise</a></td><td> &mdash; The next operation will be performed elementwize.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate">Vector3.rotate</a></td><td> &mdash; rotates a vector by a given angle in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_ip">Vector3.rotate_ip</a></td><td> &mdash; rotates the vector by a given angle in degrees in place.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_x">Vector3.rotate_x</a></td><td> &mdash; rotates a vector around the x-axis by the angle in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_x_ip">Vector3.rotate_x_ip</a></td><td> &mdash; rotates the vector around the x-axis by the angle in degrees in place.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_y">Vector3.rotate_y</a></td><td> &mdash; rotates a vector around the y-axis by the angle in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_y_ip">Vector3.rotate_y_ip</a></td><td> &mdash; rotates the vector around the y-axis by the angle in degrees in place.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_z">Vector3.rotate_z</a></td><td> &mdash; rotates a vector around the z-axis by the angle in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector3.rotate_z_ip">Vector3.rotate_z_ip</a></td><td> &mdash; rotates the vector around the z-axis by the angle in degrees in place.</td></tr>
+  <tr><td><a href="math.html#Vector3.angle_to">Vector3.angle_to</a></td><td> &mdash; calculates the angle to a given vector in degrees.</td></tr>
+  <tr><td><a href="math.html#Vector3.as_spherical">Vector3.as_spherical</a></td><td> &mdash; returns a tuple with radial distance, inclination and azimuthal angle.</td></tr>
+  <tr><td><a href="math.html#Vector3.from_spherical">Vector3.from_spherical</a></td><td> &mdash; Sets x, y and z from a spherical coordinates 3-tuple.</td></tr>
+  <tr><td>None</td><td> &mdash; </td></tr>
+</table></small></ul>
+<p>Some general information about the Vector3 class. </p>
+<!--COMMENTS:pygame.math.Vector3--> &nbsp;<br> 
+
+
+<a name="Vector3.dot">
+<big><b>Vector3.dot</big></b><br><ul>
+  <i>calculates the dot- or scalar-product with the other vector</i><br>
+  <tt>Vector3.dot(Vector3): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector3.dot--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.cross">
+<big><b>Vector3.cross</big></b><br><ul>
+  <i>calculates the cross- or vector-product</i><br>
+  <tt>Vector3.cross(Vector3): return float</tt><br>
+<p>calculates the cross-product. </p>
+<!--COMMENTS:Vector3.cross--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.length">
+<big><b>Vector3.length</big></b><br><ul>
+  <i>returns the euclidic length of the vector.</i><br>
+  <tt>Vector3.length(): return float</tt><br>
+<p>calculates the euclidic length of the vector which follows from the Pythagorean theorem: <tt>vec.length()</tt> == <tt>math.sqrt(vec.x**2 + vec.y**2 + vec.z**2)</tt> </p>
+<!--COMMENTS:Vector3.length--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.length_squared">
+<big><b>Vector3.length_squared</big></b><br><ul>
+  <i>returns the squared euclidic length of the vector.</i><br>
+  <tt>Vector3.length_squared(): return float</tt><br>
+<p>calculates the euclidic length of the vector which follows from the Pythagorean theorem: <tt>vec.length_squared()</tt> == vec.x**2 + vec.y**2 + vec.z**2 This is faster than <tt>vec.length()</tt> because it avoids the square root. </p>
+<!--COMMENTS:Vector3.length_squared--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.normalize">
+<big><b>Vector3.normalize</big></b><br><ul>
+  <i>returns a vector with the same direction but length 1.</i><br>
+  <tt>Vector3.normalize(): return Vector3</tt><br>
+<p>Returns a new vector that has length == 1 and the same direction as self. </p>
+<!--COMMENTS:Vector3.normalize--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.normalize_ip">
+<big><b>Vector3.normalize_ip</big></b><br><ul>
+  <i>normalizes the vector in place so that its length is 1.</i><br>
+  <tt>Vector3.normalize_ip(): return None</tt><br>
+<p>Normalizes the vector so that it has length == 1. The direction of the vector is not changed. </p>
+<!--COMMENTS:Vector3.normalize_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.is_normalized">
+<big><b>Vector3.is_normalized</big></b><br><ul>
+  <i>tests if the vector is normalized i.e. has length == 1.</i><br>
+  <tt>Vector3.is_normalized(): return Bool</tt><br>
+<p>Returns True if the vector has length == 1. Otherwise it returns False. </p>
+<!--COMMENTS:Vector3.is_normalized--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.scale_to_length">
+<big><b>Vector3.scale_to_length</big></b><br><ul>
+  <i>scales the vector to a given length.</i><br>
+  <tt>Vector3.scale_to_length(float): return None</tt><br>
+<p>Scales the vector so that it has the given length. The direction of the vector is not changed. You can also scale to length 0. If the vector is the zero vector (i.e. has length 0 thus no direction) an ZeroDivisionError is raised. </p>
+<!--COMMENTS:Vector3.scale_to_length--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.reflect">
+<big><b>Vector3.reflect</big></b><br><ul>
+  <i>returns a vector reflected of a given normal.</i><br>
+  <tt>Vector3.reflect(Vector3): return Vector3</tt><br>
+<p>Returns a new vector that points in the direction as if self would bounce of a surface characterized by the given surface normal. The length of the new vector is the same as self's. </p>
+<!--COMMENTS:Vector3.reflect--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.reflect_ip">
+<big><b>Vector3.reflect_ip</big></b><br><ul>
+  <i>reflect the vector of a given normal in place.</i><br>
+  <tt>Vector3.reflect_ip(Vector3): return None</tt><br>
+<p>Changes the direction of self as if it would have been reflected of a surface with the given surface normal. </p>
+<!--COMMENTS:Vector3.reflect_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.distance_to">
+<big><b>Vector3.distance_to</big></b><br><ul>
+  <i>calculates the euclidic distance to a given vector.</i><br>
+  <tt>Vector3.distance_to(Vector3): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector3.distance_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.distance_squared_to">
+<big><b>Vector3.distance_squared_to</big></b><br><ul>
+  <i>calculates the squared euclidic distance to a given vector.</i><br>
+  <tt>Vector3.distance_squared_to(Vector3): return float</tt><br>
+ &nbsp;<br> 
+<!--COMMENTS:Vector3.distance_squared_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.lerp">
+<big><b>Vector3.lerp</big></b><br><ul>
+  <i>returns a linear interpolation to the given vector.</i><br>
+  <tt>Vector3.lerp(Vector3, float): return Vector3</tt><br>
+<p>Returns a Vector which is a linear interpolation between self and the given Vector. The second parameter determines how far between self an other the result is going to be. It must be a value between 0 and 1 where 0 means self an 1 means other will be returned. </p>
+<!--COMMENTS:Vector3.lerp--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.slerp">
+<big><b>Vector3.slerp</big></b><br><ul>
+  <i>returns a spherical interpolation to the given vector.</i><br>
+  <tt>Vector3.slerp(Vector3, float): return Vector3</tt><br>
+<p>Calculates the spherical interpolation from self to the given Vector. The second argument - often called t - must be in the range [-1, 1]. It parametrizes where - in between the two vectors - the result should be. If a negative value is given the interpolation will not take the complement of the shortest path. </p>
+<!--COMMENTS:Vector3.slerp--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.elementwise">
+<big><b>Vector3.elementwise</big></b><br><ul>
+  <i>The next operation will be performed elementwize.</i><br>
+  <tt>Vector3.elementwise(): return VectorElementwizeProxy</tt><br>
+<p>Applies the following operation to each element of the vector. </p>
+<!--COMMENTS:Vector3.elementwise--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate">
+<big><b>Vector3.rotate</big></b><br><ul>
+  <i>rotates a vector by a given angle in degrees.</i><br>
+  <tt>Vector3.rotate(Vector3, float): return Vector3</tt><br>
+<p>Returns a vector which has the same length as self but is rotated counterclockwise by the given angle in degrees around the given axis. </p>
+<!--COMMENTS:Vector3.rotate--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_ip">
+<big><b>Vector3.rotate_ip</big></b><br><ul>
+  <i>rotates the vector by a given angle in degrees in place.</i><br>
+  <tt>Vector3.rotate_ip(Vector3, float): return None</tt><br>
+<p>Rotates the vector counterclockwise around the given axis by the given angle in degrees. The length of the vector is not changed. </p>
+<!--COMMENTS:Vector3.rotate_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_x">
+<big><b>Vector3.rotate_x</big></b><br><ul>
+  <i>rotates a vector around the x-axis by the angle in degrees.</i><br>
+  <tt>Vector3.rotate_x(float): return Vector3</tt><br>
+<p>Returns a vector which has the same length as self but is rotated counterclockwise around the x-axis by the given angle in degrees. </p>
+<!--COMMENTS:Vector3.rotate_x--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_x_ip">
+<big><b>Vector3.rotate_x_ip</big></b><br><ul>
+  <i>rotates the vector around the x-axis by the angle in degrees in place.</i><br>
+  <tt>Vector3.rotate_x_ip(float): return None</tt><br>
+<p>Rotates the vector counterclockwise around the x-axis by the given angle in degrees. The length of the vector is not changed. </p>
+<!--COMMENTS:Vector3.rotate_x_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_y">
+<big><b>Vector3.rotate_y</big></b><br><ul>
+  <i>rotates a vector around the y-axis by the angle in degrees.</i><br>
+  <tt>Vector3.rotate_y(float): return Vector3</tt><br>
+<p>Returns a vector which has the same length as self but is rotated counterclockwise around the y-axis by the given angle in degrees. </p>
+<!--COMMENTS:Vector3.rotate_y--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_y_ip">
+<big><b>Vector3.rotate_y_ip</big></b><br><ul>
+  <i>rotates the vector around the y-axis by the angle in degrees in place.</i><br>
+  <tt>Vector3.rotate_y_ip(float): return None</tt><br>
+<p>Rotates the vector counterclockwise around the y-axis by the given angle in degrees. The length of the vector is not changed. </p>
+<!--COMMENTS:Vector3.rotate_y_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_z">
+<big><b>Vector3.rotate_z</big></b><br><ul>
+  <i>rotates a vector around the z-axis by the angle in degrees.</i><br>
+  <tt>Vector3.rotate_z(float): return Vector3</tt><br>
+<p>Returns a vector which has the same length as self but is rotated counterclockwise around the z-axis by the given angle in degrees. </p>
+<!--COMMENTS:Vector3.rotate_z--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.rotate_z_ip">
+<big><b>Vector3.rotate_z_ip</big></b><br><ul>
+  <i>rotates the vector around the z-axis by the angle in degrees in place.</i><br>
+  <tt>Vector3.rotate_z_ip(float): return None</tt><br>
+<p>Rotates the vector counterclockwise around the z-axis by the given angle in degrees. The length of the vector is not changed. </p>
+<!--COMMENTS:Vector3.rotate_z_ip--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.angle_to">
+<big><b>Vector3.angle_to</big></b><br><ul>
+  <i>calculates the angle to a given vector in degrees.</i><br>
+  <tt>Vector3.angle_to(Vector3): return float</tt><br>
+<p>Returns the angle between self and the given vector. </p>
+<!--COMMENTS:Vector3.angle_to--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.as_spherical">
+<big><b>Vector3.as_spherical</big></b><br><ul>
+  <i>returns a tuple with radial distance, inclination and azimuthal angle.</i><br>
+  <tt>Vector3.as_spherical(): return (r, theta, phi)</tt><br>
+<p>Returns a tuple (r, theta, phi) where r is the radial distance, theta is the inclination angle and phi is the azimuthal angle. </p>
+<!--COMMENTS:Vector3.as_spherical--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="Vector3.from_spherical">
+<big><b>Vector3.from_spherical</big></b><br><ul>
+  <i>Sets x, y and z from a spherical coordinates 3-tuple.</i><br>
+  <tt>Vector3.from_spherical((r, theta, phi)): return None</tt><br>
+<p>Sets x, y and z from a tuple (r, theta, phi) where r is the radial distance, theta is the inclination angle and phi is the azimuthal angle. </p>
+<!--COMMENTS:Vector3.from_spherical--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="">
+<big><b></big></b><br><ul>
+ &nbsp;<br> 
+<!--COMMENTS:--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+<br></ul>
+
+</body></html>

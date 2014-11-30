@@ -1,0 +1,18 @@
+This file serves as a scratch place for some ideas about things that are wanted
+in the editor or that would be nice to have. A more formal listing is available
+on the projects issue tracker page http://code.google.com/p/editra/issues/list
+
+This is a partial list of planned features that are yet to be implemented. 
+
+Planned Features:
+
+Core:
+- Full command mode to remove need for mouse interaction (initial basic version to be available after 0.1.78)
+- Builtin help/documentation browser
+- Extensions to current syntax stylesheet language to allow for per language style definitions
+- Runtime loading/unloading of plugins (works for some plugins)
+
+Plugin:
+- Terminal, builtin system shell control (partially implemented osx/gtk)
+- Debugger/Build system front end
+

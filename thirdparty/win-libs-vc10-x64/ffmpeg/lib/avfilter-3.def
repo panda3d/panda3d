@@ -1,0 +1,252 @@
+EXPORTS
+    av_abuffersink_params_alloc
+    av_buffersink_get_buffer_ref
+    av_buffersink_get_frame
+    av_buffersink_get_frame_flags
+    av_buffersink_get_frame_rate
+    av_buffersink_get_samples
+    av_buffersink_params_alloc
+    av_buffersink_poll_frame
+    av_buffersink_read
+    av_buffersink_read_samples
+    av_buffersink_set_frame_size
+    av_buffersrc_add_frame
+    av_buffersrc_add_frame_flags
+    av_buffersrc_add_ref
+    av_buffersrc_buffer
+    av_buffersrc_get_nb_failed_requests
+    av_buffersrc_write_frame
+    av_filter_next
+    avfilter_add_matrix
+    avfilter_af_aconvert DATA
+    avfilter_af_aecho DATA
+    avfilter_af_afade DATA
+    avfilter_af_afifo DATA
+    avfilter_af_aformat DATA
+    avfilter_af_ainterleave DATA
+    avfilter_af_allpass DATA
+    avfilter_af_amerge DATA
+    avfilter_af_amix DATA
+    avfilter_af_anull DATA
+    avfilter_af_apad DATA
+    avfilter_af_aperms DATA
+    avfilter_af_aphaser DATA
+    avfilter_af_aresample DATA
+    avfilter_af_aselect DATA
+    avfilter_af_asendcmd DATA
+    avfilter_af_asetnsamples DATA
+    avfilter_af_asetpts DATA
+    avfilter_af_asetrate DATA
+    avfilter_af_asettb DATA
+    avfilter_af_ashowinfo DATA
+    avfilter_af_asplit DATA
+    avfilter_af_astats DATA
+    avfilter_af_astreamsync DATA
+    avfilter_af_atempo DATA
+    avfilter_af_atrim DATA
+    avfilter_af_bandpass DATA
+    avfilter_af_bandreject DATA
+    avfilter_af_bass DATA
+    avfilter_af_biquad DATA
+    avfilter_af_channelmap DATA
+    avfilter_af_channelsplit DATA
+    avfilter_af_compand DATA
+    avfilter_af_earwax DATA
+    avfilter_af_ebur128 DATA
+    avfilter_af_equalizer DATA
+    avfilter_af_highpass DATA
+    avfilter_af_join DATA
+    avfilter_af_lowpass DATA
+    avfilter_af_pan DATA
+    avfilter_af_silencedetect DATA
+    avfilter_af_treble DATA
+    avfilter_af_volume DATA
+    avfilter_af_volumedetect DATA
+    avfilter_all_channel_layouts DATA
+    avfilter_asink_abuffer DATA
+    avfilter_asink_anullsink DATA
+    avfilter_asink_ffabuffersink DATA
+    avfilter_asrc_abuffer DATA
+    avfilter_asrc_aevalsrc DATA
+    avfilter_asrc_anullsrc DATA
+    avfilter_asrc_sine DATA
+    avfilter_avf_avectorscope DATA
+    avfilter_avf_concat DATA
+    avfilter_avf_showspectrum DATA
+    avfilter_avf_showwaves DATA
+    avfilter_avsrc_amovie DATA
+    avfilter_avsrc_movie DATA
+    avfilter_config_links
+    avfilter_configuration
+    avfilter_copy_buf_props
+    avfilter_copy_buffer_ref_props
+    avfilter_copy_frame_props
+    avfilter_fill_frame_from_audio_buffer_ref
+    avfilter_fill_frame_from_buffer_ref
+    avfilter_fill_frame_from_video_buffer_ref
+    avfilter_free
+    avfilter_get_audio_buffer_ref_from_arrays
+    avfilter_get_audio_buffer_ref_from_arrays_channels
+    avfilter_get_audio_buffer_ref_from_frame
+    avfilter_get_buffer_ref_from_frame
+    avfilter_get_by_name
+    avfilter_get_class
+    avfilter_get_matrix
+    avfilter_get_video_buffer_ref_from_arrays
+    avfilter_get_video_buffer_ref_from_frame
+    avfilter_graph_add_filter
+    avfilter_graph_alloc
+    avfilter_graph_alloc_filter
+    avfilter_graph_config
+    avfilter_graph_create_filter
+    avfilter_graph_dump
+    avfilter_graph_free
+    avfilter_graph_get_filter
+    avfilter_graph_parse
+    avfilter_graph_parse2
+    avfilter_graph_parse_ptr
+    avfilter_graph_queue_command
+    avfilter_graph_request_oldest
+    avfilter_graph_send_command
+    avfilter_graph_set_auto_convert
+    avfilter_init_dict
+    avfilter_init_filter
+    avfilter_init_str
+    avfilter_inout_alloc
+    avfilter_inout_free
+    avfilter_insert_filter
+    avfilter_license
+    avfilter_link
+    avfilter_link_free
+    avfilter_link_get_channels
+    avfilter_link_set_closed
+    avfilter_make_format64_list
+    avfilter_mul_matrix
+    avfilter_next
+    avfilter_open
+    avfilter_pad_count
+    avfilter_pad_get_name
+    avfilter_pad_get_type
+    avfilter_process_command
+    avfilter_ref_buffer
+    avfilter_ref_get_channels
+    avfilter_register
+    avfilter_register_all
+    avfilter_sub_matrix
+    avfilter_transform
+    avfilter_uninit
+    avfilter_unref_buffer
+    avfilter_unref_bufferp
+    avfilter_version
+    avfilter_vf_alphaextract DATA
+    avfilter_vf_alphamerge DATA
+    avfilter_vf_ass DATA
+    avfilter_vf_bbox DATA
+    avfilter_vf_blackdetect DATA
+    avfilter_vf_blackframe DATA
+    avfilter_vf_blend DATA
+    avfilter_vf_boxblur DATA
+    avfilter_vf_colorbalance DATA
+    avfilter_vf_colorchannelmixer DATA
+    avfilter_vf_colormatrix DATA
+    avfilter_vf_copy DATA
+    avfilter_vf_crop DATA
+    avfilter_vf_cropdetect DATA
+    avfilter_vf_curves DATA
+    avfilter_vf_dctdnoiz DATA
+    avfilter_vf_decimate DATA
+    avfilter_vf_delogo DATA
+    avfilter_vf_deshake DATA
+    avfilter_vf_drawbox DATA
+    avfilter_vf_drawgrid DATA
+    avfilter_vf_drawtext DATA
+    avfilter_vf_edgedetect DATA
+    avfilter_vf_extractplanes DATA
+    avfilter_vf_fade DATA
+    avfilter_vf_field DATA
+    avfilter_vf_fieldmatch DATA
+    avfilter_vf_fieldorder DATA
+    avfilter_vf_fifo DATA
+    avfilter_vf_format DATA
+    avfilter_vf_fps DATA
+    avfilter_vf_framestep DATA
+    avfilter_vf_frei0r DATA
+    avfilter_vf_geq DATA
+    avfilter_vf_gradfun DATA
+    avfilter_vf_haldclut DATA
+    avfilter_vf_hflip DATA
+    avfilter_vf_histeq DATA
+    avfilter_vf_histogram DATA
+    avfilter_vf_hqdn3d DATA
+    avfilter_vf_hue DATA
+    avfilter_vf_idet DATA
+    avfilter_vf_il DATA
+    avfilter_vf_interlace DATA
+    avfilter_vf_interleave DATA
+    avfilter_vf_kerndeint DATA
+    avfilter_vf_lut DATA
+    avfilter_vf_lut3d DATA
+    avfilter_vf_lutrgb DATA
+    avfilter_vf_lutyuv DATA
+    avfilter_vf_mcdeint DATA
+    avfilter_vf_mp DATA
+    avfilter_vf_mpdecimate DATA
+    avfilter_vf_negate DATA
+    avfilter_vf_noformat DATA
+    avfilter_vf_noise DATA
+    avfilter_vf_null DATA
+    avfilter_vf_overlay DATA
+    avfilter_vf_owdenoise DATA
+    avfilter_vf_pad DATA
+    avfilter_vf_perms DATA
+    avfilter_vf_perspective DATA
+    avfilter_vf_pixdesctest DATA
+    avfilter_vf_pp DATA
+    avfilter_vf_psnr DATA
+    avfilter_vf_removelogo DATA
+    avfilter_vf_rotate DATA
+    avfilter_vf_sab DATA
+    avfilter_vf_scale DATA
+    avfilter_vf_select DATA
+    avfilter_vf_sendcmd DATA
+    avfilter_vf_separatefields DATA
+    avfilter_vf_setdar DATA
+    avfilter_vf_setfield DATA
+    avfilter_vf_setpts DATA
+    avfilter_vf_setsar DATA
+    avfilter_vf_settb DATA
+    avfilter_vf_showinfo DATA
+    avfilter_vf_smartblur DATA
+    avfilter_vf_split DATA
+    avfilter_vf_spp DATA
+    avfilter_vf_stereo3d DATA
+    avfilter_vf_subtitles DATA
+    avfilter_vf_super2xsai DATA
+    avfilter_vf_swapuv DATA
+    avfilter_vf_telecine DATA
+    avfilter_vf_thumbnail DATA
+    avfilter_vf_tile DATA
+    avfilter_vf_tinterlace DATA
+    avfilter_vf_transpose DATA
+    avfilter_vf_trim DATA
+    avfilter_vf_unsharp DATA
+    avfilter_vf_vflip DATA
+    avfilter_vf_vignette DATA
+    avfilter_vf_yadif DATA
+    avfilter_vsink_buffer DATA
+    avfilter_vsink_ffbuffersink DATA
+    avfilter_vsink_nullsink DATA
+    avfilter_vsrc_buffer DATA
+    avfilter_vsrc_cellauto DATA
+    avfilter_vsrc_color DATA
+    avfilter_vsrc_frei0r_src DATA
+    avfilter_vsrc_haldclutsrc DATA
+    avfilter_vsrc_life DATA
+    avfilter_vsrc_mandelbrot DATA
+    avfilter_vsrc_mptestsrc DATA
+    avfilter_vsrc_nullsrc DATA
+    avfilter_vsrc_rgbtestsrc DATA
+    avfilter_vsrc_smptebars DATA
+    avfilter_vsrc_smptehdbars DATA
+    avfilter_vsrc_testsrc DATA
+    ff_default_query_formats

@@ -1,0 +1,8 @@
+Sun, 07 Oct 2012 17:41:32 +0200
+
+This is Cg Toolkit 3.1.0013 (April 2012), downloaded from:
+http://developer.download.nvidia.com/cg/Cg_3.1/Cg-3.1_April2012_Setup.exe
+
+License is proprietary, see license.txt.
+
+~rdb

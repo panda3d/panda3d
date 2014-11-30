@@ -1,0 +1,66 @@
+// Syntax Highlighting Test File for Ferite
+// Comments are like this
+/** Multiline comments are like this
+ * @summary Documentation keyword
+ * \brief Another Doc keyword
+ */
+
+// Hello World
+uses "console";
+Console.println( "Hello World" );
+Console.println( "Unclosed String
+
+// Types
+number a;
+string b;
+array c;
+
+a = 2;
+b = "2";
+c = [ a, b ];
+
+// Function
+function f( number x ) {
+    if( x > 1 ) {
+        return f( x - 1 ) * 2;
+    }
+    return 1;
+}
+Console.println( f(10) );
+
+// Class
+class A {
+    string value;
+    
+    function constructor() {
+        .value = "Class.A";
+    }
+    
+    function f() {
+        return .value;
+    }
+}
+
+// Some Namespace defs
+namespace A {
+    function f() {
+        return "A.f";
+    }
+}
+
+namespace modifies A {
+    function g() {
+        return "A.g";
+    }
+}
+
+// Protocols
+protocol C {
+    function getX();
+    function getY();
+}
+
+class A implements C {
+    function getX() { return "X"; }
+    function getY() { return "Y"; }
+}

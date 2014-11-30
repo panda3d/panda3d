@@ -1,0 +1,12 @@
+Sat, 05 Oct 2013 11:57:16 +0200
+
+This is FCollada 3.05B.  It is no longer available from its developer's
+site, but I've made the source archive available here:
+https://www.panda3d.org/download/noversion/FCollada_FREE_3.05B.zip
+
+Compiled on Windows 7 using Visual C++ 2010 Express after importing the
+supplied .sln file.  Compiled in "Release" mode.
+
+The license is MIT, see Copright.txt.
+
+~rdb

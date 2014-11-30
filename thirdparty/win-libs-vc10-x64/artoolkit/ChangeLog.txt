@@ -1,0 +1,146 @@
+ARToolKit ChangeLog.
+====================
+
+
+Changes in version 2.72.1 (this release) (2007-02-07).
+------------------------------------------------------
+All platforms:
+- Bug fix: Removed VRML backgrounds which were still showing when using new OpenVRML-0.16.3.
+- Bug fix: The bud_B VRML model does not render correctly with OpenVRML-0.16.3 and has been temporarily removed.
+- Enhancement: Debug mode ('d' key) and threshhold adjustment ('+' and '-' keys) are now enabled in all gsub_lite-based examples.
+
+Windows:
+- Bug fix: Fix for issue which made video stream appear white in examples based on the old gsub library.
+- Enhancement: added reading of environment variable ARTOOLKIT_CONFIG for DSVL video capture.
+
+Linux:
+- Bug fix: VideoLinuxV4L should now compile correctly on 64-bit x86 systems.
+
+Mac OS X:
+- Bug fix: A long-standing performance problem in the Mac video library has been addressed, allowing correct and optimal buffering of the video stream.
+- Enhancement: ARvrml now links to fink-supplied OpenVRML-0.16.3 by default.
+
+
+Changes in version 2.72 (2006-11-20).
+-------------------------------------
+All platforms:
+- New feature: ARToolKit now supports querying of SDK and runtime versions.
+- New feature: There are now right-hand coordinate system versions of the OpenGL projection and modelview matrix functions, named arglCameraFrustumRH and arglCameraViewRH, respectively. These will help when integrating ARToolKit into existing OpenGL drawing.
+- Enhancement: Support for AR_PIXEL_FORMAT_MONO is now included.
+- Enhancement: gsub_lite now supports arDebug mode.
+- Enhancement: ARvrml now builds against OpenVRML-0.16.1.
+- Enhancement: The license model is now stated more clearly in the readme.
+
+Mac OS X:
+- Bug fix: Fix for an error in the VRML library inclusion on Mac OS X.
+- Bug fix: Now detects if running emulated on Intel Macs, and optimises video for this case.
+- Enhancement: Two new video config tokens are now available; -fliph and -flipv, which will mirror the video image horizontally and vertically respectively.
+
+Linux:
+- New feature: Support for gstreamer video capture added, thanks to Hartmut Seichter.
+- Enhancement: Major changes to Video1394DC- add PointGray DragonFly support, add LGPL/GPL license info, better config string support, stabilised interfaces, lots of clean ups to make the code easier to work with.
+- Bug fix: Using PAL in VideoLinuxDV as reported at http://www.hitlabnz.org/forum/showthread.php?t=412.
+
+
+Changes in version 2.71.3 (2006-06-19).
+---------------------------------------
+- This release supports Mac OS X on Intel, and builds Universal binaries, with the exception of the VRML projects (since OpenVRML does not yet build on Mac OS X i386).
+- Fixed line endings in MS Visual Studio 6 project files calib_distortion.dsp and calib_camera2.dsp.
+- Fix for a bug in VideoLinuxDV identified by Simon Goodall, where video stream could be incorrectly closed twice (SF 1452403).
+- The Win32 video library now accepts in the config string either the pathname of an XML file, or raw XML. The string is treated as raw XML if the  first 5 characters are "<?xml".
+- The Mac OS X video library won't return a copy of the acquired image if running on an Intel Mac. This is a workaround for a driver issue. It may cause problems and a more robust solution is coming.
+- Fixed a bug in pattern extraction which occured when AR_PATTERN_SIZE_X and AR_PATTERN_SIZE_Y were not equal.
+- Rewrite of mk_patt.c to use gsub_lite.
+- Cleaned up pixel format specification in config.h, borrowing code from gsub_lite.
+- Fix long-standing bug in gsub_lite when drawing to fullscreen windows in drawpixels mode.
+
+
+Changes in version 2.71.2 (2005-10-11).
+---------------------------------------
+- Fixed line endings in MS Visual Studio 6 workspace (.dsw) file.
+
+
+Changes in version 2.71.1 (2005-09-22).
+---------------------------------------
+- Mac OS X XCode builds: An outdated version of the project file slipped into the 2.71 release. This has been corrected.
+- Mac OS X XCode builds: Version 2.1 of XCode is required. The obsolete XCode 2.0 .xcode project file has been removed. Users running on Mac OS X versions prior to 10.4 can still build using the command-line Makefiles.
+- A bug in libARgsub_lite incorrectly restored OpenGL state. Fixed. Also corrected for this fix in simpleLite and twoView examples.
+- Builds of calib_cparam now correctly link against libARgsub_lite.
+
+
+Changes in version 2.71 (2005-09-21).
+-------------------------------------
+- Mac OS X video driver: QuickTime 6.4 is now required by default. (Support for  versions back to 4.0 can be enabled at compile-time if required). 
+- Mac OS X libARgsub and binaries which call it: fix for bug "GLUT Warning: glutInit being called a second time" by moving glutInit to main so that it is called before calling arVideoOpen.
+- Linux V4L video driver: Apply patch by Wayne Piekarski to auto-adjust video resolution.
+- Windows video driver: Uses updated (0.0.8b) DSVideoLib. Building ARToolKit on Windows no longer requires installation of DirectX SDK, or registering of DS filters. It also includes many bug fixes.
+- gsub_lite: Added complete support for runtime specification of pixel format and rectangle/power-of-2 textures.
+- Mac OS X XCode builds now build the examples as bundled applications. The contents of the "Data" directory are copied into the application bundle at build time. The applications can thus be moved from their build locations. The utilities are still (mostly) built as command-line tools.
+- The calibration utilties have been rewritten to use gsub_lite. They should now run much more reliably across different platforms.
+
+
+Changes in version 2.70.1 (2005-03-14).
+---------------------------------------
+- Mac OS X video driver: support added for runtime specification of pixel format.
+- Mac OS X video driver: video input settings are now saved to and restored from preferences.
+- Linux 1394cam video driver: Patch by Henrik Erkkonen to support version 11 of libdc1394.
+
+
+Changes in version 2.70 (2004-12-02).
+-------------------------------------
+- Added libARvrml and simpleVRML example.
+- Turn off texturing in gsub/gsub_lite when argDrawMode/arglDrawmode is AR_DRAW_BY_GL_DRAW_PIXELS.
+- Added examples loadMultiple, demonstrating basic usage.
+- Added examples rangeTest, collideTest, paddleTest, paddleDemo, paddleInteractionTest, demonstrating interaction techniques.
+- Added example twoView, demonstrating input, processing and output from two (or more) cameras.
+- Added utilities  graphicsTest and videoTest, for testing graphics and video without marker recognition.
+- VideoLinuxV4L patch by Uwe Woessner for YUV support (at last!)
+- VideoLinuxV4L patches by Raphael Grasset for improved camera parameter control and compressed jpeg video stream to support Sony Eyetoy camera.
+- VideoLinux1394Cam patch by Wayne Piekarski for improved lib1394 support, including multiple lib1394 versions.
+- Preliminary API documentation by Raphael Grasset.
+- Default DEFAULT_DRAW_MODE changed to AR_DRAW_BY_TEXTURE_MAPPING on Windows.
+
+
+Changes in version 2.69 (2004-11-04).
+-------------------------------------
+- Windows builds still depend on DSVideoLib, but DSVideoLib is no longer included in source-only ARToolKit releases and must be downloaded separately.
+- Fixed bugs identified by Raphael Grasset: typo 'DEFALUT' in config.h.in and arUtil.c, return values in arMultiActivate.c, implementation of arUtilSleep for Win32.
+- Fixed help text in arVideoDispOption for VideoWin32DirectShow.
+- Fixed bug in ar2VideoClose() identified by Joerg Hedrich (http://www.hitl.washington.edu/artoolkit/mail-archive/message-thread-00690-possible-bug-in-libARvid.html).
+- For builds under Visual Studio 6, all projects are now in one workspace (.dsw) file, and builds now go into lib/ and bin/ rather than lib.vc60/ and bin.vc60/.
+- For debug builds under Visual Studio, libraries and binaries now have the character 'd' appended to the name.
+- For builds under Visual Studio 6, all libraries now use multithreaded code generation model.
+- For builds under Apple XCode, creation of config.h is now performed by a script run by the aggregate target 'Configure'.
+- Changed the '_' character in releases to a '-' character to be more compatible with Unix packaging system conventions.
+- Fix bug identified by Alexandre Gillet: arLabelling.c allocates buffer for arImage with maximum dimension 512 pixels.
+
+
+Changes in version 2.68.2.
+--------------------------
+- VideoWin32DirectShow uses DSVideoLib 0.0.4 (was 0.0.3). The samples now correct the vertical orientation of video from DSVideoLib by specifying the "flipV" parameter by default. An alternative is to use the WDM capture settings dialog 'Mirror horizontally' parameter and rotate the camera 180 degrees.
+- Rewrite of Windows AR/video.h interface to follow same scheme for multiple cameras as used on other platforms (i.e. using the ar2Video*() set of functions).
+- All platforms now support the arVideoDispOptions() call, which prints acceptable options for arVideoOpen()'s configuration string to the standard output. New applications using ARToolKit should provide a way for a user to specify a preferred configuration string at runtime (rather than compile time), and to see the output of arVideoDispOptions() so that he or she can learn possible configuration strings.
+- Optimisations in arLabelling.c and arGetCode.c by Thomas Pintaric.
+- gsub libraries compile correctly on platforms with older OpenGL headers. Removed extraneous glPixelStorei(GL_UNPACK_IMAGE_HEIGHT,...) calls.
+- New function arglDispImageStateful() in gsub_lite for special effects.
+- Removed the obsolete graphicsTest example.
+
+
+Changes in version 2.68.1.
+--------------------------
+- Mac video settings dialog can now be disabled by adding "-nodialog" to options string passed to arVideoOpen().
+- Fixed some build bugs.
+
+
+Changes in version 2.68.
+------------------------
+Version 2.65 of ARToolKit incorporated the enhanced Windows video capture library created by Thomas Pintaric (http://www.ims.tuwien.ac.at/~thomas/artoolkit.php). Version 2.68 is based on 2.65f with the following changes:
+- New gsub_lite library designed to allow easier use of ARToolKit in existing applications, plus complete documentation in HTML format in doc/gsub_lite.
+- New high-performance Macintosh video capture library by Philip Lamb.
+- Support throughout the toolkit for three extra pixel formats including two packed-pixel YCbCr types (Mac pixel format codes 'ARGB', '2vuy', 'yuvs'). 
+- Several minor changes for compiler correctness, such as return values from main() and const declarations in some function parameter lists.
+- Fix for bug in arGetTransMat2.c identified by Joerg Stoecklein (http://www.hitl.washington.edu/artoolkit/mail-archive/message-thread-00627--variable--s1--not-initi.html).
+- Fix for bug in VideoLinuxDV/video.c identified by Tobias Laubach (http://www.hitl.washington.edu/artoolkit/mail-archive/message-thread-00626-Segmentation-error---fix.html).
+
+--
+EOF

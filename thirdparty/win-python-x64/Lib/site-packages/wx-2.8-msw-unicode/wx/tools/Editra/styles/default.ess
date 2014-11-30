@@ -1,0 +1,203 @@
+default_style {
+        fore:#000000;
+        back:#FFFFFF;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+margin_style {
+        fore:#FFFFFF;
+        back:#000000;
+}
+
+number2_style {
+        fore:#DD0101;
+        modifiers:bold;
+}
+
+caret_line {
+        back:#D8F8FF;
+}
+
+comment_style {
+        fore:#838383;
+}
+
+foldmargin_style {
+        back:#D1D1D1;
+}
+
+keyword_style {
+        fore:#A52B2B;
+        modifiers:bold;
+}
+
+keyword3_style {
+        fore:#008B8B;
+        modifiers:bold;
+}
+
+guide_style {
+        fore:#838383;
+}
+
+edge_style {
+        fore:#838383;
+}
+
+error_style {
+        fore:#FE5252;
+        face:%(secondary)s;
+        modifiers:bold;
+}
+
+ideol_style {
+        fore:#E0C0E0;
+}
+
+array_style {
+        fore:#EE8B02;
+        modifiers:bold;
+}
+
+global_style {
+        fore:#007F7F;
+        modifiers:bold;
+}
+
+line_num {
+        back:#C0C0C0;
+        size:%(size3)d;
+}
+
+pre2_style {
+        fore:#AB39F2;
+        modifiers:bold;
+}
+
+string_style {
+        fore:#FF3AFF;
+        modifiers:bold;
+}
+
+class_style {
+        fore:#2E8B57;
+        modifiers:bold;
+}
+
+ctrl_char {
+        back:#FFFFFF;
+}
+
+marker_style {
+        back:#FFFFFF;
+}
+
+keyword2_style {
+        fore:#2E8B57;
+        modifiers:bold;
+}
+
+class2_style {
+        fore:#2E8B57;
+        modifiers:bold;
+}
+
+userkw_style {
+        back:#FFFFFF;
+}
+
+char_style {
+        fore:#FF3AFF;
+}
+
+keyword4_style {
+        fore:#9D2424;
+}
+
+unknown_style {
+        fore:#FFFFFF;
+        back:#DD0101;
+        modifiers:bold eol;
+}
+
+btick_style {
+        fore:#8959F6;
+        modifiers:bold;
+}
+
+scalar_style {
+        fore:#AB37F2;
+        modifiers:bold;
+}
+
+operator_style {
+        fore:#000000;
+}
+
+here_style {
+        fore:#CA61CA;
+        modifiers:bold;
+}
+
+regex_style {
+        fore:#008B8B;
+}
+
+stringeol_style {
+        back:#EEC0EE;
+        modifiers:eol bold;
+}
+
+whitespace_style {
+        fore:#838383;
+}
+
+decor_style {
+        fore:#BA0EEA;
+        face:%(secondary)s;
+        modifiers:italic;
+}
+
+scalar2_style {
+        fore:#AB37F2;
+}
+
+funct_style {
+        fore:#008B8B;
+        modifiers:italic;
+}
+
+brace_good {
+        fore:#0000FF;
+        modifiers:bold;
+}
+
+pre_style {
+        fore:#AB39F2;
+        modifiers:bold;
+}
+
+directive_style {
+        fore:#0000FF;
+        modifiers:bold;
+}
+
+calltip {
+        fore:#404040;
+        back:#FFFFB8;
+}
+
+number_style {
+        fore:#DD0101;
+}
+
+brace_bad {
+        fore:#FF0000;
+        modifiers:bold;
+}
+
+dockey_style {
+        fore:#0000FF;
+}
+

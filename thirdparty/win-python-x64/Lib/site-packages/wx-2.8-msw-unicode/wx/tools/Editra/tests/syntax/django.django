@@ -1,0 +1,25 @@
+<!-- Syntax Highlighting Test File for Django -->
+<!-- Comments are like this -->
+
+<!-- base.html -->
+<html>
+    <head>
+        <title>{% block head_title %}mysite.com{% endblock %}</title>
+    </head>
+    <body>
+    </body>
+</html>
+
+<!-- application/model_index.html -->
+{% extends "base.html" %}
+{% block head_title %}{{ object.title|title }} &amp;ndash; {{ block.super }}{% endblock %}
+
+<!-- result, when {{ object.title }} was "My test entry" -->
+<html>
+    <head>
+        <title>My Test Entry &amp;ndash; mysite.com</title>
+    </head>
+    <body>
+        <p class="hello">Hello</p>
+    </body>
+</html>

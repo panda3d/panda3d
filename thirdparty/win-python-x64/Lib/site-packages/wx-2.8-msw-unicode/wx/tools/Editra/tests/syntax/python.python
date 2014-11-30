@@ -1,0 +1,43 @@
+# Syntax Highlight Test File for Python
+# Some Comments about this file
+
+"""
+A test file for checking styles for the python highlighter.
+This is a docstring
+
+"""
+__author__ = "Cody Precord"
+
+# Keyword statement
+import sys
+
+# Function Definition
+def say_hello():
+    """Prints hello world to the console"""
+    print "Hello World"
+    print "unclosed string
+
+# Class Definition
+class Greeting:
+    """A class to represent a greeting"""
+    def __init__(self, language):
+        """initializes the greeting"""
+        self._lang = language
+
+    def __str__(self):
+        """Returns the string representation of the greeting"""
+        if self._lang == "English":
+            return "Hello"
+        elif self._lang == "Spanish":
+            return "Holla"
+        else:
+            return "Sorry I dont know %s" % self._lang
+
+    # Decorator's (python 2.4+)
+    @property
+    def classdocs(self):
+        return '\n'.join([ x.__doc__ for x in dir(self) if hasattr(x, '__doc__')])
+
+if __name__ == '__main__':
+    say_hello()
+    print Greeting('English')

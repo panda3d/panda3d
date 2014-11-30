@@ -1,0 +1,118 @@
+
+Libpng 1.6.3 - July 18, 2013
+
+This is a public release of libpng, intended for use in production codes.
+
+Files available for download:
+
+Source files with LF line endings (for Unix/Linux) and with a
+"configure" script
+
+   libpng-1.6.3.tar.xz (LZMA-compressed, recommended)
+   libpng-1.6.3.tar.gz
+
+Source files with CRLF line endings (for Windows), without the
+"configure" script
+
+   lpng163.7z  (LZMA-compressed, recommended)
+   lpng163.zip
+
+Other information:
+
+   libpng-1.6.3-README.txt
+   libpng-1.6.3-LICENSE.txt
+
+Changes since the last public release (1.6.2):
+
+  Revised stack marking in arm/filter_neon.S and configure.ac.
+  Ensure that NEON filter stuff is completely disabled when switched 'off'.
+    Previously the ARM NEON specific files were still built if the option
+    was switched 'off' as opposed to being explicitly disabled.
+  Test for 'arm*' not just 'arm' in the host_cpu configure variable.
+  Rebuilt the configure scripts.
+  Expanded manual paragraph about writing private chunks, particularly
+    the need to call png_set_keep_unknown_chunks() when writing them.
+  Avoid dereferencing NULL pointer possibly returned from
+     png_create_write_struct() (Andrew Church).
+  Calculate our own zlib windowBits when decoding rather than trusting the
+    CMF bytes in the PNG datastream.
+  Added an option to force maximum window size for inflating, which was
+    the behavior of libpng15 and earlier.
+  Added png-fix-itxt and png-fix-too-far-back to the built programs and
+    removed warnings from the source code and timepng that are revealed as
+    a result.
+  Detect wrong libpng versions linked to png-fix-too-far-back, which currently
+    only works with libpng versions that can be made to reliably fail when
+    the deflate data contains an out-of-window reference.  This means only
+    1.6 and later.
+  Fixed gnu issues: g++ needs a static_cast, gcc 4.4.7 has a broken warning
+    message which it is easier to work round than ignore.
+  Updated contrib/pngminus/pnm2png.c (Paul Stewart):
+    Check for EOF
+    Ignore "#" delimited comments in input file to pnm2png.c.
+    Fixed whitespace handling
+    Added a call to png_set_packing()
+    Initialize dimension values so if sscanf fails at least we have known
+      invalid values.
+  Attempt to detect configuration issues with png-fix-too-far-back, which
+    requires both the correct libpng and the correct zlib to function
+    correctly.
+  Check ZLIB_VERNUM for mismatches, enclose #error in quotes
+  Added information in the documentation about problems with and fixes for
+    the bad CRC and bad iTXt chunk situations.
+  Allow contrib/pngminus/pnm2png.c to compile without WRITE_INVERT and
+    WRITE_PACK supported (writes error message that it can't read P1 or
+  Improved png-fix-too-far-back usage message, added --suffix option.
+  Revised contrib/pngminim/*/makefile to generate pnglibconf.h with the
+    right zlib header files.
+  Separated CPPFLAGS and CFLAGS in contrib/pngminim/*/makefile
+  Removed a redundant test in png_set_IHDR().
+  Added set(CMAKE_CONFIGURATION_TYPES ...) to CMakeLists.txt (Andrew Hundt)
+  Deleted set(CMAKE_BUILD_TYPE) block from CMakeLists.txt
+  Enclose the prototypes for the simplified write API in
+    #ifdef PNG_STDIO_SUPPORTED/#endif
+  Make ARM NEON support work at compile time (not just configure time).
+    This moves the test on __ARM_NEON__ into pngconf.h to avoid issues when
+    using a compiler that compiles for multiple architectures at one time.
+  Removed PNG_FILTER_OPTIMIZATIONS and PNG_ARM_NEON_SUPPORTED from
+    pnglibconf.h, allowing more of the decisions to be made internally
+    (pngpriv.h) during the compile.  Without this, symbol prefixing is broken
+    under certain circumstances on ARM platforms.  Now only the API parts of
+    the optimizations ('check' vs 'api') are exposed in the public header files
+    except that the new setting PNG_ARM_NEON_OPT documents how libpng makes the
+    decision about whether or not to use the optimizations.
+  Protect symbol prefixing against CC/CPPFLAGS/CFLAGS useage.
+    Previous iOS/Xcode fixes for the ARM NEON optimizations moved the test
+    on __ARM_NEON__ from configure time to compile time.  This breaks symbol
+    prefixing because the definition of the special png_init_filter_functions
+    call was hidden at configure time if the relevant compiler arguments are
+    passed in CFLAGS as opposed to CC.  This change attempts to avoid all
+    the confusion that would result by declaring the init function even when
+    it is not used, so that it will always get prefixed.
+  Revised libpng.3 so that "doclifter" can process it.
+  Revised example.c to illustrate use of PNG_DEFAULT_sRGB and PNG_GAMMA_MAC_18
+    as parameters for png_set_gamma().  These have been available since
+    libpng-1.5.4.
+  Renamed contrib/tools/png-fix-too-far-back.c to pngfix.c and revised it
+    to check all compressed chunks known to libpng.
+  Updated documentation to show default behavior of benign errors correctly.
+  Only compile ARM code when PNG_READ_SUPPORTED is defined.
+  Fixed undefined behavior in contrib/tools/pngfix.c and added new strip
+    option. pngfix relied on undefined behavior and even a simple change from
+    gcc to g++ caused it to fail.  The new strip option 'unsafe' has been
+    implemented and is the default if --max is given.  Option names have
+    been clarified, with --strip=transform now stripping the bKGD chunk,
+    which was stripped previously with --strip=unused.
+  Added all documented chunk types to pngpriv.h
+  Unified pngfix.c source with libpng17.
+  Revised manual about changes in iTXt chunk handling made in libpng-1.6.0.
+  Added "/* SAFE */" comments in pngrutil.c and pngrtran.c where warnings
+    may be erroneously issued by code-checking applications.
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net
+(subscription required; visit
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe)
+or to glennrp at users.sourceforge.net
+
+Glenn R-P

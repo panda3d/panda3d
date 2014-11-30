@@ -1,0 +1,141 @@
+
+<html>
+<title>sndarray - Pygame Documentation</title>
+<body bgcolor=#aaeebb text=#000000 link=#331111 vlink=#331111>
+
+
+<table cellpadding=0 cellspacing=0 border=0 style='border: 3px solid black;' width='100%'>
+<tr>
+<td bgcolor='#c2fc20' style='padding: 6px;' align=center valign=center><a href='http://www.pygame.org/'><img src='../pygame_tiny.gif' border=0 width=200 height=60></a><br><b>pygame documentation</b></td>
+<td bgcolor='#6aee28' style='border-left: 3px solid black; padding: 6px;' align=center valign=center>
+	||&nbsp;
+	<a href=http://www.pygame.org>Pygame Home</a> &nbsp;||&nbsp;
+	<a href=../index.html>Help Contents</a> &nbsp;||
+	<a href=index.html>Reference Index</a> &nbsp;||
+	<br>&nbsp;<br>
+	
+<a href="camera.html">Camera</a>&nbsp;||&nbsp;
+<a href="cdrom.html">Cdrom</a>&nbsp;||&nbsp;
+<a href="color.html">Color</a>&nbsp;||&nbsp;
+<a href="cursors.html">Cursors</a>&nbsp;||&nbsp;
+<a href="display.html">Display</a>&nbsp;||&nbsp;
+<a href="draw.html">Draw</a>&nbsp;||&nbsp;
+<a href="event.html">Event</a>&nbsp;||&nbsp;
+<a href="examples.html">Examples</a>&nbsp;||&nbsp;
+<a href="font.html">Font</a>&nbsp;||&nbsp;
+<a href="freetype.html">Freetype</a>&nbsp;||&nbsp;
+<a href="gfxdraw.html">Gfxdraw</a>&nbsp;||&nbsp;
+<a href="image.html">Image</a>&nbsp;||&nbsp;
+<a href="joystick.html">Joystick</a>&nbsp;||&nbsp;
+<a href="key.html">Key</a>&nbsp;||&nbsp;
+<a href="locals.html">Locals</a>&nbsp;||&nbsp;
+<a href="mask.html">Mask</a>&nbsp;||&nbsp;
+<a href="math.html">Math</a>&nbsp;||&nbsp;
+<a href="midi.html">Midi</a>&nbsp;||&nbsp;
+<a href="mixer.html">Mixer</a>&nbsp;||&nbsp;
+<a href="mouse.html">Mouse</a>&nbsp;||&nbsp;
+<a href="movie.html">Movie</a>&nbsp;||&nbsp;
+<a href="music.html">Music</a>&nbsp;||&nbsp;
+<a href="overlay.html">Overlay</a>&nbsp;||&nbsp;
+<a href="pixelarray.html">Pixelarray</a>&nbsp;||&nbsp;
+<a href="pixelcopy.html">Pixelcopy</a>&nbsp;||&nbsp;
+<a href="pygame.html">Pygame</a>&nbsp;||&nbsp;
+<a href="rect.html">Rect</a>&nbsp;||&nbsp;
+<a href="scrap.html">Scrap</a>&nbsp;||&nbsp;
+<a href="sndarray.html">Sndarray</a>&nbsp;||&nbsp;
+<a href="sprite.html">Sprite</a>&nbsp;||&nbsp;
+<a href="surface.html">Surface</a>&nbsp;||&nbsp;
+<a href="surfarray.html">Surfarray</a>&nbsp;||&nbsp;
+<a href="tests.html">Tests</a>&nbsp;||&nbsp;
+<a href="time.html">Time</a>&nbsp;||&nbsp;
+<a href="transform.html">Transform</a>
+</td></tr></table>
+<br>
+
+
+<a name="pygame.sndarray">
+<big><b>pygame.sndarray</big></b><br><ul>
+  <i>pygame module for accessing sound sample data</i><br>
+<ul><small><table>
+  <tr><td><a href="sndarray.html#pygame.sndarray.array">pygame.sndarray.array</a></td><td> &mdash; copy Sound samples into an array</td></tr>
+  <tr><td><a href="sndarray.html#pygame.sndarray.samples">pygame.sndarray.samples</a></td><td> &mdash; reference Sound samples into an array</td></tr>
+  <tr><td><a href="sndarray.html#pygame.sndarray.make_sound">pygame.sndarray.make_sound</a></td><td> &mdash; convert an array into a Sound object</td></tr>
+  <tr><td><a href="sndarray.html#pygame.sndarray.use_arraytype">pygame.sndarray.use_arraytype</a></td><td> &mdash; Sets the array system to be used for sound arrays</td></tr>
+  <tr><td><a href="sndarray.html#pygame.sndarray.get_arraytype">pygame.sndarray.get_arraytype</a></td><td> &mdash; Gets the currently active array type.</td></tr>
+  <tr><td><a href="sndarray.html#pygame.sndarray.get_arraytypes">pygame.sndarray.get_arraytypes</a></td><td> &mdash; Gets the array system types currently supported.</td></tr>
+</table></small></ul>
+<p>Functions to convert between Numeric or numpy arrays and Sound objects. This module will only be available when pygame can use the external numpy or Numeric package. </p>
+<p>Sound data is made of thousands of samples per second, and each sample is the amplitude of the wave at a particular moment in time. For example, in 22-kHz format, element number 5 of the array is the amplitude of the wave after 5/22000 seconds. </p>
+<p>Each sample is an 8-bit or 16-bit integer, depending on the data format. A stereo sound file has two values per sample, while a mono sound file only has one. </p>
+<p>Supported array systems are </p>
+<pre>  numpy
+  numeric (deprecated; to be removed in Pygame 1.9.3.)
+</pre><p>The default will be numpy, if installed. Otherwise, Numeric will be set as default if installed, and a deprecation warning will be issued. If neither numpy nor Numeric are installed, the module will raise an ImportError. </p>
+<p>The array type to use can be changed at runtime using the <tt>use_arraytype()</tt> method, which requires one of the above types as string. </p>
+<p>Note: numpy and Numeric are not completely compatible. Certain array manipulations, which work for one type, might behave differently or even completely break for the other. </p>
+<p>Additionally, in contrast to Numeric numpy can use unsigned 16-bit integers. Sounds with 16-bit data will be treated as unsigned integers, if the sound sample type requests this. Numeric instead always uses signed integers for the representation, which is important to keep in mind, if you use the module's functions and wonder about the values. </p>
+<p>numpy support added in Pygame 1.8 Official Numeric deprecation begins in Pygame 1.9.2. </p>
+<!--COMMENTS:pygame.sndarray--> &nbsp;<br> 
+
+
+<a name="pygame.sndarray.array">
+<big><b>pygame.sndarray.array</big></b><br><ul>
+  <i>copy Sound samples into an array</i><br>
+  <tt>pygame.sndarray.array(Sound): return array</tt><br>
+<p>Creates a new array for the sound data and copies the samples. The array will always be in the format returned from <tt><a href="mixer.html#pygame.mixer.get_init">pygame.mixer.get_init</a></tt>&nbsp;&ndash;<font size=-1>test if the mixer is initialized</font>. </p>
+<!--COMMENTS:pygame.sndarray.array--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sndarray.samples">
+<big><b>pygame.sndarray.samples</big></b><br><ul>
+  <i>reference Sound samples into an array</i><br>
+  <tt>pygame.sndarray.samples(Sound): return array</tt><br>
+<p>Creates a new array that directly references the samples in a Sound object. Modifying the array will change the Sound. The array will always be in the format returned from <tt><a href="mixer.html#pygame.mixer.get_init">pygame.mixer.get_init</a></tt>&nbsp;&ndash;<font size=-1>test if the mixer is initialized</font>. </p>
+<!--COMMENTS:pygame.sndarray.samples--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sndarray.make_sound">
+<big><b>pygame.sndarray.make_sound</big></b><br><ul>
+  <i>convert an array into a Sound object</i><br>
+  <tt>pygame.sndarray.make_sound(array): return Sound</tt><br>
+<p>Create a new playable Sound object from an array. The mixer module must be initialized and the array format must be similar to the mixer audio format. </p>
+<!--COMMENTS:pygame.sndarray.make_sound--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sndarray.use_arraytype">
+<big><b>pygame.sndarray.use_arraytype</big></b><br><ul>
+  <i>Sets the array system to be used for sound arrays</i><br>
+  <tt>pygame.sndarray.use_arraytype (arraytype): return None</tt><br>
+<p>Uses the requested array type for the module functions. Currently supported array types are: </p>
+<pre>  numeric (deprecated; will be removed in Pygame 1.9.3.)
+  numpy
+</pre><p>If the requested type is not available, a ValueError will be raised. </p>
+<p>New in pygame 1.8. </p>
+<!--COMMENTS:pygame.sndarray.use_arraytype--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sndarray.get_arraytype">
+<big><b>pygame.sndarray.get_arraytype</big></b><br><ul>
+  <i>Gets the currently active array type.</i><br>
+  <tt>pygame.sndarray.get_arraytype (): return str</tt><br>
+<p>Returns the currently active array type. This will be a value of the <tt>get_arraytypes()</tt> tuple and indicates which type of array module is used for the array creation. </p>
+<p>New in pygame 1.8 </p>
+<!--COMMENTS:pygame.sndarray.get_arraytype--> &nbsp;<br> 
+<br></ul>
+
+
+<a name="pygame.sndarray.get_arraytypes">
+<big><b>pygame.sndarray.get_arraytypes</big></b><br><ul>
+  <i>Gets the array system types currently supported.</i><br>
+  <tt>pygame.sndarray.get_arraytypes (): return tuple</tt><br>
+<p>Checks, which array systems are available and returns them as a tuple of strings. The values of the tuple can be used directly in the <tt>pygame.sndarray.use_arraytype</tt> () method. If no supported array system could be found, None will be returned. </p>
+<p>New in pygame 1.8. </p>
+<!--COMMENTS:pygame.sndarray.get_arraytypes--> &nbsp;<br> 
+<br></ul>
+<br></ul>
+
+</body></html>

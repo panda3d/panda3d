@@ -1,0 +1,4377 @@
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Types.h : Making the "Need to compile with C++
+		error message more verbose.
+
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Change to make this compile under Visual Studio
+		6.0 submitted by Andrei State.
+	* vrpn_Mouse.C : Same.
+
+2010-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Modified to compile with the latest version
+		of the Intersense library based on comments from Andrew Roth at
+		York University, Toronto based on info from Rand Kmiec at
+		Intersense.
+	* vrpn_Tracker_isense.h : Same.
+
+2010-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (get_log_names):  does not attempt to return
+	names for NULL input parameters.
+	* vrpn_FunctionGenerator.h/c:  uses vrpn_Callback_List.
+
+2010-03-16  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.C:  correctly NULL-terminates decoded
+	script and description strings.
+
+2010-03-08  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.h (vrpn_FunctionGenerator_function_script::getConstScript):
+	  new, const accessor for the script string.
+	* vrpn_FunctionGenerator.C (vrpn_FunctionGenerator_Remote::encode_channel):
+	  encodes the correct, desired channel.  
+
+2010-02-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  a few tweaks and additions, 
+	including:  the ability for servers to keep up with the number
+	of channels they're really using, the ability to copy functions,
+	and some additional, correct const-ing.
+
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added -fPIC option submitted by Sheldon
+		Andrews from McGill to non-Windows builds.  This was
+		important for his 64-bit Java code.
+	* vrpn_DreamCheeky.C : Makes it not try to compile except
+		under Windows, Cygwin, Apple.
+	* vrpn_DreamCheaky.h : Same.
+
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  various bug fixes and additions,
+	mostly involved with sending and receiving channel messages.
+
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting handlers
+	for remote objects.  also, explicitly defined value for the
+	enumeration of error codes.
+
+2009-12-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting capabilities
+	for servers (intended to be used for script malfunctions).
+
+2009-12-29  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added another constructor to
+	vrpn_FunctionGenerator_function_script and removed the pure-virtual
+	specifier from the method generateValues.
+
+2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DreamCheeky.h : Added support for the Dream Cheeky USB
+		roll-up drum kit, which is a HID device.
+	* vrpn_DreamCheeky.C : Same.
+	* CMakeLists.txt : Same.
+	* Makefile : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
+2009-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	All changes here are from Ryan Pavlik.  I'm just adding them in.
+	* CMakeLists.txt : Adds vrpn_Configure.h into developer files.
+	* README.Compiling : Describes building using Cmake.
+	* vrpn_Configure.h : Added note telling about Cmake build/config.
+	* vrpn_Configure.h.cmake_in : Same.
+	* vrpn_HumanInterface.h : Adds default for non-Cmake compilation.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Major version number now 7.25.
+	* vrpn_Connection.C : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improved version from Ryan Pavlik.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed #pragmas calling for linking with the
+		libraries because it breaks things when running Cmake. All
+		app builds will need to explicitly link with VRPN now.
+	* vrpn_Configure.h.cmake_in : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Remove un-needed vrpn_TypeDispatcher.[hC]
+	* vrpn_TypeDispatcher.h : Removed (included in vrpn_Connection.h).
+	* vrpn_TypeDispatcher.C : Removed (included in vrpn_Connection.C).
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Improved version from Ryan Pavlik.  Refactored to make
+		them cleaner and updated them to more modern Cmake usage.  Also
+		added CPack descriptions.
+	* cmake : New directory in support of the above.
+	* FindDirectShow.cmake : Moved to cmake/ subdirectory.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Atmel.C : Added newline at end of file.
+	* vrpn_Configure.h : Commented definition of VRPN_USE_PHANTOM_SERVER.
+	* vrpn_HumanInterface.C : Mac version-agnostic type definition.
+	* vrpn_Nidaq.C : Turns off inclusion of function when USE_NIDAQ not there.
+	* vrpn_Nidaq.h : Same.
+
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Replaced MACOSX with __APPLE__ to make things compile
+		on more Mac platforms.
+	* Findquatlib.cmake : Knows to look one directory up from the present one
+		to find quatlib.
+	* vrpn_Button.C : Patch from Hans Labermont to make it compile under 64-bit
+		Windows.
+
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h:  added VRPN_CALLBACK to the callback type definitions.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added code to compile the DirectShow video
+		server and the gen_rpc tests.
+	* FindDirectShow.cmake : Same.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Picking lint found by a new compiler (const declarations
+		and printf format changes).
+	* vrpn_JoyFly.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_Tracker_Crossbow.C : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Type conversions to remove compiler warnings.
+	* vrpn_Connection.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Removing duplicate entries.
+	* Findquatlib.cmake : To Unix line endings.
+	* time_test.cpp : Compiles under Linux.
+	* vrpn_FunctionGenerator.C : same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Configure.h.cmake_in : Same, plus letting user set things to
+		be compiled in using the Cmake interface.  This needs to be
+		improved -- it overwrites the vrpn_Configure.h file now.
+	* time_test.cpp : Include adjustments to make it compile on Windows.
+	* vrpn_Atmel.C : Make it compile on Windows.
+	* vrpn_Shared.C : Disabled spurious compiler warning on Windows.
+
+2009-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HumanInterface.C : Patch from Bruno Raffin from imag.fr that
+		makes it compile cleanly on macosx.
+
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this compile under Linux using new 0.4 version of
+		libfreespace; patch from Phil Black.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Freespace.h : Same.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changed to always link with the release version
+		of the libfreespace, even in debug mode, to avoid manifes problems.
+	* vrpndll.vcproj : Making vrpn_Freespace.C compile as C++ code in debug
+		mode.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Put in patch from Ian Curington to work
+		with devices that have more than 8 buttons.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Freespace.h : Added code from Phil Black at Hillcrest Labs to
+		run their Freespace devices in VRPN.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Same.
+	* Makefile : Putting the files into the server library.  Still
+		won't compile on anything but Windows.
+
+2009-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_FunctionGenerator.C (register_types):  corrected a typo
+	in the message IDs
+
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		3DConnexion and HID drivers work on MacOSX.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn_HumanInterface.C : Same.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Shared.C : Same.
+
+2009-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_DTrack.C : Changes by Kurt Achatz to enable enhanced
+		timing support and new device support.
+	* vrpn_Tracker_DTrack.h : Same.
+
+2009-09-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h, .C:  removed all the specific functions
+	(sine, degauss, ramp, etc.).  now, there's just a "script" function, 
+	which is interpreted by the server to generate values.  removed 
+	various support facilities  for the specific functions.
+	* added destructor for vrpn_FunctionGenerator_function_script
+
+2009-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Added fix by Chris VanderKnyff to the mouse code on
+		Windows to make it work when there are multiple screens.
+
+2009-08-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed a bug in region decoding when a region less
+		than the whole image was loaded and the repeat count on the
+		pixel output was more than 1.
+
+2009-07-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Isotrak.h : Adds an Isotrak tracker driver
+		submitted by Burno Herbelin from the Sensorama Laboratory
+		at AAlborg University.
+	* vrpn_Tracker_Isotrak.C : Same.
+	* vrpn.dsp : Same.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* Makefile : Same.
+
+2009-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Added a run_auxiliary_logger test program that
+		lets you connect and ask for a log file for some
+		duration.
+	* vrpn.dsw : Same.
+
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Version 07.21 released.
+
+	* vrpn_Connection.C : Changed version number higher so that compiles
+		will be above current release number.
+
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Added deep-copy operator to the callback list
+		class, so that it would work properly with the tracker code.
+	* vrpn_Tracker.h : Added deep-copy operator to the callback list
+		class, so that it would work with the copy-then-delete
+		approach to allocating more handlers in the tracker code.
+
+2009-06-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added fix by Joseph Newman to let this compile
+		under Mac OSX.
+
+2009-06-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Removed a spurious #endif that was left
+		behind from my previous commit.
+
+2009-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Added fix to semaphore code on the mac sent in
+		by Simon Julier.
+	* vrpn.sln : Converted back to correct line endings so it can be
+		opened by Visual Studio.
+
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn.sln:  made the vrpn project depend on quatlib, so quatlib
+	will always be rebuilt when needed.
+	* vrpn_ForceDevice.h:  removed an unnecessary include of quat.h
+
+2009-05-15  Ryan Schubert  <res@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed 16->8 bit transcoding.
+
+2009-04-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		Linux version read all of the messages in the buffer from
+		the device.  Also fixed both Windows and Linux versions
+		to both send all messages found in a buffer, rather than
+		just the last set.  (Not yet tested this second set of
+		fixes).
+
+2009-03-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Tracker.C (ensure_enough_unit2sensors):  initializes
+	the new elements of the new arrays rather than the non-existant
+	elements of the old arrays.
+
+2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Add in vrpn_WiiMote files to server library.
+	* vrpn_WiiMote.C : Define min() before use.
+
+2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Increasing version number after release.
+
+2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Version 07.20 release.
+
+	* vrpn_Connection.C : Moved the connection manager class to the .h file
+		so that FileConnection can access it in its constructor and
+		destructor.
+	* vrpn_Connection.h : Same.
+	* vrpn_FileConnection.C : Adds itself to the list of open connections in
+		constructor and removes itself in destructor, so that multiple
+		devices opening the same file share the same connection.
+	* vrpn_FileConnection.h : Changed parameter name to make it more clear
+		what it does.
+	* vrpn_Tracker.C : Removed spurious ":" that had worked its way into one
+		of the tracker report strings (for acceleration).
+
+2009-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Removed the upper limit on the number of
+		sensors per tracker.  The client now dynamically updates
+		the list to provide sufficient entries until it runs out
+		of memory.
+	* vrpn_Tracker.h : Same.
+
+2009-01-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_WiiMote.C : Fixed a bug that caused the buttons on the
+		Classic controller and Guitar Hero controller to be ignored
+		by the driver.
+
+2009-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Making this work with Cygwin.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn_HumanInterface.C : Same.
+	* vrpn_HumanInterface.h : Same.
+
+2009-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Fixed #defines so that it compiles under Cygwin.
+	* vrpn.vcproj : Removed entry for isense.h (not always present)
+	* vrpndll.vcproj : Same.
+
+2009-01-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_ForceDevice.h : Bug fix sent in by Bruno Raffin, where
+		<quat.h> should have been used but "../quat/qua.h" was.
+
+2008-12-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added a comment about where to find a different
+		library for dxerr8.lib, which has vanished in newer versions of
+		the SDK from Microsoft.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Raised version number after releasing version
+		7.19.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Making it also compile under Windows.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont from Virtual Proteins
+		to light up the 3DConnexion when the server runs.
+	* vrpn_3DConnexion.h : Same.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C : Added fix sent in by Roger Hoang to
+		keep things working with both Fastrak and IS900s with buttons.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_WiiMote.C : Driver for the WiiMote device using the WiiUse
+		library.  Tested under Windows; also supposed to work under
+		Linux.  Handles accelerometers, buttons, and raw IR values.
+		Should handle nunchuck, classic remote, and guitar hero 3
+		attachments (not tested).
+	* vrpn_WiiMote.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpn_Configure.h : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Added rumble test program.
+
+2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_XInputGamepad.C : Chris VanderKnyff's implementation of the Xbox 360
+		game controller.
+	* vrpn_XInputGamepad.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
+2008-10-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Adds some more checks and deletion to make
+		things a bit more stable when connections try to overwrite
+		existing log files.
+
+2008-10-01  Ian Curington <ianc@acm.org>
+	* vrpn_3DConnexion.C/h:
+          Added 3DConnexion Spaceball 5000 device support
+
+2008-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Patch from Ian Curington to get around a
+		GCC 2.3 bug in converting shorts to doubles.
+
+2008-09-05  Ryan Schubert  <res@cs.unc.edu>
+
+	* vrpn_Imager.C : Looked like 16->8 transcoding was never
+		committed.
+
+2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed out a horrible hack where a
+		structure was being packed using memcpy (and a structure
+		with a pointer in it at that) into one where it is
+		explicitly marshalled and unmarshalled to the log files.
+		This fixes a bug where log files generates on 64-bit
+		machines were unreadiable on 32-bit machines and vice-versa.
+	* vrpn_FileConnection.C : Same.
+
+2008-07-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.c : Modified the unsigned 16 decode routine
+		to fix a bug where it was crashing when trying to read
+		from the wrong part of memory.
+
+2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C : Fixed the order of rotations
+		when using the clutch on orientation.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Updating version after release of 7.16.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Removed debug printout.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Added dependencies in quatlib to servers.
+	* vrpn_Connection.C : Fixed a bug in the determination of
+		the machine name where it was being truncated for the
+		case of tcp:// names.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C : Removed a redundant copy from a
+		redundant temporary variable.
+
+2008-06-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Poser.h, .C:  added the capability for remote objects
+	to make relative pose & velocity requests and for servers to
+	receive these requests.
+
+2008-06-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Adding python_vrpn port from Thiebaut Mochel at the
+		University of Strasborg.
+
+2008-05-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.h : Setting clutch name to NULL in the
+		constructor; it was not set before, causing a crash later.
+
+2008-05-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_PhaseSpace.C : Added updates from Lawrence K.
+		at PhaseSpace.
+	* vrpn_Tracker_PhaseSpace.h : Same.
+
+2008-04-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changing comments on when to define the
+		various NATIONAL_INSTRUMENTS flavors.
+	* vrpn.vcproj : Pointing at the new location for NI MX header
+		files.
+	* vrpndll.vrproj : Same.
+
+2008-04-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed a signed vs unsigned copy of characters in the
+		non-unity-stride 8-bit copy function.
+
+2008-04-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.h : Added patch from Mike Weiblen to
+		add SpaceExplorer.
+	* vrpn_3DConnexion.C : Same.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.vcproj : Added Polaris tracker to VS 2005 project.
+	* vrpndll.vcproj : Same.
+	* vrpndll.dsp : Same.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding vrpn_Tracker_NDI_Polaris driver submitted
+		by Sharif Razzaque from InnerOptic.
+	* Makefile : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+	* vrpn_Tracker_NDI_Polaris.h : Same.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_JoyWin32.C : Added another error check submitted by
+		M. Casas Sanchez at Space Application Services in
+		Belgium.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Making it so that specifying a blank
+		NIC name results in opening the default NIC.
+	* vrpn_Connection.C : Same.
+
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Added another optional parameter to the
+		helper version of vrpn_create_server_connection() so
+		that it matches the constructor arguments from the old
+		vrpn_Connection() server constructor to make it easier to
+		port existing servers.
+
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Turned off DIRECTSHOW in the default
+		configuration.
+
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	WARNING: The changes made in this commit require any code that
+		created a vrpn_Connection (server connection) using its
+		constructor to be changed to use the new function
+		vrpn_create_server_connection() instead.  This is required
+		because a base-class constructor cannot create and return
+		an object of a derived class.
+
+	* vrpn_Connection.h : Pulling the IP-specific portions of the
+		vrpn_Connection object into a separate class so that we
+		can add an MPI implementation.
+		- Added another parameter to vrpn_get_connection_by_name
+		to force it to open a new connection even if there was
+		already one there.
+		- Should no longer create a vrpn_Connection directly; either
+		create a specific subclass (vrpn_Connection_IP) or else
+		use the vrpn_create_server_connection() function to make
+		one of arbitrary type.
+		- Made vrpn_Connection_Generic the base type.
+	* vrpn_Connection.C : Same.
+	* vrpn_Mutex.C : Makes an IP-based connection to listen on.
+	* vrpn_ForwarderController.C : Makes an IP-based connection to
+		forward on.
+	* vrpn_FileConnection.C : Modified to use the new base class.
+	* vrpn_Imager_Stream_Buffer.C : Calls vrpn_get_connection_by_name
+		rather than calling base-class constructor.
+	* vrpn_Auxilliary_Logger.C : Same.
+
+2008-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Fixed a bug reported by Patric Schmitz
+		where multiple-report packets from the device were not
+		being treated correctly.
+
+2008-02-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added a configuration entry to enable VRPN
+		to link with a Message-Passing Interface (MPI) library and
+		communicate over it between a group of processes.  This is
+		a fast and low-latency communications mechanism available
+		on clusters.  So far, only the definition is in there; the
+		implementation will be committed in steps as the TCP and UDP
+		parts are teased out of the general Connection object.
+	* vrpn_Connection.h : Teasing the IP-specific (TCP, UDP) portions
+		of the vrpn_Endpoint out into a separate base class.  The
+		basic Connection object has been modified to use the IP
+		version in all cases (it is effectively an IP connection).
+		Next up will be teasing the non-IP-specific parts of the
+		Connection out.
+	* vrpn_Connection.C : Same.
+
+2008-02-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Modified to make the tcp: connection
+		method reconnect after a connection drops (and retry
+		if the initial connection is not made).  Also cleaned
+		up some names.
+	* vrpn_Connection.h : Same.
+
+2007-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changing version number to 7.15 for
+		release.
+
+2007-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Making this compile on the mac by removing
+		a spurious extra if statement left over from a bad
+		patch attempt.  Removing a second deletion of an
+		already-destroyed semaphore.
+
+	* Makefile : Switching mac compiler from gcc to g++.
+
+2007-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Finally tracked down and squashed
+		that horrible bug where the UDP packets would not
+		go on the same interface as the TCP packets sometimes
+		on hosts with multiple interfaces.  Did it by using
+		the same connection for UDP that was established for
+		TCP unless there was an explicit override in the
+		constructor.
+
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Liberty.C : Patch from Michael Adrian that
+		makes this work with more versions of the tracker.
+
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DCOnnexion.C : Patch from Patrick Hartling
+		to make this compile on the Mac.
+	* vrpn_Shared.C : Patch from Patrick Hartling to
+		make this work with the most recent Apple compiler.
+
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making it include the vrpn_Tracker_MotionNode.
+
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added entry for MotionNode Tracker.
+		This compiles under Visual Studio 2005 (not 6.0).
+	* vrpn.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpn_Tracker_MotionNode.C : Vendor-supplied server code.
+	* vrpn_Tracker_MotionNode.h : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+
+2007-11-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed the paths for DirectX and
+		replaced them with instructions for how to put the
+		include and lib directories into the Visual Studio
+		options.
+	* vrpn_Shared.C : Whitespace cleanup
+	* vrpn.sln : Adding required dependency.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Liberty.C : Added patch from Eric Griffith
+		to include control of a stylus.
+	* vrpn_Tracker_Liberty.h : Same.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Included definitions needed to compile with
+		the InterSense library.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Picking some lint.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Made this compile under Linux.
+		Had to add in a structure definition that was not
+		in the system header files.
+	* vrpn_3DConnexion.h : Same.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added code to run with the event
+		interface on non-Windows platforms.  This was sent
+		in by Jan Ciger.
+	* vrpn_3Dconnexion.h : Same.
+	* vrpn_Configure.h : Removed vrpn_USE_HID; this turned
+		into checks for _WIN32 all over the place.
+	* vrpn_HumanInterface.C : Pulling out the non-Windows-
+		specific parts so that all of the acceptor code
+		can be used.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Xkeys.C : Switched to checking for _WIN32 rather than
+		vrpn_USE_HID
+	* vrpn_Xkeys.h : Same.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Joywin32.C : Allows more than two joysticks
+		to be opened.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock.C : Uses 36" rather than 144" as the
+		range when not using the extended-range
+		transmitter.  Fix submitted by Jo Skjermo.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Renamed Auxilliary to Auxiliary.
+		Moved Keyboard_Mouse to Keyboard.
+	* vrpn_Mouse.C : Added required include file.
+
+2007-11-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Moved the serial-mouse button code
+		into the vrpn_Mouse.C file to have all of the
+		mice in one place.
+	* vrpn_Button.h : Same.  Made the MAX_BUTTONS and BUF_SIZE
+		values 256, rather than 100, to support the keyboard
+		class.
+	* vrpn_Mouse.C : Added Windows interface to the class.
+		Changed Windows interface to report mouse position
+		in fraction of screen rather than pixels, so
+		that the Windows and Linux implementations match.
+		Moved the serial mouse-button class into this file
+		so all of the mice are here.
+	* vrpn_Mouse.h : Same.
+	* vrpn_Keyboard.C : Pared-down version of vrpn_KeyMouse
+		that only implements the keyboard portion.
+	* vrpn_Keyboard.h : Same.
+	* vrpn_KeyMouse.C : Removed.
+	* vrpn_KeyMouse.h : Removed.
+	* vrpn_AnalogFly.C : Added a clutch button that causes
+		the differential tracker to only move when the
+		button is pressed and causes an absolute tracker
+		to behave like a mouse, also only moving when the
+		button is down.
+	* vrpn.dsp : Removed vrpn_KeyMouse.  Added vrpn_Keyboard.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
+2007-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Toook out NationalInstruments.
+		Reverted to old version of Microsoft DirectX
+		SDK (let the tug-of-war begin).
+	* vrpn.dsp : Changed name of Auxilliary to Auxiliary.
+	* vrpndll.dsp : Same.
+
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
+2007-10-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Making an fprintf() with the
+		machine IP address work under Linux.
+
+2007-10-11  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_Imager_Stream_Buffer.h/C:  implemented
+	handle_request_logging_status
+	(vrpn_Imager_Stream_Shared_State):  this now keeps around
+	the log-file-name results.  added appropriate memory management
+	for that.  added lots of NULL tests.  added an accessor for
+	log file names, get log file names, which doesn't depend on
+	whether the file names are unqueried.  added comments.
+
+2007-10-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Log.h (vrpn_Log::getName):  new, returns the 
+	  log file name.
+	* vrpn_Connection.h (vrpn_Connection::get_log_names):
+	  returns the names of the local/remote in/out log files.
+	* vrpn_Connection.C:
+	  implementation of vrpn_Connection::get_log_names
+	  and vrpn_Log::getName.
+	* vrpn_Auxilliary_Logger.h/C: added code for a 
+	  "request logging status" message, including an example
+	  in the generic server.
+
+
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpndll.vcproj : Added preprocessor definitions that
+		make VRPN build the files needed to link in the
+		DLL state.
+	* vrpn.sln : Making it come much closer to being able to
+		build DLL.
+	* vrpn_Connection.h : Removed redundant check for #ifdef.
+
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added SpaceMouse code from
+		Lode Vanacken.
+	* vrpn_3DConnexion.h : Same.
+
+2007-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager_Stream_Buffer.C : const casts so that we
+		can delete buffers without the VC 6.0 compiler
+		complaining.
+
+2007-09-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Added the name of the endpoint to
+		the data structure so we get a reasonable error
+		message when connections fail.
+	* vrpn_Connection.h : Whitespace change.
+	* vrpn_Imager_Stream_Buffer.C : Initialized a variable so
+		we don't get a race condition when making logging
+		connections.
+
+2007-09-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Does transcoding for the simple case
+		of an 8-bit input image going to a 16-bit output
+		image by shifting left 8 bits.
+
+2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_GlobalHapticsOrb.C : Removing things that were not
+		needed.  Replacing member variables that start with
+		underscore with those that start with d_.  Code
+		cleaning that should leave the behavior unchanged.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_VPJoystick.h : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_Zaber.h : Same.
+
+2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager_Stream_Buffer.C : Deletes the buffer for
+		each message that has been passed to the initial
+		thread from the real-time thread.  Not doing this
+		caused a massive memory leak.  The comments said
+		to do it but the code didn't.
+
+2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.h : Added friend reference to the imager
+		stream buffer to enable passing values from one
+		thread to the other.
+	* vrpn_Imager_Stream_Buffer.C : Now passes the channel
+		descriptions from the real-time logging thread up
+		to the client-management thread so that it can send
+		correct descriptions when multiple clients connect.
+	* vrpn_Imager_Stream_Buffer.h : Same.
+
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed version number to 7.13
+		for new release.
+
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output.C : Moved some methods from public
+		to protected.  Added a new derived class for the server
+		that calls user-level callbacks when things change.
+		This was needed for MegaWatt Solar's tracker drive.
+	* vrpn_Analog_Output.h : Same.
+	* vrpn_Connection.C : Comment change.
+	* vrpn_Analog.h : Removed blank line.
+
+2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed version number to 7.12
+		(for some reason it was 7.10, even though version
+		7.11 has been out for a while).
+
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Patch from Patrick Hartling for compilation
+		under 64-bit Windows.
+	* vrpn_Tracker_DTrack.h : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_HumanInterface.h : Added carriage return to last line.
+	* vrpn_XKeys.h : Same.
+	* vrpn_3DConnexion.h : Same.
+
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Adding more clarifying comments.
+	* vrpn_Imager.C : Removed line that set throttle drop count
+		to zero when it should not have.
+	* vrpn_Imager_Stream_Buffer.C : Completed the implementation
+		and debugging.
+	* vrpn_Imager_Stream_Buffer.h : Same.
+
+2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Thanks to Chris V's new HID class, I
+		was able to write a driver for the Space Traveler and
+		Space Navigator from 3DConnexion.  These are a $55 and
+		$200 replacement for the Magellans.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.dsw : Added new project from Chris VanderKnyff that
+		prints out the values from a HID device, enabling you
+		to figure out how to write a driver for it.  That's what
+		I used to figure out the bytes from the 3DConnexions.
+
+2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added option to enable compilation
+		of the HID devices (including the Xkeys devices).
+		This will only work on Windows for now.
+	* vrpn_HumanInterface.C : Chris VanderKnyff's implementation
+		of a generic HID device interface for Windows.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Xkeys.C : Chris VanderKnyff's implementation of a
+		driver for four of the X-Keys devices from P.I.
+		Engineering
+	* vrpn_Xkeys.h : Same.
+	* vrpn.dsp : Adding HID and XKeys to project.
+	* vrpn.vcproj : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Added vrpn_Imager_Stream_Buffer.
+	* vrpndll.dsp  : Same.
+
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager_Stream_Buffer.h : Class that provides
+		full-rate logging of a vrpn_Imager stream while
+		forwarding a subset of the stream to a client.
+		This is for the UNC NSRG research group to enable
+		scientists to log microscope video data at full
+		camera rates of 120 frames/second while previewing
+		live during the experiment.  The implementation is
+		not yet complete, but this version has all of the
+		logging and logfile-switching code working with
+		multiple threads so I wanted to check it in before
+		doing the next step.
+	* vrpn_Imager_Stream_Buffer.C : Same.
+	* Makefile : Adding vrpn_Imager_Stream_Buffer class.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn_Imager.h : Comment improvements.
+	* vrpn_Shared.h : Comment fixes.
+
+2007-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXRumblePad.C : Changes by Chris VanderKnyff to
+		make this work correctly on Visual Studio .NET and 6.
+	* vrpn_DirectXRumblePad.h : Same.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Organizing the various projects into folders
+		within the solution to make it easier to figure out
+		what is what.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding the vrpn_Auxilliary_Logger under
+		Linux.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Auxilliary_Logger.h : New class that lets a client
+		request an additional log file to be started on a
+		local or remote server.  Intended for logging on
+		scientific instruments in the UNC NSRG group but
+		there is a generic server for use elsewhere.
+	* vrpn_Auxilliary_Logger.C : Same.
+	* vrpn.dsp : Added to project.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.dsw : Added build project for test program.
+	* vrpn.sln : Same.
+	* vrpn_Analog_Output.h : White space change.
+	* vrpn_Connection.C : Modified the pack_log_description()
+		function to remove the fixed-buffer-length hack that
+		had been in there.  It now allocates a buffer that is
+		large enough and frees it when it is done.
+		Modified code to handle empty-string ("") names for
+		log files meaning "no log file" in addition to
+		NULL pointers.
+		Comment changes.  Fixing error
+		messages to work properly with perror().
+
+2007-07-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Comment and white-space changes.
+		Converting from C-style casts to static_cast<>
+		in several locations.
+
+2007-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : This version compiles and runs under
+		Linux again (removed an &).
+
+2007-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : More fixes to get the atmellib compiling
+		correctly.
+	* vrpn_Share.h : Changes to make this work on the Mac, which
+		uses a different Posix open/close call than Linux.  Also
+		changed to using a semaphore pointer rather than a
+		semaphore under Posix, which requried new and delete.
+		Works under mac and Windows.  Needs to be tested
+		under Linux.
+	* vrpn_Shared.C : Same.
+
+2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.h : Added VRPN_API where needed for the
+		Thread code to compile under DLL linkage.
+
+2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Fixing problems put in when I added the atmellib
+		stuff; it was not making the client library as client-
+		only code any more.
+	* vrpn_Shared.C : Bug fixes in the Semaphore and Thread code.
+		Made the interface to them a bit cleaner (fewer
+		pointers).  Added test routine that make sure the
+		Semaphore and Thread code is working.
+	* vrpn_Shared.h : Same.
+
+2007-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Fixed the thread code to be Posix-compliant,
+		and not specify pthread_t as unsigned long; this makes
+		it work on mac as well as Linux.
+	* vrpn_Shared.h : Same.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXRumblePad.C : This code is broken (Chris
+		V. verified this).  The constructor now reports that
+		it is broken.  Once we get a bug fix, we can let the
+		constructor construct one again.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_DTrack.C : Changed type of a struct so that it
+		has vrpn_ prepended to the name (don't want anything in
+		the library that can be seen globally to have a name that
+		doesn't start with vrpn_ to avoid name-collisions.
+	* vrpn_Tracker_DTrack.h : Same.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_DTrack.C : Patch from Kurt Achatz to build for new
+		version of A.R.T. DTrack, which supports the new Flystick2
+		input device.  The patch was necessary to support the new
+		(additional) DTrack output format called '6df2'; the driver
+		still understands the former output format '6df', so that
+		it can work with any existing DTrack installation too.
+		Note that there was a change how buttons of a 'Flystick'
+		device are sorted; this was done to fit DTrack's standards
+		described in A.R.T. documentation. For backward
+		compatibility the driver uses the old sorting when using
+		the old output format '6df'.
+	* vrpn_Tracker_DTrack.h : Same.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_inertiamouse.h : Removing iostream and std::vector class
+		from the code.  It turns out that the standard template
+		libraries don't work across all platforms VRPN is built
+		upon, which keeps folks from using (linking to) it if it
+		has these references.  Totally horrible, but true; someone
+		had trouble linking as soon as this was added.
+	* vrpn_inertiamouse.C : Same.
+
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : White space, comment, and error message
+		editing.
+	* vrpn_Log.h : Same.
+
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Fixed bug in the recent patch.
+		Updated version number.
+
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Applied patch from Mike Weiblen that
+		doesn't restrict the number of file descriptors to
+		32, but rather uses as many as are needed based
+		on the actual file descriptor being used.
+	* vrpn_Joylin.C : Same.
+	* vrpn_Mouse.C : Fix from Mike Weiblen to code cleanup that
+		I did that broke the Mouse class.
+
+2007-06-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Atmel.C : Making it also compile on Mac Universal.
+	* vrpn_Event.C : Same.
+
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Extra includes to work on non-Windows
+		machines.
+
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Comment fixed.
+	* vrpn_Shared.h : Added vrpn_Semaphore and vrpn_Thread classes
+		based on Hans Weber's classes.  These are to support an
+		upcoming vrpn_Imager_Logger class that will enable full-
+		bandwidth logging while subsetting the images to a
+		client across the network.
+	* vrpn_Shared.C : Same.
+
+2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Updated version number.
+	* Makefile : Adding a number of devices from Bauhaus University Weimar
+		submitted by Jan Springer, including some helper classes
+		used by their code.
+	* vrpn_Atmel.C : Same.
+	* vrpn_Atmel.h : Same.
+	* vrpn_Event.C : Same.
+	* vrpn_Event.h : Same.
+	* vrpn_Event_Analog.C : Same.
+	* vrpn_Event_Analog.h : Same.
+	* vrpn_Event_Mouse.C : Same.
+	* vrpn_Event_Mouse.h : Same.
+	* vrpn_Joylin.C : Adding typecasts to time reads.
+	* vrpn_atmellib.h : Same.
+	* vrpn_atmellib_errno.h : Same.
+	* vrpn_atmellib_helper.h : Same.
+	* vrpn_atmellib_helper.C : Same.
+	* vrpn_atmellib_iobasic.C : Same.
+	* vrpn_atmellib_openclose.C : Same.
+	* vrpn_atmellib_register.C : Same.
+	* vrpn_atmellib_tester.C : Same.
+	* vrpn_interiamouse.C : Same.
+	* vrpn_interiamouse.h : Same.
+
+2007-06-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Attempting to fix some problems with RTS/CTS that
+		came in when we switched to termios serial control in version
+		7 of VRPN.  There was a bug introduced in the Windows clear
+		call that has been fixed.  Trying out a new way to control
+		the RTS/CTS that should work across Linux and Mac platform;
+		hope it works!
+
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed to version 7.07.
+
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding vrpn_DirectXRumblePad driver submitted by
+		Chris VanderKnyff and Jeff Feasel.
+	* vrpndll.dsp : Same.
+	* vrpn.vjproj : Same.
+	* vrpndll.vjproj : Same.
+	* vrpn_DirectXRumblePad.C : Same.
+	* vrpn_DirectXRumblePad.h : Same.
+	* vrpn_BaseClass.C : Added a public "shutup" boolean member that
+		makes an object not print that it cannot connect to its
+		server counterpart when set to "true".  This functionality
+		is deprecated from the start; we need to figure out a good
+		functional interface for this.  Leaving it in so as not to
+		break EVE code while a new version is implemented.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Flock.C : Added the ability to set the hemisphere for the
+		Flock (code from Jeff Feasel).
+	* vrpn_Flock.h : Same.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.vcproj : Making all of the .C files compile with the C++
+		compiler.
+	* vrpndll.vcproj: Adding the Poser_Tek4662 file.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Removed dependencies on vrpn.lib and vrpndll.lib,
+		because they are handled indirectly and through lines in
+		vrpn_Configure.h.
+	* vrpn.dsw : Same.
+	* vrpndll.dsp : Added Poser_Tek4662 source files to the project.
+	* vrpn_Mouse.h : Added VRPN_API to class definition (needed for
+		DLL linkage).
+	* vrpn_Mouse.C : Comment clean-up.
+	* vrpn_Tracker_3DMouse.h : Added VRPN_API to class definition
+		(needed for DLL Linkage).
+	* vrpn_Configure.h : Whitespace changes.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding patch submitted by Patrick Hartling from
+		Infiscape.com for making this compile on MacOSX
+		to create universal binaries.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Fixing the path to the PhaseSpace libraries.
+
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding PhaseSpace driver submitted by
+		Lawrence Kwan.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn_Configure.h : Fixing the path to the include files.
+
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Compiles with PhaseSpace driver submitted by
+		Lawrence Kwan.
+	* vrpn.vcproj : Same.
+	* vrpn_Tracker_PhaseSpace.h : Same.
+	* vrpn_Tracker_PhaseSpace.C : Same.
+
+2007-05-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : It was building the release configuration as
+		Debug for some reason.  So changed that.
+
+2007-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Made the joystick report at the
+		requested rate, whether or not there have been changes
+		to its analog values.
+
+2007-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Uncommenting the lines that make sure
+		not to send force commands or read values at a rate greater
+		than was asked for.  No idea why these had been commented
+		out, but it broke the case where you opened a non-FF
+		joystick with a zero force update rate.
+
+2007-03-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changing version number to 07.05.
+
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.h : Made both the vrpn_big_endian and the
+		htond() code use the same test to see what the
+		endianness is.
+	* vrpn_Shared.C : It turns out that some ARM processors have
+		a mixed-endian double format, where you have to both
+		swap the bytes and then swap the two words that make
+		up the double.  Horrible.  This checks for that and
+		does it if needed.
+
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Removing the mouse library except when the
+		new VRPN_USE_GPM_MOUSE definition is specified in
+		vrpn_Configure.h
+	* vrpn_Configure.h : Added entry to let us use the GPM mouse
+		under linux.
+	* Makefile : Added a build environment description for cross-
+		compiling to ARM from PCs running Cygwin
+
+2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Removing the mouse library when compiling
+		for the ARM, which is the embedded version of the
+		OS.  This device was not present (at least not on
+		the ARM development I'm working on now).
+
+2007-02-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Adding required dependencies on quatlib and two
+		new files that were added to the VS 6.0 files.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
+2007-01-23  David Borland  <borland@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Removed DIENVELOPE struct when 
+	creating the force effect.  This was causing a buzzing when
+	applying forces, as the force was ramped down and then back 
+	up again.
+
+2007-01-23  David Borland  <borland@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.h : Now handles changed force field
+	messages.  Currently, just assuming a constant force.  The center,
+	jacobian, and radius are ignored.
+	* vrpn_DirectXFFJoystick.C : Same.
+
+2007-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Changed the interpretation of the
+		Intersense Quaternion to match that of VRPN/Quatlib.
+		This lets us translate the positions directly, rather
+		than scrambled.  Thanks to Christian Odom for the
+		fix!
+	* vrpn_Connection.C : Updated version number to 7.04.
+
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding new objects to the project to support
+		the two new devices.
+	* vrpndll.dsp : Same.
+	* vrpn_Analog_USDigital_A2.C : Modified to use the device
+		#define in vrpn_Configure.h rather than WIN32.
+	* vrpn_Button_NI_DIO24.C : same.
+	* vrpn_Button_NI_DIO24.h : same.
+
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_USDigital_A2.h : New device driver submitted
+		by William West from Disney VR Studios.
+	* vrpn_Analog_USDigital_A2.h : Same.
+	* vrpn_Button_NI_DIO24.h : Same.
+	* vrpn_Button_NI_DIO24.C : Same.
+	* Makefile : Added the above files.
+	* vrpn_Configure.h : Adds configuration option for these
+		devices and paths needed.
+
+2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.vcproj : Updated to use the August 2006 version
+		of the DirectX SDK and the Microsoft Platform SDK
+		for Windows Server 20003 R2.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Added projects needed to do a DirectShow video
+		camera vrpn_Imager server.  Updated to latest DirectX
+		SDK and Platform SDK.
+	* vrpn_FunctionGenerator.C : Removed ambiguity about the
+		pow() operator by casting one of its inputs.
+
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added projects needed to implement a DirectShow
+		video imager server.
+	* vrpn_Configure.h : Added entry to tell whether to include
+		DirectShow video in the build.  This must be defined
+		to build the DirectShow video imager server.
+
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Switched to most recent version of
+		DirectX SDK.  Moved include into config file so
+		everything can be edited in one location.
+	* vrpn_DirectXFFJoystick.h : Same.
+
+2006-08-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.C:  correct version of the file.
+
+2006-08-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h,C:  moved the definition of the
+	message-type strings into the C file.  they should have
+	always been here.
+
+2006-08-21  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h,C:  fixed up a few things for
+	vrpn_FunctionGenerator_function_degauss -- constructor and
+	the way cycleTime is calculated.
+
+2006-08-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h,C:  added a new function, 
+	vrpn_FunctionGenerator_function_degauss.  also, made the data
+	members of the other functions protected and added accessors for
+	them all.
+
+2006-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Edited some comments.
+	* vrpn_Connection.h : Added functions to tell the connection to only
+		handle a finite number of messages per mainloop() call.
+	* vrpn_Connection.C : Same.
+	* vrpn_FileConnection.h : Re-implemented the limit_messages_played_back
+		function and its functionality using the new capability in the
+		vrpn_Connection object (from which FileConnection derives).
+
+2006-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Increased the maximum number of
+		tracker sensors from 100 to 500.  This is to support
+		more reported beads in the CISMM Video Spot Tracker
+		program.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added install and uninstall targets.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added HL library when compiling Phantom
+		driver with HDAPI library.
+	* vrpn_Connection.C : Increased version number.
+
+2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  undoing the change i accidentally committed.
+
+2006-05-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.[h,C]:  added get_time, which returns the
+	current UTC time in the steam (as opposed to elapsed time, or
+	time since the connection was opened).
+	* vrpn_FileConnection.h:  same.
+
+2006-04-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Increased version number for new
+		release.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpndll.dsp : Added Button_USB and Keyboard_Mouse.
+	* vrpndll.vcproj : Same.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changing version number for new release.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button_USB.cpp : Code from Tom De Weyer to handle USB
+		buttons on Windows.
+	* vrpn_Button_USB.h : Same.
+	* vrpn.dsp : Adding vrpn_Button_USB.cpp and .h.
+	* vrpn.vcproj : Same.
+	* vrpn_Keyboard_Mouse.C : Updates to export analogs rather than tracker.
+	* vrpn_Keyboard_Mouse.h : same.
+
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.cpp : Added type-cast.
+	* vrpn_Keyboard_Mouse.C : Added required library.
+	* vrpn_Tracker_DTrack.C : Changed from WIN to _WIN check.
+	* vrpn.sln : Visual C++ 2005 solution file for VRPN.
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
+2006-02-23  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FileConnection.C:  the bookmarking mechanism used when searching
+	through vrpn logs for start/end times did not correctly handle the
+	end-of-file case (NULL d_currentLogEntry) in the case of !preload and 
+	!accumulate.  store_stream_bookmark and return_to_bookmark now
+	correctly handle going to/from the end of file (without preload and
+	accumulate).
+
+2006-02-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Imager.h:  added is_description_valid() to vrpn_Imager_Remote.
+	this function says whether the imager has received a description
+	message yet.
+
+2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Removing vrpn_Router.[hC]
+	* vrpndll.dsp : Same.
+
+2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Router.h : Removing the Sierra Router Server and its
+		associated files.  It was coded in a style that used
+		the serial messages directly, rather than defining its
+		own message types.  It is no longer being used at UNC,
+		and I don't know that it has ever been used elsewhere.
+		A user asked that it be removed.
+	* vrpn_Router.C : Same.
+
+2006-02-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Making the C: drive the default in preparation
+		for release of version 7.00.
+
+2006-01-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_File_Connection.h (get_replay_rate):  new.  there
+	was no accessor for replay rate, only a way to set it.
+
+2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Added newline to end of error print.
+	* vrpn_raw_sgibox.C : Removed spurious checks that caused
+		compiler warnings under Cygwin.  Isn't it great to
+		compile under multiple architectures -- it catches
+		so many silly things!
+
+2005-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Switching to HDAPI default.
+	* Makefile : Fixed to compile under Cygwin.
+
+2005-12-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HashST.h : Removed function setting non-existent
+		member variable.
+	* vrpn_Keyboard_Mouse.C : Moved definitions to make them
+		legal in modern compilers.
+	* vrpn.dsp : Added vrpn_HashST.h to the files.
+
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding vrpn_Keyboard_Mouse.[hC] into the build.
+	* vrpn_Keyboard_Mouse.C : Fixing bugs I introduced when making
+		it compile under Linux.
+	* vrpn_Keyboard_Mouse.h : Same.
+
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Keyboard_Mouse.h : Lets us use Windows keyboard to fly.
+		From Tom De Weyer at EDM-Uhasselt from Belgium.
+	* vrpn_Keyboard_Mouse.C : Same.
+	* Makefile : Same.
+
+2005-10-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Made some parameters const that can be.
+	* vrpn_Tracker.C : Same.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Making a protected method public to expose
+		it; it used to be exposed by calling the same method on
+		the vrpn_Synchronized_Connection class, which no longer
+		exists.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added target for 64-bit Intel-based SGI compilation.
+
+2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	MAJOR VERSION NUMBER CHANGED TO 7.0 because the vrpn_ForceDevice
+	protocol values have changed.  It is now possible to include trimeshes
+	that are in a tree structure, and move individual ones around, as
+	part of the GHOST build.  The HDAPI build still builds, but doesn't
+	have trimeshes in it yet.
+
+	These changes were sent in by Tom De Weyer's group in Belgium after
+	several rounds of discussion and design.
+
+	* Makefile : Added vrpn_ForceDeviceServer.[hC}
+	* vrpn.dsp : Same.
+	* vrpndll.dsp : Same (plus added others needed).
+	* vrpn_Configure.h : Rearranged entries.
+	* vrpn_Connection.C : Upgraded version number.
+	* vrpn_DirectXFFJoystick.h : Now derived from ForceDeviceServer, and
+		includes stubbed member functions that needed to be defined.
+	* vrpn_DirectXFFJoystick.C : Same.
+	* vrpn_ForceDevice.h : Redone to enable multiple objects in a
+		hierarchy in the scene.  The hierarchy handling stuff on
+		the server side is wrapped into vrpn_ForceDeviceServer.
+	* vrpn_ForceDevice.C : Same.
+	* vrpn_ForceDeviceServer.h : Implements the hierarchy-figuring
+		stuff on the server side.  All servers should now derive
+		from this class.
+	* vrpn_ForceDeviceServer.C : Same.
+	* vrpn_HashST.h : Helper class for ForceDeviceServer.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Added the 5DT16 analog and button drivers.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding 5DT16 driver along with button driver
+		to convert from its analog outputs to button
+		outputs.
+	* vrpn_5DT16.h : Same.
+	* vrpn_5DT16.C : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Added the Microscribe.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DMicroscribe.C : Added driver from Tom de Weyer's group
+		in Belgium for the Microscribe.
+	* vrpn_3DMicroscribe.h : Same.
+	* vrpn_Configure.h : Same.
+	* Makefile : Same, but only works on Unix whereas the scribe
+		only works on Windows and Mac (need to modify things
+		to make it link correctly on these).
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Crossbow.h : Removing a function no longer needed.
+	* vrpn_Tracker_Crossbow.C : Same.
+
+2005-09-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C : Fixing up type-casts.
+	* vrpn_Connection.C : Removing typecasts that are not needed
+	* vrpn_Joylin.C : Fixing type cast that was a bug under the
+		C++ standard, and on some compilers.
+	* vrpn_Tracker_Fastrak.C : Fixing up typecasts.
+
+2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Modified all applications to also depend on
+		VRPN library, in addition to "make_vrpn_build."  This
+		is going to break things for those who want to build
+		DLLs, but not having it meant that the apps would not
+		re-link with the library when only library files were
+		changed.  This was debugging hell.
+
+2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_ForceDevice.C : Fixed a bug in the line-mode
+		constraint code.  Involved remembering lots of
+		linear algebra.  Eigenstuff that I always wondered
+		why I would use it when I had it in course.  Also
+		modified both line and plane codes to normalize the
+		direction vectors they are passed in.  This avoids
+		unexpected scaling of the forces.
+
+2005-09-02	Kalpit Desai	<kvdesai@cs.unc.edu>
+	* vrpn_Text.h: Modified the signature of send_message() method to expect 4th argument (time stamp) which may be supplied.
+	* vrpn_Text.C: Modified the definition of send_message() method to send the user specified timestamp when supplied.
+
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Whitespace change.
+	* vrpn_Connection.C : Fixed a bug where a zero-time select()
+		during an interrupt was not setting the stop time, so
+		would return with an inconsistent state.  Also, whitespace
+		changes.
+	* vrpn_Shared.h : Whitspace changes.
+
+2005-08-13    David Marshburn <marshbur@cs.unc.edu>
+
+	* vrpn.dsw:  makes vrpn_Phantom project depend on vrpn project
+
+2005-08-05  Kalpit Desai	<kvdesai@cs.unc.edu>
+
+	* vrpn_Poser.h: Added register_change_handler routines and vrpn_POSERCB
+		template that provides a way to call back user-routines.
+	* vrpn_Poser.C: Modified handle_change_message routine of server to
+		pack the information in vrpn_POSERCB format and then callback
+		the registered user-routines.		
+
+2005-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added a clock drift estimator project to the list
+		of available projects.
+	* vrpn_Connection.C : Modified the getservicename function so that
+		it doesn't seg fault if passed a NULL pointer.
+
+2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Debugged and tested on a mac.  Tested on
+		Linux box.  Only tested with the serial mouse, so
+		more testing should be done before we're entirely
+		certain that the port worked.
+
+2005-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Switched over to the termios-style commands
+		from the termio/ioctl() style.  This lets things compile
+		on the Mac platform and should retain backwards compatibility
+		with the other Unix/Linux platforms.  The code does indeed
+		compile on linux, sgi, and sparc.  Not yet tested.
+
+2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* vrpn.dsp : Same.
+	* vrpn_Configure.h : Same.
+	* vrpndll.dsp : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed vrpn_Clock.C and .h, which are
+		no longer needed.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Removed vrpn_Clock.C and .h files from those needed.
+	* vrpndll.dsp : Same.
+	* vrpn_BaseClass.C : Removed option to not count an object when
+		doing reference counting.  This was only in there for the
+		synchronized connections, which are now gone.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Removed.
+	* vrpn_Clock.h : Removed.
+	* vrpn_Connection.C : Removed references to vrpn_Clock, and the
+		implementation of vrpn_Synchronized_Connection.  This is
+		going to break every server ever compiled for VRPN, but the
+		fix is to change to using a vrpn_Connection wherever there
+		was a vrpn_Synchronized_Connection before.  If you were
+		including the parameters for the clock frequency and
+		interval, remove them.
+	* vrpn_Connection.h : Same.
+	* vrpn_ForwarderController.C : Removed Synchronized.
+	* vrpn_Mutex.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding vrpn_Mouse to Windows build.
+	* vrpndll.dsp : Same.
+	* vrpn_Mouse.C : Modified so that it will compile on Windows.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Including vrpn_Mouse class in the server build.
+	* vrpn_Mouse.h : Linux GPM-based mouse driver submitted by
+		Mike Weiblen at 3DLabs.
+	* vrpn_Mouse.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding Logitech 3DMouse into the Windows build.
+	* vrpndll.dsp : Same.
+	* vrpn_Tracker_3DMouse.C : Switching to C++ type casts and putting
+		in some more to prevent compile-time warnings on Windows.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_3DMouse.C : Driver for Logitech 3D Mouse
+		provided by Jinseok Seo from the VR Lab of
+		POSTECH in Korea.
+	* vrpn_Tracker_3DMouse.h : Same.
+	* Makefile : Added the 3D mouse into the build.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding Crossbow into the set of files built
+		into VRPN.
+	* vrpndll.dsp : Same.
+	* vrpn_Tracker_Crossbow.C : Changed warning pragmas to work
+		with VC6.0.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Crossbow.h : Driver from Chris V. for a
+		Crossbow accelerometer and rate gyro server.
+	* vrpn_Tracker_Crossbow.C : Same.
+
+2005-06-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Fixed type on GNUC define pointed out by
+		Chris V.
+
+2005-06-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Added transcoding from float32
+		to uint8 to enable testing the receipt of
+		different image servers.
+
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Adds patch for compile on Mac submitted
+		by Patrick Hartling.
+
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Clock.h : Added "class" keyword so it would compile on
+		Linux.
+
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C : Changes from Jeff Feasel to fix a
+		bug I introduced when I put the reference-counting
+		stuff in without his earlier patch.  This makes the
+		Clock object behave differently.  It also hides the
+		clock objects away so that users don't create them
+		and cause reference-count problems.  Also adds
+		comments describing why we need both unique and
+		non-unique base classes.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.C : Same. Also bumps minor version number.
+	* vrpn_Connection.h : Same.
+	* vrpn_Forwarder.C : Adds reference-counting to this class, which
+		is not derived from BaseClass.
+	* vrpn_Forwarder.h : Same.
+	* vrpn_ForwarderController.C : Same.
+	* vrpn_ForwarderController.h : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_SharedObject.C : Same.
+
+2005-05-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removing HMD directory stuff that is no
+		longer useful, and might cause permission
+		problems on builds at UNC.
+
+2005-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_ForceDevice.h : Replaced the callback list code
+		with new code based on the template.  This file
+		was missed in the mass conversion 12/14/2004.
+	* vrpn_ForceDevice.C : Same.
+
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Moved the location to look for DirectX
+		SDK to where the Feb 2005 installer puts it.  This
+		version works with release but not debug code.  How
+		Nice of them :-)
+	* vrpn_NationalInstruments.h : Removed a redundant place to
+		store the number of output channels.  There is already
+		a member variable for this is the AnalogOutput class;
+		having another one here just causes fragility.
+	* vrpn_NationalInstruments.C : Same.
+
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_NationalInstruments.C : Marked one particular
+		error return code as not a problem for AO_Configure.
+		This makes the new NI module work like the old
+		NI_Output.  It is almost certainly something to
+		fix for real later.
+	* vrpn.dsw : Added dependencies to make the server
+		rebuild when library does.
+
+2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed -LANG:std from compile, no streams
+		used in the code anymore.
+
+2005-02-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output.C : Whitespace change.
+	* vrpn_Analoh_Output.h : Same.
+	* vrpn_Poser_Analog.C : By default, a poser will not send
+		updates until it gets a request from a client.  Also,
+		it sends them only when they arrive, not every
+		time through mainloop().
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_nikon_controls.h : Guard definitions to enable
+		multiple inclusion.
+	* vrpn_NationalInstruments.C : Replacement for the
+		vrpn_Analog_Output_NI.C file that makes a more-
+		general read/write server.
+	* vrpn_NationalInstruments.h : Replacement for the
+		vrpn_Analog_Output_NI.h file that makes a more-
+		general read/write server.
+	* vrpn.dsp : Modified to use new files.
+	* vrpndll.dsp : Modified to use new files.
+	* Makefile : Changed NI files to NationalInstruments.
+
+2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Added John Stone's definitions to make
+                things compile under 64-bit Linux.
+
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C : Removing last vestiges of STREAMS from VRPN.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Shared.h : Same.
+
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Removed all references to the ill-planned
+		RGB and BGR formats.
+	* vrpn_Imager.h : Same.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C : Turned on a higher level of warnings in
+		Windows and then went through and fixed all of the
+		warnings, except a few on FunctionGenerator (which
+		has an uncompleted function) and on Sound (which has
+		a bunch of uncompleted functions).  Fixed a few bugs
+		that turned up along the way.  Ripped out every trace
+		of iostream (old or new type) from the base library.
+		Also removed VRPN_NO_STREAMS, which was obviated by
+		this.
+	* vrpn_ADBox.C : Same.
+	* vrpn_Analog.C : Same.
+	* vrpn_Analog.h : Same.
+	* vrpn_Analog_5dt.h : Same.
+	* vrpn_Analog_Output_NI.C : Same.
+	* vrpn_Analog_Output_NI.h : Same.
+	* vrpn_Analog_Radamec_SPI.C : Same.
+	* vrpn_BaseClass.C : Same.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_CerealBox.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_DirectXFFJoystick.C : Same.
+	* vrpn_Dyna.C : Same.
+	* vrpn_FileConnection.C : Same.
+	* vrpn_Flock.C : Same.
+	* vrpn_FunctionGenerator.C : Same.
+	* vrpn_FunctionGenerator.h : Same.
+	* vrpn_Imager.C : Same.
+	* vrpn_Imager.h : Same.
+	* vrpn_ImmersionBox.C : Same.
+	* vrpn_ImmersionBox.h : Same.
+	* vrpn_Joywin32.C : Same.
+	* vrpn_Joywin32.h : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_Poser_Tek4662.C : Same.
+	* vrpn_Serial.C : Same.
+	* vrpn_Shared.C : Same.
+	* vrpn_Shared.h : Same.
+	* vrpn_SharedObject.C : Same.
+	* vrpn_Sound.C : Same.
+	* vrpn_Spaceball.C : Same.
+	* vrpn_Tng3.C : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_Tracker_Fastrak.C : Same.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_UNC_Joystick.C : Same.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_Wanda.C : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_nikon_controls.C : Same.
+	* vrpn_raw_sgibox.C : Same.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Guarding the #pragma that turns off
+		the warning so that it only happens on Windows,
+		so that the SGI compiler doesn't complain about
+		every file.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Added a template class to deal with
+		callback list handling.  This does not use STL, to
+		avoid the problems with having incompatible STL
+		versions on some systems.  It generated a warning
+		message when using DLLs that seemed to make no sense,
+		and the test code still works in DLL mode (tested),
+		so I turned the warning off.  This change removes
+		a lot of duplicate code from derived classes, and
+		ensures proper clean-up of lists at destruction.
+	* vrpn_Analog.C : Modified to use templated callbacks.
+	* vrpn_Analog.h : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_Button.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.C : Same (modified Clock callback).
+	* vrpn_Dial.C : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_Imager.C : Same.
+	* vrpn_Imager.h : Same.
+	* vrpn_Router.C : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Text.C : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpndll.dsp : Must have tweaked a compiler flag.
+
+2004-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changes from Patrick Hartling to make
+		VRPN compile under FreeBSD.
+	* vrpn_Types.h : Same.
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Switched out TempImager for Imager
+	* vrpn.dsw : Changed to test_imager from test_tempimager
+	* vrpn_Imager.h : Added #include needed on Unix
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp  Added vrpn_Imager.[hC] and removed
+		vrpn_TempImager.[hC].
+	* vrpndll.dsp  Same.
+	* vrpn.dsw  Added vrpn_testimager_server.dsp
+	* vrpn_Imager.C  Final design, partial implementation of
+		VRPN Imager class.  Pulls the image pose out as a
+		separate class and adds throttle capability to the
+		client code (implemented in server by dropping frames
+		rather than sending them).  Adds count of frames
+		dropped to alert client application.  Adds 12-in-16
+		data type.  Transcoding between types not yet
+		implemented.  Client-side selection of data types to
+		send not yet implemented.  RGB and BGR packed formats
+		not yet implemented.
+	* vrpn_Imager.h  Same.
+
+2004-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Whitespace changes.
+
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Dyna.C : Added changes from Uni-Hamburg to also work with
+		the SeeReal D4D stereo Display, which is an older version.
+		This still works with the newer DynaSight at UNC.
+	* vrpn_Tracker_Liberty.C : Also works with the Patriot, which
+		sends a slightly different record format.  This version
+		comes from Uni-Hamburg.  Roland Schroeder-Kroll sent
+		these fixes in from Steffi Beckhaus' group there.
+
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Happy Birthday to me!
+	* Makefile : Added John Stone's additions to make it compile on
+		64-bit Solaris
+
+2004-11-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Fixed a bug where a specified time value never
+		got stored into the timestamp before sending.
+
+2004-10-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.h:  added VRPN_CALLBACK to the friend function
+	declaration of java_vrpn_handle_region_change in 
+	vrpn_TempImager_Region
+
+2004-10-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Types.h : Added a flag to tell the file not to throw an error
+		when compiled with a C compiler rather than a C++ compiler.
+		Useful to programs that want to hide things behind a C
+		interface.
+
+2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Fixed a crash bug when you didn't have
+		a joystick open.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Adding a couple more VRPN_CALLBACKs that I thought
+		we didn't need but we do.
+	* vrpn_raw_sgibox.C : same.
+	* vrpn_Configure.h : Changing back to the C: drive for normal users
+		(I've got everything installed on D:).
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding Chris VanderKnyff's changes that enable DLL linkage
+	for applications.  Heading towards enabling C# and other language
+	support.
+
+	* ChangeLog : Fixing date on my earlier message, reordering.
+	* Makefile : Adding new source-code files.
+	* make_vrpn_libs_build.dsp : New project file to make
+		dependency on both VRPN and VRPNDLL.
+	* time_test.dsp : Making it depend on the project that causes
+		both VRPN and VRPNDLL projects to be built, rather
+		than on VRPN.  If you try to make it depend on both
+		VRPN and VRPNDLL, you get linking trouble.
+	* vrpn.dsp : Same.  Also, defining things needed to make DLL
+		linkage work correctly.
+	* vrpn.dsw : Adding make_vrpn_libs.build project.  Adding
+		dependencies.
+	* vrpn_Configure.h : Added an entry for compiling with DLL linkage.
+		Added definitions needed to make this work for the three
+		cases (library DLL, library static, application).
+	* vrpn_Connection.C : Removed iostream.  Chris made error output
+		go to stderr rather than stdout.
+	* vrpn_Router.C : Moved external functions into static member
+		functions to avoid cluttering the name space.
+	* vrpn_Types.h : Changed to #error from ad-hoc error generator.
+	* vrpn_3Space.h : Making all classes defined with VRPN_API.
+		Making all callbacks use VRPN_CALLBACK.  Making all
+		external functions and structures VRPN_API.
+	* vrpn_ADBox.h : Same.
+	* vrpn_Analog.h : Same.
+	* vrpn_Analog_5dt.h : Same.
+	* vrpn_Analog_Output.h : Same.
+	* vrpn_Analog_Output_NI.h : Same.
+	* vrpn_Radamec_SPI.h : Same.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Button.h : Same.
+	* vrpn_CerealBox.h : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.h : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_DirectXFFJoystick.h : Same.
+	* vrpn_Dyna.h : Same.
+	* vrpn_FileConnection.h : Same.
+	* vrpn_FileController.h : Same.
+	* vrpn_Flock.h : Same.
+	* vrpn_Flock_Parallel.h : Same.
+	* vrpn_ForeceDevice.h : Same.
+	* vrpn_ForwarderController.h : Same.
+	* vrpn_FunctionGenerator.h : Same.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_ImmersionBox.h : Same.
+	* vrpn_JoyFly.h : Same.
+	* vrpn_Joylin.h : Same.
+	* vrpn_Joywin32.h : Same.
+	* vrpn_LamportClock.h : Same.
+	* vrpn_Log.h : Same.
+	* vrpn_Magellan.h : Same.
+	* vrpn_Mutex.h : Same.
+	* vrpn_Nidaq.h : Same.
+	* vrpn_Poser.h : Same.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_Poser_Tek4662.h : Same.
+	* vrpn_RedundantTransmission.h : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Serial.h : Same.
+	* vrpn_Shared.h : Same.
+	* vrpn_SharedObject.h : Same.
+	* vrpn_Sound.h : Same.
+	* vrpn_Spaceball.h : Same.
+	* vrpn_TemImager.h : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tng3.h : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Tracker_AnalogFly.h : Same.
+	* vrpn_Tracker_ButtonFly.h : Same.
+	* vrpn_Tracker_DTrack.h : Same.
+	* vrpn_Tracker_Fastrak.h : Same.
+	* vrpn_Tracker_Liberty.h : Same.
+	* vrpn_Tracker_isense.h : Same.
+	* vrpn_TypeDispatcher.h : Same.
+	* vrpn_UNC_Joystick.h : Same.
+	* vrpn_VPJoystick.h : Same.
+	* vrpn_Wanda.h : Same.
+	* vrpn_Zaber.h : Same.
+	* vrpn_nikon_controls.h : Same.
+	* vrpn_raw_sgibox.h : Same.
+	* vrpn_sgibox.h : Same.
+
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Bumped the maximum number of sensors per tracker
+		from 20 to 100.
+	* vrpn_BaseClass.C : Making the d_servicename and d_connection
+		code only run once for a multiple-inheritance tree.
+		Moved the deletion code into the Unique base class
+		destructor to avoid crashing due to accessing already-
+		deleted connection object.
+	* vrpn_Connection.C : Prettifying.
+	* time_test.dsp : Switching back to DLL-based linkage
+	* vrpn.dsp : Same.
+
+2004-09-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.[h,C]:  first commit of a new device
+	type, and function generator
+	* vrpn.dsp:  includes function generator files
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Added John Stone's fix to make it compile on macs.
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding build for vrpn_Poser_Tek4662 in server library.
+	* time_test.dsp : Changing code generation to use multithreaded
+		non-DLL for both debug and release.  This turns out to have
+		always been the proper setting to use.  Unfortunately, all
+		apps have to be rebuild with new settings, and all libraries
+		have to use the same setting.
+	* vrpn.dsp : Same.
+	* vrpn_Analog.C : Whitespace changes.
+	* vrpn_Poser.C : Same.
+	* vrpn_Poser.h : Same.
+	* vrpn_CerealBox.C : Comment correction.
+	* vrpn_Connection.C : Setting values to NULL to avoid multiple
+		deletion attempts on clock object at shutdown.
+	* vrpn_Serial.C : Declared const parameter when appropriate.
+	* vrpn_Serial.h : Same.
+	* vrpn_Nikon_Controls.C : Error message correction.
+	* vrpn_Nikon_Controls.h : Uppercased "com1" for Windows.
+
+2004-08-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding changes made by Jeff Feasel to include reference counting
+	in the vrpn_Connection object so that they would be deleted when
+	all objects using them are deleted (and when all objects opening
+	them with vrpn_get_connection_by_name() remove their references.
+	* vrpn_BaseClass.C : Adds reference-counting for vrpn_Connections.
+	* vrpn_Clock.C : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_Connection.h : Same.
+	* vrpn_Mutex.h : Same.  Also fixed a bug whereby the number of
+		allocated connections was not being properly incremented.
+
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adds possibility that NI files are on D:
+	* vrpn_Button.C : Moving global constants not starting with vrpn_
+		from header file to source file.
+	* vrpn_Button.h : Same.
+
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Changes submitted by Kurt Achatz at A.R.T.
+	* Makefile : Adding vrpn_Tracker_DTrack.[Ch] to server.
+	* vrpn_Analog.C : Fixing time-comparison bug.
+	* vrpn_Configure.h : No longer need to configure the
+		DTrack driver -- all needed files are built in.
+	* vrpn_Tracker_DTrack.C : Updated to not switch target ID
+		numbering.  Now supports up to for A.R.T. Flysticks.
+	* vrpn_Tracker.DTrack.h : Same.	
+
+2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_FileConnection.C : Made all of the deletes for
+		arrays of characters use the [] version of
+		delete on (char *).  Very scary that it didn't
+		used to do this.
+
+2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding in recent files.  Deleting commented-out
+		rules.
+	* vrpn_Poser.C : removing unused variables.
+	* vrpn_Poser.h : Adding newline at end of file.
+
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added project file for forcedevice test client.
+	* vrpn_Configure.h : Added entry for using the HDAPI library from
+		SensAble Technologies in place of the older GHOST library.
+
+2004-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Connection.C : Added port number to printed comment.
+
+2004-06-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Turns off streams when compiling for the
+		Phantom server.
+	* vrpn_TempImager.C : Adds functions to send using pointers to
+		the data to be sent, rather than pointer to the whole
+		image.  Added functions to set the resolution and range.
+	* vrpn_TempImager.h : Same.  Increased number of channels.
+
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output_NI.C : Removed debug print statements.
+	* vrpn_Poser_Analog.C : Changed the parameters so that it can
+		use a different analog output device for each channel.
+		This is going to break code that uses the Posers, but it
+		was needed to split it up for the case where some channels
+		were driven by one device and others by a different
+		device.  It now behaves more like an AnalogFly in terms
+		of parameters.
+	* vrpn_Poser_Analog.h : Same.
+
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output_NI.h : Analog output that uses National
+		Instruments board.
+	* vrpn_Analog_Output_NH.C : Same.
+	* vrpn.dsp : Added NI-DAQ to library path, files to project.
+		Enable/disable using vrpn_Configure.h.
+	* vrpn.dsw : Added tracker_to_poser project (client_src).
+	* vrpn_Configure.h : Added entry for National Instruments
+		board.  Also loads libraries if NI is configured.
+	* vrpn_Poser.C : Made several things const that should have
+		been.
+	* vrpn_Poser.h : Same.
+	* vrpn_Poser_Analog.C : Added comment.
+	* vrpn_TempImager.C : Checks to make sure we have sent the
+		description before sending any regions.  Removed an
+		unused parameter.
+	* vrpn_TempImager.h : Added comments for improvements.  Added
+		some functions.  Still a work in progress.
+
+2004-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.C : Implemented another of the decode functions.
+
+2004-04-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_ButtonC : Modified the reset command for the Pinchglove
+		so that it works more reliably (fixed timeout bug
+		and reworked logic).  Tested by offsite user who
+		had problems with the original version.
+	* vrpn_ForceDevice.C : Making it compile under Cygwin.
+	* vrpn_Serial.C : Making it compile undre Cygwin.
+	* vrpn_Tracker.h : Describing the format of the values to be returned.
+	* vrpn_Types.h : Making it compile under Cygwin.
+
+2004-04-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.h : Returns the port argument for the parallel
+		button device to an int to make error checking work.
+		Points to the web page where the Python button is
+		described.
+
+2004-04-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FileConnection.h:  adds new data members to track earliest
+	and latest user-message times and functions for finding these times.  
+	Adds a function, jump_to_filetime, that jumps the current time in
+	a vrpn stream to a specified absolute time.  Adds an internal 
+	class, vrpn_FileBookmark, used when jumping around in a stream.
+	* vrpn_FileConnection.C:  this should no longer cause repeated 
+	or missed message when (internally) jumping around in streams.
+	Also, elapsed time is computed based on the earliest-timed user
+	message.  As a result, functions that query elapsed time or
+	stream length will cause vrpn to examine the entire stream once.
+
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Added check for old/new streams.
+	* vrpn_BaseClass.C : Same.
+
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding flag to SGI compile in the hope that it would
+		fix things and let us use the new streams libraries.  It
+		got us part of the way there on my system.
+	* vrpn_BaseClass.C : Added Patrick Hartling's changes to make VRPN
+		compile with Visual Studio.NET, which required switching to
+		new streams, which required retrofitting SGIs to use old
+		streams (using yet another define in vrpn_Configure.h).
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_ImmersionBox. : Same.
+	* vrpn_Shared.C : Same.
+	* vrpn_TempImager.h : Same.
+	* vrpn_Tng3.C : Same.
+	* vrpn_Tracker_AnalogFly : Adding Patrick Hartlings changes to make
+		it compile with Visual Studio.NET, in this case a type cast
+		to let the compiler know which function to call.
+	* vrpn_Tracker_ButtonFly : Same.
+
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Modified all of VRPN to use calls to a new
+		function vrpn_gettimeofday() rather than the standard
+		gettimeofday() to avoid exporting gettimeofday().  On
+		all but Windows with WINSOCK, this is defined back to
+		gettimeofday().  On Windows with WINSOCK, it is the
+		function that implements gettimeofday().  By editing
+		a flag in vrpn_Configure.h, VRPN will still export
+		gettimeofday; otherwise, it no longer does on any
+		operating system.
+	* vrpn_Shared.h : Same.
+	* vrpn_Configure.h : Modified to include an optional parameter
+		that will export vrpn_gettimeofday() as gettimeofday() and also
+		'struct timezone' when it is set, but not otherwise.
+	* time_test.cpp : Using vrpn_gettimeofday() not gettimeofday()
+	* vrpn_3Space.C : Same.
+	* vrpn_ADBox.C : Same.
+	* vrpn_Analog.C : Same.
+	* vrpn_Analog_3dt.C : Same.
+	* vrpn_Analog_Output.C : Same.
+	* vrpn_Analog_Radamec_SPI.C : Same.
+	* vrpn_BaseClass.C : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_CerealBox.C : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_Dial.C : Same.
+	* vrpn_DirectXFFJoystick.C : Same.
+	* vrpn_Dyna. : Same.
+	* vrpn_FileController.C : Same.
+	* vrpn_Flock.C : Same.
+	* vrpn_Flock_Parallel.C : Same.
+	* vrpn_ForceDevice.C : Same.
+	* vrpn_ForewardController.C : Same.
+	* vrpn_GlobalHapticsOrb.C : Same.
+	* vrpn_ImmersionBox.C : Same.
+	* vrpn_Joylin.C : Same.
+	* vrpn_Joywin32.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_Nidaq.C : Same.
+	* vrpn_Nidaq.h : Same.
+	* vrpn_Poser.C : Same.
+	* vrpn_Poser_Analog.C : Same.
+	* vrpn_RedundantTransmission.C : Sam.e
+	* vrpn_Router.C : Same.
+	* vrpn_Serial.C : Same.
+	* vrpn_SharedObject.C : Same.
+	* vrpn_Sound.C : Same.
+	* vrpn_Spaceball.C : Same.
+	* vrpn_TempImager.C : Same.
+	* vrpn_Text.C : Same.
+	* vrpn_Tng.C : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn_Tracker_AnalogFly.C : Same.
+	* vrpn_Tracker_ButtonFly.C : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_Tracker_Fastrak.C : Same.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_Tracker_isense.C : Same.
+	* vrpn_UNC_Joystick.C : Same.
+	* vrpn_Wanda.C : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_nikon_controls.C : Same.
+	* vrpn_FileConnection.C : Same.  Also, modified some calls to
+		advance_currentLogEntry() so that they were funtion
+		calls so that the code would compile.  Not sure how
+		they compiled before...
+
+2004-03-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Fixed a bug that encoded the negative tick
+		incorrectly.
+	* vrpn_Joywin32.h : Added credits.
+	* vrpn_Tracker.C : Closes the serial device when the tracker's
+		destructor is called.
+	* vrpn_Tracker.h : Same.
+
+2004-02-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Closes file handle that is no longer needed.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_FileConnection.h : Added three new global flags that
+		control the state of buffering when a FileConnection
+		reads a log file.  PRELOAD controls whether it grabs
+		the whole file into memory when it starts.  ACCUMULATE
+		controls whether it keep the file in memory as it reads
+		it.  SKIP_TO_USER_MESSAGES tells whether it should jump
+		over all initial system messages in a file when it is
+		loaded or rewound.
+	* vrpn_FileConnection.C : Major changes throughout to implement
+		the flexibility described above.  Also lots of code
+		factoring and consolidation so that there is only one
+		function to do each particular operation that is called
+		by all other functions requiring the operation.  Tested
+		with Nano, Video_spot_tracker, and vrpnLogToMatlab in
+		several different states of operation.
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Added change by David Nahon to make
+		the units correct (meters rather than centimeters).
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Removed separate library for DTrack.
+	* vrpn_Tracker.DTrack.C : Includes the necessary .c file from
+		dtracklib to avoid having to load a library.
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Told the release version where to find Dtrack.h.
+	* vrpn_Tracker_DTrack.C : Modified the order of includes so that
+		it can compile properly when VRPN_USE_DTRACK is defined.
+		Initialized some member variables correctly.
+	* vrpn_Tracker.DTrack.h : Same.
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding changes from David Nahon at Virtools.
+	* vrpn.dsp : Added DTrack files and includes and project.
+	* vrpn.dsw : Same.
+	* vrpn_Configure.h : Added configuration setting to enable
+		building the DTrack code from Advanced Realtime
+		Tracking CmbH.
+	* vrpn_Tracker_isense.C : Modified this to return the orientation
+		with the axes permuted in a way that makes it match
+		what other trackers report.
+
+2004-02-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (handle_sender_message):  auto-registers
+	unknown senders.
+
+2004-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Added initialization of the watchdog timer
+		in the constructor to keep it from accidentally taking
+		over and causing infinite-reset problems on all but
+		the Liberty.
+
+2003-12-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock.h : Added an optional flag to tell whether to invert
+		the Quaternion orientation report before sending it back.
+		This has been done always in the past, but it was probably
+		a hack to make the sensors work in the wrong hemisphere.
+	* vrpn_Flock.C : Same.
+	* vrpn_Flock_Parallel.h : Same.
+	* vrpn_Flock_Parallel.C : Same.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_5dt.h : Added optional parameter to make it try
+		10 bytes per message rather than 9.  This is because one
+		group has one that does this.
+	* vrpn_Analog_5dt.C : Same.  Also fixed some bugs reported by
+		Sebastien Maraux.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.h : Added calls to raise and lower RTS line.
+		Should work on Windows.  Not sure it will work on Linux/Unix.
+		Not tested on any.
+
+	* vrpn_Serial.C : Same.
+
+	* vrpn_Flock.C : Changed to use the new RTS raise/lower calls
+		in vrpn_Serial.C to reset the tracker.  This should enable
+		Flocks to work even with serial connectors that have all
+		the wires connected.
+
+2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Clock.C : Plugging memory leaks.
+	* vrpn_Connection.C : Plugging memory leaks.
+
+2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Liberty.h : Adds driver submitted by Daniel Myall
+		from Westco for the Polhemus Liberty tracker.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn.dsp : Same.
+	* Makefile : Same.
+
+2003-11-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : report() : Added parameter to tell the timestamp
+		that should be used by the Analog for the report.  Both
+		for vrpn_Analog and vrpn_Analog_Server.
+		: report_changes() : Same.
+	* vrpn_Analog.h : Same.  Also added default time parameter.  Also
+		re-ordered where include files happen.
+
+2003-11-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Modified so that you can set the class of
+		service in the vrpn_Tracker_Server.
+	* vrpn_Tracker.C : Same.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : I messed up the commented-out config for UNC
+		with the last commit.  Fixed here.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Compiler warning on SGI caught this!  There
+		was an = rather than == where we were checking for the
+		existence of a local type.  No harm done, but this avoids
+		extra checking.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Exposing constructor with stern warning
+		against using it.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock.C : Added changes so that the use o the extended-range
+		transmitter is optional, rather than required as it was
+		before.
+	* vrpn_Flock.h : Same.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Added changed by David Nahon that lets
+		the user specify whether to do a boresight reset at startup.
+		Also changes the sensor numbers to be zero-indexed like all
+		other VRPN trackers.  Also changes units to meters and
+		radians to match other VRPN trackers.
+	* vrpn_Tracker_isense.h : Same.
+
+2003-11-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changes the default port number one more time,
+		to the one given to us by the Internet Address Naming
+		Authority.
+
+2003-10-31  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Endpoint):  new methods setConnection and
+	getConnection, and a new data member d_parent of type vrpn_Connection*.
+	* vrpn_Connection.C (vrpn_Endpoint::handle_type_message):  message
+	type auto-registration.  If the type from the remote side is unknown,
+	register the type locally.  This enables generic stream examiners
+	and editors.
+	(vrpn_Connection::connect_to_client):  call vrpn_Endpoint::
+	setConnection after creating an endpoint.
+	(vrpn_Connection::vrpn_Connection):  same
+	(vrpn_Connection::server_check_for_incoming_connections):  same
+
+2003-10-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Fixed a bug that was added in the code that
+		unregisters handlers in the destructor.  It needed to pass
+		another parameter, which it does here, to work in the
+		general case.  This bug caused nano to hang at exit,
+		repeatedly tryin to unregister the same (wrong) handler.
+
+2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
+
+	* Makefile : Added VPJoystick driver.
+	* vrpn.dsp : Same.
+	* vrpn_VPJoystick.h : Driver for a commercial joystick.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_raw_sgibox.C : Modified to remove #defines from the header
+		file that didn't start with vrpn_
+	* vrpn_raw_sgibox.h : Same.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Rearranged order of functions so that
+		it would compile on HPUX.
+	* vrpn_ForceDevice.C : Made it compile on HPUX.
+	* vrpn_ForceDevice.h : Rationalized const vs. non-const params.
+	* vrpn_Shared.h : Moved hack to make it compile on HPUX.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.cpp : Compiles without warnings (commented out
+		unused variables).
+	* time_test.dsp : Making it build on Release setting.
+	* vrpn_ForceDevice : Changed types to prevent compiler warnings.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Cleans up memory in the destructor to
+		prevent it leaking when remote tracker objects
+		are created and destroyed.
+
+2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
+
+	* vrpn_ForceDevice.C : Added custom effect to ForceDevice,
+		in particular a buzzing effect whose amplitude
+		and frequency can be set.
+	* vrpn_ForceDevice.h : Same.
+	* vrpn_Serial.C : Change to make it compile on SGI.
+
+2003-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.h : Fixing things that broke the build.
+		Bad Russ.  No Cookie!
+	* vrpn_Tracker_isense.C : Same.  Still no cookie.
+
+2003-09-16  Blair MacIntyre	<blair@cc.gatech.edu>
+
+	* vrpn_Tracker_isense.h : Added code to add Wands and other
+		devices to the tracker like the Fastrak version of
+		the Intersense driver could.
+	* vrpn_Tracker_isense.C : Same.
+
+2003-09-02  Blair MacIntyre	<blair@cc.gatech.edu>
+
+	* Makefile : Makes it work on MacOSX with Intersense.
+	* vrpn_ADBox.C : Compiles on Mac.
+	* vrpn_Serial.C : Compiles on Mac.
+	* vrpn_Tracker_isense.C : Calls required function in constructor.
+	* vrpn_Tracker_isense.h : Works on Mac.
+
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Includes the new files for Joywin32.
+
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Added include needed on Linux
+	* vrpn_Joywin32.C : Code from Sebastien Maraux to read
+		from joysticks without going through DirectX.
+	* vrpn_Joywin32.h : Same.
+
+2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Removed #ifdef'd out code.
+
+2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	*  vrpn_Shared.C : Fixed the code that handles high-resolution
+		Windows timing.  This version always has time moving
+		forwards.
+	* time_test.cpp : Modified to test the monotonicity of time.
+	* time_test.dsp : Same.
+	* vrpn.dsw : Same.
+
+2003-08-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Made not crash when it couldn't
+		open a joystick.
+
+2003-07-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Prints a more useful error message when
+		the bind() function call fails.
+
+2003-07-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added configurable default port, no longer
+		set to 4500 (which is being used by VPN and Microsoft).
+	* vrpn_Connection.h : Same.
+	* vrpn_Connection.C : Uses non-interruptable version of select,
+		which is more general for apps that have interrupts.
+	* vrpn_Serial.C : Switches to interrupt-savvy version of read.
+
+2003-07-24  Matt McCallus  <mccallus@cs.unc.edu>
+
+	* vrpn_Sound.C : Added a "look at/look up" call for setting
+		orientation, rather than quaternions.  Later will
+		either remove quaternion one or (better) reimplement
+		in terms of at/up (or vice-versa).
+	* vrpn_Sound.h : Same.
+
+2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* Makefile : Removed un-needed include directories that caused
+		problems with non-standard Linux compiler installation.
+
+2003-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Turns on a second bit to work with the HiBall.
+		This is a fix from Ben Elgin.
+
+2003-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Added support for compiling ADBox/CubicMouse driver.
+	* vrpn_ADBox.C : Removed definitions that exclude Windows.
+
+2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* Makefile : added ADBox/CubicMouse driver
+	* vrpn.C : Same.
+	* vrpn_ADBox.C : Same.
+	* vrpn_ADBox.h : Same.
+
+2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  adds a (commented-out) option to use Ghost 3.1
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed syntax error that kept it from compiling.
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Changes to include Intersense files in ../isense.
+	* vrpn_Configure.h : Describes how to link with InterSense library.
+	* vrpn_Tracker_isense.C : Updated to newer version of InterSense
+		library.  Now works with USB trackers.
+
+2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  change the default path for the Ghost library
+	to point to version 4.0.
+
+2003-05-21  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C:
+	(vrpn_Endpoint::setLogNames):  set the in or out log-file name only
+	if each is non-NULL
+	(vrpn_Connection::handle_log_message):  correctly handle the case in
+	which only one log file has been requested (in or out).  previously
+	assumed both would be requested.
+
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.C : Fixes bug by which a new imager client would
+		not get the region description message, causing it to never
+		get region callbacks.
+
+2003-05-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added configuration entry for Intersense driver.
+	* vrpn_Tracker_isense.C : Made it include the Intersense-supplied
+		C file that interacts with the DLL code.  Note that this
+		does not compile with the currently-supplied SDK from
+		InterSense.  I don't have any trackers to test it on if I
+		mess with it, so decided to leave it alone.
+
+2003-04-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_raw_sgibox.C : Fixed bug on analog code that read from the
+		dials, where the 16-bit integer was not read in the correct
+		order and not sign-extended.  Added Dial interface, so that
+		the dial box reports both analog and dial values.
+	* vrpn_raw_sgibox.h : Same.
+
+2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Removed phan_server project.  Added vrpn_phantom.lib
+		dependency to the vrpn_server project.
+	* vrpn_Configure.h : Added configuration for using Phantom.
+
+2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added definitions to control which version of
+		the system clock is used in Windows.
+	* vrpn_Shared.C : Added Haris' code to use the system performance
+		clock, guarded by VRPN_WINDOWS_CLOCK_V2.  Tested using
+		the Analogfly test program.
+	* vrpn_Tracker_AnalogFly.C : Comment change.
+
+2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Put back the uncommented #pragma for library loads
+		and added comments describing how to change them in the
+		future.
+	* vrpn_DirectXCCJoystick.C : Added casts to get rid of compiler
+		warnings, white space changes, comments.
+	* vrpn_Shared.h : Uncommented definition in Windows CE compile.
+
+2003-01-15  Alexandra Bokinsky  <bokinsky@cs.unc.edu>
+
+	* vrpn_Configure.h : Commented out DirectX library load #pragmas.
+	* vrpn.dsw : Added force-feedback joystick server.
+	* vrpn_Shared.h : Commented out definition for Windows CE compile.
+	* vrpn_DirectXFFJoystick.C : Changed startup parameters for force and
+		made the force command average the last three values before
+		sending them to the joystick.
+
+2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_GlobalHapticsOrb.C : Server for the Global Haptics GeoOrb device.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_Tracker_ButtonFly.C : Server for a device that lets you fly
+		or teleport using button devices.
+	* vrpn_Tracker_ButtonFly.g : Same.
+	* Makefile : Adding GlobalHapticsOrb and ButtonFly servers.
+	* vrpn.dsp : Same.
+	* vrpn_Tng3.h : Comment fix.
+	* vrpn_Tracker_AnalogFly.C : Switched to autodeleted handler, rather
+		than registering and unregistering the handler.
+
+2003-01-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C : Installing fix from Sascha Scholz to make
+		the fastrak work with a fastrak stylus.  I couldn't test the
+		code I put in the previous commit.
+
+2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Analog_Output.h:  uniform formatting, new data members for
+	num-channel report and new-connection message types, plus:
+	(vrpn_Analog_Output::getNumChannels):  new
+	(vrpn_Analog_Output::encode_to):  removed, unused.
+	(vrpn_Analog_Output_Server::setNumChannels):  note about expected use.
+	(vrpn_Analog_Output_Server::vrpn_Analog_Output_Sever):  added a third
+	parameter which specifies the number of active channels.  defaults 
+	to vrpn_CHANNEL_MAX.
+	(vrpn_Analog_Output_Server::handle_got_connection):  new
+	(vrpn_Analog_Output_Server::report_num_channels):  new
+	(vrpn_Analog_Output_Server::encode_num_channels_to):  new
+	(vrpn_Analog_Output_Remote::handle_report_num_channels):  new
+
+	* vrpn_Analog_Output.C:  the functions noted above, plus:
+	(vrpn_Analog_Output::register_types):  register "number of channels" 
+	and "new connection" message types.
+	(vrpn_Analog_Output_Server::vrpn_Analog_Output_Server):  register
+	handler for new-connection messages.
+	(vrpn_Analog_Output_Server::handle_request_message):  sends a text
+	error message to the client if it tries to set an invalid/inactive
+	channel.
+	(vrpn_Analog_Output_Server::handle_request_channels_message):  same.
+	also catches the case in which the number of channels to change is
+	negative.
+	(vrpn_Analog_Output_Remote::vrpn_Analog_Ouput_Remote):  register
+	handler for "number of active channels" message.
+	(vrpn_Analog_Output_Remote::request_change_channels):  uses a 
+	statically declared buffer instead of one dynamically declared.
+
+2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Analog.h:  
+	(vrpn_Analog::getNumChannels):  new
+	(vrpn_Analog_Server::numChannels):  removed
+	(vrpn_Analog_Server::setNumChannels):  added a note about expected use.
+	(vrpn_Analog_Server::vrpn_Analog_Server):  added a third parameter
+	which specifies the number of active channels.  defaults to
+	vrpn_CHANNEL_MAX.
+	(vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server):  same
+
+	* vrpn_Analog.C:  changes corresponding to the above, plus:
+	(vrpn_Analog::encode_to):  initializes buflen correctly, to
+	be of size vrpn_CHANNEL_MAX+1.  Also, uses sizeof(vrpn_float64) 
+	instead of  sizeof(double).
+	(vrpn_Analog::report):  create the buffer to be of length
+	vrpn_CHANNEL_MAX+1.
+	(vrpn_Analog_Remote::handle_change_message):  updates num_channel
+
+2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.h : Added return type to member function.
+	* vrpn_DirectXFFJoystick.h : Added newline at end of file.
+
+2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Tracker_Fastrak.h : Added Deepak's code to handle the fastrak
+                with a stylus that has a button.
+        * vrpn_Tracker_Fastrak.C : Same.
+        * vrpn_UNC_Joystick.h : Changed return type to say if got report.
+        * vrpn_UNC_Joystick.C : Changed server to read multiple reports from
+                the joystick if they are available.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Removed duplicate definition.  Note to self,
+		always try compiling after update before commit.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.dsp : DSP files have been modified to not do definitions of
+		VRPN_NO_STREAMS and other constants directly, rather these are
+		now set by editing vrpn_Configure.h.  Also, made projects
+		compile in both debug and release versions.
+	* vrpn.dsp : Same.
+	* vrpn.dsw : Removed vrpn_server_with_timecode project because you
+		can now build vrpn_server.exe with the proper definition in
+		the vrpn_Configure.h file to do this.
+	* vrpn_Analog.h : Added structure names to help offsite users not
+		have to include all of the VRPN header files when building.
+	* vrpn_Button.h : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_ForceDevice.h : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Analog_Output.h : White space changes.
+	* vrpn_Connection.C : Modified the read-with-timeout routine to try
+		and read all characters at once; should only be used with
+		a socket.  Removed commented-out printfs.  Whitespace changes.
+	* vrpn_Connecton.h : Comment change.
+	* vrpn_DirectXFFJoystick.C : Reordered #includes to work with the
+		vrpn_Configure.h file.  Comment corrections.  Made the
+		joystick opened for exclusive access even if it is only going
+		to be used as a joystick (was causing problems with VMD, which
+		also opened the joystick and then the two programs would fight
+		over it.
+	* vrpn_DirectXFFJoystick.h : Reordered #includes to work with
+		vrpn_Configure.h.
+	* vrpn_Poser.C : Removed reporting calls that were duplicates of the
+		vrpn_Tracker calls.  Now a server that wants to report its
+		poses should use a vrpn_Tracker to report them and the Poser
+		only to set them.
+	* vrpn_Poser.h : Same.  Whitespace changes.
+	* vrpn_Poser_Analog.C : Modified to work with the reduced-function
+		vrpn_Poser class: now opens a vrpn_Tracker as well to report
+		the new poses.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_TempImager.C : Changed all member variables to begin with
+		"d_" rather than just "_" ("_" violates C++ rules).
+	* vrpn_TempImager.h : Same.
+	* vrpn_Types.h : Includes vrpn_Configure.h (so that it will be included
+		by every VRPN include file).
+
+
+2002-11-25    <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.C:  makes the function java_vrpn_handle_region_change
+	a friend of class vrpn_TempImager_Region (so it can copy directly from
+	the value array).  Also, moves the declarations of vrpn_IMAGERREGIONCB,
+	vrpn_IMAGERREGIONHANDLER and vrpn_IMAGERDESCRIPTIONHANDLER forward
+	in the file.
+
+2002-11-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Inlined the channels() function.
+	* vrpn_Analog.h : Same.
+	* vrpn_Connection.h : Whitespace changes.
+	* vrpn_Shared.C : changed variables to constants for speed.
+	* vrpn_TempImager.C : Major modifications to reduce the number of
+		copies from three down to one when going through the imager.
+		On the server side, there is a reformatting copy into a
+		buffer for VRPN, then the VRPN buffer copy.  On the client
+		side, there is a reformatting copy right from the VRPN
+		buffer.  Made it so that several different message types
+		can be sent for regions; the receiver code will do
+		transcoding to make it right (not yet implemented).  Uses
+		memcpy() when it can to increase throughput.  Several
+		functions collapsed into send_region_using_base_pointer().
+	* vrpn_TempImager.h : Same.
+
+2002-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Made Connection constructor public.
+
+2002-11-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Changes to work with Cygwin on Windows 2000.
+
+2002-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.h : Added const boolean vrpn_big_endian that tells if
+		the machine the program is running on is big-endian.
+	* vrpn_TempImager.h : Uses memcpy() on little-endian machines to
+		copy data, rather than vrpn_buffer() and vrpn_unbuffer().
+		This switches the endian-ness from normal VRPN, but makes
+		the copies much faster.
+	* vrpn_testimager_client.C : Increased the sleep length to make the
+		image reads faster when both client and server are on the
+		same machine.
+
+2002-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added vrpn_Analog_Output.[Ch] to server build.
+
+2002-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Put back in 'endif' that was deleted by accident.
+
+2002-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Inserted changes from John Stone to make the code compile
+		on Mac's running OS/X.
+	* vrpn_Connection.C : Changed function return type in declaration
+		to match definition.  Added things from John Stone that make
+		it compile on Mac's running OS/X.
+	* vrpn_Connection.h : Changed function declaration types to match
+		function definition.
+	* vrpn_Serial.C : Added changes by John Stone to make it compile
+		on Mac's running OS/X.
+	* vrpn_Shared.C : Same.
+	* vrpn_Types.h : Same.
+
+2002-10-27  Charalampos Fretzagias <fretzagi@cs.unc.edu>
+
+	* vrpn_TempImager.C : The 16bit version of fill_region will no
+		 longer use offset or scale unless they are really needed
+	* testimager_client.C : Added some optimizations, removed call to
+		glutPostRedisplay() which has some bug. It will also not
+		sleep when idle.
+
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Adds testimager_client project from client_src.
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added to compile on ARM
+	* vrpn_TempImager.C : Added include needed on Linux.
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Magellan.h : Added 'altreset' paramter to constructor.
+	* vrpn_Magellan.C : Alternate reset command for older Magellans added.
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Only send region message to user if description gotten.
+	* vrpn_TempImager.C : Same.
+
+2002-09-19  David Borland <borland@cs.unc.edu>
+ 
+        * vrpn_Tracker.C : implemented the request_workspace method in 
+        vrpn_Tracker_Remote.
+
+2002-09-18  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Analog_Output.C : wasn't regestering callbacks in the sample
+        server.  Changed this.
+
+2002-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output.h : Comment changes, cosmetic changes.
+	* vrpn_Analog_Output.C : Cosmetic changes.
+	* vrpn_Zaber.C : Switches to using vrpn_Analog_Output (multi-channel).
+	* vrpn_Zaber.h : Switches to using vrpn_Analog_Output (multi-channel).
+	* vrpn_nikon_controls.C : Switches to using vrpn_Analog_Output.
+	* vrpn_nikon_controls.h : Switches to using vrpn_Analog_Output.
+
+2002-09-18  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.C : cosmetic changes
+
+        * vrpn_Poser_Analog.C : wasn't registering callbacks.  Changed this.
+
+2002-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_flush_input_buffer) : Changed to return 0 or -1
+		on Windows the same way it does on Unix.
+
+2002-09-13  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.[Ch] : Changed some data member names so that if 
+        we want to derive from a poser and a tracker, there won't be
+        a naming ambiguity.  Made some small changes to the Poser_Server
+        sample class.  Added print functions.
+
+        * vrpn_Poser_Analog.[Ch] : Changed so that the Poser_Analog is now
+        derived from Poser, not Poser_Server.  Poser_Server is only a sample
+        server.
+
+2002-09-13  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Analog_Output.[Ch] : Minor changes to the sample
+        vrpn_Analog_Output_Server class
+
+2002-09-12  David Borland  <borland@cs.unc.edu>
+        
+        * vrpn_Analog_Output.[Ch] : New classes for analog devices that
+        write values.  vrpn_Analog was getting overloaded with both 
+        input and output functions, so these have been factored into
+        the old vrpn_Analog, which does analog input, and the new
+        vrpn_Analog_Output, which does analog output.
+
+        * vrpn_Analog.[Ch] : took out the output functionality
+
+        * vrpn_Poser_Analog.[Ch] : changed so that it now uses a
+        vrpn_Analog_Output_Remote
+
+        * vrpn_Zaber.[Ch] : now derived from vrpn_Serial_Analog and
+        vrpn_Analog_Output
+
+        * vrpn_nikon_controls.[Ch] : now derived from vrpn_Serial_Analog
+        and vrpn_Analog_Output
+
+        * vrpn.dsp : added the vrpn_Analog_Output files
+
+2002-09-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.h (getNumVals):  new, returns the number of
+	entries in the 'vals' array.
+
+2002-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Changed a lot a debugged to make test program work.
+	* vrpn_TempImager.C : Same.
+
+2002-09-06  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser_Analog.[Ch] : Changed the Poser_Analog to have a 
+        vrpn_Analog_Server member instead of a vrpn_Analog_Remote.  
+        Therefore, the server code must open up a vrpn_Analog_Remote 
+        connection.  This seems counter-intuitive, but it is correct for
+        the Poser, since we are sending analog values, not receiving them.
+
+2002-09-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Temporary Imager class until the new cool one arrives.
+		Not yet tested, but compiles on PCs and SGIs.
+	* vrpn_TempImager.C : Same.
+	* vrpn.dsp : Adds vrpn_TempImager classes.
+	* Makefile : Adds vrpn_TempImager classes.  Removed obsolete "NEW_LIB" stuff.
+	* vrpn_Analog.h : White space cleanup.
+
+2002-09-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_nikon_controls.h : Control for the focus stage of a Nikon
+		optical microscope.  Later may include other controls as
+		well.  This is a pretty specialized driver for the 3DFM
+		project at UNC.
+	* vrpn_nikon_controls.C : Same.
+	* Makefile : Includes the Nikon files in server source build.
+	* vrpn.dsp : Same.
+
+2002-08-15  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Analog.[Ch] : fixed some bugs from the last commit
+
+        * vrpn_Poser_Analog.[Ch] : fixed some bugs from the last commit
+
+2002-08-15  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Analog.[Ch] : added functions for sending requests to 
+        change a range of channels at once.
+
+        * vrpn_Poser_Analog.[Ch] : created new vrpn_Poser_Analog class that is
+        used when we wish to "pose" an analog device.  Still in testing 
+        phase.
+
+        * vrpn_Poser.[Ch] : moved some code from here to vrpn_Poser_Analog
+
+2002-08-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Changed the way the lateral force is
+		computed to be the slope rather than the component of the
+		normal vector pointing in that direction.  Clip forces in
+		a way that preserves direction.
+
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.h : Added force feedback.
+	* vrpn_DirectXFFJoystick.C : Added force feedback.
+
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Add in definition of VRPN_USE_DIRECTINPUT to enable the
+		compilation of force-feedback joystick code under DirectX (this
+		first implementation doesn't use force feedback, just reads from
+		the joystick).  Remove this definition from VRPN and from
+		vrpn_server to compile without the DirectX 8.0 SDK.
+	* vrpn_DirectXFFJoystick.h : Driver for Force Feedback joystick.
+	* vrpn_DirectXFFJoystick.C : Driver for Force Feedback joystick.
+
+2002-08-12 David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.[Ch] : Incorporating an Analog Device into the Poser
+        class.  Not finished, but want to do some tests.
+
+2002-08-02 David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.[Ch] : files for the new Poser class.  A Poser
+        is basically the inverse of a Tracker.  It takes pose requests for
+        a device and will (eventually) drive the device to the given pose.
+        Right now, we can give pose and velocity requests on the client 
+        side and recieve them on the server side.  Just performing this 
+        commit for some testing purposes.
+
+2002-07-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_drain_output_buffer) : Changed return value to
+		match what it was supposed to be.
+
+2002-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_UNC_Joystick.C : Changed memcpy() to normal assignment
+		to avoid segfault.
+
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_open_commport) : Sets the DTR line to be
+		on while the port is open.  Windows XP turns this off.
+		The TNG3 uses this line for power, so goes dead when
+		opened on XP unless this is done.
+	* vrpn_Serial.C (read_available_characters) : The timeout was
+		coded incorrectly so that it waited zero time when
+		passed a NULL pointer to the timeout; it should wait
+		an infinite time in this case.  Pass it a structure
+		with zeroes to get a zero timeout (or use the other
+		function of the same name).
+	* vrpn_Serial.C (vrpn_flush_output_buffer) : The flush and drain
+		routines were backwards for Windows.  Flush now throws
+		out the characters and drain waits for them to get out
+		the port.
+	* vrpn_Serial.C (vrpn_drain_output_buffer) : The flush and drain
+		routines were backwards for Windows.  Flush now throws
+		out the characters and drain waits for them to get out
+		the port.
+	* vrpn_Tng3.h : Made timeout named _timeout to show that it is
+		a member variable.
+	* vrpn_Tng3.C : Made timout named _timeout to match header.
+		Changed error message to say "TNG3" rather than
+		"Cerealbox" (cut-and-paste error).
+
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Reordered functions (for HP build).
+	* vrpn_Shared.h : Hack to get bools to work on old HP compiler.
+
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_FileConnection.C : Include needed for Linux.
+
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Clock.h : Cosmetic changes.
+	* vrpn_Connection.C : Adds hostname to error messages.
+		Only reports broken connection message once/second.
+	* vrpn_FileConnection.C : Comment changes.  Only print out
+		error messages once per second.
+	* vrpn_Tracker.h : Changed array sizes to use the defined
+		constant meant for that purpose.
+
+2002-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_ForceDevice.[h,C]:  constructors now take the name of
+	the connection as a const char* argument.
+
+2002-06-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Fixing "for (int i = 0;" initialization.
+
+2002-05-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tng3.C : Cosmetic + fixing infinite-loop bug by turning it from
+			hanging waiting for characters to polling for any
+			available characters.
+	* vrpn_Tng3.h : Same.
+
+2002-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Code to interface to Intersense trackers
+		using their library.  By default, it is not built (requires
+		proprietary library) but instead prints an error message.
+	* vrpn_Tracker_isense.h : Same.
+	* Makefile : Added Zaber and Isense drivers to the server library.
+	* vrpn.dsp : Added Zaber and Isense drivers to the server library.
+
+2002-05-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Zaber.C : Code to handle report types 20 and 255.  Added code
+		to tell the
+		remote device its values upon initial connection.  Code to
+		tell it to start off more slowly and have a smaller maximum
+		speed (to help with torque).  Fixed timeout code so that it
+		will reset correctly if devices are unplugged and replugged.
+	* vrpn_Zaber.h : Code to tell the remote device its values upon
+		initial connection
+
+2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Added capability to send requests from an analog
+		remote to an analog server for it to change a channel to the
+		requested value.  Modified the example server to respond by
+		setting its channels to this.  This is done to enable the
+		Zaber linear actuator to be moved to requested positions.
+	* vrpn_Analog.h : Same.
+	* vrpn_Zaber.h : Code to control a Zaber linear actuator.
+	* vrpn_Zaber.C : Code to control a Zaber linear actuator.
+	* vrpn.dsw : Added vrpn_Zaber.[hC] to compile code for Windows.
+		It should work for any architecture.
+
+2002-04-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Dial.C (vrpn_Dial_Remote::mainloop) : Calls client_mainloop()
+
+2002-03-20  Aron Helser  <helser@cs.unc.edu>
+
+	* time_test.dsp : Moved here so it is next to the code it
+	compiles. Standardized settings, see below.
+	* vrpn.dsp : standardized settings, see below. 
+	* vrpn.dsw : Changed location of many dsp files, and made
+	standardized settings for all Debug and Release
+	builds. VRPN_NO_STREAMS defined by default. All object files and
+	compiler-generated files go in vrpn/pc_win32 directory, in a
+	subdirectory that matches the source directory or executable
+	name. 
+
+2002-03-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Button.C (read): change in Python's read method to allow
+	compilation on the SGI.
+
+2002-03-15  Aron Helser  <helser@cs.unc.edu>
+
+	* *.dsp: Added VRPN_COMPILE_DEF environment variable to
+	preprocessor definitions of all projects. Allows nano to define
+	VRPN_NO_STREAMS from the environment, as needed. 
+
+2002-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C (read): Sets the debounce on the Python to check
+		over 30 reads rather than just 3, also makes the code
+		general so that you change one constant and it checks
+		that number of readings.  This is to make the foot pedal
+		for the 3DFM not bounce.
+
+2002-03-13  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (setControlMsgTimeOffset): new method to
+	assist writing a stream file with artibrary time stamps inside. 
+	(d_controlMsgTimeOffset): new, same. 
+	(drop_connection): Use d_controlMsgTimeOffset
+	* vrpn_Spaceball.C: compiler warning fix.
+	
+2002-02-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn.dsp:  added vrpn_LamportClock.[C,h]
+
+2002-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Spaceball.C : Code to drive Spaceballs (from John Stone).
+	* vrpn_Spaceball.h : Code to drive Spaceballs (from John Stone).
+	* Makefile : Include files needed to drive Spaceballs (from John Stone).
+	* vrpn.dsp : Include files needed to drive Spaceballs (from John Stone).
+
+2002-01-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Adding vrpn_Tracker_Server (utility class for apps)
+	* vrpn_Tracker.h : Adding vrpn_Tracker_Server (utility class for apps)
+
+2002-01-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Wande.C : Changing istream messages into stdio messages
+		so that it can compile without the streams library.
+
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C (vrpn_Tracker_3Space::get_report) : Decodes the
+		orientation bytes correctly for all orientations.  Fixes
+		a bug.  This code is still too specific, it looks like it
+		will only work on machines with the same byte order as
+		PCs, and with machines that allow unaligned access.
+
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C (vrpn_Button_SerialMouse::read) : Checks more
+		carefully for unwanted characters.  More comments to
+		describe what is happening.
+
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C (reset) : Some IS900 trackers report
+		a status message with only 54 bytes, rather than the 55 bytes
+		for a Fastrak.  This code is generalized to handle both.
+
+2002-01-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C (get_report) : Added a call to report
+		the changes in IS900 analogs.  The semantics of mainloop()
+		on the analog server had changed so that it no longer calls
+		report() each time through, and this change had not been
+		filtered into the servers that relied on it calling
+		report().  Since sometimes you want report(), and sometimes
+		you want report_changes(), and sometimes you want neither,
+		this is more general.
+
+2001-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C (client_msg_handler) : Made the parsing of the admin
+		message match the encoding of it, so that filtered buttons
+		will respond to requests to set buttons toggle/momentary.
+		This fixes a bug.
+
+2001-12-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Log::open):  added some more diagnostic
+	output when this fails to open a log file.
+
+2001-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.cpp : Program to compare two ways of reading time on Windows.
+	* vrpn.dsw : Added project file to compile time_test application.
+	* vrpn_Analog.C : Modify to compile under Windows CE development environment.
+	* vrpn_BaseClass.C : Modify to compile under Windows CE development environment.
+	* vrpn_BaseClass.h : Modify to compile under Windows CE development environment.
+	* vrpn_Button.C : Modify to compile under Windows CE development environment.
+	* vrpn_Button.h : Modify to compile under Windows CE development environment.
+	* vrpn_Clock.C : Modify to compile under Windows CE development environment.
+	* vrpn_Connection.C : Modify to compile under Windows CE development environment.
+	* vrpn_FileConnection.C : Modify to compile under Windows CE development environment.
+	* vrpn_Serial.C : Modify to compile under Windows CE development environment.
+	* vrpn_Shared.C : Modify to compile under Windows CE development environment.
+	* vrpn_Shared.h : Modify to compile under Windows CE development environment.
+		Note that VRPN_NO_STREAMS is defined whenever Windows CE is being
+		used (they don't have I/O streams!)  This same definition can be used
+		at any time to build a VRPN library that uses FILE * rather than streams.
+	* vrpn_Tracker.C : Modify to compile under Windows CE development environment.
+	* vrpn_Tracker.h : Modify to compile under Windows CE development environment.
+	* vrpn_embedded : Directory containing workspace and project files to build
+		VRPN library under Windows CE.  I can't get the application to build,
+		but am checking this in so that it will start to track other changes.
+
+2001-11-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_5dt.C (vrpn_5dt::get_report) :
+		Changed it to expect 10 characters per report, since
+		that is what they are getting in France (they are the
+		only group that has the glove, and they wrote the
+		driver, so I does what they sez.
+
+2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+		The check put in below causes the system to fail when
+		reading from tracker log files.  This is scary, but I'm
+		taking the check back out until I can debug this
+		properly.
+
+2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+		Check added to see if there is already an entry in the
+		table.  If so, error printed and returned.
+
+2001-10-23  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_SharedObject.C (vrpn_Shared_String::set): fixed some bad
+	logic here that was causing a memory bug - was comparing strings 
+	by comparing the pointers for those strings despite the fact that
+	string values were being put into newly allocated arrays
+
+2001-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Adds a DAQ driver server for the UNC 3D Force Microscope
+	* vrpn_Types.h : Comment clarification
+
+2001-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Makes all libraries in Phantom server use same style
+	* vrpn_Connection.C (vrpn_Endpoint::send_pending_messages) :
+		Better handling of this check to avoid problems.
+
+2001-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added vrpn_print_devices project file
+	* vrpn_Connection.C (vrpn_Endpoint::send_pending_messages) :
+		Check for valid connection before doing anything
+
+2001-07-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* server_src\vrpn_phantom.dsp:  changed the include directories
+	to ghost3.1 and ghost-stl.
+
+2001-07-29  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_Connection.C (vrpn_Endpoint::drop_connection) :
+        Fix parentheses on d_connectionCounter reference.
+        (vrpn_Endpoint::finish_new_connection) : Same.
+
+        * vrpn_Connection.C (vrpn_Synchronized_Connection::mainloop) :
+        Partially fix logic for calling clock server/remote.
+
+        * vrpn_Mutex.C (vrpn_Mutex_Remote::requestIndex) : Add verbose
+        debugging printfs.
+        (vrpn_Mutex_Remote::request) : Same.
+        (vrpn_Mutex_Remote::release) : Same.
+        (vrpn_Mutex_Remote::handle_initialize) : Same.
+
+2001-07-25  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Log.h : New file.
+	* vrpn_Connection.C (vrpn_Log declaration) : Moved to new file.
+
+	* vrpn_File_Connection.C (play_to_user_message) : Log "incoming"
+	messages.
+	(playone_to_filetime) : Same.
+	(read_cookie) : Log cookie.
+
+2001-07-03  David Marshburn  <marshbur@tungsten-cs.cs.unc.edu>
+
+	* vrpn_Shared.h, C: added vrpn_TimevalEqual
+
+	* vrpn_SharedObject.C: 
+	(shouldAcceptUpdate) changed the logic of shouldAcceptUpdate
+	in regard to timing.  Changes were formerly ignored if the 
+	timestamp of the update was <= the time of the last update.
+	Due to poor time resolution, the "=" part of this comparison
+	is a bug.  Now, we only reject an update if the time of the
+	current and last updates are equal, and we are not the
+	serializer, and the update is of a local source.  
+	(vrpn_SharedObject) made d_isSerializer initialized to vrpn_TRUE,
+	so shared object will by default accept changes having equal
+	timestamps.
+	(vrpn_Shared_int32::shouldAcceptUpdate)  removed test of
+	Lamport clock, so that we only ever test the standard timevals.  
+	The implementation of vrpn_LamportClock is incomplete.
+	(useLamportClock) disabled so that Lamport clocks can't be
+	accidentally turned on.
+	- Also removed a bunch of commented-out print statements.
+	
+2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock_Parallel.h : Spoof Master ID directly, removed un-needed
+		re-registry of IDs by using inherited function to send the
+		tracker reports.  The previous version was sending messages
+		with bogus ID because of recent refactoring of the Serial
+		Tracker classes.
+	* vrpn_Flock_Parallel.C : Same.
+
+2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Serial.C : Removed dynamic allocation of comm handles,
+            which was causing seg faults.
+	* vrpn_Tracker.C : Added check for negative sensor number in callback
+		handler (this happened when connected to a malfunctioning
+		tracker server).
+
+2001-06-27  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Endpoint::drop_connection): removed a hack
+	that had been put in to ensure that the "connection dropped" timestamp
+	was at least as late as the last message in the log (this had 
+	caused problems in translating some old files but I don't remember how)
+
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C : Massive cleanup
+	* vrpn_3Space.h : Massive cleanup
+	* vrpn_Analog.C : Massive cleanup
+	* vrpn_Analog.h : Massive cleanup
+	* vrpn_Analog_5dt.C : Massive cleanup
+	* vrpn_Analog_Radamec_SPI.C : Massive cleanup
+	* vrpn_Analog_Radamec_SPI.h : Massive cleanup
+	* vrpn_BaseClass.h : Massive cleanup
+	* vrpn_Button.C : Massive cleanup
+	* vrpn_Button.h : Massive cleanup
+	* vrpn_CerealBox.C : Massive cleanup
+	* vrpn_CerealBox.h : Massive cleanup
+	* vrpn_Clock.C : Massive cleanup
+	* vrpn_Connection.C : Massive cleanup
+	* vrpn_Connection.h : Massive cleanup
+	* vrpn_Dial.h : Massive cleanup
+	* vrpn_Dyna.C : Massive cleanup
+	* vrpn_Dyna.h : Massive cleanup
+	* vrpn_Flock.C : Massive cleanup
+	* vrpn_Flock.h : Massive cleanup
+	* vrpn_Flock_Parallel.C : Massive cleanup
+	* vrpn_Flock_Parallel.h : Massive cleanup
+	* vrpn_ForceDevice.C : Massive cleanup
+	* vrpn_ImmersionBox.C : Massive cleanup
+	* vrpn_ImmersionBox.h : Massive cleanup
+	* vrpn_Joylin.C : Massive cleanup
+	* vrpn_Magellan.C : Massive cleanup
+	* vrpn_Mutex.C : Massive cleanup
+	* vrpn_Serial.C : Massive cleanup
+	* vrpn_Sound.C : Massive cleanup
+	* vrpn_Tng3.C : Massive cleanup
+	* vrpn_Tng3.h : Massive cleanup
+	* vrpn_Tracker.C : Massive cleanup
+	* vrpn_Tracker.h : Massive cleanup
+	* vrpn_Tracker_Fastrak.C : Massive cleanup
+	* vrpn_Tracker_Fastrak.h : Massive cleanup
+	* vrpn_Types.h : Massive cleanup
+	* vrpn_UNC_Joystick.C : Massive cleanup
+	* vrpn_Wanda.C : Massive cleanup
+	* vrpn_raw_sgibox.C : Massive cleanup
+
+2001-06-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Bumped minor version number
+	* vrpn_Shared.C : Put back Perf code, guarded by VRPN_UNSAFE_WINDOWS_CLOCK
+
+2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock.C : Modified to print an error when trying to open a Flock
+		that has a transmitter other than as unit 1.  The code doesn't
+		work in this case, and it is good to tell the user what's up.
+
+2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C (gettimeofday) : Modified the PC version to always use the
+		_ftime() call, rather than attempting to use the performance counter.
+		This means only 6ms accuracy on timing, but the other code was fragile
+		and didn't work across operating systems (98, NT, 2000).
+
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.h (vrpn_Button_Parallel) : Moving default parameter into
+		header file and out of C file
+	* vrpn_Button.C (vrpn_Button_Parallel) : same
+
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C (mainloop) : Made it so that it tries to read a record
+		before checking for timeout (to prevent infinite resets when there
+		are two trackers or other devices running on same server).
+	* vrpn_Analog_5dt.C (mainloop) : Same
+	* vrpn_Analog_Radamec_SPI.C (mainloop) : Same
+	* vrpn_CerealBox.C (mainloop) : Same
+	* vrpn_Analog_.C (mainloop) : Same
+	* vrpn_Dyna.C (mainloop) : Same
+	* vrpn_Flock.C (mainloop) : Same
+	* vrpn_Flock_Parallel.C (mainloop) : Same
+	* vrpn_ImmersionBox.C (mainloop) : Same
+	* vrpn_Tracker_Fastrak.C (mainloop) : Same
+	* vrpn_Button.h : Added entry to read from the buttons on a mouse that
+		is treated as a serial device.
+	* vrpn_Button.C : Same
+	* vrpn_Tng3.h : Code to run a "Totally Neat Gadget", or at least its
+		buttons.  Driver by Rob King at NRL.
+	* vrpn_Tng3.C : Same
+	* Makefile : Modified to load the Tng drivers into servers.
+
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_5dt.h : Driver for 5DT data glove (5 fingers, roll, pitch)
+	* vrpn_Analog_5dt.C : Same
+	* vrpn_Button.h : Added Bel Elgin's changes from 3rdTech to allow the
+		hex specification of the parallel port address as a 4th argument.
+	* vrpn_Button.C : Same plus ability to set an output bit on the port to
+		1 to driver power to an external button device.
+	* vrpn_Joylin.h : Driver for PC joysticks under Linux, written by Harald
+		Barth.
+	* vrpn_Joylin.C : Same
+
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Endpoint) : Adds d_tcp_only member, which tells
+		the endpoint not to try and communicate with its peer using any
+		other mechanism.
+
+	* vrpn_Connection.C : Removed commented-out things left hanging around.
+		(vrpn_Connection) : Made parsing of "tcp:" names more robust and
+			made it so that an endpoint created using the "tcp:" URL is
+			told not to communicate except via TCP.
+		(header_len) : Const helper routine for the following
+		(vrpn_copy_machine_name) : Uses more-robust helper routine
+		(vrpn_get_port_number) : Same
+		(vrpn_copy_rsh_program) : Same
+		(vrpn_copy_rsh_arguments) : Same
+		(server_check_for_incoming_connections) : Tells the endpoint not
+			to open a UDP link if it was created on a server that was
+			connected to with a TCP connection (presumably going through
+			a firewall or NAT).
+		(finish_new_connection_setup) : Doesn't open UDP port if it is a
+			TCP-only endpoint.  Otherwise, it does.
+		(connect_udp_to) : Same.
+
+2001-05-01  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Mutex.C (vrpn_Mutex_Remote::requestIndex): now packs the IP
+	address and process id into this message
+	(vrpn_Mutex_Remote::handle_initialize): checks to see if the
+	index message is tagged with the same IP address and process id that
+	was included in the requestIndex message; this also handles the case
+	when other clients that may use an older version of the code
+	do not provide this unique identifier and ignores index assignments
+	designated for those clients
+	(vrpn_Mutex_Server::handle_requestIndex): now packs whatever was
+	in the requestIndex message from the client so it gets echoed back
+	and the client can figure out which index belongs to it
+	(presumably the client put some unique identifier into the
+	requestIndex message)
+
+2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Mutex.C (handle_gotConnection) : Fix logic error to request
+	a new ID if one hasn't been set already.  Has known failure modes
+	(?), but fewer than when this was incorrect.
+
+2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C (d_reportChanges) : new member variable
+	recording whether we're reporting at the full update_rate or at the
+	rate at which changes actually happen
+	(shouldReport) : new function
+	(mainloop) : call shouldReport()
+
+2001-04-24  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Mutex.hC : added a new message to let the client request
+		the initialization message instead of having the server
+		send this automatically on getting a connection - the problem
+		with the old method is that if the connection was opened before
+		creating the vrpn_Mutex_Remote then the message could be
+		received before the vrpn_Mutex_Remote's callback was registered
+		Now, when creating a vrpn_Mutex_Remote with an already-
+		connected vrpn_Connection, a request for initialization is sent
+		immediately. Otherwise, the vrpn_Mutex_Remote requests
+		initialization when its got_connection callback is 
+		triggered.
+	* vrpn_Tracker.C : changed checks for sensor > TRACKER_MAX_SENSOR_LIST
+		to sensor >= TRACKER_MAX_SENSOR_LIST because a sensor index
+		equal to TRACKER_MAX_SENSOR_LIST is also illegal
+
+2001-03-25  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Analog.C : Tweak of message types to make them more uniform
+	an easy to automatically generate. Class name is first, followed
+	by space, followed by message type.
+	* vrpn_BaseClass.C : same
+	* vrpn_Button.C : same
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_Dial.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForceDevice.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Mutex.C : same
+	* vrpn_RedundantTransmission.C : same
+	* vrpn_Router.C : same
+	* vrpn_SharedObject.C : same
+	* vrpn_Sound.C : same
+	* vrpn_Tracker.C : same
+
+2001-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Removed spaces and other characters not available in
+		C variable names from the message type and sender descriptions
+		so that Aron's Perl script could be used to generate all of
+		these objects (or a program to print them).
+	* vrpn_BaseClass.C : same
+	* vrpn_Button.C : same
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_Dial.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForceDevice.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Mutex.C : same
+	* vrpn_RedundantTransmission.C : same
+	* vrpn_Router.C : same
+	* vrpn_SharedObject.C : same
+	* vrpn_Sound.C : same
+	* vrpn_Tracker.C : same
+
+2001-03-01  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_BaseClass.h: Fixed D'Oxygen comments.
+
+2001-02-15  Tom Hudson <hudson@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Connection::vrpn_Connection) : change
+	logfile arguments for both server and client constructors.
+	(vrpn_Synchronized_Connection::vrpn_Synchronized_Connection) : same.
+	(vrpn_get_connection_by_name) : same.
+	(vrpn_Endpoint) : replace remote_log_name with two names, one for
+        incoming and one for outgoing;  replace d_log with two vrpn_Logs,
+	add d_ convention to remote_log_mode.
+	(vrpn_Endpoint::setLogNames) : new function.
+	(vrpn_Endpoint::openLogs) : same.
+	* vrpn_Connection.C (vrpn_Connection::vrpn_Connection) : handle
+        changed method of log specification.
+	(vrpn_Synchronized_Connection::vrpn_Synchronized_Connection) : pass
+        changed arguments to Connection constructor.
+	(vrpn_get_connection_by_nbame) : same.
+	(vrpn_Endpoint::vrpn_Endpoint) : initialize both log names.
+	(vrpn_Endpoint::init) : create both logs.
+	(vrpn_Endpoint::pack_log_description) : pass both log names.
+	(vrpn_Endpoint::handle_log_message) : unpack both log names.
+	* vrpn_FileConnection.h (vrpn_File_Connection::vrpn_File_Connection) :
+        change logfile arguments for constructor.
+	* vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection) :
+	same.
+
+2001-02-12  Russell M. Taylor II <taylorr@cs.unc.edu>
+	* vrpn_shared.C : vrpn_unbuffer ( ) {All of them} Modified to handle
+	conversions from unaligned buffers.  This was causing problems with
+	the code being used to read from serial buffers in tracker drivers.
+	I give up on trying to save the extra copy.
+
+2001-02-09  Kwan Torrich Skinner <skinner@cs.unc.edu>
+	* vrpn.dsp : removes references to vrpn_DelayedConnection.[C,h]
+
+2001-02-07  Kwan Torrich Skinner <skinner@cs.unc.edu>
+	* vrpn_Connection.C : increased minor version number.
+	* Changelog : fixed Tom's (and my own) dates to be 2001 and not y2k.
+
+2001-02-05 Tom Hudson  <hudson@cs.unc.edu>
+
+        (vrpn_Connection::server_check_for_incoming_connections) :
+        Change one type to compile on the PC
+
+2001-02-05 Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.h: add vrpn_Connection::listen_tcp_sock
+	vrpn_Connection.C
+	(open_tcp_socket) : Add portno argument just like open_udp_socket;
+	default to NULL
+	(vrpn_Endpoint::connect_tcp_to) : Refactor into two functions
+        (vrpn_Connection::server_check_for_incoming_connections) :
+        Add check for TCP connections
+	(vrpn_Connection server constructor) : Add initialization,
+        opening, and listen() call for tcp socket
+	(vrpn_Connection client constructor) : Check for "tcp:"
+        station name; if found, initiate a TCP connection instead
+        of sending UDP message asking the server to initiate on
+
+2001-01-07  Kwan Torrich Skinner  <skinner@cs.unc.edu>
+
+	* vrpn_MTd.dsp: added vrpn_RedundantTransmission to the project
+	file so topo will compile.
+
+2000-12-6  Tom Hudson  <hudson@cs.unc.edu>
+
+	* Makefile:  remove vrpn_DelayedConnection.C, vrpn_DelayedConnection.h
+
+	* vrpn_RedundantTransmission.C
+	(vrpn_RedundantTransmission::mainloop) : rewrite deletion routine
+	so it doesn't occasionally crash for no apparent reason on PCs
+
+	(vrpn_RedundantTransmission::pack_message) : add new parameter;
+	handle special cases and boundary conditions better
+	* vrpn_Tracker.C (vrpn_Tracker_NULL::mainloop) : pass new parameter
+	to vrpn_RedundantTransmission::pack_message
+
+	(vrpn_RedundantTransmission) : new data member d_isEnabled
+	(vrpn_RedundantTransmission::isEnabled) : new function
+	(vrpn_RedundantTransmission::enable) : same
+	(vrpn_RedundantController_Protocol::encode_enable) : same
+	(vrpn_RedundantController_Protocol::decode_enable) : same
+	(vrpn_RedundantController::handle_enable) : same
+	(vrpn_RedundantRemote::enable) : same
+	(vrpn_RedundantController constructor) : add handler registration
+
+	(vrpn_RedundantReceiver) : new class
+
+2000-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock_Parallel.C (mainloop) : Made the code close and then
+		reopen the serial ports (like it used to do before I turned
+		it off because of a buggy Linux kernel).
+
+2000-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C (gettimeofday) : Turned off hi-perf clock for Win98
+		(vrpn_AdjustFrequency) : Removed buggy clock-check code
+
+2000-11-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_FileConnection.C : Fixed parsing of file://.
+	* vrpn_Connection.C : Removed more of the WINDOWS_GETHOSTBYNAME hack
+
+2000-11-01  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.Ch (vrpn_Log::close): calls saveLogSoFar then
+	closes file. 
+	(vrpn_Log::saveLogSoFar): Incremental save of log file whenever
+	called. 
+	(vrpn_Connection::save_log_so_far): calls vrpn_Log::saveLogSoFar
+	on all open endpoints. 
+
+2000-10-20  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (connect_tcp_to): Don't call gethostbyname if
+	machine name provided is an IP number. 
+	(vrpn_connect_udp_port): same
+	(connect_tcp_to): same
+	(connect_udp_to): comment out, replaced with call to
+	vrpn_connect_udp_port
+
+	* vrpn_Mutex.C (getmyIP): Don't call gethostbyname if machine name
+	provided is an IP number. Fixes byte-order problem with return
+	value on win32.
+	
+	* vrpn_BaseClass.C (~vrpn_TextPrinter): Fix compiler warnings.
+
+2000-10-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_drain_output_buffer) :
+		Called drain function, rather than flush.
+
+2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Connection) : add data members
+        d_endpointAllocator, d_updateEndpoint
+	(vrpn_Connection client constructor) : add endpoint allocator
+	as extra argument, call (*d_endpointAllocator) & set d_updateEndpoint
+	instead of calling allocateEndpoint()
+	(vrpn_Connection server constructor) : same
+	(vrpn_Synchronized_Connection client constructor) : add endpoint
+	allocator as extra argument
+	(vrpn_Synchronized_Connection server constructor) : same
+	(vrpn_Connection::updateEndpoints) : new function
+	(vrpn_Connection::allocateEndpoint) : change from virtual to static
+        (vrpn_Connection::connect_to_client) : replace call to
+        allocateEndpoint() with (*d_endpointAllocator), set d_updateEndpoint
+	(vrpn_Connection::server_check_for_incoming_connections) : same
+	(vrpn_Connection::mainloop) : call updateEndpoints() if
+	d_updateEndpoint is true
+	(vrpn_Endpoint::dispatch) : make virtual
+
+	* vrpn_DelayedConnection.C (vrpn_DelayedEndpoint) : new data
+	members d_delayListEnd, d_delayAllTypes, d_typeIsDelayed
+	(vrpn_DelayedConnection) : new data members d_delayAllTypes,
+	d_typeIsDelayed
+	(vrpn_DelayedEndpoint constructor) : remove timeval parameter,
+	initialize d_typeIsDelayed
+	(vrpn_DelayedEndpoint::delayAllTypes) : new function
+	(vrpn_DelayedEndpoint::delayType) : same
+	(vrpn_DelayedEndpoint::enqueue) : same
+	(vrpn_DelayedEndpoint::updateEndpoints) : same
+	(vrpn_DelayedEndpoint::dispatch) : don't delay system messages;
+	TCP/UDP connections will timeout otherwise
+	(vrpn_DelayedConnection constructor) : initialize d_typeIsDelayed
+	(vrpn_DelayedConnection::delayAllTypes) : new function
+	(vrpn_DelayedConnection::delayType) : same
+	(vrpn_RelativeDelayEndpoint) : new class
+	(vrpn_RelativeDelayConnection) : new class
+
+	* vrpn_RedundantTransmission.C 
+	(vrpn_RedundantTransmission::mainloop) : detect & clean-up after
+	error states
+
+2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Deleted commented-out code.
+
+2000-10-16  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_RedundantTransmission.C (defaultInterval) : new function
+        (defaultRetransmissions) : same
+
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+        add details to error output
+
+	* vrpn_Tracker.C (vrpn_Tracker_NULL::mainloop) : add support for
+        vrpn_RedundantTransmission
+        (vrpn_Tracker_NULL::setRedundantTransmission) : new function
+        * vrpn_RedundantTransmission.h : new file
+        * vrpn_RedundantTransmission.C : new file
+        
+2000-10-10  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_FileConnection.hC (vrpn_File_Connection::get_filename) :
+	new function that lets you easily find out what the name of the
+	file was that vrpn opened (you could also do this using
+	vrpn_copy_file_name with the name passed in originally)
+
+2000-10-09  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (server_check_for_incoming_connections): A
+	server used to get NIC for tcp connection from information in the
+	UDP message sent by the client. Instead, use the NIC the UDP
+	message came in on, ignoring NIC information in the UDP
+	message. Allows us to handle multiple NICs more gracefully,
+	because client can't easily discover the right NIC to put in the
+	message.
+	Other comment and verbose printout changes.
+
+2000-10-08  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection):
+        sets d_start_time to be the first time after playing to the first
+        user message to avoid problems with log files that have system
+        messages with messed up timestamps
+
+2000-10-05  Sang-Uok Kum  <kumsu@cs.unc.edu>
+
+	* vrpn_Shared.h: Fixed a mistake which made it not work in VC++. 
+	sleep is still not defined in VC++.
+
+2000-10-04  Sang-Uok Kum  <kumsu@cs.unc.edu>
+
+	* vrpn_Button.C : Include files and #ifdefs changed so in cygwin v1.1
+	it always uses unix sockets instead of window sockets. (The vrpn libary
+	compiled but gave run time errors.) This was only tested for vrpn 
+	client.
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Serial.C : same
+	* vrpn_Shared.C : same
+	* vrpn_Shared.h : same
+	
+2000-10-02  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_SharedObject.h :  Uncommented initial #include of
+        vrpn_Shared.h, which is necessary for compiling under
+        Cygwin 1.1;  code still compiles under VC++ and Cygwin 1.0
+
+2000-10-02  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Shared.C (vrpn_buffer, vrpn_unbuffer) : added these functions
+	for vrpn_int16 and vrpn_uint16 - also, had to remove the one for
+	vrpn_bool because a vrpn_bool is a vrpn_int16
+
+2000-09-26  Tom Hudson  <hudson@cs.unc.edu>
+
+        * Makefile : now that we're using makedepend, got rid of rebuild
+        of entire library whenever any header file changed.
+
+        * vrpn_DelayedConnection.C
+        (vrpn_DelayedEndpoint::send_pending_reports) : implemented
+        (vrpn_DelayedEndpoint::dispatch) : same
+        (vrpn_DelayedEndpoint::dispatchPending) : same
+        (vrpn_DelayedEndpoint::setDelay) : new function
+        (vrpn_DelayedEndpoint::deletePending) : same
+        (vrpn_DelayedConnection::setDelay) : same
+
+2000-09-25  Tom Hudson  <hudson@cs.unc.edu>
+
+	* connection : new directory, to be populated later today
+
+	* vrpn_Connection.C (vrpn_Endpoint::dispatch) : new function
+        (vrpn_Connection::allocateEndpoint) : new function
+        (vrpn_Endpoint::getOneTCPMessage) : call dispatch()
+        (vrpn_Endpoint::getOneUDPMessage) : same
+        (vrpn_Connection::connectToClient) : call allocateEndpoint()
+        (vrpn_Connection::server_check_for_incoming_connections) : same
+        (vrpn_Connection::server constuctor) : same
+        (vrpn_Connection::client constuctor) : same
+
+        * vrpn_DelayedConnection.C : new file
+
+2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
+	return the last timestamp for a logged message
+	* vrpn_Connection.C (vrpn_Endpoint::drop_connection) : Since we
+	read the actual time here to log dropped connection message, this
+        was setting back the time for programs that used the logging
+        mechanism for translation of old data into new log files. Now, in the
+	case of logging and when the current time is less than the last log
+        time, this function records the dropped_connection message with 
+        the previous log time instead
+	* vrpn_Connection.C (vrpn_Synchronized_Connection::client constructor):
+	this function now calls pack_sender_description for vrpn_CONTROL and
+        pack_type_description for vrpn_got_connection, vrpn_dropped_connection,
+        vrpn_got_first_connection, vrpn_dropped_last_connection so that they
+	will get put into a log file even if the endpoint is not connected
+	(needed for translation) - (At least I think this is why they aren't
+	getting put into the log file)
+
+2000-09-21  Tom Hudson  <hudson@cs.unc.edu>
+
+        (vrpn_SharedObject::handle_gotConnection) : small fix for
+        non-serialized use
+
+2000-09-18  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_SharedObject.C:
+        (class vrpn_SharedObject)
+        d_isNegotiatingSerializer : new data member
+        (vrpn_SharedObject::becomeSerializer) : test & set
+        d_isNegotiatingSerializer
+        (vrpn_SharedObject::handle_requestSerializer) : same
+        (vrpn_SharedObject::handle_grantSerializer) : clear
+        d_isNegotiatingSerializer
+        (vrpn_SharedObject::handle_assumeSerializer) : same
+        (vrpn_SharedObject::postBindConnection) : check for NULL connection,
+        moved code from serverPostBindConnection
+        (vrpn_SharedObject::serverPostBindConnection) : same
+        (vrpn_SharedObject::handle_gotConnection) : generalized,
+        renamed from handle_gotConnectionToRemote
+
+
+2000-09-17  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_SharedObject.C:
+        (class vrpn_SharedObject)
+        d_serverId, d_remoteId, d_peerId, d_update_type, d_lamportUpdate_type :
+        new data members
+        d_updateFromServer_type, d_updateFromRemote_type, d_myUpdate_type,
+        d_updateFromServerLamport_type, d_updateFromRemoteLamport_type :
+        remove
+        (vrpn_SharedObject::postBindCleanup) : new function
+        (vrpn_SharedObject::serverPostBindCleanup) : same
+        (vrpn_SharedObject::remotePostBindCleanup) : same
+        (vrpn_SharedObject::sendUpdate) : same
+        (vrpn_SharedObject::handleUpdate) : same
+        (vrpn_SharedObject::handle_gotConnectionToRemote) : same
+        (vrpn_SharedObject::handle_update) : same
+        (vrpn_SharedObject::becomeSerializer) : simplify
+        (vrpn_SharedObject::handle_requestSerializer) : simplify
+        (vrpn_SharedObject::handle_grantSerializer) : simplify
+        (vrpn_SharedObject::handle_assumeSerializer) : simplify
+        (vrpn_Shared_int32::sendUpdate) : remove first parameter
+        (vrpn_Shared_float64::sendUpdate) : same
+        (vrpn_Shared_String::sendUpdate) : same
+        (vrpn_Shared_int32::handleUpdate) : new function
+        (vrpn_Shared_float64::handleUpdate) : same
+        (vrpn_Shared_String::handleUpdate) : same
+
+2000-09-15  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_LamportClock.h : changed <> on include to ""
+
+2000-09-12  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_BaseClass.h : made some of the comments 80-column correct
+        so I could read them.
+
+        * vrpn_SharedObject.h: (becomeSerializer) : new function
+        d_requestSerializer_type, d_grantSerializer_type,
+        d_assumeSerializer_type : new data members
+        d_queueSets : new data member (probably unnecessary)
+        d_becomeSerializer_type : removed old data member
+        (handle_requestSerializer) : new function
+        (handle_grantSerializer) : renamed from handle_becomeSerializer
+        (handle_assumeSerializer) : new function
+        (vrpn_SerializerPolicy) : renamed vrpn_DENY to vrpn_DENY_REMOTE,
+        added vrpn_DENY_LOCAL
+
+        * vrpn_SharedObject.C: (vrpn_SharedObject constructor) :
+        default values for new data members, d_lClock.
+        (vrpn_SharedObject::becomeSerializer) : new function
+        (vrpn_SharedObject::handle_requestSerializer) : new function
+        (vrpn_SharedObject::handle_grantSerializer) :
+        renamed from handle_becomeSerializer
+        (vrpn_SharedObject::handle_assumeSerializer) : new function
+        (vrpn_Shared_int32_Server::bindConnection) : added registration
+        of handler for requestSerializer
+        (vrpn_Shared_float64_Server::bindConnection) : added registration
+        of handler for requestSerializer
+        (vrpn_Shared_String_Server::bindConnection) : added registration
+        of handler for requestSerializer
+	(vrpn_Shared_int32::shouldAcceptUpdate) : added handling for
+        vrpn_DENY_LOCAL
+	(vrpn_Shared_float64::shouldAcceptUpdate) : same
+	(vrpn_Shared_String::shouldAcceptUpdate) : same
+
+
+2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_FileConnection.C (vrpn_File_Connection::reset) : 
+	Added call to d_endpoints[0]->drop_connection() to clear all state for
+	replaying the file from the beginning.
+        * vrpn_FileConnection.C (vrpn_File_Connection::mainloop) :
+	returns -1 if there is an error reading from the file
+
+2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Mutex.C (vrpn_Mutex_Server::~vrpn_Mutex_Server) : added
+	unregister messages to correspond to register messages in the
+	constructor (should be fixed using vrpn_BaseClass later)
+	* vrpn_Mutex.C (vrpn_Mutex_Remote::~vrpn_Mutex_Remote) : added
+        unregister messages to correspond to register messages in the
+        constructor (should be fixed using vrpn_BaseClass later)
+	* vrpn_FileConnection.C (vrpn_File_Connection::constructor) :
+	took out code that set the first message to the first
+	user message because when we later get a message that clears
+	the translation table there is no way to rewind and rebuild
+	the translation table because the initial system messages
+	don't get replayed (left in the part that actually skips to the
+	first user message though because this is apparently useful in
+	order to avoid timing problems)
+	* vrpn_FileConnection.C (vrpn_File_Connection::reset) :
+	added code from constructor to skip to the first user message
+
+2000-09-07  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::clear) : changed this
+	to do delete [] instead of delete on d_entry[i].name since a
+	cName (its type) is a typedef for an array
+
+2000-09-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Magellan.C (vrpn_write_slowly) : Added parameter for how long
+		wait.
+		(get_report) : Returns 1 if a full report found
+		(mainloop): Retries reading when a full report is found
+			so that the buffer is cleared of all reports
+
+	* vrpn_Router.C : #include string.h to compile on Linux
+
+2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.h (check_vrpn_file_cookie) : Now this will work
+	if the version is >= 4.0 and <= the current version
+
+2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_Connection.h (check_vrpn_file_cookie) : This only worked if
+	the version was 4.0, now it works if the version is the current one
+	or less
+
+2000-08-31  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable):  Removed a lot of
+        #if 1/#if 0 clauses that have become set.
+	* vrpn_Connection.C (vrpn_TranslationTable::addLocalID):  Added
+        a guard to strcmp to make sure we weren't comparing against NULL.
+
+2000-08-28  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_Router.[hC] (vrpn_Router, ~vrpn_Router) : Made it so that
+	the big arrays in this class get dynamically allocated instead
+	of statically allocated so we don't have to use the huge_objects
+	flag with Visual C++
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added Brown patches to compile under AIX.
+		Cleaned up RANLIB and some dependencies.
+
+	* vrpn_Shared.h : Added INVALID_SOCKET defs for Win32.
+
+	* vrpn_Types.h : Added AIX definitions.
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Wanda.h : New file
+	* vrpn_Wanda.C : New file
+	* Makefile : Add Wanda to server library
+
+2000-08-27  Jeffrey Juliano  <juliano@cs.unc.edu>
+
+	* .cvsignore: Add sgi_irix.n32.mips3 to ignore list.
+
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C (~vrpn_TextPrinter) : Hack to remove segfaults
+	* vrpn_Router.C : New file
+	* vrpn_Router.h : New file
+	* Makefile : Added vrpn_Router compilation
+
+2000-08-22  Kwan Skinner  <skinner@cs.unc.edu>
+
+	* vrpn_Connection.C (check_vrpn_file_cookie) : New function
+	* vrpn_Connection.h (check_vrpn_file_cookie) : New function
+	* vrpn_FileConnection.C (read_cookie) : Now calls check_vrpn_file_cookie
+
+2000-08-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C (connect_to_client) : Bug fix
+		Remove parameter that is now obsolete.
+
+2000-08-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mutex.C (vrpn_Mutex_Remote) : Type cast
+
+2000-08-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Radamec.C (int_to_pan) : Fix negative rotations
+
+2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Radamec.C (send_command) : Removed slow writes
+		(int_to_pan) : Conversion fixed
+		(reset) : Chopped out large parts that didn't work but should
+		(get_report) : Set to ignore commands in case they are sent
+
+	* vrpn_Tracker_AnalogFly.h : Added "absolute" and offset
+	* vrpn_Tracker_AnalogFly.C : Added "absolute" and offset
+
+2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Radamec_SPI.C : Changed some warnings into errors
+		(mainloop) : Added a watchdog timer
+
+	* vrpn_Connection.C (vrpn_Log::setCompoundName): added 'const'
+
+	* vrpn_Serial.C (vrpn_open_commport): Adds input baud to SGI code
+
+	* vrpn_Tracker_Fastrak.C (get_report): Flushes buffer when resynching
+
+	* vrpn_ImmersionBox.h : New file
+
+	* vrpn_ImmersionBox.C : New file
+
+2000-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp: Adds a driver for the Radamec Serial Position Interface
+	(Camera tracker)
+
+	* vrpn.dsw: same
+	* vrpn_Analog_Radamec_SPI.h: same
+	* vrpn_Analog_Radamec_SPI.C: same
+
+	* vrpn_Serial.h (vrpn_open_commport): Adds bit length and parity to
+	the optional parameters to the serial-port open.
+
+	* vrpn_Serial.C (vrpn_open_commport): same
+	* vrpn_Analog.C (vrpn_Serial_Analog::vrpn_Serial_Analog): same
+	* vrpn_Analog.h (vrpn_Serial_Analog::vrpn_Serial_Analog): same
+
+	* vrpn_Tracker.C: Modified the packing code to use vrpn_buffer()
+	and vrpn_unbufer().  Removed the redundant change handlers for all
+	sensors, by replacing them with ones that have optional parameters.
+
+	* vrpn_Tracker.h: same
+
+	* vrpn_AnalogFly.C (vrpn_AnalogFly::vrpn_AnalogFly): Sets the reset
+	button to NULL by default so that the code won't blow up if you don't
+	have one.

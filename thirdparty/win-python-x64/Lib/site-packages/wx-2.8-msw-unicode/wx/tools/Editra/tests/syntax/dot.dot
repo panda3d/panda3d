@@ -1,0 +1,32 @@
+// Syntax Highlighting Test file for DOT
+// Some Comments about this file
+// Sample graphviz DOT file from 
+// http://www.graphviz.org/Gallery/directed/cluster.html
+
+digraph "Example" {
+
+	subgraph cluster_0 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+		a0 -> a1 -> a2 -> a3;
+		label = 'process #1';
+	}
+
+	subgraph cluster_1 {
+		node [style=filled];
+		b0 -> b1 -> b2 -> b3;
+		label = "process #2";
+		color=blue
+	}
+	begin -> a0;
+	begin -> b0;
+	a1 -> b3;
+	b2 -> a3;
+	a3 -> a0;
+	a3 -> end;
+	b3 -> end;
+
+	begin [shape=Mdiamond];
+	end [shape=Msquare];
+}

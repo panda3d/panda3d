@@ -1,0 +1,10 @@
+Sun, 25 Aug 2013 13:51:41 +0200
+
+This is VRPN 7.30, downloaded from:
+http://www.cs.unc.edu/Research/vrpn/downloads/vrpn_07_30.zip
+Compiled in Release mode using CMake 2.8.11.2, MSVC Express 2010 and WinSDK 7.1.
+Note that quat also has to be built, it is a separate .sln file.
+
+License is Boost Software License 1.0.
+
+~rdb

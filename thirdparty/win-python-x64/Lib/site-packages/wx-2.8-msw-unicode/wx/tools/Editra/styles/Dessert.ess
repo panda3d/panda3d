@@ -1,0 +1,168 @@
+/* Editra Style Sheet
+ * Name: Dessert
+ * Author: Greg Allen <mail@jga23.com>
+ * License: wxWindows License
+ */
+default_style {
+        fore:#CCCCCC;
+        back:#333333;
+        face:%(primary)s;
+        size:%(size)d;
+}
+
+number2_style {
+        fore:#CCCCCC;
+}
+
+stringeol_style {
+        fore:#FF0000;
+}
+
+caret_line {
+        back: #3F3F3F;
+}
+
+comment_style {
+        fore:#999999;
+}
+
+keyword_style {
+        fore:#F0E68C;
+}
+
+keyword3_style {
+        fore:#CD5C5C;
+}
+
+guide_style {
+        fore:#CCCCCC;
+}
+
+keyword4_style {
+        fore:#CCCCCC;
+}
+
+ideol_style {
+        fore:#CCCCCC;
+}
+
+array_style {
+        fore:#87CEEB;
+}
+
+global_style {
+        fore:#CCCCCC;
+}
+
+line_num {
+        fore:#CCCCCC;
+}
+
+pre2_style {
+        fore:#CCCCCC;
+}
+
+string_style {
+        fore:#98FB98;
+}
+
+class_style {
+        fore:#87CEEB;
+}
+
+ctrl_char {
+        fore:#CCCCCC;
+}
+
+marker_style {
+        fore:#CCCCCC;
+}
+
+keyword2_style {
+        fore:#87CEEB;
+}
+
+class2_style {
+        fore:#CCCCCC;
+}
+
+unknown_style {
+        fore:#CCCCCC;
+}
+
+calltip {
+        fore:#CCCCCC;
+}
+
+scalar_style {
+        fore:#CCCCCC;
+}
+
+char_style {
+        fore:#98FB98;
+}
+
+here_style {
+        fore:#CCCCCC;
+}
+
+number_style {
+        fore:#CCCCCC;
+}
+
+regex_style {
+        fore:#CCCCCC;
+}
+
+folder_style {
+        fore:#CCCCCC;
+}
+
+pre_style {
+        fore:#CCCCCC;
+}
+
+decor_style {
+        fore:#87CEEB;
+}
+
+scalar2_style {
+        fore:#CCCCCC;
+}
+
+funct_style {
+        fore:#CCCCCC;
+}
+
+brace_good {
+        fore:#CCCCCC;
+}
+
+error_style {
+        fore:#CD5C5C;
+}
+
+directive_style {
+        fore:#CCCCCC;
+}
+
+btick_style {
+        fore:#CCCCCC;
+}
+
+operator_style {
+        fore:#BDB76B;
+}
+
+margin_style {
+        fore:#CCCCCC;
+}
+
+brace_bad {
+        fore:#CCCCCC;
+}
+
+dockey_style {
+        fore:#CCCCCC;
+}
+

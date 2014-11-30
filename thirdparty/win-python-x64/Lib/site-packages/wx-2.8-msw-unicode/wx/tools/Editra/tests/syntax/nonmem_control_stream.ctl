@@ -1,0 +1,21 @@
+$PROB theophylline pharmacodynamics standard control stream 
+$DATA theopd.dat IGNORE # 
+$INPUT ID TIME THEO AGE WT GEND RACE DIAG PEFR=DV 
+$ESTIM PRINT=1 POSTHOC 
+MSFO=theopd.msf 
+$COV 
+$THETA (0,150.,) ;popE0 1 
+$THETA (0,200.,) ;popEMAX 2 
+$THETA (.001,10,) ;popEC50 3 
+$OMEGA 0.5 ;etaE0 1 
+$OMEGA 0.5 ;etaEMAX 2 
+$OMEGA 0.5 ;etaEC50 3 
+$SIGMA 100 ;errSD 1 
+$PRED 
+E0=THETA(1)*EXP(ETA(1)) 
+EMAX=THETA(2)*EXP(ETA(2)) 
+EC50=THETA(3)*EXP(ETA(3)) 
+Y = E0 + EMAX*THEO/(THEO+EC50) + ERR(1) 
+$TABLE ID TIME THEO AGE WT GEND RACE DIAG 
+E0 EMAX EC50 Y 
+NOPRINT ONEHEADER FILE=theopd.fit 

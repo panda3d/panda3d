@@ -1,0 +1,27 @@
+//Cg
+
+void vshader(float4 vtx_position : POSITION,
+             float4 vtx_texcoord0: TEXCOORD0,
+             uniform float4x4 mat_modelproj,
+             uniform float4 k_scale,
+	     uniform float4 k_concentration,
+	     out float4 l_position : POSITION,
+	     out float4 l_texcoord0 : TEXCOORD0
+             )
+{
+  l_texcoord0 = vtx_texcoord0;
+  float4 position = vtx_position * k_scale;
+  l_position = mul(mat_modelproj, position);
+  float2 absoffs = abs(l_position.xy / l_position.w);
+  float maxoffs = max(absoffs.x, absoffs.y);
+  float expand = (1-pow((1-maxoffs),k_concentration.x)) / maxoffs;
+  l_position.xy *= expand;
+}
+
+void fshader(in float2 l_texcoord0 : TEXCOORD0,
+             uniform sampler2D tex_0 : TEXUNIT0,
+	     uniform float4 k_texDisable,
+             out float4 o_color:COLOR)
+{
+  o_color = saturate(tex2D(tex_0, l_texcoord0) + k_texDisable);
+}

@@ -1,0 +1,23 @@
+/* Syntax Highlighting Test File for Editra Style Sheets
+ * Comments are like this
+ */
+
+default_style {
+    fore: #FFFFFF;
+    back: #000000;
+    face: %(mono)s;
+    size: %(size)d;
+}
+
+keyword_style {
+    fore: #A52B2B bold;
+    back: #F6F6F6;
+    size: %(size)d;
+}
+
+/* Definition with a bad attribute size5 */
+class_style {
+    fore: #2E8B57 bold;
+    back: #F6F6F6;
+    size5: %(size)d;
+}

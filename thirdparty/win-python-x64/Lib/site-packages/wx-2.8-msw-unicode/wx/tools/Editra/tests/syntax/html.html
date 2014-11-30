@@ -1,0 +1,39 @@
+<!-- Syntax Highlighting Test File for Html -->
+<%@ LANGUAGE=VBScript %> 
+<% OPTION EXPLICIT %>
+<!-- Embedded ASP -->
+<%
+    Dim sMessage
+    Dim bIncludeJavaScript
+    
+    sMessage = "Hello World" 'This is the message to be displayed
+    
+    'Getting a request value that defines if the javascript part should be included
+    bIncludeJavaScript = FALSE
+    If (Request("withJavaScript") = "Y") Then
+        bIncludeJavaScript = TRUE
+    End If
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+   <head>
+    <!-- Some Comments about this file -->
+	<title>Hello World</title>
+	<link href="hello.css" rel="stylesheet" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <script language="JavaScript" type="text/JavaScript">
+        <!-- Some Embedded JavaScript --!>
+        <!--
+        function MM_swapImgRestore() { //v3.0
+        var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+        }
+        //-->
+        </script>
+   </head>
+   <body>
+       <div>
+        <h1>Hello World HTML</h1>
+        <p class="bigHello">HELLO HELLO HELLO</p>
+       </div>
+   </body>
+</html>

@@ -1,0 +1,12 @@
+Sun, 14 Sep 2014 21:15:01 +0200
+
+This is Eigen 3.2.2, downloaded from:
+https://bitbucket.org/eigen/eigen/get/3.2.2.zip
+
+No need to compile, since this is a template library.
+Just copy over the Eigen directory.
+
+License is mostly MPL2, and MPL2 or more permissive when compiled
+with the EIGEN_MPL2_ONLY preprocessor symbol.  See COPYING.README.
+
+~rdb

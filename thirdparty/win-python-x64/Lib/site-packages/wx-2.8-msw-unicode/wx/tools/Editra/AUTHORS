@@ -1,0 +1,35 @@
+Editra
+Developer's Text Editor
+
+Author:
+Cody Precord <cprecord@editra.org>
+
+Translations:
+Angelo (Italian)
+Anri Ito (Japanese)
+Cody Precord (English/Japanese)
+DR0ID (German)
+gasolin (Traditional Chinese)
+Gerard Petersen (Dutch)
+heccj (Simplified Chinese)
+Igor Chomko (Ukrainian)
+Janis.sl (Latvian)
+JoNNeMaNN (Norwegian Nynorsk)
+mustafa (Turkish)
+Raul Gonzalez Duque (Spanish)
+Sergei Zivukov (Russian)
+shaohao (Simplified Chinese)
+slavOnic (Russian)
+Peter Magnusson (Swedish)
+Tomas Fryda (Czech)
+Vladimir Lazic (Serbian)
+And many more, see the launchpad site for a full list of contributors!
+
+Contributors:
+DR0ID (Comment Browser)
+Kevin Smith (Projects Plugin)
+Laurent Dufrenchou (IPyShell)
+Kurt Schelin (App Icon Design)
+shaohao (Statusbar improvement patch)
+Giuseppe "Cowo" Corbelli (various patches)
+quode (OCaml support for Launch plugin)

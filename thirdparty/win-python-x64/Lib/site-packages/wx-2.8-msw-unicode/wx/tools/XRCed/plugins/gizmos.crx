@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<resource>
+  <component class="Component" name="LEDNumberCtrl" provider="Roman Rolinsky &lt;genericsoma@gmail.com&gt;">
+    <groups>
+      <item>control</item>
+    </groups>
+    <attributes>
+      <item>pos</item>
+      <item>size</item>
+      <item>value</item>
+    </attributes>
+    <has-name>1</has-name>
+    <styles>
+      <item>wxLED_ALIGN_LEFT</item>
+      <item>wxLED_ALIGN_RIGHT</item>
+      <item>wxLED_ALIGN_CENTER</item>
+      <item>wxLED_ALIGN_FADED</item>
+    </styles>
+    <module>xh_gizmos</module>
+    <handler>LEDNumberCtrlXmlHandler</handler>
+    <menu>gizmo</menu>
+    <label>LED number</label>
+    <help>LED-style control</help>
+    <panel>Gizmos</panel>
+    <pos>1,0</pos>
+  </component>
+  <component class="Component" name="EditableListBox" provider="Roman Rolinsky &lt;genericsoma@gmail.com&gt;">
+    <groups>
+      <item>control</item>
+    </groups>
+    <attributes>
+      <item>pos</item>
+      <item>size</item>
+      <item>label</item>
+      <item>content:ContentAttribute</item>
+    </attributes>
+    <has-name>1</has-name>
+    <styles>
+      <item>wxEL_ALLOW_NEW</item>
+      <item>wxEL_ALLOW_EDIT</item>
+      <item>wxEL_ALLOW_DELETE</item>
+    </styles>
+    <module>xh_gizmos</module>
+    <handler>EditableListBoxXmlHandler</handler>
+    <menu>gizmo</menu>
+    <label>editable list box</label>
+    <help>list box with editable items</help>
+    <panel>Gizmos</panel>
+    <pos>0,1</pos>
+  </component>
+  <component class="Component" name="TreeListCtrl" provider="Roman Rolinsky &lt;genericsoma@gmail.com&gt;">
+    <groups>
+      <item>control</item>
+    </groups>
+    <attributes>
+      <item>pos</item>
+      <item>size</item>
+    </attributes>
+    <has-name>1</has-name>
+    <styles>
+      <item>wxTR_DEFAULT_STYLE</item>
+      <item>wxDEFAULT_COL_WIDTH</item>
+      <item>wxTL_MODE_NAV_FULLTREE</item>
+      <item>wxTL_MODE_NAV_EXPANDED</item>
+      <item>wxTL_MODE_NAV_VISIBLE</item>
+      <item>wxTL_MODE_NAV_LEVEL</item>
+      <item>wxTL_MODE_FIND_EXACT</item>
+      <item>wxTL_MODE_FIND_PARTIAL</item>
+      <item>wxTL_MODE_FIND_NOCASE</item>
+      <item>wxTREE_HITTEST_ONITEMCOLUMN</item>
+      <item>wxTR_COLUMN_LINES</item>
+      <item>wxTR_VIRTUAL</item>
+      <item>wxTL_ALIGN_LEFT</item>
+      <item>wxTL_ALIGN_RIGHT</item>
+      <item>wxTL_ALIGN_CENTER</item>
+      <item>wxTL_SEARCH_VISIBLE</item>
+      <item>wxTL_SEARCH_LEVEL</item>
+      <item>wxTL_SEARCH_FULL</item>
+      <item>wxTL_SEARCH_PARTIAL</item>
+      <item>wxTL_SEARCH_NOCASE</item>
+      <item>wxTR_DONT_ADJUST_MAC</item>
+    </styles>
+    <module>xh_gizmos</module>
+    <handler>TreeListCtrlXmlHandler</handler>
+    <menu>gizmo</menu>
+    <label>tree list ctrl</label>
+    <help>tree combined with list control</help>
+    <panel>Gizmos</panel>
+    <pos>0,0</pos>
+  </component>
+  <component class="Component" name="DynamicSashWindow" provider="Roman Rolinsky &lt;genericsoma@gmail.com&gt;">
+    <groups>
+      <item>control</item>
+    </groups>
+    <attributes>
+      <item>pos</item>
+      <item>size</item>
+    </attributes>
+    <has-name>1</has-name>
+    <styles>
+      <item>wxDS_MANAGE_SCROLLBARS</item>
+      <item>wxDS_DRAG_CORNER</item>
+    </styles>
+    <events>
+      <item>wxEVT_DYNAMIC_SASH_SPLIT</item>
+      <item>wxEVT_DYNAMIC_SASH_UNIFY</item>
+    </events>
+    <module>xh_gizmos</module>
+    <handler>DynamicSashWindowXmlHandler</handler>
+    <menu>gizmo</menu>
+    <label>dynamic sash window</label>
+    <panel>Gizmos</panel>
+    <pos>0,2</pos>
+  </component>
+  <object class="wxPanel" name="test">
+    <object class="wxBoxSizer">
+      <object class="sizeritem">
+        <object class="EditableListBox">
+          <size>100,100</size>
+          <label>label</label>
+          <content>
+            <item>item1</item>
+          </content>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="TreeListCtrl"/>
+      </object>
+      <object class="sizeritem">
+        <object class="DynamicSashWindow">
+          <size>100,100</size>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>
