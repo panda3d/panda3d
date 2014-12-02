@@ -29,7 +29,13 @@
 //               on the mesh.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAAI AINode {
-public:
+PUBLISHED:
+  // This variable specifies whether the node is an obtacle or not.
+  // Used for dynamic obstacle addition to the environment.
+  // obstacle = false
+  // navigational = true
+  bool _type;
+
   // This variable specifies the node status whether open, close
   // or neutral.
   // open = belongs to _open_list.
@@ -41,12 +47,6 @@ public:
     ST_neutral
   };
   Status _status;
-
-  // This variable specifies whether the node is an obtacle or not.
-  // Used for dynamic obstacle addition to the environment.
-  // obstacle = false
-  // navigational = true
-  bool _type;
 
   // The score is used to compute the traversal expense to nodes
   // when using A*.
@@ -76,7 +76,6 @@ public:
   // is written into navmesh.csv file.
   AINode *_next;
 
-PUBLISHED:
   AINode(int grid_x, int grid_y, LVecBase3f pos, float w, float l, float h);
   ~AINode();
 

@@ -78,12 +78,6 @@ class DoInterestManager(DirectObject.DirectObject):
     Top level Interest Manager
     """
     notify = directNotify.newCategory("DoInterestManager")
-    try:
-        tempbase = base
-    except:
-        tempbase = simbase
-    InterestDebug = tempbase.config.GetBool('interest-debug', False)
-    del tempbase
 
     # 'handle' is a number that represents a single interest set that the
     # client has requested; the interest set may be modified
@@ -113,6 +107,8 @@ class DoInterestManager(DirectObject.DirectObject):
         # keep track of request contexts that have not completed
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
+
+        self.InterestDebug = config.GetBool('interest-debug', False)
 
     def __verbose(self):
         return self.InterestDebug or self.getVerbose()
@@ -508,18 +504,23 @@ class DoInterestManager(DirectObject.DirectObject):
                 'trying to set interest to invalid parent: %s' % parentId)
         datagram = PyDatagram()
         # Add message type
-        datagram.addUint16(CLIENT_ADD_INTEREST)
-        datagram.addUint16(handle)
-        datagram.addUint32(contextId)
-        datagram.addUint32(parentId)
         if isinstance(zoneIdList, types.ListType):
             vzl = list(zoneIdList)
             vzl.sort()
             uniqueElements(vzl)
+            datagram.addUint16(CLIENT_ADD_INTEREST_MULTIPLE)
+            datagram.addUint32(contextId)
+            datagram.addUint16(handle)
+            datagram.addUint32(parentId)
+            datagram.addUint16(len(vzl))
             for zone in vzl:
                 datagram.addUint32(zone)
         else:
-           datagram.addUint32(zoneIdList)
+            datagram.addUint16(CLIENT_ADD_INTEREST)
+            datagram.addUint32(contextId)
+            datagram.addUint16(handle)
+            datagram.addUint32(parentId)
+            datagram.addUint32(zoneIdList)
         self.send(datagram)
 
     def _sendRemoveInterest(self, handle, contextId):
@@ -534,9 +535,8 @@ class DoInterestManager(DirectObject.DirectObject):
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_REMOVE_INTEREST)
+        datagram.addUint32(contextId)
         datagram.addUint16(handle)
-        if contextId != 0:
-            datagram.addUint32(contextId)
         self.send(datagram)
         if __debug__:
             state = DoInterestManager._interests[handle]
@@ -587,8 +587,8 @@ class DoInterestManager(DirectObject.DirectObject):
         This handles the interest done messages and may dispatch an event
         """
         assert DoInterestManager.notify.debugCall()
-        handle = di.getUint16()
         contextId = di.getUint32()
+        handle = di.getUint16()
         if self.__verbose():
             print 'CR::INTEREST.interestDone(handle=%s)' % handle
         DoInterestManager.notify.debug(
