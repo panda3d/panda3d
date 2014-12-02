@@ -5,3 +5,11 @@ compiler:
 before_script:
   - sudo apt-get install python-dev libpng-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libjpeg-dev libopenal-dev libode-dev nvidia-cg-toolkit
 script: python makepanda/makepanda.py --everything
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#panda3d"
+    on_success: change
+    on_failure: change
+    use_notice: true
+    skip_join: true
