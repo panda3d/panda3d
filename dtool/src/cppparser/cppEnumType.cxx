@@ -12,11 +12,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "cppEnumType.h"
 #include "cppTypedef.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
+#include "cppConstType.h"
 #include "cppScope.h"
 #include "cppParser.h"
 #include "indent.h"
@@ -29,7 +29,8 @@
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
             const CPPFile &file) :
-  CPPExtensionType(T_enum, ident, current_scope, file)
+  CPPExtensionType(T_enum, ident, current_scope, file),
+  _last_value(NULL)
 {
 }
 
@@ -41,12 +42,31 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
 CPPInstance *CPPEnumType::
 add_element(const string &name, CPPExpression *value) {
   CPPType *type =
-    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
-                                        CPPSimpleType::F_unsigned));
+    CPPType::new_type(new CPPConstType(new CPPSimpleType(
+      CPPSimpleType::T_int, CPPSimpleType::F_unsigned)));
+
   CPPIdentifier *ident = new CPPIdentifier(name);
   CPPInstance *inst = new CPPInstance(type, ident);
-  inst->_initializer = value;
   _elements.push_back(inst);
+
+  if (value == (CPPExpression *)NULL) {
+    if (_last_value == (CPPExpression *)NULL) {
+      // This is the first value, and should therefore be 0.
+      static CPPExpression *const zero = new CPPExpression(0);
+      value = zero;
+
+    } else if (_last_value->_type == CPPExpression::T_integer) {
+      value = new CPPExpression(_last_value->_u._integer + 1);
+
+    } else {
+      // We may not be able to determine the value just yet.  No
+      // problem; we'll just define it as another expression.
+      static CPPExpression *const one = new CPPExpression(1);
+      value = new CPPExpression('+', _last_value, one);
+    }
+  }
+  inst->_initializer = value;
+  _last_value = value;
   return inst;
 }
 
