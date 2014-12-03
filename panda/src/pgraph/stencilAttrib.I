@@ -18,6 +18,6 @@
 //  Description: Returns render state.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int StencilAttrib::
-get_render_state(unsigned int render_state_identifier) const {
-  return _stencil_render_states [render_state_identifier];
+get_render_state(StencilRenderState render_state_identifier) const {
+  return _stencil_render_states[(int)render_state_identifier];
 }

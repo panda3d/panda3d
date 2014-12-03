@@ -43,7 +43,6 @@
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
     displayInformation.h \
@@ -80,7 +79,6 @@
     parasiteBuffer.cxx \
     windowHandle.cxx \
     windowProperties.cxx \
-    stencilRenderStates.cxx \
     stereoDisplayRegion.cxx \
     subprocessWindow.cxx \
     touchInfo.cxx
@@ -118,7 +116,6 @@
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     subprocessWindow.h subprocessWindow.I \
     subprocessWindowBuffer.h subprocessWindowBuffer.I \

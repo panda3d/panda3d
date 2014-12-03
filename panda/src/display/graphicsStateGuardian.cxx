@@ -258,8 +258,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // it is rendered.
   _runtime_color_scale = false;
 
-  _stencil_render_states = 0;
-
   // The default is no shader support.
   _auto_detect_shader_model = SM_00;
   _shader_model = SM_00;
@@ -278,11 +276,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
-
-  if (_stencil_render_states) {
-    delete _stencil_render_states;
-    _stencil_render_states = 0;
-  }
 
   if (_shader_generator) {
     delete _shader_generator;
@@ -1988,12 +1981,6 @@ reset() {
   _last_max_stage_index = 0;
 
   _is_valid = true;
-
-  if (_stencil_render_states) {
-    delete _stencil_render_states;
-    _stencil_render_states = 0;
-  }
-  _stencil_render_states = new StencilRenderStates(this);
 }
 
 ////////////////////////////////////////////////////////////////////
