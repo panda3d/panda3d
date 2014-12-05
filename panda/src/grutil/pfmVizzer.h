@@ -36,7 +36,7 @@ PUBLISHED:
   INLINE PfmFile &get_pfm();
   INLINE const PfmFile &get_pfm() const;
 
-  BLOCKING void project(const Lens *lens);
+  BLOCKING void project(const Lens *lens, const PfmFile *undist_lut = NULL);
   BLOCKING void extrude(const Lens *lens);
 
   INLINE void set_vis_inverse(bool vis_inverse);
