@@ -37,7 +37,7 @@
 #include "thread.h"
 #include "renderAttribRegistry.h"
 #include "py_panda.h"
-  
+
 LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
 CPT(RenderState) RenderState::_empty_state;
@@ -67,7 +67,7 @@ TypeHandle RenderState::_type_handle;
 //               spurious warning if all constructors are private.
 ////////////////////////////////////////////////////////////////////
 RenderState::
-RenderState() : 
+RenderState() :
   _flags(0),
   _auto_shader_state(NULL),
   _lock("RenderState")
@@ -225,6 +225,31 @@ compare_sort(const RenderState &other) const {
     if (a != b) {
       return a < b ? -1 : 1;
     }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::compare_mask
+//       Access: Published
+//  Description: This version of compare_to takes a slot mask that
+//               indicates which attributes to include in the
+//               comparison.  Unlike compare_to, this method
+//               compares the attributes by pointer.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+compare_mask(const RenderState &other, SlotMask compare_mask) const {
+  SlotMask mask = (_filled_slots | other._filled_slots) & compare_mask;
+  int slot = mask.get_lowest_on_bit();
+  while (slot >= 0) {
+    const RenderAttrib *a = _attributes[slot]._attrib;
+    const RenderAttrib *b = other._attributes[slot]._attrib;
+    if (a != b) {
+      return a < b ? -1 : 1;
+    }
+    mask.clear_bit(slot);
+    slot = mask.get_lowest_on_bit();
   }
 
   return 0;
@@ -464,7 +489,7 @@ compose(const RenderState *other) const {
     // to decrement it again later, when the composition entry is
     // removed from the cache.
     result->cache_ref();
-    
+
     // (If the result was just this again, we still store the
     // result, but we don't increment the reference count, since
     // that would be a self-referential leak.)
@@ -558,7 +583,7 @@ invert_compose(const RenderState *other) const {
     // to decrement it again later, when the composition entry is
     // removed from the cache.
     result->cache_ref();
-    
+
     // (If the result was just this again, we still store the
     // result, but we don't increment the reference count, since
     // that would be a self-referential leak.)
@@ -759,7 +784,7 @@ get_auto_shader_state() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 output(ostream &out) const {
@@ -789,12 +814,12 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "(empty)\n";
   }
 
@@ -804,7 +829,7 @@ write(ostream &out, int indent_level) const {
     const Attribute &attrib = _attributes[slot];
     nassertv(attrib._attrib != (RenderAttrib *)NULL);
     attrib._attrib->write(out, indent_level);
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -927,7 +952,7 @@ get_num_unused_states() {
 
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
-          << "Unused state: " << (void *)state << ":" 
+          << "Unused state: " << (void *)state << ":"
           << state->get_ref_count() << " =\n";
         state->write(pgraph_cat.debug(false), 2);
       }
@@ -1062,7 +1087,7 @@ garbage_collect() {
   }
   num_this_pass = min(num_this_pass, size);
   int stop_at_element = (_garbage_index + num_this_pass) % size;
-  
+
   int num_elements = 0;
   int si = _garbage_index;
   do {
@@ -1092,7 +1117,7 @@ garbage_collect() {
         state->cache_unref();
         delete state;
       }
-    }      
+    }
 
     si = (si + 1) % size;
   } while (si != stop_at_element);
@@ -1193,7 +1218,7 @@ list_cycles(ostream &out) {
         if (r_detect_reverse_cycles(state, state, 1, _last_cycle_detect, &cycle_desc)) {
           // This state begins a cycle.
           CompositionCycleDesc::iterator csi;
-          
+
           out << "\nReverse cycle detected of length " << cycle_desc.size() + 1 << ":\n"
               << "state ";
           for (csi = cycle_desc.begin(); csi != cycle_desc.end(); ++csi) {
@@ -1209,7 +1234,7 @@ list_cycles(ostream &out) {
           out << (void *)state << ":"
               << state->get_ref_count() << " =\n";
           state->write(out, 2);
-          
+
           cycle_desc.clear();
         }
       }
@@ -1272,7 +1297,7 @@ validate_states() {
     pgraph_cat.error()
       << "RenderState::_states cache is invalid!\n";
     return false;
-  }    
+  }
 
   int size = _states->get_size();
   int si = 0;
@@ -1447,7 +1472,7 @@ do_calc_auto_shader_state() {
       state->_attributes[slot].set(new_attrib, 0);
       state->_filled_slots.set_bit(slot);
     }
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -1455,7 +1480,7 @@ do_calc_auto_shader_state() {
   return return_new(state);
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::return_new
 //       Access: Private, Static
@@ -1553,7 +1578,7 @@ return_unique(RenderState *state) {
       attrib._attrib = attrib._attrib->get_unique();
       mask.clear_bit(slot);
       slot = mask.get_lowest_on_bit();
-    }    
+    }
   }
 
   int si = _states->find(state);
@@ -1561,7 +1586,7 @@ return_unique(RenderState *state) {
     // There's an equivalent state already in the set.  Return it.
     return _states->get_key(si);
   }
-  
+
   // Not already in the set; add it.
   if (garbage_collect_states) {
     // If we'll be garbage collecting states explicitly, we'll
@@ -1627,11 +1652,11 @@ do_compose(const RenderState *other) const {
       // with B's override value.
       result.set(a._attrib->compose(b._attrib), b._override);
     }
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
-  
+
   // If we have any ShaderAttrib with auto-shader enabled,
   // remove any shader inputs on it. This is a workaround for an
   // issue that makes the shader-generator regenerate the shader
@@ -1640,7 +1665,7 @@ do_compose(const RenderState *other) const {
   if (sattrib->auto_shader()) {
     sattrib = DCAST(ShaderAttrib, sattrib->clear_all_shader_inputs());
   }
-  
+
   return return_new(new_state);
 }
 
@@ -1680,7 +1705,7 @@ do_invert_compose(const RenderState *other) const {
       // Compose.
       result.set(a._attrib->invert_compose(b._attrib), 0);
     }
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -1697,7 +1722,7 @@ do_invert_compose(const RenderState *other) const {
 void RenderState::
 detect_and_break_cycles() {
   PStatTimer timer(_state_break_cycles_pcollector);
-      
+
   ++_last_cycle_detect;
   if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
     // Ok, we have a cycle.  This will be a leak unless we break the
@@ -1706,7 +1731,7 @@ detect_and_break_cycles() {
       pgraph_cat.debug()
         << "Breaking cycle involving " << (*this) << "\n";
     }
-    
+
     ((RenderState *)this)->remove_cache_pointers();
   } else {
     ++_last_cycle_detect;
@@ -1715,12 +1740,12 @@ detect_and_break_cycles() {
         pgraph_cat.debug()
           << "Breaking cycle involving " << (*this) << "\n";
       }
-      
+
       ((RenderState *)this)->remove_cache_pointers();
     }
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::r_detect_cycles
 //       Access: Private, Static
@@ -1747,14 +1772,14 @@ r_detect_cycles(const RenderState *start_state,
     return (current_state == start_state && length > 2);
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
-    
+
   int i;
   int cache_size = current_state->_composition_cache.get_size();
   for (i = 0; i < cache_size; ++i) {
     if (current_state->_composition_cache.has_element(i)) {
       const RenderState *result = current_state->_composition_cache.get_data(i)._result;
       if (result != (const RenderState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1, 
+        if (r_detect_cycles(start_state, result, length + 1,
                             this_seq, cycle_desc)) {
           // Cycle detected.
           if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -1826,7 +1851,7 @@ r_detect_reverse_cycles(const RenderState *start_state,
 
         const RenderState *result = other->_composition_cache.get_data(oi)._result;
         if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+          if (r_detect_reverse_cycles(start_state, result, length + 1,
                                       this_seq, cycle_desc)) {
             // Cycle detected.
             if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -1851,7 +1876,7 @@ r_detect_reverse_cycles(const RenderState *start_state,
 
         const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
         if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+          if (r_detect_reverse_cycles(start_state, result, length + 1,
                                       this_seq, cycle_desc)) {
             // Cycle detected.
             if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -1975,11 +2000,11 @@ remove_cache_pointers() {
       if (oi != -1) {
         // Hold a copy of the other composition result, too.
         Composition ocomp = other->_composition_cache.get_data(oi);
-        
+
         other->_composition_cache.remove_element(oi);
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
-        
+
         // It's finally safe to let our held pointers go away.  This may
         // have cascading effects as other RenderState objects are
         // destructed, but there will be no harm done if they destruct
@@ -2071,7 +2096,7 @@ determine_bin_index() {
       }
     }
   }
-  
+
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   _bin_index = bin_manager->find_bin(bin_name);
   if (_bin_index == -1) {
@@ -2104,7 +2129,7 @@ determine_cull_callback() {
       _flags |= F_has_cull_callback;
       break;
     }
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -2210,7 +2235,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     nassertv(attrib._attrib != (RenderAttrib *)NULL);
     manager->write_pointer(dg, attrib._attrib);
     dg.add_int32(attrib._override);
-    
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -2276,7 +2301,7 @@ change_this(TypedWritable *old_ptr, BamReader *manager) {
     pointer->ref();
     manager->register_finalize(state);
   }
-  
+
   // We have to cast the pointer back to non-const, because the bam
   // reader expects that.
   return (RenderState *)pointer.p();

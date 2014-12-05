@@ -45,7 +45,6 @@
 #include "texture.h"
 #include "occlusionQueryContext.h"
 #include "timerQueryContext.h"
-#include "stencilRenderStates.h"
 #include "loader.h"
 #include "shaderAttrib.h"
 #include "texGenAttrib.h"
@@ -531,8 +530,6 @@ protected:
   bool _runtime_color_scale;
 
   int  _stereo_buffer_mask;
-
-  StencilRenderStates *_stencil_render_states;
 
   int _auto_detect_shader_model;
   int _shader_model;

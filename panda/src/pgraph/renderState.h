@@ -67,6 +67,7 @@ public:
 PUBLISHED:
   int compare_to(const RenderState &other) const;
   int compare_sort(const RenderState &other) const;
+  int compare_mask(const RenderState &other, SlotMask compare_mask) const;
   INLINE size_t get_hash() const;
 
   INLINE bool is_empty() const;
@@ -88,7 +89,7 @@ PUBLISHED:
                                const RenderAttrib *attrib4, int override = 0);
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
-  
+
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
 
@@ -152,10 +153,10 @@ PUBLISHED:
   INLINE int get_draw_order() const;
   INLINE int get_bin_index() const;
   int get_geom_rendering(int geom_rendering) const;
-  
+
 public:
   static void bin_removed(int bin_index);
-  
+
   INLINE static void flush_level();
 
 private:
@@ -339,7 +340,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

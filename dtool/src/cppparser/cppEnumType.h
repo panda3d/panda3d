@@ -52,6 +52,7 @@ public:
 
   typedef vector<CPPInstance *> Elements;
   Elements _elements;
+  CPPExpression *_last_value;
 };
 
 

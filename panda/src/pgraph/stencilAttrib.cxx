@@ -24,11 +24,8 @@ TypeHandle StencilAttrib::_type_handle;
 int StencilAttrib::_attrib_slot;
 
 const char *StencilAttrib::
-stencil_render_state_name_array [StencilAttrib::SRS_total] =
+stencil_render_state_name_array[StencilAttrib::SRS_total] =
 {
-  "SRS_front_enable",
-  "SRS_back_enable",
-
   "SRS_front_comparison_function",
   "SRS_front_stencil_fail_operation",
   "SRS_front_stencil_pass_z_fail_operation",
@@ -55,11 +52,7 @@ stencil_render_state_name_array [StencilAttrib::SRS_total] =
 ////////////////////////////////////////////////////////////////////
 StencilAttrib::
 StencilAttrib() {
-
-  _stencil_render_states [SRS_front_enable] = 0;
-  _stencil_render_states [SRS_back_enable] = 0;
-
-  _stencil_render_states [SRS_front_comparison_function] = SCF_always;
+  _stencil_render_states [SRS_front_comparison_function] = M_none;
   _stencil_render_states [SRS_front_stencil_fail_operation] = SO_keep;
   _stencil_render_states [SRS_front_stencil_pass_z_fail_operation] = SO_keep;
   _stencil_render_states [SRS_front_stencil_pass_z_pass_operation] = SO_keep;
@@ -68,7 +61,7 @@ StencilAttrib() {
   _stencil_render_states [SRS_read_mask] = ~0;
   _stencil_render_states [SRS_write_mask] = ~0;
 
-  _stencil_render_states [SRS_back_comparison_function] = SCF_always;
+  _stencil_render_states [SRS_back_comparison_function] = M_none;
   _stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
   _stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
   _stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
@@ -80,14 +73,12 @@ StencilAttrib() {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilAttrib::make_off
 //       Access: Published, Static
-//  Description: Constructs a StencilAttrib that has stenciling 
+//  Description: Constructs a StencilAttrib that has stenciling
 //               turned off.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
-make_off()
-{
+make_off() {
   StencilAttrib *attrib = new StencilAttrib;
-
   return return_new(attrib);
 }
 
@@ -110,19 +101,20 @@ make_default() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make(
-  unsigned int front_enable,
-  unsigned int front_comparison_function,
-  unsigned int stencil_fail_operation,
-  unsigned int stencil_pass_z_fail_operation,
-  unsigned int front_stencil_pass_z_pass_operation,
+  bool front_enable,
+  PandaCompareFunc front_comparison_function,
+  StencilOperation stencil_fail_operation,
+  StencilOperation stencil_pass_z_fail_operation,
+  StencilOperation front_stencil_pass_z_pass_operation,
   unsigned int reference,
   unsigned int read_mask,
   unsigned int write_mask)
 {
   StencilAttrib *attrib = new StencilAttrib;
 
-  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
-  attrib->_stencil_render_states [SRS_back_enable] = 0;
+  if (!front_enable) {
+    front_comparison_function = M_none;
+  }
 
   attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
   attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
@@ -133,7 +125,7 @@ make(
   attrib->_stencil_render_states [SRS_read_mask] = read_mask;
   attrib->_stencil_render_states [SRS_write_mask] = write_mask;
 
-  attrib->_stencil_render_states [SRS_back_comparison_function] = SCF_always;
+  attrib->_stencil_render_states [SRS_back_comparison_function] = M_none;
   attrib->_stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
   attrib->_stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
   attrib->_stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
@@ -148,24 +140,29 @@ make(
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make_2_sided(
-  unsigned int front_enable,
-  unsigned int back_enable,
-  unsigned int front_comparison_function,
-  unsigned int stencil_fail_operation,
-  unsigned int stencil_pass_z_fail_operation,
-  unsigned int front_stencil_pass_z_pass_operation,
+  bool front_enable,
+  bool back_enable,
+  PandaCompareFunc front_comparison_function,
+  StencilOperation stencil_fail_operation,
+  StencilOperation stencil_pass_z_fail_operation,
+  StencilOperation front_stencil_pass_z_pass_operation,
   unsigned int reference,
   unsigned int read_mask,
   unsigned int write_mask,
-  unsigned int back_comparison_function,
-  unsigned int back_stencil_fail_operation,
-  unsigned int back_stencil_pass_z_fail_operation,
-  unsigned int back_stencil_pass_z_pass_operation)
+  PandaCompareFunc back_comparison_function,
+  StencilOperation back_stencil_fail_operation,
+  StencilOperation back_stencil_pass_z_fail_operation,
+  StencilOperation back_stencil_pass_z_pass_operation)
 {
   StencilAttrib *attrib = new StencilAttrib;
 
-  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
-  attrib->_stencil_render_states [SRS_back_enable] = back_enable;
+  if (!front_enable) {
+    front_comparison_function = M_none;
+  }
+
+  if (!back_enable) {
+    back_comparison_function = M_none;
+  }
 
   attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
   attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
@@ -191,21 +188,22 @@ make_2_sided(
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make_with_clear(
-  unsigned int front_enable,
-  unsigned int front_comparison_function,
-  unsigned int stencil_fail_operation,
-  unsigned int stencil_pass_z_fail_operation,
-  unsigned int front_stencil_pass_z_pass_operation,
+  bool front_enable,
+  PandaCompareFunc front_comparison_function,
+  StencilOperation stencil_fail_operation,
+  StencilOperation stencil_pass_z_fail_operation,
+  StencilOperation front_stencil_pass_z_pass_operation,
   unsigned int reference,
   unsigned int read_mask,
   unsigned int write_mask,
-  unsigned int clear,
+  bool clear,
   unsigned int clear_value)
 {
   StencilAttrib *attrib = new StencilAttrib;
 
-  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
-  attrib->_stencil_render_states [SRS_back_enable] = 0;
+  if (!front_enable) {
+    front_comparison_function = M_none;
+  }
 
   attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
   attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
@@ -216,7 +214,7 @@ make_with_clear(
   attrib->_stencil_render_states [SRS_read_mask] = read_mask;
   attrib->_stencil_render_states [SRS_write_mask] = write_mask;
 
-  attrib->_stencil_render_states [SRS_back_comparison_function] = SCF_always;
+  attrib->_stencil_render_states [SRS_back_comparison_function] = M_none;
   attrib->_stencil_render_states [SRS_back_stencil_fail_operation] = SO_keep;
   attrib->_stencil_render_states [SRS_back_stencil_pass_z_fail_operation] = SO_keep;
   attrib->_stencil_render_states [SRS_back_stencil_pass_z_pass_operation] = SO_keep;
@@ -234,26 +232,31 @@ make_with_clear(
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) StencilAttrib::
 make_2_sided_with_clear(
-  unsigned int front_enable,
-  unsigned int back_enable,
-  unsigned int front_comparison_function,
-  unsigned int stencil_fail_operation,
-  unsigned int stencil_pass_z_fail_operation,
-  unsigned int front_stencil_pass_z_pass_operation,
+  bool front_enable,
+  bool back_enable,
+  PandaCompareFunc front_comparison_function,
+  StencilOperation stencil_fail_operation,
+  StencilOperation stencil_pass_z_fail_operation,
+  StencilOperation front_stencil_pass_z_pass_operation,
   unsigned int reference,
   unsigned int read_mask,
   unsigned int write_mask,
-  unsigned int back_comparison_function,
-  unsigned int back_stencil_fail_operation,
-  unsigned int back_stencil_pass_z_fail_operation,
-  unsigned int back_stencil_pass_z_pass_operation,
-  unsigned int clear,
+  PandaCompareFunc back_comparison_function,
+  StencilOperation back_stencil_fail_operation,
+  StencilOperation back_stencil_pass_z_fail_operation,
+  StencilOperation back_stencil_pass_z_pass_operation,
+  bool clear,
   unsigned int clear_value)
 {
   StencilAttrib *attrib = new StencilAttrib;
 
-  attrib->_stencil_render_states [SRS_front_enable] = front_enable;
-  attrib->_stencil_render_states [SRS_back_enable] = back_enable;
+  if (!front_enable) {
+    front_comparison_function = M_none;
+  }
+
+  if (!back_enable) {
+    back_comparison_function = M_none;
+  }
 
   attrib->_stencil_render_states [SRS_front_comparison_function] = front_comparison_function;
   attrib->_stencil_render_states [SRS_front_stencil_fail_operation] = stencil_fail_operation;
@@ -316,9 +319,9 @@ compare_to_impl(const RenderAttrib *other) const {
   int index;
   int compare_result = 0;
 
-  for (index = 0; index < SRS_total; index++) {
-    a = (int) sa -> _stencil_render_states [index];
-    b = (int) _stencil_render_states [index];
+  for (index = 0; index < SRS_total; ++index) {
+    a = (int) sa -> _stencil_render_states[index];
+    b = (int) _stencil_render_states[index];
     compare_result = (a - b);
     if (compare_result) {
       break;
@@ -368,9 +371,8 @@ void StencilAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  int index;
-  for (index = 0; index < SRS_total; index++) {
-    dg.add_int32(_stencil_render_states [index]);
+  for (int index = 0; index < SRS_total; ++index) {
+    dg.add_uint32(_stencil_render_states[index]);
   }
 }
 
@@ -405,8 +407,29 @@ void StencilAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  int index;
-  for (index = 0; index < SRS_total; index++) {
-    _stencil_render_states [index] = scan.get_int32();
+  if (manager->get_file_minor_ver() < 35) {
+    unsigned int front_enable, back_enable;
+    front_enable = scan.get_int32();
+    back_enable = scan.get_int32();
+
+    for (int index = 0; index < SRS_total; ++index) {
+      _stencil_render_states[index] = scan.get_int32();
+    }
+
+    if (front_enable) {
+      _stencil_render_states[SRS_front_comparison_function]++;
+    } else {
+      _stencil_render_states[SRS_front_comparison_function] = M_none;
+    }
+
+    if (back_enable) {
+      _stencil_render_states[SRS_back_comparison_function]++;
+    } else {
+      _stencil_render_states[SRS_back_comparison_function] = M_none;
+    }
+  } else {
+    for (int index = 0; index < SRS_total; ++index) {
+      _stencil_render_states[index] = scan.get_uint32();
+    }
   }
 }
