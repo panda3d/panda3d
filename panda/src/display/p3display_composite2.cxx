@@ -12,7 +12,6 @@
 #include "nativeWindowHandle.cxx"
 #include "parasiteBuffer.cxx"
 #include "standardMunger.cxx"
-#include "stencilRenderStates.cxx"
 #include "touchInfo.cxx"
 #include "stereoDisplayRegion.cxx"
 #include "subprocessWindow.cxx"

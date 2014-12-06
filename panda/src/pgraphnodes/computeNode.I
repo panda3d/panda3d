@@ -42,6 +42,17 @@ add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ComputeNode::clear_dispatches
+//       Access: Published
+//  Description: Removes all dispatch commands.
+////////////////////////////////////////////////////////////////////
+INLINE void ComputeNode::
+clear_dispatches() {
+  Dispatcher::CDWriter cdata(_dispatcher->_cycler);
+  cdata->_dispatches.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ComputeNode::get_num_dispatches
 //       Access: Published
 //  Description: Returns the number of times add_dispatch has been

@@ -47,12 +47,12 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _supports_fbconfig = false;
   _supports_pbuffer = false;
   _uses_sgix_pbuffer = false;
-  
+
   if (share_with != (glxGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
-  
+
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
   _temp_context = (GLXContext)NULL;
@@ -126,10 +126,10 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
   } else {
     properties.set_indexed_color(1);
   }
-  properties.set_color_bits(red_size+green_size+blue_size);
+
+  properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
   properties.set_stencil_bits(stencil_size);
   properties.set_depth_bits(depth_size);
-  properties.set_alpha_bits(alpha_size);
   properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
 
   // Set both hardware and software bits, indicating not-yet-known.
@@ -144,7 +144,7 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
 //               indicated GLXFBConfig
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
-get_properties_advanced(FrameBufferProperties &properties, 
+get_properties_advanced(FrameBufferProperties &properties,
                         bool &context_has_pbuffer, bool &context_has_pixmap,
                         bool &slow, GLXFBConfig config) {
   properties.clear();
@@ -212,10 +212,9 @@ get_properties_advanced(FrameBufferProperties &properties,
       properties.set_indexed_color(true);
     }
 
-    properties.set_color_bits(red_size+green_size+blue_size);
+    properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
     properties.set_stencil_bits(stencil_size);
     properties.set_depth_bits(depth_size);
-    properties.set_alpha_bits(alpha_size);
     properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
     properties.set_multisamples(samples);
 
@@ -488,7 +487,7 @@ query_gl_version() {
   // two of these together.
   if (glgsg_cat.is_debug()) {
     glgsg_cat.debug()
-      << "GLX_VERSION = " << _glx_version_major << "." << _glx_version_minor 
+      << "GLX_VERSION = " << _glx_version_major << "." << _glx_version_minor
       << "\n";
   }
 }
@@ -583,7 +582,7 @@ query_glx_extensions() {
   _supports_swap_control = has_extension("GLX_SGI_swap_control");
 
   if (_supports_swap_control) {
-    _glXSwapIntervalSGI = 
+    _glXSwapIntervalSGI =
       (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glXSwapIntervalSGI");
     if (_glXSwapIntervalSGI == NULL) {
       glxdisplay_cat.error()
@@ -689,7 +688,7 @@ query_glx_extensions() {
     }
 
     if (has_extension("GLX_ARB_create_context")) {
-      _glXCreateContextAttribs = 
+      _glXCreateContextAttribs =
         (PFNGLXCREATECONTEXTATTRIBSARBPROC)get_extension_func("glXCreateContextAttribsARB");
     } else {
       _glXCreateContextAttribs = NULL;

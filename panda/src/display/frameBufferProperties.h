@@ -18,6 +18,8 @@
 #include "pandabase.h"
 #include "pnotify.h"
 
+class Texture;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : FrameBufferProperties
 // Description : A container for the various kinds of properties we
@@ -31,6 +33,9 @@ private:
     // This section has to start with "depth" and end with "accum"
     FBP_depth_bits,
     FBP_color_bits,
+    FBP_red_bits,
+    FBP_green_bits,
+    FBP_blue_bits,
     FBP_alpha_bits,
     FBP_stencil_bits,
     FBP_accum_bits,
@@ -72,6 +77,9 @@ PUBLISHED:
   // Individual queries.
   INLINE int get_depth_bits() const;
   INLINE int get_color_bits() const;
+  INLINE int get_red_bits() const;
+  INLINE int get_green_bits() const;
+  INLINE int get_blue_bits() const;
   INLINE int get_alpha_bits() const;
   INLINE int get_stencil_bits() const;
   INLINE int get_accum_bits() const;
@@ -93,6 +101,10 @@ PUBLISHED:
   // Individual assigners.
   INLINE void set_depth_bits(int n);
   INLINE void set_color_bits(int n);
+  INLINE void set_rgba_bits(int r, int g, int b, int a);
+  INLINE void set_red_bits(int n);
+  INLINE void set_green_bits(int n);
+  INLINE void set_blue_bits(int n);
   INLINE void set_alpha_bits(int n);
   INLINE void set_stencil_bits(int n);
   INLINE void set_accum_bits(int n);
@@ -136,6 +148,9 @@ PUBLISHED:
   int get_aux_mask() const;
   int get_buffer_mask() const;
   bool verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const;
+
+  bool setup_color_texture(Texture *tex) const;
+  bool setup_depth_texture(Texture *tex) const;
 };
 
 INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);

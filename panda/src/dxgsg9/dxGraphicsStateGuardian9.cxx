@@ -2769,9 +2769,6 @@ reset() {
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 
-  void dx_set_stencil_functions (StencilRenderStates *stencil_render_states);
-  dx_set_stencil_functions (_stencil_render_states);
-
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
@@ -5261,9 +5258,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 ////////////////////////////////////////////////////////////////////
 //  DX stencil code section
 ////////////////////////////////////////////////////////////////////
-
-static int dx_stencil_comparison_function_array [ ] =
-{
+static int dx_stencil_comparison_function_array[] = {
   D3DCMP_NEVER,
   D3DCMP_LESS,
   D3DCMP_EQUAL,
@@ -5274,8 +5269,7 @@ static int dx_stencil_comparison_function_array [ ] =
   D3DCMP_ALWAYS,
 };
 
-static int dx_stencil_operation_array [ ] =
-{
+static int dx_stencil_operation_array[] = {
   D3DSTENCILOP_KEEP,
   D3DSTENCILOP_ZERO,
   D3DSTENCILOP_REPLACE,
@@ -5286,93 +5280,6 @@ static int dx_stencil_operation_array [ ] =
   D3DSTENCILOP_INCRSAT,
   D3DSTENCILOP_DECRSAT,
 };
-
-void dx_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-  StencilType render_state_value;
-
-  DXGraphicsStateGuardian9 *gsg;
-
-  gsg = (DXGraphicsStateGuardian9 *) stencil_render_states -> _gsg;
-
-  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
-
-  // DEBUG
-  if (false) {
-    dxgsg9_cat.debug()
-      << "SRS: " <<  StencilAttrib::stencil_render_state_name_array [stencil_render_state] << ", " << render_state_value << "\n";
-  }
-
-  switch (stencil_render_state)
-  {
-    case StencilRenderStates::SRS_front_enable:
-      gsg -> set_render_state (D3DRS_STENCILENABLE, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_enable:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_TWOSIDEDSTENCILMODE, render_state_value);
-      }
-      break;
-
-    case StencilRenderStates::SRS_front_comparison_function:
-      gsg -> set_render_state (D3DRS_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_fail_operation:
-      gsg -> set_render_state (D3DRS_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_fail_operation:
-      gsg -> set_render_state (D3DRS_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_pass_operation:
-      gsg -> set_render_state (D3DRS_STENCILPASS, dx_stencil_operation_array [render_state_value]);
-      break;
-
-    case StencilRenderStates::SRS_reference:
-      gsg -> set_render_state (D3DRS_STENCILREF, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_read_mask:
-      gsg -> set_render_state (D3DRS_STENCILMASK, render_state_value);
-      break;
-    case StencilRenderStates::SRS_write_mask:
-      gsg -> set_render_state (D3DRS_STENCILWRITEMASK, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_comparison_function:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_fail_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_fail_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_pass_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILPASS, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
-void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
-  if (stencil_render_states) {
-    StencilRenderStates::StencilRenderState stencil_render_state;
-
-    for (stencil_render_state = StencilRenderStates::SRS_first; stencil_render_state < StencilRenderStates::SRS_total; stencil_render_state = (StencilRenderStates::StencilRenderState) ((int) stencil_render_state + 1)) {
-      stencil_render_states -> set_stencil_function (stencil_render_state, dx_stencil_function);
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::do_issue_stencil
@@ -5385,70 +5292,84 @@ do_issue_stencil() {
     return;
   }
 
-  StencilRenderStates *stencil_render_states;
-  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));
-  stencil_render_states = this -> _stencil_render_states;
-  if (stencil && stencil_render_states) {
+  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
 
+  if (stencil != (const StencilAttrib *)NULL) {
     // DEBUG
     if (false) {
       dxgsg9_cat.debug() << "STENCIL STATE CHANGE\n";
       dxgsg9_cat.debug() << "\n"
-        << "SRS_front_enable " << stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
-        << "SRS_back_enable " << stencil -> get_render_state (StencilAttrib::SRS_back_enable) << "\n"
-        << "SRS_front_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
-        << "SRS_front_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
-        << "SRS_reference " << stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
-        << "SRS_read_mask " << stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
-        << "SRS_write_mask " << stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n"
-        << "SRS_back_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function) << "\n"
-        << "SRS_back_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
-        << "SRS_back_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
-        << "SRS_back_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
+        << "SRS_front_comparison_function " << stencil->get_render_state(StencilAttrib::SRS_front_comparison_function) << "\n"
+        << "SRS_front_stencil_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_pass_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
+        << "SRS_reference " << stencil->get_render_state(StencilAttrib::SRS_reference) << "\n"
+        << "SRS_read_mask " << stencil->get_render_state(StencilAttrib::SRS_read_mask) << "\n"
+        << "SRS_write_mask " << stencil->get_render_state(StencilAttrib::SRS_write_mask) << "\n"
+        << "SRS_back_comparison_function " << stencil->get_render_state(StencilAttrib::SRS_back_comparison_function) << "\n"
+        << "SRS_back_stencil_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_pass_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
     }
 
-    bool on;
+    bool on = false;
 
-    on = false;
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, stencil -> get_render_state (StencilAttrib::SRS_front_enable));
-    if (stencil -> get_render_state (StencilAttrib::SRS_front_enable)) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation));
+    unsigned int front_compare;
+    front_compare = stencil->get_render_state(StencilAttrib::SRS_front_comparison_function);
+
+    if (front_compare != RenderAttrib::M_none) {
+      set_render_state(D3DRS_STENCILENABLE, TRUE);
+      set_render_state(D3DRS_STENCILFUNC, dx_stencil_comparison_function_array[front_compare]);
+      set_render_state(D3DRS_STENCILFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation)]);
+      set_render_state(D3DRS_STENCILZFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation)]);
+      set_render_state(D3DRS_STENCILPASS, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation)]);
       on = true;
+    } else {
+      set_render_state(D3DRS_STENCILENABLE, FALSE);
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, stencil -> get_render_state (StencilAttrib::SRS_back_enable));
-    if (stencil -> get_render_state (StencilAttrib::SRS_back_enable)) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation));
-      on = true;
+    if (_supports_two_sided_stencil) {
+      unsigned int back_compare;
+      back_compare = stencil->get_render_state(StencilAttrib::SRS_back_comparison_function);
+
+      if (back_compare != RenderAttrib::M_none) {
+        set_render_state(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
+        set_render_state(D3DRS_CCW_STENCILFUNC, dx_stencil_comparison_function_array[back_compare]);
+        set_render_state(D3DRS_CCW_STENCILFAIL, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_fail_operation)]);
+        set_render_state(D3DRS_CCW_STENCILZFAIL, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_fail_operation)]);
+        set_render_state(D3DRS_CCW_STENCILPASS, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_pass_operation)]);
+        on = true;
+      } else {
+        set_render_state(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+      }
     }
 
     if (on) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_reference, stencil -> get_render_state (StencilAttrib::SRS_reference));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
+      set_render_state(D3DRS_STENCILREF, stencil->get_render_state(StencilAttrib::SRS_reference));
+      set_render_state(D3DRS_STENCILMASK, stencil->get_render_state(StencilAttrib::SRS_read_mask));
+      set_render_state(D3DRS_STENCILWRITEMASK, stencil->get_render_state(StencilAttrib::SRS_write_mask));
     }
 
-    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {
-      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil -> get_render_state (StencilAttrib::SRS_clear_value));
+    if (stencil->get_render_state(StencilAttrib::SRS_clear)) {
+      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil->get_render_state(StencilAttrib::SRS_clear_value));
     }
-  }
-  else {
 
+  } else {
     // DEBUG
     if (false) {
-      dxgsg9_cat.debug() << "STENCIL STATE CHANGE TO OFF \n";
+      dxgsg9_cat.debug() << "STENCIL STATE CHANGE TO OFF\n";
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
+    set_render_state(D3DRS_STENCILENABLE, FALSE);
+    if (_supports_two_sided_stencil) {
+      set_render_state(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+    }
   }
 }
 
@@ -5482,32 +5403,34 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
                    DWORD multisampletype, DWORD multisamplequality) {
   FrameBufferProperties props;
   int index=0;
-  int alpha=0;
-  int color=0;
+  int r=0, g=0, b=0, a=0;
   switch (cformat) {
-  case D3DFMT_R8G8B8:      index=0; color=24; alpha=0; break;
-  case D3DFMT_A8R8G8B8:    index=0; color=24; alpha=8; break;
-  case D3DFMT_X8R8G8B8:    index=0; color=24; alpha=0; break;
-  case D3DFMT_R5G6B5:      index=0; color=16; alpha=0; break;
-  case D3DFMT_X1R5G5B5:    index=0; color=15; alpha=0; break;
-  case D3DFMT_A1R5G5B5:    index=0; color=15; alpha=1; break;
-  case D3DFMT_A4R4G4B4:    index=0; color=12; alpha=4; break;
-  case D3DFMT_R3G3B2:      index=0; color= 8; alpha=0; break;
-  case D3DFMT_A8R3G3B2:    index=0; color= 8; alpha=8; break;
-  case D3DFMT_X4R4G4B4:    index=0; color=12; alpha=0; break;
-  case D3DFMT_A2B10G10R10: index=0; color=30; alpha=2; break;
-  case D3DFMT_A8P8:        index=1; color= 8; alpha=8; break;
-  case D3DFMT_P8:          index=1; color= 8; alpha=0; break;
+  case D3DFMT_R8G8B8:      r=8; g=8; b=8; a=0; break;
+  case D3DFMT_A8R8G8B8:    r=8; g=8; b=8; a=8; break;
+  case D3DFMT_X8R8G8B8:    r=8; g=8; b=8; a=0; break;
+  case D3DFMT_R5G6B5:      r=5; g=6; b=5; a=0; break;
+  case D3DFMT_X1R5G5B5:    r=5; g=5; b=5; a=0; break;
+  case D3DFMT_A1R5G5B5:    r=5; g=5; b=5; a=1; break;
+  case D3DFMT_A4R4G4B4:    r=4; g=4; b=4; a=4; break;
+  case D3DFMT_R3G3B2:      r=3; g=3; b=2; a=0; break;
+  case D3DFMT_A8R3G3B2:    r=3; g=3; b=2; a=8; break;
+  case D3DFMT_X4R4G4B4:    r=4; g=4; b=4; a=0; break;
+  case D3DFMT_A2B10G10R10: r=10;g=10;b=10;a=2; break;
+  case D3DFMT_A8P8:        index=8; a=8; break;
+  case D3DFMT_P8:          index=8; a=0; break;
+  default: break;
   }
-  props.set_color_bits(color);
-  props.set_alpha_bits(alpha);
-  if (index) {
+  if (index > 0) {
     props.set_rgb_color(0);
     props.set_indexed_color(1);
-  } else if (color) {
+    props.set_color_bits(index);
+  } else if (r + g + b > 0) {
     props.set_rgb_color(1);
     props.set_indexed_color(0);
+    props.set_rgba_bits(r, g, b, a);
   }
+  props.set_alpha_bits(a);
+
   int depth=0;
   int stencil=0;
   switch (dformat) {
@@ -5517,6 +5440,7 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
   case D3DFMT_D16:     depth=16; stencil=0; break;
   case D3DFMT_D24X8:   depth=24; stencil=0; break;
   case D3DFMT_D24X4S4: depth=24; stencil=4; break;
+  default: break;
   }
   props.set_depth_bits(depth);
   props.set_stencil_bits(stencil);

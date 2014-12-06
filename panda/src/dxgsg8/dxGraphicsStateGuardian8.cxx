@@ -303,7 +303,7 @@ upload_texture(DXTextureContext8 *dtc, bool force) {
   dtc->delete_texture();
   dtc->update_data_size_bytes(0);
   dtc->mark_unloaded();
-  
+
   if (_effective_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
@@ -321,7 +321,7 @@ upload_texture(DXTextureContext8 *dtc, bool force) {
       }
     }
   }
-  
+
   return dtc->create_texture(*_screen);
 }
 
@@ -634,7 +634,7 @@ clear(DrawableRegion *clearable) {
         }
       }
     }
-    
+
     if (FAILED(hr)) {
       dxgsg8_cat.error()
         << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
@@ -1025,7 +1025,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
         (D3DPT_TRIANGLELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         index_pointer, index_type, vertex_pointer, 
+         index_pointer, index_type, vertex_pointer,
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -2074,9 +2074,6 @@ reset() {
 
   PRINT_REFCNT(dxgsg8, _d3d_device);
 
-  void dx_set_stencil_functions (StencilRenderStates *stencil_render_states);
-  dx_set_stencil_functions (_stencil_render_states);
-
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
@@ -2468,7 +2465,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_depth_write();
     _state_mask.set_bit(depth_write_slot);
   }
-     
+
   int fog_slot = FogAttrib::get_class_slot();
   if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
       !_state_mask.get_bit(fog_slot)) {
@@ -2650,22 +2647,22 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     const LMatrix4 &light_mat = transform->get_mat();
     LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
     LVector3f dir = LCAST(float, light_obj->get_direction() * rel_mat);
-    
+
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
-    
+
     ZeroMemory(&fdata, sizeof(D3DLIGHT8));
-    
+
     fdata.Type =  D3DLIGHT_DIRECTIONAL;
     fdata.Ambient  =  black ;
     LColorf color = LCAST(float, light_obj->get_specular_color());
     fdata.Specular = *(D3DCOLORVALUE *)(color.get_data());
-    
+
     fdata.Direction = *(D3DVECTOR *)dir.get_data();
-    
+
     fdata.Range =  __D3DLIGHT_RANGE_MAX;
     fdata.Falloff =  1.0f;
-    
+
     fdata.Attenuation0 = 1.0f;       // constant
     fdata.Attenuation1 = 0.0f;       // linear
     fdata.Attenuation2 = 0.0f;       // quadratic
@@ -2983,12 +2980,12 @@ do_issue_texture() {
       // that there are 3-d texture coordinates, because of the
       // 3-component texture coordinate in get_constant_value().
       {
-        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX, 
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
 
         const LTexCoord3 &v = _target_tex_gen->get_constant_value(stage);
-        CPT(TransformState) squash = 
+        CPT(TransformState) squash =
           TransformState::make_pos_hpr_scale(v, LVecBase3::zero(),
                                              LVecBase3::zero());
         tex_mat = tex_mat->compose(squash);
@@ -4006,7 +4003,7 @@ create_swap_chain(DXScreenData *new_context) {
 bool DXGraphicsStateGuardian8::
 release_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
-  wdxdisplay8_cat.debug() 
+  wdxdisplay8_cat.debug()
     << "Releasing swap chain " << new_context->_swap_chain << "\n";
   if (new_context->_swap_chain) {
     hr = new_context->_swap_chain->Release();
@@ -4310,9 +4307,7 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
 ////////////////////////////////////////////////////////////////////
 //  DX stencil code section
 ////////////////////////////////////////////////////////////////////
-
-static int dx_stencil_comparison_function_array [ ] =
-{
+static int dx_stencil_comparison_function_array[] = {
   D3DCMP_NEVER,
   D3DCMP_LESS,
   D3DCMP_EQUAL,
@@ -4323,8 +4318,7 @@ static int dx_stencil_comparison_function_array [ ] =
   D3DCMP_ALWAYS,
 };
 
-static int dx_stencil_operation_array [ ] =
-{
+static int dx_stencil_operation_array[] = {
   D3DSTENCILOP_KEEP,
   D3DSTENCILOP_ZERO,
   D3DSTENCILOP_REPLACE,
@@ -4336,84 +4330,6 @@ static int dx_stencil_operation_array [ ] =
   D3DSTENCILOP_DECRSAT,
 };
 
-void dx_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-  StencilType render_state_value;
-
-  DXGraphicsStateGuardian8 *gsg;
-  LPDIRECT3DDEVICE8 device;
-
-  gsg = (DXGraphicsStateGuardian8 *) stencil_render_states -> _gsg;
-  device = gsg->get_d3d_device();
-
-  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
-
-  if (dxgsg8_cat.is_debug()) {
-    dxgsg8_cat.debug()
-      << "SRS: " <<  StencilAttrib::stencil_render_state_name_array [stencil_render_state] << ", " << render_state_value << "\n";
-  }
-
-  switch (stencil_render_state)
-  {
-    case StencilRenderStates::SRS_front_enable:
-      device->SetRenderState (D3DRS_STENCILENABLE, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_enable:
-      // not supported in DX8
-      break;
-
-    case StencilRenderStates::SRS_front_comparison_function:
-      device->SetRenderState (D3DRS_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_fail_operation:
-      device->SetRenderState (D3DRS_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_fail_operation:
-      device->SetRenderState (D3DRS_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_pass_operation:
-      device->SetRenderState (D3DRS_STENCILPASS, dx_stencil_operation_array [render_state_value]);
-      break;
-
-    case StencilRenderStates::SRS_reference:
-      device->SetRenderState (D3DRS_STENCILREF, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_read_mask:
-      device->SetRenderState (D3DRS_STENCILMASK, render_state_value);
-      break;
-    case StencilRenderStates::SRS_write_mask:
-      device->SetRenderState (D3DRS_STENCILWRITEMASK, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_comparison_function:
-      // not supported in DX8
-      break;
-    case StencilRenderStates::SRS_back_stencil_fail_operation:
-      // not supported in DX8
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_fail_operation:
-      // not supported in DX8
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_pass_operation:
-      // not supported in DX8
-      break;
-
-    default:
-      break;
-  }
-}
-
-void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
-  if (stencil_render_states) {
-    StencilRenderStates::StencilRenderState stencil_render_state;
-
-    for (stencil_render_state = StencilRenderStates::SRS_first; stencil_render_state < StencilRenderStates::SRS_total; stencil_render_state = (StencilRenderStates::StencilRenderState) ((int) stencil_render_state + 1)) {
-      stencil_render_states -> set_stencil_function (stencil_render_state, dx_stencil_function);
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::do_issue_stencil
 //       Access: Protected
@@ -4421,48 +4337,56 @@ void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 do_issue_stencil() {
-
   if (!_supports_stencil) {
     return;
   }
 
-  StencilRenderStates *stencil_render_states;
-  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));
-  stencil_render_states = this -> _stencil_render_states;
-  if (stencil && stencil_render_states) {
+  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
 
-    if (dxgsg8_cat.is_debug()) {
+  if (stencil != (const StencilAttrib *)NULL) {
+    // DEBUG
+    if (false) {
       dxgsg8_cat.debug() << "STENCIL STATE CHANGE\n";
       dxgsg8_cat.debug() << "\n"
-        << "SRS_front_enable " << stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
-        << "SRS_front_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
-        << "SRS_front_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
-        << "SRS_reference " << stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
-        << "SRS_read_mask " << stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
-        << "SRS_write_mask " << stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n";
+        << "SRS_front_comparison_function " << stencil->get_render_state(StencilAttrib::SRS_front_comparison_function) << "\n"
+        << "SRS_front_stencil_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_pass_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
+        << "SRS_reference " << stencil->get_render_state(StencilAttrib::SRS_reference) << "\n"
+        << "SRS_read_mask " << stencil->get_render_state(StencilAttrib::SRS_read_mask) << "\n"
+        << "SRS_write_mask " << stencil->get_render_state(StencilAttrib::SRS_write_mask) << "\n";
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, stencil -> get_render_state (StencilAttrib::SRS_front_enable));
-    if (stencil -> get_render_state (StencilAttrib::SRS_front_enable)) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation));
+    unsigned int front_compare;
+    front_compare = stencil->get_render_state(StencilAttrib::SRS_front_comparison_function);
+    if (front_compare != RenderAttrib::M_none) {
+      set_render_state(D3DRS_STENCILENABLE, TRUE);
+      set_render_state(D3DRS_STENCILFUNC, dx_stencil_comparison_function_array[front_compare]);
+      set_render_state(D3DRS_STENCILFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation)]);
+      set_render_state(D3DRS_STENCILZFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation)]);
+      set_render_state(D3DRS_STENCILPASS, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation)]);
 
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_reference, stencil -> get_render_state (StencilAttrib::SRS_reference));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
+      set_render_state(D3DRS_STENCILREF, stencil->get_render_state(StencilAttrib::SRS_reference));
+      set_render_state(D3DRS_STENCILMASK, stencil->get_render_state(StencilAttrib::SRS_read_mask));
+      set_render_state(D3DRS_STENCILWRITEMASK, stencil->get_render_state(StencilAttrib::SRS_write_mask));
+    } else {
+      set_render_state(D3DRS_STENCILENABLE, FALSE);
     }
-  }
-  else {
 
-    if (dxgsg8_cat.is_debug()) {
-      dxgsg8_cat.debug() << "STENCIL STATE CHANGE TO OFF \n";
+    if (stencil->get_render_state(StencilAttrib::SRS_clear)) {
+      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil->get_render_state(StencilAttrib::SRS_clear_value));
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
+  } else {
+    // DEBUG
+    if (false) {
+      dxgsg8_cat.debug() << "STENCIL STATE CHANGE TO OFF\n";
+    }
+
+    set_render_state(D3DRS_STENCILENABLE, FALSE);
   }
 }
 
@@ -4474,7 +4398,7 @@ get_d3d_device() {
 ////////////////////////////////////////////////////////////////////
 //     Function: dxGraphicsStateGuardian8::do_issue_scissor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 do_issue_scissor() {
@@ -4511,7 +4435,7 @@ set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat
     dxgsg8_cat.error()
       << "SetViewport(" << vp.X << ", " << vp.Y << ", " << vp.Width << ", " << vp.Height
       << ") failed" << D3DERRORSTRING(hr);
-    
+
     D3DVIEWPORT8 vp_old;
     _d3d_device->GetViewport(&vp_old);
     dxgsg8_cat.error()
@@ -4552,32 +4476,34 @@ FrameBufferProperties DXGraphicsStateGuardian8::
 calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype) {
   FrameBufferProperties props;
   int index=0;
-  int alpha=0;
-  int color=0;
+  int r=0, g=0, b=0, a=0;
   switch (cformat) {
-  case D3DFMT_R8G8B8:      index=0; color=24; alpha=0; break;
-  case D3DFMT_A8R8G8B8:    index=0; color=24; alpha=8; break;
-  case D3DFMT_X8R8G8B8:    index=0; color=24; alpha=0; break;
-  case D3DFMT_R5G6B5:      index=0; color=16; alpha=0; break;
-  case D3DFMT_X1R5G5B5:    index=0; color=15; alpha=0; break;
-  case D3DFMT_A1R5G5B5:    index=0; color=15; alpha=1; break;
-  case D3DFMT_A4R4G4B4:    index=0; color=12; alpha=4; break;
-  case D3DFMT_R3G3B2:      index=0; color= 8; alpha=0; break;
-  case D3DFMT_A8R3G3B2:    index=0; color= 8; alpha=8; break;
-  case D3DFMT_X4R4G4B4:    index=0; color=12; alpha=0; break;
-  case D3DFMT_A2B10G10R10: index=0; color=30; alpha=2; break;
-  case D3DFMT_A8P8:        index=1; color= 8; alpha=8; break;
-  case D3DFMT_P8:          index=1; color= 8; alpha=0; break;
+  case D3DFMT_R8G8B8:      r=8; g=8; b=8; a=0; break;
+  case D3DFMT_A8R8G8B8:    r=8; g=8; b=8; a=8; break;
+  case D3DFMT_X8R8G8B8:    r=8; g=8; b=8; a=0; break;
+  case D3DFMT_R5G6B5:      r=5; g=6; b=5; a=0; break;
+  case D3DFMT_X1R5G5B5:    r=5; g=5; b=5; a=0; break;
+  case D3DFMT_A1R5G5B5:    r=5; g=5; b=5; a=1; break;
+  case D3DFMT_A4R4G4B4:    r=4; g=4; b=4; a=4; break;
+  case D3DFMT_R3G3B2:      r=3; g=3; b=2; a=0; break;
+  case D3DFMT_A8R3G3B2:    r=3; g=3; b=2; a=8; break;
+  case D3DFMT_X4R4G4B4:    r=4; g=4; b=4; a=0; break;
+  case D3DFMT_A2B10G10R10: r=10;g=10;b=10;a=2; break;
+  case D3DFMT_A8P8:        index=8; a=8; break;
+  case D3DFMT_P8:          index=8; a=0; break;
+  default: break;
   }
-  props.set_color_bits(color);
-  props.set_alpha_bits(alpha);
-  if (index) {
+  if (index > 0) {
     props.set_rgb_color(0);
     props.set_indexed_color(1);
-  } else if (color) {
+    props.set_color_bits(index);
+  } else if (r + g + b > 0) {
     props.set_rgb_color(1);
     props.set_indexed_color(0);
+    props.set_rgba_bits(r, g, b, a);
   }
+  props.set_alpha_bits(a);
+
   int depth=0;
   int stencil=0;
   switch (dformat) {
@@ -4587,6 +4513,7 @@ calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype) {
   case D3DFMT_D16:     depth=16; stencil=0; break;
   case D3DFMT_D24X8:   depth=24; stencil=0; break;
   case D3DFMT_D24X4S4: depth=24; stencil=4; break;
+  default: break;
   }
   props.set_depth_bits(depth);
   props.set_stencil_bits(stencil);
@@ -4607,8 +4534,8 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
     // avoid divide by zero and negative exponents
     gamma = 1.0;
   }
-  gamma_correction = 1.0 / (double) gamma;    
-  
+  gamma_correction = 1.0 / (double) gamma;
+
   for (i = 0; i < 256; i++) {
     double r;
     double g;
@@ -4619,11 +4546,11 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       g = (double) original_green_table [i] / GAMMA_1;
       b = (double) original_blue_table [i] / GAMMA_1;
     }
-    else {    
+    else {
       r = ((double) i / 255.0);
       g = r;
       b = r;
-    }    
+    }
 
     r = pow (r, gamma_correction);
     g = pow (g, gamma_correction);
@@ -4639,14 +4566,14 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       b = 1.0;
     }
 
-    r = r * GAMMA_1;    
-    g = g * GAMMA_1;    
-    b = b * GAMMA_1;    
+    r = r * GAMMA_1;
+    g = g * GAMMA_1;
+    b = b * GAMMA_1;
 
     red_table [i] = r;
     green_table [i] = g;
     blue_table [i] = b;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4656,13 +4583,13 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 get_gamma_table(void) {
-  bool get;  
+  bool get;
 
   get = false;
   if (_gamma_table_initialized == false) {
     HDC hdc = GetDC(NULL);
 
-    if (hdc) {   
+    if (hdc) {
       if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
         _gamma_table_initialized = true;
         get = true;
@@ -4671,26 +4598,26 @@ get_gamma_table(void) {
       ReleaseDC (NULL, hdc);
     }
   }
-  
+
   return get;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::static_set_gamma
 //       Access: Public, Static
-//  Description: Static function for setting gamma which is needed 
+//  Description: Static function for setting gamma which is needed
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
-  bool set;  
+  bool set;
   HDC hdc = GetDC(NULL);
 
   set = false;
-  if (hdc) {   
+  if (hdc) {
     unsigned short ramp [256 * 3];
 
-    if (restore && _gamma_table_initialized) {    
+    if (restore && _gamma_table_initialized) {
       _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
@@ -4700,7 +4627,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
     }
-    
+
     ReleaseDC (NULL, hdc);
   }
 
@@ -4719,7 +4646,7 @@ set_gamma(PN_stdfloat gamma) {
 
   set = static_set_gamma(false, gamma);
   if (set) {
-    _gamma = gamma;  
+    _gamma = gamma;
   }
 
   return set;

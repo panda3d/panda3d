@@ -28,7 +28,7 @@ bool wglGraphicsStateGuardian::_twindow_class_registered = false;
 ////////////////////////////////////////////////////////////////////
 wglGraphicsStateGuardian::
 wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-                         wglGraphicsStateGuardian *share_with) : 
+                         wglGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(engine, pipe),
   _share_with(share_with)
 {
@@ -41,12 +41,12 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _pfnum = -1;
   _pfnum_supports_pbuffer = false;
   _pfnum_properties.clear();
-  
+
   _supports_pbuffer = false;
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
   _supports_wgl_render_texture = false;
-  
+
   get_gamma_table();
   atexit(atexit_function);
 }
@@ -103,7 +103,7 @@ fail_pfnum() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
-  
+
   PIXELFORMATDESCRIPTOR pfd;
   ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -113,7 +113,7 @@ get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
 
   properties.clear();
   properties.set_all_specified();
-  
+
   if (((pfd.dwFlags & PFD_SUPPORT_OPENGL) == 0)||
       ((pfd.dwFlags & PFD_DRAW_TO_WINDOW) == 0)) {
     // Return without setting either RGB or Indexed Color.
@@ -123,8 +123,12 @@ get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
 
   if (pfd.iPixelType == PFD_TYPE_COLORINDEX) {
     properties.set_indexed_color(1);
+    properties.set_color_bits(pfd.cColorBits);
+    properties.set_alpha_bits(pfd.cAlphaBits);
   } else {
     properties.set_rgb_color(1);
+    properties.set_rgba_bits(pfd.cRedBits, pfd.cGreenBits,
+                             pfd.cBlueBits, pfd.cAlphaBits);
   }
 
   int mode = 0;
@@ -139,13 +143,7 @@ get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
   } else {
     properties.set_force_hardware(1);
   }
-  
-  if (pfd.cColorBits != 0) {
-    properties.set_color_bits(pfd.cColorBits);
-  }
-  if (pfd.cAlphaBits != 0) {
-    properties.set_alpha_bits(pfd.cAlphaBits);
-  }
+
   if (pfd.cDepthBits != 0) {
     properties.set_depth_bits(pfd.cDepthBits);
   }
@@ -164,23 +162,27 @@ get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
 //               extensions.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsStateGuardian::
-get_properties_advanced(FrameBufferProperties &properties, 
+get_properties_advanced(FrameBufferProperties &properties,
                         HDC window_dc, int pfnum) {
-  
+
   static const int max_attrib_list = 32;
   int iattrib_list[max_attrib_list];
   int ivalue_list[max_attrib_list];
   int ni = 0;
 
   int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
-    color_bits_i, alpha_bits_i, accum_bits_i, depth_bits_i, 
-    stencil_bits_i, multisamples_i, srgb_capable_i;
+    color_bits_i, red_bits_i, green_bits_i, blue_bits_i, alpha_bits_i,
+    accum_bits_i, depth_bits_i, stencil_bits_i, multisamples_i,
+    srgb_capable_i;
 
   iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
   iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
   iattrib_list[double_buffer_i = ni++] = WGL_DOUBLE_BUFFER_ARB;
   iattrib_list[stereo_i = ni++] = WGL_STEREO_ARB;
   iattrib_list[color_bits_i = ni++] = WGL_COLOR_BITS_ARB;
+  iattrib_list[red_bits_i = ni++] = WGL_RED_BITS_ARB;
+  iattrib_list[green_bits_i = ni++] = WGL_GREEN_BITS_ARB;
+  iattrib_list[blue_bits_i = ni++] = WGL_BLUE_BITS_ARB;
   iattrib_list[alpha_bits_i = ni++] = WGL_ALPHA_BITS_ARB;
   iattrib_list[accum_bits_i = ni++] = WGL_ACCUM_BITS_ARB;
   iattrib_list[depth_bits_i = ni++] = WGL_DEPTH_BITS_ARB;
@@ -211,8 +213,14 @@ get_properties_advanced(FrameBufferProperties &properties,
 
   if (ivalue_list[pixel_type_i] == WGL_TYPE_COLORINDEX_ARB) {
     properties.set_indexed_color(true);
+    properties.set_color_bits(ivalue_list[color_bits_i]);
+    properties.set_alpha_bits(ivalue_list[alpha_bits_i]);
   } else {
     properties.set_rgb_color(true);
+    properties.set_rgba_bits(ivalue_list[red_bits_i],
+                             ivalue_list[green_bits_i],
+                             ivalue_list[blue_bits_i],
+                             ivalue_list[alpha_bits_i]);
   }
 
   if (ivalue_list[double_buffer_i]) {
@@ -225,10 +233,6 @@ get_properties_advanced(FrameBufferProperties &properties,
 
   if (ivalue_list[srgb_capable_i]) {
     properties.set_srgb_color(true);
-  }
-
-  if (ivalue_list[alpha_bits_i] != 0) {
-    properties.set_alpha_bits(ivalue_list[alpha_bits_i]);
   }
 
   if (ivalue_list[accum_bits_i] != 0) {
@@ -248,8 +252,6 @@ get_properties_advanced(FrameBufferProperties &properties,
       properties.set_multisamples(ivalue_list[multisamples_i]);
     }
   }
-
-  properties.set_color_bits(ivalue_list[color_bits_i]);
 
   return true;
 }
@@ -271,22 +273,22 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   if (gl_force_pixfmt.has_value()) {
     wgldisplay_cat.info()
-      << "overriding pixfmt choice with gl-force-pixfmt(" 
+      << "overriding pixfmt choice with gl-force-pixfmt("
       << gl_force_pixfmt << ")\n";
     _pfnum = gl_force_pixfmt;
     _pfnum_properties = properties;
     _pfnum_supports_pbuffer = true;
     return;
   }
-  
+
   int  best_pfnum = 0;
   int  best_quality = 0;
   FrameBufferProperties best_prop;
-  
+
   HDC hdc = GetDC(NULL);
 
   int max_pfnum = DescribePixelFormat(hdc, 1, 0, NULL);
-  
+
   for (int pfnum = 0; pfnum<max_pfnum; ++pfnum) {
     FrameBufferProperties pfprop;
     get_properties(pfprop, hdc, pfnum);
@@ -297,7 +299,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       best_prop = pfprop;
     }
   }
-  
+
   ReleaseDC(NULL, hdc);
 
   _pfnum = best_pfnum;
@@ -305,7 +307,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _pfnum_properties = best_prop;
   _pre_pfnum = _pfnum;
   _pre_pfnum_properties = _pfnum_properties;
-  
+
   if (best_quality == 0) {
     wgldisplay_cat.error()
       << "Could not find a usable pixel format.\n";
@@ -314,7 +316,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
-      << "Preliminary pixfmt #" << _pfnum << " = " 
+      << "Preliminary pixfmt #" << _pfnum << " = "
       << _pfnum_properties << "\n";
   }
 
@@ -325,7 +327,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // fetch the extensions temporarily, get the few extensions
   // we need, then clear the extensions list again in preparation
   // for the reset.
-  
+
   HDC twindow_dc = get_twindow_dc();
   if (twindow_dc == 0) {
     return;
@@ -368,13 +370,13 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   //// Use the wgl extensions to find a better format.
   //
-  
+
   static const int max_attrib_list = 64;
   int iattrib_list[max_attrib_list];
   float fattrib_list[max_attrib_list];
   int ni = 0;
   int nf = 0;
-  
+
   iattrib_list[ni++] = WGL_SUPPORT_OPENGL_ARB;
   iattrib_list[ni++] = true;
   iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
@@ -395,18 +397,18 @@ choose_pixel_format(const FrameBufferProperties &properties,
   nassertv(ni < max_attrib_list && nf < max_attrib_list);
   iattrib_list[ni] = 0;
   fattrib_list[nf] = 0;
-  
+
   static const int max_pformats = 1024;
   int pformat[max_pformats];
   memset(pformat, 0, sizeof(pformat));
   int nformats = 0;
-  
+
   if (!_wglChoosePixelFormatARB(twindow_dc, iattrib_list, fattrib_list,
                                 max_pformats, pformat, (unsigned int *)&nformats)) {
     nformats = 0;
   }
   nformats = min(nformats, max_pformats);
-  
+
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
       << "Found " << nformats << " advanced formats: [";
@@ -417,7 +419,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     wgldisplay_cat.debug(false)
       << " ]\n";
   }
-  
+
   if (nformats > 0) {
     if (need_pbuffer) {
       best_quality = 0;
@@ -445,11 +447,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
     if (wgldisplay_cat.is_debug()) {
       wgldisplay_cat.debug()
-        << "Selected advanced pixfmt #" << _pfnum << " = " 
+        << "Selected advanced pixfmt #" << _pfnum << " = "
         << _pfnum_properties << "\n";
     }
   }
-  
+
   wglDeleteContext(twindow_ctx);
   release_twindow();
 }
@@ -467,7 +469,7 @@ reset() {
   _supports_swap_control = has_extension("WGL_EXT_swap_control");
 
   if (_supports_swap_control) {
-    _wglSwapIntervalEXT = 
+    _wglSwapIntervalEXT =
       (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
     if (_wglSwapIntervalEXT == NULL) {
       wgldisplay_cat.error()
@@ -485,17 +487,17 @@ reset() {
   _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
 
   if (_supports_pbuffer) {
-    _wglCreatePbufferARB = 
+    _wglCreatePbufferARB =
       (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
-    _wglGetPbufferDCARB = 
+    _wglGetPbufferDCARB =
       (PFNWGLGETPBUFFERDCARBPROC)wglGetProcAddress("wglGetPbufferDCARB");
-    _wglReleasePbufferDCARB = 
+    _wglReleasePbufferDCARB =
       (PFNWGLRELEASEPBUFFERDCARBPROC)wglGetProcAddress("wglReleasePbufferDCARB");
-    _wglDestroyPbufferARB = 
+    _wglDestroyPbufferARB =
       (PFNWGLDESTROYPBUFFERARBPROC)wglGetProcAddress("wglDestroyPbufferARB");
-    _wglQueryPbufferARB = 
+    _wglQueryPbufferARB =
       (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB");
-    
+
     if (_wglCreatePbufferARB == NULL ||
         _wglGetPbufferDCARB == NULL ||
         _wglReleasePbufferDCARB == NULL ||
@@ -531,11 +533,11 @@ reset() {
   _supports_wgl_render_texture = has_extension("WGL_ARB_render_texture");
 
   if (_supports_wgl_render_texture) {
-    _wglBindTexImageARB = 
+    _wglBindTexImageARB =
       (PFNWGLBINDTEXIMAGEARBPROC)wglGetProcAddress("wglBindTexImageARB");
-    _wglReleaseTexImageARB = 
+    _wglReleaseTexImageARB =
       (PFNWGLRELEASETEXIMAGEARBPROC)wglGetProcAddress("wglReleaseTexImageARB");
-    _wglSetPbufferAttribARB = 
+    _wglSetPbufferAttribARB =
       (PFNWGLSETPBUFFERATTRIBARBPROC)wglGetProcAddress("wglSetPbufferAttribARB");
     if (_wglBindTexImageARB == NULL ||
         _wglReleaseTexImageARB == NULL ||
@@ -562,7 +564,7 @@ get_extra_extensions() {
 
   // Look for the ARB flavor first, which wants one parameter, the HDC
   // of the drawing context.
-  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = 
+  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
     (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
   if (wglGetExtensionsStringARB != NULL) {
     HDC hdc = wglGetCurrentDC();
@@ -574,7 +576,7 @@ get_extra_extensions() {
 
   // If that failed, look for the EXT flavor, which wants no
   // parameters.
-  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT = 
+  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT =
     (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
   if (wglGetExtensionsStringEXT != NULL) {
     save_extensions((const char *)wglGetExtensionsStringEXT());
@@ -709,9 +711,9 @@ make_twindow() {
 
   register_twindow_class();
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _twindow = CreateWindow(_twindow_class_name, "twindow", window_style, 
+  _twindow = CreateWindow(_twindow_class_name, "twindow", window_style,
                           0, 0, 1, 1, NULL, NULL, hinstance, 0);
-  
+
   if (!_twindow) {
     wgldisplay_cat.error()
       << "CreateWindow() failed!" << endl;
@@ -775,7 +777,7 @@ register_twindow_class() {
   wc.lpfnWndProc = DefWindowProc;
   wc.hInstance = instance;
   wc.lpszClassName = _twindow_class_name;
-  
+
   if (!RegisterClass(&wc)) {
     wgldisplay_cat.error()
       << "could not register window class!" << endl;
@@ -797,8 +799,8 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
     // avoid divide by zero and negative exponents
     gamma = 1.0;
   }
-  gamma_correction = 1.0 / (double) gamma;    
-  
+  gamma_correction = 1.0 / (double) gamma;
+
   for (i = 0; i < 256; i++) {
     double r;
     double g;
@@ -809,11 +811,11 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       g = (double) original_green_table [i] / GAMMA_1;
       b = (double) original_blue_table [i] / GAMMA_1;
     }
-    else {    
+    else {
       r = ((double) i / 255.0);
       g = r;
       b = r;
-    }    
+    }
 
     r = pow (r, gamma_correction);
     g = pow (g, gamma_correction);
@@ -829,14 +831,14 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       b = 1.0;
     }
 
-    r = r * GAMMA_1;    
-    g = g * GAMMA_1;    
-    b = b * GAMMA_1;    
+    r = r * GAMMA_1;
+    g = g * GAMMA_1;
+    b = b * GAMMA_1;
 
     red_table [i] = r;
     green_table [i] = g;
     blue_table [i] = b;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -846,13 +848,13 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsStateGuardian::
 get_gamma_table(void) {
-  bool get;  
+  bool get;
 
   get = false;
   if (_gamma_table_initialized == false) {
     HDC hdc = GetDC(NULL);
 
-    if (hdc) {   
+    if (hdc) {
       if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
         _gamma_table_initialized = true;
         get = true;
@@ -861,26 +863,26 @@ get_gamma_table(void) {
       ReleaseDC (NULL, hdc);
     }
   }
-  
+
   return get;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::static_set_gamma
 //       Access: Public, Static
-//  Description: Static function for setting gamma which is needed 
+//  Description: Static function for setting gamma which is needed
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsStateGuardian::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
-  bool set;  
+  bool set;
   HDC hdc = GetDC(NULL);
 
   set = false;
-  if (hdc) {   
+  if (hdc) {
     unsigned short ramp [256 * 3];
 
-    if (restore && _gamma_table_initialized) {    
+    if (restore && _gamma_table_initialized) {
       _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
@@ -890,7 +892,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
     }
-    
+
     ReleaseDC (NULL, hdc);
   }
 
@@ -909,7 +911,7 @@ set_gamma(PN_stdfloat gamma) {
 
   set = static_set_gamma(false, gamma);
   if (set) {
-    _gamma = gamma;  
+    _gamma = gamma;
   }
 
   return set;

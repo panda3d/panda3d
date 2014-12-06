@@ -71,13 +71,14 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   properties.clear();
 
   // Now update our framebuffer_mode and bit depth appropriately.
-  GLint double_buffer, stereo, aux_buffers, color_size, alpha_size,
-    depth_size, stencil_size, accum_size, sample_buffers, samples,
-    renderer_id, accelerated, window, pbuffer;
+  GLint double_buffer, stereo, aux_buffers, color_float, color_size,
+    alpha_size, depth_size, stencil_size, accum_size, sample_buffers,
+    samples, renderer_id, accelerated, window, pbuffer;
 
   [pixel_format getValues:&double_buffer  forAttribute:NSOpenGLPFADoubleBuffer  forVirtualScreen:screen];
   [pixel_format getValues:&stereo         forAttribute:NSOpenGLPFAStereo        forVirtualScreen:screen];
   [pixel_format getValues:&aux_buffers    forAttribute:NSOpenGLPFAAuxBuffers    forVirtualScreen:screen];
+  [pixel_format getValues:&color_float    forAttribute:NSOpenGLPFAColorFloat    forVirtualScreen:screen];
   [pixel_format getValues:&color_size     forAttribute:NSOpenGLPFAColorSize     forVirtualScreen:screen];
   [pixel_format getValues:&alpha_size     forAttribute:NSOpenGLPFAAlphaSize     forVirtualScreen:screen];
   [pixel_format getValues:&depth_size     forAttribute:NSOpenGLPFADepthSize     forVirtualScreen:screen];
@@ -93,6 +94,7 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   properties.set_back_buffers(double_buffer);
   properties.set_stereo(stereo);
   properties.set_rgb_color(1);
+  properties.set_float_color(color_float);
   properties.set_color_bits(color_size);
   properties.set_stencil_bits(stencil_size);
   properties.set_depth_bits(depth_size);
@@ -145,7 +147,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   // Don't let it fall back to a different renderer.
   attribs.push_back(NSOpenGLPFANoRecovery);
-  
+
   // Consider pixel formats with properties equal
   // to or better than we requested.
   attribs.push_back(NSOpenGLPFAMinimumPolicy);
@@ -192,7 +194,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     attribs.push_back(NSOpenGLPFARendererID);
     attribs.push_back(kCGLRendererGenericFloatID);
   }
-  
+
   if (properties.get_force_hardware()) {
     attribs.push_back(NSOpenGLPFAAccelerated);
   }

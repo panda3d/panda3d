@@ -54,7 +54,7 @@ PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
 //               texture image.
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
-project(const Lens *lens) {
+project(const Lens *lens, const PfmFile *undist_lut) {
   nassertv(_pfm.is_valid());
 
   static LMatrix4f to_uv(0.5f, 0.0f, 0.0f, 0.0f,
@@ -77,7 +77,19 @@ project(const Lens *lens) {
           _pfm.set_point4(xi, yi, LVecBase4f(0, 0, 0, 0));
         }
       } else {
-        p = to_uv.xform_point(LCAST(PN_float32, film));
+        // Now the lens gives us coordinates in the range [-1, 1].
+        // Rescale these to [0, 1].
+        LPoint3f uvw = film * to_uv;
+        
+        if (undist_lut != NULL) {
+          // Apply the undistortion map, if given.
+          LPoint3f p2;
+          undist_lut->calc_bilinear_point(p2, uvw[0], 1.0 - uvw[1]);
+          uvw = p2;
+          uvw[1] = 1.0 - uvw[1];
+        }
+        
+        p = uvw;
       }
     }
   }

@@ -338,7 +338,6 @@ class CommonFilters:
             if ("Inverted" in configuration):
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
-            print text
             
             self.finalQuad.setShader(Shader.make(text))
             for tex in self.textures:
