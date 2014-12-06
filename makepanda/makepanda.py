@@ -52,6 +52,7 @@ GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
 CFLAGS=""
+CXXFLAGS=""
 LDFLAGS=""
 RTDIST=0
 RTDIST_VERSION="dev"
@@ -283,13 +284,17 @@ parseopts(sys.argv[1:])
 ########################################################################
 
 if ("CFLAGS" in os.environ):
-    CFLAGS = os.environ["CFLAGS"]
+    CFLAGS = os.environ["CFLAGS"].strip()
+
+if ("CXXFLAGS" in os.environ):
+    CXXFLAGS = os.environ["CXXFLAGS"].strip()
+
 if ("RPM_OPT_FLAGS" in os.environ):
-    CFLAGS += " " + os.environ["RPM_OPT_FLAGS"]
-CFLAGS = CFLAGS.strip()
+    CFLAGS += " " + os.environ["RPM_OPT_FLAGS"].strip()
+    CXXFLAGS += " " + os.environ["RPM_OPT_FLAGS"].strip()
+
 if ("LDFLAGS" in os.environ):
-    LDFLAGS = os.environ["LDFLAGS"]
-LDFLAGS = LDFLAGS.strip()
+    LDFLAGS = os.environ["LDFLAGS"].strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if (GetHost() == "darwin" and OSXTARGET != None):
@@ -1126,7 +1131,13 @@ def CompileCxx(obj,src,opts):
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
-        if (CFLAGS !=""): cmd += " " + CFLAGS
+
+        if src.endswith(".c"):
+            cmd += ' ' + CFLAGS
+        else:
+            cmd += ' ' + CXXFLAGS
+        cmd = cmd.rstrip()
+
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " -DBUILDING_" + building
         cmd += ' ' + BracketNameWithQuotes(src)
