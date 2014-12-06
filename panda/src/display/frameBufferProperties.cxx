@@ -757,6 +757,7 @@ setup_color_texture(Texture *tex) const {
     for (int i = 0; i < num_formats; ++i) {
       if (get_color_bits() <= (int)formats[i].color_bits &&
           get_red_bits() <= (int)formats[i].red_bits &&
+          get_green_bits() <= (int)formats[i].green_bits &&
           get_blue_bits() <= (int)formats[i].blue_bits &&
           get_alpha_bits() <= (int)formats[i].alpha_bits &&
           get_float_color() <= formats[i].has_float) {
