@@ -673,13 +673,22 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         if (_fb_properties.get_float_color()) {
           tex->set_component_type(Texture::T_float);
         }
-        if (_fb_properties.get_color_bits() > 16 * 3) {
-          tex->set_format(Texture::F_rgba32);
-          tex->set_component_type(Texture::T_float);
-        } else if (_fb_properties.get_color_bits() > 8 * 3) {
-          tex->set_format(Texture::F_rgba16);
+        if (_fb_properties.get_alpha_bits() == 0) {
+          if (_fb_properties.get_color_bits() > 16 * 3) {
+            tex->set_format(Texture::F_rgb32);
+          } else if (_fb_properties.get_color_bits() > 8 * 3) {
+            tex->set_format(Texture::F_rgb16);
+          } else {
+            tex->set_format(Texture::F_rgb);
+          }
         } else {
-          tex->set_format(Texture::F_rgba);
+          if (_fb_properties.get_color_bits() > 16 * 3) {
+            tex->set_format(Texture::F_rgba32);
+          } else if (_fb_properties.get_color_bits() > 8 * 3) {
+            tex->set_format(Texture::F_rgba16);
+          } else {
+            tex->set_format(Texture::F_rgba);
+          }
         }
       }
     }
