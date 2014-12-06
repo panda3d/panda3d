@@ -568,13 +568,13 @@ if (COMPILER == "MSVC"):
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex64_vc.lib")
         else:
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
-    if (PkgSkip("WX")==0):
+    if (PkgSkip("WX")==0 and RTDIST):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
         DefSymbol("WX",     "__WXMSW__", "")
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
-    if (PkgSkip("FLTK")==0):
+    if (PkgSkip("FLTK")==0 and RTDIST):
         LibName("FLTK",     GetThirdpartyDir() + "fltk/lib/fltk.lib")
     if (PkgSkip("VORBIS")==0):
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
