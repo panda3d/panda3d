@@ -3760,7 +3760,7 @@ get_shader_input(const InternalName *id) const {
 //  Description: Returns the geometry instance count, or 0 if
 //               disabled. See set_instance_count.
 ////////////////////////////////////////////////////////////////////
-const int NodePath::
+int NodePath::
 get_instance_count() const {
   nassertr_always(!is_empty(), 0);
 

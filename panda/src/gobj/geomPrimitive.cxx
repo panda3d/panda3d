@@ -1602,6 +1602,11 @@ get_index_format(NumericType index_type) {
       }
       return cformat;
     }
+
+  default:
+    gobj_cat.error()
+      << "Not a valid index type: " << index_type << "\n";
+    return NULL;
   }
 
   return NULL;

@@ -646,7 +646,7 @@ PUBLISHED:
 
   const Shader *get_shader() const;
   const ShaderInput *get_shader_input(const InternalName *id) const;
-  const int get_instance_count() const;
+  int get_instance_count() const;
 
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
   void clear_tex_transform();
