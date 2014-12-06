@@ -16,6 +16,7 @@
 #include "string_utils.h"
 #include "renderBuffer.h"
 #include "config_display.h"
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::Constructor
@@ -100,6 +101,9 @@ get_default() {
     display_cat.error() << "  framebuffer-stereo #t\n";
     display_cat.error() << "  depth-bits N\n";
     display_cat.error() << "  color-bits N\n";
+    display_cat.error() << "  red-bits N\n";
+    display_cat.error() << "  green-bits N\n";
+    display_cat.error() << "  blue-bits N\n";
     display_cat.error() << "  alpha-bits N\n";
     display_cat.error() << "  stencil-bits N\n";
     display_cat.error() << "  multisamples N\n";
@@ -143,6 +147,15 @@ get_default() {
   if (color_bits > 0) {
     default_props.set_color_bits(color_bits);
   }
+  if (red_bits > 0) {
+    default_props.set_red_bits(red_bits);
+  }
+  if (green_bits > 0) {
+    default_props.set_green_bits(green_bits);
+  }
+  if (blue_bits > 0) {
+    default_props.set_blue_bits(blue_bits);
+  }
   if (alpha_bits > 0) {
     default_props.set_alpha_bits(alpha_bits);
   }
@@ -166,7 +179,7 @@ get_default() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::operator == 
+//     Function: FrameBufferProperties::operator ==
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -250,6 +263,15 @@ output(ostream &out) const {
   }
   if (_property[FBP_color_bits] > 0) {
     out << "color_bits=" << _property[FBP_color_bits] << " ";
+  }
+  if (_property[FBP_red_bits] > 0) {
+    out << "red_bits=" << _property[FBP_red_bits] << " ";
+  }
+  if (_property[FBP_green_bits] > 0) {
+    out << "green_bits=" << _property[FBP_green_bits] << " ";
+  }
+  if (_property[FBP_blue_bits] > 0) {
+    out << "blue_bits=" << _property[FBP_blue_bits] << " ";
   }
   if (_property[FBP_alpha_bits] > 0) {
     out << "alpha_bits=" << _property[FBP_alpha_bits] << " ";
@@ -382,6 +404,15 @@ is_basic() const {
     return false;
   }
   if (_property[FBP_color_bits] > 1) {
+    return false;
+  }
+  if (_property[FBP_red_bits] > 1) {
+    return false;
+  }
+  if (_property[FBP_green_bits] > 1) {
+    return false;
+  }
+  if (_property[FBP_blue_bits] > 1) {
     return false;
   }
   if (_property[FBP_alpha_bits] > 1) {
@@ -661,4 +692,121 @@ verify_hardware_software(const FrameBufferProperties &props, const string &rende
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::setup_color_texture
+//       Access: Public
+//  Description: Sets the texture up for render-to-texture matching
+//               these framebuffer properties.
+//
+//               Returns true if there was a format that had enough
+//               bits, false otherwise.  Of course, this is no
+//               guarantee that a particular graphics back-end
+//               supports rendering to textures of that format.
+////////////////////////////////////////////////////////////////////
+bool FrameBufferProperties::
+setup_color_texture(Texture *tex) const {
+  // Note by rdb: I'm not entirely happy about this system.  I'd
+  // eventually like to move to a system in which framebuffer color
+  // formats and texture formats are unified (like in Direct3D and
+  // OpenGL) and where a table such as the below one would be
+  // generated dynamically by the GSG to reflect the formats that
+  // are supported for render-to-texture.
+
+  static const int num_formats = 12;
+  static const struct {
+    unsigned char color_bits, red_bits, green_bits, blue_bits, alpha_bits;
+    bool has_float;
+    Texture::Format format;
+  } formats[num_formats] = {
+  //{  1,  1,  0,  0,  0, F_red},
+    {  1,  1,  1,  1,  0, false, Texture::F_rgb },
+    {  1,  1,  1,  1,  1, false, Texture::F_rgba },
+    { 24,  8,  8,  8,  0, false, Texture::F_rgb8 },
+    { 24,  8,  8,  8,  8, false, Texture::F_rgba8 },
+    { 16, 16,  0,  0,  0,  true, Texture::F_r16 },
+    { 32, 16, 16,  0,  0,  true, Texture::F_rg16 },
+    { 48, 16, 16, 16,  0,  true, Texture::F_rgb16 },
+    { 48, 16, 16, 16, 16,  true, Texture::F_rgba16 },
+    { 32, 32,  0,  0,  0,  true, Texture::F_r32 },
+    { 64, 32, 32,  0,  0,  true, Texture::F_rg32 },
+    { 96, 32, 32, 32,  0,  true, Texture::F_rgb32 },
+    { 96, 32, 32, 32, 32,  true, Texture::F_rgba32 },
+  };
+
+  if (get_srgb_color()) {
+    // These are the only sRGB formats.  Deal with it.
+    if (get_alpha_bits() == 0) {
+      tex->set_format(Texture::F_srgb);
+    } else {
+      tex->set_format(Texture::F_srgb_alpha);
+    }
+
+    return (get_color_bits() <= 24 &&
+            get_red_bits() <= 8 &&
+            get_green_bits() <= 8 &&
+            get_blue_bits() <= 8 &&
+            get_alpha_bits() <= 8);
+
+  } else {
+    if (get_float_color()) {
+      tex->set_component_type(Texture::T_float);
+    }
+
+    for (int i = 0; i < num_formats; ++i) {
+      if (get_color_bits() <= (int)formats[i].color_bits &&
+          get_red_bits() <= (int)formats[i].red_bits &&
+          get_blue_bits() <= (int)formats[i].blue_bits &&
+          get_alpha_bits() <= (int)formats[i].alpha_bits &&
+          get_float_color() <= formats[i].has_float) {
+
+        tex->set_format(formats[i].format);
+        return true;
+      }
+    }
+
+    // Can't get requested bits.  Choose a generic format and return.
+    tex->set_format((get_alpha_bits() == 0) ? Texture::F_rgb : Texture::F_rgba);
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::setup_depth_texture
+//       Access: Public
+//  Description: Sets the texture up for render-to-texture matching
+//               these framebuffer properties.
+//
+//               Returns true if there was a format that had enough
+//               bits, false otherwise.  Of course, this is no
+//               guarantee that a particular graphics back-end
+//               supports rendering to textures of that format.
+////////////////////////////////////////////////////////////////////
+bool FrameBufferProperties::
+setup_depth_texture(Texture *tex) const {
+  if (get_float_depth()) {
+    tex->set_component_type(Texture::T_float);
+    tex->set_format(Texture::F_depth_component32);
+    return (get_depth_bits() <= 32);
+
+  } else if (get_depth_bits() <= 1) {
+    tex->set_format(Texture::F_depth_component);
+    return true;
+
+  } else if (get_depth_bits() <= 16) {
+    tex->set_format(Texture::F_depth_component16);
+    return true;
+
+  } else if (get_depth_bits() <= 24) {
+    tex->set_format(Texture::F_depth_component24);
+    return true;
+
+  } else if (get_depth_bits() <= 32) {
+    tex->set_format(Texture::F_depth_component32);
+    return true;
+  }
+
+  tex->set_format(Texture::F_depth_component);
+  return false;
 }

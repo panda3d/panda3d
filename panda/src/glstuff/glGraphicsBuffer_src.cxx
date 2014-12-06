@@ -626,18 +626,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     // Adjust the texture format based on the requested framebuffer settings.
     switch (slot) {
     case RTP_depth:
-      if (_fb_properties.get_float_depth()) {
-        tex->set_format(Texture::F_depth_component32);
-        tex->set_component_type(Texture::T_float);
-      } else if (_fb_properties.get_depth_bits() > 24) {
-        tex->set_format(Texture::F_depth_component32);
-      } else if (_fb_properties.get_depth_bits() > 16) {
-        tex->set_format(Texture::F_depth_component24);
-      } else if (_fb_properties.get_depth_bits() > 8) {
-        tex->set_format(Texture::F_depth_component16);
-      } else {
-        tex->set_format(Texture::F_depth_component);
-      }
+      _fb_properties.setup_depth_texture(tex);
       break;
     case RTP_depth_stencil:
       tex->set_format(Texture::F_depth_stencil);
@@ -663,34 +652,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       tex->set_component_type(Texture::T_float);
       break;
     default:
-      if (_fb_properties.get_srgb_color()) {
-        if (_fb_properties.get_alpha_bits() == 0) {
-          tex->set_format(Texture::F_srgb);
-        } else {
-          tex->set_format(Texture::F_srgb_alpha);
-        }
-      } else {
-        if (_fb_properties.get_float_color()) {
-          tex->set_component_type(Texture::T_float);
-        }
-        if (_fb_properties.get_alpha_bits() == 0) {
-          if (_fb_properties.get_color_bits() > 16 * 3) {
-            tex->set_format(Texture::F_rgb32);
-          } else if (_fb_properties.get_color_bits() > 8 * 3) {
-            tex->set_format(Texture::F_rgb16);
-          } else {
-            tex->set_format(Texture::F_rgb);
-          }
-        } else {
-          if (_fb_properties.get_color_bits() > 16 * 3) {
-            tex->set_format(Texture::F_rgba32);
-          } else if (_fb_properties.get_color_bits() > 8 * 3) {
-            tex->set_format(Texture::F_rgba16);
-          } else {
-            tex->set_format(Texture::F_rgba);
-          }
-        }
-      }
+      _fb_properties.setup_color_texture(tex);
     }
 
 #ifndef OPENGLES

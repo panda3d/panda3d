@@ -123,10 +123,9 @@ get_properties(FrameBufferProperties &properties,
 
   properties.set_back_buffers(1);
   properties.set_rgb_color(1);
-  properties.set_color_bits(red_size+green_size+blue_size);
+  properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
   properties.set_stencil_bits(stencil_size);
   properties.set_depth_bits(depth_size);
-  properties.set_alpha_bits(alpha_size);
   properties.set_multisamples(samples);
 
   // Set both hardware and software bits, indicating not-yet-known.

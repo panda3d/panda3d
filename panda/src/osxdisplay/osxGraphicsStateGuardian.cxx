@@ -87,7 +87,7 @@ osxGraphicsStateGuardian::
 //  Description: Resets all internal state as if the gsg were newly
 //               created.
 ////////////////////////////////////////////////////////////////////
-void osxGraphicsStateGuardian::reset() 
+void osxGraphicsStateGuardian::reset()
 {
 /*
   if(_aglcontext != (AGLContext)NULL)
@@ -153,7 +153,7 @@ draw_resize_box() {
   // viewport size.
   PN_stdfloat inner_x = 1.0f - (15.0f * 2.0f / _viewport_width);
   PN_stdfloat inner_y = (15.0f * 2.0f / _viewport_height) - 1.0f;
-  
+
   // Draw the quad.  We just use the slow, simple immediate mode calls
   // here.  It's just one quad, after all.
   glBegin(GL_QUADS);
@@ -177,7 +177,7 @@ draw_resize_box() {
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsStateGuardian::build_gl
 //       Access: Public, Virtual
-//  Description: This function will build up a context for a gsg..  
+//  Description: This function will build up a context for a gsg..
 ////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsStateGuardian::
 build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
@@ -187,9 +187,9 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   }
 
   OSStatus err = noErr;
-        
+
   GDHandle display = GetMainDevice();
-        
+
   pvector<GLint> attrib;
   if (!fb_props.get_indexed_color()) {
     attrib.push_back(AGL_RGBA);
@@ -200,11 +200,11 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
     attrib.push_back(AGL_PIXEL_SIZE);
     attrib.push_back(color_bits);
     attrib.push_back(AGL_RED_SIZE);
-    attrib.push_back(color_bits / 3);
+    attrib.push_back(fb_props.get_red_bits());
     attrib.push_back(AGL_GREEN_SIZE);
-    attrib.push_back(color_bits / 3);
+    attrib.push_back(fb_props.get_green_bits());
     attrib.push_back(AGL_BLUE_SIZE);
-    attrib.push_back(color_bits / 3);
+    attrib.push_back(fb_props.get_blue_bits());
     attrib.push_back(AGL_ALPHA_SIZE);
     attrib.push_back(alpha_bits);
   }
@@ -265,10 +265,10 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
         err = -1;
       }
     } else {
-      aglSetInteger(_aglcontext, AGL_BUFFER_NAME, &_shared_buffer);      
-      err = report_agl_error("aglSetInteger AGL_BUFFER_NAME");          
+      aglSetInteger(_aglcontext, AGL_BUFFER_NAME, &_shared_buffer);
+      err = report_agl_error("aglSetInteger AGL_BUFFER_NAME");
     }
-        
+
   } else {
     osxdisplay_cat.error()
       << "osxGraphicsStateGuardian::build_gl Error Getting Pixel Format\n" ;
@@ -282,10 +282,10 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   if (err == noErr) {
     describe_pixel_format(fb_props);
   }
-        
+
   if (osxdisplay_cat.is_debug()) {
     osxdisplay_cat.debug()
-      << "osxGraphicsStateGuardian::build_gl Returning :" << err << "\n"; 
+      << "osxGraphicsStateGuardian::build_gl Returning :" << err << "\n";
     osxdisplay_cat.debug()
       << fb_props << "\n";
   }
@@ -314,12 +314,15 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
   }
   int color_bits = 0;
   if (aglDescribePixelFormat(_aglPixFmt, AGL_RED_SIZE, &value)) {
+    fb_props.set_red_bits(value);
     color_bits += value;
   }
   if (aglDescribePixelFormat(_aglPixFmt, AGL_GREEN_SIZE, &value)) {
+    fb_props.set_green_bits(value);
     color_bits += value;
   }
   if (aglDescribePixelFormat(_aglPixFmt, AGL_BLUE_SIZE, &value)) {
+    fb_props.set_blue_bits(value);
     color_bits += value;
   }
   fb_props.set_color_bits(color_bits);
@@ -399,13 +402,13 @@ get_gamma_table() {
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsStateGuardian::static_set_gamma
 //       Access: Public, Static
-//  Description: Static function for setting gamma which is needed 
+//  Description: Static function for setting gamma which is needed
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsStateGuardian::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
-  bool set;  
-        
+  bool set;
+
   set = false;
 
   if (restore) {
@@ -414,23 +417,23 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     return set;
   }
   // CGDisplayRestoreColorSyncSettings();
-  
+
   // CGGammaValue gOriginalRedTable[ 256 ];
   // CGGammaValue gOriginalGreenTable[ 256 ];
   // CGGammaValue gOriginalBlueTable[ 256 ];
-  
+
   // CGTableCount sampleCount;
   // CGDisplayErr cgErr;
-  
+
   // cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable, _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
-  
+
   CGGammaValue redTable[ 256 ];
   CGGammaValue greenTable[ 256 ];
   CGGammaValue blueTable[ 256 ];
-  
+
   short j, i;
   short y[3];
-  
+
   for (j = 0; j < 3; j++) {
     y[j] = 255;
   }
@@ -438,18 +441,18 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
   y[0] = 256 * gamma;
   y[1] = 256 * gamma;
   y[2] = 256 * gamma;
-  
+
   for (i = 0; i < 256; i++) {
     redTable[i] = _gOriginalRedTable[ i ] * (y[ 0 ] ) / 256;
     greenTable[ i ] = _gOriginalGreenTable[ i ] * (y[ 1 ] ) / 256;
     blueTable[ i ] = _gOriginalBlueTable[ i ] * (y[ 2 ] ) / 256;
   }
   _cgErr = CGSetDisplayTransferByTable( 0, 256, redTable, greenTable, blueTable);
-  
+
   if (_cgErr == 0) {
     set = true;
   }
-  
+
   return set;
 }
 
