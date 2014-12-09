@@ -2596,11 +2596,11 @@ CopyAllHeaders('panda/src/downloader')
 CopyAllHeaders('panda/metalibs/pandaexpress')
 
 CopyAllHeaders('panda/src/pipeline')
+CopyAllHeaders('panda/src/linmath')
 CopyAllHeaders('panda/src/putil')
 CopyAllHeaders('dtool/src/prckeys')
 CopyAllHeaders('panda/src/audio')
 CopyAllHeaders('panda/src/event')
-CopyAllHeaders('panda/src/linmath')
 CopyAllHeaders('panda/src/mathutil')
 CopyAllHeaders('panda/src/gsgbase')
 CopyAllHeaders('panda/src/pnmimage')
@@ -3037,6 +3037,25 @@ if (not RUNTIME):
   TargetAdd('libp3pipeline_igate.obj', input='libp3pipeline.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: panda/src/linmath/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
+  TargetAdd('p3linmath_composite1.obj', opts=OPTS, input='p3linmath_composite1.cxx')
+  TargetAdd('p3linmath_composite2.obj', opts=OPTS, input='p3linmath_composite2.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite*.cxx"])
+  for ifile in IGATEFILES[:]:
+      if "_src." in ifile:
+          IGATEFILES.remove(ifile)
+  IGATEFILES.remove('cast_to_double.h')
+  IGATEFILES.remove('lmat_ops.h')
+  IGATEFILES.remove('cast_to_float.h')
+  TargetAdd('libp3linmath.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3linmath.in', opts=['IMOD:panda3d.core', 'ILIB:libp3linmath', 'SRCDIR:panda/src/linmath'])
+  TargetAdd('libp3linmath_igate.obj', input='libp3linmath.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: panda/src/putil/
 #
 
@@ -3075,25 +3094,6 @@ if (not RUNTIME):
   TargetAdd('libp3event.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3event.in', opts=['IMOD:panda3d.core', 'ILIB:libp3event', 'SRCDIR:panda/src/event'])
   TargetAdd('libp3event_igate.obj', input='libp3event.in', opts=["DEPENDENCYONLY"])
-
-#
-# DIRECTORY: panda/src/linmath/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
-  TargetAdd('p3linmath_composite1.obj', opts=OPTS, input='p3linmath_composite1.cxx')
-  TargetAdd('p3linmath_composite2.obj', opts=OPTS, input='p3linmath_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite*.cxx"])
-  for ifile in IGATEFILES[:]:
-      if "_src." in ifile:
-          IGATEFILES.remove(ifile)
-  IGATEFILES.remove('cast_to_double.h')
-  IGATEFILES.remove('lmat_ops.h')
-  IGATEFILES.remove('cast_to_float.h')
-  TargetAdd('libp3linmath.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3linmath.in', opts=['IMOD:panda3d.core', 'ILIB:libp3linmath', 'SRCDIR:panda/src/linmath'])
-  TargetAdd('libp3linmath_igate.obj', input='libp3linmath.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/mathutil/

@@ -1,6 +1,6 @@
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
-#define LOCAL_LIBS p3pipeline p3express p3pandabase
+#define LOCAL_LIBS p3pipeline p3linmath p3express p3pandabase
 #define USE_PACKAGES zlib
 
 #begin lib_target
@@ -57,6 +57,7 @@
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
+    paramValue.I paramValue.h \
     pbitops.I pbitops.h \
     portalMask.h \
     pta_ushort.h \
@@ -107,6 +108,7 @@
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
+    paramValue.cxx \
     pbitops.cxx \
     pta_ushort.cxx \
     pythonCallbackObject.cxx \
@@ -167,8 +169,9 @@
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
-    portalMask.h \
+    paramValue.I paramValue.h \
     pbitops.I pbitops.h \
+    portalMask.h \
     pta_ushort.h \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \

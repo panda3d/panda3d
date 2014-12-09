@@ -20,58 +20,22 @@
 #pragma implementation
 #endif
 
-TypeHandle EventStoreValueBase::_type_handle;
-TypeHandle EventStoreTypedRefCount::_type_handle;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EventParameter::
 output(ostream &out) const {
   if (_ptr == (TypedWritableReferenceCount *)NULL) {
     out << "(empty)";
 
-  } else if (_ptr->is_of_type(EventStoreValueBase::get_class_type())) {
-    const EventStoreValueBase *sv_ptr;
+  } else if (_ptr->is_of_type(ParamValueBase::get_class_type())) {
+    const ParamValueBase *sv_ptr;
     DCAST_INTO_V(sv_ptr, _ptr);
     sv_ptr->output(out);
 
   } else {
     out << _ptr->get_type();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreValueBase::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-EventStoreValueBase::
-~EventStoreValueBase() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreTypedRefCount::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-EventStoreTypedRefCount::
-~EventStoreTypedRefCount() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventStoreTypedRefCount::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void EventStoreTypedRefCount::
-output(ostream &out) const {
-  if (_value == (TypedReferenceCount *)NULL) {
-    out << "(empty)";
-
-  } else {
-    out << _value->get_type();
   }
 }

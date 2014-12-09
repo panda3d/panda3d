@@ -24,7 +24,7 @@
 // Description : A class object for storing specifically objects of
 //               type PandaNode.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH EventStorePandaNode : public EventStoreValueBase {
+class EXPCL_PANDA_PGRAPH EventStorePandaNode : public ParamValueBase {
 PUBLISHED:
   INLINE EventStorePandaNode(const PandaNode *value);
   virtual ~EventStorePandaNode();
@@ -46,9 +46,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    EventStoreValueBase::init_type();
+    ParamValueBase::init_type();
     register_type(_type_handle, "EventStorePandaNode",
-                  EventStoreValueBase::get_class_type());
+                  ParamValueBase::get_class_type());
   }
 
 private:

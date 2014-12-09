@@ -23,6 +23,7 @@
 #include "pointerTo.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "paramValue.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventParameter
@@ -32,8 +33,7 @@
 //               object, which of course could be pretty much
 //               anything.  To store a simple value like a double or a
 //               string, the EventParameter constructors transparently
-//               use the EventStoreValue template class, defined
-//               below.
+//               use the ParamValue template class from paramValue.h.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT EventParameter {
 PUBLISHED:
@@ -77,138 +77,15 @@ private:
 
 INLINE ostream &operator << (ostream &out, const EventParameter &param);
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventStoreValueBase
-// Description : A non-template base class of EventStoreValue (below),
-//               which serves mainly to define the placeholder for the
-//               virtual output function.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT EventStoreValueBase : public TypedWritableReferenceCount {
-public:
-  INLINE EventStoreValueBase();
+typedef ParamTypedRefCount EventStoreTypedRefCount;
 
-PUBLISHED:
-  virtual ~EventStoreValueBase();
-  virtual void output(ostream &out) const=0;
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, ParamValue<int>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, ParamValue<double>);
 
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "EventStoreValueBase",
-                  TypedWritableReferenceCount::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
-////////////////////////////////////////////////////////////////////
-//       Class : EventStoreTypedRefCount
-// Description : A class object for storing specifically objects of
-//               type TypedReferenceCount, which is different than
-//               TypedWritableReferenceCount.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT EventStoreTypedRefCount : public EventStoreValueBase {
-PUBLISHED:
-  INLINE EventStoreTypedRefCount(const TypedReferenceCount *value);
-  virtual ~EventStoreTypedRefCount();
-
-  INLINE void set_value(const TypedReferenceCount *value);
-  INLINE TypedReferenceCount *get_value() const;
-
-  virtual void output(ostream &out) const;
-
-public:
-  PT(TypedReferenceCount) _value;
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    EventStoreValueBase::init_type();
-    register_type(_type_handle, "EventStoreTypedRefCount",
-                  EventStoreValueBase::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
-////////////////////////////////////////////////////////////////////
-//       Class : EventStoreValue
-// Description : A handy class object for storing simple values (like
-//               integers or strings) passed along with an Event.
-//               This is essentially just a wrapper around whatever
-//               data type you like, to make it a
-//               TypedWritableReferenceCount object which can be
-//               passed along inside an EventParameter.
-////////////////////////////////////////////////////////////////////
-template<class Type>
-class EventStoreValue : public EventStoreValueBase {
-private:
-  INLINE EventStoreValue();
-public:
-  INLINE EventStoreValue(const Type &value);
-  virtual ~EventStoreValue();
-
-  INLINE void set_value(const Type &value);
-  INLINE const Type &get_value() const;
-
-  virtual void output(ostream &out) const;
-
-  Type _value;
-
-public:
-  static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &dg);
-
-protected:
-  static TypedWritable *make_from_bam(const FactoryParams &params);
-  void fillin(DatagramIterator &scan, BamReader *manager);
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type(const string &type_name = "UndefinedEventStoreValue") {
-    EventStoreValueBase::init_type();
-    _type_handle = register_dynamic_type
-      (type_name, EventStoreValueBase::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {
-    // In this case, we can't do anything, since we don't have the
-    // class' type_name.
-    return get_class_type();
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<int>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<double>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<std::string>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<std::wstring>);
-
-typedef EventStoreValue<int> EventStoreInt;
-typedef EventStoreValue<double> EventStoreDouble;
-typedef EventStoreValue<string> EventStoreString;
-typedef EventStoreValue<wstring> EventStoreWstring;
+typedef ParamValue<int> EventStoreInt;
+typedef ParamValue<double> EventStoreDouble;
+typedef ParamString EventStoreString;
+typedef ParamWstring EventStoreWstring;
 
 #include "eventParameter.I"
 
@@ -218,4 +95,3 @@ typedef EventStoreValue<wstring> EventStoreWstring;
 #endif
 
 #endif
-
