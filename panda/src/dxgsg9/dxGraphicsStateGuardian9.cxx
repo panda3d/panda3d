@@ -293,6 +293,9 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   set_sampler_state(i, D3DSAMP_MINFILTER, new_min_filter);
   set_sampler_state(i, D3DSAMP_MIPFILTER, new_mip_filter);
 
+  float lod_bias = sampler.get_lod_bias();
+  set_sampler_state(i, D3DSAMP_MIPMAPLODBIAS, *(DWORD*)&lod_bias);
+
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
 }
 
