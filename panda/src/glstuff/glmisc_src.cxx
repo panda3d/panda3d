@@ -259,6 +259,12 @@ ConfigVariableBool gl_support_primitive_restart_index
             "segment primitives.  Set to false if you suspect a bug "
             "in the driver implementation."));
 
+ConfigVariableBool gl_support_sampler_objects
+  ("gl-support-sampler-objects", true,
+   PRC_DESC("Setting this allows Panda to make use of sampler "
+            "objects.  Set to false if you suspect a bug in the "
+            "driver implementation."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {
@@ -270,6 +276,7 @@ void CLP(init_classes)() {
   CLP(ShaderContext)::init_type();
 #endif
   CLP(TextureContext)::init_type();
+  CLP(SamplerContext)::init_type();
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
 

@@ -293,7 +293,7 @@ get_page_y_size() const {
 //               textures created for this font.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_minfilter(Texture::FilterType filter) {
+set_minfilter(SamplerState::FilterType filter) {
   _minfilter = filter;
   update_filters();
 }
@@ -304,7 +304,7 @@ set_minfilter(Texture::FilterType filter) {
 //  Description: Returns the filter type used when minimizing the
 //               textures created for this font.
 ////////////////////////////////////////////////////////////////////
-INLINE Texture::FilterType DynamicTextFont::
+INLINE SamplerState::FilterType DynamicTextFont::
 get_minfilter() const {
   return _minfilter;
 }
@@ -316,7 +316,7 @@ get_minfilter() const {
 //               textures created for this font.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_magfilter(Texture::FilterType filter) {
+set_magfilter(SamplerState::FilterType filter) {
   _magfilter = filter;
   update_filters();
 }
@@ -327,7 +327,7 @@ set_magfilter(Texture::FilterType filter) {
 //  Description: Returns the filter type used when enlarging the
 //               textures created for this font.
 ////////////////////////////////////////////////////////////////////
-INLINE Texture::FilterType DynamicTextFont::
+INLINE SamplerState::FilterType DynamicTextFont::
 get_magfilter() const {
   return _magfilter;
 }

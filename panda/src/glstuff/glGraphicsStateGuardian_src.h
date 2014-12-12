@@ -184,10 +184,18 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
+typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
+typedef void (APIENTRYP PFNGLDELETESAMPLERSPROC) (GLsizei count, const GLuint *samplers);
+typedef void (APIENTRYP PFNGLBINDSAMPLERPROC) (GLuint unit, GLuint sampler);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERIPROC) (GLuint sampler, GLenum pname, GLint param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERIVPROC) (GLuint sampler, GLenum pname, const GLint *param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERFPROC) (GLuint sampler, GLenum pname, GLfloat param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERFVPROC) (GLuint sampler, GLenum pname, const GLfloat *param);
 typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIEXTPROC) (GLuint program, GLenum pname, GLint value);
 typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
+typedef void (APIENTRYP PFNGLBINDSAMPLERSPROC) (GLuint first, GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLDISPATCHCOMPUTEPROC) (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
@@ -275,6 +283,9 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
+
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
+  virtual void release_sampler(SamplerContext *sc);
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
@@ -443,11 +454,11 @@ protected:
 
   static GLenum get_numeric_type(Geom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
-  GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
-  static Texture::WrapMode get_panda_wrap_mode(GLenum wm);
-  static GLenum get_texture_filter_type(Texture::FilterType ft,
+  GLenum get_texture_wrap_mode(SamplerState::WrapMode wm) const;
+  static SamplerState::WrapMode get_panda_wrap_mode(GLenum wm);
+  static GLenum get_texture_filter_type(SamplerState::FilterType ft,
                                         bool ignore_mipmaps);
-  static Texture::FilterType get_panda_filter_type(GLenum ft);
+  static SamplerState::FilterType get_panda_filter_type(GLenum ft);
   GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;
   GLint get_internal_image_format(Texture *tex) const;
@@ -476,8 +487,9 @@ protected:
 #endif  // NDEBUG
 
   void do_auto_rescale_normal();
-  bool specify_texture(CLP(TextureContext) *gtc);
+  bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
   bool apply_texture(TextureContext *tc);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc, bool force);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,
@@ -765,11 +777,19 @@ public:
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
 #endif  // OPENGLES_1
 #ifndef OPENGLES
+  PFNGLGENSAMPLERSPROC _glGenSamplers;
+  PFNGLDELETESAMPLERSPROC _glDeleteSamplers;
+  PFNGLBINDSAMPLERPROC _glBindSampler;
+  PFNGLSAMPLERPARAMETERIPROC _glSamplerParameteri;
+  PFNGLSAMPLERPARAMETERIVPROC _glSamplerParameteriv;
+  PFNGLSAMPLERPARAMETERFPROC _glSamplerParameterf;
+  PFNGLSAMPLERPARAMETERFVPROC _glSamplerParameterfv;
   PFNGLPROGRAMPARAMETERIPROC _glProgramParameteri;
   PFNGLPATCHPARAMETERIPROC _glPatchParameteri;
   PFNGLDRAWARRAYSINSTANCEDPROC _glDrawArraysInstanced;
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
   PFNGLBINDTEXTURESPROC _glBindTextures;
+  PFNGLBINDSAMPLERSPROC _glBindSamplers;
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
   PFNGLBINDIMAGETEXTURESPROC _glBindImageTextures;
   PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
@@ -780,6 +800,7 @@ public:
   PFNGLSCISSORARRAYVPROC _glScissorArrayv;
   PFNGLDEPTHRANGEARRAYVPROC _glDepthRangeArrayv;
   PFNGLGETTEXTUREHANDLEPROC _glGetTextureHandle;
+  PFNGLGETTEXTURESAMPLERHANDLEPROC _glGetTextureSamplerHandle;
   PFNGLMAKETEXTUREHANDLERESIDENTPROC _glMakeTextureHandleResident;
   PFNGLMAKETEXTUREHANDLENONRESIDENTPROC _glMakeTextureHandleNonResident;
   PFNGLUNIFORMHANDLEUI64PROC _glUniformHandleui64;

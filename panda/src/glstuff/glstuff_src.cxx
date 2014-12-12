@@ -19,6 +19,7 @@
 
 #include "glmisc_src.cxx"
 #include "glTextureContext_src.cxx"
+#include "glSamplerContext_src.cxx"
 #include "glVertexBufferContext_src.cxx"
 #include "glIndexBufferContext_src.cxx"
 #include "glOcclusionQueryContext_src.cxx"

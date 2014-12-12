@@ -246,8 +246,8 @@ flatten(GraphicsOutput *window) {
 
     Texture *model_tex = model_stage._tex;
     int aniso_degree = model_tex->get_anisotropic_degree();
-    Texture::FilterType minfilter = model_tex->get_minfilter();
-    Texture::FilterType magfilter = model_tex->get_magfilter();
+    SamplerState::FilterType minfilter = model_tex->get_minfilter();
+    SamplerState::FilterType magfilter = model_tex->get_magfilter();
 
     // What is the UV range of the model stage?
     LTexCoord min_uv, max_uv;

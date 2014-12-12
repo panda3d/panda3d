@@ -1276,9 +1276,12 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
+    SamplerState sampler;
+
     if (id != NULL) {
       const ShaderInput *input = _glgsg->_target_shader->get_shader_input(id);
       tex = input->get_texture();
+      sampler = input->get_sampler();
 
     } else {
       if (texunit >= texattrib->get_num_on_stages()) {
@@ -1286,6 +1289,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
       TextureStage *stage = texattrib->get_on_stage(texunit);
       tex = texattrib->get_on_texture(stage);
+      sampler = texattrib->get_on_sampler(stage);
       view += stage->get_tex_view_offset();
     }
 
@@ -1349,6 +1353,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
     _glgsg->apply_texture(gtc);
+    _glgsg->apply_sampler(i, sampler, gtc);
   }
 
 #ifndef OPENGLES

@@ -20,6 +20,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
+#include "samplerContext.h"
 #include "shader.h"
 #include "reMutexHolder.h"
 #include "geomContext.h"
@@ -32,10 +33,10 @@ int PreparedGraphicsObjects::_name_index = 0;
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PreparedGraphicsObjects::
-PreparedGraphicsObjects() : 
+PreparedGraphicsObjects() :
   _lock("PreparedGraphicsObjects::_lock"),
   _name(init_name()),
   _vertex_buffer_cache_size(0),
@@ -43,7 +44,8 @@ PreparedGraphicsObjects() :
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),
   _ibuffer_residency(_name, "ibuffer"),
-  _graphics_memory_lru("graphics_memory_lru", graphics_memory_limit)
+  _graphics_memory_lru("graphics_memory_lru", graphics_memory_limit),
+  _sampler_object_lru("sampler_object_lru", sampler_object_limit)
 {
   // GLGSG will turn this flag on.  This is a temporary hack to
   // disable this feature for DX8/DX9 for now, until we work out the
@@ -54,7 +56,7 @@ PreparedGraphicsObjects() :
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PreparedGraphicsObjects::
 ~PreparedGraphicsObjects() {
@@ -74,6 +76,9 @@ PreparedGraphicsObjects::
   }
   // Is this a leak?  Should we delete these TextureContexts?
   _released_textures.clear();
+
+  release_all_samplers();
+  _released_samplers.clear();
 
   release_all_geoms();
   _released_geoms.clear();
@@ -121,7 +126,7 @@ void PreparedGraphicsObjects::
 set_graphics_memory_limit(size_t limit) {
   if (limit != _graphics_memory_lru.get_max_size()) {
     _graphics_memory_lru.set_max_size(limit);
-  
+
     // We throw an event here so global objects (particularly the
     // TexMemWatcher) can automatically respond to this change.
     throw_event("graphics_memory_limit_changed");
@@ -356,6 +361,198 @@ prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
   }
 
   return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::enqueue_sampler
+//       Access: Public
+//  Description: Indicates that a sampler would like to be put on the
+//               list to be prepared when the GSG is next ready to
+//               do this (presumably at the next frame).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+enqueue_sampler(const SamplerState &sampler) {
+  ReMutexHolder holder(_lock);
+
+  _enqueued_samplers.insert(sampler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_sampler_queued
+//       Access: Public
+//  Description: Returns true if the sampler has been queued on this
+//               GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_sampler_queued(const SamplerState &sampler) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedSamplers::const_iterator qi = _enqueued_samplers.find(sampler);
+  return (qi != _enqueued_samplers.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::dequeue_sampler
+//       Access: Public
+//  Description: Removes a sampler from the queued list of samplers to
+//               be prepared.  Normally it is not necessary to call
+//               this, unless you change your mind about preparing it
+//               at the last minute, since the sampler will
+//               automatically be dequeued and prepared at the next
+//               frame.
+//
+//               The return value is true if the sampler is
+//               successfully dequeued, false if it had not been
+//               queued.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+dequeue_sampler(const SamplerState &sampler) {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedSamplers::iterator qi = _enqueued_samplers.find(sampler);
+  if (qi != _enqueued_samplers.end()) {
+    _enqueued_samplers.erase(qi);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_sampler_prepared
+//       Access: Public
+//  Description: Returns true if the sampler has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_sampler_prepared(const SamplerState &sampler) const {
+  ReMutexHolder holder(_lock);
+
+  PreparedSamplers::const_iterator it = _prepared_samplers.find(sampler);
+  return (it != _prepared_samplers.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_sampler
+//       Access: Public
+//  Description: Indicates that a sampler context, created by a
+//               previous call to prepare_sampler(), is no longer
+//               needed.  The driver resources will not be freed until
+//               some GSG calls update(), indicating it is at a
+//               stage where it is ready to release samplers.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_sampler(SamplerContext *sc) {
+  ReMutexHolder holder(_lock);
+
+  _released_samplers.insert(sc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_sampler
+//       Access: Public
+//  Description: Releases a sampler if it has already been prepared,
+//               or removes it from the preparation queue.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_sampler(const SamplerState &sampler) {
+  ReMutexHolder holder(_lock);
+
+  PreparedSamplers::iterator it = _prepared_samplers.find(sampler);
+  if (it != _prepared_samplers.end()) {
+    _released_samplers.insert(it->second);
+    _prepared_samplers.erase(it);
+  }
+
+  _enqueued_samplers.erase(sampler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_all_samplers
+//       Access: Public
+//  Description: Releases all samplers at once.  This will force them
+//               to be reloaded for all GSG's that share this object.
+//               Returns the number of samplers released.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+release_all_samplers() {
+  ReMutexHolder holder(_lock);
+
+  int num_samplers = (int)_prepared_samplers.size() + (int)_enqueued_samplers.size();
+
+  PreparedSamplers::iterator sci;
+  for (sci = _prepared_samplers.begin();
+       sci != _prepared_samplers.end();
+       ++sci) {
+    _released_samplers.insert(sci->second);
+  }
+
+  _prepared_samplers.clear();
+  _enqueued_samplers.clear();
+
+  return num_samplers;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_samplers
+//       Access: Public
+//  Description: Returns the number of samplers that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_samplers() const {
+  return _enqueued_samplers.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_samplers
+//       Access: Public
+//  Description: Returns the number of samplers that have already been
+//               prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_samplers() const {
+  return _prepared_samplers.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::prepare_sampler_now
+//       Access: Public
+//  Description: Immediately creates a new SamplerContext for the
+//               indicated sampler and returns it.  This assumes that
+//               the GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               samplers.  If this is not necessarily the case, you
+//               should use enqueue_sampler() instead.
+//
+//               Normally, this function is not called directly.
+//               Call Sampler::prepare_now() instead.
+//
+//               The SamplerContext contains all of the pertinent
+//               information needed by the GSG to keep track of this
+//               one particular sampler, and will exist as long as the
+//               sampler is ready to be rendered.
+//
+//               When either the Sampler or the
+//               PreparedGraphicsObjects object destructs, the
+//               SamplerContext will be deleted.
+////////////////////////////////////////////////////////////////////
+SamplerContext *PreparedGraphicsObjects::
+prepare_sampler_now(const SamplerState &sampler, GraphicsStateGuardianBase *gsg) {
+  ReMutexHolder holder(_lock);
+
+  PreparedSamplers::const_iterator it = _prepared_samplers.find(sampler);
+  if (it != _prepared_samplers.end()) {
+    return it->second;
+  }
+
+  // Ask the GSG to create a brand new SamplerContext.
+  SamplerContext *sc = gsg->prepare_sampler(sampler);
+
+  if (sc != (SamplerContext *)NULL) {
+    _prepared_samplers[sampler] = sc;
+  }
+
+  return sc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -870,8 +1067,8 @@ release_all_vertex_buffers() {
 
   // Also clear the cache of recently-unprepared vertex buffers.
   BufferCache::iterator bci;
-  for (bci = _vertex_buffer_cache.begin(); 
-       bci != _vertex_buffer_cache.end(); 
+  for (bci = _vertex_buffer_cache.begin();
+       bci != _vertex_buffer_cache.end();
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_vertex_buffers);
@@ -884,7 +1081,7 @@ release_all_vertex_buffers() {
   _vertex_buffer_cache.clear();
   _vertex_buffer_cache_lru.clear();
   _vertex_buffer_cache_size = 0;
-  
+
   return num_vertex_buffers;
 }
 
@@ -1099,8 +1296,8 @@ release_all_index_buffers() {
 
   // Also clear the cache of recently-unprepared index buffers.
   BufferCache::iterator bci;
-  for (bci = _index_buffer_cache.begin(); 
-       bci != _index_buffer_cache.end(); 
+  for (bci = _index_buffer_cache.begin();
+       bci != _index_buffer_cache.end();
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_index_buffers);
@@ -1218,9 +1415,21 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
       TextureContext *tc = (*tci);
       gsg->release_texture(tc);
     }
+
+    _released_textures.clear();
   }
 
-  _released_textures.clear();
+  if (!_released_samplers.empty()) {
+    ReleasedSamplers::iterator sci;
+    for (sci = _released_samplers.begin();
+         sci != _released_samplers.end();
+         ++sci) {
+      SamplerContext *sc = (*sci);
+      gsg->release_sampler(sc);
+    }
+
+    _released_samplers.clear();
+  }
 
   Geoms::iterator gci;
   for (gci = _released_geoms.begin();
@@ -1283,6 +1492,16 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   }
 
   _enqueued_textures.clear();
+
+  EnqueuedSamplers::iterator qsmi;
+  for (qsmi = _enqueued_samplers.begin();
+       qsmi != _enqueued_samplers.end();
+       ++qsmi) {
+    const SamplerState &sampler = (*qsmi);
+    sampler.prepare_now(this, gsg);
+  }
+
+  _enqueued_samplers.clear();
 
   EnqueuedGeoms::iterator qgi;
   for (qgi = _enqueued_geoms.begin();
@@ -1371,7 +1590,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
                         GeomEnums::UsageHint usage_hint,
                         PreparedGraphicsObjects::BufferCache &buffer_cache,
                         PreparedGraphicsObjects::BufferCacheLRU &buffer_cache_lru,
-                        size_t &buffer_cache_size, 
+                        size_t &buffer_cache_size,
                         int released_buffer_cache_size,
                         PreparedGraphicsObjects::Buffers &released_buffers) {
   BufferCacheKey key;
@@ -1395,7 +1614,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
     nassertv(!buffer_cache_lru.empty());
     const BufferCacheKey &release_key = *buffer_cache_lru.rbegin();
     BufferList &buffer_list = buffer_cache[release_key];
-    while (!buffer_list.empty() && 
+    while (!buffer_list.empty() &&
            (int)buffer_cache_size > released_buffer_cache_size) {
       BufferContext *released_buffer = buffer_list.back();
       buffer_list.pop_back();

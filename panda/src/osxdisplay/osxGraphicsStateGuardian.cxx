@@ -135,8 +135,8 @@ draw_resize_box() {
       PT(Texture) tex = new Texture;
       tex->set_name("resize_box.rgb");
       tex->load(resize_box_pnm);
-      tex->set_minfilter(Texture::FT_linear);
-      tex->set_magfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
+      tex->set_magfilter(SamplerState::FT_linear);
       state = state->add_attrib(TextureAttrib::make(tex));
     }
   }

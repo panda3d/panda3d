@@ -645,21 +645,21 @@ create_texture(DXScreenData &scrn) {
   // validate magfilter setting
   // degrade filtering if no HW support
 
-  Texture::FilterType ft;
+  SamplerState::FilterType ft;
 
   ft = tex->get_magfilter();
-  if ((ft != Texture::FT_linear) && ft != Texture::FT_nearest) {
+  if ((ft != SamplerState::FT_linear) && ft != SamplerState::FT_nearest) {
     // mipmap settings make no sense for magfilter
-    if (ft == Texture::FT_nearest_mipmap_nearest) {
-      ft = Texture::FT_nearest;
+    if (ft == SamplerState::FT_nearest_mipmap_nearest) {
+      ft = SamplerState::FT_nearest;
     } else {
-      ft = Texture::FT_linear;
+      ft = SamplerState::FT_linear;
     }
   }
 
-  if (ft == Texture::FT_linear &&
+  if (ft == SamplerState::FT_linear &&
       (filter_caps & D3DPTFILTERCAPS_MAGFLINEAR) == 0) {
-    ft = Texture::FT_nearest;
+    ft = SamplerState::FT_nearest;
   }
   tex->set_magfilter(ft);
 
@@ -669,33 +669,33 @@ create_texture(DXScreenData &scrn) {
 
   if (!dx_ignore_mipmaps) {  // set if no HW mipmap capable
     switch(ft) {
-    case Texture::FT_nearest_mipmap_nearest:
-    case Texture::FT_linear_mipmap_nearest:
-    case Texture::FT_nearest_mipmap_linear:  // pick nearest in each, interpolate linearly b/w them
-    case Texture::FT_linear_mipmap_linear:
+    case SamplerState::FT_nearest_mipmap_nearest:
+    case SamplerState::FT_linear_mipmap_nearest:
+    case SamplerState::FT_nearest_mipmap_linear:  // pick nearest in each, interpolate linearly b/w them
+    case SamplerState::FT_linear_mipmap_linear:
       _has_mipmaps = true;
     }
 
     if (dx_mipmap_everything) {  // debug toggle, ok to leave in since its just a creation cost
       _has_mipmaps = true;
       if (dxgsg9_cat.is_spam()) {
-        if (ft != Texture::FT_linear_mipmap_linear) {
+        if (ft != SamplerState::FT_linear_mipmap_linear) {
           dxgsg9_cat.spam()
             << "Forcing trilinear mipmapping on DX texture ["
             << tex->get_name() << "]\n";
         }
       }
-      ft = Texture::FT_linear_mipmap_linear;
+      ft = SamplerState::FT_linear_mipmap_linear;
       tex->set_minfilter(ft);
     }
 
-  } else if ((ft == Texture::FT_nearest_mipmap_nearest) ||   // cvt to no-mipmap filter types
-             (ft == Texture::FT_nearest_mipmap_linear)) {
-    ft = Texture::FT_nearest;
+  } else if ((ft == SamplerState::FT_nearest_mipmap_nearest) ||   // cvt to no-mipmap filter types
+             (ft == SamplerState::FT_nearest_mipmap_linear)) {
+    ft = SamplerState::FT_nearest;
 
-  } else if ((ft == Texture::FT_linear_mipmap_nearest) ||
-            (ft == Texture::FT_linear_mipmap_linear)) {
-    ft = Texture::FT_linear;
+  } else if ((ft == SamplerState::FT_linear_mipmap_nearest) ||
+            (ft == SamplerState::FT_linear_mipmap_linear)) {
+    ft = SamplerState::FT_linear;
   }
 
   nassertr((filter_caps & D3DPTFILTERCAPS_MINFPOINT) != 0, false);
@@ -704,36 +704,36 @@ create_texture(DXScreenData &scrn) {
 
   // do any other filter type degradations necessary
   switch(ft) {
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     if ((filter_caps & TRILINEAR_MIPMAP_TEXFILTERCAPS) != TRILINEAR_MIPMAP_TEXFILTERCAPS) {
       if (filter_caps & D3DPTFILTERCAPS_MINFLINEAR) {
-        ft = Texture::FT_linear_mipmap_nearest;
+        ft = SamplerState::FT_linear_mipmap_nearest;
       } else {
         // if you cant do linear in a level, you probably cant do
         // linear b/w levels, so just do nearest-all
-        ft = Texture::FT_nearest_mipmap_nearest;
+        ft = SamplerState::FT_nearest_mipmap_nearest;
       }
     }
     break;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     // if we don't have bilinear, do nearest_nearest
     if (!((filter_caps & D3DPTFILTERCAPS_MIPFPOINT) &&
           (filter_caps & D3DPTFILTERCAPS_MINFLINEAR))) {
-      ft = Texture::FT_nearest_mipmap_nearest;
+      ft = SamplerState::FT_nearest_mipmap_nearest;
     }
     break;
 
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     // if we don't have mip linear, do nearest_nearest
     if (!(filter_caps & D3DPTFILTERCAPS_MIPFLINEAR)) {
-      ft = Texture::FT_nearest_mipmap_nearest;
+      ft = SamplerState::FT_nearest_mipmap_nearest;
     }
     break;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     if (!(filter_caps & D3DPTFILTERCAPS_MINFLINEAR)) {
-      ft = Texture::FT_nearest;
+      ft = SamplerState::FT_nearest;
     }
     break;
   }

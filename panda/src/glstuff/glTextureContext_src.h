@@ -15,8 +15,10 @@
 #include "pandabase.h"
 #include "textureContext.h"
 #include "deletedChain.h"
+#include "samplerState.h"
 
 class CLP(GraphicsStateGuardian);
+class CLP(SamplerContext);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLTextureContext
@@ -62,6 +64,7 @@ public:
   GLsizei _height;
   GLsizei _depth;
   GLenum _target;
+  SamplerState _active_sampler;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

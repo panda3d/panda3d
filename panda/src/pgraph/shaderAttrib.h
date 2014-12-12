@@ -33,11 +33,9 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderAttrib
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
-
 private:
   INLINE ShaderAttrib();
   INLINE ShaderAttrib(const ShaderAttrib &copy);
@@ -71,7 +69,7 @@ PUBLISHED:
   CPT(RenderAttrib) clear_shader() const;
   // Shader Inputs
   CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
-  
+
   // InternalName* id
   CPT(RenderAttrib) set_shader_input(const InternalName *id, Texture *tex,       int priority=0) const;
   CPT(RenderAttrib) set_shader_input(const InternalName *id, const NodePath &np, int priority=0) const;
@@ -88,7 +86,7 @@ PUBLISHED:
   CPT(RenderAttrib) set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0) const;
   CPT(RenderAttrib) set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0) const;
   CPT(RenderAttrib) set_shader_input(const InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1,
-                                     int priority=0) const; 
+                                     int priority=0) const;
 
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
 
@@ -97,11 +95,11 @@ PUBLISHED:
 
   CPT(RenderAttrib) clear_shader_input(const InternalName *id) const;
   CPT(RenderAttrib) clear_shader_input(const string &id) const;
-  
+
   CPT(RenderAttrib) clear_all_shader_inputs() const;
 
   INLINE bool get_flag(int flag) const;
-  
+
   const Shader *get_shader() const;
   const ShaderInput *get_shader_input(const InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
@@ -109,11 +107,12 @@ PUBLISHED:
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   const LVecBase4 &get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id) const;
+  const SamplerState &get_shader_input_sampler(const InternalName *id) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
 
   static void register_with_read_factory();
-  
+
 public:
 
 protected:
@@ -121,7 +120,7 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
-  
+
 private:
 
   CPT(Shader) _shader;

@@ -54,6 +54,7 @@ class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
+class SamplerState;
 class Shader;
 class ShaderInput;
 
@@ -539,7 +540,7 @@ PUBLISHED:
   INLINE void compose_color_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat sa,
                                   int priority = 0);
   void set_color_scale_off(int priority = 0);
-  
+
   void set_alpha_scale(PN_stdfloat scale, int priority = 0);
   void set_all_color_scale(PN_stdfloat scale, int priority = 0);
   INLINE void set_sr(PN_stdfloat sr);
@@ -573,12 +574,12 @@ PUBLISHED:
 
   void set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
   void set_scissor(const LPoint3 &a, const LPoint3 &b);
-  void set_scissor(const LPoint3 &a, const LPoint3 &b, 
+  void set_scissor(const LPoint3 &a, const LPoint3 &b,
                    const LPoint3 &c, const LPoint3 &d);
-  void set_scissor(const NodePath &other, 
+  void set_scissor(const NodePath &other,
                    const LPoint3 &a, const LPoint3 &b);
   void set_scissor(const NodePath &other,
-                   const LPoint3 &a, const LPoint3 &b, 
+                   const LPoint3 &a, const LPoint3 &b,
                    const LPoint3 &c, const LPoint3 &d);
   void clear_scissor();
   bool has_scissor() const;
@@ -596,6 +597,8 @@ PUBLISHED:
 
   void set_texture(Texture *tex, int priority = 0);
   void set_texture(TextureStage *stage, Texture *tex, int priority = 0);
+  void set_texture(Texture *tex, const SamplerState &sampler, int priority = 0);
+  void set_texture(TextureStage *stage, Texture *tex, const SamplerState &sampler, int priority = 0);
   void set_texture_off(int priority = 0);
   void set_texture_off(TextureStage *stage, int priority = 0);
   void clear_texture();
@@ -606,6 +609,8 @@ PUBLISHED:
   bool has_texture_off(TextureStage *stage) const;
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
+  const SamplerState &get_texture_sampler() const;
+  const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
   void set_shader(const Shader *sha, int priority = 0);
   void set_shader_off(int priority = 0);
@@ -615,6 +620,7 @@ PUBLISHED:
 
   void set_shader_input(const ShaderInput *inp);
   void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
+  void set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority=0);
   void set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
   void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
@@ -698,10 +704,10 @@ PUBLISHED:
   INLINE LVecBase3 get_tex_scale_3d(const NodePath &other, TextureStage *stage) const;
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
-                   const string &source_name, const NodePath &light, 
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
+                   const string &source_name, const NodePath &light,
                    int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
                    const LTexCoord3 &constant_value,
                    int priority = 0);
   void clear_tex_gen();
@@ -915,20 +921,20 @@ PUBLISHED:
 private:
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
-                       int &a_count, int &b_count, 
+                       int &a_count, int &b_count,
                        Thread *current_thread);
 
-  CPT(RenderState) r_get_net_state(NodePathComponent *comp, 
+  CPT(RenderState) r_get_net_state(NodePathComponent *comp,
                                    Thread *current_thread) const;
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n,
                                        Thread *current_thread) const;
-  CPT(TransformState) r_get_net_transform(NodePathComponent *comp, 
+  CPT(TransformState) r_get_net_transform(NodePathComponent *comp,
                                           Thread *current_thread) const;
   CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n,
                                               Thread *current_thread) const;
   CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp,
                                                Thread *current_thread) const;
-  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp, 
+  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp,
                                                    int n, Thread *current_thread) const;
 
   void find_matches(NodePathCollection &result,
@@ -937,7 +943,7 @@ private:
   void find_matches(NodePathCollection &result,
                     FindApproxPath &approx_path,
                     int max_matches) const;
-  void find_matches(NodePathCollection &result, 
+  void find_matches(NodePathCollection &result,
                     FindApproxLevelEntry *level,
                     int max_matches) const;
 
@@ -946,13 +952,13 @@ private:
 
   void r_force_recompute_bounds(PandaNode *node);
 
-  void r_set_collide_mask(PandaNode *node, 
+  void r_set_collide_mask(PandaNode *node,
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
   typedef phash_set<InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
-  void r_find_all_vertex_columns(PandaNode *node, 
+  void r_find_all_vertex_columns(PandaNode *node,
                                  InternalNames &vertex_columns) const;
 
   typedef phash_set<Texture *, pointer_hash> Textures;

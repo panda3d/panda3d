@@ -199,11 +199,11 @@ make_spot(int pixel_width, PN_stdfloat full_radius, LColor &fg, LColor &bg) {
   PT(Texture) tex = new Texture("spot");
   tex->load(image);
   tex->set_border_color(bg);
-  tex->set_wrap_u(Texture::WM_border_color);
-  tex->set_wrap_v(Texture::WM_border_color);
+  tex->set_wrap_u(SamplerState::WM_border_color);
+  tex->set_wrap_v(SamplerState::WM_border_color);
 
-  tex->set_minfilter(Texture::FT_linear);
-  tex->set_magfilter(Texture::FT_linear);
+  tex->set_minfilter(SamplerState::FT_linear);
+  tex->set_magfilter(SamplerState::FT_linear);
 
   return tex;
 }

@@ -710,8 +710,8 @@ load_default_model(const NodePath &parent) {
     PT(Texture) tex = new Texture;
     tex->set_name("rock-floor.rgb");
     tex->load(rock_floor_pnm);
-    tex->set_minfilter(Texture::FT_linear);
-    tex->set_magfilter(Texture::FT_linear);
+    tex->set_minfilter(SamplerState::FT_linear);
+    tex->set_magfilter(SamplerState::FT_linear);
     state = state->add_attrib(TextureAttrib::make(tex));
   }
 
@@ -1257,8 +1257,8 @@ load_image_as_model(const Filename &filename) {
   }
 
   // Yes, it is an image file; make a texture out of it.
-  tex->set_minfilter(Texture::FT_linear_mipmap_linear);
-  tex->set_magfilter(Texture::FT_linear);
+  tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
+  tex->set_magfilter(SamplerState::FT_linear);
 
   // Ok, now make a polygon to show the texture.
   bool has_alpha = true;

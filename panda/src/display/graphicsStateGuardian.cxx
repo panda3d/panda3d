@@ -98,6 +98,7 @@ PStatCollector GraphicsStateGuardian::_command_latency_pcollector("Command laten
 
 PStatCollector GraphicsStateGuardian::_prepare_pcollector("Draw:Prepare");
 PStatCollector GraphicsStateGuardian::_prepare_texture_pcollector("Draw:Prepare:Texture");
+PStatCollector GraphicsStateGuardian::_prepare_sampler_pcollector("Draw:Prepare:Sampler");
 PStatCollector GraphicsStateGuardian::_prepare_geom_pcollector("Draw:Prepare:Geom");
 PStatCollector GraphicsStateGuardian::_prepare_shader_pcollector("Draw:Prepare:Shader");
 PStatCollector GraphicsStateGuardian::_prepare_vertex_buffer_pcollector("Draw:Prepare:Vertex buffer");
@@ -230,6 +231,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_texture = false;
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
+  _supports_sampler_objects = false;
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
@@ -624,6 +626,35 @@ release_texture(TextureContext *) {
 bool GraphicsStateGuardian::
 extract_texture_data(Texture *) {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_sampler
+//       Access: Public, Virtual
+//  Description: Creates whatever structures the GSG requires to
+//               represent the sampler internally, and returns a
+//               newly-allocated SamplerContext object with this data.
+//               It is the responsibility of the calling function to
+//               later call release_sampler() with this same pointer
+//               (which will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a sampler.  Instead, call Texture::prepare().
+////////////////////////////////////////////////////////////////////
+SamplerContext *GraphicsStateGuardian::
+prepare_sampler(const SamplerState &sampler) {
+  return (SamplerContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_sampler
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_sampler(), including deleting the
+//               SamplerContext itself, if it is non-NULL.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_sampler(SamplerContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2883,22 +2914,22 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 
   // Set the wrap mode
   if (is_point) {
-    tex->set_wrap_u(Texture::WM_clamp);
-    tex->set_wrap_v(Texture::WM_clamp);
+    tex->set_wrap_u(SamplerState::WM_clamp);
+    tex->set_wrap_v(SamplerState::WM_clamp);
   } else {
-    tex->set_wrap_u(Texture::WM_border_color);
-    tex->set_wrap_v(Texture::WM_border_color);
+    tex->set_wrap_u(SamplerState::WM_border_color);
+    tex->set_wrap_v(SamplerState::WM_border_color);
     tex->set_border_color(LVecBase4(1, 1, 1, 1));
   }
 
   if (get_supports_shadow_filter()) {
     // If we have the ARB_shadow extension, enable shadow filtering.
-    tex->set_minfilter(Texture::FT_shadow);
-    tex->set_magfilter(Texture::FT_shadow);
+    tex->set_minfilter(SamplerState::FT_shadow);
+    tex->set_magfilter(SamplerState::FT_shadow);
   } else {
     // We only accept linear - this tells the GPU to use hardware PCF.
-    tex->set_minfilter(Texture::FT_linear);
-    tex->set_magfilter(Texture::FT_linear);
+    tex->set_minfilter(SamplerState::FT_linear);
+    tex->set_magfilter(SamplerState::FT_linear);
   }
 
   // Assign display region(s) to the buffer and camera

@@ -231,8 +231,8 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
     return false;
   }
 
-  tex->set_minfilter(Texture::FT_nearest);
-  tex->set_magfilter(Texture::FT_nearest);
+  tex->set_minfilter(SamplerState::FT_nearest);
+  tex->set_magfilter(SamplerState::FT_nearest);
 
   texture_dimensions.x = tex->get_x_size();
   texture_dimensions.y = tex->get_y_size();
@@ -271,10 +271,10 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
     }
   }
 
-  tex->set_wrap_u(Texture::WM_clamp);
-  tex->set_wrap_v(Texture::WM_clamp);
-  tex->set_minfilter(Texture::FT_nearest);
-  tex->set_magfilter(Texture::FT_nearest);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
+  tex->set_minfilter(SamplerState::FT_nearest);
+  tex->set_magfilter(SamplerState::FT_nearest);
 
   tex->ref();
   texture_handle = (Rocket::Core::TextureHandle) tex.p();

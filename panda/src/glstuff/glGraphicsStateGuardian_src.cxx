@@ -64,6 +64,7 @@
 #include "stencilAttrib.h"
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
+#include "samplerState.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 #include "Cg/cgGL.h"
@@ -1870,6 +1871,28 @@ reset() {
     _glMemoryBarrier = NULL;
   }
 
+  _supports_sampler_objects = false;
+  if (gl_support_sampler_objects &&
+      ((is_at_least_gl_version(3, 3) || has_extension("GL_ARB_sampler_objects")))) {
+    _glGenSamplers = (PFNGLGENSAMPLERSPROC) get_extension_func("glGenSamplers");
+    _glDeleteSamplers = (PFNGLDELETESAMPLERSPROC) get_extension_func("glDeleteSamplers");
+    _glBindSampler = (PFNGLBINDSAMPLERPROC) get_extension_func("glBindSampler");
+    _glSamplerParameteri = (PFNGLSAMPLERPARAMETERIPROC) get_extension_func("glSamplerParameteri");
+    _glSamplerParameteriv = (PFNGLSAMPLERPARAMETERIVPROC) get_extension_func("glSamplerParameteriv");
+    _glSamplerParameterf = (PFNGLSAMPLERPARAMETERFPROC) get_extension_func("glSamplerParameterf");
+    _glSamplerParameterfv = (PFNGLSAMPLERPARAMETERFVPROC) get_extension_func("glSamplerParameterfv");
+
+    if (_glGenSamplers == NULL || _glDeleteSamplers == NULL ||
+        _glBindSampler == NULL || _glSamplerParameteri == NULL ||
+        _glSamplerParameteriv == NULL || _glSamplerParameterf == NULL ||
+        _glSamplerParameterfv == NULL) {
+      GLCAT.warning()
+        << "GL_ARB_sampler_objects advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    } else {
+      _supports_sampler_objects = true;
+    }
+  }
+
   // Check availability of multi-bind functions.
   _supports_multi_bind = false;
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_multi_bind")) {
@@ -1877,6 +1900,11 @@ reset() {
       get_extension_func("glBindTextures");
     _glBindImageTextures = (PFNGLBINDIMAGETEXTURESPROC)
       get_extension_func("glBindImageTextures");
+
+    if (_supports_sampler_objects) {
+      _glBindSamplers = (PFNGLBINDSAMPLERSPROC)
+        get_extension_func("glBindSamplers");
+    }
 
     if (_glBindTextures != NULL && _glBindImageTextures != NULL) {
       _supports_multi_bind = true;
@@ -1900,6 +1928,8 @@ reset() {
   if (has_extension("GL_ARB_bindless_texture")) {
     _glGetTextureHandle = (PFNGLGETTEXTUREHANDLEPROC)
       get_extension_func("glGetTextureHandleARB");
+    _glGetTextureSamplerHandle = (PFNGLGETTEXTURESAMPLERHANDLEPROC)
+      get_extension_func("glGetTextureSamplerHandleARB");
     _glMakeTextureHandleResident = (PFNGLMAKETEXTUREHANDLERESIDENTPROC)
       get_extension_func("glMakeTextureHandleResidentARB");
     _glUniformHandleui64 = (PFNGLUNIFORMHANDLEUI64PROC)
@@ -2199,7 +2229,6 @@ reset() {
   // optimizations.
   add_gsg(this);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::finish
@@ -2517,6 +2546,12 @@ clear_before_callback() {
   // texture stage is still set to stage 0.  CEGUI, in particular,
   // makes this assumption.
   _glActiveTexture(GL_TEXTURE0);
+
+  // Clear the bound sampler object, so that we do not inadvertently
+  // override the callback's desired sampler settings.
+  if (_supports_sampler_objects) {
+    _glBindSampler(0, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4234,7 +4269,8 @@ update_texture(TextureContext *tc, bool force) {
     // If the texture image was modified, reload the texture.
     apply_texture(tc);
     if (gtc->was_properties_modified()) {
-      specify_texture(gtc);
+      Texture *tex = tc->get_texture();
+      specify_texture(gtc, tex->get_default_sampler());
     }
     bool okflag = upload_texture(gtc, force);
     if (!okflag) {
@@ -4249,13 +4285,15 @@ update_texture(TextureContext *tc, bool force) {
     // If only the properties have been modified, we don't necessarily
     // need to reload the texture.
     apply_texture(tc);
-    if (specify_texture(gtc)) {
+
+    Texture *tex = tc->get_texture();
+    if (specify_texture(gtc, tex->get_default_sampler())) {
       // Actually, looks like the texture *does* need to be reloaded.
       gtc->mark_needs_reload();
       bool okflag = upload_texture(gtc, force);
       if (!okflag) {
         GLCAT.error()
-          << "Could not load " << *gtc->get_texture() << "\n";
+          << "Could not load " << *tex << "\n";
         return false;
       }
 
@@ -4316,6 +4354,109 @@ extract_texture_data(Texture *tex) {
   }
 
   return success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::prepare_sampler
+//       Access: Public, Virtual
+//  Description: Creates whatever structures the GSG requires to
+//               represent the sampler state internally, and returns a
+//               newly-allocated SamplerContext object with this data.
+//               It is the responsibility of the calling function to
+//               later call release_sampler() with this same pointer
+//               (which will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a sampler object.  Instead, call
+//               SamplerState::prepare().
+////////////////////////////////////////////////////////////////////
+SamplerContext *CLP(GraphicsStateGuardian)::
+prepare_sampler(const SamplerState &sampler) {
+#ifndef OPENGLES
+  nassertr(_supports_sampler_objects, NULL);
+  PStatGPUTimer timer(this, _prepare_sampler_pcollector);
+
+  CLP(SamplerContext) *gsc = new CLP(SamplerContext)(this, sampler);
+  GLuint index = gsc->_index;
+
+  // Sampler contexts are immutable in Panda, so might as well just
+  // initialize all the settings here.
+  _glSamplerParameteri(index, GL_TEXTURE_WRAP_S,
+                       get_texture_wrap_mode(sampler.get_wrap_u()));
+  _glSamplerParameteri(index, GL_TEXTURE_WRAP_T,
+                       get_texture_wrap_mode(sampler.get_wrap_v()));
+  _glSamplerParameteri(index, GL_TEXTURE_WRAP_R,
+                       get_texture_wrap_mode(sampler.get_wrap_w()));
+
+#ifdef STDFLOAT_DOUBLE
+  LVecBase4f fvalue = LCAST(float, sampler.get_border_color());
+  _glSamplerParameterfv(index, GL_TEXTURE_BORDER_COLOR, fvalue.get_data());
+#else
+  _glSamplerParameterfv(index, GL_TEXTURE_BORDER_COLOR,
+                        sampler.get_border_color().get_data());
+#endif
+
+  SamplerState::FilterType minfilter = sampler.get_effective_minfilter();
+  SamplerState::FilterType magfilter = sampler.get_effective_magfilter();
+  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !gl_ignore_mipmaps;
+
+#ifndef NDEBUG
+  if (gl_force_mipmaps) {
+    minfilter = SamplerState::FT_linear_mipmap_linear;
+    magfilter = SamplerState::FT_linear;
+    uses_mipmaps = true;
+  }
+#endif
+
+  _glSamplerParameteri(index, GL_TEXTURE_MIN_FILTER,
+                              get_texture_filter_type(minfilter, !uses_mipmaps));
+  _glSamplerParameteri(index, GL_TEXTURE_MAG_FILTER,
+                              get_texture_filter_type(magfilter, true));
+
+  // Set anisotropic filtering.
+  if (_supports_anisotropy) {
+    PN_stdfloat anisotropy = sampler.get_effective_anisotropic_degree();
+    anisotropy = min(anisotropy, _max_anisotropy);
+    anisotropy = max(anisotropy, (PN_stdfloat)1.0);
+    _glSamplerParameterf(index, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+  }
+
+  if (_supports_shadow_filter) {
+    if ((sampler.get_magfilter() == SamplerState::FT_shadow) ||
+        (sampler.get_minfilter() == SamplerState::FT_shadow)) {
+      _glSamplerParameteri(index, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
+      _glSamplerParameteri(index, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);
+    } else {
+      _glSamplerParameteri(index, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE);
+      _glSamplerParameteri(index, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);
+    }
+  }
+
+  _glSamplerParameterf(index, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+  _glSamplerParameterf(index, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  _glSamplerParameterf(index, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+
+  gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
+
+  report_my_gl_errors();
+  return gsc;
+
+#else
+  return NULL;
+#endif // OPENGLES
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::release_sampler
+//       Access: Public, Virtual
+//  Description: Frees the GL resources previously allocated for the
+//               sampler.  This function should never be called
+//               directly; instead, call SamplerState::release().
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+release_sampler(SamplerContext *sc) {
+  CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
+  delete gsc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5095,7 +5236,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   apply_texture(gtc);
-  bool needs_reload = specify_texture(gtc);
+  bool needs_reload = specify_texture(gtc, tex->get_default_sampler());
 
   GLenum target = get_texture_target(tex->get_texture_type());
   GLint internal_format = get_internal_image_format(tex);
@@ -6964,30 +7105,30 @@ get_texture_target(Texture::TextureType texture_type) const {
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_wrap_mode(Texture::WrapMode wm) const {
+get_texture_wrap_mode(SamplerState::WrapMode wm) const {
   if (gl_ignore_clamp) {
     return GL_REPEAT;
   }
   switch (wm) {
-  case Texture::WM_clamp:
+  case SamplerState::WM_clamp:
     return _edge_clamp;
 
-  case Texture::WM_repeat:
+  case SamplerState::WM_repeat:
     return GL_REPEAT;
 
-  case Texture::WM_mirror:
+  case SamplerState::WM_mirror:
     return _mirror_repeat;
 
-  case Texture::WM_mirror_once:
+  case SamplerState::WM_mirror_once:
     return _mirror_border_clamp;
 
-  case Texture::WM_border_color:
+  case SamplerState::WM_border_color:
     return _border_clamp;
 
-  case Texture::WM_invalid:
+  case SamplerState::WM_invalid:
     break;
   }
-  GLCAT.error() << "Invalid Texture::WrapMode value!\n";
+  GLCAT.error() << "Invalid SamplerState::WrapMode value!\n";
   return _edge_clamp;
 }
 
@@ -6997,34 +7138,34 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 //  Description: Maps from the GL's internal wrap mode symbols to
 //               Panda's.
 ////////////////////////////////////////////////////////////////////
-Texture::WrapMode CLP(GraphicsStateGuardian)::
+SamplerState::WrapMode CLP(GraphicsStateGuardian)::
 get_panda_wrap_mode(GLenum wm) {
   switch (wm) {
 #ifndef OPENGLES
   case GL_CLAMP:
 #endif
   case GL_CLAMP_TO_EDGE:
-    return Texture::WM_clamp;
+    return SamplerState::WM_clamp;
 
 #ifndef OPENGLES
   case GL_CLAMP_TO_BORDER:
-    return Texture::WM_border_color;
+    return SamplerState::WM_border_color;
 #endif
 
   case GL_REPEAT:
-    return Texture::WM_repeat;
+    return SamplerState::WM_repeat;
 
 #ifndef OPENGLES
   case GL_MIRROR_CLAMP_EXT:
   case GL_MIRROR_CLAMP_TO_EDGE_EXT:
-    return Texture::WM_mirror;
+    return SamplerState::WM_mirror;
 
   case GL_MIRROR_CLAMP_TO_BORDER_EXT:
-    return Texture::WM_mirror_once;
+    return SamplerState::WM_mirror_once;
 #endif
   }
   GLCAT.error() << "Unexpected GL wrap mode " << (int)wm << "\n";
-  return Texture::WM_clamp;
+  return SamplerState::WM_clamp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7034,49 +7175,49 @@ get_panda_wrap_mode(GLenum wm) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
+get_texture_filter_type(SamplerState::FilterType ft, bool ignore_mipmaps) {
   if (gl_ignore_filters) {
     return GL_NEAREST;
 
   } else if (ignore_mipmaps) {
     switch (ft) {
-    case Texture::FT_nearest_mipmap_nearest:
-    case Texture::FT_nearest:
+    case SamplerState::FT_nearest_mipmap_nearest:
+    case SamplerState::FT_nearest:
       return GL_NEAREST;
-    case Texture::FT_linear:
-    case Texture::FT_linear_mipmap_nearest:
-    case Texture::FT_nearest_mipmap_linear:
-    case Texture::FT_linear_mipmap_linear:
+    case SamplerState::FT_linear:
+    case SamplerState::FT_linear_mipmap_nearest:
+    case SamplerState::FT_nearest_mipmap_linear:
+    case SamplerState::FT_linear_mipmap_linear:
       return GL_LINEAR;
-    case Texture::FT_shadow:
+    case SamplerState::FT_shadow:
       return GL_LINEAR;
-    case Texture::FT_default:
-    case Texture::FT_invalid:
+    case SamplerState::FT_default:
+    case SamplerState::FT_invalid:
       break;
     }
 
   } else {
     switch (ft) {
-    case Texture::FT_nearest:
+    case SamplerState::FT_nearest:
       return GL_NEAREST;
-    case Texture::FT_linear:
+    case SamplerState::FT_linear:
       return GL_LINEAR;
-    case Texture::FT_nearest_mipmap_nearest:
+    case SamplerState::FT_nearest_mipmap_nearest:
       return GL_NEAREST_MIPMAP_NEAREST;
-    case Texture::FT_linear_mipmap_nearest:
+    case SamplerState::FT_linear_mipmap_nearest:
       return GL_LINEAR_MIPMAP_NEAREST;
-    case Texture::FT_nearest_mipmap_linear:
+    case SamplerState::FT_nearest_mipmap_linear:
       return GL_NEAREST_MIPMAP_LINEAR;
-    case Texture::FT_linear_mipmap_linear:
+    case SamplerState::FT_linear_mipmap_linear:
       return GL_LINEAR_MIPMAP_LINEAR;
-    case Texture::FT_shadow:
+    case SamplerState::FT_shadow:
       return GL_LINEAR;
-    case Texture::FT_default:
-    case Texture::FT_invalid:
+    case SamplerState::FT_default:
+    case SamplerState::FT_invalid:
       break;
     }
   }
-  GLCAT.error() << "Invalid Texture::FilterType value!\n";
+  GLCAT.error() << "Invalid SamplerState::FilterType value!\n";
   return GL_NEAREST;
 }
 
@@ -7086,24 +7227,24 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
 //  Description: Maps from the GL's internal filter type symbols
 //               to Panda's.
 ////////////////////////////////////////////////////////////////////
-Texture::FilterType CLP(GraphicsStateGuardian)::
+SamplerState::FilterType CLP(GraphicsStateGuardian)::
 get_panda_filter_type(GLenum ft) {
   switch (ft) {
   case GL_NEAREST:
-    return Texture::FT_nearest;
+    return SamplerState::FT_nearest;
   case GL_LINEAR:
-    return Texture::FT_linear;
+    return SamplerState::FT_linear;
   case GL_NEAREST_MIPMAP_NEAREST:
-    return Texture::FT_nearest_mipmap_nearest;
+    return SamplerState::FT_nearest_mipmap_nearest;
   case GL_LINEAR_MIPMAP_NEAREST:
-    return Texture::FT_linear_mipmap_nearest;
+    return SamplerState::FT_linear_mipmap_nearest;
   case GL_NEAREST_MIPMAP_LINEAR:
-    return Texture::FT_nearest_mipmap_linear;
+    return SamplerState::FT_nearest_mipmap_linear;
   case GL_LINEAR_MIPMAP_LINEAR:
-    return Texture::FT_linear_mipmap_linear;
+    return SamplerState::FT_linear_mipmap_linear;
   }
   GLCAT.error() << "Unexpected GL filter type " << (int)ft << "\n";
-  return Texture::FT_linear;
+  return SamplerState::FT_linear;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -8972,6 +9113,7 @@ update_standard_texture_bindings() {
       continue;
     }
     apply_texture(tc);
+    apply_sampler(i, _target_texture->get_on_sampler(stage), tc);
 
     if (stage->involves_color_scale() && _color_scale_enabled) {
       LColor color = stage->get_color();
@@ -9651,10 +9793,11 @@ do_issue_tex_gen() {
 //     Function: GLGraphicsStateGuardian::specify_texture
 //       Access: Protected
 //  Description: Specifies the texture parameters.  Returns true if
-//               the texture may need to be reloaded.
+//               the texture may need to be reloaded.  Pass non-NULL
+//               sampler argument to use different sampler settings.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-specify_texture(CLP(TextureContext) *gtc) {
+specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
   nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
 
   Texture *tex = gtc->get_texture();
@@ -9665,38 +9808,41 @@ specify_texture(CLP(TextureContext) *gtc) {
     return false;
   }
 
+  // Record the active sampler settings.
+  gtc->_active_sampler = sampler;
+
   glTexParameteri(target, GL_TEXTURE_WRAP_S,
-                     get_texture_wrap_mode(tex->get_wrap_u()));
+                  get_texture_wrap_mode(sampler.get_wrap_u()));
 #ifndef OPENGLES
   if (target != GL_TEXTURE_1D) {
     glTexParameteri(target, GL_TEXTURE_WRAP_T,
-                       get_texture_wrap_mode(tex->get_wrap_v()));
+                    get_texture_wrap_mode(sampler.get_wrap_v()));
   }
 #endif
 #ifdef OPENGLES_2
   if (target == GL_TEXTURE_3D_OES) {
     glTexParameteri(target, GL_TEXTURE_WRAP_R_OES,
-                       get_texture_wrap_mode(tex->get_wrap_w()));
+                    get_texture_wrap_mode(sampler.get_wrap_w()));
   }
 #endif
 #ifndef OPENGLES
   if (target == GL_TEXTURE_3D) {
     glTexParameteri(target, GL_TEXTURE_WRAP_R,
-                       get_texture_wrap_mode(tex->get_wrap_w()));
+                    get_texture_wrap_mode(sampler.get_wrap_w()));
   }
 
-  LColor border_color = tex->get_border_color();
+  LColor border_color = sampler.get_border_color();
   call_glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif  // OPENGLES
 
-  Texture::FilterType minfilter = tex->get_effective_minfilter();
-  Texture::FilterType magfilter = tex->get_effective_magfilter();
+  SamplerState::FilterType minfilter = sampler.get_effective_minfilter();
+  SamplerState::FilterType magfilter = sampler.get_effective_magfilter();
   bool uses_mipmaps = Texture::is_mipmap(minfilter) && !gl_ignore_mipmaps;
 
 #ifndef NDEBUG
   if (gl_force_mipmaps) {
-    minfilter = Texture::FT_linear_mipmap_linear;
-    magfilter = Texture::FT_linear;
+    minfilter = SamplerState::FT_linear_mipmap_linear;
+    magfilter = SamplerState::FT_linear;
     uses_mipmaps = true;
   }
 #endif
@@ -9713,13 +9859,13 @@ specify_texture(CLP(TextureContext) *gtc) {
   }
 
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
-                     get_texture_filter_type(minfilter, !uses_mipmaps));
+                  get_texture_filter_type(minfilter, !uses_mipmaps));
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
-                     get_texture_filter_type(magfilter, true));
+                  get_texture_filter_type(magfilter, true));
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
-    PN_stdfloat anisotropy = tex->get_effective_anisotropic_degree();
+    PN_stdfloat anisotropy = sampler.get_effective_anisotropic_degree();
     anisotropy = min(anisotropy, _max_anisotropy);
     anisotropy = max(anisotropy, (PN_stdfloat)1.0);
     glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
@@ -9733,8 +9879,8 @@ specify_texture(CLP(TextureContext) *gtc) {
       tex->get_format() == Texture::F_depth_component32) {
     glTexParameteri(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
     if (_supports_shadow_filter) {
-      if ((tex->get_magfilter() == Texture::FT_shadow) ||
-          (tex->get_minfilter() == Texture::FT_shadow)) {
+      if ((sampler.get_magfilter() == SamplerState::FT_shadow) ||
+          (sampler.get_minfilter() == SamplerState::FT_shadow)) {
         glTexParameteri(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
         glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC_ARB, GL_LEQUAL);
       } else {
@@ -9743,6 +9889,10 @@ specify_texture(CLP(TextureContext) *gtc) {
       }
     }
   }
+
+  glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+  glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
 #endif
 
   report_my_gl_errors();
@@ -9780,6 +9930,51 @@ apply_texture(TextureContext *tc) {
     gtc->_target = target;
   }
   glBindTexture(target, gtc->_index);
+
+  report_my_gl_errors();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_sampler
+//       Access: Protected
+//  Description: Updates OpenGL with the current information for this
+//               sampler, and makes it the current sampler available
+//               for rendering.  Use NULL to unbind the sampler.
+//
+//               If the GSG doesn't support sampler objects, the
+//               sampler settings are applied to the given texture
+//               context instead.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
+  if (_supports_sampler_objects) {
+    // We support sampler objects.  Prepare the sampler object and
+    // bind it to the indicated texture unit.
+    SamplerContext *sc = sampler.prepare_now(get_prepared_objects(), this);
+    nassertr(sc != (SamplerContext *)NULL, false);
+    CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
+
+    gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
+
+    _glBindSampler(unit, gsc->_index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "bind " << unit << " " << sampler << "\n";
+    }
+
+  } else {
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+    // We don't support sampler objects.  We'll have to bind the
+    // texture and change the texture parameters if they don't match.
+    if (gtc->_active_sampler != sampler) {
+      _glActiveTexture(GL_TEXTURE0 + unit);
+      apply_texture(tc);
+      specify_texture(gtc, sampler);
+    }
+  }
 
   report_my_gl_errors();
   return true;

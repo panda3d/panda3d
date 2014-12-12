@@ -257,39 +257,39 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
       pgraph_cat.debug()
         << "Recomputing viz for " << *this << "\n";
     }
-    
+
     PT(GeomVertexData) vdata = new GeomVertexData
       (get_name(), GeomVertexFormat::get_v3n3t2(), Geom::UH_static);
-    
+
     // Compute the polygon normal from the first three vertices.
     LPlane plane(_vertices[0], _vertices[1], _vertices[2]);
     LVector3 poly_normal = plane.get_normal();
-    
+
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     GeomVertexWriter normal(vdata, InternalName::get_normal());
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
     vertex.add_data3(_vertices[0]);
     normal.add_data3(poly_normal);
     texcoord.add_data2(0.0, 0.0);
-    
+
     vertex.add_data3(_vertices[1]);
     normal.add_data3(poly_normal);
     texcoord.add_data2(8.0, 0.0);
-    
+
     vertex.add_data3(_vertices[2]);
     normal.add_data3(poly_normal);
     texcoord.add_data2(8.0, 8.0);
-    
+
     vertex.add_data3(_vertices[3]);
     normal.add_data3(poly_normal);
     texcoord.add_data2(0.0, 8.0);
-    
+
     PT(GeomTriangles) triangles = new GeomTriangles(Geom::UH_static);
     triangles->add_vertices(0, 1, 2);
     triangles->close_primitive();
     triangles->add_vertices(0, 2, 3);
     triangles->close_primitive();
-    
+
     _occluder_viz = new Geom(vdata);
     _occluder_viz->add_primitive(triangles);
 
@@ -297,7 +297,7 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
     lines->add_vertices(0, 1, 2, 3);
     lines->add_vertex(0);
     lines->close_primitive();
-    
+
     _frame_viz = new Geom(vdata);
     _frame_viz->add_primitive(lines);
   }
@@ -321,8 +321,8 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
     PTA_uchar image;
     image.set_data("\x20\x80\x80\x20");
     _viz_tex->set_ram_image(image);
-    _viz_tex->set_minfilter(Texture::FT_nearest);
-    _viz_tex->set_magfilter(Texture::FT_nearest);
+    _viz_tex->set_minfilter(SamplerState::FT_nearest);
+    _viz_tex->set_magfilter(SamplerState::FT_nearest);
   }
 
   static CPT(RenderState) viz_state;

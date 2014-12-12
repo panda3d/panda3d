@@ -570,19 +570,25 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
     int texunit = cgGetParameterResourceIndex(p);
 
-    Texture *tex = 0;
+    Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
-    if (id != 0) {
+    SamplerState sampler;
+
+    if (id != NULL) {
       const ShaderInput *input = _glgsg->_target_shader->get_shader_input(id);
       tex = input->get_texture();
+      sampler = input->get_sampler();
+
     } else {
       if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
         continue;
       }
       TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
       tex = texattrib->get_on_texture(stage);
+      sampler = texattrib->get_on_sampler(stage);
       view += stage->get_tex_view_offset();
     }
+
     if (_shader->_tex_spec[i]._suffix != 0) {
       // The suffix feature is inefficient. It is a temporary hack.
       if (tex == 0) {
@@ -612,6 +618,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     _glgsg->apply_texture(tc);
+    _glgsg->apply_sampler(i, sampler, tc);
   }
 
   cg_report_errors();

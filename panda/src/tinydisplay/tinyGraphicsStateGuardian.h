@@ -131,8 +131,8 @@ private:
   void do_auto_rescale_normal();
   static void load_matrix(M4 *matrix, const TransformState *transform);
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
-  static ZB_lookupTextureFunc get_tex_filter_func(Texture::FilterType filter);
-  static ZB_texWrapFunc get_tex_wrap_func(Texture::WrapMode wrap_mode);
+  static ZB_lookupTextureFunc get_tex_filter_func(SamplerState::FilterType filter);
+  static ZB_texWrapFunc get_tex_wrap_func(SamplerState::WrapMode wrap_mode);
 
   INLINE void clear_light_state();
 

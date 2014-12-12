@@ -2300,31 +2300,31 @@ do_issue_texture() {
     
     // Fill in the filter func pointers.  These may not actually get
     // called, if we decide below we can inline the filters.
-    Texture::FilterType minfilter = texture->get_minfilter();
-    Texture::FilterType magfilter = texture->get_magfilter();
+    SamplerState::FilterType minfilter = texture->get_minfilter();
+    SamplerState::FilterType magfilter = texture->get_magfilter();
 
     if (td_ignore_mipmaps && Texture::is_mipmap(minfilter)) {
       // Downgrade mipmaps.
-      if (minfilter == Texture::FT_nearest_mipmap_nearest) {
-        minfilter = Texture::FT_nearest;
+      if (minfilter == SamplerState::FT_nearest_mipmap_nearest) {
+        minfilter = SamplerState::FT_nearest;
       } else {
-        minfilter = Texture::FT_linear;
+        minfilter = SamplerState::FT_linear;
       }
     }
 
     // Depending on this particular texture's quality level, we may
     // downgrade the requested filters.
     if (quality_level == Texture::QL_fastest) {
-      minfilter = Texture::FT_nearest;
-      magfilter = Texture::FT_nearest;
+      minfilter = SamplerState::FT_nearest;
+      magfilter = SamplerState::FT_nearest;
 
     } else if (quality_level == Texture::QL_normal) {
       if (Texture::is_mipmap(minfilter)) {
-        minfilter = Texture::FT_nearest_mipmap_nearest;
+        minfilter = SamplerState::FT_nearest_mipmap_nearest;
       } else {
-        minfilter = Texture::FT_nearest;
+        minfilter = SamplerState::FT_nearest;
       }
-      magfilter = Texture::FT_nearest;
+      magfilter = SamplerState::FT_nearest;
 
     } else if (quality_level == Texture::QL_best) {
       minfilter = texture->get_effective_minfilter();
@@ -2334,14 +2334,14 @@ do_issue_texture() {
     texture_def->tex_minfilter_func = get_tex_filter_func(minfilter);
     texture_def->tex_magfilter_func = get_tex_filter_func(magfilter);
     
-    Texture::WrapMode wrap_u = texture->get_wrap_u();
-    Texture::WrapMode wrap_v = texture->get_wrap_v();
+    SamplerState::WrapMode wrap_u = texture->get_wrap_u();
+    SamplerState::WrapMode wrap_v = texture->get_wrap_v();
     if (td_ignore_clamp) {
-      wrap_u = Texture::WM_repeat;
-      wrap_v = Texture::WM_repeat;
+      wrap_u = SamplerState::WM_repeat;
+      wrap_v = SamplerState::WM_repeat;
     }
 
-    if (wrap_u != Texture::WM_repeat || wrap_v != Texture::WM_repeat) {
+    if (wrap_u != SamplerState::WM_repeat || wrap_v != SamplerState::WM_repeat) {
       // We have some nonstandard wrap mode.  This will force the use
       // of the general texfilter mode.
       needs_general = true;
@@ -2364,21 +2364,21 @@ do_issue_texture() {
 
       // The following special cases are handled inline, rather than
       // relying on the above wrap function pointers.
-      if (wrap_u && Texture::WM_border_color && wrap_v == Texture::WM_border_color) {
+      if (wrap_u && SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
         texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
-      } else if (wrap_u && Texture::WM_clamp && wrap_v == Texture::WM_clamp) {
+      } else if (wrap_u && SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
         texture_def->tex_minfilter_func = apply_wrap_clamp_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_clamp_magfilter;
       }
     }
 
-    if (minfilter != Texture::FT_nearest || magfilter != Texture::FT_nearest) {
+    if (minfilter != SamplerState::FT_nearest || magfilter != SamplerState::FT_nearest) {
       all_nearest = false;
     }
 
-    if (minfilter != Texture::FT_nearest_mipmap_nearest ||
-        magfilter != Texture::FT_nearest) {
+    if (minfilter != SamplerState::FT_nearest_mipmap_nearest ||
+        magfilter != SamplerState::FT_nearest) {
       all_mipmap_nearest = false;
     }
 
@@ -3195,24 +3195,24 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
 //               function according to the texture's filter type.
 ////////////////////////////////////////////////////////////////////
 ZB_lookupTextureFunc TinyGraphicsStateGuardian::
-get_tex_filter_func(Texture::FilterType filter) {
+get_tex_filter_func(SamplerState::FilterType filter) {
   switch (filter) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return &lookup_texture_nearest;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return &lookup_texture_bilinear;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return &lookup_texture_mipmap_nearest;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return &lookup_texture_mipmap_linear;
       
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     return &lookup_texture_mipmap_bilinear;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return &lookup_texture_mipmap_trilinear;
 
   default:
@@ -3227,20 +3227,20 @@ get_tex_filter_func(Texture::FilterType filter) {
 //               function according to the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 ZB_texWrapFunc TinyGraphicsStateGuardian::
-get_tex_wrap_func(Texture::WrapMode wrap_mode) {
+get_tex_wrap_func(SamplerState::WrapMode wrap_mode) {
   switch (wrap_mode) {
-  case Texture::WM_clamp:
-  case Texture::WM_border_color:  // border_color is handled later.
+  case SamplerState::WM_clamp:
+  case SamplerState::WM_border_color:  // border_color is handled later.
     return &texcoord_clamp;
 
-  case Texture::WM_repeat:
-  case Texture::WM_invalid:
+  case SamplerState::WM_repeat:
+  case SamplerState::WM_invalid:
     return &texcoord_repeat;
 
-  case Texture::WM_mirror:
+  case SamplerState::WM_mirror:
     return &texcoord_mirror;
 
-  case Texture::WM_mirror_once:
+  case SamplerState::WM_mirror_once:
     return &texcoord_mirror_once;
   }
 

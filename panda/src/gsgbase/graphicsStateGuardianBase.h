@@ -54,8 +54,10 @@ class PreparedGraphicsObjects;
 class GraphicsOutput;
 class Texture;
 class TextureContext;
-class ShaderContext;
+class SamplerContext;
+class SamplerState;
 class Shader;
+class ShaderContext;
 class RenderState;
 class TransformState;
 class Material;
@@ -147,6 +149,9 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
+
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler)=0;
+  virtual void release_sampler(SamplerContext *sc)=0;
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;

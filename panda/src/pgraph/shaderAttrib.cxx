@@ -81,7 +81,7 @@ make_default() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader(const Shader *s, int priority) const {
@@ -96,7 +96,7 @@ set_shader(const Shader *s, int priority) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_off
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_off(int priority) const {
@@ -117,7 +117,7 @@ set_shader_off(int priority) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_auto
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_auto(int priority) const {
@@ -142,7 +142,7 @@ set_shader_auto(int priority) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_auto(BitMask32 shader_switch, int priority) const {
-  
+
   ShaderAttrib *result = new ShaderAttrib(*this);
   result->_shader = NULL;
   result->_shader_priority = priority;
@@ -160,7 +160,7 @@ set_shader_auto(BitMask32 shader_switch, int priority) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::clear_shader
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 clear_shader() const {
@@ -180,7 +180,7 @@ clear_shader() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_flag
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_flag(int flag, bool value) const {
@@ -194,11 +194,11 @@ set_flag(int flag, bool value) const {
   result->_has_flags |= bit;
   return return_new(result);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::clear_flag
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 clear_flag(int flag) const {
@@ -212,7 +212,7 @@ clear_flag(int flag) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const ShaderInput *input) const {
@@ -229,9 +229,9 @@ set_shader_input(const ShaderInput *input) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_float &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -239,9 +239,9 @@ set_shader_input(const InternalName *id, const PTA_float &v, int priority) const
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_double &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -249,9 +249,9 @@ set_shader_input(const InternalName *id, const PTA_double &v, int priority) cons
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -259,9 +259,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) c
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -270,9 +270,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) c
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -280,9 +280,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) c
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -290,9 +290,9 @@ set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) const
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -300,9 +300,9 @@ set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) const
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -310,9 +310,9 @@ set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) const
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -320,9 +320,9 @@ set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) co
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -330,9 +330,9 @@ set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) co
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -340,9 +340,9 @@ set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) const 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderAttrib:: 
+CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) const {
   return set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -350,7 +350,7 @@ set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) const 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, Texture *tex, int priority) const {
@@ -360,7 +360,7 @@ set_shader_input(const InternalName *id, Texture *tex, int priority) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, const NodePath &np, int priority) const {
@@ -370,7 +370,7 @@ set_shader_input(const InternalName *id, const NodePath &np, int priority) const
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(const InternalName *id, double n1, double n2, double n3, double n4, int priority) const {
@@ -395,7 +395,7 @@ set_instance_count(int instance_count) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::clear_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 clear_shader_input(const InternalName *id) const {
@@ -407,7 +407,7 @@ clear_shader_input(const InternalName *id) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::clear_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 clear_shader_input(const string &id) const {
@@ -458,7 +458,7 @@ get_shader_input(const string &id) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader_input_nodepath
 //       Access: Published
-//  Description: Returns the ShaderInput as a nodepath.  Assertion 
+//  Description: Returns the ShaderInput as a nodepath.  Assertion
 //               fails if there is none, or if it is not a nodepath.
 ////////////////////////////////////////////////////////////////////
 const NodePath &ShaderAttrib::
@@ -488,7 +488,7 @@ get_shader_input_nodepath(const InternalName *id) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader_input_vector
 //       Access: Published
-//  Description: Returns the ShaderInput as a vector.  Assertion 
+//  Description: Returns the ShaderInput as a vector.  Assertion
 //               fails if there is none, or if it is not a vector.
 ////////////////////////////////////////////////////////////////////
 const LVecBase4 &ShaderAttrib::
@@ -502,24 +502,33 @@ get_shader_input_vector(InternalName *id) const {
     return resfail;
   } else {
     const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_numeric) {
-      ostringstream strm;
-      strm << "Shader input " << id->get_name() << " is not a vector.\n";
-      nassert_raise(strm.str());
-      return resfail;
+
+    if (p->get_value_type() == ShaderInput::M_numeric) {
+      return p->get_vector();
+
+    } else if (p->get_value_type() == ShaderInput::M_param) {
+      // Temporary solution until the new param system
+      ParamValueBase *param = p->get_param();
+      if (param != NULL && param->is_of_type(ParamVecBase4::get_class_type())) {
+        return ((const ParamVecBase4 *) param)->get_value();
+      }
     }
-    return p->get_vector();
+
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not a vector.\n";
+    nassert_raise(strm.str());
+    return resfail;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader_input_ptr
 //       Access: Published
-//  Description: Returns the ShaderInput as a ShaderPtrData struct. 
-//               Assertion fails if there is none. or if it is not 
+//  Description: Returns the ShaderInput as a ShaderPtrData struct.
+//               Assertion fails if there is none. or if it is not
 //               a PTA(double/float)
 ////////////////////////////////////////////////////////////////////
-const Shader::ShaderPtrData *ShaderAttrib:: 
+const Shader::ShaderPtrData *ShaderAttrib::
 get_shader_input_ptr(const InternalName *id) const {
   Inputs::const_iterator i = _inputs.find(id);
   if (i == _inputs.end()) {
@@ -542,7 +551,7 @@ get_shader_input_ptr(const InternalName *id) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader_input_texture
 //       Access: Published
-//  Description: Returns the ShaderInput as a texture.  Assertion 
+//  Description: Returns the ShaderInput as a texture.  Assertion
 //               fails if there is none, or if it is not a texture.
 ////////////////////////////////////////////////////////////////////
 Texture *ShaderAttrib::
@@ -555,13 +564,41 @@ get_shader_input_texture(const InternalName *id) const {
     return NULL;
   } else {
     const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_texture) {
+    if (p->get_value_type() != ShaderInput::M_texture &&
+        p->get_value_type() != ShaderInput::M_texture_sampler) {
       ostringstream strm;
       strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
       nassert_raise(strm.str());
       return NULL;
     }
     return p->get_texture();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_shader_input_sampler
+//       Access: Published
+//  Description: Returns the ShaderInput as a sampler.  Assertion
+//               fails if there is none, or if it is not a texture.
+////////////////////////////////////////////////////////////////////
+const SamplerState &ShaderAttrib::
+get_shader_input_sampler(const InternalName *id) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return SamplerState::get_default();
+  } else {
+    const ShaderInput *p = (*i).second;
+    if (p->get_value_type() != ShaderInput::M_texture &&
+        p->get_value_type() != ShaderInput::M_texture_sampler) {
+      ostringstream strm;
+      strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
+      nassert_raise(strm.str());
+      return SamplerState::get_default();
+    }
+    return p->get_sampler();
   }
 }
 
@@ -604,6 +641,12 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
           matrix = LCAST(PN_stdfloat, matrixd);
           return matrix;
         }
+        default: {
+          ostringstream strm;
+          strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
+          nassert_raise(strm.str());
+          return LMatrix4::ident_mat();
+        }
       }
     }
 
@@ -618,7 +661,7 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
 //     Function: ShaderAttrib::get_shader
 //       Access: Published
 //  Description: Returns the shader object associated with the node.
-//               If get_override returns true, but get_shader 
+//               If get_override returns true, but get_shader
 //               returns NULL, that means that this attribute should
 //               disable the shader.
 ////////////////////////////////////////////////////////////////////
@@ -646,7 +689,7 @@ int ShaderAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ShaderAttrib *that;
   DCAST_INTO_R(that, other, 0);
-  
+
   if (this->_shader != that->_shader) {
     return (this->_shader < that->_shader) ? -1 : 1;
   }
@@ -699,7 +742,7 @@ compare_to_impl(const RenderAttrib *other) const {
   if (i2 != that->_inputs.end()) {
     return -1;
   }
-  
+
   return 0;
 }
 
@@ -789,7 +832,7 @@ compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_auto_shader_attrib_impl
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {

@@ -1,5 +1,5 @@
-// Filename: textureContext.cxx
-// Created by:  drose (07Oct99)
+// Filename: samplerContext.cxx
+// Created by:  rdb (11Dec14))
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,26 +12,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textureContext.h"
+#include "samplerContext.h"
 
-TypeHandle TextureContext::_type_handle;
+TypeHandle SamplerContext::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::output
+//     Function: SamplerContext::output
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void TextureContext::
+void SamplerContext::
 output(ostream &out) const {
-  out << *get_texture() << ", " << get_data_size_bytes();
+  SavedContext::output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::write
+//     Function: SamplerContext::write
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void TextureContext::
+void SamplerContext::
 write(ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }
+

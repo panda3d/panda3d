@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE int get_ff_tc_index(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
+  INLINE const SamplerState &get_on_sampler(TextureStage *stage) const;
   INLINE int get_on_stage_override(TextureStage *stage) const;
 
   int find_on_stage(const TextureStage *stage) const;
@@ -74,6 +75,8 @@ PUBLISHED:
   INLINE bool is_identity() const;
 
   CPT(RenderAttrib) add_on_stage(TextureStage *stage, Texture *tex, int override = 0) const;
+  CPT(RenderAttrib) add_on_stage(TextureStage *stage, Texture *tex,
+                                 const SamplerState &sampler, int override = 0) const;
   CPT(RenderAttrib) remove_on_stage(TextureStage *stage) const;
   CPT(RenderAttrib) add_off_stage(TextureStage *stage, int override = 0) const;
   CPT(RenderAttrib) remove_off_stage(TextureStage *stage) const;
@@ -102,12 +105,14 @@ private:
 private:
   class StageNode {
   public:
-    INLINE StageNode(const TextureStage *stage, 
+    INLINE StageNode(const TextureStage *stage,
                      unsigned int implicit_sort = 0,
                      int override = 0);
 
     PT(TextureStage) _stage;
     PT(Texture) _texture;
+    SamplerState _sampler;
+    bool _has_sampler;
     int _ff_tc_index;
     unsigned int _implicit_sort;
     int _override;
@@ -135,7 +140,7 @@ private:
   RenderStages _render_stages;      // all "on" stages, sorted in render order.
   RenderStages _render_ff_stages;   // fixed-function stages only, in render order.
   unsigned int _next_implicit_sort;
-  
+
   Stages _off_stages;
   bool _off_all_stages;
 
@@ -164,7 +169,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -188,4 +193,3 @@ private:
 #include "textureAttrib.I"
 
 #endif
-

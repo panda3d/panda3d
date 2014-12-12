@@ -75,16 +75,16 @@
 #include "bam.h"
 #include "bamWriter.h"
 
-// stack seems to overflow on Intel C++ at 7000.  If we need more than 
+// stack seems to overflow on Intel C++ at 7000.  If we need more than
 // 7000, need to increase stack size.
-int NodePath::_max_search_depth = 7000; 
+int NodePath::_max_search_depth = 7000;
 TypeHandle NodePath::_type_handle;
 
 PStatCollector NodePath::_get_transform_pcollector("*:NodePath:get_transform");
 PStatCollector NodePath::_verify_complete_pcollector("*:NodePath:verify_complete");
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
+#include "py_panda.h"
 #ifndef CPPPARSER
 extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
 extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamReader;
@@ -153,7 +153,7 @@ static ConfigVariableEnum<EmptyNodePathType> empty_node_path
 //               stashed or unstashed child of the parent.
 ////////////////////////////////////////////////////////////////////
 NodePath::
-NodePath(const NodePath &parent, PandaNode *child_node, 
+NodePath(const NodePath &parent, PandaNode *child_node,
          Thread *current_thread) :
   _error_type(ET_fail)
 {
@@ -162,7 +162,7 @@ NodePath(const NodePath &parent, PandaNode *child_node,
 
   if (parent.is_empty()) {
     // Special case: constructing a NodePath at the root.
-    _head = PandaNode::get_top_component(child_node, true, 
+    _head = PandaNode::get_top_component(child_node, true,
                                          pipeline_stage, current_thread);
 
   } else {
@@ -206,7 +206,7 @@ operator bool () const {
     if (!is_empty()) {
       return true;
     }
-    
+
     {
       const char *message = "Using an empty NodePath as a boolean value.  Because the meaning of this operation is changing, you should avoid doing this to avoid ambiguity, or set the config variable empty-node-path to 'future' or 'deprecated' to specify the desired behavior.";
       pgraph_cat.warning()
@@ -510,7 +510,7 @@ find_all_paths_to(PandaNode *node) const {
 //       Access: Published
 //  Description: Removes the referenced node of the NodePath from its
 //               current parent and attaches it to the referenced node
-//               of the indicated NodePath.  
+//               of the indicated NodePath.
 //
 //               If the destination NodePath is empty, this is the
 //               same thing as detach_node().
@@ -644,7 +644,7 @@ instance_to(const NodePath &other, int sort, Thread *current_thread) const {
       }
       return orig;
     }
-    
+
     // Nope, it must be a cycle.
     nassertr(reparented, new_instance);
   }
@@ -869,7 +869,7 @@ get_state(const NodePath &other, Thread *current_thread) const {
   if (is_empty()) {
     return other.get_net_state(current_thread)->invert_compose(RenderState::make_empty());
   }
-    
+
   nassertr(verify_complete(current_thread), RenderState::make_empty());
   nassertr(other.verify_complete(current_thread), RenderState::make_empty());
 
@@ -1041,7 +1041,7 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
   if (is_empty()) {
     return other.get_net_prev_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
-    
+
   nassertr(verify_complete(current_thread), TransformState::make_identity());
   nassertr(other.verify_complete(current_thread), TransformState::make_identity());
 
@@ -2017,7 +2017,7 @@ set_pos_quat(const NodePath &other, const LVecBase3 &pos,
              const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  
+
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
     // If we had a componentwise transform before we started, we
@@ -2074,7 +2074,7 @@ set_hpr_scale(const NodePath &other, const LVecBase3 &hpr, const LVecBase3 &scal
 //               transform when both quat and scale are to be changed.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_quat_scale(const NodePath &other, const LQuaternion &quat, 
+set_quat_scale(const NodePath &other, const LQuaternion &quat,
                const LVecBase3 &scale) {
   // We don't bother trying very hard to preserve pos across this
   // operation, unlike the work we do above to preserve quat or scale,
@@ -2385,7 +2385,7 @@ clear_color_scale() {
 //     Function: NodePath::compose_color_scale
 //       Access: Published
 //  Description: multiplies the color scale component of the transform,
-//               with previous color scale leaving translation and 
+//               with previous color scale leaving translation and
 //               rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
@@ -2399,7 +2399,7 @@ compose_color_scale(const LVecBase4 &scale, int priority) {
                    node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
 
-    // Modify the existing ColorScaleAttrib by multiplying with the 
+    // Modify the existing ColorScaleAttrib by multiplying with the
     // indicated colorScale.
     LVecBase4 prev_color_scale = csa->get_scale();
     LVecBase4 new_color_scale(prev_color_scale[0]*scale[0],
@@ -2569,11 +2569,11 @@ set_light(const NodePath &light, int priority) {
         priority = max(priority,
                        node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
-        
+
         // Modify the existing LightAttrib to add the indicated
         // light.
         node()->set_attrib(la->add_on_light(light), priority);
-        
+
       } else {
         // Create a new LightAttrib for this node.
         CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
@@ -2594,11 +2594,11 @@ set_light(const NodePath &light, int priority) {
         node()->get_effect(PolylightEffect::get_class_type());
       if (effect != (const RenderEffect *)NULL) {
         const PolylightEffect *ple = DCAST(PolylightEffect, effect);
-        
+
         // Modify the existing PolylightEffect to add the indicated
         // light.
         node()->set_effect(ple->add_light(light));
-        
+
       } else {
         // Create a new PolylightEffect for this node.
         CPT(PolylightEffect) ple = DCAST(PolylightEffect, PolylightEffect::make());
@@ -2657,12 +2657,12 @@ set_light_off(const NodePath &light, int priority) {
         priority = max(priority,
                        node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
-        
+
         // Modify the existing LightAttrib to add the indicated light
         // to the "off" list.  This also, incidentally, removes it from
         // the "on" list if it is there.
         node()->set_attrib(la->add_off_light(light), priority);
-        
+
       } else {
         // Create a new LightAttrib for this node that turns off the
         // indicated light.
@@ -2708,10 +2708,10 @@ clear_light(const NodePath &light) {
         CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
         la = DCAST(LightAttrib, la->remove_on_light(light));
         la = DCAST(LightAttrib, la->remove_off_light(light));
-        
+
         if (la->is_identity()) {
           node()->clear_attrib(LightAttrib::get_class_slot());
-          
+
         } else {
           int priority = node()->get_state()->get_override(LightAttrib::get_class_slot());
           node()->set_attrib(la, priority);
@@ -2841,11 +2841,11 @@ set_clip_plane(const NodePath &clip_plane, int priority) {
       priority = max(priority,
                      node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
-      
+
       // Modify the existing ClipPlaneAttrib to add the indicated
       // clip_plane.
       node()->set_attrib(la->add_on_plane(clip_plane), priority);
-      
+
     } else {
       // Create a new ClipPlaneAttrib for this node.
       CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, ClipPlaneAttrib::make());
@@ -2898,12 +2898,12 @@ set_clip_plane_off(const NodePath &clip_plane, int priority) {
       priority = max(priority,
                      node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
-      
+
       // Modify the existing ClipPlaneAttrib to add the indicated clip_plane
       // to the "off" list.  This also, incidentally, removes it from
       // the "on" list if it is there.
       node()->set_attrib(la->add_off_plane(clip_plane), priority);
-      
+
     } else {
       // Create a new ClipPlaneAttrib for this node that turns off the
       // indicated clip_plane.
@@ -2945,10 +2945,10 @@ clear_clip_plane(const NodePath &clip_plane) {
       CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, attrib);
       la = DCAST(ClipPlaneAttrib, la->remove_on_plane(clip_plane));
       la = DCAST(ClipPlaneAttrib, la->remove_off_plane(clip_plane));
-        
+
       if (la->is_identity()) {
         node()->clear_attrib(ClipPlaneAttrib::get_class_slot());
-          
+
       } else {
         int priority = node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot());
         node()->set_attrib(la, priority);
@@ -3047,11 +3047,11 @@ set_occluder(const NodePath &occluder) {
       node()->get_effect(OccluderEffect::get_class_type());
     if (effect != (const RenderEffect *)NULL) {
       const OccluderEffect *la = DCAST(OccluderEffect, effect);
-      
+
       // Modify the existing OccluderEffect to add the indicated
       // occluder.
       node()->set_effect(la->add_on_occluder(occluder));
-      
+
     } else {
       // Create a new OccluderEffect for this node.
       CPT(OccluderEffect) la = DCAST(OccluderEffect, OccluderEffect::make());
@@ -3090,10 +3090,10 @@ clear_occluder(const NodePath &occluder) {
     if (effect != (const RenderEffect *)NULL) {
       CPT(OccluderEffect) la = DCAST(OccluderEffect, effect);
       la = DCAST(OccluderEffect, la->remove_on_occluder(occluder));
-        
+
       if (la->is_identity()) {
         node()->clear_effect(OccluderEffect::get_class_type());
-          
+
       } else {
         node()->set_effect(la);
       }
@@ -3382,6 +3382,68 @@ set_texture(TextureStage *stage, Texture *tex, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_texture
+//       Access: Published
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the default texture stage.
+//
+//               The given sampler state will override the sampling
+//               settings on the texture itself.  Note that this
+//               method makes a copy of the sampler settings that
+//               you give; further changes to this object will not
+//               be reflected.
+//
+//               This is the convenience single-texture variant of
+//               this method; it is now superceded by set_texture()
+//               that accepts a stage and texture.  You may use this
+//               method if you just want to adjust the default stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_texture(Texture *tex, const SamplerState &sampler, int priority) {
+  nassertv_always(!is_empty());
+  PT(TextureStage) stage = TextureStage::get_default();
+  set_texture(stage, tex, sampler, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_texture
+//       Access: Published
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the indicated multitexture
+//               stage.  If there are multiple texture stages
+//               specified (possibly on multiple different nodes at
+//               different levels), they will all be applied to
+//               geometry together, according to the stage
+//               specification set up in the TextureStage object.
+//
+//               The given sampler state will override the sampling
+//               settings on the texture itself.  Note that this
+//               method makes a copy of the sampler settings that
+//               you give; further changes to this object will not
+//               be reflected.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_texture(TextureStage *stage, Texture *tex, const SamplerState &sampler, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_slot());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
+    int sg_priority = node()->get_state()->get_override(TextureAttrib::get_class_slot());
+
+    // Modify the existing TextureAttrib to add the indicated
+    // texture.
+    node()->set_attrib(tsa->add_on_stage(stage, tex, sampler, priority), sg_priority);
+
+  } else {
+    // Create a new TextureAttrib for this node.
+    CPT(TextureAttrib) tsa = DCAST(TextureAttrib, TextureAttrib::make());
+    node()->set_attrib(tsa->add_on_stage(stage, tex, sampler, priority));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_texture_off
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
@@ -3604,9 +3666,47 @@ get_texture(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_texture_sampler
+//       Access: Published
+//  Description: Returns the sampler state that has been given for
+//               the base-level texture that has been set on this
+//               particular node.  If no sampler state was given,
+//               this returns the texture's default sampler settings.
+//
+//               It is an error to call this if there is no base-level
+//               texture applied to this particular node.
+////////////////////////////////////////////////////////////////////
+const SamplerState &NodePath::
+get_texture_sampler() const {
+  return get_texture_sampler(TextureStage::get_default());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_texture_sampler
+//       Access: Published
+//  Description: Returns the sampler state that has been given for
+//               the indicated texture stage that has been set on this
+//               particular node.  If no sampler state was given,
+//               this returns the texture's default sampler settings.
+//
+//               It is an error to call this if there is no texture
+//               set for this stage on this particular node.
+////////////////////////////////////////////////////////////////////
+const SamplerState &NodePath::
+get_texture_sampler(TextureStage *stage) const {
+  nassertr_always(!is_empty(), SamplerState::get_default());
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_slot());
+  nassertr_always(attrib != NULL, SamplerState::get_default());
+
+  const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+  return ta->get_on_sampler(stage);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader(const Shader *sha, int priority) {
@@ -3629,7 +3729,7 @@ set_shader(const Shader *sha, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_off
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_off(int priority) {
@@ -3639,7 +3739,7 @@ set_shader_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_auto
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_auto(int priority) {
@@ -3684,7 +3784,7 @@ set_shader_auto(BitMask32 shader_switch, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_shader
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 clear_shader() {
@@ -3701,7 +3801,7 @@ clear_shader() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_shader
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const Shader *NodePath::
 get_shader() const {
@@ -3718,7 +3818,7 @@ get_shader() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_input(const ShaderInput *inp) {
@@ -3739,12 +3839,12 @@ set_shader_input(const ShaderInput *inp) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const ShaderInput *NodePath::
 get_shader_input(const InternalName *id) const {
   nassertr_always(!is_empty(), NULL);
-  
+
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -3778,7 +3878,7 @@ get_instance_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 clear_shader_input(const InternalName *id) {
@@ -3796,9 +3896,9 @@ clear_shader_input(const InternalName *id) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_float &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3806,9 +3906,9 @@ set_shader_input(const InternalName *id, const PTA_float &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3816,9 +3916,9 @@ set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_int &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3826,9 +3926,9 @@ set_shader_input(const InternalName *id, const PTA_int &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3836,9 +3936,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3847,9 +3947,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3857,9 +3957,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3867,9 +3967,9 @@ set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3877,9 +3977,9 @@ set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3887,9 +3987,9 @@ set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3897,9 +3997,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority) 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3908,9 +4008,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority) 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3918,9 +4018,9 @@ set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority) 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase4i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3928,9 +4028,9 @@ set_shader_input(const InternalName *id, const LVecBase4i &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase3i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3938,9 +4038,9 @@ set_shader_input(const InternalName *id, const LVecBase3i &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LVecBase2i &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3948,9 +4048,9 @@ set_shader_input(const InternalName *id, const LVecBase2i &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3958,9 +4058,9 @@ set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3968,9 +4068,9 @@ set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3978,9 +4078,9 @@ set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3988,7 +4088,7 @@ set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_input(const InternalName *id, Texture *tex, int priority) {
@@ -3998,7 +4098,17 @@ set_shader_input(const InternalName *id, Texture *tex, int priority) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority) {
+  set_shader_input(new ShaderInput(id,tex,sampler,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z, int n, int priority) {
@@ -4008,7 +4118,7 @@ set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, in
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_shader_input(const InternalName *id, const NodePath &np, int priority) {
@@ -4028,9 +4138,9 @@ set_shader_input(const InternalName *id, int n1, int n2, int n3, int n4, int pri
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_shader_input
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void NodePath:: 
+void NodePath::
 set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
   set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
 }
@@ -4260,7 +4370,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
 //               specific light to generate coordinates for.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
             const string &source_name, const NodePath &light, int priority) {
   nassertv_always(!is_empty());
 
@@ -4290,7 +4400,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
 //               requires a constant texture coordinate value.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
             const LTexCoord3 &constant_value, int priority) {
   nassertv_always(!is_empty());
 
@@ -4605,7 +4715,7 @@ set_normal_map(Texture *normal_map, const string &texcoord_name,
   PT(Texture) normalization_map = TexturePool::get_normalization_cube_map(32);
   PT(TextureStage) normalization_map_ts = new TextureStage("__normalization_map");
   normalization_map_ts->set_combine_rgb
-    (TextureStage::CM_dot3_rgb, 
+    (TextureStage::CM_dot3_rgb,
      TextureStage::CS_texture, TextureStage::CO_src_color,
      TextureStage::CS_previous, TextureStage::CO_src_color);
   normalization_map_ts->set_texcoord_name("light_vector");
@@ -4613,7 +4723,7 @@ set_normal_map(Texture *normal_map, const string &texcoord_name,
   set_texture(normalization_map_ts, normalization_map);
 
   // Finally, we enable M_light_vector texture coordinate generation.
-  set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector, 
+  set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector,
               texcoord_name, NodePath());
 
   if (preserve_color) {
@@ -4736,7 +4846,7 @@ find_all_texcoords() const {
   r_find_all_vertex_columns(node(), vertex_columns);
 
   CPT(InternalName) texcoord_name = InternalName::get_texcoord();
-  
+
   InternalNameCollection tc;
   InternalNames::iterator ti;
   for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
@@ -5788,7 +5898,7 @@ void NodePath::
 set_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
-    (LVector3::up(), false, true, 
+    (LVector3::up(), false, true,
      offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
@@ -6147,8 +6257,8 @@ get_hidden_ancestor(DrawMask camera_mask, Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
 
   NodePathComponent *comp;
-  for (comp = _head; 
-       comp != (NodePathComponent *)NULL; 
+  for (comp = _head;
+       comp != (NodePathComponent *)NULL;
        comp = comp->get_next(pipeline_stage, current_thread)) {
     PandaNode *node = comp->get_node();
     if (node->is_overall_hidden() ||
@@ -6286,7 +6396,7 @@ verify_complete(Thread *current_thread) const {
   PandaNode *node = comp->get_node();
   nassertr(node != (const PandaNode *)NULL, false);
   int length = comp->get_length(pipeline_stage, current_thread);
-  
+
   comp = comp->get_next(pipeline_stage, current_thread);
   length--;
   while (comp != (const NodePathComponent *)NULL) {
@@ -6476,7 +6586,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   nassertr_always(!is_empty(), false);
 
   bool found_any = false;
-  node()->calc_tight_bounds(min_point, max_point, found_any, 
+  node()->calc_tight_bounds(min_point, max_point, found_any,
                             TransformState::make_identity(),
                             current_thread);
 
@@ -6755,19 +6865,19 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
   if (!dout.open(stream)) {
     return false;
   }
-  
+
   BamWriter local_writer;
   bool used_local_writer = false;
   if (writer == NULL) {
     // Create our own writer.
-    
+
     if (!dout.write_header(_bam_header)) {
       return false;
     }
     writer = &local_writer;
     used_local_writer = true;
   }
-  
+
   writer->set_target(&dout);
 
   int num_nodes = get_num_nodes();
@@ -6781,7 +6891,7 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
   Datagram dg;
   dg.add_uint8(_error_type);
   dg.add_int32(num_nodes);
-  
+
   if (!dout.put_datagram(dg)) {
     writer->set_target(NULL);
     return false;
@@ -6797,7 +6907,7 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
     }
   }
   writer->set_target(NULL);
-  
+
   data = stream.str();
   return true;
 }
@@ -6829,14 +6939,14 @@ decode_from_bam_stream(const string &data, BamReader *reader) {
     if (!din.read_header(head, _bam_header.size())) {
       return NodePath::fail();
     }
-    
+
     if (head != _bam_header) {
       return NodePath::fail();
     }
 
     reader = &local_reader;
   }
-  
+
   reader->set_source(&din);
 
   // One initial datagram to encode the error type, and the number of nodes.
@@ -6862,7 +6972,7 @@ decode_from_bam_stream(const string &data, BamReader *reader) {
         reader->set_source(NULL);
         return NodePath::fail();
       }
-  
+
       if (!reader->resolve()) {
         reader->set_source(NULL);
         return NodePath::fail();
@@ -6872,7 +6982,7 @@ decode_from_bam_stream(const string &data, BamReader *reader) {
       result = NodePath(result, node);
     }
   }
-  
+
   reader->set_source(NULL);
 
   return result;
@@ -6915,7 +7025,7 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
 
   // Now shorten them both up until we reach the same component.
   while (ac != bc) {
-    // These shouldn't go to NULL unless they both go there together. 
+    // These shouldn't go to NULL unless they both go there together.
     nassertr(ac != (NodePathComponent *)NULL, NULL);
     nassertr(bc != (NodePathComponent *)NULL, NULL);
     ac = ac->get_next(pipeline_stage, current_thread);
@@ -6953,7 +7063,7 @@ r_get_net_state(NodePathComponent *comp, Thread *current_thread) const {
 //               net transform from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
-r_get_partial_state(NodePathComponent *comp, int n, 
+r_get_partial_state(NodePathComponent *comp, int n,
                     Thread *current_thread) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return RenderState::make_empty();
@@ -6984,7 +7094,7 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
     if (effects->has_adjust_transform()) {
       effects->adjust_transform(net_transform, transform, node);
     }
-      
+
     return net_transform->compose(transform);
   }
 }
@@ -7002,7 +7112,7 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
 //               transform cannot be easily determined.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
-r_get_partial_transform(NodePathComponent *comp, int n, 
+r_get_partial_transform(NodePathComponent *comp, int n,
                         Thread *current_thread) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
@@ -7101,7 +7211,7 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
   }
 
   // We start with just one entry on the level.
-  FindApproxLevelEntry *level = 
+  FindApproxLevelEntry *level =
     new FindApproxLevelEntry(WorkingNodePath(*this), approx_path);
   nassertv(level->_node_path.is_valid());
 
@@ -7118,7 +7228,7 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
 void NodePath::
 find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
              int max_matches) const {
-  
+
   int num_levels_remaining = _max_search_depth;
 
   FindApproxLevelEntry *deleted_entries = NULL;
@@ -7171,7 +7281,7 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
 
       entry = next;
     }
-    
+
     // Make sure the remaining entries from this level are added to
     // the delete chain.
     while (entry != (FindApproxLevelEntry *)NULL) {
@@ -7250,7 +7360,7 @@ r_adjust_all_priorities(PandaNode *node, int adjustment) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_force_recompute_bounds
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_force_recompute_bounds(PandaNode *node) {
@@ -7282,7 +7392,7 @@ r_force_recompute_bounds(PandaNode *node) {
 //               nodes at and below this node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-r_set_collide_mask(PandaNode *node, 
+r_set_collide_mask(PandaNode *node,
                    CollideMask and_mask, CollideMask or_mask,
                    TypeHandle node_type) {
   if (node->is_of_type(node_type)) {
@@ -7301,7 +7411,7 @@ r_set_collide_mask(PandaNode *node,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_has_vertex_column
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 r_has_vertex_column(PandaNode *node, const InternalName *name) const {
@@ -7335,7 +7445,7 @@ r_has_vertex_column(PandaNode *node, const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_all_vertex_columns
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_all_vertex_columns(PandaNode *node,
@@ -7372,7 +7482,7 @@ r_find_all_vertex_columns(PandaNode *node,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Texture *NodePath::
 r_find_texture(PandaNode *node, const RenderState *state,
@@ -7383,7 +7493,7 @@ r_find_texture(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
@@ -7422,7 +7532,7 @@ r_find_texture(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_all_textures
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_all_textures(PandaNode *node, const RenderState *state,
@@ -7433,7 +7543,7 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
@@ -7464,7 +7574,7 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Texture * NodePath::
 r_find_texture(PandaNode *node, TextureStage *stage) const {
@@ -7516,7 +7626,7 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_all_textures
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_all_textures(PandaNode *node, TextureStage *stage,
@@ -7563,7 +7673,7 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture_stage
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureStage * NodePath::
 r_find_texture_stage(PandaNode *node, const RenderState *state,
@@ -7574,7 +7684,7 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
@@ -7613,7 +7723,7 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_all_texture_stages
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_all_texture_stages(PandaNode *node, const RenderState *state,
@@ -7624,7 +7734,7 @@ r_find_all_texture_stages(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
@@ -7655,7 +7765,7 @@ r_find_all_texture_stages(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_unify_texture_stages
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
@@ -7704,7 +7814,7 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_material
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Material *NodePath::
 r_find_material(PandaNode *node, const RenderState *state,
@@ -7715,7 +7825,7 @@ r_find_material(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a MaterialAttrib on the state.
@@ -7754,7 +7864,7 @@ r_find_material(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_all_materials
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_all_materials(PandaNode *node, const RenderState *state,
@@ -7765,7 +7875,7 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = 
+      CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
       // Look for a MaterialAttrib on the state.

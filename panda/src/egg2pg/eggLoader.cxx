@@ -1108,16 +1108,16 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
   switch (egg_tex->get_minfilter()) {
   case EggTexture::FT_nearest:
-    tex->set_minfilter(Texture::FT_nearest);
+    tex->set_minfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1125,13 +1125,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_nearest_mipmap_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
     }
     break;
 
@@ -1139,13 +1139,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(Texture::FT_linear_mipmap_nearest);
+      tex->set_minfilter(SamplerState::FT_linear_mipmap_nearest);
     }
     break;
 
@@ -1153,13 +1153,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_nearest_mipmap_linear);
+      tex->set_minfilter(SamplerState::FT_nearest_mipmap_linear);
     }
     break;
 
@@ -1167,13 +1167,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+      tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
     }
     break;
 
@@ -1185,7 +1185,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest:
   case EggTexture::FT_nearest_mipmap_nearest:
   case EggTexture::FT_nearest_mipmap_linear:
-    tex->set_magfilter(Texture::FT_nearest);
+    tex->set_magfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
@@ -1194,9 +1194,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring magfilter request\n";
-      tex->set_magfilter(Texture::FT_nearest);
+      tex->set_magfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_magfilter(Texture::FT_linear);
+      tex->set_magfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1397,35 +1397,35 @@ convert_compression_mode(EggTexture::CompressionMode compression_mode) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::convert_wrap_mode
 //       Access: Private
-//  Description: Returns the Texture::WrapMode enum corresponding to
+//  Description: Returns the SamplerState::WrapMode enum corresponding to
 //               the EggTexture::WrapMode.  Returns WM_repeat if the
 //               wrap mode is unspecified.
 ////////////////////////////////////////////////////////////////////
-Texture::WrapMode EggLoader::
+SamplerState::WrapMode EggLoader::
 convert_wrap_mode(EggTexture::WrapMode wrap_mode) const {
   switch (wrap_mode) {
   case EggTexture::WM_clamp:
-    return Texture::WM_clamp;
+    return SamplerState::WM_clamp;
 
   case EggTexture::WM_repeat:
-    return Texture::WM_repeat;
+    return SamplerState::WM_repeat;
 
   case EggTexture::WM_mirror:
-    return Texture::WM_mirror;
+    return SamplerState::WM_mirror;
 
   case EggTexture::WM_mirror_once:
-    return Texture::WM_mirror_once;
+    return SamplerState::WM_mirror_once;
 
   case EggTexture::WM_border_color:
-    return Texture::WM_border_color;
+    return SamplerState::WM_border_color;
 
   case EggTexture::WM_unspecified:
-    return Texture::WM_repeat;
+    return SamplerState::WM_repeat;
   }
 
   egg2pg_cat.warning()
     << "Unexpected texture wrap flag: " << (int)wrap_mode << "\n";
-  return Texture::WM_repeat;
+  return SamplerState::WM_repeat;
 }
 
 ////////////////////////////////////////////////////////////////////

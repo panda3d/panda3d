@@ -242,7 +242,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
       if (tex == NULL) {
         nout << "Couldn't find " << _vistex_filename << "\n";
       } else {
-        tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+        tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
         mesh.set_texture(tex);
         if (tex->has_alpha(tex->get_format())) {
           mesh.set_transparency(TransparencyAttrib::M_dual);
