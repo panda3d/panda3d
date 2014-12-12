@@ -50,7 +50,7 @@ public:
     calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype);
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
-  void apply_texture(int i, TextureContext *tc);
+  void apply_texture(int i, TextureContext *tc, const SamplerState &sampler);
   virtual bool update_texture(TextureContext *tc, bool force);
   bool upload_texture(DXTextureContext8 *dtc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -258,7 +258,7 @@ protected:
   const DXIndexBufferContext8 *_active_ibuffer;
 
   int _num_active_texture_stages;
-  
+
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have
   // to compute its data once.
@@ -292,7 +292,7 @@ public:
     register_type(_type_handle, "DXGraphicsStateGuardian8",
                   GraphicsStateGuardian::get_class_type());
   }
-  
+
 private:
   static TypeHandle _type_handle;
 
