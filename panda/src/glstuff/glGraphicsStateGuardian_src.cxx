@@ -4268,14 +4268,15 @@ update_texture(TextureContext *tc, bool force) {
 
     // If the texture image was modified, reload the texture.
     apply_texture(tc);
+
+    Texture *tex = tc->get_texture();
     if (gtc->was_properties_modified()) {
-      Texture *tex = tc->get_texture();
       specify_texture(gtc, tex->get_default_sampler());
     }
-    bool okflag = upload_texture(gtc, force);
+    bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
     if (!okflag) {
       GLCAT.error()
-        << "Could not load " << *gtc->get_texture() << "\n";
+        << "Could not load " << *tex << "\n";
       return false;
     }
 
@@ -4290,7 +4291,7 @@ update_texture(TextureContext *tc, bool force) {
     if (specify_texture(gtc, tex->get_default_sampler())) {
       // Actually, looks like the texture *does* need to be reloaded.
       gtc->mark_needs_reload();
-      bool okflag = upload_texture(gtc, force);
+      bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
       if (!okflag) {
         GLCAT.error()
           << "Could not load " << *tex << "\n";
@@ -4398,7 +4399,7 @@ prepare_sampler(const SamplerState &sampler) {
 
   SamplerState::FilterType minfilter = sampler.get_effective_minfilter();
   SamplerState::FilterType magfilter = sampler.get_effective_magfilter();
-  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !gl_ignore_mipmaps;
+  bool uses_mipmaps = SamplerState::is_mipmap(minfilter) && !gl_ignore_mipmaps;
 
 #ifndef NDEBUG
   if (gl_force_mipmaps) {
@@ -9837,7 +9838,7 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 
   SamplerState::FilterType minfilter = sampler.get_effective_minfilter();
   SamplerState::FilterType magfilter = sampler.get_effective_magfilter();
-  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !gl_ignore_mipmaps;
+  bool uses_mipmaps = SamplerState::is_mipmap(minfilter) && !gl_ignore_mipmaps;
 
 #ifndef NDEBUG
   if (gl_force_mipmaps) {
@@ -9948,6 +9949,8 @@ apply_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
   if (_supports_sampler_objects) {
     // We support sampler objects.  Prepare the sampler object and
     // bind it to the indicated texture unit.
@@ -9965,14 +9968,25 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
     }
 
   } else {
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
     // We don't support sampler objects.  We'll have to bind the
     // texture and change the texture parameters if they don't match.
     if (gtc->_active_sampler != sampler) {
       _glActiveTexture(GL_TEXTURE0 + unit);
       apply_texture(tc);
       specify_texture(gtc, sampler);
+    }
+  }
+
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps) {
+    // The texture wasn't created with mipmaps, but we are trying
+    // to sample it with mipmaps.  We will need to reload it.
+    apply_texture(tc);
+    gtc->mark_needs_reload();
+    bool okflag = upload_texture(gtc, false, true);
+    if (!okflag) {
+      GLCAT.error()
+        << "Could not load " << *gtc->get_texture() << "\n";
+      return false;
     }
   }
 
@@ -9990,7 +10004,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-upload_texture(CLP(TextureContext) *gtc, bool force) {
+upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   PStatGPUTimer timer(this, _load_texture_pcollector);
 
   Texture *tex = gtc->get_texture();
@@ -10161,7 +10175,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   GLenum target = get_texture_target(tex->get_texture_type());
-  bool uses_mipmaps = (tex->uses_mipmaps() && !gl_ignore_mipmaps) || gl_force_mipmaps;
+  uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
   bool needs_reload = false;
   if (!gtc->_has_storage ||
       gtc->_uses_mipmaps != uses_mipmaps ||
@@ -11453,7 +11467,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   tex->set_ram_image(image, compression, page_size);
 
-  if (tex->uses_mipmaps()) {
+  if (gtc->_uses_mipmaps) {
     // Also get the mipmap levels.
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;

@@ -308,6 +308,38 @@ get_lod_bias() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SamplerState::uses_mipmaps
+//       Access: Public
+//  Description: Returns true if the minfilter settings on this
+//               sampler indicate the use of mipmapping, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SamplerState::
+uses_mipmaps() const {
+  return is_mipmap(get_effective_minfilter());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SamplerState::is_mipmap
+//       Access: Published, Static
+//  Description: Returns true if the indicated filter type requires
+//               the use of mipmaps, or false if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE bool SamplerState::
+is_mipmap(FilterType filter_type) {
+  switch (filter_type) {
+  case SamplerState::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SamplerState::operator ==
 //       Access: Published
 //  Description:

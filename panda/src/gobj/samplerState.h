@@ -110,6 +110,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_max_lod() const;
   INLINE PN_stdfloat get_lod_bias() const;
 
+  INLINE bool uses_mipmaps() const;
+  INLINE static bool is_mipmap(FilterType type);
+
   static string format_filter_type(FilterType ft);
   static FilterType string_filter_type(const string &str);
 

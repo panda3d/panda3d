@@ -458,8 +458,6 @@ PUBLISHED:
   INLINE void set_loaded_from_txo();
   INLINE bool get_loaded_from_txo() const;
 
-  static bool is_mipmap(FilterType type);
-
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
 

@@ -1223,7 +1223,7 @@ get_render_to_texture() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 uses_mipmaps() const {
-  return is_mipmap(get_effective_minfilter());
+  return SamplerState::is_mipmap(get_effective_minfilter());
 }
 
 ////////////////////////////////////////////////////////////////////
