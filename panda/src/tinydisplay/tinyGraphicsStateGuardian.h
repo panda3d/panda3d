@@ -91,7 +91,7 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
-  bool update_texture(TextureContext *tc, bool force, int stage_index);
+  bool update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmaps);
   virtual void release_texture(TextureContext *tc);
 
   virtual void do_issue_light();
@@ -115,7 +115,7 @@ private:
   void set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
 
   bool apply_texture(TextureContext *tc);
-  bool upload_texture(TinyTextureContext *gtc, bool force);
+  bool upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps);
   bool upload_simple_texture(TinyTextureContext *gtc);
   bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels);
   int get_tex_shift(int orig_size);
