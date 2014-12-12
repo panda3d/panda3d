@@ -267,8 +267,7 @@ get_highest_on_bit(PN_uint64 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_next_higher_bit(PN_uint16 x) {
-  PN_uint16 w = flood_bits_down(x);
-  return count_bits_in_word(w);
+  return get_highest_on_bit(x) + 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,8 +279,7 @@ get_next_higher_bit(PN_uint16 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_next_higher_bit(PN_uint32 x) {
-  PN_uint32 w = flood_bits_down(x);
-  return count_bits_in_word(w);
+  return get_highest_on_bit(x) + 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,6 +291,5 @@ get_next_higher_bit(PN_uint32 x) {
 ////////////////////////////////////////////////////////////////////
 INLINE int
 get_next_higher_bit(PN_uint64 x) {
-  PN_uint64 w = flood_bits_down(x);
-  return count_bits_in_word(w);
+  return get_highest_on_bit(x) + 1;
 }
