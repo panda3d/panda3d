@@ -47,8 +47,8 @@ Mac
 1. install the NVIDIA Cg toolkit
 2. install xcode packagemaker from apple developer site
 3. install homebrew http://brew.sh/
-4.do the command  brew install fftw --with-fortran python apple-gcc42 freetype gtk+ wxmac eigen jpeg
-libpng ode --enable-double-precision libtiff
+4.do the command  brew install fftw--with-fortran python apple-gcc42 freetype gtk+ wxmac eigen jpeg
+libpng ode--enable-double-precision libtiff
 5. get rest of third party depependencies from the site or from a developer 64 bit or 32 bit depending on your system
 6. cd  panda3d  if u cloned it to your username directory
 7. run python makepanda/makepanda.py --everything --installer --no-ffmpeg --no-vrpn --no-rocket --no-opencv --no-gles --no-gles2 --no-egl
