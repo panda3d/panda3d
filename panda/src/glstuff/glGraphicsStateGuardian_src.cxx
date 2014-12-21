@@ -800,6 +800,21 @@ reset() {
     }
   }
 
+  _supports_clear_texture = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEPROC)
+      get_extension_func("glClearTexImage");
+
+    if (_glClearTexImage == NULL) {
+      GLCAT.warning()
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
+#endif
+
   _supports_2d_texture_array = false;
 #ifndef OPENGLES
   _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
@@ -7519,7 +7534,7 @@ get_external_image_format(Texture *tex) const {
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_internal_image_format(Texture *tex) const {
+get_internal_image_format(Texture *tex, bool force_sized) const {
   Texture::CompressionMode compression = tex->get_compression();
   if (compression == Texture::CM_default) {
     compression = (compressed_textures) ? Texture::CM_on : Texture::CM_off;
@@ -7752,7 +7767,7 @@ get_internal_image_format(Texture *tex) const {
       } else
 #endif
       {
-        return GL_DEPTH_STENCIL;
+        return force_sized ? GL_DEPTH24_STENCIL8 : GL_DEPTH_STENCIL;
       }
     }
     // Fall through.
@@ -7764,7 +7779,7 @@ get_internal_image_format(Texture *tex) const {
     } else
 #endif
     {
-      return GL_DEPTH_COMPONENT;
+      return force_sized ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT;
     }
   case Texture::F_depth_component16:
 #ifdef OPENGLES
@@ -7811,7 +7826,7 @@ get_internal_image_format(Texture *tex) const {
     } else
 #endif
     {
-      return GL_RGBA;
+      return force_sized ? GL_RGBA8 : GL_RGBA;
     }
 
   case Texture::F_rgba4:
@@ -7821,7 +7836,7 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_rgba8:
     return GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return GL_RGBA;
+    return force_sized ? GL_RGBA8 : GL_RGBA;
 #else
   case Texture::F_rgba8:
     return GL_RGBA8;
@@ -7843,7 +7858,7 @@ get_internal_image_format(Texture *tex) const {
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGB16F;
     } else {
-      return GL_RGB;
+      return force_sized ? GL_RGB8 : GL_RGB;
     }
 
   case Texture::F_rgb5:
@@ -7860,7 +7875,7 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_rgb8:
     return GL_RGB8_OES;
   case Texture::F_rgb12:
-    return GL_RGB;
+    return force_sized ? GL_RGB8 : GL_RGB;
   case Texture::F_rgb16:
     return GL_RGB16F;
 #else
@@ -7912,25 +7927,26 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_red:
   case Texture::F_green:
   case Texture::F_blue:
-    return GL_RED;
+    return force_sized ? GL_R8 : GL_RED;
 #endif
 
   case Texture::F_alpha:
-    return GL_ALPHA;
+    return force_sized ? GL_ALPHA8 : GL_ALPHA;
+
   case Texture::F_luminance:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
     } else if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE16;
     } else {
-      return GL_LUMINANCE;
+      return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
     }
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
     } else {
-      return GL_LUMINANCE_ALPHA;
+      return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
     }
 
 #ifndef OPENGLES_1
@@ -7953,7 +7969,7 @@ get_internal_image_format(Texture *tex) const {
     GLCAT.error()
       << "Invalid image format in get_internal_image_format(): "
       << (int)tex->get_format() << "\n";
-    return GL_RGB;
+    return force_sized ? GL_RGB8 : GL_RGB;
   }
 }
 
@@ -9359,6 +9375,8 @@ update_show_usage_texture_bindings(int show_stage_index) {
       GLuint index = (*ui).second;
       glBindTexture(GL_TEXTURE_2D, index);
     }
+
+    //TODO: glBindSampler(0) ?
   }
 
   report_my_gl_errors();
@@ -10052,7 +10070,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
 
-  GLint internal_format = get_internal_image_format(tex);
+  // If we'll use immutable texture storage, we have to pick a sized
+  // image format.
+  bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage);
+
+  GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
   GLenum component_type = get_component_type(tex->get_component_type());
 
@@ -10207,6 +10229,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
 
     if (image.is_null()) {
+      // We don't even have a RAM image, so we have no choice but to let
+      // mipmaps be generated on the GPU.
       if (uses_mipmaps) {
         if (_supports_generate_mipmap) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
@@ -10372,7 +10396,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
        component_type, false, 0, image_compression);
   }
 
-  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL) {
+  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL &&
+      !image.is_null()) {
+    // We uploaded an image; we may need to generate mipmaps.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "generating mipmaps for texture " << tex->get_name() << ", "
@@ -10470,6 +10496,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   // Determine the number of images to upload.
+  int num_levels = 1;
+  if (uses_mipmaps) {
+    num_levels = tex->get_expected_num_mipmap_levels();
+  }
+
   int num_ram_mipmap_levels = 0;
   if (!image.is_null()) {
     if (uses_mipmaps) {
@@ -10494,49 +10525,85 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
     if (GLCAT.is_debug()) {
       if (num_ram_mipmap_levels == 0) {
-        GLCAT.debug()
-          << "not loading NULL image for tex " << tex->get_name() << ", " << width << " x " << height
-          << " x " << depth << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        if (tex->has_clear_color()) {
+          GLCAT.debug()
+            << "clearing texture " << tex->get_name() << ", "
+            << width << " x " << height << " x " << depth << ", z = " << z
+            << ", uses_mipmaps = " << uses_mipmaps << ", clear_color = "
+            << tex->get_clear_color() << "\n";
+        } else {
+          GLCAT.debug()
+            << "not loading NULL image for texture " << tex->get_name()
+            << ", " << width << " x " << height << " x " << depth
+            << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        }
       } else {
         GLCAT.debug()
-          << "updating image data of texture " << tex->get_name() << ", " << width << " x " << height
-          << " x " << depth << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
+          << "updating image data of texture " << tex->get_name()
+          << ", " << width << " x " << height << " x " << depth
+          << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
     }
 
-    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+    for (int n = mipmap_bias; n < num_levels; ++n) {
       // we grab the mipmap pointer first, if it is NULL we grab the
       // normal mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
         ptimage = tex->get_ram_mipmap_image(n);
-        if (ptimage == (const unsigned char *)NULL) {
-          GLCAT.warning()
-            << "No mipmap level " << n << " defined for " << tex->get_name()
-            << "\n";
-          // No mipmap level n; stop here.
-          break;
+        if (ptimage.is_null()) {
+          if (n < num_ram_mipmap_levels) {
+            // We were told we'd have this many RAM mipmap images, but
+            // we don't.  Raise a warning.
+            GLCAT.warning()
+              << "No mipmap level " << n << " defined for " << tex->get_name()
+              << "\n";
+            break;
+          }
+
+          if (tex->has_clear_color()) {
+            // The texture has a clear color, so we should fill this mipmap
+            // level to a solid color.
+            if (_supports_clear_texture) {
+              // We can do that with the convenient glClearTexImage function.
+              string clear_data = tex->get_clear_data();
+
+              _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                               component_type, (void *)clear_data.data());
+              continue;
+            } else {
+              // Ask the Texture class to create the mipmap level in RAM.
+              // It'll fill it in with the correct clear color, which we
+              // can then upload.
+              ptimage = tex->make_ram_mipmap_image(n);
+            }
+          } else {
+            // No clear color and no more images.
+            break;
+          }
         }
         image_ptr = ptimage;
       }
 
-      const unsigned char *orig_image_ptr = image_ptr;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
-      image_ptr += view_size * gtc->get_view();
-      if (one_page_only) {
-        view_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += view_size * z;
-      }
-      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
-
       PTA_uchar bgr_image;
-      if (!_supports_bgr && image_compression == Texture::CM_off) {
-        // If the GL doesn't claim to support BGR, we may have to reverse
-        // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
-                                           external_format, tex);
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      if (image_ptr != (const unsigned char *)NULL) {
+        const unsigned char *orig_image_ptr = image_ptr;
+        image_ptr += view_size * gtc->get_view();
+        if (one_page_only) {
+          view_size = tex->get_ram_mipmap_page_size(n);
+          image_ptr += view_size * z;
+        }
+        nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
+
+        if (!_supports_bgr && image_compression == Texture::CM_off) {
+          // If the GL doesn't claim to support BGR, we may have to reverse
+          // the component ordering of the image.
+          image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
+                                             external_format, tex);
+        }
       }
 
       int width = tex->get_expected_mipmap_x_size(n);
@@ -10651,63 +10718,56 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         component_type = GL_UNSIGNED_INT_24_8_EXT;
 #endif
       }
-
-      // We don't have any RAM mipmap levels, so we create an uninitialized OpenGL
-      // texture.  Presumably this will be used later for render-to-texture or so.
-      switch (page_target) {
-#ifndef OPENGLES
-        case GL_TEXTURE_1D:
-          glTexImage1D(page_target, 0, internal_format, width, 0, external_format, component_type, NULL);
-          break;
-        case GL_TEXTURE_2D_ARRAY:
-#endif
-#ifndef OPENGLES_1
-        case GL_TEXTURE_3D:
-          _glTexImage3D(page_target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
-          break;
-#endif
-        default:
-          glTexImage2D(page_target, 0, internal_format, width, height, 0, external_format, component_type, NULL);
-          break;
-      }
     }
 
-    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+    for (int n = mipmap_bias; n < num_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
         ptimage = tex->get_ram_mipmap_image(n);
-        if (ptimage == (const unsigned char *)NULL) {
-          GLCAT.warning()
-            << "No mipmap level " << n << " defined for " << tex->get_name()
-            << "\n";
-          // No mipmap level n; stop here.
-#ifndef OPENGLES
-          if (is_at_least_gl_version(1, 2)) {
-            // Tell the GL we have no more mipmaps for it to use.
-            glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+        if (ptimage.is_null()) {
+          if (n < num_ram_mipmap_levels) {
+            // We were told we'd have this many RAM mipmap images, but
+            // we don't.  Raise a warning.
+            GLCAT.warning()
+              << "No mipmap level " << n << " defined for " << tex->get_name()
+              << "\n";
+  #ifndef OPENGLES
+            if (is_at_least_gl_version(1, 2)) {
+              // Tell the GL we have no more mipmaps for it to use.
+              glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+            }
+  #endif
+            break;
           }
-#endif
-          break;
+
+          if (tex->has_clear_color()) {
+            // Ask the Texture class to create the mipmap level in RAM.
+            // It'll fill it in with the correct clear color, which we
+            // can then upload.
+            ptimage = tex->make_ram_mipmap_image(n);
+          }
         }
         image_ptr = ptimage;
       }
 
-      const unsigned char *orig_image_ptr = image_ptr;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
-      image_ptr += view_size * gtc->get_view();
-      if (one_page_only) {
-        view_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += view_size * z;
-      }
-      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
-
       PTA_uchar bgr_image;
-      if (!_supports_bgr && image_compression == Texture::CM_off) {
-        // If the GL doesn't claim to support BGR, we may have to reverse
-        // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
-                                           external_format, tex);
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      if (image_ptr != (const unsigned char *)NULL) {
+        const unsigned char *orig_image_ptr = image_ptr;
+        image_ptr += view_size * gtc->get_view();
+        if (one_page_only) {
+          view_size = tex->get_ram_mipmap_page_size(n);
+          image_ptr += view_size * z;
+        }
+        nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
+
+        if (!_supports_bgr && image_compression == Texture::CM_off) {
+          // If the GL doesn't claim to support BGR, we may have to reverse
+          // the component ordering of the image.
+          image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
+                                             external_format, tex);
+        }
       }
 
       int width = tex->get_expected_mipmap_x_size(n);

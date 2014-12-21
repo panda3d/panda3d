@@ -1228,17 +1228,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
       } else {
         //TODO: automatically convert to sized type instead of plain GL_RGBA
         // If a base type is used, it will crash.
-        if (gtc->_internal_format == GL_RGBA || gtc->_internal_format == GL_RGB) {
+        GLenum internal_format = gtc->_internal_format;
+        if (internal_format == GL_RGBA || internal_format == GL_RGB) {
           GLCAT.error()
             << "Texture " << tex->get_name() << " has an unsized format.  Textures bound "
             << "to a shader as an image need a sized format.\n";
 
           // This may not actually be right, but may still prevent a crash.
-          if (gtc->_internal_format == GL_RGBA) {
-            gtc->_internal_format = GL_RGBA8;
-          } else {
-            gtc->_internal_format = GL_RGB8;
-          }
+          internal_format = _glgsg->get_internal_image_format(tex, true);
         }
 
         GLenum access = GL_READ_ONLY;

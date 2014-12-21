@@ -55,7 +55,8 @@ clear() {
 //  Description: Sets the texture to the indicated type and
 //               dimensions, presumably in preparation for calling
 //               read() or load(), or set_ram_image() or
-//               modify_ram_image().
+//               modify_ram_image(), or use set_clear_color to let
+//               the texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
@@ -71,7 +72,9 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 //       Access: Published
 //  Description: Sets the texture as an empty 1-d texture with no
 //               dimensions.  Follow up with read() or load() to fill
-//               the texture properties and image data.
+//               the texture properties and image data, or use
+//               set_clear_color to let the texture be cleared to a
+//               solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_1d_texture() {
@@ -84,7 +87,8 @@ setup_1d_texture() {
 //  Description: Sets the texture as an empty 1-d texture with the
 //               specified dimensions and properties.  Follow up with
 //               set_ram_image() or modify_ram_image() to fill the
-//               image data.
+//               image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_1d_texture(int x_size, ComponentType component_type, Format format) {
@@ -96,7 +100,9 @@ setup_1d_texture(int x_size, ComponentType component_type, Format format) {
 //       Access: Published
 //  Description: Sets the texture as an empty 2-d texture with no
 //               dimensions.  Follow up with read() or load() to fill
-//               the texture properties and image data.
+//               the texture properties and image data, or use
+//               set_clear_color to let the texture be cleared to a
+//               solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_2d_texture() {
@@ -109,7 +115,8 @@ setup_2d_texture() {
 //  Description: Sets the texture as an empty 2-d texture with the
 //               specified dimensions and properties.  Follow up with
 //               set_ram_image() or modify_ram_image() to fill the
-//               image data.
+//               image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_2d_texture(int x_size, int y_size, ComponentType component_type,
@@ -124,7 +131,8 @@ setup_2d_texture(int x_size, int y_size, ComponentType component_type,
 //               dimensions (though if you know the depth ahead
 //               of time, it saves a bit of reallocation later).
 //               Follow up with read() or load() to fill the texture
-//               properties and image data.
+//               properties and image data, or use set_clear_color
+//               to let the texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_3d_texture(int z_size) {
@@ -152,7 +160,8 @@ setup_3d_texture(int x_size, int y_size, int z_size,
 //               no dimensions (though if you know the depth ahead
 //               of time, it saves a bit of reallocation later).
 //               Follow up with read() or load() to fill the texture
-//               properties and image data.
+//               properties and image data, or use set_clear_color
+//               to let the texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_2d_texture_array(int z_size) {
@@ -165,7 +174,8 @@ setup_2d_texture_array(int z_size) {
 //  Description: Sets the texture as an empty 2-d texture array with the
 //               specified dimensions and properties. Follow up with
 //               set_ram_image() or modify_ram_image() to fill the
-//               image data.
+//               image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_2d_texture_array(int x_size, int y_size, int z_size,
@@ -178,7 +188,9 @@ setup_2d_texture_array(int x_size, int y_size, int z_size,
 //       Access: Published
 //  Description: Sets the texture as an empty cube map texture with no
 //               dimensions.  Follow up with read() or load() to fill
-//               the texture properties and image data.
+//               the texture properties and image data, or use
+//               set_clear_color to let the texture be cleared to a
+//               solid color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 setup_cube_map() {
@@ -191,7 +203,8 @@ setup_cube_map() {
 //  Description: Sets the texture as an empty cube map texture with
 //               the specified dimensions and properties.  Follow up
 //               with set_ram_image() or modify_ram_image() to fill
-//               the image data.
+//               the image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
 //
 //               Note that a cube map should always consist of six
 //               square images, so x_size and y_size will be the same,
@@ -200,6 +213,87 @@ setup_cube_map() {
 INLINE void Texture::
 setup_cube_map(int size, ComponentType component_type, Format format) {
   setup_texture(TT_cube_map, size, size, 6, component_type, format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::clear_image
+//       Access: Published
+//  Description: Clears the texture data without changing its format
+//               or resolution.  The texture is cleared on both the
+//               graphics hardware and from RAM, unlike clear_ram_image,
+//               which only removes the data from RAM.
+//
+//               If a clear color has been specified using
+//               set_clear_color, the texture will be cleared using
+//               a solid color.
+//
+//               The texture data will be cleared the first time in
+//               which the texture is used after this method is called.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+clear_image() {
+  CDWriter cdata(_cycler, true);
+  do_clear_ram_image(cdata);
+  do_clear_simple_ram_image(cdata);
+  cdata->inc_image_modified();
+  cdata->inc_simple_image_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_clear_color
+//       Access: Published
+//  Description: Returns true if a color was previously set using
+//               set_clear_color.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_clear_color() const {
+  CDReader cdata(_cycler);
+  return cdata->_has_clear_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_clear_color
+//       Access: Published
+//  Description: Returns the color that was previously set using
+//               set_clear_color.
+////////////////////////////////////////////////////////////////////
+INLINE LColor Texture::
+get_clear_color() const {
+  CDReader cdata(_cycler);
+  return cdata->_clear_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_clear_color
+//       Access: Published
+//  Description: Sets the color that will be used to fill the
+//               texture image in absence of any image data.  It is
+//               used when any of the setup_texture functions or
+//               clear_image is called and image data is not
+//               provided using read() or modify_ram_image().
+//
+//               This does not affect a texture that has already
+//               been cleared; call clear_image to clear it again.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_clear_color(const LColor &color) {
+  CDWriter cdata(_cycler, true);
+  cdata->_clear_color = color;
+  cdata->_has_clear_color = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_clear_data
+//       Access: Published
+//  Description: Returns the raw image data for a single pixel if
+//               it were set to the clear color.
+////////////////////////////////////////////////////////////////////
+INLINE string Texture::
+get_clear_data() const {
+  CDReader cdata(_cycler);
+  unsigned char data[16];
+  int size = do_get_clear_data(cdata, data);
+  return string((char *)data, size);
 }
 
 ////////////////////////////////////////////////////////////////////

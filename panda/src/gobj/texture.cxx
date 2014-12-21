@@ -4258,12 +4258,26 @@ do_modify_ram_image(CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 do_make_ram_image(CData *cdata) {
+  int image_size = do_get_expected_ram_image_size(cdata);
   cdata->_ram_images.clear();
   cdata->_ram_images.push_back(RamImage());
   cdata->_ram_images[0]._page_size = do_get_expected_ram_page_size(cdata);
-  cdata->_ram_images[0]._image = PTA_uchar::empty_array(do_get_expected_ram_image_size(cdata), get_class_type());
+  cdata->_ram_images[0]._image = PTA_uchar::empty_array(image_size, get_class_type());
   cdata->_ram_images[0]._pointer_image = NULL;
   cdata->_ram_image_compression = CM_off;
+
+  if (cdata->_has_clear_color) {
+    // Fill the image with the clear color.
+    unsigned char pixel[16];
+    const int pixel_size = do_get_clear_data(cdata, pixel);
+    nassertr(pixel_size > 0, cdata->_ram_images[0]._image);
+
+    unsigned char *image_data = cdata->_ram_images[0]._image;
+    for (int i = 0; i < image_size; i += pixel_size) {
+      memcpy(image_data + i, pixel, pixel_size);
+    }
+  }
+
   return cdata->_ram_images[0]._image;
 }
 
@@ -4331,9 +4345,23 @@ do_make_ram_mipmap_image(CData *cdata, int n) {
     cdata->_ram_images.push_back(RamImage());
   }
 
-  cdata->_ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(cdata, n), get_class_type());
+  size_t image_size = do_get_expected_ram_mipmap_image_size(cdata, n);
+  cdata->_ram_images[n]._image = PTA_uchar::empty_array(image_size, get_class_type());
   cdata->_ram_images[n]._pointer_image = NULL;
   cdata->_ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(cdata, n);
+
+  if (cdata->_has_clear_color) {
+    // Fill the image with the clear color.
+    unsigned char pixel[16];
+    const int pixel_size = do_get_clear_data(cdata, pixel);
+    nassertr(pixel_size > 0, cdata->_ram_images[n]._image);
+
+    unsigned char *image_data = cdata->_ram_images[n]._image;
+    for (int i = 0; i < image_size; i += pixel_size) {
+      memcpy(image_data + i, pixel, pixel_size);
+    }
+  }
+
   return cdata->_ram_images[n]._image;
 }
 
@@ -4360,6 +4388,116 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
     cdata->_ram_images[n]._page_size = page_size;
     cdata->inc_image_modified();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_clear_color
+//       Access: Published
+//  Description: Returns a string with a single pixel representing
+//               the clear color of the texture in the format of
+//               this texture.
+//
+//               In other words, to create an uncompressed RAM
+//               texture filled with the clear color, it should
+//               be initialized with this string repeated for
+//               every pixel.
+////////////////////////////////////////////////////////////////////
+int Texture::
+do_get_clear_data(const CData *cdata, unsigned char *into) const {
+  nassertr(cdata->_has_clear_color, 0);
+  nassertr(cdata->_num_components <= 4, 0);
+
+  //TODO: encode the color into the sRGB color space if used
+  switch (cdata->_component_type) {
+  case T_unsigned_byte:
+    {
+      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      scaled *= 255;
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (unsigned char)scaled[1];
+      case 1:
+        into[0] = (unsigned char)scaled[0];
+        break;
+      case 4:
+        into[3] = (unsigned char)scaled[3];
+      case 3: // BGR <-> RGB
+        into[0] = (unsigned char)scaled[2];
+        into[1] = (unsigned char)scaled[1];
+        into[2] = (unsigned char)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_unsigned_short:
+    {
+      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      scaled *= 65535;
+      switch (cdata->_num_components) {
+      case 2:
+        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
+      case 1:
+        ((unsigned short *)into)[0] = (unsigned short)scaled[0];
+        break;
+      case 4:
+        ((unsigned short *)into)[3] = (unsigned short)scaled[3];
+      case 3: // BGR <-> RGB
+        ((unsigned short *)into)[0] = (unsigned short)scaled[2];
+        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
+        ((unsigned short *)into)[2] = (unsigned short)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_float:
+    switch (cdata->_num_components) {
+    case 2:
+      ((float *)into)[1] = cdata->_clear_color[1];
+    case 1:
+      ((float *)into)[0] = cdata->_clear_color[0];
+      break;
+    case 4:
+      ((float *)into)[3] = cdata->_clear_color[3];
+    case 3: // BGR <-> RGB
+      ((float *)into)[0] = cdata->_clear_color[2];
+      ((float *)into)[1] = cdata->_clear_color[1];
+      ((float *)into)[2] = cdata->_clear_color[0];
+      break;
+    }
+    break;
+
+  case T_unsigned_int_24_8:
+    nassertr(cdata->_num_components == 1, 0);
+    *((unsigned int *)into) =
+      ((unsigned int)(cdata->_clear_color[0] * 16777215) << 8) +
+       (unsigned int)max(min(cdata->_clear_color[1], 255), 0);
+    break;
+
+  case T_int:
+    {
+      // Note: there are no 32-bit UNORM textures.  Therefore, we don't
+      // do any normalization here, either.
+      switch (cdata->_num_components) {
+      case 2:
+        ((int *)into)[1] = (int)cdata->_clear_color[1];
+      case 1:
+        ((int *)into)[0] = (int)cdata->_clear_color[0];
+        break;
+      case 4:
+        ((int *)into)[3] = (int)cdata->_clear_color[3];
+      case 3: // BGR <-> RGB
+        ((int *)into)[0] = (int)cdata->_clear_color[2];
+        ((int *)into)[1] = (int)cdata->_clear_color[1];
+        ((int *)into)[2] = (int)cdata->_clear_color[0];
+        break;
+      }
+      break;
+    }
+  }
+
+  return cdata->_num_components * cdata->_component_width;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -8151,6 +8289,8 @@ CData() {
   _simple_x_size = 0;
   _simple_y_size = 0;
   _simple_ram_image._page_size = 0;
+
+  _has_clear_color = false;
 }
 
 ////////////////////////////////////////////////////////////////////
