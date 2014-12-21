@@ -4472,7 +4472,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
     nassertr(cdata->_num_components == 1, 0);
     *((unsigned int *)into) =
       ((unsigned int)(cdata->_clear_color[0] * 16777215) << 8) +
-       (unsigned int)max(min(cdata->_clear_color[1], 255), 0);
+       (unsigned int)max(min(cdata->_clear_color[1], (PN_stdfloat)255), (PN_stdfloat)0);
     break;
 
   case T_int:
