@@ -562,6 +562,8 @@ estimate_texture_memory() const {
   case Texture::F_rgb8:
   case Texture::F_rgba8:
   case Texture::F_srgb_alpha:
+  case Texture::F_rgb8i:
+  case Texture::F_rgba8i:
     bpp = 4;
     break;
 
@@ -583,6 +585,8 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
+  case Texture::F_r8i:
+  case Texture::F_rg8i:
     bpp = 2;
     break;
   case Texture::F_rg16:

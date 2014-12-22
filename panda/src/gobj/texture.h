@@ -146,6 +146,11 @@ PUBLISHED:
     F_r32,
     F_rg32,
     F_rgb32,
+
+    F_r8i, // 8 integer bits per R channel
+    F_rg8i, // 8 integer bits per R,G channel
+    F_rgb8i, // 8 integer bits per R,G,B channel
+    F_rgba8i, // 8 integer bits per R,G,B,A channel
   };
 
   // Deprecated.  See SamplerState.FilterType.

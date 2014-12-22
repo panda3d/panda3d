@@ -7327,12 +7327,14 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba12:
       case Texture::F_rgba16:
       case Texture::F_rgba32:
+      case Texture::F_rgba8i:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
       case Texture::F_rgb5:
       case Texture::F_rgba5:
       case Texture::F_rgb8:
+      case Texture::F_rgb8i:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
@@ -7345,11 +7347,13 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
+      case Texture::F_r8i:
       case Texture::F_r16:
       case Texture::F_r32:
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
+      case Texture::F_rg8i:
       case Texture::F_rg16:
       case Texture::F_rg32:
         return GL_COMPRESSED_RG;
@@ -7517,8 +7521,16 @@ get_external_image_format(Texture *tex) const {
     return GL_LUMINANCE_ALPHA;
 
 #ifndef OPENGLES
+  case Texture::F_r8i:
   case Texture::F_r32i:
     return GL_RED_INTEGER;
+  case Texture::F_rg8i:
+    return GL_RG_INTEGER;
+  case Texture::F_rgb8i:
+    return GL_RGB_INTEGER;
+  case Texture::F_rgba8i:
+    return GL_RGBA_INTEGER;
+
 #endif
   }
   GLCAT.error()
@@ -7565,6 +7577,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_depth_component24:
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r8i:
+      case Texture::F_rg8i:
+      case Texture::F_rgb8i:
+      case Texture::F_rgba8i:
       case Texture::F_r32i:
         // Unsupported; fall through to below.
         break;
@@ -7840,6 +7856,30 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #else
   case Texture::F_rgba8:
     return GL_RGBA8;
+  case Texture::F_r8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_R8UI;
+    } else {
+      return GL_R8I;
+    }
+  case Texture::F_rg8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RG8UI;
+    } else {
+      return GL_RG8I;
+    }
+  case Texture::F_rgb8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RGB8UI;
+    } else {
+      return GL_RGB8I;
+    }
+  case Texture::F_rgba8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RGBA8UI;
+    } else {
+      return GL_RGBA8I;
+    }
   case Texture::F_rgba12:
     return GL_RGBA12;
 #endif  // OPENGLES
@@ -11260,6 +11300,36 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
+    break;
+
+  case GL_R8I:
+    format = Texture::F_r8i;
+    break;
+  case GL_RG8I:
+    format = Texture::F_rg8i;
+    break;
+  case GL_RGB8I:
+    format = Texture::F_rgb8i;
+    break;
+  case GL_RGBA8I:
+    format = Texture::F_rgba8i;
+    break;
+
+  case GL_R8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_r8i;
+    break;
+  case GL_RG8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rg8i;
+    break;
+  case GL_RGB8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgb8i;
+    break;
+  case GL_RGBA8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgba8i;
     break;
 #endif
 
