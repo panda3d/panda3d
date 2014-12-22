@@ -61,6 +61,7 @@ DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
 RPMRELEASE="1"
+GIT_COMMIT=None
 P3DSUFFIX=None
 MAJOR_VERSION=None
 COREAPI_VERSION=None
@@ -121,7 +122,7 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 def usage(problem):
     if (problem):
         print("")
-        print("Error parsing commandline input", problem)
+        print("Error parsing command-line input: %s" % (problem))
 
     print("")
     print("Makepanda generates a 'built' subdirectory containing a")
@@ -164,7 +165,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,UNIVERSAL,HOST_URL
-    global DEBVERSION,RPMRELEASE,P3DSUFFIX
+    global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
     global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
@@ -172,7 +173,7 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
         "directx-sdk=", "platform-sdk=", "use-icl",
-        "universal", "target=", "arch="]
+        "universal", "target=", "arch=", "git-commit="]
     anything = 0
     optimize = ""
     target = None
@@ -208,6 +209,7 @@ def parseopts(args):
             elif (option=="--host"): HOST_URL=value
             elif (option=="--debversion"): DEBVERSION=value
             elif (option=="--rpmrelease"): RPMRELEASE=value
+            elif (option=="--git-commit"): GIT_COMMIT=value
             elif (option=="--p3dsuffix"): P3DSUFFIX=value
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
@@ -258,6 +260,9 @@ def parseopts(args):
         assert GetOptimize() in [1, 2, 3, 4]
     except:
         usage("Invalid setting for OPTIMIZE")
+
+    if GIT_COMMIT is not None and not re.match("^[a-f0-9]{40}$", GIT_COMMIT):
+        usage("Invalid SHA-1 hash given for --git-commit option!")
 
     if target is not None or target_arch is not None:
         SetTarget(target, target_arch)
@@ -2398,6 +2403,9 @@ def CreatePandaVersionFiles():
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
         pandaversion_h += "\n#undef  PANDA_OFFICIAL_VERSION\n"
+
+    if GIT_COMMIT:
+        pandaversion_h += "\n#define PANDA_GIT_COMMIT_STR \"%s\"\n" % (GIT_COMMIT)
 
     if not RUNTIME:
         checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
