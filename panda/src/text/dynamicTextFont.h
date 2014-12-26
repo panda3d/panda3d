@@ -77,10 +77,10 @@ PUBLISHED:
   INLINE int get_page_x_size() const;
   INLINE int get_page_y_size() const;
 
-  INLINE void set_minfilter(Texture::FilterType filter);
-  INLINE Texture::FilterType get_minfilter() const;
-  INLINE void set_magfilter(Texture::FilterType filter);
-  INLINE Texture::FilterType get_magfilter() const;
+  INLINE void set_minfilter(SamplerState::FilterType filter);
+  INLINE SamplerState::FilterType get_minfilter() const;
+  INLINE void set_magfilter(SamplerState::FilterType filter);
+  INLINE SamplerState::FilterType get_magfilter() const;
   INLINE void set_anisotropic_degree(int anisotropic_degree);
   INLINE int get_anisotropic_degree() const;
 
@@ -139,8 +139,8 @@ private:
   PN_stdfloat _poly_margin;
   int _page_x_size, _page_y_size;
 
-  Texture::FilterType _minfilter;
-  Texture::FilterType _magfilter;
+  SamplerState::FilterType _minfilter;
+  SamplerState::FilterType _magfilter;
   int _anisotropic_degree;
 
   RenderMode _render_mode;

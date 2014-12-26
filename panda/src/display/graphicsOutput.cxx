@@ -308,8 +308,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Create texture if necessary.
   if (tex == (Texture *)NULL) {
     tex = new Texture(get_name());
-    tex->set_wrap_u(Texture::WM_clamp);
-    tex->set_wrap_v(Texture::WM_clamp);
+    tex->set_wrap_u(SamplerState::WM_clamp);
+    tex->set_wrap_v(SamplerState::WM_clamp);
   } else {
     tex->clear_ram_image();
   }
@@ -1050,8 +1050,8 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 
   PT(Texture) tex = new Texture(name);
   tex->setup_cube_map();
-  tex->set_wrap_u(Texture::WM_clamp);
-  tex->set_wrap_v(Texture::WM_clamp);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
   GraphicsOutput *buffer;
 
   buffer = make_texture_buffer(name, size, size, tex, to_ram, fbp);

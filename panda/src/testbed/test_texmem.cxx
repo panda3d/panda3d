@@ -81,7 +81,7 @@ event_T(const Event *, void *data) {
                                  (tex_y_size - white_center.get_y_size()) / 2);
       
       PT(Texture) tex = new Texture;
-      tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+      tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
       tex->load(bogus_image);
 
       CardMaker cm("card");

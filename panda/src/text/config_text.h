@@ -50,9 +50,9 @@ extern wstring get_text_never_break_before();
 extern ConfigVariableInt text_max_never_break;
 extern ConfigVariableDouble text_default_underscore_height;
 
-extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
-extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
-extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
+extern ConfigVariableEnum<SamplerState::FilterType> text_minfilter;
+extern ConfigVariableEnum<SamplerState::FilterType> text_magfilter;
+extern ConfigVariableEnum<SamplerState::WrapMode> text_wrap_mode;
 extern ConfigVariableEnum<Texture::QualityLevel> text_quality_level;
 extern ConfigVariableEnum<TextFont::RenderMode> text_render_mode;
 

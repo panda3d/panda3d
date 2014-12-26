@@ -590,7 +590,7 @@ class Installer:
             if package.platform:
                 xpackage.SetAttribute('platform', package.platform)
                 assert package.platform == platform
-            xpackage.SetAttribute('per_platform', '1')
+            xpackage.SetAttribute('per_platform', '0')
             if package.packageVersion:
                 xpackage.SetAttribute('version', version)
                 xpackage.SetAttribute('filename', package.packageName + "/" + package.packageVersion + "/" + package.descFileBasename)

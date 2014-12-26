@@ -86,10 +86,10 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
     if (tex->get_quality_level() == Texture::QL_default) {
       tex->set_quality_level(text_quality_level);
     }
-    if (tex->get_minfilter() == Texture::FT_default) {
+    if (tex->get_minfilter() == SamplerState::FT_default) {
       tex->set_minfilter(text_minfilter);
     }
-    if (tex->get_magfilter() == Texture::FT_default) {
+    if (tex->get_magfilter() == SamplerState::FT_default) {
       tex->set_magfilter(text_magfilter);
     }
   }

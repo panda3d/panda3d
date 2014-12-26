@@ -175,7 +175,7 @@ prepare_texture(Texture *tex, int view) {
 //               rendering on the ith stage.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-apply_texture(int i, TextureContext *tc) {
+apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   if (tc == (TextureContext *)NULL) {
     // The texture wasn't bound properly or something, so ensure
     // texturing is disabled and just return.
@@ -193,20 +193,20 @@ apply_texture(int i, TextureContext *tc) {
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
   Texture *tex = tc->get_texture();
 
-  Texture::WrapMode wrap_u, wrap_v, wrap_w;
-  wrap_u = tex->get_wrap_u();
-  wrap_v = tex->get_wrap_v();
-  wrap_w = tex->get_wrap_w();
+  SamplerState::WrapMode wrap_u, wrap_v, wrap_w;
+  wrap_u = sampler.get_wrap_u();
+  wrap_v = sampler.get_wrap_v();
+  wrap_w = sampler.get_wrap_w();
 
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSU, get_texture_wrap_mode(wrap_u));
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSV, get_texture_wrap_mode(wrap_v));
   _d3d_device->SetTextureStageState(i, D3DTSS_ADDRESSW, get_texture_wrap_mode(wrap_w));
 
   _d3d_device->SetTextureStageState(i, D3DTSS_BORDERCOLOR,
-                                    LColor_to_D3DCOLOR(tex->get_border_color()));
+                                    LColor_to_D3DCOLOR(sampler.get_border_color()));
 
-  uint aniso_degree = tex->get_effective_anisotropic_degree();
-  Texture::FilterType ft = tex->get_effective_magfilter();
+  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
     _d3d_device->SetTextureStageState(i, D3DTSS_MAXANISOTROPY, aniso_degree);
@@ -214,7 +214,7 @@ apply_texture(int i, TextureContext *tc) {
 
   D3DTEXTUREFILTERTYPE new_mag_filter;
   if (aniso_degree <= 1) {
-    new_mag_filter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+    new_mag_filter = ((ft != SamplerState::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
   } else {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
@@ -222,8 +222,8 @@ apply_texture(int i, TextureContext *tc) {
   _d3d_device->SetTextureStageState(i, D3DTSS_MAGFILTER, new_mag_filter);
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
-  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_effective_minfilter());
-  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_effective_minfilter());
+  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(sampler.get_effective_minfilter());
+  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(sampler.get_effective_minfilter());
 
   if (!tex->might_have_ram_image()) {
     // If the texture is completely dynamic, don't try to issue
@@ -2859,11 +2859,12 @@ do_issue_texture() {
 
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
+    const SamplerState &sampler = _target_texture->get_on_sampler(stage);
 
     // We always reissue every stage in DX, just in case the texcoord
     // index or texgen mode or some other property has changed.
     TextureContext *tc = texture->prepare_now(0, _prepared_objects, this);
-    apply_texture(si, tc);
+    apply_texture(si, tc, sampler);
     set_texture_blend_mode(si, stage);
 
     int texcoord_dimensions = 2;
@@ -4031,28 +4032,28 @@ copy_pres_reset(DXScreenData *screen) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
-get_d3d_min_type(Texture::FilterType filter_type) {
+get_d3d_min_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_shadow:
-  case Texture::FT_default:
+  case SamplerState::FT_shadow:
+  case SamplerState::FT_default:
     return D3DTEXF_LINEAR;
   }
 
@@ -4067,28 +4068,28 @@ get_d3d_min_type(Texture::FilterType filter_type) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian8::
-get_d3d_mip_type(Texture::FilterType filter_type) {
+get_d3d_mip_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return D3DTEXF_NONE;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return D3DTEXF_NONE;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_shadow:
-  case Texture::FT_default:
+  case SamplerState::FT_shadow:
+  case SamplerState::FT_default:
     return D3DTEXF_NONE;
   }
 

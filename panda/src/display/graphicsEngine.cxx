@@ -41,6 +41,7 @@
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"
+#include "omniBoundingVolume.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
 #include "vertexDataPage.h"
@@ -1212,7 +1213,8 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
     if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+        bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
+        !bv->is_of_type(OmniBoundingVolume::get_class_type())) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());

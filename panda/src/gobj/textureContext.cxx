@@ -19,7 +19,7 @@ TypeHandle TextureContext::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureContext::
 output(ostream &out) const {
@@ -29,7 +29,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::write
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureContext::
 write(ostream &out, int indent_level) const {

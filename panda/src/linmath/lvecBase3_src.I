@@ -931,7 +931,7 @@ componentwise_mult(const FLOATNAME(LVecBase3) &other) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
-fmax(const FLOATNAME(LVecBase3) &other) {
+fmax(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmax()", " ", TAU_USER);
   return FLOATNAME(LVecBase3)(_v(0) > other._v(0) ? _v(0) : other._v(0),
                               _v(1) > other._v(1) ? _v(1) : other._v(1),
@@ -944,7 +944,7 @@ fmax(const FLOATNAME(LVecBase3) &other) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
-fmin(const FLOATNAME(LVecBase3) &other) {
+fmin(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmin()", " ", TAU_USER);
   return FLOATNAME(LVecBase3)(_v(0) < other._v(0) ? _v(0) : other._v(0),
                               _v(1) < other._v(1) ? _v(1) : other._v(1),

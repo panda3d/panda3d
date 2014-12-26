@@ -34,7 +34,7 @@ class DatagramIterator;
 //               but it may be used anywhere a list of PointerEvents
 //               is desired.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT PointerEventList : public EventStoreValueBase {
+class EXPCL_PANDA_EVENT PointerEventList : public ParamValueBase {
 PUBLISHED:
   INLINE PointerEventList();
 
@@ -53,15 +53,14 @@ PUBLISHED:
   INLINE void   clear();
   INLINE void   pop_front();
   void   add_event(bool in_win, int xpos, int ypos, int seq, double time);
-  
+
   bool   encircles(int x, int y) const;
   double total_turns(double sec) const;
   double match_pattern(const string &pattern, double rot, double seglen);
-  
+
 public:
   INLINE PointerEventList(const PointerEventList &copy);
   INLINE void operator = (const PointerEventList &copy);
-
 
   virtual void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -76,9 +75,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    EventStoreValueBase::init_type();
+    ParamValueBase::init_type();
     register_type(_type_handle, "PointerEventList",
-                  EventStoreValueBase::get_class_type());
+                  ParamValueBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

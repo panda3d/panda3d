@@ -998,11 +998,9 @@ INLINE_LINMATH void FLOATNAME(LMatrix3)::
 transpose_in_place() {
   TAU_PROFILE("void LMatrix3::transpose_in_place()", " ", TAU_USER);
 
-  #define SWAP__(x,y) { FLOATTYPE temp = (x);  (x) = (y);  (y) = temp;}
-  SWAP__(_m(0, 1),_m(1, 0));
-  SWAP__(_m(0, 2),_m(2, 0));
-  SWAP__(_m(1, 2),_m(2, 1));
-  #undef SWAP__
+  std::swap(_m(0, 1), _m(1, 0));
+  std::swap(_m(0, 2), _m(2, 0));
+  std::swap(_m(1, 2), _m(2, 1));
 }
 
 // Matrix inversion code from Numerical Recipes in C.
@@ -1050,12 +1048,16 @@ INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 invert_from(const FLOATNAME(LMatrix3) &other) {
   TAU_PROFILE("bool LMatrix3::invert_from(const LMatrix3 &)", " ", TAU_USER);
 
+  // We throw the value out only if it's smaller than our "small"
+  // threshold squared.  This helps reduce overly-sensitive
+  // rejections.
 #ifdef HAVE_EIGEN
   bool invertible;
-  other._m.computeInverseWithCheck(_m, invertible);
+  other._m.computeInverseWithCheck(_m, invertible,
+    NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE));
 
   if (!invertible) {
-#ifdef NDEBUG
+#ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
     (*this) = ident_mat();
@@ -1068,11 +1070,7 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
 
   FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m);
 
-  // We throw the value out only if it's smaller than our "small"
-  // threshold squared.  This helps reduce overly-sensitive
-  // rejections.
   if (IS_THRESHOLD_ZERO(other_det, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
-    //    if (IS_NEARLY_ZERO(other_det)) {
 #ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
@@ -1125,10 +1123,11 @@ invert_transpose_from(const FLOATNAME(LMatrix3) &other) {
 #ifdef HAVE_EIGEN
   bool invertible;
   EMatrix3 temp;
-  other._m.computeInverseWithCheck(temp, invertible);
+  other._m.computeInverseWithCheck(temp, invertible,
+    NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE));
 
   if (!invertible) {
-#ifdef NDEBUG
+#ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
     (*this) = ident_mat();
@@ -1139,6 +1138,7 @@ invert_transpose_from(const FLOATNAME(LMatrix3) &other) {
   return true;
 
 #else  // HAVE_EIGEN
+
   FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m);
 
   if (IS_THRESHOLD_ZERO(other_det, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
@@ -1180,10 +1180,11 @@ invert_transpose_from(const FLOATNAME(LMatrix4) &other) {
 #ifdef HAVE_EIGEN
   bool invertible;
   EMatrix3 temp;
-  other._m.block<3, 3>(0, 0).computeInverseWithCheck(temp, invertible);
+  other._m.block<3, 3>(0, 0).computeInverseWithCheck(temp, invertible,
+    NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE));
 
   if (!invertible) {
-#ifdef NDEBUG
+#ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
     (*this) = ident_mat();

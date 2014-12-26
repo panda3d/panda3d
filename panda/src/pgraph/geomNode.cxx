@@ -141,7 +141,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 
       AccumulatedAttribs geom_attribs = attribs;
       entry->_state = geom_attribs.collect(entry->_state, attrib_types);
-      
+
       bool any_changed = false;
 
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
@@ -152,9 +152,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
 
         ra = entry->_state->get_attrib_def(ColorAttrib::get_class_slot());
-        CPT (ColorAttrib) ca = DCAST(ColorAttrib, ra);          
+        CPT (ColorAttrib) ca = DCAST(ColorAttrib, ra);
         if (ca->get_color_type() != ColorAttrib::T_vertex) {
-          if(allow_flatten_color) { 
+          if(allow_flatten_color) {
               if(transformer.set_color(new_geom, ca->get_color())) {
                 any_changed = true;
                 entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
@@ -163,15 +163,15 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
             if (transformer.remove_column(new_geom, InternalName::get_color())) {
               any_changed = true;
             }
-          }            
+          }
         }
-      }      
+      }
       if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
         if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
           CPT(ColorScaleAttrib) csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
           if (csa->get_scale() != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
 
-            
+
             // Now, if we have an "off" or "flat" color attribute, we
             // simply modify the color attribute, and leave the
             // vertices alone.
@@ -187,16 +187,16 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                 // ColorAttrib::T_off means the color scale becomes
                 // the new color.
                 entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
-              
+
               } else if (ca->get_color_type() == ColorAttrib::T_flat) {
                 // ColorAttrib::T_flat means the color scale modulates
                 // the specified color to produce a new color.
                 const LColor &c1 = ca->get_color();
                 const LVecBase4 &c2 = csa->get_scale();
-                LColor color(c1[0] * c2[0], c1[1] * c2[1], 
+                LColor color(c1[0] * c2[0], c1[1] * c2[1],
                              c1[2] * c2[2], c1[3] * c2[3]);
                 entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(color));
-              
+
               } else {
                 // Otherwise, we have vertex color, and we just scale
                 // it normally.
@@ -219,7 +219,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           // that from which we started the flatten operation, but
           // caveat programmer.
           NameCount name_count;
-          
+
           if (geom_attribs._texture != (RenderAttrib *)NULL) {
             const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
             int num_on_stages = ta->get_num_on_stages();
@@ -229,12 +229,12 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
               count_name(name_count, name);
             }
           }
-          
-          const TexMatrixAttrib *tma = 
+
+          const TexMatrixAttrib *tma =
             DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
-          
+
           CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-          
+
           int num_stages = tma->get_num_stages();
           for (int i = 0; i < num_stages; i++) {
             TextureStage *stage = tma->get_stage(i);
@@ -243,7 +243,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
               // We can't transform these texcoords, since the name is
               // used by more than one active stage.
               new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
-              
+
             } else {
               // It's safe to transform these texcoords; the name is
               // used by no more than one active stage.
@@ -252,7 +252,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
               }
             }
           }
-          
+
           if (!new_tma->is_empty()) {
             entry->_state = entry->_state->add_attrib(new_tma);
           }
@@ -288,7 +288,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                 // invalidated our old pointer into the list, so we
                 // reassign it now.
                 entry = &(*geoms)[i];
-                
+
               } else {
                 // If there are no normals, we can just doubleside it in
                 // place.  This is preferable because we can share vertices.
@@ -297,14 +297,14 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
               }
             }
             break;
-        
+
           case CullFaceAttrib::M_cull_counter_clockwise:
             // Reverse winding order.
             new_geom->reverse_in_place();
             transformer.reverse_normals(new_geom);
             any_changed = true;
             break;
-            
+
           default:
             break;
           }
@@ -425,7 +425,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     }
 
     // And now prepare each of the textures.
-    const RenderAttrib *attrib = 
+    const RenderAttrib *attrib =
       geom_state->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       const TextureAttrib *ta;
@@ -433,6 +433,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       int num_stages = ta->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
         Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+        //TODO: prepare the sampler states, if specified.
         if (texture != (Texture *)NULL) {
           texture->prepare(prepared_objects);
         }
@@ -448,10 +449,11 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       if (shader != (Shader *)NULL) {
         shader->prepare(prepared_objects);
       }
+      //TODO: prepare the shader inputs.
       //TODO: Invoke the shader generator if enabled.
     }
   }
-  
+
   PandaNode::r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
@@ -503,7 +505,7 @@ combine_with(PandaNode *other) {
 CPT(TransformState) GeomNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform = 
+  CPT(TransformState) next_transform =
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
@@ -552,10 +554,10 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
 
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
-      << "Found " << *this << " in state " << *data._state 
+      << "Found " << *this << " in state " << *data._state
       << " draw_mask = " << data._draw_mask << "\n";
   }
-  
+
   // Get all the Geoms, with no decalling.
   Geoms geoms = get_geoms(trav->get_current_thread());
   int num_geoms = geoms.get_num_geoms();
@@ -575,7 +577,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       // Cull.
       continue;
     }
-    
+
     // Cull the Geom bounding volume against the view frustum
     // and/or the cull planes.  Don't bother unless we've got more
     // than one Geom, since otherwise the bounding volume of the
@@ -587,7 +589,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
         CPT(BoundingVolume) geom_volume = geom->get_bounds();
         const GeometricBoundingVolume *geom_gbv =
           DCAST(GeometricBoundingVolume, geom_volume);
-        
+
         int result = data._view_frustum->contains(geom_gbv);
         if (result == BoundingVolume::IF_no_intersection) {
           // Cull this Geom.
@@ -607,9 +609,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
         }
       }
     }
-    
-    CullableObject *object = 
-      new CullableObject(geom, state, net_transform, 
+
+    CullableObject *object =
+      new CullableObject(geom, state, net_transform,
                          modelview_transform, internal_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
@@ -803,7 +805,7 @@ unify(int max_indices, bool preserve_order) {
     CPT(GeomList) old_geoms = cdata->get_geoms();
     for (gi = old_geoms->begin(); gi != old_geoms->end(); ++gi) {
       const GeomEntry &old_entry = (*gi);
-      
+
       bool unified = false;
 
       // Go from back to front, to minimize damage to the primitive ordering.
@@ -827,14 +829,14 @@ unify(int max_indices, bool preserve_order) {
           break;
         }
       }
-      
+
       if (!unified) {
         // Couldn't unify this Geom with anything, so just add it to the
         // output list.
         new_geoms->push_back(old_entry);
       }
     }
-    
+
     // Done!  We'll keep whatever's left in the output list.
     cdata->set_geoms(new_geoms);
 
@@ -868,7 +870,7 @@ write_geoms(ostream &out, int indent_level) const {
   CPT(GeomList) geoms = cdata->get_geoms();
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << *entry._geom.get_read_pointer() << " " << *entry._state << "\n";
   }
 }
@@ -888,7 +890,7 @@ write_verbose(ostream &out, int indent_level) const {
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
     CPT(Geom) geom = entry._geom.get_read_pointer();
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << *geom << " " << *entry._state << "\n";
     geom->write(out, indent_level + 4);
   }
@@ -897,7 +899,7 @@ write_verbose(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 output(ostream &out) const {
@@ -923,7 +925,7 @@ output(ostream &out) const {
   out << " (" << geoms->size() << " geoms";
 
   if (!common->is_empty()) {
-    out << ": " << *common;    
+    out << ": " << *common;
   }
 
   out << ")";
@@ -1061,7 +1063,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
     const BoundingVolume **child_end = child_begin + child_volumes.size();
     ((BoundingVolume *)gbv)->around(child_begin, child_end);
   }
-  
+
   internal_bounds = gbv;
   internal_vertices = num_vertices;
 }
@@ -1216,7 +1218,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   int num_geoms = geoms->size();
   nassertv(num_geoms == (int)(PN_uint16)num_geoms);
   dg.add_uint16(num_geoms);
-  
+
   GeomList::const_iterator gi;
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);

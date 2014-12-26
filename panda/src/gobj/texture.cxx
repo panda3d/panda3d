@@ -58,36 +58,6 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
           "it has little or no effect on normal, hardware-accelerated "
           "renderers.  See Texture::set_quality_level()."));
 
-ConfigVariableEnum<Texture::FilterType> texture_minfilter
-("texture-minfilter", Texture::FT_linear,
- PRC_DESC("This specifies the default minfilter that is applied to a texture "
-          "in the absence of a specific minfilter setting.  Normally this "
-          "is either 'linear' to disable mipmapping by default, or "
-          "'mipmap', to enable trilinear mipmapping by default.  This "
-          "does not apply to depth textures.  Note if this variable is "
-          "changed at runtime, you may need to reload textures explicitly "
-          "in order to change their visible properties."));
-
-ConfigVariableEnum<Texture::FilterType> texture_magfilter
-("texture-magfilter", Texture::FT_linear,
- PRC_DESC("This specifies the default magfilter that is applied to a texture "
-          "in the absence of a specific magfilter setting.  Normally this "
-          "is 'linear' (since mipmapping does not apply to magfilters).  This "
-          "does not apply to depth textures.  Note if this variable is "
-          "changed at runtime, you may need to reload textures explicitly "
-          "in order to change their visible properties."));
-
-ConfigVariableInt texture_anisotropic_degree
-("texture-anisotropic-degree", 1,
- PRC_DESC("This specifies the default anisotropic degree that is applied "
-          "to a texture in the absence of a particular anisotropic degree "
-          "setting (that is, a texture for which the anisotropic degree "
-          "is 0, meaning the default setting).  It should be 1 to disable "
-          "anisotropic filtering, or a higher number to enable it.  "
-          "Note if this variable is "
-          "changed at runtime, you may need to reload textures explicitly "
-          "in order to change their visible properties."));
-
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 TypeHandle Texture::CData::_type_handle;
@@ -380,9 +350,10 @@ void Texture::
 generate_alpha_scale_map() {
   CDWriter cdata(_cycler, true);
   do_setup_texture(cdata, TT_1d_texture, 256, 1, 1, T_unsigned_byte, F_alpha);
-  cdata->_wrap_u = WM_clamp;
-  cdata->_minfilter = FT_nearest;
-  cdata->_magfilter = FT_nearest;
+  cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+  cdata->_default_sampler.set_minfilter(SamplerState::FT_nearest);
+  cdata->_default_sampler.set_magfilter(SamplerState::FT_nearest);
+
   cdata->_compression = CM_off;
 
   cdata->inc_image_modified();
@@ -591,6 +562,8 @@ estimate_texture_memory() const {
   case Texture::F_rgb8:
   case Texture::F_rgba8:
   case Texture::F_srgb_alpha:
+  case Texture::F_rgb8i:
+  case Texture::F_rgba8i:
     bpp = 4;
     break;
 
@@ -612,6 +585,8 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
+  case Texture::F_r8i:
+  case Texture::F_rg8i:
     bpp = 2;
     break;
   case Texture::F_rg16:
@@ -875,48 +850,6 @@ load_related(const InternalName *suffix) const {
   // field is only a cache.
   ((Texture *)this)->_related_textures.insert(RelatedTextures::value_type(suffix, res));
   return res;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_effective_minfilter
-//       Access: Published
-//  Description: Returns the filter mode of the texture for
-//               minification, with special treatment for FT_default.
-//               This will normally not return FT_default, unless
-//               there is an error in the config file.
-////////////////////////////////////////////////////////////////////
-Texture::FilterType Texture::
-get_effective_minfilter() const {
-  CDReader cdata(_cycler);
-  if (cdata->_minfilter != FT_default) {
-    return cdata->_minfilter;
-  }
-  if (cdata->_format == Texture::F_depth_stencil ||
-      cdata->_format == Texture::F_depth_component) {
-    return FT_nearest;
-  }
-  return texture_minfilter;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_effective_magfilter
-//       Access: Published
-//  Description: Returns the filter mode of the texture for
-//               magnification, with special treatment for FT_default.
-//               This will normally not return FT_default, unless
-//               there is an error in the config file.
-////////////////////////////////////////////////////////////////////
-Texture::FilterType Texture::
-get_effective_magfilter() const {
-  CDReader cdata(_cycler);
-  if (cdata->_magfilter != FT_default) {
-    return cdata->_magfilter;
-  }
-  if (cdata->_format == Texture::F_depth_stencil ||
-      cdata->_format == Texture::F_depth_component) {
-    return FT_nearest;
-  }
-  return texture_magfilter;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1789,32 +1722,7 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level + 2);
 
-  switch (cdata->_texture_type) {
-  case TT_1d_texture:
-    out << cdata->_wrap_u << ", ";
-    break;
-
-  case TT_2d_texture:
-    out << cdata->_wrap_u << " x " << cdata->_wrap_v << ", ";
-    break;
-
-  case TT_3d_texture:
-    out << cdata->_wrap_u << " x " << cdata->_wrap_v << " x " << cdata->_wrap_w << ", ";
-    break;
-
-  case TT_2d_texture_array:
-    out << cdata->_wrap_u << " x " << cdata->_wrap_v << " x " << cdata->_wrap_w << ", ";
-    break;
-
-  case TT_cube_map:
-    break;
-  }
-
-  out << "min " << cdata->_minfilter
-      << ", mag " << cdata->_magfilter
-      << ", aniso " << cdata->_anisotropic_degree
-      << ", border " << cdata->_border_color
-      << "\n";
+  cdata->_default_sampler.output(out);
 
   if (do_has_ram_image(cdata)) {
     indent(out, indent_level + 2)
@@ -1879,7 +1787,7 @@ set_size_padded(int x, int y, int z) {
     do_set_y_size(cdata, y);
     do_set_z_size(cdata, z);
   }
-  do_set_pad_size(cdata, 
+  do_set_pad_size(cdata,
                   cdata->_x_size - x,
                   cdata->_y_size - y,
                   cdata->_z_size - z);
@@ -1898,26 +1806,6 @@ set_orig_file_size(int x, int y, int z) {
   cdata->_orig_file_y_size = y;
 
   nassertv(z == cdata->_z_size);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::is_mipmap
-//       Access: Published, Static
-//  Description: Returns true if the indicated filter type requires
-//               the use of mipmaps, or false if it does not.
-////////////////////////////////////////////////////////////////////
-bool Texture::
-is_mipmap(FilterType filter_type) {
-  switch (filter_type) {
-  case FT_nearest_mipmap_nearest:
-  case FT_linear_mipmap_nearest:
-  case FT_nearest_mipmap_linear:
-  case FT_linear_mipmap_linear:
-    return true;
-
-  default:
-    return false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2313,127 +2201,6 @@ string_format(const string &str) {
   gobj_cat->error()
     << "Invalid Texture::Format value: " << str << "\n";
   return F_rgba;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::format_filter_type
-//       Access: Published, Static
-//  Description: Returns the indicated FilterType converted to a
-//               string word.
-////////////////////////////////////////////////////////////////////
-string Texture::
-format_filter_type(FilterType ft) {
-  switch (ft) {
-  case FT_nearest:
-    return "nearest";
-  case FT_linear:
-    return "linear";
-
-  case FT_nearest_mipmap_nearest:
-    return "nearest_mipmap_nearest";
-  case FT_linear_mipmap_nearest:
-    return "linear_mipmap_nearest";
-  case FT_nearest_mipmap_linear:
-    return "nearest_mipmap_linear";
-  case FT_linear_mipmap_linear:
-    return "linear_mipmap_linear";
-
-  case FT_shadow:
-    return "shadow";
-
-  case FT_default:
-    return "default";
-
-  case FT_invalid:
-    return "invalid";
-  }
-  return "**invalid**";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::string_filter_type
-//       Access: Public
-//  Description: Returns the FilterType value associated with the given
-//               string representation, or FT_invalid if the string
-//               does not match any known FilterType value.
-////////////////////////////////////////////////////////////////////
-Texture::FilterType Texture::
-string_filter_type(const string &string) {
-  if (cmp_nocase_uh(string, "nearest") == 0) {
-    return FT_nearest;
-  } else if (cmp_nocase_uh(string, "linear") == 0) {
-    return FT_linear;
-  } else if (cmp_nocase_uh(string, "nearest_mipmap_nearest") == 0) {
-    return FT_nearest_mipmap_nearest;
-  } else if (cmp_nocase_uh(string, "linear_mipmap_nearest") == 0) {
-    return FT_linear_mipmap_nearest;
-  } else if (cmp_nocase_uh(string, "nearest_mipmap_linear") == 0) {
-    return FT_nearest_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "linear_mipmap_linear") == 0) {
-    return FT_linear_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "mipmap") == 0) {
-    return FT_linear_mipmap_linear;
-  } else if (cmp_nocase_uh(string, "shadow") == 0) {
-    return FT_shadow;
-  } else if (cmp_nocase_uh(string, "default") == 0) {
-    return FT_default;
-  } else {
-    return FT_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::format_wrap_mode
-//       Access: Published, Static
-//  Description: Returns the indicated WrapMode converted to a
-//               string word.
-////////////////////////////////////////////////////////////////////
-string Texture::
-format_wrap_mode(WrapMode wm) {
-  switch (wm) {
-  case WM_clamp:
-    return "clamp";
-  case WM_repeat:
-    return "repeat";
-  case WM_mirror:
-    return "mirror";
-  case WM_mirror_once:
-    return "mirror_once";
-  case WM_border_color:
-    return "border_color";
-
-  case WM_invalid:
-    return "invalid";
-  }
-
-  return "**invalid**";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::string_wrap_mode
-//       Access: Public
-//  Description: Returns the WrapMode value associated with the given
-//               string representation, or WM_invalid if the string
-//               does not match any known WrapMode value.
-////////////////////////////////////////////////////////////////////
-Texture::WrapMode Texture::
-string_wrap_mode(const string &string) {
-  if (cmp_nocase_uh(string, "repeat") == 0 ||
-      cmp_nocase_uh(string, "wrap") == 0) {
-    return WM_repeat;
-  } else if (cmp_nocase_uh(string, "clamp") == 0) {
-    return WM_clamp;
-  } else if (cmp_nocase_uh(string, "mirror") == 0 ||
-             cmp_nocase_uh(string, "mirrored_repeat") == 0) {
-    return WM_mirror;
-  } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
-    return WM_mirror_once;
-  } else if (cmp_nocase_uh(string, "border_color") == 0 ||
-             cmp_nocase_uh(string, "border") == 0) {
-    return WM_border_color;
-  } else {
-    return WM_invalid;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3955,7 +3722,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
 //               mipmap levels to disk files.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-do_write(CData *cdata, 
+do_write(CData *cdata,
          const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) {
   if (is_txo_filename(fullpath)) {
     if (!do_has_bam_rawdata(cdata)) {
@@ -4273,20 +4040,20 @@ unlocked_ensure_ram_image(bool allow_compression) {
   // We need to reload.
   nassertr(!_reloading, NULL);
   _reloading = true;
-  
+
   PT(Texture) tex = do_make_copy(cdata);
   _cycler.release_read(cdata);
   _lock.release();
-  
+
   // Perform the actual reload in a copy of the texture, while our
   // own mutex is left unlocked.
   CDWriter cdata_tex(tex->_cycler, true);
   tex->do_reload_ram_image(cdata_tex, allow_compression);
-  
+
   _lock.acquire();
 
   CData *cdataw = _cycler.write_upstream(false, current_thread);
-  
+
   // Rather than calling do_assign(), which would copy *all* of the
   // reloaded texture's properties over, we only copy in the ones
   // which are relevant to the ram image.  This way, if the
@@ -4295,7 +4062,7 @@ unlocked_ensure_ram_image(bool allow_compression) {
   // texture.
   cdataw->_orig_file_x_size = cdata_tex->_orig_file_x_size;
   cdataw->_orig_file_y_size = cdata_tex->_orig_file_y_size;
-  
+
   // If any of *these* properties have changed, the texture has
   // changed in some fundamental way.  Update it appropriately.
   if (cdata_tex->_x_size != cdataw->_x_size ||
@@ -4306,33 +4073,33 @@ unlocked_ensure_ram_image(bool allow_compression) {
       cdata_tex->_component_width != cdataw->_component_width ||
       cdata_tex->_texture_type != cdataw->_texture_type ||
       cdata_tex->_component_type != cdataw->_component_type) {
-    
+
     cdataw->_x_size = cdata_tex->_x_size;
     cdataw->_y_size = cdata_tex->_y_size;
     cdataw->_z_size = cdata_tex->_z_size;
     cdataw->_num_views = cdata_tex->_num_views;
-    
+
     cdataw->_num_components = cdata_tex->_num_components;
     cdataw->_component_width = cdata_tex->_component_width;
     cdataw->_texture_type = cdata_tex->_texture_type;
     cdataw->_format = cdata_tex->_format;
     cdataw->_component_type = cdata_tex->_component_type;
-    
+
     cdataw->inc_properties_modified();
     cdataw->inc_image_modified();
   }
-  
+
   cdataw->_keep_ram_image = cdata_tex->_keep_ram_image;
   cdataw->_ram_image_compression = cdata_tex->_ram_image_compression;
   cdataw->_ram_images = cdata_tex->_ram_images;
-  
+
   nassertr(_reloading, NULL);
   _reloading = false;
-  
+
   // We don't generally increment the cdata->_image_modified semaphore,
   // because this is just a reload, and presumably the image hasn't
   // changed (unless we hit the if condition above).
-  
+
   _cvar.notify_all();
 
   // Return the still-locked cdata.
@@ -4495,12 +4262,26 @@ do_modify_ram_image(CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 do_make_ram_image(CData *cdata) {
+  int image_size = do_get_expected_ram_image_size(cdata);
   cdata->_ram_images.clear();
   cdata->_ram_images.push_back(RamImage());
   cdata->_ram_images[0]._page_size = do_get_expected_ram_page_size(cdata);
-  cdata->_ram_images[0]._image = PTA_uchar::empty_array(do_get_expected_ram_image_size(cdata), get_class_type());
+  cdata->_ram_images[0]._image = PTA_uchar::empty_array(image_size, get_class_type());
   cdata->_ram_images[0]._pointer_image = NULL;
   cdata->_ram_image_compression = CM_off;
+
+  if (cdata->_has_clear_color) {
+    // Fill the image with the clear color.
+    unsigned char pixel[16];
+    const int pixel_size = do_get_clear_data(cdata, pixel);
+    nassertr(pixel_size > 0, cdata->_ram_images[0]._image);
+
+    unsigned char *image_data = cdata->_ram_images[0]._image;
+    for (int i = 0; i < image_size; i += pixel_size) {
+      memcpy(image_data + i, pixel, pixel_size);
+    }
+  }
+
   return cdata->_ram_images[0]._image;
 }
 
@@ -4568,9 +4349,23 @@ do_make_ram_mipmap_image(CData *cdata, int n) {
     cdata->_ram_images.push_back(RamImage());
   }
 
-  cdata->_ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(cdata, n), get_class_type());
+  size_t image_size = do_get_expected_ram_mipmap_image_size(cdata, n);
+  cdata->_ram_images[n]._image = PTA_uchar::empty_array(image_size, get_class_type());
   cdata->_ram_images[n]._pointer_image = NULL;
   cdata->_ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(cdata, n);
+
+  if (cdata->_has_clear_color) {
+    // Fill the image with the clear color.
+    unsigned char pixel[16];
+    const int pixel_size = do_get_clear_data(cdata, pixel);
+    nassertr(pixel_size > 0, cdata->_ram_images[n]._image);
+
+    unsigned char *image_data = cdata->_ram_images[n]._image;
+    for (int i = 0; i < image_size; i += pixel_size) {
+      memcpy(image_data + i, pixel, pixel_size);
+    }
+  }
+
   return cdata->_ram_images[n]._image;
 }
 
@@ -4600,6 +4395,116 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_clear_color
+//       Access: Published
+//  Description: Returns a string with a single pixel representing
+//               the clear color of the texture in the format of
+//               this texture.
+//
+//               In other words, to create an uncompressed RAM
+//               texture filled with the clear color, it should
+//               be initialized with this string repeated for
+//               every pixel.
+////////////////////////////////////////////////////////////////////
+int Texture::
+do_get_clear_data(const CData *cdata, unsigned char *into) const {
+  nassertr(cdata->_has_clear_color, 0);
+  nassertr(cdata->_num_components <= 4, 0);
+
+  //TODO: encode the color into the sRGB color space if used
+  switch (cdata->_component_type) {
+  case T_unsigned_byte:
+    {
+      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      scaled *= 255;
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (unsigned char)scaled[1];
+      case 1:
+        into[0] = (unsigned char)scaled[0];
+        break;
+      case 4:
+        into[3] = (unsigned char)scaled[3];
+      case 3: // BGR <-> RGB
+        into[0] = (unsigned char)scaled[2];
+        into[1] = (unsigned char)scaled[1];
+        into[2] = (unsigned char)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_unsigned_short:
+    {
+      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      scaled *= 65535;
+      switch (cdata->_num_components) {
+      case 2:
+        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
+      case 1:
+        ((unsigned short *)into)[0] = (unsigned short)scaled[0];
+        break;
+      case 4:
+        ((unsigned short *)into)[3] = (unsigned short)scaled[3];
+      case 3: // BGR <-> RGB
+        ((unsigned short *)into)[0] = (unsigned short)scaled[2];
+        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
+        ((unsigned short *)into)[2] = (unsigned short)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_float:
+    switch (cdata->_num_components) {
+    case 2:
+      ((float *)into)[1] = cdata->_clear_color[1];
+    case 1:
+      ((float *)into)[0] = cdata->_clear_color[0];
+      break;
+    case 4:
+      ((float *)into)[3] = cdata->_clear_color[3];
+    case 3: // BGR <-> RGB
+      ((float *)into)[0] = cdata->_clear_color[2];
+      ((float *)into)[1] = cdata->_clear_color[1];
+      ((float *)into)[2] = cdata->_clear_color[0];
+      break;
+    }
+    break;
+
+  case T_unsigned_int_24_8:
+    nassertr(cdata->_num_components == 1, 0);
+    *((unsigned int *)into) =
+      ((unsigned int)(cdata->_clear_color[0] * 16777215) << 8) +
+       (unsigned int)max(min(cdata->_clear_color[1], (PN_stdfloat)255), (PN_stdfloat)0);
+    break;
+
+  case T_int:
+    {
+      // Note: there are no 32-bit UNORM textures.  Therefore, we don't
+      // do any normalization here, either.
+      switch (cdata->_num_components) {
+      case 2:
+        ((int *)into)[1] = (int)cdata->_clear_color[1];
+      case 1:
+        ((int *)into)[0] = (int)cdata->_clear_color[0];
+        break;
+      case 4:
+        ((int *)into)[3] = (int)cdata->_clear_color[3];
+      case 3: // BGR <-> RGB
+        ((int *)into)[0] = (int)cdata->_clear_color[2];
+        ((int *)into)[1] = (int)cdata->_clear_color[1];
+        ((int *)into)[2] = (int)cdata->_clear_color[0];
+        break;
+      }
+      break;
+    }
+  }
+
+  return cdata->_num_components * cdata->_component_width;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::consider_auto_process_ram_image
 //       Access: Protected
 //  Description: Should be called after a texture has been loaded into
@@ -4626,7 +4531,7 @@ consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression) {
 //               operation, false if it wasn't.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps, 
+do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
                                    bool allow_compression) {
   bool modified = false;
 
@@ -5158,10 +5063,10 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type, int x_size, in
 
     // In principle the wrap mode shouldn't mean anything to a cube
     // map, but some drivers seem to misbehave if it's other than
-    // WM_clamp.
-    cdata->_wrap_u = WM_clamp;
-    cdata->_wrap_v = WM_clamp;
-    cdata->_wrap_w = WM_clamp;
+    // SamplerState::WM_clamp.
+    cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
   }
 
@@ -5359,10 +5264,10 @@ do_set_num_views(CData *cdata, int num_views) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_wrap_u(CData *cdata, Texture::WrapMode wrap) {
-  if (cdata->_wrap_u != wrap) {
+do_set_wrap_u(CData *cdata, SamplerState::WrapMode wrap) {
+  if (cdata->_default_sampler.get_wrap_u() != wrap) {
     cdata->inc_properties_modified();
-    cdata->_wrap_u = wrap;
+    cdata->_default_sampler.set_wrap_u(wrap);
   }
 }
 
@@ -5372,10 +5277,10 @@ do_set_wrap_u(CData *cdata, Texture::WrapMode wrap) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_wrap_v(CData *cdata, Texture::WrapMode wrap) {
-  if (cdata->_wrap_v != wrap) {
+do_set_wrap_v(CData *cdata, SamplerState::WrapMode wrap) {
+  if (cdata->_default_sampler.get_wrap_v() != wrap) {
     cdata->inc_properties_modified();
-    cdata->_wrap_v = wrap;
+    cdata->_default_sampler.set_wrap_v(wrap);
   }
 }
 
@@ -5385,10 +5290,10 @@ do_set_wrap_v(CData *cdata, Texture::WrapMode wrap) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_wrap_w(CData *cdata, Texture::WrapMode wrap) {
-  if (cdata->_wrap_w != wrap) {
+do_set_wrap_w(CData *cdata, SamplerState::WrapMode wrap) {
+  if (cdata->_default_sampler.get_wrap_w() != wrap) {
     cdata->inc_properties_modified();
-    cdata->_wrap_w = wrap;
+    cdata->_default_sampler.set_wrap_w(wrap);
   }
 }
 
@@ -5398,10 +5303,10 @@ do_set_wrap_w(CData *cdata, Texture::WrapMode wrap) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_minfilter(CData *cdata, Texture::FilterType filter) {
-  if (cdata->_minfilter != filter) {
+do_set_minfilter(CData *cdata, SamplerState::FilterType filter) {
+  if (cdata->_default_sampler.get_minfilter() != filter) {
     cdata->inc_properties_modified();
-    cdata->_minfilter = filter;
+    cdata->_default_sampler.set_minfilter(filter);
   }
 }
 
@@ -5411,10 +5316,10 @@ do_set_minfilter(CData *cdata, Texture::FilterType filter) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_magfilter(CData *cdata, Texture::FilterType filter) {
-  if (cdata->_magfilter != filter) {
+do_set_magfilter(CData *cdata, SamplerState::FilterType filter) {
+  if (cdata->_default_sampler.get_magfilter() != filter) {
     cdata->inc_properties_modified();
-    cdata->_magfilter = filter;
+    cdata->_default_sampler.set_magfilter(filter);
   }
 }
 
@@ -5425,9 +5330,9 @@ do_set_magfilter(CData *cdata, Texture::FilterType filter) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_set_anisotropic_degree(CData *cdata, int anisotropic_degree) {
-  if (cdata->_anisotropic_degree != anisotropic_degree) {
+  if (cdata->_default_sampler.get_anisotropic_degree() != anisotropic_degree) {
     cdata->inc_properties_modified();
-    cdata->_anisotropic_degree = anisotropic_degree;
+    cdata->_default_sampler.set_anisotropic_degree(anisotropic_degree);
   }
 }
 
@@ -5438,9 +5343,9 @@ do_set_anisotropic_degree(CData *cdata, int anisotropic_degree) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_set_border_color(CData *cdata, const LColor &color) {
-  if (cdata->_border_color != color) {
+  if (cdata->_default_sampler.get_border_color() != color) {
     cdata->inc_properties_modified();
-    cdata->_border_color = color;
+    cdata->_default_sampler.set_border_color(color);
   }
 }
 
@@ -7870,7 +7775,7 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
   // loads the bam file later will have access to the image file on
   // disk.
   BamWriter::BamTextureMode file_texture_mode = manager->get_file_texture_mode();
-  has_rawdata = (file_texture_mode == BamWriter::BTM_rawdata || 
+  has_rawdata = (file_texture_mode == BamWriter::BTM_rawdata ||
                  (cdata->_filename.empty() && do_has_bam_rawdata(cdata)));
   if (has_rawdata && !do_has_bam_rawdata(cdata)) {
     do_get_bam_rawdata(cdata);
@@ -7953,13 +7858,8 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
-  me.add_uint8(cdata->_wrap_u);
-  me.add_uint8(cdata->_wrap_v);
-  me.add_uint8(cdata->_wrap_w);
-  me.add_uint8(cdata->_minfilter);
-  me.add_uint8(cdata->_magfilter);
-  me.add_int16(cdata->_anisotropic_degree);
-  cdata->_border_color.write_datagram(me);
+  cdata->_default_sampler.write_datagram(me);
+
   me.add_uint8(cdata->_compression);
   me.add_uint8(cdata->_quality_level);
 
@@ -8181,13 +8081,7 @@ make_this_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
-  cdata->_wrap_u = (WrapMode)scan.get_uint8();
-  cdata->_wrap_v = (WrapMode)scan.get_uint8();
-  cdata->_wrap_w = (WrapMode)scan.get_uint8();
-  cdata->_minfilter = (FilterType)scan.get_uint8();
-  cdata->_magfilter = (FilterType)scan.get_uint8();
-  cdata->_anisotropic_degree = scan.get_int16();
-  cdata->_border_color.read_datagram(scan);
+  cdata->_default_sampler.read_datagram(scan, manager);
 
   if (manager->get_file_minor_ver() >= 1) {
     cdata->_compression = (CompressionMode)scan.get_uint8();
@@ -8261,12 +8155,12 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() >= 1) {
     cdata->_ram_image_compression = (CompressionMode)scan.get_uint8();
   }
-  
+
   int num_ram_images = 1;
   if (manager->get_file_minor_ver() >= 3) {
     num_ram_images = scan.get_uint8();
   }
-  
+
   cdata->_ram_images.clear();
   cdata->_ram_images.reserve(num_ram_images);
   for (int n = 0; n < num_ram_images; ++n) {
@@ -8275,9 +8169,9 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     if (manager->get_file_minor_ver() >= 1) {
       cdata->_ram_images[n]._page_size = scan.get_uint32();
     }
-    
+
     size_t u_size = scan.get_uint32();
-    
+
     // fill the cdata->_image buffer with image data
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
     for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
@@ -8308,19 +8202,19 @@ do_fillin_from(CData *cdata, const Texture *dummy) {
 
   CDReader cdata_dummy(dummy->_cycler);
 
-  do_set_wrap_u(cdata, cdata_dummy->_wrap_u);
-  do_set_wrap_v(cdata, cdata_dummy->_wrap_v);
-  do_set_wrap_w(cdata, cdata_dummy->_wrap_w);
-  do_set_border_color(cdata, cdata_dummy->_border_color);
+  do_set_wrap_u(cdata, cdata_dummy->_default_sampler.get_wrap_u());
+  do_set_wrap_v(cdata, cdata_dummy->_default_sampler.get_wrap_v());
+  do_set_wrap_w(cdata, cdata_dummy->_default_sampler.get_wrap_w());
+  do_set_border_color(cdata, cdata_dummy->_default_sampler.get_border_color());
 
-  if (cdata_dummy->_minfilter != FT_default) {
-    do_set_minfilter(cdata, cdata_dummy->_minfilter);
+  if (cdata_dummy->_default_sampler.get_minfilter() != SamplerState::FT_default) {
+    do_set_minfilter(cdata, cdata_dummy->_default_sampler.get_minfilter());
   }
-  if (cdata_dummy->_magfilter != FT_default) {
-    do_set_magfilter(cdata, cdata_dummy->_magfilter);
+  if (cdata_dummy->_default_sampler.get_magfilter() != SamplerState::FT_default) {
+    do_set_magfilter(cdata, cdata_dummy->_default_sampler.get_magfilter());
   }
-  if (cdata_dummy->_anisotropic_degree != 0) {
-    do_set_anisotropic_degree(cdata, cdata_dummy->_anisotropic_degree);
+  if (cdata_dummy->_default_sampler.get_anisotropic_degree() != 0) {
+    do_set_anisotropic_degree(cdata, cdata_dummy->_default_sampler.get_anisotropic_degree());
   }
   if (cdata_dummy->_compression != CM_default) {
     do_set_compression(cdata, cdata_dummy->_compression);
@@ -8345,7 +8239,7 @@ do_fillin_from(CData *cdata, const Texture *dummy) {
     // recently than the one we already have.
     if (cdata->_simple_ram_image._image.empty() ||
         cdata_dummy->_simple_image_date_generated > cdata->_simple_image_date_generated) {
-      do_set_simple_ram_image(cdata, 
+      do_set_simple_ram_image(cdata,
                               cdata_dummy->_simple_ram_image._image,
                               cdata_dummy->_simple_x_size,
                               cdata_dummy->_simple_y_size);
@@ -8357,20 +8251,13 @@ do_fillin_from(CData *cdata, const Texture *dummy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::CData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::CData::
 CData() {
   _primary_file_num_channels = 0;
   _alpha_file_channel = 0;
-  _magfilter = FT_default;
-  _minfilter = FT_default;
-  _wrap_u = WM_repeat;
-  _wrap_v = WM_repeat;
-  _wrap_w = WM_repeat;
-  _anisotropic_degree = 0;
   _keep_ram_image = true;
-  _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _compression = CM_default;
   _auto_texture_scale = ATS_unspecified;
   _ram_image_compression = CM_off;
@@ -8406,12 +8293,14 @@ CData() {
   _simple_x_size = 0;
   _simple_y_size = 0;
   _simple_ram_image._page_size = 0;
+
+  _has_clear_color = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::CData::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::CData::
 CData(const Texture::CData &copy) {
@@ -8437,7 +8326,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::CData::do_assign
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::CData::
 do_assign(const Texture::CData *copy) {
@@ -8470,14 +8359,8 @@ do_assign(const Texture::CData *copy) {
   _has_read_pages = copy->_has_read_pages;
   _has_read_mipmaps = copy->_has_read_mipmaps;
   _num_mipmap_levels_read = copy->_num_mipmap_levels_read;
-  _wrap_u = copy->_wrap_u;
-  _wrap_v = copy->_wrap_v;
-  _wrap_w = copy->_wrap_w;
-  _minfilter = copy->_minfilter;
-  _magfilter = copy->_magfilter;
-  _anisotropic_degree = copy->_anisotropic_degree;
+  _default_sampler = copy->_default_sampler;
   _keep_ram_image = copy->_keep_ram_image;
-  _border_color = copy->_border_color;
   _compression = copy->_compression;
   _match_framebuffer_format = copy->_match_framebuffer_format;
   _quality_level = copy->_quality_level;
@@ -8547,50 +8430,6 @@ operator << (ostream &out, Texture::ComponentType ct) {
 ostream &
 operator << (ostream &out, Texture::Format f) {
   return out << Texture::format_format(f);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::FilterType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, Texture::FilterType ft) {
-  return out << Texture::format_filter_type(ft);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::FilterType input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-istream &
-operator >> (istream &in, Texture::FilterType &ft) {
-  string word;
-  in >> word;
-
-  ft = Texture::string_filter_type(word);
-  return in;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::WrapMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, Texture::WrapMode wm) {
-  return out << Texture::format_wrap_mode(wm);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::WrapMode input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-istream &
-operator >> (istream &in, Texture::WrapMode &wm) {
-  string word;
-  in >> word;
-
-  wm = Texture::string_wrap_mode(word);
-  return in;
 }
 
 ////////////////////////////////////////////////////////////////////

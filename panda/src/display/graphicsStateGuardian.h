@@ -87,6 +87,7 @@ PUBLISHED:
 
   INLINE void release_all();
   INLINE int release_all_textures();
+  INLINE int release_all_samplers();
   INLINE int release_all_geoms();
   INLINE int release_all_vertex_buffers();
   INLINE int release_all_index_buffers();
@@ -143,6 +144,7 @@ PUBLISHED:
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
   INLINE bool get_supports_shadow_filter() const;
+  INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
   INLINE bool get_supports_geometry_shaders() const;
   INLINE bool get_supports_tessellation_shaders() const;
@@ -164,7 +166,6 @@ PUBLISHED:
 
   virtual int get_supported_geom_rendering() const;
   virtual bool get_supports_cg_profile(const string &name) const;
-
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -214,6 +215,9 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
+
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
+  virtual void release_sampler(SamplerContext *sc);
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
@@ -509,6 +513,7 @@ protected:
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;
+  bool _supports_sampler_objects;
   bool _supports_basic_shaders;
   bool _supports_geometry_shaders;
   bool _supports_tessellation_shaders;
@@ -586,6 +591,7 @@ public:
 
   static PStatCollector _prepare_pcollector;
   static PStatCollector _prepare_texture_pcollector;
+  static PStatCollector _prepare_sampler_pcollector;
   static PStatCollector _prepare_geom_pcollector;
   static PStatCollector _prepare_shader_pcollector;
   static PStatCollector _prepare_vertex_buffer_pcollector;

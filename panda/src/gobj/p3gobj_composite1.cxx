@@ -33,3 +33,5 @@
 #include "material.cxx"
 #include "materialPool.cxx"
 #include "matrixLens.cxx"
+#include "occlusionQueryContext.cxx"
+#include "orthographicLens.cxx"

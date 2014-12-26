@@ -34,6 +34,7 @@
 #include "factoryParam.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
+#include "paramValue.h"
 #include "pythonCallbackObject.h"
 #include "referenceCount.h"
 #include "sparseArray.h"
@@ -62,7 +63,7 @@ ConfigVariableEnum<BamEnums::BamEndian> bam_endian
           "particular platform."));
 
 ConfigVariableBool bam_stdfloat_double
-("bam-stdfloat-double", 
+("bam-stdfloat-double",
 #ifdef STDFLOAT_DOUBLE
  true,
 #else
@@ -70,7 +71,7 @@ ConfigVariableBool bam_stdfloat_double
 #endif
  PRC_DESC("The default width of floating-point numbers to write to a bam "
           "file.  Set this true to force doubles (64-bit floats), or false "
-          "to force sinles (32-bit floats).  The default is whichever width "
+          "to force singles (32-bit floats).  The default is whichever width "
           "Panda has been compiled to use natively.  Normally, this setting "
           "should not be changed from the default."));
 
@@ -78,8 +79,6 @@ ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
 ("bam-texture-mode", BamEnums::BTM_relative,
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
-
-
 
 ConfigureFn(config_util) {
   init_libputil();
@@ -200,6 +199,23 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+  ParamMatrix3d::init_type("ParamMatrix3d");
+  ParamMatrix3f::init_type("ParamMatrix3f");
+  ParamMatrix4d::init_type("ParamMatrix4d");
+  ParamMatrix4f::init_type("ParamMatrix4f");
+  ParamString::init_type("ParamString");
+  ParamTypedRefCount::init_type();
+  ParamValueBase::init_type();
+  ParamVecBase2d::init_type("ParamVecBase2d");
+  ParamVecBase2f::init_type("ParamVecBase2f");
+  ParamVecBase2i::init_type("ParamVecBase2i");
+  ParamVecBase3d::init_type("ParamVecBase3d");
+  ParamVecBase3f::init_type("ParamVecBase3f");
+  ParamVecBase3i::init_type("ParamVecBase3i");
+  ParamVecBase4f::init_type("ParamVecBase4f");
+  ParamVecBase4d::init_type("ParamVecBase4d");
+  ParamVecBase4i::init_type("ParamVecBase4i");
+  ParamWstring::init_type("ParamWstring");
 #ifdef HAVE_PYTHON
   PythonCallbackObject::init_type();
 #endif
@@ -218,4 +234,19 @@ init_libputil() {
 
   BamCacheIndex::register_with_read_factory();
   BamCacheRecord::register_with_read_factory();
+  ParamMatrix3d::register_with_read_factory();
+  ParamMatrix3f::register_with_read_factory();
+  ParamMatrix4d::register_with_read_factory();
+  ParamMatrix4f::register_with_read_factory();
+  ParamString::register_with_read_factory();
+  ParamVecBase2d::register_with_read_factory();
+  ParamVecBase2f::register_with_read_factory();
+  ParamVecBase2i::register_with_read_factory();
+  ParamVecBase3d::register_with_read_factory();
+  ParamVecBase3f::register_with_read_factory();
+  ParamVecBase3i::register_with_read_factory();
+  ParamVecBase4d::register_with_read_factory();
+  ParamVecBase4f::register_with_read_factory();
+  ParamVecBase4i::register_with_read_factory();
+  ParamWstring::register_with_read_factory();
 }
