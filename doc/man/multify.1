@@ -1,0 +1,156 @@
+.TH MULTIFY 1 "27 December 2014" "" Panda3D
+.SH NAME
+multify \- manipulate .mf multifiles
+.SH SYNOPSIS
+.B multify \-[c|r|u|t|x] -f
+.I multifile_name.mf
+[
+.I options
+]
+.I subfile_name ...
+.SH DESCRIPTION
+\fBmultify\fP is used to store and extract files from a Panda Multifile.
+This is similar to a tar or zip file in that it is an archive file that
+contains a number of subfiles that may later be extracted.
+.PP
+Panda's VirtualFileSystem is capable of mounting Multifiles for direct
+access to the subfiles contained within without having to extract them
+out to independent files first.
+.PP
+The command-line options for multify are designed to be similar to those
+for \fBtar\fR(1), the traditional Unix archiver utility.
+.SH OPTIONS
+You must specify exactly one of the following command switches:
+.TP
+.B \-c
+Create a new Multifile archive.  Subfiles named on the command line
+will be added to the new Multifile.  If the Multifile already exists,
+it is first removed.
+.TP
+.B \-r
+Rewrite an existing Multifile archive.  Subfiles named on the command
+line will be added to the Multifile or will replace subfiles within
+the Multifile with the same name.  The Multifile will be repacked
+after completion, even if no Subfiles were added.
+.TP
+.B \-u
+Update an existing Multifile archive.  This is similar to \fB\-r\fP,
+except that files are compared byte\-for\-byte with their corresponding
+files in the archive first.  If they have not changed, the multifile
+is not modified (other than to repack it if necessary).
+.TP
+.B \-t
+List the contents of an existing Multifile.  With -v, this shows
+the size of each Subfile and its compression ratio, if compressed.
+.TP
+.B \-x
+Extract the contents of an existing Multifile.  The Subfiles named on
+the command line, or all Subfiles if nothing is named, are extracted
+into the current directory or into whichever directory is specified
+with \fB\-C\fP.
+.TP
+.B \-k
+Delete (kill) the named Subfiles from the Multifile.  The Multifile
+will be repacked after completion.
+.PP
+You must always specify the following switch:
+.TP
+.BI "\-f " multifile_name.mf
+Names the Multifile that will be operated on.
+.PP
+The remaining switches are optional:
+.TP
+.B \-v
+Run verbosely.  In \-c, \-r, or \-x mode, list each file as it is
+written or extracted.  In \-t mode, list more information about each
+file.
+.TP
+.B \-z
+Compress subfiles as they are written to the Multifile.  Unlike tar
+(but like zip), subfiles are compressed individually, instead of the
+entire archive being compressed as one stream.  It is not necessary
+to specify \-z when extracting compressed subfiles; they will always be
+decompressed automatically.  Also see \-Z, which restricts which
+subfiles will be compressed based on the filename extension.
+.TP
+.B \-e
+Encrypt subfiles as they are written to the Multifile using the password
+specified with \-p, below.  Subfiles are encrypted individually, rather
+than encrypting the entire multifile, and different subfiles may be
+encrypted using different passwords (although this requires running
+multify multiple times).  It is not possible to encrypt the multifile's
+table of contents using this interface, but see the
+.BR pencrypt (1)
+program to encrypt the entire multifile after it has been generated.
+.TP
+.BI "\-p " password
+Specifies the password to encrypt or decrypt subfiles.  If this is not
+specified, and passwords are required, the user will be prompted from
+standard input.
+.TP
+.BI "\-P " prefix
+Specifies a header_prefix to write to the beginning of the multifile.
+This is primarily useful for creating a multifile that can be invoked
+directly as a program from the shell on Unix-like environments,
+for instance, p3d files.  The header_prefix must begin with a hash
+mark and end with a newline; this will be enforced if it is not
+already so.  This only has effect in conjunction with with -c, -u,
+or -k.
+.TP
+.BI "\-F " scale_factor
+Specify a Multifile scale factor.  This is only necessary to support
+Multifiles that will exceed 4GB in size.  The default scale factor is
+1, which should be sufficient for almost any application, but the total
+size of the Multifile will be limited to 4GB * \fIscale_factor\fP.
+The size of individual subfiles may not exceed 4GB in any case.
+.TP
+.BI "\-C " extract_dir
+Change to the named directory before working on files;
+that is, extraction/creation/update and replace will be based on this path
+.TP
+.BI "\-O
+With \-x, extract subfiles to standard output instead of to disk.
+.TP
+.BI "\-Z " extension_list
+Specify a comma-separated list of filename extensions that represent
+files that are not to be compressed.  The default if this is omitted is
+"\fIjpg,png,mp3,ogg\fP".  Specify \-Z "" (be sure to include the space)
+to allow all files to be compressed.
+.TP
+.BI "\-X " extension_list
+Specify a comma-separated list of filename extensions that represent
+text files.  These files are opened and read in text mode, and added to
+the multifile with the text flag set.  The default if this is omitted is
+"\fItxt\fP".  Specify \-X "" (be sure to include the space) to record
+all files in binary mode.
+.TP
+.BI "\-T " flag
+Enable or disable the recording of file timestamps within the multifile.
+If \fIflag\fP is 1, timestamps will be recorded within the multifile for
+each subfile added; this is the default behavior.  If <flag> is 0,
+timestamps will not be recorded, which will make it easier to do a
+bitwise comparison between multifiles to determine whether their
+contents are equivalent.
+.TP
+.B \-1 .. \-9
+Specify the compression level when \-z is in effect.  Larger numbers
+generate slightly smaller files, but compression takes longer.  The
+default is \-6.
+.TP
+.BI "\-S " file.crt[,chain.crt[,file.key[,"password"]]]
+Sign the multifile.  The signing certificate should be in PEM form in
+\fIfile.crt\fP, with its private key in PEM form in \fIfile.key\fP.
+If the key is encrypted on-disk, specify the decryption password as
+the third option.  If a certificate chain is required, \fIchain.crt\fP
+should also be specified; note that the separating commas should be
+supplied even if this optional filename is omitted.
+You may also provide a single composite file that contains the
+certificate, chain, and key in the same file.
+PEM form is the form accepted by the Apache web server.  The
+signature is written to the multifile to prove it is unchanged; any
+subsequent change to the multifile will invalidate the signature.
+This parameter may be repeated to sign the multifile with additional
+certificates.
+.SH "SEE ALSO"
+.BR pencrypt (1),
+.BR pzip (1)

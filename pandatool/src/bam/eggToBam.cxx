@@ -43,6 +43,7 @@ EggToBam::
 EggToBam() :
   EggToSomething("Bam", ".bam", true, false)
 {
+  set_program_brief("convert .egg files to .bam files");
   set_program_description
     ("This program reads Egg files and outputs Bam files, the binary format "
      "suitable for direct loading of animation and models into Panda.  Bam "

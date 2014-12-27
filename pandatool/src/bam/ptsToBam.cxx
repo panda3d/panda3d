@@ -32,6 +32,7 @@
 PtsToBam::
 PtsToBam() : WithOutputFile(true, false, true)
 {
+  set_program_brief("convert point cloud data into a .bam file");
   set_program_description
     ("This program reads a point clound in a pts file and outputs a bam files, "
      "suitable for viewing in Panda.");

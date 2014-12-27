@@ -1,0 +1,64 @@
+.TH PZIP 1 "27 December 2014" "" Panda3D
+.SH NAME
+pzip, punzip \- compress or decompress files
+.SH SYNOPSIS
+.B pzip
+.I file
+[
+.I file2 file3 ...
+]
+.br
+.B pzip -c < \fIfile\fB > \fIdest_file\fB
+.br
+.B pzip -o
+.I dest_file file
+.PP
+.B punzip
+.I file.pz
+[
+.I file2.pz file3.pz ...
+]
+.br
+.B punzip -c < \fIfile.pz\fB > \fIdest_file\fB
+.br
+.B punzip -o
+.I dest_file file.pz
+.SH DESCRIPTION
+The \fBpzip\fP program compresses the named file(s) using the Panda
+native compression algorithm (gzip in practice, but with a different
+file header).  The compressed versions are written to a file with the
+same name as the original, but the extension .pz added to the
+filename, and the original file is removed (unless the version with
+\fB\-o\fP is used, in which case you can compress only one file, you
+specify the destination file name, and the original file is not removed).
+.PP
+In many cases, Panda can read the resulting .pz file directly,
+exactly as if it were still in its uncompressed original form.
+In fact, unless \fBvfs\-implicit\-pz\fP is set to \fBfalse\fP in your
+Config.prc file, you can also load the file by referencing it with its
+original filename (without the .pz extension), even though it no longer
+exists under that filename, and Panda will find the .pz file and
+transparently decompress it on the fly, as if the original, uncompressed
+file still existed.
+.PP
+Note that if you are adding files to a Panda multifile (.mf file) with the
+.BR multify (1)
+command, it is not necessary to encrypt them separately; \fBmultify\fP has an
+inline encryption option.
+.PP
+\fBpunzip\fP reverses the operation of a previous \fBpzip\fP command.
+It uncompresses the contents of the named source file(s) and removes
+the .pz extension.
+.SH OPTIONS
+These options apply to \fBpzip\fP only.
+.TP
+.B \-1
+compress faster
+.TP
+.B \-6
+compress default
+.TP
+.B \-9
+compress better (intermediate compression levels supported also)
+.SH "SEE ALSO"
+.BR multify (1)

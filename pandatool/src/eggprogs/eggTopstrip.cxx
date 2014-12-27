@@ -34,6 +34,7 @@ EggTopstrip() {
   add_path_replace_options();
   add_path_store_options();
 
+  set_program_brief("unapplies animation from a joint in an .egg file");
   set_program_description
     ("egg-topstrip reads a character model and its associated animation "
      "files, and unapplies the animation from one of the top joints.  "

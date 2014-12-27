@@ -27,6 +27,7 @@ EggToDXF() :
   EggToSomething("DXF", ".dxf", true, false)
 {
   set_binary_output(true);
+  set_program_brief("convert .egg files to AutoCAD .dxf files");
   set_program_description
     ("This program converts files from egg format to AutoCAD DXF format.  "
      "Since DXF does not support nested hierarchies, vertex normals, or any "

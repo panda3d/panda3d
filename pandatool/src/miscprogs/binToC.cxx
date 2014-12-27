@@ -33,6 +33,7 @@ BinToC() :
   add_runline("input -o output.c");
   add_runline("input >output.c");
 
+  set_program_brief("convert binary data to a compilable C table");
   set_program_description
     ("bin2c is a simple utility program to read a disk file, presumably "
      "one with binary contents, and output a table that can be "

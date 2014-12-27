@@ -37,6 +37,7 @@ PfmTrans() {
 
   add_transform_options();
 
+  set_program_brief("transform .pfm files");
   set_program_description
     ("pfm-trans reads an pfm file and transforms it, filters it, "
      "operates on it, writing the output to another pfm file.  A pfm "

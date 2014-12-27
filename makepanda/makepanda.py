@@ -6290,6 +6290,8 @@ def MakeInstallerLinux():
         else:
             InstallPanda(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=GetDebLibDir())
             oscmd("chmod -R 755 targetroot/usr/share/panda3d")
+            oscmd("mkdir -p targetroot/usr/share/man/man1")
+            oscmd("cp doc/man/*.1 targetroot/usr/share/man/man1/")
 
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
         pkg_arch = ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
@@ -6462,6 +6464,9 @@ def MakeInstallerOSX():
     oscmd("mkdir -p dstroot/tools/etc/paths.d")
     # Trailing newline is important, works around a bug in OSX
     WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Developer/Tools/Panda3D\n")
+
+    oscmd("mkdir -p dstroot/tools/usr/share/man/man1")
+    oscmd("cp doc/man/*.1 dstroot/tools/usr/share/man/man1/")
 
     for base in os.listdir(GetOutputDir()+"/bin"):
         binname = "dstroot/tools/Developer/Tools/Panda3D/" + base

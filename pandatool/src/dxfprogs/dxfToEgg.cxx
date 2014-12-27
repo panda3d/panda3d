@@ -30,6 +30,7 @@ DXFToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert AutoCAD .dxf files to .egg files");
   set_program_description
     ("This program converts DXF (AutoCAD interchange format) to egg.  It "
      "only converts polygon data, with no fancy tricks.  DXF does not support "

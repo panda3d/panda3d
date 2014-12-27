@@ -29,6 +29,7 @@ SoftCVS::
 SoftCVS() {
   _cvs_binary = "cvs";
 
+  set_program_brief("prepare a SoftImage database directory for adding to CVS");
   set_program_description
     ("softcvs is designed to prepare a directory hierarchy "
      "representing a SoftImage database for adding to CVS.  "

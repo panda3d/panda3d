@@ -28,6 +28,7 @@ DXFPoints() :
   // output files.
   _preferred_extension = ".txt";
 
+  set_program_brief("extract points from AutoCAD .dxf files");
   set_program_description
     ("This program reads an AutoCAD .dxf file and generates a simple "
      "list of all the points contained within it, one per line, to a "
