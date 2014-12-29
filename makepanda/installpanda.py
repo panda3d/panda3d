@@ -12,7 +12,7 @@
 #
 ########################################################################
 
-import os, sys, platform, compileall
+import os, sys, platform
 from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
@@ -201,9 +201,9 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     WriteKeysFile(destdir+prefix+"/share/mime-info/panda3d.keys", MIME_INFO)
     WriteMimeXMLFile(destdir+prefix+"/share/mime/packages/panda3d.xml", MIME_INFO)
     WriteApplicationsFile(destdir+prefix+"/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO)
-    oscmd("cp makepanda/pview.desktop           "+destdir+prefix+"/share/applications/pview.desktop")
-    oscmd("cp doc/LICENSE                       "+destdir+prefix+"/share/panda3d/LICENSE")
-    oscmd("cp doc/LICENSE                       "+destdir+prefix+"/include/panda3d/LICENSE")
+    if os.path.isfile(outputdir+"/bin/pview"):
+        oscmd("cp makepanda/pview.desktop "+destdir+prefix+"/share/applications/pview.desktop")
+
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
     oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+PPATH+"/panda3d.pth")
     oscmd("echo '"+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
@@ -211,22 +211,17 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
         oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
     else:
         oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
-        oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
+
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")) or base == "libp3pystub.a":
             # We really need to specify -R in order not to follow symlinks on non-GNU
             oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+libdir+"/panda3d/"+base)
-    # rpmlint doesn't like it if we compile pyc.
-    #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
-    #    if ((base != "extensions") and (base != "extensions_native")):
-    #        compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
-    #compileall.compile_dir(destdir+prefix+"/share/panda3d/Pmw")
 
-    DeleteCVS(destdir+prefix+"/share/panda3d")
+    DeleteVCS(destdir+prefix+"/share/panda3d")
     DeleteBuildFiles(destdir+prefix+"/share/panda3d")
     DeleteEmptyDirs(destdir+prefix+"/share/panda3d")
-    DeleteCVS(destdir+prefix+"/include/panda3d")
+    DeleteVCS(destdir+prefix+"/include/panda3d")
     DeleteBuildFiles(destdir+prefix+"/include/panda3d")
     DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
 

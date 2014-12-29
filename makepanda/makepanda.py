@@ -2583,7 +2583,7 @@ CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/Dense')
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/StdVector')
 CopyFile(GetOutputDir()+'/include/parser-inc/Rocket/Core/','dtool/src/parser-inc/RenderInterface.h')
-DeleteCVS(GetOutputDir()+'/include/parser-inc')
+DeleteVCS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
 #
@@ -6158,7 +6158,7 @@ Conflicts: panda3d
 Replaces: panda3d
 Maintainer: rdb <me@rdb.name>
 Installed-Size: INSTSIZE
-Description: The Panda3D free 3D engine SDK
+Description: Panda3D free 3D engine SDK
  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
  .
@@ -6285,10 +6285,11 @@ def MakeInstallerLinux():
 
     if os.path.exists("/usr/bin/dpkg-deb"):
         # Invoke installpanda.py to install it into a temporary dir
+        lib_dir = GetDebLibDir()
         if RUNTIME:
-            InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=GetDebLibDir())
+            InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=lib_dir)
         else:
-            InstallPanda(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=GetDebLibDir())
+            InstallPanda(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=lib_dir)
             oscmd("chmod -R 755 targetroot/usr/share/panda3d")
             oscmd("mkdir -p targetroot/usr/share/man/man1")
             oscmd("cp doc/man/*.1 targetroot/usr/share/man/man1/")
@@ -6311,7 +6312,6 @@ def MakeInstallerLinux():
 
         # Determine the package name and the locations that
         # dpkg-shlibdeps should look in for executables.
-        lib_dir = GetLibDir()
         pkg_version = DEBVERSION
         if RUNTIME:
             pkg_name = "panda3d-runtime"
@@ -6507,7 +6507,7 @@ def MakeInstallerOSX():
         oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
 
     oscmd("chmod -R 0775 dstroot/*")
-    DeleteCVS("dstroot")
+    DeleteVCS("dstroot")
     DeleteBuildFiles("dstroot")
     # We need to be root to perform a chown. Bleh.
     # Fortunately PackageMaker does it for us, on 10.5 and above.
