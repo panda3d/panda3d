@@ -163,6 +163,20 @@ PUBLISHED:
 };
 
 
+// The existence of these functions makes it possible to sort vectors
+// of PointerTo objects without incurring the cost of unnecessary
+// reference count changes.  The performance difference is dramatic!
+template <class T>
+void swap(PointerTo<T> &one, PointerTo<T> &two) {
+  one.swap(two);
+}
+
+template <class T>
+void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) {
+  one.swap(two);
+}
+
+
 // Finally, we'll define a couple of handy abbreviations to save on
 // all that wasted typing time.
 

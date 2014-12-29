@@ -105,3 +105,13 @@ operator != (const PointerToVoid &other) const {
   return _void_ptr != other._void_ptr;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::swap
+//       Access: Public
+//  Description: Swaps the contents of this PointerTo with the other,
+//               without touching the reference counts.
+////////////////////////////////////////////////////////////////////
+INLINE void PointerToVoid::
+swap(PointerToVoid &other) {
+  std::swap(_void_ptr, other._void_ptr);
+}
