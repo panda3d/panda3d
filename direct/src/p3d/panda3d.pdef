@@ -96,7 +96,7 @@ class panda3d(package):
     # platform-specific extension for an executable.
     file('libpandagl.dll', 'libp3tinydisplay.dll')
     if platform.startswith('win'):
-        file('libpandadx8.dll', 'libpandadx9.dll')
+        file('libpandadx9.dll')
 
     # A basic config file is needed to lay some some fundamental runtime
     # variables.
@@ -104,7 +104,6 @@ class panda3d(package):
         auxDisplays = """
 aux-display pandagl
 aux-display pandadx9
-aux-display pandadx8
 aux-display p3tinydisplay
 """
     else:

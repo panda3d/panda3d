@@ -37,7 +37,7 @@ LoaderOptions PandaFramework::_loader_options;
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PandaFramework::
 PandaFramework() :
@@ -63,7 +63,7 @@ PandaFramework() :
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PandaFramework::
 ~PandaFramework() {
@@ -98,9 +98,6 @@ open_framework(int &argc, char **&argv) {
   #elif defined(HAVE_DX9)
   extern EXPCL_PANDADX9 void init_libpandadx9();
   init_libpandadx9();
-  #elif defined(HAVE_DX8)
-  extern EXPCL_PANDADX8 void init_libpandadx8();
-  init_libpandadx8();
   #elif defined(HAVE_TINYDISPLAY)
   extern EXPCL_TINYDISPLAY void init_libtinydisplay();
   init_libtinydisplay();
@@ -158,7 +155,7 @@ open_framework(int &argc, char **&argv) {
     PT(GenericAsyncTask) task = new GenericAsyncTask("play_frame", task_play_frame, this);
     task->set_sort(55);
     _task_mgr.add(task);
-    
+
   } else if (!record_session.empty()) {
     // If the config file so indicates, create a recorder and start it
     // recording.
@@ -168,7 +165,7 @@ open_framework(int &argc, char **&argv) {
     PT(GenericAsyncTask) task = new GenericAsyncTask("record_frame", task_record_frame, this);
     task->set_sort(45);
     _task_mgr.add(task);
-  } 
+  }
 
   _event_handler.add_hook("window-event", event_window_event, this);
 }
@@ -263,7 +260,7 @@ get_mouse(GraphicsOutput *window) {
     GraphicsWindow *win = DCAST(GraphicsWindow, window);
     MouseAndKeyboard *mouse_node = new MouseAndKeyboard(win, 0, "mouse");
     mouse = data_root.attach_new_node(mouse_node);
-    
+
     RecorderController *recorder = get_recorder();
     if (recorder != (RecorderController *)NULL) {
       // If we're in recording or playback mode, associate a recorder.
@@ -272,7 +269,7 @@ get_mouse(GraphicsOutput *window) {
       recorder->add_recorder("mouse", mouse_recorder);
     }
   }
-    
+
   _mouses[window] = mouse;
 
   return mouse;
@@ -415,7 +412,7 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   if (window_type == "offscreen") {
     flags = GraphicsPipe::BF_refuse_window;
   }
-  
+
   return open_window(props, flags, pipe, gsg);
 }
 
@@ -449,7 +446,7 @@ open_window(const WindowProperties &props, int flags,
   wf->set_perpixel(get_perpixel());
   wf->set_background_type(get_background_type());
 
-  GraphicsOutput *win = wf->open_window(props, flags, get_graphics_engine(), 
+  GraphicsOutput *win = wf->open_window(props, flags, get_graphics_engine(),
                                         pipe, gsg);
   _engine->open_windows();
   if (win != (GraphicsOutput *)NULL && !win->is_valid()) {
@@ -523,7 +520,7 @@ close_window(int n) {
   if (win != (GraphicsOutput *)NULL) {
     _engine->remove_window(win);
   }
-  
+
   wf->close_window();
   _windows.erase(_windows.begin() + n);
 }
@@ -544,7 +541,7 @@ close_all_windows() {
     if (win != (GraphicsOutput *)NULL) {
       _engine->remove_window(win);
     }
-    
+
     wf->close_window();
   }
 
@@ -602,7 +599,7 @@ void PandaFramework::
 report_frame_rate(ostream &out) const {
   double now = ClockObject::get_global_clock()->get_frame_time();
   double delta = now - _start_time;
-  
+
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
   int num_frames = frame_count - _frame_count;
   if (num_frames > 0) {
@@ -959,7 +956,7 @@ clear_text() {
 //               window).
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_esc(const Event *event, void *data) { 
+event_esc(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1227,7 +1224,7 @@ event_A(const Event *, void *data) {
 void PandaFramework::
 event_h(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
-  
+
   if (self->has_highlight()) {
     self->clear_highlight();
   } else {
@@ -1290,7 +1287,7 @@ event_arrow_left(const Event *, void *data) {
       nassertv(index >= 0);
       int sibling = index - 1;
 
-      if (sibling >= 0 && 
+      if (sibling >= 0 &&
           parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
         // Skip over the special highlight node.
         sibling--;
@@ -1323,12 +1320,12 @@ event_arrow_right(const Event *, void *data) {
       int num_children = parent.node()->get_num_children();
       int sibling = index + 1;
 
-      if (sibling < num_children && 
+      if (sibling < num_children &&
           parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
         // Skip over the special highlight node.
         sibling++;
       }
-      
+
       if (sibling < num_children) {
         self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
       }
@@ -1416,11 +1413,11 @@ event_comma(const Event *event, void *) {
     case WindowFramework::BT_other:
     case WindowFramework::BT_none:
       break;
-      
+
     case WindowFramework::BT_white:
       wf->set_background_type(WindowFramework::BT_default);
       break;
-      
+
     default:
       wf->set_background_type((WindowFramework::BackgroundType)(wf->get_background_type() + 1));
     }
@@ -1450,8 +1447,8 @@ event_question(const Event *event, void *data) {
       // Build up a string to display.
       ostringstream help;
       KeyDefinitions::const_iterator ki;
-      for (ki = self->_key_definitions.begin(); 
-           ki != self->_key_definitions.end(); 
+      for (ki = self->_key_definitions.begin();
+           ki != self->_key_definitions.end();
            ++ki) {
         const KeyDefinition &keydef = (*ki);
         help << keydef._event_name << "\t" << keydef._description << "\n";
@@ -1513,7 +1510,7 @@ event_window_event(const Event *event, void *data) {
           self->close_window(window_index);
           window_index = self->find_window(win);
         }
-        
+
         // Free up the mouse for that window.
         self->remove_mouse(win);
 

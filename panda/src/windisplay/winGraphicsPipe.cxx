@@ -758,7 +758,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
       if (buffer != NULL) {
         PANDA_FREE_ARRAY(buffer);
       }
-      
+
       buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)PANDA_MALLOC_ARRAY(buffer_length);
       nassertv(buffer != NULL);
     } else {
@@ -777,7 +777,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
   while (ptr < end) {
     if (ptr->Relationship == RelationProcessorCore) {
       num_cpu_cores++;
-      
+
       // A hyperthreaded core supplies more than one logical processor.
       num_logical_cpus += count_bits_in_word((PN_uint64)(ptr->ProcessorMask));
     }
@@ -798,14 +798,14 @@ count_number_of_cpus(DisplayInformation *display_information) {
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsPipe::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 WinGraphicsPipe() {
 
   bool state;
   char string [512];
-  
+
   state = false;
   _supported_types = OT_window | OT_fullscreen_window;
 
@@ -815,7 +815,7 @@ WinGraphicsPipe() {
 
   _hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
   if (_hUser32 != NULL) {
-    _pfnTrackMouseEvent = 
+    _pfnTrackMouseEvent =
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
   }
 
@@ -826,17 +826,6 @@ WinGraphicsPipe() {
 
     if (state == false && dx9_display_information (display_search_parameters_dx9, _display_information)) {
       state = true;
-    }
-  }
-#endif
-
-#ifdef HAVE_DX8
-  if (request_dxdisplay_information){
-    DisplaySearchParameters display_search_parameters_dx8;
-    int dx8_display_information (DisplaySearchParameters &display_search_parameters_dx8, DisplayInformation *display_information);
-    
-    if (state == false && dx8_display_information (display_search_parameters_dx8, _display_information)) {
-      state = true;    
     }
   }
 #endif
@@ -852,32 +841,32 @@ WinGraphicsPipe() {
     sprintf (string, "OS version: %d.%d.%d.%d \n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
     windisplay_cat.info() << string;
     windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
-    
+
     _display_information -> _os_version_major = version_info.dwMajorVersion;
     _display_information -> _os_version_minor = version_info.dwMinorVersion;
-    _display_information -> _os_version_build = version_info.dwBuildNumber;     
+    _display_information -> _os_version_build = version_info.dwBuildNumber;
     _display_information -> _os_platform_id = version_info.dwPlatformId;
   }
   // Screen size
   _display_width = GetSystemMetrics(SM_CXSCREEN);
   _display_height = GetSystemMetrics(SM_CYSCREEN);
-  
+
   HMODULE power_dll;
 
   power_dll = LoadLibrary ("PowrProf.dll");
-  if (power_dll) {    
+  if (power_dll) {
     CallNtPowerInformationFunction = (CallNtPowerInformationType) GetProcAddress (power_dll, "CallNtPowerInformation");
-    if (CallNtPowerInformationFunction) {    
-    
+    if (CallNtPowerInformationFunction) {
+
       _display_information -> _update_cpu_frequency_function = update_cpu_frequency_function;
       update_cpu_frequency_function(0, _display_information);
 
-      sprintf (string, "max Mhz %I64d, current Mhz %I64d \n", _display_information -> _maximum_cpu_frequency, _display_information -> _current_cpu_frequency);     
+      sprintf (string, "max Mhz %I64d, current Mhz %I64d \n", _display_information -> _maximum_cpu_frequency, _display_information -> _current_cpu_frequency);
 
-      windisplay_cat.info() << string;    
+      windisplay_cat.info() << string;
     }
   }
-  
+
   if (state) {
 
   }

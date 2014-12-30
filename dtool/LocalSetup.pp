@@ -66,11 +66,6 @@
 #else
 #print - Did not find Cg OpenGL API
 #endif
-#if $[HAVE_CGDX8]
-#print + Cg DX8 API
-#else
-#print - Did not find Cg DX8 API
-#endif
 #if $[HAVE_CGDX9]
 #print + Cg DX9 API
 #else
@@ -150,11 +145,6 @@
 #print + OpenGL ES 2
 #else
 #print - Did not find OpenGL ES 2
-#endif
-#if $[HAVE_DX8]
-#print + DirectX8
-#else
-#print - Did not find DirectX8
 #endif
 #if $[HAVE_DX9]
 #print + DirectX9
@@ -389,9 +379,6 @@ $[cdefine HAVE_CG]
 /* Define if we have CGGL installed.  */
 $[cdefine HAVE_CGGL]
 
-/* Define if we have CGDX8 installed.  */
-$[cdefine HAVE_CGDX8]
-
 /* Define if we have CGDX9 installed.  */
 $[cdefine HAVE_CGDX9]
 
@@ -440,9 +427,6 @@ $[cdefine HAVE_EGL]
 
 /* Define if we have Windows-GL installed and want to build for Wgl.  */
 $[cdefine HAVE_WGL]
-
-/* Define if we have DirectX installed and want to build for DX.  */
-$[cdefine HAVE_DX8]
 
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX9]

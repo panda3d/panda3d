@@ -93,7 +93,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
 
 MAYAVERSIONS = []
 MAXVERSIONS = []
-DXVERSIONS = ["DX8","DX9"]
+DXVERSIONS = ["DX9"]
 
 for (ver,key) in MAYAVERSIONINFO:
     MAYAVERSIONS.append(ver)
@@ -1644,7 +1644,6 @@ def GetSdkDir(sdkname, sdkkey = None):
 def SdkLocateDirectX( strMode = 'default' ):
     if (GetHost() != "windows"): return
     if strMode == 'default':
-        GetSdkDir("directx8", "DX8")
         GetSdkDir("directx9", "DX9")
         if ("DX9" not in SDK):
             strMode = 'latest'
@@ -1681,18 +1680,12 @@ def SdkLocateDirectX( strMode = 'default' ):
                 print("Using DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = GetTargetArch()
-        if ("DX9" not in SDK) or ("DX8" not in SDK):
+        if ("DX9" not in SDK):
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
                     dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
                     if (dir != 0):
-                        if (("DX8" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d8.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
-                            (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
-                            SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -1743,18 +1736,12 @@ def SdkLocateDirectX( strMode = 'default' ):
             exit("Couldn't find DirectX March 2009 SDK")
     elif strMode == 'aug2006':
         archStr = GetTargetArch()
-        if ("DX9" not in SDK) or ("DX8" not in SDK):
+        if ("DX9" not in SDK):
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
                     dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
                     if (dir != 0):
-                        if (("DX8" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d8.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
-                            (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
-                            SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -2074,7 +2061,7 @@ def SdkLocateAndroid():
 ########################################################################
 
 def SdkAutoDisableDirectX():
-    for ver in ["DX8","DX9","DIRECTCAM"]:
+    for ver in ["DX9", "DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (ver not in SDK):
                 if (GetHost() == "windows"):

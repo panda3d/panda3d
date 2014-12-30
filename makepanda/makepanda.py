@@ -1933,7 +1933,6 @@ DTOOL_CONFIG=[
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_EGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
-    ("HAVE_DX8",                       'UNDEF',                  'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
@@ -2491,7 +2490,6 @@ if (GetTarget() == 'windows'):
     configprc = configprc.replace("$HOME/.panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
 else:
     configprc = configprc.replace("aux-display pandadx9", "")
-    configprc = configprc.replace("aux-display pandadx8", "")
 
 if (GetTarget() == 'darwin'):
     configprc = configprc.replace(".panda3d/cache", "Library/Caches/Panda3D-%s" % MAJOR_VERSION)
@@ -2663,8 +2661,6 @@ CopyAllHeaders('panda/src/audiotraits')
 CopyAllHeaders('panda/src/distort')
 CopyAllHeaders('panda/src/downloadertools')
 CopyAllHeaders('panda/src/windisplay')
-CopyAllHeaders('panda/src/dxgsg8')
-CopyAllHeaders('panda/metalibs/pandadx8')
 CopyAllHeaders('panda/src/dxgsg9')
 CopyAllHeaders('panda/metalibs/pandadx9')
 CopyAllHeaders('panda/src/egg')
@@ -3922,29 +3918,11 @@ if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")
 if (GetTarget() == 'windows' and not RUNTIME):
   OPTS=['DIR:panda/src/windisplay', 'BUILDING:PANDAWIN']
   TargetAdd('p3windisplay_composite1.obj', opts=OPTS+["BIGOBJ"], input='p3windisplay_composite1.cxx')
-  TargetAdd('p3windisplay_windetectdx8.obj', opts=OPTS + ["DX8"], input='winDetectDx8.cxx')
   TargetAdd('p3windisplay_windetectdx9.obj', opts=OPTS + ["DX9"], input='winDetectDx9.cxx')
   TargetAdd('libp3windisplay.dll', input='p3windisplay_composite1.obj')
-  TargetAdd('libp3windisplay.dll', input='p3windisplay_windetectdx8.obj')
   TargetAdd('libp3windisplay.dll', input='p3windisplay_windetectdx9.obj')
   TargetAdd('libp3windisplay.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',"BIGOBJ"])
-
-#
-# DIRECTORY: panda/metalibs/pandadx8/
-#
-
-if PkgSkip("DX8")==0 and not RUNTIME:
-  OPTS=['DIR:panda/src/dxgsg8', 'DIR:panda/metalibs/pandadx8', 'BUILDING:PANDADX', 'DX8']
-  TargetAdd('p3dxgsg8_dxGraphicsStateGuardian8.obj', opts=OPTS, input='dxGraphicsStateGuardian8.cxx')
-  TargetAdd('p3dxgsg8_composite1.obj', opts=OPTS, input='p3dxgsg8_composite1.cxx')
-  TargetAdd('pandadx8_pandadx8.obj', opts=OPTS, input='pandadx8.cxx')
-  TargetAdd('libpandadx8.dll', input='pandadx8_pandadx8.obj')
-  TargetAdd('libpandadx8.dll', input='p3dxgsg8_dxGraphicsStateGuardian8.obj')
-  TargetAdd('libpandadx8.dll', input='p3dxgsg8_composite1.obj')
-  TargetAdd('libpandadx8.dll', input='libp3windisplay.dll')
-  TargetAdd('libpandadx8.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandadx8.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX8'])
 
 #
 # DIRECTORY: panda/metalibs/pandadx9/

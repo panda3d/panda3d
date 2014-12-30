@@ -22,7 +22,6 @@
 #include "graphicsPipe.h"
 #include "displaySearchParameters.h"
 
-#define DX8 0
 #define Direct3DCreate Direct3DCreate9
 
 typedef LPDIRECT3D9 (WINAPI *DIRECT3DCREATE9)(UINT SDKVersion);

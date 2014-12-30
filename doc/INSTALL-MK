@@ -141,7 +141,6 @@ it will show you the available command-line options:
   --use-max9        --no-max9      (enable/disable use of MAX9)
   --use-max2009     --no-max2009   (enable/disable use of MAX2009)
   --use-max2010     --no-max2010   (enable/disable use of MAX2010)
-  --use-dx8         --no-dx8       (enable/disable use of DX8)
   --use-dx9         --no-dx9       (enable/disable use of DX9)
   --use-python      --no-python    (enable/disable use of PYTHON)
   --use-zlib        --no-zlib      (enable/disable use of ZLIB)
