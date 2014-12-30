@@ -79,6 +79,7 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_AsUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_FromLong(...);
   EXPCL_PYSTUB int PyLong_FromLongLong(...);
+  EXPCL_PYSTUB int PyLong_FromSize_t(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLong(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_Type(...);
@@ -153,6 +154,7 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_AsUTF8(...);
   EXPCL_PYSTUB int PyUnicode_AsUTF8AndSize(...);
   EXPCL_PYSTUB int PyUnicode_AsWideChar(...);
+  EXPCL_PYSTUB int PyUnicode_AsWideCharString(...);
   EXPCL_PYSTUB int PyUnicode_FromString(...);
   EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicode_FromWideChar(...);
@@ -263,6 +265,7 @@ int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
 int PyLong_FromLong(...) { return 0; }
 int PyLong_FromLongLong(...) { return 0; }
+int PyLong_FromSize_t(...) { return 0; }
 int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
@@ -337,6 +340,7 @@ int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_AsUTF8(...) { return 0; }
 int PyUnicode_AsUTF8AndSize(...) { return 0; }
 int PyUnicode_AsWideChar(...) { return 0; }
+int PyUnicode_AsWideCharString(...) { return 0; }
 int PyUnicode_FromString(...) { return 0; }
 int PyUnicode_FromStringAndSize(...) { return 0; }
 int PyUnicode_FromWideChar(...) { return 0; }

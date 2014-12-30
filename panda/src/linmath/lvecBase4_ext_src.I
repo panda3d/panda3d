@@ -36,17 +36,6 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::python_repr
 //       Access: Published
 //  Description:
@@ -257,17 +246,6 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(3) = cpow(_this->_v(3), exponent);
   Py_INCREF(self);
   return self;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(UnalignedLVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
 }
 
 #undef PYNUMBER_FLOATTYPE

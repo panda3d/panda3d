@@ -39,7 +39,7 @@ CPPIdentifier(const string &name, const CPPFile &file) : _file(file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier::
-CPPIdentifier(const CPPNameComponent &name) {
+CPPIdentifier(const CPPNameComponent &name, const CPPFile &file) : _file(file) {
   _names.push_back(name);
   _native_scope = (CPPScope *)NULL;
 }
@@ -382,6 +382,7 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
   if (scope == NULL) {
     return NULL;
   }
+
   CPPType *type = scope->find_type(get_simple_name(), subst, global_scope);
   if (type != NULL && _names.back().has_templ()) {
     // This is a template type.
@@ -398,7 +399,6 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
       assert(new_type != NULL);
       if (new_type == type) {
         type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
-        //      type = new_type;
       } else {
         type = new_type;
       }
@@ -424,12 +424,50 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
   if (scope == NULL) {
     return NULL;
   }
+
   CPPDeclaration *sym;
   if (!_names.back().has_templ()) {
     sym = scope->find_symbol(get_simple_name());
 
   } else {
     sym = scope->find_template(get_simple_name());
+    if (sym != NULL) {
+      CPPType *type = sym->as_type();
+      if (type != NULL && type->is_incomplete()) {
+        // We can't instantiate an incomplete type.
+        sym = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
+      } else {
+        // Instantiate the symbol.
+        sym = sym->instantiate(_names.back().get_templ(), current_scope,
+                               global_scope, error_sink);
+      }
+    }
+  }
+
+  return sym;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPIdentifier::find_symbol
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPDeclaration *CPPIdentifier::
+find_symbol(CPPScope *current_scope, CPPScope *global_scope,
+            CPPDeclaration::SubstDecl &subst,
+            CPPPreprocessor *error_sink) const {
+  CPPScope *scope = get_scope(current_scope, global_scope, subst, error_sink);
+  if (scope == NULL) {
+    return NULL;
+  }
+
+  CPPDeclaration *sym;
+  if (!_names.back().has_templ()) {
+    sym = scope->find_symbol(get_simple_name());
+
+  } else {
+    sym = scope->find_template(get_simple_name());
+
     if (sym != NULL) {
       CPPType *type = sym->as_type();
       if (type != NULL && type->is_incomplete()) {

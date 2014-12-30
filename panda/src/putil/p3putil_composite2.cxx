@@ -2,8 +2,6 @@
 #include "ioPtaDatagramInt.cxx"
 #include "ioPtaDatagramShort.cxx"
 #include "keyboardButton.cxx"
-#include "lineStream.cxx"
-#include "lineStreamBuf.cxx"
 #include "linkedListNode.cxx"
 #include "load_prc_file.cxx"
 #include "loaderOptions.cxx"

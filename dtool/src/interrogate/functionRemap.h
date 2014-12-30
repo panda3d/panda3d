@@ -76,21 +76,25 @@ public:
     T_typecast,
     T_getter,
     T_setter,
+    T_item_assignment_operator,
   };
 
   enum Flags {
-    F_getitem          = 0x0001,
-    F_getitem_int      = 0x0002,
-    F_size             = 0x0004,
-    F_setitem          = 0x0008,
-    F_setitem_int      = 0x0010,
-    F_make_copy        = 0x0020,
-    F_copy_constructor = 0x0040,
-    F_explicit_self    = 0x0080,
-    F_iter             = 0x0100,
-    F_getbuffer        = 0x0200,
-    F_releasebuffer    = 0x0400,
-    F_compare_to       = 0x0800,
+    F_getitem            = 0x0001,
+    F_getitem_int        = 0x0002,
+    F_size               = 0x0004,
+    F_setitem            = 0x0008,
+    F_setitem_int        = 0x0010,
+    F_delitem            = 0x0020,
+    F_delitem_int        = 0x0040,
+    F_make_copy          = 0x0080,
+    F_copy_constructor   = 0x0100,
+    F_explicit_self      = 0x0200,
+    F_iter               = 0x0400,
+    F_getbuffer          = 0x0800,
+    F_releasebuffer      = 0x1000,
+    F_compare_to         = 0x2000,
+    F_coerce_constructor = 0x4000,
   };
 
   typedef vector<Parameter> Parameters;

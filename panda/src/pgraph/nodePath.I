@@ -110,6 +110,19 @@ operator = (const NodePath &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear
+//       Access: Published
+//  Description: Sets this NodePath to the empty NodePath.  It will
+//               no longer point to any node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear() {
+  _head.clear();
+  _backup_key = 0;
+  _error_type = ET_ok;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::not_found named constructor
 //       Access: Published, Static
 //  Description: Creates a NodePath with the ET_not_found error type

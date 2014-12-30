@@ -1,5 +1,5 @@
-// Filename: lmatrix4_ext_src.h
-// Created by:  rdb (12Sep13)
+// Filename: globPattern_ext.h
+// Created by:  rdb (17Sep14)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,18 +12,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef GLOBPATTERN_EXT_H
+#define GLOBPATTERN_EXT_H
+
+#include "dtoolbase.h"
+
+#ifdef HAVE_PYTHON
+
+#include "extension.h"
+#include "globPattern.h"
+#include "py_panda.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Extension<LMatrix4>
+//       Class : Extension<GlobPattern>
 // Description : This class defines the extension methods for
-//               LMatrix4, which are called instead of
+//               GlobPattern, which are called instead of
 //               any C++ methods with the same prototype.
 ////////////////////////////////////////////////////////////////////
 template<>
-class Extension<FLOATNAME(LMatrix4)> : public ExtensionBase<FLOATNAME(LMatrix4)> {
+class Extension<GlobPattern> : public ExtensionBase<GlobPattern> {
 public:
-  INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+  PyObject *match_files(const Filename &cwd = Filename()) const;
 };
 
-#include "lmatrix4_ext_src.I"
+#endif  // HAVE_PYTHON
+
+#endif  // GLOBPATTERN_EXT_H

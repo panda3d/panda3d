@@ -34,7 +34,7 @@ class CPPExtensionType;
 class CPPStructType;
 class CPPNamespace;
 class CPPUsing;
-class CPPTypedef;
+class CPPTypedefType;
 class CPPInstance;
 class CPPFunctionGroup;
 class CPPTemplateScope;
@@ -128,8 +128,8 @@ public:
   typedef map<string, CPPNamespace *> Namespaces;
   Namespaces _namespaces;
 
-  typedef map<string, CPPTypedef *> Typedefs;
-  Typedefs _typedefs;
+  typedef map<string, CPPType *> Types;
+  Types _types;
   typedef map<string, CPPInstance *> Variables;
   Variables _variables;
   Variables _enum_values;

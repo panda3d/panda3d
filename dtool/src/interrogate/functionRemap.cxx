@@ -275,7 +275,6 @@ make_wrapper_entry(FunctionIndex function_index) {
     iwrapper._comment = InterrogateBuilder::trim_blanks(_cppfunc->_leading_comment->_comment);
   }
 
-
   if (output_function_names) {
     // If we're keeping the function names, record that the wrapper is
     // callable.
@@ -413,14 +412,26 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
 
-    for (int pn = _first_true_parameter;
-         pn < (int)_parameters.size();
-         ++pn) {
+    int pn = _first_true_parameter;
+    int num_parameters = _parameters.size();
+
+    if (_type == T_item_assignment_operator) {
+      // The last parameter is the value to set.
+      --num_parameters;
+    }
+
+    for (pn = _first_true_parameter;
+         pn < num_parameters; ++pn) {
       call << separator;
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
       separator = ", ";
     }
     call << ")";
+
+    if (_type == T_item_assignment_operator) {
+      call << " = ";
+      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    }
   }
 
   return call.str();
@@ -484,6 +495,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   string fname = _cppfunc->get_simple_name();
+  CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _cppscope);
 
   if (_cpptype != (CPPType *)NULL &&
       ((_cppfunc->_storage_class & CPPInstance::SC_static) == 0) &&
@@ -520,13 +532,22 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         fname == "operator <<=" ||
         fname == "operator >>=") {
       _type = T_assignment_method;
+
+    } else if (fname == "operator []" && !_const_method && rtype != NULL) {
+       // Check if this is an item-assignment operator.
+      CPPReferenceType *reftype = rtype->as_reference_type();
+      if (reftype != NULL && reftype->_pointing_at->as_const_type() == NULL) {
+        // It returns a mutable reference.
+        _type = T_item_assignment_operator;
+      }
     }
   }
 
   const CPPParameterList::Parameters &params =
     _ftype->_parameters->_parameters;
   for (int i = 0; i < (int)params.size() - _num_default_parameters; i++) {
-    CPPType *type = params[i]->_type->resolve_type(&parser, _cppscope);
+    //CPPType *type = params[i]->_type->resolve_type(&parser, _cppscope);
+    CPPType *type = params[i]->_type;
     Parameter param;
     param._has_name = true;
     param._name = params[i]->get_simple_name();
@@ -588,9 +609,39 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
     }
 
+  } else if (_type == T_item_assignment_operator) {
+    // An item-assignment method isn't really a thing in C++, but it is
+    // in scripting languages, so we use this to denote item-access operators
+    // that return a non-const reference.
+
+    if (_cpptype == (CPPType *)NULL) {
+      nout << "Method " << *_cppfunc << " has no struct type\n";
+      return false;
+    } else {
+      // Synthesize a const reference parameter for the assignment.
+      CPPType *bare_type = TypeManager::unwrap_reference(rtype);
+      CPPType *const_type = CPPType::new_type(new CPPConstType(bare_type));
+      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(const_type));
+
+      Parameter param;
+      param._has_name = true;
+      param._name = "assign_val";
+      param._remap = interface_maker->remap_parameter(_cpptype, ref_type);
+
+      if (param._remap == NULL || !param._remap->is_valid()) {
+        nout << "Invalid remap for assignment type of method " << *_cppfunc << "\n";
+        return false;
+      }
+      _parameters.push_back(param);
+
+      // Pretend we don't return anything at all.
+      CPPType *void_type = TypeManager::get_void_type();
+      _return_type = interface_maker->remap_parameter(_cpptype, void_type);
+      _void_return = true;
+    }
+
   } else {
     // The normal case.
-    CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _cppscope);
     _return_type = interface_maker->remap_parameter(_cpptype, rtype);
     if (_return_type != (ParameterRemap *)NULL) {
       _void_return = TypeManager::is_void(rtype);
@@ -639,7 +690,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   if (_has_this || _type == T_constructor) {
-    if (_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
+    if ((int)_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
         TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
       // Here's a special case.  If the first parameter of a nonstatic
       // method is a PyObject * called "self", then we will
@@ -650,9 +701,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     }
   }
 
-  if (_parameters.size() == first_param) {
+  if ((int)_parameters.size() == first_param) {
     _args_type = InterfaceMaker::AT_no_args;
-  } else if (_parameters.size() == first_param + 1) {
+  } else if ((int)_parameters.size() == first_param + 1) {
     _args_type = InterfaceMaker::AT_single_arg;
   } else {
     _args_type = InterfaceMaker::AT_varargs;
@@ -669,12 +720,22 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "__setitem__") {
-      _flags |= F_setitem;
       if (_has_this && _parameters.size() > 2) {
+        _flags |= F_setitem;
         if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
           // Its first parameter is an int parameter, presumably an index.
           _flags |= F_setitem_int;
           _args_type = InterfaceMaker::AT_varargs;
+        }
+      }
+
+    } else if (fname == "__delitem__") {
+      if (_has_this && _parameters.size() == 2) {
+        _flags |= F_delitem;
+        if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+          // Its first parameter is an int parameter, presumably an index.
+          _flags |= F_delitem_int;
+          _args_type = InterfaceMaker::AT_single_arg;
         }
       }
 
@@ -722,11 +783,20 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_compare_to;
       }
 
+    } else if (fname == "make") {
+      if (!_has_this && _parameters.size() >= 1 &&
+          TypeManager::is_pointer(_return_type->get_new_type())) {
+        // We can use this for coercion.
+        _flags |= F_coerce_constructor;
+      }
+
     } else if (fname == "operator ()" || fname == "__call__") {
       // Call operators always take keyword arguments.
       _args_type = InterfaceMaker::AT_keyword_args;
 
-    } else if (fname == "__setattr__" || fname == "__getattr__") {
+    } else if (fname == "__setattr__"
+            || fname == "__getattr__"
+            || fname == "__delattr__") {
       // Just to prevent these from getting keyword arguments.
 
     } else {
@@ -737,6 +807,19 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
     }
 
+  } else if (_type == T_item_assignment_operator) {
+    // The concept of "item assignment operator" doesn't really exist in C++,
+    // but it does in scripting languages, and this allows us to wrap cases
+    // where the C++ getitem returns an assignable reference.
+    _flags |= F_setitem;
+    if (_has_this && _parameters.size() > 2) {
+      if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // Its first parameter is an int parameter, presumably an index.
+        _flags |= F_setitem_int;
+      }
+    }
+    _args_type = InterfaceMaker::AT_varargs;
+
   } else if (_type == T_constructor) {
     if (!_has_this && _parameters.size() == 1 &&
         TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
@@ -745,7 +828,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       // "this" type, this is a copy constructor.
       _flags |= F_copy_constructor;
 
+    } else if (!_has_this && _parameters.size() > 0 &&
+               (_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0) {
+      // A non-explicit non-copy constructor might be eligible for coercion.
+      _flags |= F_coerce_constructor;
     }
+
     // Constructors always take varargs and keyword args.
     _args_type = InterfaceMaker::AT_keyword_args;
   }

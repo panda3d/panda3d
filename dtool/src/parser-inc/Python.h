@@ -26,8 +26,8 @@ typedef _object PyObject;
 struct _typeobject;
 typedef _typeobject PyTypeObject;
 
-struct PyStringObject;
-struct PyUnicodeObject;
+typedef struct {} PyStringObject;
+typedef struct {} PyUnicodeObject;
 
 class PyThreadState;
 typedef int Py_ssize_t;

@@ -17,7 +17,7 @@
 #include "config_event.h"
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
+#include "py_panda.h" 
 
 TypeHandle PythonTask::_type_handle;
 
@@ -46,7 +46,7 @@ PythonTask(PyObject *function, const string &name) :
   set_upon_death(Py_None);
   set_owner(Py_None);
 
-  _dict = PyDict_New();
+  __dict__ = PyDict_New();
 
 #ifndef SIMPLE_THREADS
   // Ensure that the Python threading system is initialized and ready
@@ -71,7 +71,7 @@ PythonTask::
 ~PythonTask() {
   Py_DECREF(_function);
   Py_DECREF(_args);
-  Py_DECREF(_dict);
+  Py_DECREF(__dict__);
   Py_XDECREF(_generator);
   Py_XDECREF(_owner);
   Py_XDECREF(_upon_death);
@@ -118,7 +118,7 @@ void PythonTask::
 set_args(PyObject *args, bool append_task) {
   Py_XDECREF(_args);
   _args = NULL;
-    
+
   if (args == Py_None) {
     // None means no arguments; create an empty tuple.
     _args = PyTuple_New(0);
@@ -249,53 +249,36 @@ get_owner() {
 //               arbitrary data to the Task object.
 ////////////////////////////////////////////////////////////////////
 int PythonTask::
-__setattr__(const string &attr_name, PyObject *v) {
+__setattr__(PyObject *self, PyObject *attr, PyObject *v) {
+  if (PyObject_GenericSetAttr(self, attr, v) == 0) {
+    return 0;
+  }
+
+  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {
+    return -1;
+  }
+
+  PyErr_Clear();
+
   if (task_cat.is_debug()) {
     PyObject *str = PyObject_Repr(v);
-    task_cat.debug() 
-      << *this << ": task." << attr_name << " = "
+    task_cat.debug()
+      << *this << ": task."
 #if PY_MAJOR_VERSION >= 3
+      << PyUnicode_AsUTF8(attr) << " = "
       << PyUnicode_AsUTF8(str) << "\n";
 #else
-      << PyString_AsString(str) << "\n"; 
+      << PyString_AsString(attr) << " = "
+      << PyString_AsString(str) << "\n";
 #endif
     Py_DECREF(str);
   }
 
-  if (attr_name == "delayTime") {
-    if (v == Py_None) {
-      clear_delay();
-    } else {
-      double delay = PyFloat_AsDouble(v);
-      if (!PyErr_Occurred()) {
-        set_delay(delay);
-      }
-    }
-
-  } else if (attr_name == "name") {
-#if PY_MAJOR_VERSION >= 3
-    char *name = PyUnicode_AsUTF8(v);
-#else
-    char *name = PyString_AsString(v);
-#endif
-    if (name != (char *)NULL) {
-      set_name(name);
-    }
-
-  } else if (attr_name == "id" || attr_name == "time" || 
-             attr_name == "frame" || attr_name == "wakeTime") {
-    nassert_raise("Cannot set constant value");
-    return true;
-
-  } else {
-    return PyDict_SetItemString(_dict, attr_name.c_str(), v);
-  }
-
-  return 0;
+  return PyDict_SetItem(__dict__, attr, v);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__setattr__
+//     Function: PythonTask::__delattr__
 //       Access: Published
 //  Description: Maps from an expression like "del task.attr_name".
 //               This is customized here so we can support some
@@ -304,8 +287,32 @@ __setattr__(const string &attr_name, PyObject *v) {
 //               arbitrary data to the Task object.
 ////////////////////////////////////////////////////////////////////
 int PythonTask::
-__setattr__(const string &attr_name) {
-  return PyDict_DelItemString(_dict, attr_name.c_str());
+__delattr__(PyObject *self, PyObject *attr) {
+  if (PyObject_GenericSetAttr(self, attr, NULL) == 0) {
+    return 0;
+  }
+
+  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {
+    return -1;
+  }
+
+  PyErr_Clear();
+
+  if (PyDict_DelItem(__dict__, attr) == -1) {
+    // PyDict_DelItem does not raise an exception.
+#if PY_MAJOR_VERSION < 3
+    PyErr_Format(PyExc_AttributeError,
+                 "'PythonTask' object has no attribute '%.400s'",
+                 PyString_AS_STRING(attr));
+#else
+    PyErr_Format(PyExc_AttributeError,
+                 "'PythonTask' object has no attribute '%U'",
+                 attr);
+#endif
+    return -1;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,43 +325,32 @@ __setattr__(const string &attr_name) {
 //               arbitrary data to the Task object.
 ////////////////////////////////////////////////////////////////////
 PyObject *PythonTask::
-__getattr__(const string &attr_name) const {
-  if (attr_name == "time") {
-    return PyFloat_FromDouble(get_elapsed_time());
+__getattr__(PyObject *attr) const {
+  // Note that with the new Interrogate behavior, this method
+  // behaves more like the Python __getattr__ rather than being
+  // directly assigned to the tp_getattro slot (a la __getattribute__).
+  // So, we won't get here when the attribute has already been found
+  // via other methods.
 
-  } else if (attr_name == "name") {
-#if PY_MAJOR_VERSION >= 3
-    return PyUnicode_FromString(get_name().c_str());
+  PyObject *item = PyDict_GetItem(__dict__, attr);
+
+  if (item == NULL) {
+    // PyDict_GetItem does not raise an exception.
+#if PY_MAJOR_VERSION < 3
+    PyErr_Format(PyExc_AttributeError,
+                 "'PythonTask' object has no attribute '%.400s'",
+                 PyString_AS_STRING(attr));
 #else
-    return PyString_FromString(get_name().c_str());
+    PyErr_Format(PyExc_AttributeError,
+                 "'PythonTask' object has no attribute '%U'",
+                 attr);
 #endif
-
-  } else if (attr_name == "wakeTime") {
-    return PyFloat_FromDouble(get_wake_time());
-
-  } else if (attr_name == "delayTime") {
-    if (!has_delay()) {
-      Py_RETURN_NONE;
-    }
-    return PyFloat_FromDouble(get_delay());
-
-  } else if (attr_name == "frame") {
-#if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(get_elapsed_frames());
-#else
-    return PyInt_FromLong(get_elapsed_frames());
-#endif
-
-  } else if (attr_name == "id") {
-#if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(_task_id);
-#else
-    return PyInt_FromLong(_task_id);
-#endif
-
-  } else {
-    return PyMapping_GetItemString(_dict, (char *)attr_name.c_str());
+    return NULL;
   }
+
+  // PyDict_GetItem returns a borrowed reference.
+  Py_INCREF(item);
+  return item;
 }
 
 ////////////////////////////////////////////////////////////////////

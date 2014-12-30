@@ -84,27 +84,14 @@ PUBLISHED:
                         int compression_level);
 
 #ifdef HAVE_OPENSSL
-  class CertRecord {
-  public:
-    INLINE CertRecord(X509 *cert);
-    INLINE CertRecord(const CertRecord &copy);
-    INLINE ~CertRecord();
-    INLINE void operator = (const CertRecord &other);
-    X509 *_cert;
-  };
-  typedef pvector<CertRecord> CertChain;
-
-  bool add_signature(const Filename &certificate, 
+  bool add_signature(const Filename &certificate,
                      const Filename &chain,
                      const Filename &pkey,
                      const string &password = "");
-  bool add_signature(const Filename &composite, 
+  bool add_signature(const Filename &composite,
                      const string &password = "");
-  bool add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey);
-  bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
 
   int get_num_signatures() const;
-  const CertChain &get_signature(int n) const;
   string get_signature_subject_name(int n) const;
   string get_signature_friendly_name(int n) const;
   string get_signature_public_key(int n) const;
@@ -152,6 +139,23 @@ PUBLISHED:
   INLINE const string &get_header_prefix() const;
 
 public:
+#ifdef HAVE_OPENSSL
+  class CertRecord {
+  public:
+    INLINE CertRecord(X509 *cert);
+    INLINE CertRecord(const CertRecord &copy);
+    INLINE ~CertRecord();
+    INLINE void operator = (const CertRecord &other);
+    X509 *_cert;
+  };
+  typedef pvector<CertRecord> CertChain;
+
+  bool add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey);
+  bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
+
+  const CertChain &get_signature(int n) const;
+#endif  // HAVE_OPENSSL
+
   bool read_subfile(int index, string &result);
   bool read_subfile(int index, pvector<unsigned char> &result);
 

@@ -38,7 +38,7 @@ static Py_hash_t DTool_HashKey_Methods_DTOOL_SUPER_BASE(PyObject *self) {
   return (Py_hash_t) local_this;
 };
 
-inline void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
+EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   static bool initdone = false;
   if (!initdone) {
 
@@ -79,11 +79,6 @@ inline void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyType
 }
 
 int Dtool_Init_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) {
-  PyErr_SetString(PyExc_TypeError, "cannot init super base");
-  return -1;
-}
-
-int Dtool_InitNoCoerce_DTOOL_SUPER_BASE(PyObject *self, PyObject *args) {
   PyErr_SetString(PyExc_TypeError, "cannot init super base");
   return -1;
 }

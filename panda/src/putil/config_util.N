@@ -1,16 +1,19 @@
+defconstruct ButtonHandle new ButtonHandle(0)
+
 ignoremember _factory
 ignoremember get_factory
 
 ignoretype FactoryBase
 ignoretype Factory<TypedWriteable>
 
-forcetype string
-renametype string CString
+# We want to keep our bindings consistent for both 32-bit and 64-bit
+# builds (to support multi-arch builds), so we don't export this.
+ignoretype BitMaskNative
 
-forcetype DoubleBitMaskNative
-forcetype QuadBitMaskNative
+forcetype basic_string<char>
+renametype basic_string<char> CString
 
 forcetype PointerToBase<ReferenceCountedVector<ushort> >
 forcetype PointerToArrayBase<ushort>
-forcetype PTA_ushort
-forcetype CPTA_ushort
+forcetype PointerToArray<ushort>
+forcetype ConstPointerToArray<ushort>

@@ -17,7 +17,7 @@
 #include "cppExtensionType.h"
 #include "cppClassTemplateParameter.h"
 #include "cppIdentifier.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::Constructor
@@ -105,8 +105,9 @@ add_template_parameter(CPPDeclaration *param) {
   if (cl != NULL) {
     // Create an implicit typedef for this class parameter.
     string name = cl->_ident->get_local_name();
-    _typedefs[name] = new CPPTypedef(new CPPInstance(cl, cl->_ident), false);
+    _types[name] = cl;
   }
+
   CPPInstance *inst = param->as_instance();
   if (inst != NULL) {
     // Register the variable for this value parameter.

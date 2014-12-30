@@ -1,5 +1,5 @@
-// Filename: lmatrix3_ext_src.I
-// Created by:  rdb (02Jan11)
+// Filename: filename_ext.cxx
+// Created by:  rdb (17Sep14)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,51 +12,58 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "filename_ext.h"
 
+#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::__reduce__
+//     Function: Extension<Filename>::__reduce__
 //       Access: Published
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH PyObject *Extension<FLOATNAME(LMatrix3)>::
+PyObject *Extension<Filename>::
 __reduce__(PyObject *self) const {
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
   // (e.g. this), and the arguments necessary to reconstruct this
   // object.
-  PyObject *this_class = PyObject_Type(self);
+  PyTypeObject *this_class = Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
   }
 
-  PyObject *result = Py_BuildValue("(O(fffffffff))", this_class, 
-    _this->_m(0, 0), _this->_m(0, 1), _this->_m(0, 2),
-    _this->_m(1, 0), _this->_m(1, 1), _this->_m(1, 2),
-    _this->_m(2, 0), _this->_m(2, 1), _this->_m(2, 2));
-
-  Py_DECREF(this_class);
+  PyObject *result = Py_BuildValue("(O(s))", this_class, _this->c_str());
   return result;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::python_repr
+//     Function: Extension<Filename>::scan_directory
 //       Access: Published
-//  Description:
+//  Description: This variant on scan_directory returns a Python list
+//               of strings on success, or None on failure.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LMatrix3)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "(" 
-      << MAYBE_ZERO(_this->_m(0, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(0, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(0, 2)) << ", "
+PyObject *Extension<Filename>::
+scan_directory() const {
+  vector_string contents;
+  if (!_this->scan_directory(contents)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
 
-      << MAYBE_ZERO(_this->_m(1, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(1, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(1, 2)) << ", "
+  PyObject *result = PyList_New(contents.size());
+  for (size_t i = 0; i < contents.size(); ++i) {
+    const string &filename = contents[i];
+#if PY_MAJOR_VERSION >= 3
+    // This function expects UTF-8.
+    PyObject *str = PyUnicode_FromStringAndSize(filename.data(), filename.size());
+#else
+    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
+#endif
+    PyList_SET_ITEM(result, i, str);
+  }
 
-      << MAYBE_ZERO(_this->_m(2, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(2, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(2, 2)) << ")";
+  return result;
 }
+#endif  // HAVE_PYTHON
+
 

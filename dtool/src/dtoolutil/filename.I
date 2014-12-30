@@ -306,6 +306,17 @@ operator + (const string &other) const {
   return a;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::operator /
+//       Access: Published
+//  Description: Returns a new Filename that is composed of the
+//               other filename added to the end of this filename,
+//               with an intervening slash added if necessary.
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
+operator / (const Filename &other) const {
+  return Filename(*this, other);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath

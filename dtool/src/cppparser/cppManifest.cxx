@@ -47,8 +47,8 @@ ExpansionNode(const string &str, bool paste) :
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
 CPPManifest(const string &args, const CPPFile &file) :
-  _file(file),
   _variadic_param(-1),
+  _file(file),
   _expr((CPPExpression *)NULL)
 {
   assert(!args.empty());
@@ -184,7 +184,7 @@ expand(const vector_string &args) const {
         // to a comma and no arguments are passed, the comma
         // is removed.  MSVC does this automatically.  Not sure
         // if we should allow MSVC behavior as well.
-        if (*result.rbegin() == ',') {
+        if (!result.empty() && *result.rbegin() == ',') {
           result.resize(result.size() - 1);
         }
       }

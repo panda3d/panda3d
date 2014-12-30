@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cppEnumType.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
 #include "cppConstType.h"
@@ -24,12 +24,29 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::Constructor
 //       Access: Public
-//  Description:
+//  Description: Creates an untyped, unscoped enum.
 ////////////////////////////////////////////////////////////////////
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
             const CPPFile &file) :
   CPPExtensionType(T_enum, ident, current_scope, file),
+  _parent_scope(current_scope),
+  _element_type(NULL),
+  _last_value(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPEnumType::Constructor
+//       Access: Public
+//  Description: Creates a typed but unscoped enum.
+////////////////////////////////////////////////////////////////////
+CPPEnumType::
+CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
+            CPPScope *current_scope, const CPPFile &file) :
+  CPPExtensionType(T_enum, ident, current_scope, file),
+  _parent_scope(current_scope),
+  _element_type(element_type),
   _last_value(NULL)
 {
 }
@@ -41,12 +58,24 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
 ////////////////////////////////////////////////////////////////////
 CPPInstance *CPPEnumType::
 add_element(const string &name, CPPExpression *value) {
-  CPPType *type =
-    CPPType::new_type(new CPPConstType(new CPPSimpleType(
-      CPPSimpleType::T_int, CPPSimpleType::F_unsigned)));
-
   CPPIdentifier *ident = new CPPIdentifier(name);
-  CPPInstance *inst = new CPPInstance(type, ident);
+  ident->_native_scope = _parent_scope;
+  CPPInstance *inst;
+
+  static CPPType *default_element_type = NULL;
+  if (_element_type == NULL) {
+    // This enum is untyped.  Use a suitable default, ie. 'int'.
+    if (default_element_type == NULL) {
+      default_element_type =
+        CPPType::new_type(new CPPConstType(new CPPSimpleType(CPPSimpleType::T_int, 0)));
+    }
+
+    inst = new CPPInstance(default_element_type, ident);
+  } else {
+    // This enum has an explicit type, so use that.
+    inst = new CPPInstance(CPPType::new_type(new CPPConstType(_element_type)), ident);
+  }
+
   _elements.push_back(inst);
 
   if (value == (CPPExpression *)NULL) {
@@ -81,6 +110,39 @@ is_incomplete() const {
   return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPEnumType::is_fully_specified
+//       Access: Public, Virtual
+//  Description: Returns true if this declaration is an actual,
+//               factual declaration, or false if some part of the
+//               declaration depends on a template parameter which has
+//               not yet been instantiated.
+////////////////////////////////////////////////////////////////////
+bool CPPEnumType::
+is_fully_specified() const {
+  if (!CPPDeclaration::is_fully_specified()) {
+    return false;
+  }
+
+  if (_ident != NULL && !_ident->is_fully_specified()) {
+    return false;
+  }
+
+  if (_element_type != NULL && !_element_type->is_fully_specified()) {
+    return false;
+  }
+
+  Elements::const_iterator ei;
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    if (!(*ei)->is_fully_specified()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::substitute_decl
 //       Access: Public, Virtual
@@ -100,7 +162,28 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
-  if (rep->_ident == _ident) {
+  if (_element_type != NULL) {
+    rep->_element_type =
+      _element_type->substitute_decl(subst, current_scope, global_scope)
+      ->as_type();
+  }
+
+  bool any_changed = false;
+
+  for (int i = 0; i < _elements.size(); ++i) {
+    CPPInstance *elem_rep =
+      _elements[i]->substitute_decl(subst, current_scope, global_scope)
+      ->as_instance();
+
+    if (elem_rep != _elements[i]) {
+      _elements[i] = elem_rep;
+      any_changed = true;
+    }
+  }
+
+  if (rep->_ident == _ident &&
+      rep->_element_type == _element_type &&
+      !any_changed) {
     delete rep;
     rep = this;
   }
@@ -124,14 +207,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     }
     out << _ident->get_local_name(scope);
 
-  } else if (!complete && !_typedefs.empty()) {
-    // If we have a typedef name, use it.
-    out << _typedefs.front()->get_local_name(scope);
-
   } else {
     out << _type;
     if (_ident != NULL) {
       out << " " << _ident->get_local_name(scope);
+    }
+    if (_element_type != NULL) {
+      out << " : " << _element_type->get_local_name(scope);
     }
 
     out << " {\n";

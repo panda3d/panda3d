@@ -19,6 +19,7 @@
 
 #include "pnmImageHeader.h"
 #include "pnmBrush.h"
+#include "stackedPerlinNoise2.h"
 
 #include "luse.h"
 

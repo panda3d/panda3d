@@ -15,20 +15,20 @@
 #include "typeManager.h"
 #include "interrogate.h"
 
-#include "cppFunctionType.h"
-#include "cppFunctionGroup.h"
-#include "cppParameterList.h"
+#include "cppArrayType.h"
 #include "cppConstType.h"
-#include "cppReferenceType.h"
+#include "cppEnumType.h"
+#include "cppFunctionGroup.h"
+#include "cppFunctionType.h"
+#include "cppParameterList.h"
 #include "cppPointerType.h"
+#include "cppReferenceType.h"
 #include "cppSimpleType.h"
 #include "cppStructType.h"
 #include "cppTemplateScope.h"
 #include "cppTypeDeclaration.h"
+#include "cppTypedefType.h"
 #include "pnotify.h"
-#include "cppTypedef.h"
-#include "cppEnumType.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::resolve_type
@@ -45,6 +45,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
     scope = &parser;
   }
 
+  CPPType *orig_type = type;
   type = type->resolve_type(scope, &parser);
   string name = type->get_local_name(&parser);
   if (name.empty()) {
@@ -54,7 +55,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
 
   CPPType *new_type = parser.parse_type(name);
   if (new_type == (CPPType *)NULL) {
-    nout << "Type " << name << " is unknown to parser.\n";
+    nout << "Type \"" << name << "\" (from " << *orig_type << ") is unknown to parser.\n";
   } else {
     type = new_type->resolve_type(&parser, &parser);
   }
@@ -96,6 +97,9 @@ is_assignable(CPPType *type) {
 
     return false;
 
+  case CPPDeclaration::ST_typedef:
+    return is_assignable(type->as_typedef_type()->_type);
+
   default:
     return true;
   }
@@ -116,6 +120,9 @@ is_reference(CPPType *type) {
 
   case CPPDeclaration::ST_reference:
     return is_pointable(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_reference(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -138,6 +145,9 @@ is_ref_to_anything(CPPType *type) {
   case CPPDeclaration::ST_reference:
     return true;
 
+  case CPPDeclaration::ST_typedef:
+    return is_ref_to_anything(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -158,6 +168,9 @@ is_const_ref_to_anything(CPPType *type) {
   case CPPDeclaration::ST_reference:
     return is_const(type->as_reference_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_anything(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -177,6 +190,42 @@ is_const_pointer_to_anything(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_const(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_pointer_to_anything(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_pointer_or_ref
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a non-const
+//               pointer or reference to something, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_pointer_or_ref(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_const_pointer_or_ref(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_const(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_reference:
+    return is_const(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_pointer_or_ref(type->as_typedef_type()->_type);
+
+  case CPPDeclaration::ST_struct:
+    if (type->get_simple_name() == "PointerTo") {
+      return false;
+    } else if (type->get_simple_name() == "ConstPointerTo") {
+      return true;
+    }
 
   default:
     return false;
@@ -201,6 +250,16 @@ is_non_const_pointer_or_ref(CPPType *type) {
   case CPPDeclaration::ST_reference:
     return !is_const(type->as_reference_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_non_const_pointer_or_ref(type->as_typedef_type()->_type);
+
+  case CPPDeclaration::ST_struct:
+    if (type->get_simple_name() == "PointerTo") {
+      return true;
+    } else if (type->get_simple_name() == "ConstPointerTo") {
+      return false;
+    }
+
   default:
     return false;
   }
@@ -221,6 +280,9 @@ is_pointer(CPPType *type) {
   case CPPDeclaration::ST_pointer:
     return is_pointable(type->as_pointer_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_pointer(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -237,6 +299,9 @@ is_const(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
     return true;
+
+  case CPPDeclaration::ST_typedef:
+    return is_const(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -259,6 +324,9 @@ is_struct(CPPType *type) {
   case CPPDeclaration::ST_extension:
     return true;
 
+  case CPPDeclaration::ST_typedef:
+    return is_struct(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -279,6 +347,9 @@ is_enum(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_enum(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_enum(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -296,6 +367,9 @@ is_const_enum(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_enum(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_enum(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -312,6 +386,9 @@ is_const_ref_to_enum(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_enum(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_enum(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -331,10 +408,13 @@ is_simple(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_simple:
   case CPPDeclaration::ST_enum:
-    return true;
+    return !is_void(type);
 
   case CPPDeclaration::ST_const:
     return is_simple(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_simple(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -352,6 +432,9 @@ is_const_simple(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
     return is_simple(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_simple(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -371,6 +454,9 @@ is_const_ref_to_simple(CPPType *type) {
   case CPPDeclaration::ST_reference:
     return is_const_simple(type->as_reference_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_simple(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -388,6 +474,62 @@ is_ref_to_simple(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_simple(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_ref_to_simple(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_simple_array
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is an array of
+//               a simple type.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_simple_array(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_simple_array(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_array:
+    return is_simple(type->as_array_type()->_element_type);
+
+  case CPPDeclaration::ST_typedef:
+    return is_simple_array(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_simple
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const or
+//               a non-constant pointer to a simple type.  This could
+//               also be a reference to an array of the simple type.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_simple(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_simple(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_simple(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_array:
+    return is_simple(type->as_array_type()->_element_type);
+
+  case CPPDeclaration::ST_reference:
+    return is_pointer_to_simple(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_simple(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -414,8 +556,11 @@ is_pointable(CPPType *type) {
   case CPPDeclaration::ST_struct:
     return true;
 
-  case CPPDeclaration::ST_simple:
-    return is_char(type);
+  //case CPPDeclaration::ST_simple:
+  //  return is_char(type);
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointable(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -444,6 +589,43 @@ is_char(CPPType *type) {
       }
     }
 
+  case CPPDeclaration::ST_typedef:
+    return is_char(type->as_typedef_type()->_type);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_unsigned_char
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is unsigned char,
+//               but not signed or 'plain' char.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_unsigned_char(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_unsigned_char(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return
+          (simple_type->_type == CPPSimpleType::T_char) &&
+          (simple_type->_flags & CPPSimpleType::F_unsigned) != 0;
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_unsigned_char(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -465,6 +647,71 @@ is_char_pointer(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_char(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_char_pointer(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_char_pointer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is const char*.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_char_pointer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_char_pointer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_char_pointer(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_unsigned_char_pointer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is unsigned char*
+//               or const unsigned char*.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_unsigned_char_pointer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_unsigned_char_pointer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_unsigned_char(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_unsigned_char_pointer(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_unsigned_char_pointer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is
+//               const unsigned char*.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_unsigned_char_pointer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_unsigned_char_pointer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_unsigned_char_pointer(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -489,6 +736,9 @@ is_basic_string_char(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_basic_string_char(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_basic_string_char(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -508,6 +758,9 @@ is_const_basic_string_char(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_basic_string_char(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_basic_string_char(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -524,6 +777,9 @@ is_const_ref_to_basic_string_char(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_basic_string_char(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_basic_string_char(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -542,6 +798,9 @@ is_const_ptr_to_basic_string_char(CPPType *type) {
   case CPPDeclaration::ST_pointer:
     return is_const_basic_string_char(type->as_pointer_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_ptr_to_basic_string_char(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -558,6 +817,9 @@ is_string(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_basic_string_char(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_string(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -586,6 +848,9 @@ is_wchar(CPPType *type) {
       }
     }
 
+  case CPPDeclaration::ST_typedef:
+    return is_wchar(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -607,6 +872,9 @@ is_wchar_pointer(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_wchar(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_wchar_pointer(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -631,6 +899,9 @@ is_basic_string_wchar(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_basic_string_wchar(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_basic_string_wchar(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -650,6 +921,9 @@ is_const_basic_string_wchar(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_basic_string_wchar(type->as_const_type()->_wrapped_around);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_basic_string_wchar(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -666,6 +940,9 @@ is_const_ref_to_basic_string_wchar(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_basic_string_wchar(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_basic_string_wchar(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -684,6 +961,9 @@ is_const_ptr_to_basic_string_wchar(CPPType *type) {
   case CPPDeclaration::ST_pointer:
     return is_const_basic_string_wchar(type->as_pointer_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_const_ptr_to_basic_string_wchar(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -700,6 +980,9 @@ is_wstring(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_basic_string_wchar(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_wstring(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -729,6 +1012,9 @@ is_bool(CPPType *type) {
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_bool(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -761,10 +1047,15 @@ is_integer(CPPType *type) {
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_wchar_t ||
+           simple_type->_type == CPPSimpleType::T_char16_t ||
+           simple_type->_type == CPPSimpleType::T_char32_t ||
            simple_type->_type == CPPSimpleType::T_int);
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_integer(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -794,10 +1085,38 @@ is_unsigned_integer(CPPType *type) {
             simple_type->_type == CPPSimpleType::T_char ||
             simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
-           (simple_type->_flags & CPPSimpleType::F_unsigned) != 0);
+           (simple_type->_flags & CPPSimpleType::F_unsigned) != 0) ||
+           (simple_type->_type == CPPSimpleType::T_char16_t ||
+            simple_type->_type == CPPSimpleType::T_char32_t);
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_unsigned_integer(type->as_typedef_type()->_type);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_size
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is the "size_t"
+//               type.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_size(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_size(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_integer(type->as_typedef_type()->_type) &&
+                      type->get_simple_name() == "size_t";
 
   default:
     break;
@@ -822,11 +1141,14 @@ is_short(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return (simple_type->_type == CPPSimpleType::T_int && 
+        return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & CPPSimpleType::F_short) != 0);
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_short(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -851,11 +1173,14 @@ is_unsigned_short(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return (simple_type->_type == CPPSimpleType::T_int && 
+        return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & (CPPSimpleType::F_short | CPPSimpleType::F_unsigned)) == (CPPSimpleType::F_short | CPPSimpleType::F_unsigned));
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_unsigned_short(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -881,11 +1206,14 @@ is_longlong(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return (simple_type->_type == CPPSimpleType::T_int && 
+        return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & CPPSimpleType::F_longlong) != 0);
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_longlong(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -911,11 +1239,14 @@ is_unsigned_longlong(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return (simple_type->_type == CPPSimpleType::T_int && 
+        return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned)) == (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned));
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_unsigned_longlong(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -944,6 +1275,9 @@ is_double(CPPType *type) {
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_double(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -975,6 +1309,9 @@ is_float(CPPType *type) {
       }
     }
     break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_float(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -1033,6 +1370,9 @@ is_reference_count(CPPType *type) {
     }
     break;
 
+  case CPPDeclaration::ST_typedef:
+    return is_reference_count(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -1054,6 +1394,9 @@ is_reference_count_pointer(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_reference_count(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_reference_count_pointer(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1096,6 +1439,10 @@ is_pointer_to_base(CPPType *type) {
         }
       }
     }
+    return false;
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_base(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1113,6 +1460,9 @@ is_const_pointer_to_base(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
     return is_pointer_to_base(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_pointer_to_base(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1133,6 +1483,9 @@ is_const_ref_to_pointer_to_base(CPPType *type) {
 
   case CPPDeclaration::ST_reference:
     return is_const_pointer_to_base(type->as_reference_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_const_ref_to_pointer_to_base(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1161,6 +1514,9 @@ is_pair(CPPType *type) {
   case CPPDeclaration::ST_reference:
     return is_pair(type->as_reference_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_pair(type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -1182,6 +1538,9 @@ is_pointer_to_PyObject(CPPType *type) {
   case CPPDeclaration::ST_pointer:
     return is_PyObject(type->as_pointer_type()->_pointing_at);
 
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_PyObject(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -1200,12 +1559,63 @@ is_PyObject(CPPType *type) {
 
   case CPPDeclaration::ST_extension:
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "PyObject" ||
-            type->get_local_name(&parser) == "PyTypeObject" ||
-            type->get_local_name(&parser) == "PyStringObject" ||
-            type->get_local_name(&parser) == "PyUnicodeObject" ||
-            type->get_local_name(&parser) == "_object" ||
+    return (type->get_local_name(&parser) == "_object" ||
             type->get_local_name(&parser) == "_typeobject");
+
+  case CPPDeclaration::ST_typedef:
+    return (is_struct(type->as_typedef_type()->_type) &&
+            (type->get_local_name(&parser) == "PyObject" ||
+             type->get_local_name(&parser) == "PyTypeObject" ||
+             type->get_local_name(&parser) == "PyStringObject" ||
+             type->get_local_name(&parser) == "PyUnicodeObject")) ||
+           is_PyObject(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_PyTypeObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyTypeObject *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_PyTypeObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_PyTypeObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_PyTypeObject(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_PyTypeObject(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_PyTypeObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyTypeObject.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_PyTypeObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_PyTypeObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "_typeobject");
+
+  case CPPDeclaration::ST_typedef:
+    return (type->get_local_name(&parser) == "PyTypeObject" &&
+            is_struct(type->as_typedef_type()->_type)) ||
+           is_PyTypeObject(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1242,9 +1652,10 @@ is_PyStringObject(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_PyStringObject(type->as_const_type()->_wrapped_around);
 
-  case CPPDeclaration::ST_extension:
-  case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "PyStringObject");
+  case CPPDeclaration::ST_typedef:
+    return (type->get_local_name(&parser) == "PyStringObject" &&
+            is_struct(type->as_typedef_type()->_type)) ||
+           is_PyStringObject(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1281,9 +1692,10 @@ is_PyUnicodeObject(CPPType *type) {
   case CPPDeclaration::ST_const:
     return is_PyUnicodeObject(type->as_const_type()->_wrapped_around);
 
-  case CPPDeclaration::ST_extension:
-  case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "PyUnicodeObject");
+  case CPPDeclaration::ST_typedef:
+    return (type->get_local_name(&parser) == "PyUnicodeObject" &&
+            is_struct(type->as_typedef_type()->_type)) ||
+           is_PyUnicodeObject(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1303,6 +1715,9 @@ is_pointer_to_Py_buffer(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_Py_buffer(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_Py_buffer(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1324,6 +1739,9 @@ is_Py_buffer(CPPType *type) {
   case CPPDeclaration::ST_struct:
     return (type->get_local_name(&parser) == "Py_buffer");
 
+  case CPPDeclaration::ST_typedef:
+    return is_Py_buffer(type->as_typedef_type()->_type);
+
   default:
     return false;
   }
@@ -1341,6 +1759,9 @@ bool TypeManager::is_ostream(CPPType *type) {
 
   case CPPDeclaration::ST_struct:
     return (type->get_local_name(&parser) == "ostream");
+
+  case CPPDeclaration::ST_typedef:
+    return is_ostream(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1363,6 +1784,9 @@ is_pointer_to_ostream(CPPType *type) {
 
   case CPPDeclaration::ST_pointer:
     return is_ostream(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return is_pointer_to_ostream(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -1440,6 +1864,9 @@ involves_unpublished(CPPType *type) {
     }
     */
 
+  case CPPDeclaration::ST_typedef:
+    return involves_unpublished(type->as_typedef_type()->_type);
+
   default:
     if (type->_declaration != (CPPTypeDeclaration *)NULL) {
       return (type->_declaration->_vis > min_vis);
@@ -1485,6 +1912,9 @@ involves_protected(CPPType *type) {
       }
       return false;
     }
+
+  case CPPDeclaration::ST_typedef:
+    return involves_protected(type->as_typedef_type()->_type);
 
   default:
     if (type->_declaration != (CPPTypeDeclaration *)NULL) {
@@ -1572,8 +2002,8 @@ unwrap_const_reference(CPPType *source_type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::unwrap
 //       Access: Public, Static
-//  Description: Removes all const, pointer, and reference wrappers,
-//               to get to the thing we're talking about.
+//  Description: Removes all const, pointer, reference wrappers, and
+//               typedefs, to get to the thing we're talking about.
 ////////////////////////////////////////////////////////////////////
 CPPType *TypeManager::
 unwrap(CPPType *source_type) {
@@ -1586,6 +2016,9 @@ unwrap(CPPType *source_type) {
 
   case CPPDeclaration::ST_pointer:
     return unwrap(source_type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_typedef:
+    return unwrap(source_type->as_typedef_type()->_type);
 
   default:
     return source_type;
@@ -1645,6 +2078,9 @@ get_template_parameter_type(CPPType *source_type, int i) {
   case CPPDeclaration::ST_reference:
     return get_template_parameter_type(source_type->as_reference_type()->_pointing_at, i);
 
+  case CPPDeclaration::ST_typedef:
+    return get_template_parameter_type(source_type->as_typedef_type()->_type);
+
   default:
     break;
   }
@@ -1657,7 +2093,7 @@ get_template_parameter_type(CPPType *source_type, int i) {
   // I'm not sure how reliable this is, but I don't know if there
   // is a more proper way to access this.
   CPPTemplateParameterList *templ = type->_ident->_names.back().get_templ();
-  if (templ == NULL || i >= templ->_parameters.size()) {
+  if (templ == NULL || i >= (int)templ->_parameters.size()) {
     return NULL;
   }
 
@@ -1925,146 +2361,145 @@ has_protected_destructor(CPPType *type) {
 //               struct is protected or private, or false if the
 //               destructor is public or absent.
 ////////////////////////////////////////////////////////////////////
-bool TypeManager::IsExported(CPPType *in_type)
-{
-
+bool TypeManager::IsExported(CPPType *in_type) {
   string name = in_type->get_local_name(&parser);
   if (name.empty()) {
       return false;
   }
 
-    //return true;
+  //return true;
 
-    // this question is about the base type 
-    CPPType *base_type = resolve_type(unwrap(in_type));
-    //CPPType *base_type = in_type;
-    // Ok export Rules..
-    //    Classes and Structs and Unions are exported only if they have a 
-    //    function that is exported..      
-    // function is the easiest case.  
+  // this question is about the base type
+  CPPType *base_type = resolve_type(unwrap(in_type));
+  //CPPType *base_type = in_type;
+  // Ok export Rules..
+  //    Classes and Structs and Unions are exported only if they have a
+  //    function that is exported..
+  // function is the easiest case.
 
-    if (base_type->_vis <= min_vis)
+  if (base_type->_vis <= min_vis) {
+    return true;
+  }
+
+  if (in_type->_vis <= min_vis) {
+    return true;
+  }
+
+  if (base_type->get_subtype() == CPPDeclaration::ST_struct) {
+    CPPStructType *struct_type = base_type->resolve_type(&parser, &parser)->as_struct_type();
+    CPPScope *scope = struct_type->_scope;
+
+    CPPScope::Declarations::const_iterator di;
+    for (di = scope->_declarations.begin();
+         di != scope->_declarations.end(); ++di) {
+      if ((*di)->_vis <= min_vis) {
         return true;
+      }
+    }
 
-    if (in_type->_vis <= min_vis)
+  } else if (base_type->get_subtype() == CPPDeclaration::ST_instance) {
+    CPPInstance *inst = base_type->as_instance();
+    if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
+      CPPInstance *function = inst;
+      CPPFunctionType *ftype = function->_type->resolve_type(&parser, &parser)->as_function_type();
+      if (ftype->_vis <= min_vis) {
         return true;
-
-
-    if (base_type->get_subtype() == CPPDeclaration::ST_struct) 
-    {
-            CPPStructType *sstruct_type = base_type->as_struct_type();
-            CPPStructType *struct_type =sstruct_type->resolve_type(&parser, &parser)->as_struct_type();
-            CPPScope *scope = struct_type->_scope;
-
-            CPPScope::Declarations::const_iterator di;
-            for (di = scope->_declarations.begin();di != scope->_declarations.end(); di++)
-            {
-                if ((*di)->_vis <= min_vis) 
-                    return true;
-            }
-
-            
-
+      }
+    } else {
+      if (inst->_vis <= min_vis) {
+        return true;
+      }
     }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_instance) 
-    {
-        CPPInstance *inst = base_type->as_instance();
-        if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
-        {
-            CPPInstance *function = inst;
-            CPPFunctionType *ftype = function->_type->resolve_type(&parser, &parser)->as_function_type();
-            if (ftype->_vis <= min_vis)
-                return true;
-        }
-        else 
-        {
-            if (inst->_vis <= min_vis)
-                return true;
-        }
 
+  } else if (base_type->get_subtype() == CPPDeclaration::ST_typedef) {
+    CPPTypedefType *tdef = base_type->as_typedef_type();
+    if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
+      CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
+      return IsExported(struct_type);
     }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_typedef) 
-    {
-        CPPTypedef *tdef = base_type->as_typedef();
-        if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) 
-        {
-            CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
-            return IsExported(struct_type);
-        }
 
-    }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) 
-    {
-        CPPType *type = base_type->as_type_declaration()->_type;
-        if (type->get_subtype() == CPPDeclaration::ST_struct)
-        {
-            CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
-            //CPPScope *scope = struct_type->_scope;
-            return IsExported(struct_type);
+  } else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) {
+    CPPType *type = base_type->as_type_declaration()->_type;
+    if (type->get_subtype() == CPPDeclaration::ST_struct) {
+      CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+      //CPPScope *scope = struct_type->_scope;
+      return IsExported(struct_type);
 
-        }
-        else if (type->get_subtype() == CPPDeclaration::ST_enum) 
-        {
-          //CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
-            if (type->_vis <= min_vis)
-                return true;
-        }
+    } else if (type->get_subtype() == CPPDeclaration::ST_enum) {
+      //CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
+      if (type->_vis <= min_vis)
+        return true;
     }
+  }
 
 /*
-    printf("---------------------> Visibility Failed  %s %d Vis=%d, Minvis=%d\n",
-        base_type->get_fully_scoped_name().c_str(),
-        base_type->get_subtype(),
-        base_type->_vis,
-        min_vis);
+  printf("---------------------> Visibility Failed  %s %d Vis=%d, Minvis=%d\n",
+         base_type->get_fully_scoped_name().c_str(),
+         base_type->get_subtype(),
+         base_type->_vis,
+         min_vis);
 */
-    return false;       
-};
+  return false;
+}
 
-bool TypeManager::IsLocal(CPPType *in_type)
-{
-    // A local means it was compiled in this scope of work..
-    // IE a should actualy generate code for this objects....
-   CPPType *base_type = resolve_type(unwrap(in_type));
-   if (base_type->_forcetype) {
-     return true;
-   }
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_local
+//       Access: Public, Static
+//  Description: Returns true if the type is defined in a local
+//               file rather than one that is included.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_local(CPPType *source_type) {
+  switch (source_type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_local(source_type->as_const_type()->_wrapped_around);
 
-   if (base_type->_file._source == CPPFile::S_local && !base_type->is_incomplete()) {
-     return true;
-   }
+  case CPPDeclaration::ST_reference:
+    return is_local(source_type->as_reference_type()->_pointing_at);
 
-   return false;
+  case CPPDeclaration::ST_pointer:
+    return is_local(source_type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_simple:
+    return false;
+
+  default:
+    if (source_type->_file._source == CPPFile::S_local && !source_type->is_incomplete()) {
+      return true;
+    }
+  }
+
+ return false;
 
     /*
 
-    if (base_type->get_subtype() == CPPDeclaration::ST_struct) 
+    if (base_type->get_subtype() == CPPDeclaration::ST_struct)
     {
             CPPStructType *struct_type = base_type->as_struct_type();
             if (struct_type->_file._source == CPPFile::S_local)
                 return  true;
 
     }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_instance) 
+    else if (base_type->get_subtype() == CPPDeclaration::ST_instance)
     {
         CPPInstance *inst = base_type->as_instance();
-        if (inst->_type->get_subtype() == CPPDeclaration::ST_function) 
+        if (inst->_type->get_subtype() == CPPDeclaration::ST_function)
         {
             CPPInstance *function = inst;
             CPPFunctionType *ftype = function->_type->resolve_type(&parser, &parser)->as_function_type();
             if (ftype->_file._source == CPPFile::S_local)
                 return true;
         }
-        else 
+        else
         {
             if (inst->_file._source == CPPFile::S_local)
                 return true;
         }
     }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_typedef) 
+    else if (base_type->get_subtype() == CPPDeclaration::ST_typedef)
     {
         CPPTypedef *tdef = base_type->as_typedef();
-        if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) 
+        if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct)
         {
             CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
             return IsLocal(struct_type);
@@ -2072,7 +2507,7 @@ bool TypeManager::IsLocal(CPPType *in_type)
 
         }
     }
-    else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) 
+    else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration)
     {
         CPPType *type = base_type->as_type_declaration()->_type;
         if (type->get_subtype() == CPPDeclaration::ST_struct)
@@ -2082,7 +2517,7 @@ bool TypeManager::IsLocal(CPPType *in_type)
                 return true;
 
         }
-        else if (type->get_subtype() == CPPDeclaration::ST_enum) 
+        else if (type->get_subtype() == CPPDeclaration::ST_enum)
         {
             CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
             if (enum_type->_file._source != CPPFile::S_local)
@@ -2091,7 +2526,7 @@ bool TypeManager::IsLocal(CPPType *in_type)
     }
 
   if (base_type->_file._source == CPPFile::S_local)
-      return true; 
+      return true;
 
  return false;
  */

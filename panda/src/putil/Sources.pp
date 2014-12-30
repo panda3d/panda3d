@@ -49,8 +49,7 @@
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
-    ioPtaDatagramShort.h keyboardButton.h lineStream.I \
-    lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    ioPtaDatagramShort.h keyboardButton.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     loaderOptions.I loaderOptions.h \
@@ -101,7 +100,7 @@
     globalPointerRegistry.cxx \
     ioPtaDatagramFloat.cxx \
     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
-    keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
+    keyboardButton.cxx \
     linkedListNode.cxx \
     load_prc_file.cxx \
     loaderOptions.cxx \
@@ -160,8 +159,7 @@
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
-    ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
-    lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    ioPtaDatagramShort.h iterator_types.h keyboardButton.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     loaderOptions.I loaderOptions.h \

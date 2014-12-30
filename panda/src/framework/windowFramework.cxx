@@ -79,8 +79,6 @@ WindowFramework::
 WindowFramework(PandaFramework *panda_framework) :
   _panda_framework(panda_framework)
 {
-  _alight = (AmbientLight *)NULL;
-  _dlight = (DirectionalLight *)NULL;
   _got_keyboard = false;
   _got_trackball = false;
   _got_lights = false;
@@ -106,8 +104,6 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
   _window(copy._window),
   _display_region_3d(display_region)
 {
-  _alight = (AmbientLight *)NULL;
-  _dlight = (DirectionalLight *)NULL;
   _got_keyboard = false;
   _got_trackball = false;
   _got_lights = false;
@@ -205,8 +201,8 @@ close_window() {
   _render_2d.remove_node();
   _mouse.remove_node();
 
-  _alight = (AmbientLight *)NULL;
-  _dlight = (DirectionalLight *)NULL;
+  _alight.clear();
+  _dlight.clear();
   _got_keyboard = false;
   _got_trackball = false;
   _got_lights = false;

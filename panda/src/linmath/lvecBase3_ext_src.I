@@ -36,17 +36,6 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase3)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 3);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::python_repr
 //       Access: Published
 //  Description:

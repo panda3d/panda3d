@@ -78,6 +78,7 @@ public:
   CPPType *determine_type() const;
   bool is_tbd() const;
 
+  virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);

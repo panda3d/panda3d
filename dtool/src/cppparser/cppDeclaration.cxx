@@ -177,13 +177,13 @@ as_class_template_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPDeclaration::as_typedef
+//     Function: CPPDeclaration::as_typedef_type
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CPPTypedef *CPPDeclaration::
-as_typedef() {
-  return (CPPTypedef *)NULL;
+CPPTypedefType *CPPDeclaration::
+as_typedef_type() {
+  return (CPPTypedefType *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

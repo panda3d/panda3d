@@ -20,10 +20,16 @@ class FLOATNAME(UnalignedLMatrix4);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) {
 public:
+  typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
 PUBLISHED:
+  enum {
+    num_components = 16,
+    is_int = 0
+  };
+
   // These helper classes are used to support two-level operator [].
   class Row {
   private:
@@ -31,7 +37,6 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH FLOATTYPE &operator [](int i);
-    EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
     INLINE_LINMATH static int size();
   public:
     FLOATTYPE *_row;
@@ -319,6 +324,10 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLMatrix4) {
 PUBLISHED:
+  enum {
+    num_components = 16
+  };
+
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)();
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy);

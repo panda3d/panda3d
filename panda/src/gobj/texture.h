@@ -40,6 +40,7 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "samplerState.h"
+#include "pnmImage.h"
 
 class PNMImage;
 class PfmFile;
@@ -208,10 +209,12 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  Texture(const string &name = string());
+  explicit Texture(const string &name = string());
+
 protected:
   Texture(const Texture &copy);
   void operator = (const Texture &copy);
+
 PUBLISHED:
   virtual ~Texture();
 

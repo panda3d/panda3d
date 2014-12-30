@@ -30,7 +30,7 @@ using namespace std;
 
 class CPPInstance;
 class CPPTemplateParameterList;
-class CPPTypedef;
+class CPPTypedefType;
 class CPPTypeDeclaration;
 class CPPExpression;
 class CPPType;
@@ -64,7 +64,6 @@ public:
   enum SubType {
     // Subtypes of CPPDeclaration
     ST_instance,
-    ST_typedef,
     ST_type_declaration,
     ST_expression,
     ST_type,
@@ -87,6 +86,7 @@ public:
     ST_class_template_parameter,
     ST_tbd,
     ST_type_proxy,
+    ST_typedef,
   };
 
   CPPDeclaration(const CPPFile &file);
@@ -120,7 +120,7 @@ public:
 
   virtual CPPInstance *as_instance();
   virtual CPPClassTemplateParameter *as_class_template_parameter();
-  virtual CPPTypedef *as_typedef();
+  virtual CPPTypedefType *as_typedef_type();
   virtual CPPTypeDeclaration *as_type_declaration();
   virtual CPPExpression *as_expression();
   virtual CPPType *as_type();

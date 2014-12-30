@@ -164,7 +164,7 @@ INLINE BitMask<WType, nbits>::
 //               BitMask or BitArray interchangeably.
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
+CONSTEXPR bool BitMask<WType, nbits>::
 has_max_num_bits() {
   return true;
 }
@@ -183,7 +183,7 @@ has_max_num_bits() {
 //               can use BitMask or BitArray interchangeably.
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
-INLINE int BitMask<WType, nbits>::
+CONSTEXPR int BitMask<WType, nbits>::
 get_max_num_bits() {
   return num_bits;
 }
@@ -195,7 +195,7 @@ get_max_num_bits() {
 //               bitmask.
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
-INLINE int BitMask<WType, nbits>::
+CONSTEXPR int BitMask<WType, nbits>::
 get_num_bits() {
   return num_bits;
 }

@@ -69,7 +69,7 @@ PUBLISHED:
   INLINE ~Filename();
 
 #ifdef HAVE_PYTHON
-  PyObject *__reduce__(PyObject *self) const;
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 #endif
 
   // Static constructors to explicitly create a filename that refers
@@ -115,6 +115,8 @@ PUBLISHED:
   INLINE string substr(size_t begin, size_t end = string::npos) const;
   INLINE void operator += (const string &other);
   INLINE Filename operator + (const string &other) const;
+
+  INLINE Filename operator / (const Filename &other) const;
 
   // Or, you can use any of these.
   INLINE string get_fullpath() const;
@@ -190,11 +192,11 @@ PUBLISHED:
                         const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
-  
+
   bool scan_directory(vector_string &contents) const;
 #ifdef HAVE_PYTHON
-  PyObject *scan_directory() const;
-#endif 
+  EXTENSION(PyObject *scan_directory() const);
+#endif
 
   bool open_read(ifstream &stream) const;
   bool open_write(ofstream &stream, bool truncate = true) const;

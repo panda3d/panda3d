@@ -14,7 +14,7 @@
 
 
 #include "cppExtensionType.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppParser.h"
 #include "indent.h"

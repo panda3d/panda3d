@@ -25,6 +25,9 @@
 template<class ctype>
 class basic_string {
 public:
+  typedef typename size_t size_type;
+  static const size_t npos = (size_t)-1;
+
   basic_string();
   basic_string(const basic_string &copy);
   void operator = (const basic_string &copy);

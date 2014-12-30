@@ -16,32 +16,8 @@
 #include "typeRegistryNode.h"
 #include "atomicAdjust.h"
 
-#ifdef HAVE_PYTHON
-#include "Python.h"
-#endif
-
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::make
-//       Access: Published
-//  Description: This special method allows coercion to a TypeHandle
-//               from a Python class object or instance.  It simply
-//               attempts to call classobj.get_class_type(), and
-//               returns that value (or raises an exception if that
-//               method doesn't work).
-//
-//               This method allows a Python class object to be used
-//               anywhere a TypeHandle is expected by the C++
-//               interface.
-////////////////////////////////////////////////////////////////////
-PyObject *TypeHandle::
-make(PyObject *classobj) {
-  return PyObject_CallMethod(classobj, (char *)"get_class_type", (char *)"");
-}
-#endif  // HAVE_PYTHON
 
 #ifdef DO_MEMORY_USAGE
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +56,10 @@ inc_memory_usage(MemoryClass memory_class, int size) {
     assert(rnode != (TypeRegistryNode *)NULL);
     AtomicAdjust::add(rnode->_memory_usage[memory_class], (AtomicAdjust::Integer)size);
     //cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " << rnode->_memory_usage[memory_class] << "\n";
-    assert(rnode->_memory_usage[memory_class] >= 0);
+    if (rnode->_memory_usage[memory_class] < 0) {
+      cerr << "Memory usage overflow for type " << *this << ".\n";
+      abort();
+    }
   }
 }
 #endif  // DO_MEMORY_USAGE

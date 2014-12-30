@@ -163,7 +163,7 @@ PointerToArray(PyObject *self, PyObject *source) :
       PyErr_SetString(PyExc_ValueError, str.c_str());
       return;
     }
-      
+
     int num_elements = size / sizeof(Element);
     insert(begin(), num_elements, Element());
 
@@ -185,7 +185,7 @@ PointerToArray(PyObject *self, PyObject *source) :
     if (item == NULL) {
       return;
     }
-    PyObject *result = PyObject_CallMethod(self, (char *)"pushBack", (char *)"O", item);
+    PyObject *result = PyObject_CallMethod(self, (char *)"push_back", (char *)"O", item);
     Py_DECREF(item);
     if (result == NULL) {
       // Unable to add item--probably it wasn't of the appropriate type.
