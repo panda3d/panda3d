@@ -1713,6 +1713,19 @@ write(ostream &out, int indent_level) const {
   case F_rgb32:
     out << "rgb32";
     break;
+
+  case F_r8i:
+    out << "r8i";
+    break;
+  case F_rg8i:
+    out << "rg8i";
+    break;
+  case F_rgb8i:
+    out << "rgb8i";
+    break;
+  case F_rgba8i:
+    out << "rgba8i";
+    break;
   }
 
   if (cdata->_compression != CM_default) {
@@ -2110,6 +2123,14 @@ format_format(Format format) {
     return "rg32";
   case F_rgb32:
     return "rgb32";
+  case F_r8i:
+    return "r8i";
+  case F_rg8i:
+    return "rg8i";
+  case F_rgb8i:
+    return "rgb8i";
+  case F_rgba8i:
+    return "rgba8i";
   }
   return "**invalid**";
 }
@@ -5121,6 +5142,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_sluminance:
   case F_r32i:
   case F_r32:
+  case F_r8i:
     cdata->_num_components = 1;
     break;
 
@@ -5129,6 +5151,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rg16:
   case F_sluminance_alpha:
   case F_rg32:
+  case F_rg8i:
     cdata->_num_components = 2;
     break;
 
@@ -5140,6 +5163,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgb16:
   case F_srgb:
   case F_rgb32:
+  case F_rgb8i:
     cdata->_num_components = 3;
     break;
 
@@ -5152,6 +5176,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgba16:
   case F_rgba32:
   case F_srgb_alpha:
+  case F_rgba8i:
     cdata->_num_components = 4;
     break;
   }
