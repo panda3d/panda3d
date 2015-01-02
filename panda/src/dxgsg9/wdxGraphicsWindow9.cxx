@@ -552,6 +552,8 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   adapter = display._card_id;
   device_type = D3DDEVTYPE_HAL;
 
+  int supported_multisamples = 0;
+
   // NVIDIA NVPerfHUD
   if (dx_use_nvperfhud) {
     UINT adapter_id;
@@ -634,7 +636,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   presentation_params->Windowed = !is_fullscreen();
 
-  int supported_multisamples = 0;
+  supported_multisamples = 0;
   if (framebuffer_multisample.get_value()){
     supported_multisamples = multisamples.get_value();
   }

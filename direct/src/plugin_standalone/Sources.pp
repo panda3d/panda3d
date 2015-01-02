@@ -24,7 +24,7 @@
     panda3dMain.cxx
 
   #define WIN_RESOURCE_FILE panda3d.rc
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 ole32
 
 #end bin_target
 
@@ -52,7 +52,7 @@
     panda3dWinMain.cxx
 
   #define WIN_RESOURCE_FILE panda3d.rc
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 ole32
 
 #end bin_target
 
@@ -107,7 +107,7 @@
     p3dEmbed.cxx p3dEmbedMain.cxx
 
   #define WIN_RESOURCE_FILE panda3d.rc
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 comctl32 msimg32 ole32
 
 #end bin_target
 
@@ -136,7 +136,7 @@
     p3dEmbed.cxx p3dEmbedMain.cxx
 
   #define WIN_RESOURCE_FILE panda3d.rc
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 comctl32 msimg32 ole32
 
 #end bin_target
 

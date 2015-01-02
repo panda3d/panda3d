@@ -126,6 +126,7 @@ typedef union
 LONG_INTEGER;
 
 PN_uint64 cpu_time_function (void) {
+#ifndef __GNUC__  // for MinGW, MSVC only
 #ifdef _WIN64
   return __rdtsc();
 #else
@@ -144,6 +145,7 @@ PN_uint64 cpu_time_function (void) {
 
   return long_integer.long_integer;
 #endif
+#endif  // !__GNUC__
 }
 
 typedef union
@@ -166,6 +168,7 @@ typedef union
 }
 CPU_ID_REGISTERS;
 
+#ifndef __GNUC__  // for MinGW, MSVC only
 typedef struct
 {
   union
@@ -431,6 +434,7 @@ typedef struct
   unsigned int log_base_2_cache_line_size;
 }
 CPU_ID;
+#endif  // !__GNUC__
 
 typedef struct
 {
@@ -459,8 +463,8 @@ typedef struct
 }
 CPU_ID_BINARY_DATA_ARRAY;
 
+#ifndef __GNUC__  // for MinGW, MSVC only
 void cpu_id_to_cpu_id_binary_data (CPU_ID *cpu_id, CPU_ID_BINARY_DATA *cpu_id_binary_data) {
-
   cpu_id_binary_data -> cpu_id_registers_0 = cpu_id -> cpu_id_registers_0;
   cpu_id_binary_data -> cpu_id_registers_1 = cpu_id -> cpu_id_registers_1;
   cpu_id_binary_data -> cpu_id_registers_0x80000000 = cpu_id -> cpu_id_registers_0x80000000;
@@ -471,9 +475,10 @@ void cpu_id_to_cpu_id_binary_data (CPU_ID *cpu_id, CPU_ID_BINARY_DATA *cpu_id_bi
   cpu_id_binary_data -> cpu_id_registers_0x80000006 = cpu_id -> cpu_id_registers_0x80000006;
   cpu_id_binary_data -> cpu_id_registers_0x80000008 = cpu_id -> cpu_id_registers_0x80000008;
 }
+#endif  // !__GNUC__
 
+#ifndef __GNUC__  // for MinGW, MSVC only
 void cpu_id_binary_data_to_cpu_id (CPU_ID_BINARY_DATA *cpu_id_binary_data, CPU_ID *cpu_id) {
-
   memset (cpu_id, 0, sizeof (CPU_ID));
 
   cpu_id -> cpu_id_registers_0 = cpu_id_binary_data -> cpu_id_registers_0;
@@ -486,11 +491,13 @@ void cpu_id_binary_data_to_cpu_id (CPU_ID_BINARY_DATA *cpu_id_binary_data, CPU_I
   cpu_id -> cpu_id_registers_0x80000006 = cpu_id_binary_data -> cpu_id_registers_0x80000006;
   cpu_id -> cpu_id_registers_0x80000008 = cpu_id_binary_data -> cpu_id_registers_0x80000008;
 }
+#endif  // !__GNUC__
 
 int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
   int state;
 
-  state = false;   
+  state = false;
+#ifndef __GNUC__  // for MinGW, MSVC only
   __try
   {
     if (input_eax == 0) {
@@ -540,10 +547,12 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
   {
     state = false;
   }
+#endif  // !__GNUC__
 
   return state;
 }
 
+#ifndef __GNUC__  // for MinGW, MSVC only
 void parse_cpu_id (CPU_ID *cpu_id) {
 
   printf ("CPUID\n");
@@ -593,7 +602,9 @@ void parse_cpu_id (CPU_ID *cpu_id) {
     printf ("  l2_cache_size %dK \n", cpu_id -> l2_cache_size);       
   }
 }
+#endif // !__GNUC__
 
+#ifndef __GNUC__  // for MinGW, MSVC only
 int initialize_cpu_id (CPU_ID *cpu_id) {
 
   int state;
@@ -674,6 +685,7 @@ int initialize_cpu_id (CPU_ID *cpu_id) {
   
   return state;
 }
+#endif  // !_GNUC__
 
 int update_cpu_frequency_function (int processor_number, DisplayInformation *display_information)
 {
@@ -932,6 +944,7 @@ lookup_cpu_data() {
   windisplay_cat.info() << string;
 
 
+#ifndef __GNUC__  // for MinGW, MSVC only
   // CPUID
   CPU_ID cpu_id;
 
@@ -979,6 +992,7 @@ lookup_cpu_data() {
   }
 
   windisplay_cat.info() << "end CPU ID\n";
+#endif  // !__GNUC__
 
   // Number of CPU's
   count_number_of_cpus(_display_information);

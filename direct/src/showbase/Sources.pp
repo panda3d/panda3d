@@ -13,7 +13,7 @@
     p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
   #define WIN_SYS_LIBS \
-    User32.lib
+    user32
 
   #define SOURCES \
     showBase.cxx showBase.h \

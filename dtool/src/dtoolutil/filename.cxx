@@ -1687,7 +1687,7 @@ get_access_timestamp() const {
 ////////////////////////////////////////////////////////////////////
 streamsize Filename::
 get_file_size() const {
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   struct _stat64 this_buf;
@@ -2075,7 +2075,7 @@ open_read(ifstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
@@ -2131,7 +2131,7 @@ open_write(ofstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
@@ -2173,7 +2173,7 @@ open_append(ofstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
@@ -2225,7 +2225,7 @@ open_read_write(fstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
@@ -2268,7 +2268,7 @@ open_read_append(fstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#if defined(WIN32_VC) && !defined(__GNUC__)
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else

@@ -7,7 +7,7 @@
     p3directbase
 #define OTHER_LIBS \
     $[if $[HAVE_NET],p3net:c] p3linmath:c p3putil:c p3express:c panda:m pandaexpress:m p3dtoolconfig p3dtool
-#define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib //advapi32.lib
+#define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32 //advapi32
 
 #begin lib_target
   #define TARGET p3directd

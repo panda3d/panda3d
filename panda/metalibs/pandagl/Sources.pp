@@ -20,5 +20,5 @@
   #define TARGET pandagl
   #define SOURCES pandagl.cxx pandagl.h
   #define INSTALL_HEADERS pandagl.h
-  #define WIN_SYS_LIBS opengl32.lib winmm.lib kernel32.lib oldnames.lib user32.lib gdi32.lib
+  #define WIN_SYS_LIBS opengl32 winmm kernel32 user32 gdi32
 #end metalib_target

@@ -9,7 +9,7 @@
   #define USE_PACKAGES rad_mss
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS p3audio p3event p3pipeline
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32 advapi32 winmm
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
@@ -35,7 +35,7 @@
   #define USE_PACKAGES fmodex
   #define BUILDING_DLL BUILDING_FMOD_AUDIO
   #define LOCAL_LIBS p3audio p3event
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32 advapi32 winmm
 
   #define COMBINED_SOURCES fmod_audio_composite1.cxx
 
@@ -55,7 +55,7 @@
   #define USE_PACKAGES openal
   #define BUILDING_DLL BUILDING_OPENAL_AUDIO
   #define LOCAL_LIBS p3audio p3event
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32 advapi32 winmm
 
   #define COMBINED_SOURCES openal_audio_composite1.cxx
 

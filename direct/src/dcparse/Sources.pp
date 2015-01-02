@@ -18,6 +18,6 @@
 
   #define SOURCES \
     dcparse.cxx
-  #define WIN_SYS_LIBS shell32.lib
+  #define WIN_SYS_LIBS shell32
 #end bin_target
 

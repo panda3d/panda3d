@@ -1,6 +1,6 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
-#define WIN_SYS_LIBS shell32.lib advapi32.lib ws2_32.lib
+#define WIN_SYS_LIBS shell32 advapi32 ws2_32
 
 #begin bin_target
   #define TARGET maya2egg

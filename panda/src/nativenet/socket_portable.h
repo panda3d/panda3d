@@ -45,7 +45,7 @@ typedef unsigned long SOCKET;
 ************************************************************************/
 #elif defined(WIN32) || defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 
 
 inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,struct timeval *timeout)
@@ -116,7 +116,7 @@ inline int init_network()
     int answer = WSAStartup(0x0101, &mydata);
     if (answer != 0)
         return BASIC_ERROR;
-    
+
     return ALL_OK;
 }
 

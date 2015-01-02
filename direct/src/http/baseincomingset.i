@@ -70,7 +70,7 @@ inline int BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READE
 template <class _INCLASS1,class _IN_LISTEN,typename  MESSAGE_READER_BUF, typename  MESSAGE_READER_UPPASS>
 inline void BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READER_UPPASS>::AddAConection(_INCLASS1 * newt)
 {
-    push_back(newt);
+    this->push_back(newt);
 }
 ////////////////////////////////////////////////////////////////////
 // Function name    : BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READER_UPPASS>::BaseIncomingSet

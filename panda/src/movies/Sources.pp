@@ -7,7 +7,7 @@
   #define LOCAL_LIBS p3gobj
 
   #define USE_PACKAGES dx9 vorbis
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] strmiids.lib winmm.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] strmiids winmm
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx

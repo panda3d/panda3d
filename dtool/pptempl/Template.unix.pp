@@ -79,13 +79,13 @@
 
 #endif  // $[build_directory]
 
-#defer actual_local_libs $[complete_local_libs]
+#defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
 
 // $[static_lib_dependencies] is the set of libraries we will link
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[and $[lib_is_static],$[build_lib]],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -106,7 +106,7 @@
 #defer lpath $[sort $[complete_lpath]] $[other_trees_lib] $[install_lib_dir] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
-#defer nonunique_libs $[nonunique_complete_local_libs:%=%$[dllext]] $[patsubst %:m,,%:c %,%$[dllext],$[OTHER_LIBS]] $[get_libs]
+#defer nonunique_libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
 // Don't use $[unique] here, since some libraries actually do need to be
 // named multiple times (when linking static).
@@ -310,7 +310,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 #define build_it 1
 
 // We don't need a BUILDING_ symbol for Unix; that's a Windows thing.
-#define building_var
+#define building_var $[or $[BUILDING_DLL],$[module $[BUILDING_DLL],$[TARGET]]]
 
 // $[igatescan] is the set of C++ headers and source files that we
 // need to scan for interrogate.  $[igateoutput] is the name of the
@@ -342,6 +342,11 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
   #define sources \
    $[patsubst %,$[%_obj],$[c_sources] $[mm_sources] $[cxx_sources]]
+  #if $[not $[BUILD_COMPONENTS]]
+    // Also link in all of the component files directly into the metalib.
+    #define sources $[sources] \
+      $[components $[patsubst %,$[RELDIR]/$[%_obj],$[c_sources] $[mm_sources] $[cxx_sources]],$[active_component_libs]]
+  #endif
   #define interrogate_sources \
    $[patsubst %,$[%_obj],$[cxx_interrogate_sources]]
   #define cc_ld $[or $[get_ld],$[CC]]
@@ -353,11 +358,13 @@ $[varname] = $[sources] $[if $[not $[link_extra_bundle]],$[interrogate_sources]]
   #define sources $($[varname])
 
 $[target] : $[sources] $[static_lib_dependencies]
+#if $[build_lib]
   #if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_lib_c++]
   #else  
 $[TAB] $[link_lib_c]
   #endif
+#endif  // BUILD_LIB
 
   #if $[link_extra_bundle]
     // Also generate the bundles (on OSX only).
@@ -371,7 +378,7 @@ $[TAB] $[BUNDLE_LIB_C++]
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
+   $[if $[build_lib],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] \
     $[if $[link_extra_bundle],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_MODULES:%=$[install_lib_dir]/%] \
@@ -683,7 +690,7 @@ $[TAB] $[compile_c++]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
-#define flags $[cflags] $[CFLAGS_SHARED]
+#define flags $[cflags] $[CFLAGS_SHARED] $[building_var:%=-D%]
 #if $[ne $[file], $[notdir $file]]
   // If the source file is not in the current directory, tack on "."
   // to front of the ipath.
@@ -701,7 +708,7 @@ $[TAB] $[compile_c]
 #define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED]
+#define flags $[c++flags] $[CFLAGS_SHARED] $[building_var:%=-D%]
 #if $[ne $[file], $[notdir $file]]
   // If the source file is not in the current directory, tack on "."
   // to front of the ipath.

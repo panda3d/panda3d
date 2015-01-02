@@ -247,7 +247,7 @@ private:
   // represent this particular window.  We use it to add hooks for
   // communicating with the parent window, in particular to receive
   // keyboard events from the parent window when necessary.
-  class WinWindowHandle : public WindowHandle {
+  class EXPCL_PANDAWIN WinWindowHandle : public WindowHandle {
   public:
     WinWindowHandle(WinGraphicsWindow *window,
                     const WindowHandle &copy);

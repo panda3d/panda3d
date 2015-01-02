@@ -24,7 +24,7 @@
 
 #begin bin_target
   #define TARGET dxf2egg
-  #define LOCAL_LIBS p3dxf p3dxfegg p3eggbase p3progbase
+  #define LOCAL_LIBS p3dxfegg p3dxf p3eggbase p3progbase
 
   #define SOURCES \
     dxfToEgg.cxx dxfToEgg.h

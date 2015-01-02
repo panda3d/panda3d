@@ -21,8 +21,8 @@
 INLINE void AtomicAdjustI386Impl::
 inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
-#ifdef _M_IX86
-  // Windows case
+#if defined(_M_IX86) && !defined(__GNUC__)
+  // MSVC Windows case
   TVOLATILE Integer *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
@@ -47,8 +47,8 @@ INLINE bool AtomicAdjustI386Impl::
 dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   unsigned char c;
-#ifdef _M_IX86
-  // Windows case
+#if defined(_M_IX86) && !defined(__GNUC__)
+  // MSVC Windows case
   TVOLATILE Integer *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
@@ -164,8 +164,8 @@ compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem,
                      AtomicAdjustI386Impl::Integer new_value) {
   assert((((size_t)&mem) & (sizeof(Integer) - 1)) == 0);
   Integer prev;
-#ifdef _M_IX86
-  // Windows case
+#if defined(_M_IX86) && !defined(__GNUC__)
+  // MSVC Windows case
   TVOLATILE Integer *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;
@@ -197,8 +197,8 @@ compare_and_exchange_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &mem,
                          AtomicAdjustI386Impl::Pointer new_value) {
   assert((((size_t)&mem) & (sizeof(Pointer) - 1)) == 0);
   Pointer prev;
-#ifdef _M_IX86
-  // Windows case
+#if defined(_M_IX86) && !defined(__GNUC__)
+  // MSVC Windows case
   TVOLATILE Pointer *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;

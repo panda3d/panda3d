@@ -45,7 +45,7 @@
   #if $[WINDOWS_PLATFORM]
     #define WIN_RESOURCE_FILE nppanda3d.rc
     #define LINKER_DEF_FILE nppanda3d.def
-    #define WIN_SYS_LIBS user32.lib shell32.lib ole32.lib
+    #define WIN_SYS_LIBS user32 shell32 ole32
   #endif
 
   // Mac-specific options.

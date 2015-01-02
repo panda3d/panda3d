@@ -131,7 +131,7 @@
   #define INSTALL_HEADERS \
     p3d_plugin.h
 
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 comctl32 msimg32 ole32
 
 #end lib_target
 
@@ -153,7 +153,7 @@
   #define SOURCES $[COREAPI_SOURCES]
   #define INCLUDED_SOURCES $[COREAPI_INCLUDED_SOURCES]
 
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib ole32.lib
+  #define WIN_SYS_LIBS user32 gdi32 shell32 comctl32 msimg32 ole32
 
 #end static_lib_target
 
@@ -274,7 +274,7 @@
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
   #define OSX_SYS_FRAMEWORKS Carbon
 
-  #define WIN_SYS_LIBS user32.lib
+  #define WIN_SYS_LIBS user32
 #end bin_target
 
 #begin bin_target
@@ -324,7 +324,7 @@
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
   #define OSX_SYS_FRAMEWORKS Carbon
 
-  #define WIN_SYS_LIBS user32.lib
+  #define WIN_SYS_LIBS user32
 #end bin_target
 
 #begin lib_target
@@ -363,7 +363,7 @@
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I \
     run_p3dpython.h run_p3dpython.cxx
 
-  #define WIN_SYS_LIBS user32.lib
+  #define WIN_SYS_LIBS user32
 #end lib_target
 
 

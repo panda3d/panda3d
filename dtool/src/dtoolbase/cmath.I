@@ -59,8 +59,8 @@ INLINE float ctan(float v) {
 ////////////////////////////////////////////////////////////////////
 INLINE void
 csincos(float v, float *sin_result, float *cos_result) {
-  // MS VC defines _M_IX86 for x86.  gcc should define _X86_
-#if defined(_M_IX86) || defined(_X86_)
+  // MS VC defines _M_IX86 for x86. GCC uses different ASM notation.
+#if defined(_M_IX86) && !defined(__GNUC__)
   //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
   __asm {
     mov eax, sin_result
@@ -70,10 +70,10 @@ csincos(float v, float *sin_result, float *cos_result) {
       fstp DWORD ptr [edx]
       fstp DWORD ptr [eax]
       }
-#else //!_X86_
+#else //__GNUC__
   *sin_result = sinf(v);
   *cos_result = cosf(v);
-#endif //!_X86_
+#endif //__GNUC__
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +242,7 @@ ctan(double v) {
 ////////////////////////////////////////////////////////////////////
 INLINE void
 csincos(double v, double *sin_result, double *cos_result) {
-#if defined(_M_IX86) || defined(_X86_)
+#if defined(_M_IX86) && !defined(__GNUC__)
   //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
   __asm {
     mov eax, sin_result
@@ -252,10 +252,10 @@ csincos(double v, double *sin_result, double *cos_result) {
       fstp QWORD ptr [edx]
       fstp QWORD ptr [eax]
       }
-#else //!_X86_
+#else //__GNUC__
   *sin_result = sin(v);
   *cos_result = cos(v);
-#endif //!_X86_
+#endif //__GNUC__
 }
 
 ////////////////////////////////////////////////////////////////////

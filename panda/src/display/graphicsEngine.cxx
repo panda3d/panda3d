@@ -52,7 +52,7 @@
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
-  #include <WinSock2.h>
+  #include <winsock2.h>
   #include <wtypes.h>
   #undef WINDOWS_LEAN_AND_MEAN
 #else

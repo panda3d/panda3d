@@ -1,7 +1,7 @@
 #define OTHER_LIBS \
    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
-#define WIN_SYS_LIBS Iphlpapi.lib
+#define WIN_SYS_LIBS iphlpapi
 
 #define BUILD_DIRECTORY $[and $[HAVE_NET],$[WANT_NATIVE_NET]]
 #define USE_PACKAGES net

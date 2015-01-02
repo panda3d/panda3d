@@ -4,7 +4,7 @@
   #if $[ne $[PLATFORM], FreeBSD]
     #define UNIX_SYS_LIBS dl
   #endif
-  #define WIN_SYS_LIBS shell32.lib
+  #define WIN_SYS_LIBS shell32
   #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE]],AppKit]
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx

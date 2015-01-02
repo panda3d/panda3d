@@ -251,7 +251,7 @@ public:
     CPT(GeomMunger) _modifier;
   };
   // It is not clear why MSVC7 needs this class to be public.
-  class CacheEntry : public GeomCacheEntry {
+  class EXPCL_PANDA_GOBJ CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(Geom *source, 
                       const GeomVertexData *source_data,

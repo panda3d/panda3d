@@ -11,7 +11,7 @@
 
 #begin bin_target
   #define TARGET vrml2egg
-  #define LOCAL_LIBS p3vrml p3vrmlegg p3eggbase p3progbase
+  #define LOCAL_LIBS p3vrmlegg p3vrml p3eggbase p3progbase
 
   #define SOURCES \
     vrmlToEgg.cxx vrmlToEgg.h

@@ -21,8 +21,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DWORD DXGraphicsStateGuardian9::
 LColor_to_D3DCOLOR(const LColor &cLColor) {
-// MS VC defines _M_IX86 for x86.  gcc should define _X86_
-#if (defined(_M_IX86) || defined(_X86_)) && !defined(STDFLOAT_DOUBLE)
+// MS VC defines _M_IX86 for x86. GCC  should define _X86_. GCC (MinGW) uses different ASM notation.
+#if (defined(_M_IX86) || defined(_X86_)) && !defined(STDFLOAT_DOUBLE) && !defined(__GNUC__)
   DWORD d3dcolor, tempcolorval=255;
 
   // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode

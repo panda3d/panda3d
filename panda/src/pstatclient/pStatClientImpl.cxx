@@ -29,7 +29,7 @@
 #include <algorithm>
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
-#include <Winsock2.h>
+#include <winsock2.h>
 #include <windows.h>
 #endif
 
