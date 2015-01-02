@@ -57,7 +57,7 @@ static const double bin_color_flash_rate = 1.0;  // 1 state change per second
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullResult::
 CullResult(GraphicsStateGuardianBase *gsg,
@@ -87,7 +87,7 @@ make_next() const {
 
   for (size_t i = 0; i < _bins.size(); ++i) {
     CullBin *old_bin = _bins[i];
-    if (old_bin == (CullBin *)NULL || 
+    if (old_bin == (CullBin *)NULL ||
         old_bin->get_bin_type() != bin_manager->get_bin_type(i)) {
       new_result->_bins.push_back((CullBin *)NULL);
     } else {
@@ -166,21 +166,19 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // later.  This means we must copy the object and add it to
       // both bins.  We can only do this if we do not have an
       // explicit bin already applied; otherwise, M_dual falls back
-      // to M_alpha. 
+      // to M_alpha.
       {
         const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, state->get_attrib(CullBinAttrib::get_class_slot()));
-        if (bin_attrib == (CullBinAttrib *)NULL || 
+        if (bin_attrib == (CullBinAttrib *)NULL ||
             bin_attrib->get_bin_name().empty()) {
-          // We make a copy of the object to draw the transparent part
-          // without decals; this gets placed in the transparent bin.
+          // We make a copy of the object to draw the transparent part;
+          // this gets placed in the transparent bin.
 #ifndef NDEBUG
-          if (m_dual_transparent) 
+          if (m_dual_transparent)
 #endif
             {
               CullableObject *transparent_part = new CullableObject(*object);
-              CPT(RenderState) transparent_state = object->has_decals() ? 
-                get_dual_transparent_state_decals() : 
-                get_dual_transparent_state();
+              CPT(RenderState) transparent_state = get_dual_transparent_state();
               transparent_part->_state = state->compose(transparent_state);
               if (transparent_part->munge_geom
                   (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
@@ -195,9 +193,9 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                 delete transparent_part;
               }
             }
-          
-          // Now we can draw the opaque part, with decals.  This will
-          // end up in the opaque bin.
+
+          // Now we can draw the opaque part.  This will end up in
+          // the opaque bin.
           object->_state = state->compose(get_dual_opaque_state());
 #ifndef NDEBUG
           if (!m_dual_opaque) {
@@ -210,7 +208,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
         // M_alpha.
       }
       break;
-      
+
     default:
       // Other kinds of transparency need no special handling.
       break;
@@ -443,8 +441,6 @@ check_flash_transparency(CPT(RenderState) &state, const LColor &transparency) {
 //       Access: Private
 //  Description: Returns a RenderState that renders only the
 //               transparent parts of an object, in support of M_dual.
-//               This state is suitable only for objects that do not
-//               contain decals.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CullResult::
 get_dual_transparent_state() {
@@ -454,10 +450,7 @@ get_dual_transparent_state() {
     // and hence filling up the depth buffer with large empty spaces
     // that may obscure other things.  However, this does mean we draw
     // pixels twice where the alpha == 1.0 (since they were already
-    // drawn in the opaque pass).  This is not normally a problem,
-    // except when we are using decals; in the case of decals, we
-    // don't want to draw the 1.0 pixels again, since these are the
-    // ones that may have been decaled onto.
+    // drawn in the opaque pass).  This is not normally a problem.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f),
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               DepthWriteAttrib::make(DepthWriteAttrib::M_off),
@@ -478,47 +471,6 @@ get_dual_transparent_state() {
 
         flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
                                               RenderState::get_max_priority());
-      }
-      return flash_state;
-    }
-  }
-#endif  // NDEBUG
-
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_dual_transparent_state_decals
-//       Access: Private
-//  Description: Returns a RenderState that renders only the
-//               transparent parts of an object, but suitable for
-//               objects that contain decals.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) CullResult::
-get_dual_transparent_state_decals() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
-    // This is exactly the same as above except here we make the alpha
-    // test of < 1.0 instead of > 0.0.  This makes us draw big empty
-    // pixels where the alpha values are 0.0, but we don't overwrite
-    // the decals where the pixels are 1.0.
-    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, dual_opaque_level),
-                              TransparencyAttrib::make(TransparencyAttrib::M_alpha),
-                              DepthWriteAttrib::make(DepthWriteAttrib::M_off),
-                              RenderState::get_max_priority());
-  }
-
-#ifndef NDEBUG
-  if (m_dual_flash) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
-    if ((cycle & 1) == 0) {
-      static CPT(RenderState) flash_state = NULL;
-      if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.8f, 0.2, 0.2, 1.0f)),
-                                        RenderState::get_max_priority());
-        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)),
-                                              RenderState::get_max_priority());
-
       }
       return flash_state;
     }

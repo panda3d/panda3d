@@ -72,12 +72,11 @@ private:
   static CPT(RenderState) get_alpha_state();
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
-  static CPT(RenderState) get_dual_transparent_state_decals();
   static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;
   PStatCollector _draw_region_pcollector;
-  
+
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
 
@@ -90,7 +89,7 @@ public:
     register_type(_type_handle, "CullResult",
                   ReferenceCount::get_class_type());
   }
-  
+
 private:
   static TypeHandle _type_handle;
 };
@@ -99,5 +98,3 @@ private:
 
 #endif
 
-
-  

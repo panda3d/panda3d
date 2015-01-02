@@ -27,7 +27,7 @@ TypeHandle CullBin::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBin::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullBin::
 ~CullBin() {
@@ -115,7 +115,7 @@ check_flash_color() {
   } else {
     _has_flash_color = false;
     pgraph_cat.warning()
-      << "Invalid value for flash-bin-" << _name << ": " 
+      << "Invalid value for flash-bin-" << _name << ": "
       << flash_bin.get_string_value() << "\n";
   }
 #endif  // NDEBUG
@@ -124,7 +124,7 @@ check_flash_color() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBin::ResultGraphBuilder::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullBin::ResultGraphBuilder::
 ResultGraphBuilder(PandaNode *root_node) :
@@ -142,9 +142,8 @@ ResultGraphBuilder(PandaNode *root_node) :
 ////////////////////////////////////////////////////////////////////
 void CullBin::ResultGraphBuilder::
 add_object(CullableObject *object) {
-  if (_current_transform != object->_modelview_transform || 
-      _current_state != object->_state || 
-      object->is_fancy()) {
+  if (_current_transform != object->_modelview_transform ||
+      _current_state != object->_state) {
     // Create a new GeomNode to hold the net transform and state.  We
     // choose to create a new GeomNode for each new state, to make it
     // clearer to the observer when the state changes.
@@ -157,57 +156,13 @@ add_object(CullableObject *object) {
   }
 
   record_one_object(_current_node, object);
-
-  if (object->get_next() != (CullableObject *)NULL) {
-    // Collect the decal base pieces.
-    CullableObject *base = object->get_next();
-    while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
-      record_one_object(_current_node, base);
-      base = base->get_next();
-    }
-
-    if (base != (CullableObject *)NULL) {
-      // Now, collect all the decals.
-      _current_node->set_effect(DecalEffect::make());
-      int decal_index = 0;
-
-      CPT(TransformState) transform;
-      CPT(RenderState) state;
-      PT(GeomNode) decal_node;
-      CullableObject *decal = base->get_next();
-      while (decal != (CullableObject *)NULL) {
-        if (transform != decal->_modelview_transform || 
-            state != decal->_state || 
-            decal->get_next() != (CullableObject *)NULL) {
-          // Create a new GeomNode to hold the net transform.
-          transform = decal->_modelview_transform;
-          state = decal->_state;
-          decal_node = new GeomNode("decal_" + format_string(decal_index));
-          _current_node->add_child(decal_node);
-          decal_node->set_transform(transform);
-          decal_node->set_state(state);
-        }
-        
-        record_one_object(decal_node, decal);
-        decal = decal->get_next();
-        ++decal_index;
-      }
-    }
-
-    // Reset the current node pointer for next time so the decal root
-    // will remain in its own node.
-    _current_node.clear();
-    _current_transform.clear();
-    _current_state.clear();
-  }
-
   ++_object_index;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBin::ResultGraphBuilder::record_one_object
 //       Access: Private
-//  Description: Records a single object, without regard to decalling.
+//  Description: Records a single object.
 ////////////////////////////////////////////////////////////////////
 void CullBin::ResultGraphBuilder::
 record_one_object(GeomNode *node, CullableObject *object) {
