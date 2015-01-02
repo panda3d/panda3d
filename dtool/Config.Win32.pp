@@ -19,6 +19,48 @@
 // to a subsequent version of Panda.
 // *******************************************************************
 
+// These compiler settings are only used when using USE_COMPILER GCC.
+#define CC i686-w64-mingw32-gcc
+#define CXX i686-w64-mingw32-g++
+#define AR i686-w64-mingw32-ar
+#define RANLIB i686-w64-mingw32-ranlib $[target]
+
+#define DEBUGFLAGS -g
+#define OPTFLAGS -O2
+
+#defer COMPILE_C $[CC] $[CFLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] $[ARCH_FLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+
+#defer CDEFINES_OPT1 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 $[EXTRA_CDEFS]
+
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[if $[no_opt],,$[OPTFLAGS]]
+
+#defer CFLAGS_SHARED -fPIC
+
+#defer LINK_BIN_C $[cc_ld] $[ARCH_FLAGS] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
+#defer LINK_BIN_C++ $[cxx_ld] $[ARCH_FLAGS] \
+ -o $[target] $[sources]\
+ $[flags]\
+ $[lpath:%=-L%] $[libs:%=-l%]\
+ $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
+
+#defer STATIC_LIB_C $[AR] cru $[target] $[sources]
+#defer STATIC_LIB_C++ $[AR] cru $[target] $[sources]
+
+#defer SHARED_LIB_C $[cc_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#defer SHARED_LIB_C++ $[cxx_ld] -shared $[LFLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+
+#defer install_dash_p $[if $[KEEP_TIMESTAMPS],-p,]
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[install_dash_p] $[notdir $[local]] $[dest]/
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
+
 // What additional flags should we pass to interrogate?
 #define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"_declspec(param)=" -D"__declspec(param)=" -D_near  -D_far -D__near  -D__far -D_WIN32 -D__stdcall -Dvolatile -Dmutable -DWIN32
 

@@ -89,7 +89,7 @@ as_integer() const {
 
   case RT_pointer:
     // We don't mind if this loses precision.
-    return (int)reinterpret_cast<long>(_u._pointer);
+    return (int)reinterpret_cast<intptr_t>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
@@ -114,7 +114,7 @@ as_real() const {
 
   case RT_pointer:
     // We don't mind if this loses precision.
-    return (double)reinterpret_cast<long>(_u._pointer);
+    return (double)reinterpret_cast<intptr_t>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
@@ -132,10 +132,10 @@ void *CPPExpression::Result::
 as_pointer() const {
   switch (_type) {
   case RT_integer:
-    return reinterpret_cast<void*>((long)_u._integer);
+    return reinterpret_cast<void*>((intptr_t)_u._integer);
 
   case RT_real:
-    return reinterpret_cast<void*>((long)_u._real);
+    return reinterpret_cast<void*>((intptr_t)_u._real);
 
   case RT_pointer:
     return _u._pointer;

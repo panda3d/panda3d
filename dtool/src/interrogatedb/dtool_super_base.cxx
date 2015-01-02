@@ -15,7 +15,7 @@
 #include "py_panda.h"
 
 #ifdef HAVE_PYTHON
-  
+
 class EmptyClass {
 };
 Define_Module_Class_Private(dtoolconfig, DTOOL_SUPER_BASE, EmptyClass, DTOOL_SUPER_BASE111);
@@ -35,7 +35,7 @@ static Py_hash_t DTool_HashKey_Methods_DTOOL_SUPER_BASE(PyObject *self) {
   if (local_this == NULL) {
     return -1;
   }
-  return (Py_hash_t) local_this;
+  return (Py_hash_t)(intptr_t)local_this;
 };
 
 inline void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
