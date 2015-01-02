@@ -1108,8 +1108,6 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -fno-inline-functions-called-once -fgcse-after-reload'
                 cmd += ' -frerun-cse-after-loop -frename-registers'
 
-            if not src.endswith(".c"):
-                cmd += " -fno-exceptions -fno-rtti"
             cmd += " -Wa,--noexecstack"
 
             # Now add specific release/debug flags.
@@ -1134,6 +1132,16 @@ def CompileCxx(obj,src,opts):
 
         else:
             cmd += " -pthread"
+
+        if not src.endswith(".c"):
+            # We don't use exceptions.
+            if 'EXCEPTIONS' not in opts:
+                cmd += " -fno-exceptions"
+
+            if 'RTTI' not in opts:
+                # We always disable RTTI on Android for memory usage reasons.
+                if optlevel >= 4 or GetTarget() == "android":
+                    cmd += " -fno-rtti"
 
         if PkgSkip("SSE2") == 0 and not arch.startswith("arm"):
             cmd += " -msse2"
@@ -2184,6 +2192,10 @@ def WriteConfigSettings():
 
     if (GetOptimize() >= 4):
         dtool_config["PRC_SAVE_DESCRIPTIONS"] = 'UNDEF'
+
+    if (GetOptimize() >= 4):
+        # Disable RTTI on release builds.
+        dtool_config["HAVE_RTTI"] = 'UNDEF'
 
     # Now that we have OS_SIMPLE_THREADS, we can support
     # SIMPLE_THREADS on exotic architectures like win64, so we no
@@ -3665,7 +3677,7 @@ if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3rocket.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/rocket', 'ROCKET']
+  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS']
   IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
     "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.h"])
   TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
