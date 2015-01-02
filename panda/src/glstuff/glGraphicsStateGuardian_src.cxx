@@ -316,6 +316,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _force_flush = gl_force_flush;
 
   _scissor_enabled = false;
+  _scissor_attrib_active = false;
 
 #ifdef DO_PSTATS
   if (gl_finish) {
@@ -2468,6 +2469,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
 
+  int count = dr->get_num_regions();
+
   if (dr->get_scissor_enabled()) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2475,6 +2478,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glEnable(GL_SCISSOR_TEST);
     _scissor_enabled = true;
+    _scissor_array.resize(count);
   } else {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2482,27 +2486,35 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glDisable(GL_SCISSOR_TEST);
     _scissor_enabled = false;
+    _scissor_array.clear();
   }
+
+  _scissor_attrib_active = false;
 
 #ifndef OPENGLES
   if (_supports_viewport_arrays) {
-    int count = dr->get_num_regions();
-    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
-    GLint *scissors = (GLint *)alloca(sizeof(GLint) * 4 * count);
 
+    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
+
+    // We store the scissor regions in a vector since we may need
+    // to switch back to it in do_issue_scissor.
     for (int i = 0; i < count; ++i) {
-      GLint *sr = scissors + i * 4;
+      LVecBase4i sr;
       dr->get_region_pixels(i, sr[0], sr[1], sr[2], sr[3]);
       GLfloat *vr = viewports + i * 4;
       vr[0] = (GLfloat) sr[0];
       vr[1] = (GLfloat) sr[1];
       vr[2] = (GLfloat) sr[2];
       vr[3] = (GLfloat) sr[3];
+      if (_scissor_enabled) {
+        _scissor_array[i] = sr;
+      }
     }
     _glViewportArrayv(0, count, viewports);
-    if (dr->get_scissor_enabled()) {
-      _glScissorArrayv(0, count, scissors);
+    if (_scissor_enabled) {
+      _glScissorArrayv(0, count, _scissor_array[0].get_data());
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewportArrayv(0, " << count << ", [\n";
@@ -2511,12 +2523,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
         GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
       }
       GLCAT.spam(false) << "])\n";
-      if (dr->get_scissor_enabled()) {
+      if (_scissor_enabled) {
         GLCAT.spam()
           << "glScissorArrayv(0, " << count << ", [\n";
         for (int i = 0; i < count; ++i) {
-          GLint *sr = scissors + i * 4;
-          GLCAT.spam(false) << sr[0] << ", " << sr[1] << ", " << sr[2] << ", " << sr[3] << ",\n";
+          const LVecBase4i &sr = _scissor_array[i];
+          GLCAT.spam(false) << sr << ",\n";
         }
       }
       GLCAT.spam(false) << "])\n";
@@ -2526,9 +2538,13 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 #endif  // OPENGLES
   {
     glViewport(x, y, width, height);
-    if (dr->get_scissor_enabled()) {
+    if (_scissor_enabled) {
       glScissor(x, y, width, height);
+
+      _scissor_array.resize(1);
+      _scissor_array[0].set(x, y, width, height);
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewport(" << x << ", " << y << ", " << width << ", " << height << ")\n";
@@ -11984,5 +12000,30 @@ do_issue_scissor() {
         << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
     }
     glScissor(x, y, width, height);
+
+    _scissor_attrib_active = true;
+
+  } else if (_scissor_attrib_active) {
+    _scissor_attrib_active = false;
+
+    if (_scissor_array.size() > 0) {
+      // Scissoring is enabled on the display region.
+      // Revert to the scissor state specified in the DisplayRegion.
+      if (_supports_viewport_arrays) {
+        _glScissorArrayv(0, _scissor_array.size(), _scissor_array[0].get_data());
+      } else {
+        const LVecBase4i sr = _scissor_array[0];
+        glScissor(sr[0], sr[1], sr[2], sr[3]);
+      }
+
+    } else if (_scissor_enabled) {
+      // The display region had no scissor enabled.  Disable scissoring.
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glDisable(GL_SCISSOR_TEST)\n";
+      }
+      glDisable(GL_SCISSOR_TEST);
+      _scissor_enabled = false;
+    }
   }
 }
