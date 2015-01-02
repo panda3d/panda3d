@@ -35,6 +35,40 @@ PointerTo(const PointerTo<T> &copy) :
 {
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE PointerTo<T>::
+PointerTo(PointerTo<T> &&move) NOEXCEPT :
+  PointerToBase<T>((PointerToBase<T> &&)move)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE PointerTo<T> &PointerTo<T>::
+operator = (PointerTo<T> &&move) NOEXCEPT {
+  To *old_ptr = (To *)this->_void_ptr;
+
+  this->_void_ptr = move._void_ptr;
+  move._void_ptr = NULL;
+
+  if (old_ptr != (To *)NULL) {
+    unref_delete(old_ptr);
+  }
+
+  return *this;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Destructor
 //       Access: Public
@@ -165,6 +199,40 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
   PointerToBase<T>((const PointerToBase<T> &)copy)
 {
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T>::
+ConstPointerTo(ConstPointerTo<T> &&move) NOEXCEPT :
+  PointerToBase<T>((PointerToBase<T> &&)move)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (ConstPointerTo<T> &&move) NOEXCEPT {
+  To *old_ptr = (To *)this->_void_ptr;
+
+  this->_void_ptr = move._void_ptr;
+  move._void_ptr = NULL;
+
+  if (old_ptr != (To *)NULL) {
+    unref_delete(old_ptr);
+  }
+
+  return *this;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Dereference operator
