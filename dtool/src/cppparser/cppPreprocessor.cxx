@@ -2035,6 +2035,7 @@ check_keyword(const string &name) {
   if (name == "__make_seq") return KW_MAKE_SEQ;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
+  if (name == "noexcept") return KW_NOEXCEPT;
   if (name == "new") return KW_NEW;
   if (name == "operator") return KW_OPERATOR;
   if (name == "private") return KW_PRIVATE;

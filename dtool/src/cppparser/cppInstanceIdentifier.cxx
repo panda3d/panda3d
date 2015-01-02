@@ -133,7 +133,7 @@ add_func_modifier(CPPParameterList *params, int flags) {
   // function, check if the parameter list is empty.  If it is, this
   // is really a unary operator, so set the unary_op flag.  Operators
   // () and [] are never considered unary operators.
-  if (_ident != NULL && 
+  if (_ident != NULL &&
       _ident->get_simple_name().substr(0, 9) == "operator ") {
 
     if (_ident->get_simple_name() != string("operator ()") &&
@@ -245,7 +245,13 @@ r_unroll_type(CPPType *start_type,
     break;
 
   case IIT_reference:
-    result = new CPPReferenceType(r_unroll_type(start_type, mi));
+    result = new CPPReferenceType(r_unroll_type(start_type, mi),
+                                  CPPReferenceType::VC_lvalue);
+    break;
+
+  case IIT_rvalue_reference:
+    result = new CPPReferenceType(r_unroll_type(start_type, mi),
+                                  CPPReferenceType::VC_rvalue);
     break;
 
   case IIT_scoped_pointer:
