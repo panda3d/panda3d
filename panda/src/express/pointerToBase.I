@@ -36,6 +36,20 @@ PointerToBase(const PointerToBase<T> &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Move Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+#ifdef USE_MOVE_SEMANTICS
+template<class T>
+INLINE PointerToBase<T>::
+PointerToBase(PointerToBase<T> &&move) NOEXCEPT {
+  _void_ptr = move._void_ptr;
+  move._void_ptr = (void *)NULL;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Destructor
 //       Access: Protected
 //  Description:

@@ -829,6 +829,8 @@ internal_get_next_token() {
     }
     if (next_c == '<') return CPPToken(LSHIFT, first_line, first_col, first_file);
     if (next_c == '=') return CPPToken(LECOMPARE, first_line, first_col, first_file);
+    if (next_c == ':') return CPPToken('[', first_line, first_col, first_file);
+    if (next_c == '%') return CPPToken('{', first_line, first_col, first_file);
     break;
 
   case '>':
@@ -872,6 +874,7 @@ internal_get_next_token() {
 
   case ':':
     if (next_c == ':') return CPPToken(SCOPE, first_line, first_col, first_file);
+    if (next_c == '>') return CPPToken(']', first_line, first_col, first_file);
     break;
 
   case '*':
@@ -884,6 +887,7 @@ internal_get_next_token() {
 
   case '%':
     if (next_c == '=') return CPPToken(MODEQUAL, first_line, first_col, first_file);
+    if (next_c == '>') return CPPToken('}', first_line, first_col, first_file);
     break;
   }
 
@@ -1416,7 +1420,7 @@ handle_include_directive(const string &args, int first_line,
       found_file = true;
       source = CPPFile::S_local;
     }
-    
+
     // Search the same directory as the includer.
     if (!angle_quotes && !found_file) {
       Filename match(get_file()._filename.get_dirname(), filename);
@@ -1444,7 +1448,7 @@ handle_include_directive(const string &args, int first_line,
         }
       }
     }
-    
+
     if (!found_file) {
       warning("Cannot find " + filename.get_fullpath(),
               first_line, first_col, first_file);
@@ -2037,6 +2041,7 @@ check_keyword(const string &name) {
   if (name == "__make_seq") return KW_MAKE_SEQ;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
+  if (name == "noexcept") return KW_NOEXCEPT;
   if (name == "new") return KW_NEW;
   if (name == "operator") return KW_OPERATOR;
   if (name == "private") return KW_PRIVATE;
@@ -2064,6 +2069,19 @@ check_keyword(const string &name) {
   if (name == "volatile") return KW_VOLATILE;
   if (name == "wchar_t") return KW_WCHAR_T;
   if (name == "while") return KW_WHILE;
+
+  // These are alternative ways to refer to built-in operators.
+  if (name == "and") return ANDAND;
+  if (name == "and_eq") return ANDEQUAL;
+  if (name == "bitand") return '&';
+  if (name == "bitor") return '|';
+  if (name == "compl") return '~';
+  if (name == "not") return '!';
+  if (name == "not_eq") return NECOMPARE;
+  if (name == "or") return OROR;
+  if (name == "or_eq") return OREQUAL;
+  if (name == "xor") return '^';
+  if (name == "xor_eq") return XOREQUAL;
 
   if (!cpp_longlong_keyword.empty() && name == cpp_longlong_keyword) {
     return KW_LONGLONG;

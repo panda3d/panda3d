@@ -85,6 +85,11 @@ PUBLISHED:
   INLINE ~PointerTo();
 
 public:
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerTo(PointerTo<T> &&move) NOEXCEPT;
+  INLINE PointerTo<T> &operator = (PointerTo<T> &&move) NOEXCEPT;
+#endif
+
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
@@ -144,6 +149,11 @@ PUBLISHED:
   INLINE ~ConstPointerTo();
 
 public:
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerTo(ConstPointerTo<T> &&move) NOEXCEPT;
+  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&move) NOEXCEPT;
+#endif
+
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
   INLINE operator const T *() const;

@@ -257,12 +257,12 @@ ConfigVariableBool retransform_sprites
           "necessary in order for fog to work correctly on the sprites."));
 
 ConfigVariableBool depth_offset_decals
-("depth-offset-decals", false,
+("depth-offset-decals", true,
  PRC_DESC("Set this true to allow decals to be implemented via the advanced "
           "depth offset feature, if supported, instead of via the traditional "
-          "(and slower) two-pass approach.  This is false by default "
-          "because it appears that many graphics drivers have issues with "
-          "their depth offset implementation."));
+          "(and slower) two-pass approach.  This is currently the only method "
+          "by which decals are implemented in Panda3D, and as such, this "
+          "setting is ignored."));
 
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 65534,

@@ -110,12 +110,12 @@ get_initial_state() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_depth_offset_decals
 //       Access: Published
-//  Description: Returns the depth_offset_decals flag.  See
-//               set_depth_offset_decals().
+//  Description: Returns true, as depth offsets are the only way
+//               that we implement decals nowadays.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverser::
 get_depth_offset_decals() const {
-  return _depth_offset_decals;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ get_cull_handler() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_portal_clipper
 //       Access: Published
-//  Description: Specifies _portal_clipper object pointer that 
+//  Description: Specifies _portal_clipper object pointer that
 //               subsequent traverse() or traverse_below may use.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::

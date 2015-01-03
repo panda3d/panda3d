@@ -30,7 +30,6 @@
 #include "geomTriangles.h"
 #include "light.h"
 #include "lightMutexHolder.h"
-#include "geomDrawCallbackData.h"
 
 CullableObject::FormatMap CullableObject::_format_map;
 LightMutex CullableObject::_format_lock;
@@ -180,41 +179,13 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 #endif
   }
 
-  if (_fancy) {
-    // Only check the _next pointer if the _fancy flag is set.
-    if (_next != (CullableObject *)NULL) {
-      if (_next->_state != (RenderState *)NULL) {
-        _next->munge_geom(gsg, gsg->get_geom_munger(_next->_state, current_thread),
-                          traverser, force);
-      } else {
-        _next->munge_geom(gsg, munger, traverser, force);
-      }
-    }
-  }
-
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Destructor
-//       Access: Public
-//  Description: Automatically deletes the whole chain of these things.
-////////////////////////////////////////////////////////////////////
-CullableObject::
-~CullableObject() {
-  if (_fancy) {
-    // Only check the _next pointer if the _fancy flag is set.
-    if (_next != (CullableObject *)NULL) {
-      delete _next;
-    }
-    set_draw_callback(NULL);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullableObject::
 output(ostream &out) const {
@@ -224,7 +195,6 @@ output(ostream &out) const {
     out << "(null)";
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::munge_points_to_quads
@@ -642,7 +612,7 @@ munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
     return true;
   }
 
-  if (!_munged_data->has_column(InternalName::get_vertex()) || 
+  if (!_munged_data->has_column(InternalName::get_vertex()) ||
       !_munged_data->has_column(InternalName::get_normal())) {
     // No vertex or normal; can't compute light vector.
     return true;
@@ -776,96 +746,14 @@ get_flash_hardware_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::draw_fancy
-//       Access: Private
-//  Description: Something fancy about this object.  Draw it properly.
-////////////////////////////////////////////////////////////////////
-void CullableObject::
-draw_fancy(GraphicsStateGuardianBase *gsg, bool force, 
-           Thread *current_thread) {
-  nassertv(_fancy);
-  if (_draw_callback != (CallbackObject *)NULL) {
-    // It has a callback associated.
-    gsg->clear_before_callback();
-    gsg->set_state_and_transform(_state, _internal_transform);
-    GeomDrawCallbackData cbdata(this, gsg, force);
-    _draw_callback->do_callback(&cbdata);
-    if (cbdata.get_lost_state()) {
-      // Tell the GSG to forget its state.
-      gsg->clear_state_and_transform();
-    }
-    // Now the callback has taken care of drawing.
-
-  } else if (_next != (CullableObject *)NULL) {
-    // It has decals.
-    draw_with_decals(gsg, force, current_thread);
-
-  } else {
-    // Huh, nothing fancy after all.  Somehow the _fancy flag got set
-    // incorrectly; that's a bug.
-    gsg->set_state_and_transform(_state, _internal_transform);
-    draw_inline(gsg, force, current_thread);
-    nassertv(false);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::draw_with_decals
-//       Access: Private
-//  Description: Draws the current CullableObject, assuming it has
-//               attached decals.
-////////////////////////////////////////////////////////////////////
-void CullableObject::
-draw_with_decals(GraphicsStateGuardianBase *gsg, bool force, 
-                 Thread *current_thread) {
-  nassertv(_fancy && _next != (CullableObject *)NULL);  
-  // We draw with a three-step process.
-
-  // First, render all of the base geometry for the first pass.
-  CPT(RenderState) state = gsg->begin_decal_base_first();
-
-  CullableObject *base = this;
-  while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
-    gsg->set_state_and_transform(base->_state->compose(state), base->_internal_transform);
-    base->draw_inline(gsg, force, current_thread);
-    
-    base = base->_next;
-  }
-
-  if (base != (CullableObject *)NULL) {
-    // Now, draw all the decals.
-    state = gsg->begin_decal_nested();
-
-    CullableObject *decal = base->_next;
-    while (decal != (CullableObject *)NULL) {
-      gsg->set_state_and_transform(decal->_state->compose(state), decal->_internal_transform);
-      decal->draw_inline(gsg, force, current_thread);
-      decal = decal->_next;
-    }
-  }
-
-  // And now, re-draw the base geometry, if required.
-  state = gsg->begin_decal_base_second();
-  if (state != (const RenderState *)NULL) {
-    base = this;
-    while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
-      gsg->set_state_and_transform(base->_state->compose(state), base->_internal_transform);
-      base->draw_inline(gsg, force, current_thread);
-      
-      base = base->_next;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::SourceFormat::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullableObject::SourceFormat::
 SourceFormat(const GeomVertexFormat *format, bool sprite_texcoord) :
   _format(format),
-  _sprite_texcoord(sprite_texcoord) 
+  _sprite_texcoord(sprite_texcoord)
 {
   _retransform_sprites = retransform_sprites;
 }

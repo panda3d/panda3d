@@ -270,6 +270,7 @@ pop_struct() {
 %token KW_MUTABLE
 %token KW_NAMESPACE
 %token KW_NEW
+%token KW_NOEXCEPT
 %token KW_OPERATOR
 %token KW_PRIVATE
 %token KW_PROTECTED
@@ -946,6 +947,10 @@ function_post:
 {
   $$ = (int)CPPFunctionType::F_const_method;
 }
+        | function_post KW_NOEXCEPT
+{
+  $$ = (int)CPPFunctionType::F_noexcept;
+}
         | function_post KW_THROW '(' ')'
 {
   $$ = $1;
@@ -1235,6 +1240,11 @@ instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_reference);
 }
+        | ANDAND instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
+}
         | SCOPING '*' instance_identifier  %prec UNARY
 {
   $$ = $3;
@@ -1432,6 +1442,11 @@ not_paren_formal_parameter_identifier:
   $$ = $2;
   $$->add_modifier(IIT_reference);
 }
+        | ANDAND not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
+}
         | SCOPING '*' not_paren_formal_parameter_identifier  %prec UNARY
 {
   $$ = $3;
@@ -1471,6 +1486,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_reference);
+}
+        | ANDAND formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
 }
         | SCOPING '*' formal_parameter_identifier  %prec UNARY
 {
@@ -1514,6 +1534,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_reference);
+}
+        | ANDAND empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
 }
         | SCOPING '*' empty_instance_identifier  %prec UNARY
 {

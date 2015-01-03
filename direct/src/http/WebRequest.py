@@ -4,7 +4,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
 from LandingPage import LandingPage
-from direct.showbase import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 notify = directNotify.newCategory('WebRequestDispatcher')
 

@@ -38,6 +38,10 @@ protected:
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE ~PointerToBase();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerToBase(PointerToBase<T> &&move) NOEXCEPT;
+#endif
+
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
 

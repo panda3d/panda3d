@@ -243,6 +243,9 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   if (_flags & F_const_method) {
     out << " const";
   }
+  if (_flags & F_noexcept) {
+    out << " noexcept";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
