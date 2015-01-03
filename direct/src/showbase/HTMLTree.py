@@ -1,4 +1,4 @@
-from direct.showbase import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 class HTMLTree(ET.ElementTree):
     def __init__(self, title):

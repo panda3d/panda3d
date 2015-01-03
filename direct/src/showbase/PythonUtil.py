@@ -51,7 +51,6 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
-import ElementTree as ET
 import BpDb
 import unicodedata
 import bisect
