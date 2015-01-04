@@ -13,14 +13,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-
 #ifndef __OPENAL_AUDIO_SOUND_H__
 #define __OPENAL_AUDIO_SOUND_H__
 
 #include "pandabase.h"
-
-#ifdef HAVE_OPENAL //[
 
 #include "audioSound.h"
 #include "movieAudioCursor.h"
@@ -231,7 +227,5 @@ private:
 };
 
 #include "openalAudioSound.I"
-
-#endif //]
 
 #endif /* __OPENAL_AUDIO_SOUND_H__ */

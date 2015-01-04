@@ -525,9 +525,9 @@ def oscmd(cmd, ignoreError = False):
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             if sys.platform == "win32":
-                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
             else:
-                os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+                os.system(cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
         exit("The following command returned a non-zero value: " + str(cmd))
 
     return res

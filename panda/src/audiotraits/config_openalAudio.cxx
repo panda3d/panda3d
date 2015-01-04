@@ -13,8 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#ifdef HAVE_OPENAL //[
-
 
 #include "config_openalAudio.h"
 #include "openalAudioManager.h"
@@ -65,5 +63,3 @@ get_audio_manager_func_openal_audio() {
   init_libOpenALAudio();
   return &Create_OpenALAudioManager;
 }
-
-#endif //]
