@@ -18,7 +18,6 @@
 #define __OPENAL_AUDIO_MANAGER_H__
 
 #include "pandabase.h"
-#ifdef HAVE_OPENAL //[
 
 #include "audioManager.h"
 #include "plist.h"
@@ -43,11 +42,11 @@ extern void alc_audio_errcheck(const char *context,ALCdevice* device);
 
 class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   class SoundData;
-  
+
   friend class OpenALAudioSound;
   friend class OpenALSoundData;
- public:
 
+ public:
   //Constructor and Destructor
   OpenALAudioManager();
   virtual ~OpenALAudioManager();
@@ -55,18 +54,18 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   virtual void shutdown();
 
   virtual bool is_valid();
-          
+
   virtual PT(AudioSound) get_sound(const string&,     bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
-  
+
   virtual void uncache_sound(const string&);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
-    
+
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
-          
+
   void set_play_rate(PN_stdfloat play_rate);
   PN_stdfloat get_play_rate() const;
 
@@ -80,7 +79,7 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   // ux, uy and uz are the respective components of a unit up-vector
   // These changes will NOT be invoked until audio_3d_update() is called.
   virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
-                                                PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz, 
+                                                PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz,
                                                 PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz,
                                                 PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
 
@@ -88,7 +87,7 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
                                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
-          
+
   // Control the "relative distance factor" for 3D spacialized audio in units-per-foot. Default is 1.0
   // OpenAL has no distance factor but we use this as a scale
   // on the min/max distances of sounds to preserve FMOD compatibility.
@@ -121,7 +120,7 @@ private:
 
   bool can_use_audio(MovieAudioCursor *source);
   bool should_load_audio(MovieAudioCursor *source, int mode);
-  
+
   SoundData *get_sound_data(MovieAudio *source, int mode);
 
   // Tell the manager that the sound dtor was called.
@@ -129,12 +128,12 @@ private:
   void increment_client_count(SoundData *sd);
   void decrement_client_count(SoundData *sd);
   void discard_excess_cache(int limit);
-  
+
   void starting_sound(OpenALAudioSound* audio);
   void stopping_sound(OpenALAudioSound* audio);
-  
+
   void cleanup();
-  
+
 private:
   // This global lock protects all access to OpenAL library interfaces.
   static ReMutex _lock;
@@ -144,7 +143,7 @@ private:
   // around for a little while, since it is common to
   // stop using a sound for a brief moment and then
   // quickly resume.
-  
+
   typedef plist<void *> ExpirationQueue;
   ExpirationQueue _expiring_samples;
   ExpirationQueue _expiring_streams;
@@ -175,16 +174,16 @@ private:
     ExpirationQueue::iterator _expire;
   };
 
-  
+
   typedef phash_map<string, SoundData *> SampleCache;
   SampleCache _sample_cache;
-  
+
   typedef phash_set<PT(OpenALAudioSound)> SoundsPlaying;
   SoundsPlaying _sounds_playing;
 
   typedef phash_set<OpenALAudioSound *> AllSounds;
   AllSounds _all_sounds;
-  
+
   // State:
   int _cache_limit;
   PN_stdfloat _volume;
@@ -195,13 +194,13 @@ private:
   static int _active_managers;
   static bool _openal_active;
   unsigned int _concurrent_sound_limit;
-  
+
   bool _is_valid;
-  
+
   typedef pset<OpenALAudioManager *> Managers;
   static Managers *_managers;
 
-  static ALCdevice* _device; 
+  static ALCdevice* _device;
   static ALCcontext* _context;
 
   // cache of openal sources, use only for playing sounds
@@ -232,7 +231,7 @@ private:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type(); 
+    init_type();
     return get_class_type();
   }
 
@@ -246,8 +245,5 @@ private:
 };
 
 EXPCL_OPENAL_AUDIO AudioManager *Create_OpenALAudioManager();
-
-
-#endif //]
 
 #endif /* __OPENAL_AUDIO_MANAGER_H__ */

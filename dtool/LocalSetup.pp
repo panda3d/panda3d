@@ -293,17 +293,8 @@ $[cdefine PYTHON_FRAMEWORK]
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 $[cdefine HAVE_RAD_MSS]
 
-/* Define if we have FMODex installed. */
-$[cdefine HAVE_FMODEX]
-
-/* Define if we have OpenAL installed. */
-$[cdefine HAVE_OPENAL]
-
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
-
-/* Define if we are using SpeedTree. */
-$[cdefine HAVE_SPEEDTREE]
 
 /* Define if we want to compile in a default font. */
 $[cdefine COMPILE_IN_DEFAULT_FONT]
@@ -412,9 +403,6 @@ $[cdefine OPENCV_VER_23]
 $[cdefine HAVE_FFMPEG]
 $[cdefine HAVE_SWSCALE]
 $[cdefine HAVE_SWRESAMPLE]
-
-/* Define if we have ODE installed and want to build for ODE.  */
-$[cdefine HAVE_ODE]
 
 /* Define if we have AWESOMIUM installed and want to build for AWESOMIUM.  */
 $[cdefine HAVE_AWESOMIUM]
