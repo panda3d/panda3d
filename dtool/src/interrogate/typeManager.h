@@ -143,7 +143,7 @@ public:
   static bool has_protected_destructor(CPPType *type);
 
 
-  static bool IsExported(CPPType *type);
+  static bool is_exported(CPPType *type);
   static bool is_local(CPPType *type);
 
 };

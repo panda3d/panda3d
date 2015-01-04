@@ -4774,7 +4774,7 @@ is_cpp_type_legal(CPPType *in_ctype) {
     return true;
   } else if (TypeManager::is_pointer_to_simple(type)) {
     return true;
-  } else if (TypeManager::IsExported(type)) {
+  } else if (TypeManager::is_exported(type)) {
     return true;
   } else if (TypeManager::is_pointer_to_PyObject(in_ctype)) {
     return true;
@@ -4797,7 +4797,7 @@ isExportThisRun(CPPType *ctype) {
     return true;
   }
 
-  if (!TypeManager::IsExported(ctype)) {
+  if (!TypeManager::is_exported(ctype)) {
     return false;
   }
 

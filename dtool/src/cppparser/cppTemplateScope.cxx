@@ -64,10 +64,10 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
-define_extension_type(CPPExtensionType *type) {
+define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   type->_template_scope = this;
   assert(_parent_scope != NULL);
-  _parent_scope->define_extension_type(type);
+  _parent_scope->define_extension_type(type, error_sink);
 }
 
 ////////////////////////////////////////////////////////////////////

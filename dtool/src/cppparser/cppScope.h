@@ -66,7 +66,8 @@ public:
   virtual void add_enum_value(CPPInstance *inst,
                               CPPPreprocessor *preprocessor,
                               const cppyyltype &pos);
-  virtual void define_extension_type(CPPExtensionType *type);
+  virtual void define_extension_type(CPPExtensionType *type,
+                                     CPPPreprocessor *error_sink = NULL);
   virtual void define_namespace(CPPNamespace *scope);
   virtual void add_using(CPPUsing *using_decl, CPPScope *global_scope,
                          CPPPreprocessor *error_sink = NULL);
@@ -113,7 +114,8 @@ private:
   copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
                        CPPScope *global_scope) const;
 
-  void handle_declaration(CPPDeclaration *decl, CPPScope *global_scope);
+  void handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
+                          CPPPreprocessor *error_sink = NULL);
 
 public:
   typedef vector<CPPDeclaration *> Declarations;

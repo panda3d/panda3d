@@ -432,10 +432,14 @@ warning(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Warning in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
   }
   _warning_count++;
@@ -462,10 +466,14 @@ error(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Error in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
 
     if (_error_abort) {
@@ -608,7 +616,7 @@ init_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
-  if (_verbose >= 2) {
+  if (_verbose >= 3) {
     indent(cerr, _files.size() * 2)
       << "Reading " << file << "\n";
   }
@@ -2293,7 +2301,6 @@ unget(int c) {
   assert(_unget == '\0');
   _unget = c;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::nested_parse_template_instantiation

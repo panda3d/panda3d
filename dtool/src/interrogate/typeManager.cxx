@@ -53,6 +53,10 @@ resolve_type(CPPType *type, CPPScope *scope) {
     return type;
   }
 
+  // I think I fixed the bug; no need for the below hack any more.
+  return type;
+
+/*
   CPPType *new_type = parser.parse_type(name);
   if (new_type == (CPPType *)NULL) {
     nout << "Type \"" << name << "\" (from " << *orig_type << ") is unknown to parser.\n";
@@ -61,6 +65,7 @@ resolve_type(CPPType *type, CPPScope *scope) {
   }
 
   return type;
+*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2355,19 +2360,16 @@ has_protected_destructor(CPPType *type) {
   return false;
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::has_protected_destructor
+//     Function: TypeManager::is_exported
 //       Access: Public, Static
-//  Description: Returns true if the destructor for the given class or
-//               struct is protected or private, or false if the
-//               destructor is public or absent.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-bool TypeManager::IsExported(CPPType *in_type) {
+bool TypeManager::
+is_exported(CPPType *in_type) {
   string name = in_type->get_local_name(&parser);
   if (name.empty()) {
-      return false;
+    return false;
   }
-
-  //return true;
 
   // this question is about the base type
   CPPType *base_type = resolve_type(unwrap(in_type));
@@ -2415,7 +2417,7 @@ bool TypeManager::IsExported(CPPType *in_type) {
     CPPTypedefType *tdef = base_type->as_typedef_type();
     if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
       CPPStructType *struct_type =tdef->_type->resolve_type(&parser, &parser)->as_struct_type();
-      return IsExported(struct_type);
+      return is_exported(struct_type);
     }
 
   } else if (base_type->get_subtype() == CPPDeclaration::ST_type_declaration) {
@@ -2423,12 +2425,13 @@ bool TypeManager::IsExported(CPPType *in_type) {
     if (type->get_subtype() == CPPDeclaration::ST_struct) {
       CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
       //CPPScope *scope = struct_type->_scope;
-      return IsExported(struct_type);
+      return is_exported(struct_type);
 
     } else if (type->get_subtype() == CPPDeclaration::ST_enum) {
       //CPPEnumType *enum_type = type->as_type()->resolve_type(&parser, &parser)->as_enum_type();
-      if (type->_vis <= min_vis)
+      if (type->_vis <= min_vis) {
         return true;
+      }
     }
   }
 
@@ -2464,8 +2467,11 @@ is_local(CPPType *source_type) {
     return false;
 
   default:
-    if (source_type->_file._source == CPPFile::S_local && !source_type->is_incomplete()) {
-      return true;
+    {
+      CPPType *resolved_type = resolve_type(source_type);
+      if (resolved_type->_file._source == CPPFile::S_local && !resolved_type->is_incomplete()) {
+        return true;
+      }
     }
   }
 

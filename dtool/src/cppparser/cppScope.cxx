@@ -136,7 +136,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 
   _declarations.push_back(decl);
 
-  handle_declaration(decl, global_scope);
+  handle_declaration(decl, global_scope, preprocessor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,9 +185,12 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-define_extension_type(CPPExtensionType *type) {
+define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   assert(type != NULL);
-  string name = type->get_simple_name();
+  string name = type->get_local_name(this);
+  if (name.empty()) {
+    return;
+  }
 
   switch (type->_type) {
   case CPPExtensionType::T_class:
@@ -204,6 +207,7 @@ define_extension_type(CPPExtensionType *type) {
 
   case CPPExtensionType::T_enum:
     _enums[name] = type;
+    break;
   }
 
   // Create an implicit typedef for the extension.
@@ -213,21 +217,45 @@ define_extension_type(CPPExtensionType *type) {
 
   if (!result.second) {
     // There's already a typedef for this extension.  This one
-    // overrides if it has template parameters and the other one
-    // doesn't.
+    // overrides it only if the other is a forward declaration.
     CPPType *other_type = (*result.first).second;
-    if (type->is_template() && !other_type->is_template()) {
+
+    if (other_type->get_subtype() == CPPDeclaration::ST_extension) {
+      CPPExtensionType *other_ext = other_type->as_extension_type();
+
+      if (other_ext->_type != type->_type) {
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          errstr << other_ext->_type << " " << type->get_fully_scoped_name()
+                 << " was previously declared as " << other_ext->_type << "\n";
+          error_sink->error(errstr.str());
+        }
+      }
       (*result.first).second = type;
 
-      // Or if the other one is a forward reference.
-    } else if (other_type->get_subtype() == CPPDeclaration::ST_extension) {
-      (*result.first).second = type;
+    } else {
+      CPPTypedefType *other_td = other_type->as_typedef_type();
+
+      // Error out if the declaration is different than the previous one.
+      if (other_type != type &&
+          (other_td == NULL || other_td->_type != type)) {
+
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          type->output(errstr, 0, NULL, false);
+          errstr << " has conflicting declaration as ";
+          other_type->output(errstr, 0, NULL, true);
+          error_sink->error(errstr.str());
+        }
+      }
     }
   }
 
   if (type->is_template()) {
+    string simple_name = type->get_simple_name();
+
     pair<Templates::iterator, bool> result =
-      _templates.insert(Templates::value_type(name, type));
+      _templates.insert(Templates::value_type(simple_name, type));
 
     if (!result.second) {
       // The template was not inserted because we already had a
@@ -277,7 +305,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
   } else {
     CPPDeclaration *decl = using_decl->_ident->find_symbol(this, global_scope);
     if (decl != NULL) {
-      handle_declaration(decl, global_scope);
+      handle_declaration(decl, global_scope, error_sink);
     } else {
       if (error_sink != NULL) {
         error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
@@ -1047,16 +1075,39 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
 //               functions, or whatever.
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
+handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
+                   CPPPreprocessor *error_sink) {
   CPPTypedefType *def = decl->as_typedef_type();
   if (def != NULL) {
     string name = def->get_simple_name();
 
-    _types[name] = def;
+    pair<Types::iterator, bool> result =
+      _types.insert(Types::value_type(name, def));
+
+    if (!result.second) {
+      CPPType *other_type = result.first->second;
+      CPPTypedefType *other_td = other_type->as_typedef_type();
+
+      // We don't do redefinitions of typedefs.  But we don't complain
+      // as long as this is actually a typedef to the previous definition.
+      if (other_type != def->_type &&
+          (other_td == NULL || other_td->_type != def->_type)) {
+
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          def->output(errstr, 0, NULL, false);
+          errstr << " has conflicting declaration as ";
+          other_type->output(errstr, 0, NULL, true);
+          error_sink->error(errstr.str());
+        }
+      }
+    } else {
+      _types[name] = def;
+    }
 
     CPPExtensionType *et = def->_type->as_extension_type();
     if (et != NULL) {
-      define_extension_type(et);
+      define_extension_type(et, error_sink);
     }
 
     return;
@@ -1066,7 +1117,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
   if (typedecl != (CPPTypeDeclaration *)NULL) {
     CPPExtensionType *et = typedecl->_type->as_extension_type();
     if (et != NULL) {
-      define_extension_type(et);
+      define_extension_type(et, error_sink);
     }
     return;
   }
@@ -1121,6 +1172,6 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
 
   CPPExtensionType *et = decl->as_extension_type();
   if (et != NULL) {
-    define_extension_type(et);
+    define_extension_type(et, error_sink);
   }
 }
