@@ -34,6 +34,9 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
   _element_type(NULL),
   _last_value(NULL)
 {
+  if (ident != NULL) {
+    ident->_native_scope = current_scope;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +52,9 @@ CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
   _element_type(element_type),
   _last_value(NULL)
 {
+  if (ident != NULL) {
+    ident->_native_scope = current_scope;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +116,6 @@ is_incomplete() const {
   return false;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::is_fully_specified
 //       Access: Public, Virtual
@@ -157,6 +162,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPEnumType *rep = new CPPEnumType(*this);
+
   if (_ident != NULL) {
     rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
@@ -176,7 +182,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       ->as_instance();
 
     if (elem_rep != _elements[i]) {
-      _elements[i] = elem_rep;
+      rep->_elements[i] = elem_rep;
       any_changed = true;
     }
   }

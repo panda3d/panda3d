@@ -2312,7 +2312,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                    TypeIndex type_index, bool forced) {
   if (cpptype->get_simple_name().empty()) {
     // If the type has no name, forget it.  We don't export anonymous
-    // types.
+    // structs.
     return;
   }
 

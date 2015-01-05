@@ -157,4 +157,7 @@ operator << (ostream &out, const CPPDeclaration &decl) {
   return out;
 }
 
+ostream &
+operator << (ostream &out, const CPPDeclaration::SubstDecl &decl);
+
 #endif

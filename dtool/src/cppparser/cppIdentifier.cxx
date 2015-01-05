@@ -146,8 +146,10 @@ get_local_name(CPPScope *scope) const {
 
   if (scope == NULL || (_native_scope == NULL && _names.size() == 1)) {
     result = _names.back().get_name_with_templ(scope);
+
   } else if (_names.front().empty()) {
     result = get_fully_scoped_name();
+
   } else {
     // Determine the scope of everything up until but not including the
     // last name.

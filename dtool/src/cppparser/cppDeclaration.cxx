@@ -399,3 +399,24 @@ is_less(const CPPDeclaration *other) const {
   return this < other;
 }
 
+
+ostream &
+operator << (ostream &out, const CPPDeclaration::SubstDecl &subst) {
+  CPPDeclaration::SubstDecl::const_iterator it;
+  for (it = subst.begin(); it != subst.end(); ++it) {
+    out << "  ";
+    if (it->first == NULL) {
+      out << "(null)";
+    } else {
+      out << *(it->first);
+    }
+    out << " -> ";
+    if (it->second == NULL) {
+      out << "(null)";
+    } else {
+      out << *(it->second);
+    }
+    out << "\n";
+  }
+  return out;
+}
