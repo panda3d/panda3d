@@ -86,8 +86,8 @@ PUBLISHED:
 
 public:
 #ifdef USE_MOVE_SEMANTICS
-  INLINE PointerTo(PointerTo<T> &&move) NOEXCEPT;
-  INLINE PointerTo<T> &operator = (PointerTo<T> &&move) NOEXCEPT;
+  INLINE PointerTo(PointerTo<T> &&from) NOEXCEPT;
+  INLINE PointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
 #endif
 
   INLINE To &operator *() const;
@@ -150,8 +150,10 @@ PUBLISHED:
 
 public:
 #ifdef USE_MOVE_SEMANTICS
-  INLINE ConstPointerTo(ConstPointerTo<T> &&move) NOEXCEPT;
-  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&move) NOEXCEPT;
+  INLINE ConstPointerTo(PointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) NOEXCEPT;
 #endif
 
   INLINE const To &operator *() const;
@@ -177,12 +179,12 @@ PUBLISHED:
 // of PointerTo objects without incurring the cost of unnecessary
 // reference count changes.  The performance difference is dramatic!
 template <class T>
-void swap(PointerTo<T> &one, PointerTo<T> &two) {
+void swap(PointerTo<T> &one, PointerTo<T> &two) NOEXCEPT {
   one.swap(two);
 }
 
 template <class T>
-void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) {
+void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) NOEXCEPT {
   one.swap(two);
 }
 

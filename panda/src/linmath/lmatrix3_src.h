@@ -104,6 +104,7 @@ PUBLISHED:
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
+  INLINE_LINMATH bool is_identity() const;
 
   INLINE_LINMATH FLOATTYPE get_cell(int row, int col) const;
   INLINE_LINMATH void set_cell(int row, int col, FLOATTYPE value);
@@ -252,28 +253,28 @@ PUBLISHED:
     scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
   INLINE_LINMATH void
-    set_shear_mat(const FLOATNAME(LVecBase3) &shear, 
+    set_shear_mat(const FLOATNAME(LVecBase3) &shear,
                   CoordinateSystem cs = CS_default);
 
   static INLINE_LINMATH FLOATNAME(LMatrix3)
-    shear_mat(const FLOATNAME(LVecBase3) &shear, 
+    shear_mat(const FLOATNAME(LVecBase3) &shear,
               CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
-    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
               CoordinateSystem cs = CS_default);
 
   void
     set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
-                        const FLOATNAME(LVecBase3) &shear, 
+                        const FLOATNAME(LVecBase3) &shear,
                         CoordinateSystem cs = CS_default);
 
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
-                    const FLOATNAME(LVecBase3) &shear, 
+                    const FLOATNAME(LVecBase3) &shear,
                     CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
-                    FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+                    FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
                     CoordinateSystem cs = CS_default);
 
   static const FLOATNAME(LMatrix3) &convert_mat(CoordinateSystem from,

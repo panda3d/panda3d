@@ -17,7 +17,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_FMODEX //[
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 #include "audioManager.h"
@@ -29,7 +28,5 @@ extern ConfigVariableInt fmod_audio_preload_threshold;
 
 extern EXPCL_FMOD_AUDIO void init_libFmodAudio();
 extern "C" EXPCL_FMOD_AUDIO Create_AudioManager_proc *get_audio_manager_func_fmod_audio();
-
-#endif //]
 
 #endif // CONFIG_FMODAUDIO_H

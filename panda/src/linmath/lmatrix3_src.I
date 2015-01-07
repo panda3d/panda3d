@@ -386,6 +386,17 @@ is_nan() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::is_identity
+//       Access: Public
+//  Description: Returns true if this is (close enough to) the
+//               identity matrix, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
+is_identity() const {
+  return almost_equal(ident_mat(), NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::get_cell
 //       Access: Published
 //  Description: Returns a particular element of the matrix.
@@ -504,7 +515,7 @@ operator == (const FLOATNAME(LMatrix3) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator != (const FLOATNAME(LMatrix3) &other) const {
-  return !operator == (other);
+  return compare_to(other) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

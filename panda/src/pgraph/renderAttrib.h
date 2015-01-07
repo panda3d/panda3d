@@ -105,7 +105,7 @@ PUBLISHED:
     M_greater,          // incoming > reference_alpha
     M_not_equal,        // incoming != reference_alpha
     M_greater_equal,    // incoming >= reference_alpha
-    M_always            // Always draw.  
+    M_always            // Always draw.
   };
 
   // This is the enumerated type for TexGenAttrib.  It is inherited
@@ -181,6 +181,8 @@ PUBLISHED:
   };
 
 protected:
+  INLINE void calc_hash();
+
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
   static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -212,6 +214,7 @@ private:
   static Attribs *_attribs;
 
   int _saved_entry;
+  size_t _hash;
 
   // This keeps track of our current position through the garbage
   // collection cycle.
@@ -227,7 +230,7 @@ public:
 protected:
   static TypedWritable *new_from_bam(RenderAttrib *attrib, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

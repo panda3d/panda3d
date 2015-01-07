@@ -62,7 +62,7 @@ CPT(RenderAttrib) TexMatrixAttrib::
 make(const LMatrix4 &mat) {
   pgraph_cat.warning()
     << "Using deprecated TexMatrixAttrib interface.\n";
-  if (mat == LMatrix4::ident_mat()) {
+  if (mat.is_identity()) {
     return make();
   }
   CPT(TransformState) transform = TransformState::make_mat(mat);

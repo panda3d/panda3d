@@ -145,6 +145,9 @@ is_in_view_impl() {
     
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
+#ifdef NDEBUG
+      return false;
+#else
       if (!fake_view_frustum_cull) {
         return false;
       }
@@ -155,12 +158,13 @@ is_in_view_impl() {
       _view_frustum = (GeometricBoundingVolume *)NULL;
       CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
       _state = _state->compose(fake_state);
-      
+#endif
+
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely enclosed within
       // the frustum.  No need to cull further.
       _view_frustum = (GeometricBoundingVolume *)NULL;
-      
+
     } else {
       // The node is partially, but not completely, within the viewing
       // frustum.
@@ -197,16 +201,20 @@ is_in_view_impl() {
         _state->write(pgraph_cat.spam(false), 2);
       }
     }
-    
+
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
+#ifdef NDEBUG
+      return false;
+#else
       if (!fake_view_frustum_cull) {
         return false;
       }
       _cull_planes = CullPlanes::make_empty();
       CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
       _state = _state->compose(fake_state);
-      
+#endif
+
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely in front of all
       // of the clip planes and occluders.  The do_cull() call should
@@ -227,6 +235,9 @@ is_in_view_impl() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CullTraverserData::
 get_fake_view_frustum_cull_state() {
+#ifdef NDEBUG
+  return NULL;
+#else
   // Once someone asks for this pointer, we hold its reference count
   // and never free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
@@ -238,5 +249,5 @@ get_fake_view_frustum_cull_state() {
        RenderState::get_max_priority());
   }
   return state;
+#endif
 }
-

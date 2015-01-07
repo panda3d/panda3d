@@ -245,3 +245,63 @@ flush_level() {
   _geoms_pcollector.flush_level();
   _geoms_occluded_pcollector.flush_level();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::do_traverse
+//       Access: Protected
+//  Description: This is implemented inline to reduce recursion.
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverser::
+do_traverse(CullTraverserData &data) {
+  if (is_in_view(data)) {
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
+        << "\n" << data._node_path
+        << " " << data._draw_mask << "\n";
+    }
+
+    PandaNodePipelineReader *node_reader = data.node_reader();
+    int fancy_bits = node_reader->get_fancy_bits();
+
+    if ((fancy_bits & (PandaNode::FB_transform |
+                       PandaNode::FB_state |
+                       PandaNode::FB_effects |
+                       PandaNode::FB_tag |
+                       PandaNode::FB_draw_mask |
+                       PandaNode::FB_cull_callback)) == 0 &&
+        data._cull_planes->is_empty()) {
+      // Nothing interesting in this node; just move on.
+
+    } else {
+      // Something in this node is worth taking a closer look.
+      const RenderEffects *node_effects = node_reader->get_effects();
+      if (node_effects->has_show_bounds()) {
+        // If we should show the bounding volume for this node, make it
+        // up now.
+        show_bounds(data, node_effects->has_show_tight_bounds());
+      }
+
+      data.apply_transform_and_state(this);
+
+      const FogAttrib *fog = (const FogAttrib *)
+        node_reader->get_state()->get_attrib(FogAttrib::get_class_slot());
+
+      if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
+        // If we just introduced a FogAttrib here, call adjust_to_camera()
+        // now.  This maybe isn't the perfect time to call it, but it's
+        // good enough; and at this time we have all the information we
+        // need for it.
+        fog->get_fog()->adjust_to_camera(get_camera_transform());
+      }
+
+      if (fancy_bits & PandaNode::FB_cull_callback) {
+        PandaNode *node = data.node();
+        if (!node->cull_callback(this, data)) {
+          return;
+        }
+      }
+    }
+
+    traverse_below(data);
+  }
+}

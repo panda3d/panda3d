@@ -132,7 +132,7 @@ typedef ios::seekdir ios_seekdir;
 #  else
 #    define NOEXCEPT
 #  endif
-#  if __has_extension(cxx_rvalue_references)
+#  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
 #    define USE_MOVE_SEMANTICS
 #  endif
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
@@ -140,6 +140,11 @@ typedef ios::seekdir ios_seekdir;
 // GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
 #  define CONSTEXPR constexpr
 #  define NOEXCEPT noexcept
+#  define USE_MOVE_SEMANTICS
+#elif defined(_MSC_VER) && _MSC_VER >= 1600
+// MSVC 2010 has move semantics.
+#  define CONSTEXPR INLINE
+#  define NOEXCEPT throw()
 #  define USE_MOVE_SEMANTICS
 #else
 #  define CONSTEXPR INLINE

@@ -284,3 +284,76 @@ set_bin_active(const string &name, bool active) {
   nassertv(bin_index != -1);
   set_bin_active(bin_index, active);
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_flash_active
+//       Access: Published
+//  Description: Returns true if the bin with the given bin_index is
+//               configured to flash at a predetermined color (where
+//               bin_index was retrieved by get_bin() or find_bin()).
+//
+//               This method is not available in release builds.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullBinManager::
+get_bin_flash_active(int bin_index) const {
+  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), false);
+  return _bin_definitions[bin_index]._flash_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_bin_flash_color
+//       Access: Published
+//  Description: Returns the color that this bin has been configured
+//               to flash to, if configured.
+//
+//               This method is not available in release builds.
+////////////////////////////////////////////////////////////////////
+INLINE const LColor &CullBinManager::
+get_bin_flash_color(int bin_index) const {
+  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), LColor::zero());
+  return _bin_definitions[bin_index]._flash_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_flash_active
+//       Access: Published
+//  Description: When set to true, the given bin_index is configured
+//               to flash at a predetermined color (where
+//               bin_index was retrieved by get_bin() or find_bin()).
+//
+//               This method is not available in release builds.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_flash_active(int bin_index, bool active) {
+  nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
+  _bin_definitions[bin_index]._flash_active = active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_flash_color
+//       Access: Published
+//  Description: Changes the flash color for the given bin index.
+
+//               This method is not available in release builds.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_flash_color(int bin_index, const LColor &color) {
+  nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
+  _bin_definitions[bin_index]._flash_color = color;
+}
+#endif  // NDEBUG
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns the pointer to the global CullBinManager
+//               object.
+////////////////////////////////////////////////////////////////////
+INLINE CullBinManager *CullBinManager::
+get_global_ptr() {
+  if (_global_ptr == (CullBinManager *)NULL) {
+    _global_ptr = new CullBinManager;
+  }
+  return _global_ptr;
+}

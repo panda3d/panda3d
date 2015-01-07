@@ -48,11 +48,6 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   // code.  Therefore, we go through some pains to make this function
   // as efficient as possible.
 
-  // (Actually, it appears that the function is not called as often as
-  // I'd first thought, and it wasn't really all that expensive to
-  // begin with.  So much of this complexity is of limited usefulness.
-  // Oh well.)
-
   // First, compare the subtree tops.  If they are the same, then this
   // node and the base node are within the same single-inheritance
   // subtree, and we can use our bitmask trick to determine the

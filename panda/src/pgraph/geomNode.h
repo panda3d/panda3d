@@ -168,6 +168,11 @@ public:
     INLINE Geoms(const Geoms &copy);
     INLINE void operator = (const Geoms &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+    INLINE Geoms(Geoms &&from) NOEXCEPT;
+    INLINE void operator = (Geoms &&from) NOEXCEPT;
+#endif
+
     INLINE int get_num_geoms() const;
     INLINE CPT(Geom) get_geom(int n) const;
     INLINE const RenderState *get_geom_state(int n) const;

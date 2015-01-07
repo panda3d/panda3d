@@ -1953,7 +1953,7 @@ DTOOL_CONFIG=[
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
     ("DO_DCAST",                       'UNDEF',                  'UNDEF'),
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
-    ("SUPPORT_IMMEDIATE_MODE",         '1',                      '1'),
+    ("SUPPORT_IMMEDIATE_MODE",         'UNDEF',                  'UNDEF'),
     ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),

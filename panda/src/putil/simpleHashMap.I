@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleHashMap::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
@@ -32,7 +32,7 @@ SimpleHashMap(const Compare &comp) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleHashMap::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
@@ -417,7 +417,7 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleHashMap::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
@@ -443,7 +443,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleHashMap::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
@@ -575,9 +575,9 @@ void SimpleHashMap<Key, Value, Compare>::
 new_table() {
   nassertv(_table_size == 0 && _num_entries == 0);
 
-  // Pick a good initial table size.  For now, we make it as small as
-  // possible.  Maybe that's the right answer.
-  _table_size = 2;
+  // Pick a good initial table size.  For now, we make it really
+  // small.  Maybe that's the right answer.
+  _table_size = 4;
 
   // We allocate enough bytes for _table_size elements of TableEntry,
   // plus _table_size more bytes at the end (for the exists array).
@@ -618,7 +618,9 @@ expand_table() {
   SimpleHashMap<Key, Value, Compare> old_map(_comp);
   swap(old_map);
 
-  _table_size = (old_map._table_size << 1);
+  // Double the table size.
+  size_t old_table_size = old_map._table_size;
+  _table_size = (old_table_size << 1);
   nassertv(_table == NULL);
 
   // We allocate enough bytes for _table_size elements of TableEntry,
@@ -626,15 +628,30 @@ expand_table() {
   size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size;
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-  memset(get_exists_array(), 0, _table_size);
+  unsigned char *exists_array = get_exists_array();
+  memset(exists_array, 0, _table_size);
   nassertv(_num_entries == 0);
 
   // Now copy the entries from the old table into the new table.
   int num_added = 0;
-  for (size_t i = 0; i < old_map._table_size; ++i) {
+  for (size_t i = 0; i < old_table_size; ++i) {
     if (old_map.has_element(i)) {
-      store(old_map._table[i]._key, old_map._table[i]._data);
-      ++num_added;
+      size_t new_index = get_hash(old_map._table[i]._key);
+
+      while (exists_array[new_index] != 0) {
+        // Hash conflict;  look for a better spot.  This has to succeed.
+        new_index = (new_index + 1) & (_table_size - 1);
+      }
+
+#ifdef USE_MOVE_SEMANTICS
+      // Use C++11 rvalue references to invoke the move constructor,
+      // which may be more efficient.
+      new(&_table[new_index]) TableEntry(move(old_map._table[i]));
+#else
+      new(&_table[new_index]) TableEntry(old_map._table[i]);
+#endif
+      exists_array[new_index] = true;
+      ++_num_entries;
     }
   }
 

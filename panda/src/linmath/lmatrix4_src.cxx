@@ -182,7 +182,7 @@ set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
   nassertv(length_sq != 0.0f);
   FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
-  
+
   axis_0 *= recip_length;
   axis_1 *= recip_length;
   axis_2 *= recip_length;
@@ -288,11 +288,16 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 //     Function: LMatrix4::almost_equal
 //       Access: Public
 //  Description: Returns true if two matrices are memberwise equal
-//               within a specified tolerance.
+//               within a specified tolerance.  This is faster than
+//               the equivalence operator as this doesn't have to
+//               guarantee that it is transitive.
 ////////////////////////////////////////////////////////////////////
 bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LMatrix4::almost_equal(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  return ((_m - other._m).cwiseAbs().maxCoeff() < NEARLY_ZERO(FLOATTYPE));
+#else
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
@@ -309,8 +314,8 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
           IS_THRESHOLD_EQUAL((*this)(3, 1), other(3, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(3, 2), other(3, 2), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(3, 3), other(3, 3), threshold));
+#endif
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::output
@@ -520,7 +525,7 @@ void FLOATNAME(LMatrix4)::
 write_datagram_fixed(Datagram &destination) const {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
-#if FLOATTOKEN == 'f' 
+#if FLOATTOKEN == 'f'
       destination.add_float32(get_cell(i,j));
 #else
       destination.add_float64(get_cell(i,j));
