@@ -110,8 +110,13 @@ operator != (const PointerToVoid &other) const {
 //       Access: Public
 //  Description: Swaps the contents of this PointerTo with the other,
 //               without touching the reference counts.
+//
+//               For internal use only.  Use the global swap()
+//               function instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void PointerToVoid::
-swap(PointerToVoid &other) {
-  std::swap(_void_ptr, other._void_ptr);
+swap(PointerToVoid &other) NOEXCEPT {
+  AtomicAdjust::Pointer temp = _void_ptr;
+  _void_ptr = other._void_ptr;
+  other._void_ptr = temp;
 }

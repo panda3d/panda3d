@@ -79,6 +79,14 @@ private:
     INLINE TableEntry(const Key &key, const Value &data) :
       _key(key),
       _data(data) {}
+    INLINE TableEntry(const TableEntry &copy) :
+      _key(copy._key),
+      _data(copy._data) {}
+#ifdef USE_MOVE_SEMANTICS
+    INLINE TableEntry(TableEntry &&from) NOEXCEPT :
+      _key(move(from._key)),
+      _data(move(from._data)) {}
+#endif
     Key _key;
     Value _data;
   };
@@ -103,4 +111,3 @@ inline ostream &operator << (ostream &out, const SimpleHashMap<Key, Value, Compa
 #endif  // CPPPARSER
 
 #endif
-

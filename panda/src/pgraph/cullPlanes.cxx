@@ -13,11 +13,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullPlanes.h"
+#include "cullTraverser.h"
 #include "cullTraverserData.h"
 #include "clipPlaneAttrib.h"
 #include "occluderEffect.h"
 #include "boundingBox.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullPlanes::make_empty

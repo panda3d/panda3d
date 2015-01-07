@@ -81,6 +81,37 @@ INLINE CopyOnWritePointer::
   }
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointer::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CopyOnWritePointer::
+CopyOnWritePointer(CopyOnWritePointer &&move) NOEXCEPT :
+  _cow_object(move._cow_object)
+{
+  // Steal the other's reference count.
+  move._cow_object = (CopyOnWriteObject *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointer::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CopyOnWritePointer::
+operator = (CopyOnWritePointer &&move) NOEXCEPT {
+  CopyOnWriteObject *old_object = _cow_object;
+  _cow_object = move._cow_object;
+  move._cow_object = NULL;
+
+  if (old_object != (CopyOnWriteObject *)NULL) {
+    cache_unref_delete(old_object);
+  }
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::operator == 
 //       Access: Public
@@ -271,6 +302,35 @@ operator = (To *object) {
   CopyOnWritePointer::operator = (object);
 }
 #endif  // CPPPARSER
+
+#ifdef USE_MOVE_SEMANTICS
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE CopyOnWritePointerTo<T>::
+CopyOnWritePointerTo(CopyOnWritePointerTo<T> &&move) NOEXCEPT :
+  CopyOnWritePointer((CopyOnWritePointer &&)move)
+{
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE void CopyOnWritePointerTo<T>::
+operator = (CopyOnWritePointerTo<T> &&move) NOEXCEPT {
+  CopyOnWritePointer::operator = ((CopyOnWritePointer &&)move);
+}
+#endif  // CPPPARSER
+#endif  // USE_MOVE_SEMANTICS
 
 #ifndef CPPPARSER
 #ifdef COW_THREADED

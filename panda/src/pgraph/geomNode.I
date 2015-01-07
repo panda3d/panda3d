@@ -320,6 +320,29 @@ operator = (const GeomNode::Geoms &copy) {
   _geoms = copy._geoms;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomNode::Geoms::
+Geoms(GeomNode::Geoms &&from) NOEXCEPT :
+  _geoms(move(from._geoms))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::Geoms::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::Geoms::
+operator = (GeomNode::Geoms &&from) NOEXCEPT {
+  _geoms = move(from._geoms);
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::Geoms::get_num_geoms
 //       Access: Public

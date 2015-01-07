@@ -33,7 +33,6 @@ public:
   }
 };
 
-
 #else
 
 #include <map>  // for less
@@ -212,6 +211,23 @@ public:
   }
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : indirect_equals_hash
+// Description : An STL function object class, this is intended to be
+//               used on any ordered collection of pointers to classes
+//               that contain an operator ==() method.  It defines
+//               the equality of the pointers via operator ==().
+//
+//               Since it doesn't define the ordering of the pointers,
+//               it can only be used with hash containers.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+class indirect_equals_hash {
+public:
+  INLINE size_t operator () (const Key &key) const;
+  INLINE bool is_equal(const Key &a, const Key &b) const;
+};
+
 #include "stl_compares.I"
 
 typedef floating_point_hash<float> float_hash;
@@ -234,5 +250,3 @@ class indirect_compare_names_hash : public indirect_method_hash<Key, indirect_co
 };
 
 #endif
-
-

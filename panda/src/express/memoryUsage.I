@@ -366,3 +366,20 @@ INLINE void MemoryUsage::
 show_trend_ages() {
   get_global_ptr()->ns_show_trend_ages();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_global_ptr
+//       Access: Private, Static
+//  Description: Returns the pointer to the only MemoryUsage object in
+//               the world.
+////////////////////////////////////////////////////////////////////
+INLINE MemoryUsage *MemoryUsage::
+get_global_ptr() {
+  if (_global_ptr == (MemoryUsage *)NULL) {
+    init_memory_hook();
+    _global_ptr = new MemoryUsage(*memory_hook);
+    memory_hook = _global_ptr;
+  }
+
+  return _global_ptr;
+}

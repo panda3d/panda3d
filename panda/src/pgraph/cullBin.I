@@ -26,7 +26,6 @@ CullBin(const CullBin &copy) :
   _cull_this_pcollector(copy._cull_this_pcollector),
   _draw_this_pcollector(copy._draw_this_pcollector)
 {
-  check_flash_color();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +43,6 @@ CullBin(const string &name, CullBin::BinType bin_type,
   _cull_this_pcollector(_cull_bin_pcollector, name),
   _draw_this_pcollector(draw_region_pcollector, name)
 {
-  check_flash_color();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,27 +63,4 @@ get_name() const {
 INLINE CullBin::BinType CullBin::
 get_bin_type() const {
   return _bin_type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::has_flash_color
-//       Access: Public
-//  Description: Returns true if this bin has a flash color configured
-//               via the flash-bin-binname config directive, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool CullBin::
-has_flash_color() const {
-  return _has_flash_color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::get_flash_color
-//       Access: Public
-//  Description: If has_flash_color returns true, this returns the
-//               color specified.
-////////////////////////////////////////////////////////////////////
-INLINE const LColor &CullBin::
-get_flash_color() const {
-  return _flash_color;
 }

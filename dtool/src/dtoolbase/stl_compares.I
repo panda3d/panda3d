@@ -234,3 +234,25 @@ INLINE size_t indirect_method_hash<Key, Compare>::
 operator () (const Key &key) const {
   return (*key).get_hash();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: indirect_equals_hash::operator ()
+//       Access: Public
+//  Description: Calls the Key's get_hash() method.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+INLINE size_t indirect_equals_hash<Key>::
+operator () (const Key &key) const {
+  return (*key).get_hash();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: indirect_equals_hash::is_equal
+//       Access: Public
+//  Description: Returns true if a is equal to b, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+INLINE bool indirect_equals_hash<Key>::
+is_equal(const Key &a, const Key &b) const {
+  return (a == b || (*a) == (*b));
+}

@@ -16,7 +16,6 @@
 #define TYPEHANDLE_H
 
 #include "dtoolbase.h"
-#include "typeRegistry.h"
 
 #include <set>
 
@@ -152,7 +151,7 @@ private:
   int _index;
   static TypeHandle _none;
 
-friend class TypeRegistry;
+  friend class TypeRegistry;
 };
 
 

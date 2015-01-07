@@ -617,6 +617,18 @@ is_nan() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::is_identity
+//       Access: Public
+//  Description: Returns true if this is (close enough to) the
+//               identity matrix, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LMatrix4)::
+is_identity() const {
+  // Eigen has isIdentity, but it seems to be twice as slow as this.
+  return almost_equal(ident_mat(), NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::get_cell
 //       Access: Public
 //  Description: Returns a particular element of the matrix.
@@ -735,7 +747,7 @@ operator == (const FLOATNAME(LMatrix4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator != (const FLOATNAME(LMatrix4) &other) const {
-  return !operator == (other);
+  return compare_to(other) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

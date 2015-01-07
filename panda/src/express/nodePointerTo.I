@@ -51,6 +51,36 @@ INLINE NodePointerTo<T>::
 }
 #endif  // CPPPARSER
 
+#ifdef USE_MOVE_SEMANTICS
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodePointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodePointerTo<T>::
+NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT :
+  NodePointerToBase<T>((NodePointerToBase<T> &&)from)
+{
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodePointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodePointerTo<T> &NodePointerTo<T>::
+operator = (NodePointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // CPPPARSER
+#endif  // USE_MOVE_SEMANTICS
+
 #ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Dereference operator
@@ -191,6 +221,64 @@ INLINE NodeConstPointerTo<T>::
 ~NodeConstPointerTo() {
 }
 #endif  // CPPPARSER
+
+#ifdef USE_MOVE_SEMANTICS
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodeConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodeConstPointerTo<T>::
+NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT :
+  NodePointerToBase<T>((NodePointerToBase<T> &&)from)
+{
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodeConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodeConstPointerTo<T>::
+NodeConstPointerTo(NodeConstPointerTo<T> &&from) NOEXCEPT :
+  NodePointerToBase<T>((NodePointerToBase<T> &&)from)
+{
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodeConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
+operator = (NodePointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: NodeConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
+operator = (NodeConstPointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // CPPPARSER
+#endif  // USE_MOVE_SEMANTICS
 
 #ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////

@@ -133,7 +133,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
         _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
-        _munged_data = animated_vertices;
+        swap(_munged_data, animated_vertices);
       }
       if (!munge_texcoord_light_vector(traverser, force)) {
         return false;
@@ -159,7 +159,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
         _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
-        _munged_data = animated_vertices;
+        swap(_munged_data, animated_vertices);
       }
     }
 
@@ -589,7 +589,12 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   _geom = new_geom.p();
+
+#ifdef USE_MOVE_SEMANTICS
+  _munged_data = move(new_data);
+#else
   _munged_data = new_data;
+#endif
 
   return true;
 }

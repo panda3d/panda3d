@@ -23,10 +23,10 @@
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
 #include "drawMask.h"
-#include "cullTraverser.h"
 #include "pvector.h"
 
 class PandaNode;
+class CullTraverser;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverserData
@@ -67,7 +67,7 @@ PUBLISHED:
   INLINE const TransformState *get_net_transform(const CullTraverser *trav) const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
-  INLINE bool is_this_node_hidden(const CullTraverser *trav) const;
+  INLINE bool is_this_node_hidden(const DrawMask &camera_mask) const;
 
   void apply_transform_and_state(CullTraverser *trav);
   void apply_transform_and_state(CullTraverser *trav, 

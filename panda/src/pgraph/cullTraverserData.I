@@ -185,7 +185,7 @@ is_in_view(const DrawMask &camera_mask) {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullTraverserData::
-is_this_node_hidden(const CullTraverser *trav) const {
+is_this_node_hidden(const DrawMask &camera_mask) const {
   return (_draw_mask & PandaNode::get_overall_bit()).is_zero() ||
-    (_draw_mask & trav->get_camera_mask()).is_zero();
+    (_draw_mask & camera_mask).is_zero();
 }

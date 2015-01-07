@@ -27,6 +27,8 @@
 #include "drawMask.h"
 #include "typedReferenceCount.h"
 #include "pStatCollector.h"
+#include "cullTraverserData.h"
+#include "fogAttrib.h"
 
 class GraphicsStateGuardian;
 class PandaNode;
@@ -92,6 +94,8 @@ PUBLISHED:
                             const TransformState *modelview_transform) const;
 
 protected:
+  INLINE void do_traverse(CullTraverserData &data);
+
   virtual bool is_in_view(CullTraverserData &data);
 
 public:
