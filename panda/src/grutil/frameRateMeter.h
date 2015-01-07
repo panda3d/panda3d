@@ -77,6 +77,9 @@ private:
   string _text_pattern;
   ClockObject *_clock_object;
 
+  PN_stdfloat _last_aspect_ratio;
+  CPT(TransformState) _aspect_ratio_transform;
+
   static PStatCollector _show_fps_pcollector;
 
 public:
