@@ -282,42 +282,6 @@ cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make_empty
-//       Access: Published, Static
-//  Description: Returns a RenderState with no attributes set.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) RenderState::
-make_empty() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_empty_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    _empty_state = return_unique(state);
-  }
-
-  return _empty_state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make_full_default
-//       Access: Published, Static
-//  Description: Returns a RenderState with all possible attributes
-//               set to their default value.
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) RenderState::
-make_full_default() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_full_default_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    state->fill_default();
-    _full_default_state = return_unique(state);
-  }
-
-  return _full_default_state;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::make
 //       Access: Published, Static
 //  Description: Returns a RenderState with one attribute set.

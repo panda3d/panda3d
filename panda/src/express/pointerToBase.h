@@ -39,7 +39,8 @@ protected:
   INLINE ~PointerToBase();
 
 #ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToBase(PointerToBase<T> &&move) NOEXCEPT;
+  INLINE PointerToBase(PointerToBase<T> &&from) NOEXCEPT;
+  INLINE void reassign(PointerToBase<To> &&from) NOEXCEPT;
 #endif
 
   INLINE void reassign(To *ptr);

@@ -19,8 +19,6 @@
 #include "pandabase.h"
 #include "dcast.h"
 
-#ifdef HAVE_FMODEX //[
-
 //Panda Headers
 #include "config_audio.h"
 #include "config_fmodAudio.h"
@@ -1107,6 +1105,3 @@ seek_callback(void *handle, unsigned int pos, void *user_data) {
     return FMOD_OK;
   }
 }
-
-
-#endif //]

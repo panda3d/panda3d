@@ -550,6 +550,8 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
   bool _scissor_enabled;
+  bool _scissor_attrib_active;
+  epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
   PT(Shader) _current_shader;

@@ -643,8 +643,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = built/direct/test \
-                         built/direct/plugin \
+EXCLUDE                = built/direct/plugin \
                          built/direct/plugin_npapi \
                          built/direct/plugin_activex \
                          built/direct/plugin_installer \

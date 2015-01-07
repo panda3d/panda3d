@@ -75,8 +75,8 @@ PUBLISHED:
   INLINE bool has_cull_callback() const;
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
-  static CPT(RenderState) make_empty();
-  static CPT(RenderState) make_full_default();
+  INLINE static CPT(RenderState) make_empty();
+  INLINE static CPT(RenderState) make_full_default();
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
   static CPT(RenderState) make(const RenderAttrib *attrib1,
                                const RenderAttrib *attrib2, int override = 0);

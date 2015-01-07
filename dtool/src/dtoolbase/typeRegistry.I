@@ -39,3 +39,30 @@ init_lock() {
     _lock = new MutexImpl;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::look_up
+//       Access: Private
+//  Description: Returns the TypeRegistryNode associated with the
+//               indicated TypeHandle.  If there is no associated
+//               TypeRegistryNode, reports an error condition and
+//               returns NULL.
+//
+//               The associated TypedObject pointer is the pointer to
+//               the object that owns the handle, if available.  It is
+//               only used in an error condition, if for some reason
+//               the handle was uninitialized.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE TypeRegistryNode *TypeRegistry::
+look_up(TypeHandle handle, TypedObject *object) const {
+#ifndef NDEBUG
+  if (handle._index >= (int)_handle_registry.size() ||
+      handle._index <= 0) {
+    // Invalid or uninitialized type handle.
+    return look_up_invalid(handle, object);
+  }
+#endif
+  return _handle_registry[handle._index];
+}

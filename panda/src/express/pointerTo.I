@@ -43,8 +43,8 @@ PointerTo(const PointerTo<T> &copy) :
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::
-PointerTo(PointerTo<T> &&move) NOEXCEPT :
-  PointerToBase<T>((PointerToBase<T> &&)move)
+PointerTo(PointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
 {
 }
 
@@ -55,19 +55,11 @@ PointerTo(PointerTo<T> &&move) NOEXCEPT :
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
-operator = (PointerTo<T> &&move) NOEXCEPT {
-  To *old_ptr = (To *)this->_void_ptr;
-
-  this->_void_ptr = move._void_ptr;
-  move._void_ptr = NULL;
-
-  if (old_ptr != (To *)NULL) {
-    unref_delete(old_ptr);
-  }
-
+operator = (PointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
   return *this;
 }
-#endif
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Destructor
@@ -208,8 +200,20 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(ConstPointerTo<T> &&move) NOEXCEPT :
-  PointerToBase<T>((PointerToBase<T> &&)move)
+ConstPointerTo(PointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T>::
+ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
 {
 }
 
@@ -220,19 +224,23 @@ ConstPointerTo(ConstPointerTo<T> &&move) NOEXCEPT :
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
-operator = (ConstPointerTo<T> &&move) NOEXCEPT {
-  To *old_ptr = (To *)this->_void_ptr;
-
-  this->_void_ptr = move._void_ptr;
-  move._void_ptr = NULL;
-
-  if (old_ptr != (To *)NULL) {
-    unref_delete(old_ptr);
-  }
-
+operator = (PointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
   return *this;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (ConstPointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Dereference operator

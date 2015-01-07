@@ -20,8 +20,6 @@
 #include "config_fmodAudio.h"
 #include "dcast.h"
 
-#ifdef HAVE_FMODEX //[
-
 //Panda headers.
 #include "config_audio.h"
 #include "config_util.h"
@@ -897,5 +895,3 @@ get_cache_limit() const {
   //return _cache_limit;
   return 0;
 }
-
-#endif //]

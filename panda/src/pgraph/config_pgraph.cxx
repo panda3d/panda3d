@@ -106,7 +106,8 @@ ConfigVariableBool fake_view_frustum_cull
 ("fake-view-frustum-cull", false,
  PRC_DESC("Set this true to cause culling to be performed by rendering the "
           "object in red wireframe, rather than actually culling it.  This "
-          "helps make culling errors obvious."));
+          "helps make culling errors obvious.  This variable only has an "
+          "effect when Panda is not compiled for a release build."));
 
 ConfigVariableBool clip_plane_cull
 ("clip-plane-cull", true,
@@ -167,15 +168,6 @@ ConfigVariableBool compose_componentwise
  PRC_DESC("Set this true to perform componentwise compose and invert "
           "operations when possible.  If this is false, the compositions "
           "are always computed by matrix."));
-
-ConfigVariableBool uniquify_matrix
-("uniquify-matrix", true,
- PRC_DESC("Set this true to look up arbitarary 4x4 transform matrices in the "
-          "cache, to ensure that two differently-computed transforms that "
-          "happen to encode the same matrix will be "
-          "collapsed into a single pointer.  Nowadays, "
-          "with the transforms stored in a hashtable, we're generally better "
-          "off with this set true."));
 
 ConfigVariableBool paranoid_const
 ("paranoid-const", false,

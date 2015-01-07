@@ -143,7 +143,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::get_auto_shader_attrib_impl
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
@@ -191,7 +191,7 @@ unref() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
 output(ostream &out) const {
@@ -201,7 +201,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::write
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
 write(ostream &out, int indent_level) const {
@@ -274,7 +274,7 @@ garbage_collect() {
   }
   num_this_pass = min(num_this_pass, size);
   int stop_at_element = (_garbage_index + num_this_pass) % size;
-  
+
   int num_elements = 0;
   int si = _garbage_index;
   do {
@@ -291,7 +291,7 @@ garbage_collect() {
         attrib->release_new();
         unref_delete(attrib);
       }
-    }      
+    }
 
     si = (si + 1) % size;
   } while (si != stop_at_element);
@@ -328,12 +328,11 @@ validate_attribs() {
       }
       const RenderAttrib *attrib = _attribs->get_key(si);
       cerr << si << ": " << attrib << "\n";
-      attrib->get_hash();
       attrib->write(cerr, 2);
     }
 
     return false;
-  }    
+  }
 
   int size = _attribs->get_size();
   int si = 0;
@@ -391,6 +390,7 @@ CPT(RenderAttrib) RenderAttrib::
 return_new(RenderAttrib *attrib) {
   nassertr(attrib != (RenderAttrib *)NULL, attrib);
   if (!uniquify_attribs) {
+    attrib->calc_hash();
     return attrib;
   }
 
@@ -414,6 +414,8 @@ return_new(RenderAttrib *attrib) {
 CPT(RenderAttrib) RenderAttrib::
 return_unique(RenderAttrib *attrib) {
   nassertr(attrib != (RenderAttrib *)NULL, attrib);
+
+  attrib->calc_hash();
 
   if (!state_cache) {
     return attrib;
@@ -442,7 +444,7 @@ return_unique(RenderAttrib *attrib) {
     // There's an equivalent attrib already in the set.  Return it.
     return _attribs->get_key(si);
   }
-  
+
   // Not already in the set; add it.
   if (garbage_collect_states) {
     // If we'll be garbage collecting attribs explicitly, we'll
@@ -656,7 +658,7 @@ change_this(TypedWritable *old_ptr, BamReader *manager) {
     pointer->ref();
     manager->register_finalize(attrib);
   }
-  
+
   // We have to cast the pointer back to non-const, because the bam
   // reader expects that.
   return (RenderAttrib *)pointer.p();

@@ -316,6 +316,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _force_flush = gl_force_flush;
 
   _scissor_enabled = false;
+  _scissor_attrib_active = false;
 
 #ifdef DO_PSTATS
   if (gl_finish) {
@@ -2287,6 +2288,7 @@ clear(DrawableRegion *clearable) {
     return;
   }
 
+  //XXX rdb: Is this line really necessary?
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
@@ -2468,6 +2470,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
 
+  int count = dr->get_num_regions();
+
   if (dr->get_scissor_enabled()) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2475,6 +2479,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glEnable(GL_SCISSOR_TEST);
     _scissor_enabled = true;
+    _scissor_array.resize(count);
   } else {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2482,27 +2487,35 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glDisable(GL_SCISSOR_TEST);
     _scissor_enabled = false;
+    _scissor_array.clear();
   }
+
+  _scissor_attrib_active = false;
 
 #ifndef OPENGLES
   if (_supports_viewport_arrays) {
-    int count = dr->get_num_regions();
-    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
-    GLint *scissors = (GLint *)alloca(sizeof(GLint) * 4 * count);
 
+    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
+
+    // We store the scissor regions in a vector since we may need
+    // to switch back to it in do_issue_scissor.
     for (int i = 0; i < count; ++i) {
-      GLint *sr = scissors + i * 4;
+      LVecBase4i sr;
       dr->get_region_pixels(i, sr[0], sr[1], sr[2], sr[3]);
       GLfloat *vr = viewports + i * 4;
       vr[0] = (GLfloat) sr[0];
       vr[1] = (GLfloat) sr[1];
       vr[2] = (GLfloat) sr[2];
       vr[3] = (GLfloat) sr[3];
+      if (_scissor_enabled) {
+        _scissor_array[i] = sr;
+      }
     }
     _glViewportArrayv(0, count, viewports);
-    if (dr->get_scissor_enabled()) {
-      _glScissorArrayv(0, count, scissors);
+    if (_scissor_enabled) {
+      _glScissorArrayv(0, count, _scissor_array[0].get_data());
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewportArrayv(0, " << count << ", [\n";
@@ -2511,12 +2524,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
         GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
       }
       GLCAT.spam(false) << "])\n";
-      if (dr->get_scissor_enabled()) {
+      if (_scissor_enabled) {
         GLCAT.spam()
           << "glScissorArrayv(0, " << count << ", [\n";
         for (int i = 0; i < count; ++i) {
-          GLint *sr = scissors + i * 4;
-          GLCAT.spam(false) << sr[0] << ", " << sr[1] << ", " << sr[2] << ", " << sr[3] << ",\n";
+          const LVecBase4i &sr = _scissor_array[i];
+          GLCAT.spam(false) << sr << ",\n";
         }
       }
       GLCAT.spam(false) << "])\n";
@@ -2526,9 +2539,13 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 #endif  // OPENGLES
   {
     glViewport(x, y, width, height);
-    if (dr->get_scissor_enabled()) {
+    if (_scissor_enabled) {
       glScissor(x, y, width, height);
+
+      _scissor_array.resize(1);
+      _scissor_array[0].set(x, y, width, height);
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewport(" << x << ", " << y << ", " << width << ", " << height << ")\n";
@@ -2826,7 +2843,7 @@ end_frame(Thread *current_thread) {
 
   // Now is a good time to delete any pending display lists.
 #ifndef OPENGLES
-  {
+  if (display_lists) {
     LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
       DeletedNames::iterator ddli;
@@ -2841,10 +2858,13 @@ end_frame(Thread *current_thread) {
       }
       _deleted_display_lists.clear();
     }
+  }
 
-    // And deleted queries, too, unless we're using query timers
-    // in which case we'll need to reuse lots of them.
-    if (!get_timer_queries_active() && !_deleted_queries.empty()) {
+  // And deleted queries, too, unless we're using query timers
+  // in which case we'll need to reuse lots of them.
+  if (_supports_occlusion_query && !get_timer_queries_active()) {
+    LightMutexHolder holder(_lock);
+    if (!_deleted_queries.empty()) {
       if (GLCAT.is_spam()) {
         DeletedNames::iterator dqi;
         for (dqi = _deleted_queries.begin();
@@ -5106,9 +5126,9 @@ issue_timer_query(int pstats_index) {
   // Issue the timestamp query.
   _glQueryCounter(query->_index, GL_TIMESTAMP);
 
-  _pending_timer_queries.push_back(DCAST(TimerQueryContext, query));
+  _pending_timer_queries.push_back((TimerQueryContext *)query);
 
-  return DCAST(TimerQueryContext, query);
+  return (TimerQueryContext *)query;
 
 #else
   return NULL;
@@ -5621,7 +5641,9 @@ do_issue_transform() {
 void CLP(GraphicsStateGuardian)::
 do_issue_shade_model() {
 #ifndef OPENGLES_2
-  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  const ShadeModelAttrib *target_shade_model = (const ShadeModelAttrib *)
+    _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot());
+
   switch (target_shade_model->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     glShadeModel(GL_SMOOTH);
@@ -5704,7 +5726,9 @@ do_issue_shader(bool state_has_changed) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  const RenderModeAttrib *target_render_mode = (const RenderModeAttrib *)
+    _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot());
+
   _render_mode = target_render_mode->get_mode();
   _point_size = target_render_mode->get_thickness();
   _point_perspective = target_render_mode->get_perspective();
@@ -5748,7 +5772,9 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_antialias() {
-  const AntialiasAttrib *target_antialias = DCAST(AntialiasAttrib, _target_rs->get_attrib_def(AntialiasAttrib::get_class_slot()));
+  const AntialiasAttrib *target_antialias = (const AntialiasAttrib *)
+    _target_rs->get_attrib_def(AntialiasAttrib::get_class_slot());
+
   if (target_antialias->get_mode_type() == AntialiasAttrib::M_auto) {
     // In this special mode, we must enable antialiasing on a
     // case-by-case basis, because we enable it differently for
@@ -5814,7 +5840,9 @@ do_issue_antialias() {
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
 #ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
-  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
+  const RescaleNormalAttrib *target_rescale_normal = (const RescaleNormalAttrib *)
+    _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot());
+
   RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
@@ -5866,7 +5894,9 @@ do_issue_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_test() {
-  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  const DepthTestAttrib *target_depth_test = (const DepthTestAttrib *)
+    _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot());
+
   DepthTestAttrib::PandaCompareFunc mode = target_depth_test->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     enable_depth_test(false);
@@ -5887,7 +5917,9 @@ do_issue_alpha_test() {
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
   } else {
-    const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+    const AlphaTestAttrib *target_alpha_test = (const AlphaTestAttrib *)
+      _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot());
+
     AlphaTestAttrib::PandaCompareFunc mode = target_alpha_test->get_mode();
     if (mode == AlphaTestAttrib::M_none) {
       enable_alpha_test(false);
@@ -5908,7 +5940,9 @@ do_issue_alpha_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_write() {
-  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  const DepthWriteAttrib *target_depth_write = (const DepthWriteAttrib *)
+    _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot());
+
   DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
 #ifdef GSG_VERBOSE
@@ -5933,7 +5967,9 @@ do_issue_depth_write() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_cull_face() {
-  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  const CullFaceAttrib *target_cull_face = (const CullFaceAttrib *)
+    _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot());
+
   CullFaceAttrib::Mode mode = target_cull_face->get_effective_mode();
 
   switch (mode) {
@@ -5963,7 +5999,9 @@ do_issue_cull_face() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_fog() {
-  const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+  const FogAttrib *target_fog = (const FogAttrib *)
+    _target_rs->get_attrib_def(FogAttrib::get_class_slot());
+
   if (!target_fog->is_off()) {
     enable_fog(true);
     Fog *fog = target_fog->get_fog();
@@ -5982,7 +6020,9 @@ do_issue_fog() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
+     _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot());
+
   int offset = target_depth_offset->get_offset();
 
   if (offset != 0) {
@@ -6023,7 +6063,8 @@ do_issue_material() {
   static Material empty;
   const Material *material;
 
-  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  const MaterialAttrib *target_material = (const MaterialAttrib *)
+    _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
 
   if (target_material == (MaterialAttrib *)NULL ||
       target_material->is_off()) {
@@ -6130,7 +6171,8 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
+  const ColorWriteAttrib *target_color_write = (const ColorWriteAttrib *)
+    _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot());
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
@@ -6160,11 +6202,13 @@ do_issue_blending() {
   }
 
 
-  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  const ColorBlendAttrib *target_color_blend = (const ColorBlendAttrib *)
+    _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot());
   CPT(ColorBlendAttrib) color_blend = target_color_blend;
   ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
 
-  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *target_transparency = (const TransparencyAttrib *)
+    _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot());
   TransparencyAttrib::Mode transparency_mode = target_transparency->get_mode();
 
   _color_blend_involves_color_scale = color_blend->involves_color_scale();
@@ -8715,7 +8759,8 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
-  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  _target_shader = (const ShaderAttrib *)
+    _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
 #ifndef OPENGLES
   _instance_count = _target_shader->get_instance_count();
 #endif
@@ -9542,7 +9587,9 @@ do_issue_tex_matrix() {
 
     glMatrixMode(GL_TEXTURE);
 
-    const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    const TexMatrixAttrib *target_tex_matrix = (const TexMatrixAttrib *)
+      _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot());
+
     if (target_tex_matrix->has_stage(stage)) {
       GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
     } else {
@@ -11870,7 +11917,8 @@ do_issue_stencil() {
     return;
   }
 
-  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
+  const StencilAttrib *stencil = (const StencilAttrib *)
+    _target_rs->get_attrib(StencilAttrib::get_class_slot());
 
   if (stencil != (const StencilAttrib *)NULL) {
     // DEBUG
@@ -11958,7 +12006,8 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
-  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const ScissorAttrib *target_scissor = (const ScissorAttrib *)
+    _target_rs->get_attrib_def(ScissorAttrib::get_class_slot());
 
   if (!target_scissor->is_off()) {
     // A non-off ScissorAttrib means to override the scissor setting
@@ -11984,5 +12033,30 @@ do_issue_scissor() {
         << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
     }
     glScissor(x, y, width, height);
+
+    _scissor_attrib_active = true;
+
+  } else if (_scissor_attrib_active) {
+    _scissor_attrib_active = false;
+
+    if (_scissor_array.size() > 0) {
+      // Scissoring is enabled on the display region.
+      // Revert to the scissor state specified in the DisplayRegion.
+      if (_supports_viewport_arrays) {
+        _glScissorArrayv(0, _scissor_array.size(), _scissor_array[0].get_data());
+      } else {
+        const LVecBase4i sr = _scissor_array[0];
+        glScissor(sr[0], sr[1], sr[2], sr[3]);
+      }
+
+    } else if (_scissor_enabled) {
+      // The display region had no scissor enabled.  Disable scissoring.
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glDisable(GL_SCISSOR_TEST)\n";
+      }
+      glDisable(GL_SCISSOR_TEST);
+      _scissor_enabled = false;
+    }
   }
 }

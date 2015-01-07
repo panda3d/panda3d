@@ -142,24 +142,24 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                            GraphicsStateGuardianBase *gsg);
 
 public:
-  bool draw(GraphicsStateGuardianBase *gsg, 
+  bool draw(GraphicsStateGuardianBase *gsg,
             const GeomMunger *munger,
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
-  
+
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                                bool &found_any, 
+                                bool &found_any,
                                 const GeomVertexData *vertex_data,
                                 bool got_mat, const LMatrix4 &mat,
                                 Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                                 bool &found_any, Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                                bool &found_any, 
+                                bool &found_any,
                                 const GeomVertexData *vertex_data,
                                 bool got_mat, const LMatrix4 &mat,
                                 const InternalName *column_name,
@@ -174,7 +174,7 @@ private:
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                            bool &found_any, 
+                            bool &found_any,
                             const GeomVertexData *vertex_data,
                             bool got_mat, const LMatrix4 &mat,
                             const InternalName *column_name,
@@ -220,7 +220,7 @@ private:
     Geom *_source;  // A back pointer to the containing Geom
     const Geom *_geom_result;  // ref-counted if not NULL and not same as _source
     CPT(GeomVertexData) _data_result;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -228,7 +228,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "Geom::CDataCache");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -245,6 +245,10 @@ public:
   public:
     INLINE CacheKey(const GeomVertexData *source_data,
                     const GeomMunger *modifier);
+    INLINE CacheKey(const CacheKey &copy);
+#ifdef USE_MOVE_SEMANTICS
+    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
+#endif
     INLINE bool operator < (const CacheKey &other) const;
 
     CPT(GeomVertexData) _source_data;
@@ -253,9 +257,13 @@ public:
   // It is not clear why MSVC7 needs this class to be public.
   class EXPCL_PANDA_GOBJ CacheEntry : public GeomCacheEntry {
   public:
-    INLINE CacheEntry(Geom *source, 
+    INLINE CacheEntry(Geom *source,
                       const GeomVertexData *source_data,
                       const GeomMunger *modifier);
+    INLINE CacheEntry(Geom *source, const CacheKey &key);
+#ifdef USE_MOVE_SEMANTICS
+    INLINE CacheEntry(Geom *source, CacheKey &&key) NOEXCEPT;
+#endif
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
@@ -265,7 +273,7 @@ public:
     CacheKey _key;
 
     PipelineCycler<CDataCache> _cycler;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -275,7 +283,7 @@ public:
       register_type(_type_handle, "Geom::CacheEntry",
                     GeomCacheEntry::get_class_type());
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -304,13 +312,13 @@ private:
     UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
-  
+
     CPT(BoundingVolume) _internal_bounds;
     int _nested_vertices;
     bool _internal_bounds_stale;
     BoundingVolume::BoundsType _bounds_type;
     CPT(BoundingVolume) _user_bounds;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -318,11 +326,11 @@ private:
     static void init_type() {
       register_type(_type_handle, "Geom::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
- 
+
   PipelineCycler<CData> _cycler;
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;

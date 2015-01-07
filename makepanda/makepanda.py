@@ -1953,7 +1953,7 @@ DTOOL_CONFIG=[
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
     ("DO_DCAST",                       'UNDEF',                  'UNDEF'),
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
-    ("SUPPORT_IMMEDIATE_MODE",         '1',                      '1'),
+    ("SUPPORT_IMMEDIATE_MODE",         'UNDEF',                  'UNDEF'),
     ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),
@@ -2037,11 +2037,8 @@ DTOOL_CONFIG=[
     ("HAVE_BMP",                       '1',                      '1'),
     ("HAVE_PNM",                       '1',                      '1'),
     ("HAVE_VORBIS",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_FMODEX",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_OPENAL",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_SPEEDTREE",                 'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
@@ -2053,7 +2050,6 @@ DTOOL_CONFIG=[
     ("HAVE_SWSCALE",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SWRESAMPLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
-    ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
@@ -3126,6 +3122,9 @@ if (not RUNTIME):
   TargetAdd('p3mathutil_composite1.obj', opts=OPTS, input='p3mathutil_composite1.cxx')
   TargetAdd('p3mathutil_composite2.obj', opts=OPTS, input='p3mathutil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite*.cxx"])
+  for ifile in IGATEFILES[:]:
+      if "_src." in ifile:
+          IGATEFILES.remove(ifile)
   TargetAdd('libp3mathutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3mathutil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3mathutil', 'SRCDIR:panda/src/mathutil'])
   TargetAdd('libp3mathutil_igate.obj', input='libp3mathutil.in', opts=["DEPENDENCYONLY"])

@@ -19,7 +19,7 @@
 #include "renderState.h"
 #include "graphicsStateGuardianBase.h"
 #include "config_pgraph.h"
-
+#include "cullTraverser.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawCullHandler::record_object

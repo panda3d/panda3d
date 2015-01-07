@@ -380,14 +380,14 @@ clear_bounds() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  bool &found_any, 
+                  bool &found_any,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4 &mat,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  
-  do_calc_tight_bounds(min_point, max_point, found_any, 
-                       vertex_data, got_mat, mat, 
+
+  do_calc_tight_bounds(min_point, max_point, found_any,
+                       vertex_data, got_mat, mat,
                        InternalName::get_vertex(),
                        cdata, current_thread);
 }
@@ -409,7 +409,7 @@ INLINE void Geom::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, Thread *current_thread) const {
   calc_tight_bounds(min_point, max_point, found_any,
-                    get_vertex_data(current_thread), false, 
+                    get_vertex_data(current_thread), false,
                     LMatrix4::ident_mat(),
                     current_thread);
 }
@@ -422,15 +422,15 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  bool &found_any, 
+                  bool &found_any,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4 &mat,
                   const InternalName *column_name,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  
-  do_calc_tight_bounds(min_point, max_point, found_any, 
-                       vertex_data, got_mat, mat, 
+
+  do_calc_tight_bounds(min_point, max_point, found_any,
+                       vertex_data, got_mat, mat,
                        column_name, cdata, current_thread);
 }
 
@@ -450,7 +450,7 @@ mark_internal_bounds_stale(CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CDataCache::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CDataCache::
 CDataCache() :
@@ -463,7 +463,7 @@ CDataCache() :
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CDataCache::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CDataCache::
 CDataCache(const Geom::CDataCache &copy) :
@@ -500,7 +500,7 @@ set_result(const Geom *geom_result, const GeomVertexData *data_result) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CacheKey::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CacheKey::
 CacheKey(const GeomVertexData *source_data, const GeomMunger *modifier) :
@@ -508,6 +508,32 @@ CacheKey(const GeomVertexData *source_data, const GeomMunger *modifier) :
   _modifier(modifier)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheKey::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheKey::
+CacheKey(const CacheKey &copy) :
+  _source_data(copy._source_data),
+  _modifier(copy._modifier)
+{
+}
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheKey::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheKey::
+CacheKey(CacheKey &&from) NOEXCEPT :
+  _source_data(move(from._source_data)),
+  _modifier(move(from._modifier))
+{
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CacheKey::operator <
@@ -531,7 +557,7 @@ operator < (const CacheKey &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CacheEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::CacheEntry::
 CacheEntry(Geom *source, const GeomVertexData *source_data,
@@ -541,6 +567,31 @@ CacheEntry(Geom *source, const GeomVertexData *source_data,
 {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheEntry::
+CacheEntry(Geom *source, const Geom::CacheKey &key) :
+  _source(source),
+  _key(key)
+{
+}
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::CacheEntry::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::CacheEntry::
+CacheEntry(Geom *source, Geom::CacheKey &&key) NOEXCEPT :
+  _source(source),
+  _key(move(key))
+{
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CData::Constructor
@@ -667,7 +718,7 @@ get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_primitive_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPipelineReader::PrimitiveType GeomPipelineReader::
 get_primitive_type() const {
@@ -677,7 +728,7 @@ get_primitive_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_shade_model
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPipelineReader::ShadeModel GeomPipelineReader::
 get_shade_model() const {
@@ -687,7 +738,7 @@ get_shade_model() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_geom_rendering
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPipelineReader::
 get_geom_rendering() const {
@@ -697,7 +748,7 @@ get_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_usage_hint
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPipelineReader::UsageHint GeomPipelineReader::
 get_usage_hint() const {
@@ -708,7 +759,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_vertex_data
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexData) GeomPipelineReader::
 get_vertex_data() const {
@@ -718,7 +769,7 @@ get_vertex_data() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_num_primitives
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPipelineReader::
 get_num_primitives() const {
@@ -728,7 +779,7 @@ get_num_primitives() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_primitive
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomPrimitive) GeomPipelineReader::
 get_primitive(int i) const {
@@ -739,7 +790,7 @@ get_primitive(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::get_modified
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomPipelineReader::
 get_modified() const {

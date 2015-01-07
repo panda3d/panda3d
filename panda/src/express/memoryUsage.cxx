@@ -565,24 +565,6 @@ overflow_heap_size() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::get_global_ptr
-//       Access: Private, Static
-//  Description: Returns the pointer to the only MemoryUsage object in
-//               the world.
-////////////////////////////////////////////////////////////////////
-MemoryUsage *MemoryUsage::
-get_global_ptr() {
-  if (_global_ptr == (MemoryUsage *)NULL) {
-    init_memory_hook();
-    _global_ptr = new MemoryUsage(*memory_hook);
-    memory_hook = _global_ptr;
-  }
-
-  return _global_ptr;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::ns_record_pointer
 //       Access: Private
 //  Description: Indicates that the given pointer has been recently

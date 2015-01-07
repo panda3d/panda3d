@@ -72,9 +72,10 @@ public:
   ALLOC_DELETED_CHAIN(TransformState);
 
 PUBLISHED:
-  INLINE bool operator < (const TransformState &other) const;
+  INLINE bool operator != (const TransformState &other) const;
   INLINE int compare_to(const TransformState &other) const;
   int compare_to(const TransformState &other, bool uniquify_matrix) const;
+  bool operator == (const TransformState &other) const;
   INLINE size_t get_hash() const;
 
   static CPT(TransformState) make_identity();
@@ -88,17 +89,17 @@ PUBLISHED:
   INLINE static CPT(TransformState) make_scale(const LVecBase3 &scale);
   INLINE static CPT(TransformState) make_shear(const LVecBase3 &shear);
   INLINE static CPT(TransformState) make_pos_hpr_scale(const LVecBase3 &pos,
-                                                       const LVecBase3 &hpr, 
+                                                       const LVecBase3 &hpr,
                                                        const LVecBase3 &scale);
   INLINE static CPT(TransformState) make_pos_quat_scale(const LVecBase3 &pos,
-                                                        const LQuaternion &quat, 
+                                                        const LQuaternion &quat,
                                                         const LVecBase3 &scale);
   static CPT(TransformState) make_pos_hpr_scale_shear(const LVecBase3 &pos,
-                                                      const LVecBase3 &hpr, 
+                                                      const LVecBase3 &hpr,
                                                       const LVecBase3 &scale,
                                                       const LVecBase3 &shear);
   static CPT(TransformState) make_pos_quat_scale_shear(const LVecBase3 &pos,
-                                                       const LQuaternion &quat, 
+                                                       const LQuaternion &quat,
                                                        const LVecBase3 &scale,
                                                        const LVecBase3 &shear);
   static CPT(TransformState) make_mat(const LMatrix4 &mat);
@@ -112,7 +113,7 @@ PUBLISHED:
   INLINE static CPT(TransformState) make_scale2d(const LVecBase2 &scale);
   INLINE static CPT(TransformState) make_shear2d(PN_stdfloat shear);
   INLINE static CPT(TransformState) make_pos_rotate_scale2d(const LVecBase2 &pos,
-                                                            PN_stdfloat rotate, 
+                                                            PN_stdfloat rotate,
                                                             const LVecBase2 &scale);
   static CPT(TransformState) make_pos_rotate_scale_shear2d(const LVecBase2 &pos,
                                                            PN_stdfloat rotate,
@@ -257,7 +258,7 @@ private:
   static LightReMutex *_states_lock;
   class Empty {
   };
-  typedef SimpleHashMap<const TransformState *, Empty, indirect_compare_to_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, Empty, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
@@ -272,7 +273,7 @@ private:
   // remove the entry if *either* of the input TransformStates destructs.
   // To implement this, we always record Composition entries in pairs,
   // one in each of the two involved TransformState objects.
-    
+
   // The first element of the map is the object we compose with.  This
   // is not reference counted within this map; instead we store a
   // companion pointer in the other object, and remove the references
@@ -298,6 +299,8 @@ private:
   // This keeps track of our current position through the garbage
   // collection cycle.
   static int _garbage_index;
+
+  static bool _uniquify_matrix;
 
   static PStatCollector _cache_update_pcollector;
   static PStatCollector _garbage_collect_pcollector;
@@ -369,7 +372,7 @@ private:
   LMatrix4 _mat;
   LMatrix4 *_inv_mat;
   size_t _hash;
-  
+
   unsigned int _flags;
 
   // This mutex protects _flags, and all of the above computed values.
@@ -385,7 +388,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

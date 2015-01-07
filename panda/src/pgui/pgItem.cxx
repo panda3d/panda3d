@@ -209,7 +209,7 @@ draw_mask_changed() {
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
-  bool this_node_hidden = data.is_this_node_hidden(trav);
+  bool this_node_hidden = data.is_this_node_hidden(trav->get_camera_mask());
   if (!this_node_hidden && has_frame() && get_active()) {
     // The item has a frame, so we want to generate a region for it
     // and update the MouseWatcher.

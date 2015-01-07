@@ -107,6 +107,7 @@ PUBLISHED:
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
+  INLINE_LINMATH bool is_identity() const;
 
   INLINE_LINMATH FLOATTYPE get_cell(int row, int col) const;
   INLINE_LINMATH void set_cell(int row, int col, FLOATTYPE value);
@@ -205,13 +206,13 @@ PUBLISHED:
   INLINE_LINMATH void
     set_scale_mat(const FLOATNAME(LVecBase3) &scale);
   INLINE_LINMATH void
-    set_shear_mat(const FLOATNAME(LVecBase3) &shear, 
+    set_shear_mat(const FLOATNAME(LVecBase3) &shear,
                   CoordinateSystem cs = CS_default);
   INLINE_LINMATH void
     set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
-                        const FLOATNAME(LVecBase3) &shear, 
+                        const FLOATNAME(LVecBase3) &shear,
                         CoordinateSystem cs = CS_default);
-  
+
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     translate_mat(const FLOATNAME(LVecBase3) &trans);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
@@ -232,19 +233,19 @@ PUBLISHED:
     scale_mat(FLOATTYPE scale);
 
   static INLINE_LINMATH FLOATNAME(LMatrix4)
-    shear_mat(const FLOATNAME(LVecBase3) &shear, 
+    shear_mat(const FLOATNAME(LVecBase3) &shear,
               CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix4)
-    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
               CoordinateSystem cs = CS_default);
 
   static INLINE_LINMATH FLOATNAME(LMatrix4)
     scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
-                    const FLOATNAME(LVecBase3) &shear, 
+                    const FLOATNAME(LVecBase3) &shear,
                     CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix4)
     scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
-                    FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+                    FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
                     CoordinateSystem cs = CS_default);
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &y_to_z_up_mat();

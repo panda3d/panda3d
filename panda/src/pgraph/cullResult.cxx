@@ -26,6 +26,7 @@
 #include "renderState.h"
 #include "clockObject.h"
 #include "config_pgraph.h"
+#include "depthOffsetAttrib.h"
 
 TypeHandle CullResult::_type_handle;
 
@@ -114,12 +115,15 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
   bool force = !traverser->get_effective_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
+  CullBinManager *bin_manager = CullBinManager::get_global_ptr();
 
   // Check to see if there's a special transparency setting.
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);
 
-  const TransparencyAttrib *trans = DCAST(TransparencyAttrib, state->get_attrib(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *trans = (const TransparencyAttrib *)
+    state->get_attrib(TransparencyAttrib::get_class_slot());
+
   if (trans != (const TransparencyAttrib *)NULL) {
     switch (trans->get_mode()) {
     case TransparencyAttrib::M_alpha:
@@ -168,7 +172,9 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // explicit bin already applied; otherwise, M_dual falls back
       // to M_alpha.
       {
-        const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, state->get_attrib(CullBinAttrib::get_class_slot()));
+        const CullBinAttrib *bin_attrib = (const CullBinAttrib *)
+          state->get_attrib(CullBinAttrib::get_class_slot());
+
         if (bin_attrib == (CullBinAttrib *)NULL ||
             bin_attrib->get_bin_name().empty()) {
           // We make a copy of the object to draw the transparent part;
@@ -183,10 +189,14 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
               if (transparent_part->munge_geom
                   (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
                    traverser, force)) {
-                CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
+                int transparent_bin_index = transparent_part->_state->get_bin_index();
+                CullBin *bin = get_bin(transparent_bin_index);
                 nassertv(bin != (CullBin *)NULL);
 #ifndef NDEBUG
-                check_flash_bin(transparent_part->_state, bin);
+                if (bin_manager->get_bin_flash_active(transparent_bin_index)) {
+                  do_flash_bin(transparent_part->_state,
+                    bin_manager->get_bin_flash_color(transparent_bin_index));
+                }
 #endif
                 bin->add_object(transparent_part, current_thread);
               } else {
@@ -215,11 +225,15 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     }
   }
 
-  CullBin *bin = get_bin(object->_state->get_bin_index());
+  int bin_index = object->_state->get_bin_index();
+  CullBin *bin = get_bin(bin_index);
   nassertv(bin != (CullBin *)NULL);
 
 #ifndef NDEBUG
-  check_flash_bin(object->_state, bin);
+  if (bin_manager->get_bin_flash_active(bin_index)) {
+    do_flash_bin(object->_state,
+      bin_manager->get_bin_flash_color(bin_index));
+  }
 #endif
 
   // Munge vertices as needed for the GSG's requirements, and the
@@ -346,16 +360,20 @@ make_new_bin(int bin_index) {
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   PT(CullBin) bin = bin_manager->make_new_bin(bin_index, _gsg,
                                               _draw_region_pcollector);
-  if (bin != (CullBin *)NULL) {
+  CullBin *bin_ptr = bin.p();
+
+  if (bin_ptr != (CullBin *)NULL) {
     // Now store it in the vector.
     while (bin_index >= (int)_bins.size()) {
       _bins.push_back((CullBin *)NULL);
     }
     nassertr(bin_index >= 0 && bin_index < (int)_bins.size(), NULL);
-    _bins[bin_index] = bin;
+
+    // Prevent unnecessary ref/unref by swapping the PointerTos.
+    swap(_bins[bin_index], bin);
   }
 
-  return bin;
+  return bin_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -393,25 +411,25 @@ get_binary_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullResult::check_flash_bin
+//     Function: CullResult::do-flash_bin
 //       Access: Private
 //  Description: If the user configured flash-bin-binname, then update
 //               the object's state to flash all the geometry in the
 //               bin.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
-  if (bin->has_flash_color()) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
-    if ((cycle & 1) == 0) {
-      state = state->remove_attrib(TextureAttrib::get_class_slot());
-      state = state->remove_attrib(LightAttrib::get_class_slot());
-      state = state->remove_attrib(ColorScaleAttrib::get_class_slot());
-      state = state->remove_attrib(FogAttrib::get_class_slot());
-      state = state->add_attrib(ColorAttrib::make_flat(bin->get_flash_color()),
-                                RenderState::get_max_priority());
-    }
+do_flash_bin(CPT(RenderState) &state, const LColor &flash_color) {
+#ifndef NDEBUG
+  int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
+  if ((cycle & 1) == 0) {
+    state = state->remove_attrib(TextureAttrib::get_class_slot());
+    state = state->remove_attrib(LightAttrib::get_class_slot());
+    state = state->remove_attrib(ColorScaleAttrib::get_class_slot());
+    state = state->remove_attrib(FogAttrib::get_class_slot());
+    state = state->add_attrib(ColorAttrib::make_flat(flash_color),
+                              RenderState::get_max_priority());
   }
+#endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,6 +441,7 @@ check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 check_flash_transparency(CPT(RenderState) &state, const LColor &transparency) {
+#ifndef NDEBUG
   if (show_transparency) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
@@ -434,6 +453,7 @@ check_flash_transparency(CPT(RenderState) &state, const LColor &transparency) {
                                 RenderState::get_max_priority());
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

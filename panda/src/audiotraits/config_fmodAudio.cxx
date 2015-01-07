@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#ifdef HAVE_FMODEX //[
 
 #include "config_fmodAudio.h"
 #include "audioManager.h"
@@ -73,5 +72,3 @@ get_audio_manager_func_fmod_audio() {
   init_libFmodAudio();
   return &Create_FmodAudioManager;
 }
-
-#endif //]

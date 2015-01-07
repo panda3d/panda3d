@@ -17,7 +17,6 @@
 #include "cullTraverserData.h"
 #include "transformState.h"
 #include "renderState.h"
-#include "fogAttrib.h"
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
@@ -164,7 +163,7 @@ traverse(const NodePath &root) {
                            _initial_state, _view_frustum,
                            _current_thread);
 
-    traverse(data);
+    do_traverse(data);
   }
 }
 
@@ -177,55 +176,7 @@ traverse(const NodePath &root) {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(CullTraverserData &data) {
-  if (is_in_view(data)) {
-    if (pgraph_cat.is_spam()) {
-      pgraph_cat.spam()
-        << "\n" << data._node_path
-        << " " << data._draw_mask << "\n";
-    }
-
-    PandaNodePipelineReader *node_reader = data.node_reader();
-    int fancy_bits = node_reader->get_fancy_bits();
-
-    if ((fancy_bits & (PandaNode::FB_transform |
-                       PandaNode::FB_state |
-                       PandaNode::FB_effects |
-                       PandaNode::FB_tag |
-                       PandaNode::FB_draw_mask |
-                       PandaNode::FB_cull_callback)) == 0 &&
-        data._cull_planes->is_empty()) {
-      // Nothing interesting in this node; just move on.
-      traverse_below(data);
-
-    } else {
-      // Something in this node is worth taking a closer look.
-      const RenderEffects *node_effects = node_reader->get_effects();
-      if (node_effects->has_show_bounds()) {
-        // If we should show the bounding volume for this node, make it
-        // up now.
-        show_bounds(data, node_effects->has_show_tight_bounds());
-      }
-
-      data.apply_transform_and_state(this);
-
-      const FogAttrib *fog = DCAST(FogAttrib, node_reader->get_state()->get_attrib(FogAttrib::get_class_slot()));
-      if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
-        // If we just introduced a FogAttrib here, call adjust_to_camera()
-        // now.  This maybe isn't the perfect time to call it, but it's
-        // good enough; and at this time we have all the information we
-        // need for it.
-        fog->get_fog()->adjust_to_camera(get_camera_transform());
-      }
-
-      if (fancy_bits & PandaNode::FB_cull_callback) {
-        PandaNode *node = data.node();
-        if (!node->cull_callback(this, data)) {
-          return;
-        }
-      }
-      traverse_below(data);
-    }
-  }
+  do_traverse(data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,27 +192,24 @@ traverse_below(CullTraverserData &data) {
   PandaNodePipelineReader *node_reader = data.node_reader();
   PandaNode *node = data.node();
 
-  bool this_node_hidden = data.is_this_node_hidden(this);
-
-  const RenderEffects *node_effects = node_reader->get_effects();
-  bool has_decal = !this_node_hidden && node_effects->has_decal();
-
-  if (!this_node_hidden) {
+  if (!data.is_this_node_hidden(_camera_mask)) {
     node->add_for_draw(this, data);
-  }
 
-  if (has_decal) {
-    // If we *are* implementing decals with DepthOffsetAttribs,
-    // apply it now, so that each child of this node gets offset by
-    // a tiny amount.
-    data._state = data._state->compose(get_depth_offset_state());
+    // Check for a decal effect.
+    const RenderEffects *node_effects = node_reader->get_effects();
+    if (node_effects->has_decal()) {
+      // If we *are* implementing decals with DepthOffsetAttribs,
+      // apply it now, so that each child of this node gets offset by
+      // a tiny amount.
+      data._state = data._state->compose(get_depth_offset_state());
 #ifndef NDEBUG
-    // This is just a sanity check message.
-    if (!node->is_geom_node()) {
-      pgraph_cat.error()
-        << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
-    }
+      // This is just a sanity check message.
+      if (!node->is_geom_node()) {
+        pgraph_cat.error()
+          << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
+      }
 #endif
+    }
   }
 
   // Now visit all the node's children.
@@ -272,14 +220,14 @@ traverse_below(CullTraverserData &data) {
     int i = node->get_first_visible_child();
     while (i < num_children) {
       CullTraverserData next_data(data, children.get_child(i));
-      traverse(next_data);
+      do_traverse(next_data);
       i = node->get_next_visible_child(i);
     }
 
   } else {
     for (int i = 0; i < num_children; i++) {
       CullTraverserData next_data(data, children.get_child(i));
-      traverse(next_data);
+      do_traverse(next_data);
     }
   }
 }

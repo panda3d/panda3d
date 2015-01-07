@@ -54,7 +54,7 @@ public:
   INLINE bool operator == (const PointerToVoid &other) const;
   INLINE bool operator != (const PointerToVoid &other) const;
 
-  INLINE void swap(PointerToVoid &other);
+  INLINE void swap(PointerToVoid &other) NOEXCEPT;
 
 protected:
   // Within the PointerToVoid class, we only store a void pointer.
