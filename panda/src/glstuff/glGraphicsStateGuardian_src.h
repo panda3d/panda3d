@@ -616,8 +616,7 @@ public:
 
 #ifndef OPENGLES
   PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
-  bool _primitive_restart_gl3;
-  bool _primitive_restart_nv;
+  bool _explicit_primitive_restart;
 #endif
 
   bool _supports_vertex_blend;

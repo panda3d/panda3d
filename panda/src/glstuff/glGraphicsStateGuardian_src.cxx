@@ -550,8 +550,7 @@ reset() {
   }
 
 #ifndef OPENGLES
-  _primitive_restart_gl3 = false;
-  _primitive_restart_nv = false;
+  _explicit_primitive_restart = false;
   _glPrimitiveRestartIndex = NULL;
 
   if (gl_support_primitive_restart_index) {
@@ -563,19 +562,16 @@ reset() {
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
     } else if (is_at_least_gl_version(3, 1)) {
-      _primitive_restart_gl3 = true;
+      // We have to use an explicit primitive restart enable/index.
+      _explicit_primitive_restart = true;
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
       _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
         get_extension_func("glPrimitiveRestartIndex");
 
-    } else if (has_extension("GL_NV_primitive_restart")) {
-      _primitive_restart_nv = true;
-      _supported_geom_rendering |= Geom::GR_strip_cut_index;
-
-      _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
-        get_extension_func("glPrimitiveRestartIndexNV");
     }
+    // We used to have a case here for GL_NV_primitive_restart, but it
+    // seems to cause garbled geometry bugs on some drivers.
   }
 #endif
 
@@ -3954,12 +3950,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
       // One long triangle strip, connected by strip cut indices.
 #ifndef OPENGLES
-      if (_primitive_restart_gl3) {
+      if (_explicit_primitive_restart) {
         glEnable(GL_PRIMITIVE_RESTART);
-        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
-
-      } else if (_primitive_restart_nv) {
-        glEnableClientState(GL_PRIMITIVE_RESTART_NV);
         _glPrimitiveRestartIndex(reader->get_strip_cut_index());
       }
 #endif  // !OPENGLES
@@ -3989,11 +3981,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES
-      if (_primitive_restart_gl3) {
+      if (_explicit_primitive_restart) {
         glDisable(GL_PRIMITIVE_RESTART);
-
-      } else if (_primitive_restart_nv) {
-        glDisableClientState(GL_PRIMITIVE_RESTART_NV);
       }
 #endif  // !OPENGLES
     } else {
