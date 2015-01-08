@@ -21,6 +21,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "pStatTimer.h"
+#include "omniBoundingVolume.h"
 #include <stdio.h>  // For sprintf/snprintf
 
 PStatCollector FrameRateMeter::_show_fps_pcollector("*:Show fps");
@@ -38,6 +39,10 @@ FrameRateMeter(const string &name) :
   _last_aspect_ratio(-1) {
 
   set_cull_callback();
+
+  // Don't do frustum culling, as the text will always be in view.
+  set_bounds(new OmniBoundingVolume());
+  set_final(true);
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -102,6 +107,11 @@ setup_window(GraphicsOutput *window) {
   _root.node()->set_attrib(dw, 1);
   _root.set_material_off(1);
   _root.set_two_sided(1, 1);
+
+  // If we don't set this explicitly, Panda will cause it to be rendered
+  // in a back-to-front cull bin, which will cause the bounding volume
+  // to be computed unnecessarily.  Saves a little bit of overhead.
+  _root.set_bin("unsorted", 0);
 
   // Create a display region that covers the entire window.
   _display_region = _window->make_mono_display_region();
@@ -188,7 +198,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (aspect_ratio != _last_aspect_ratio) {
     _aspect_ratio_transform = TransformState::make_scale(LVecBase3(aspect_ratio, 1, 1));
     _last_aspect_ratio = aspect_ratio;
-    cerr << aspect_ratio << "\n";
   }
   data._net_transform = data._net_transform->compose(_aspect_ratio_transform);
 

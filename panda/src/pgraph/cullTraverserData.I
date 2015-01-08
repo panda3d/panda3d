@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 CullTraverserData(const NodePath &start,
@@ -29,16 +29,18 @@ CullTraverserData(const NodePath &start,
   _state(state),
   _view_frustum(view_frustum),
   _cull_planes(CullPlanes::make_empty()),
-  _draw_mask(DrawMask::all_on())
+  _draw_mask(DrawMask::all_on()),
+  _portal_depth(0)
 {
-  _node_reader.check_bounds();
-  _portal_depth = 0;
+  // Only update the bounding volume if we're going to end up needing it.
+  bool check_bounds = (view_frustum != (GeometricBoundingVolume *)NULL);
+  _node_reader.check_cached(check_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &copy) :
@@ -56,7 +58,7 @@ CullTraverserData(const CullTraverserData &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverserData::
 operator = (const CullTraverserData &copy) {
@@ -84,16 +86,19 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _state(parent._state),
   _view_frustum(parent._view_frustum),
   _cull_planes(parent._cull_planes),
-  _draw_mask(parent._draw_mask)
+  _draw_mask(parent._draw_mask),
+  _portal_depth(parent._portal_depth)
 {
-  _node_reader.check_bounds();
-  _portal_depth = parent._portal_depth;
+  // Only update the bounding volume if we're going to end up needing it.
+  bool check_bounds = !_cull_planes->is_empty() ||
+                    (_view_frustum != (GeometricBoundingVolume *)NULL);
+  _node_reader.check_cached(check_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullTraverserData::
 ~CullTraverserData() {

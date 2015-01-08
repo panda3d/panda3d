@@ -616,6 +616,11 @@ private:
     // When _last_update != _next_update, this cache is stale.
     UpdateSeq _last_update, _next_update;
 
+    // We don't always update the bounding volume and number of
+    // nested vertices.  This indicates the last time they were changed.
+    // It is never higher than _last_update.
+    UpdateSeq _last_bounds_update;
+
   public:
     // This section stores the links to other nodes above and below
     // this node in the graph.
@@ -669,7 +674,8 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   int do_find_child(PandaNode *node, const Down *down) const;
-  CDStageWriter update_bounds(int pipeline_stage, CDLockedStageReader &cdata);
+  CDStageWriter update_cached(bool update_bounds, int pipeline_stage,
+                              CDLockedStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -823,7 +829,7 @@ public:
 
   INLINE void release();
 
-  void check_bounds() const;
+  void check_cached(bool update_bounds) const;
 
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
