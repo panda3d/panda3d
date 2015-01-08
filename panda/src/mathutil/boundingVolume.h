@@ -106,6 +106,7 @@ PUBLISHED:
     BT_best,
     BT_sphere,
     BT_box,
+    BT_fastest,
   };
 
 public:

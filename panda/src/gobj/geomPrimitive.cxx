@@ -1699,10 +1699,14 @@ get_strip_cut_index(NumericType index_type) {
 //               points are found.  It is the caller's responsibility
 //               to initialize min_point, max_point, and found_any
 //               before calling this function.
+//               It also sets sq_center_dist, which is the square of
+//               the maximum distance of the points to the center.
+//               This can be useful when deciding whether a sphere
+//               volume might be more appropriate.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  bool &found_any,
+                  PN_stdfloat &sq_center_dist, bool &found_any,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4 &mat,
                   const InternalName *column_name,
@@ -1714,54 +1718,84 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   }
 
   CDReader cdata(_cycler, current_thread);
+  int i = 0;
 
   if (cdata->_vertices.is_null()) {
     // Nonindexed case.
     nassertv(cdata->_num_vertices != -1);
+    if (cdata->_num_vertices == 0) {
+      return;
+    }
+
     if (got_mat) {
-      for (int i = 0; i < cdata->_num_vertices; i++) {
+      if (!found_any) {
+        reader.set_row_unsafe(cdata->_first_vertex);
+        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
+        min_point = first_vertex;
+        max_point = first_vertex;
+        sq_center_dist = first_vertex.length_squared();
+        found_any = true;
+        ++i;
+      }
+
+      for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
         LPoint3 vertex = mat.xform_point(reader.get_data3());
 
-        if (found_any) {
-          min_point.set(min(min_point[0], vertex[0]),
-                        min(min_point[1], vertex[1]),
-                        min(min_point[2], vertex[2]));
-          max_point.set(max(max_point[0], vertex[0]),
-                        max(max_point[1], vertex[1]),
-                        max(max_point[2], vertex[2]));
-        } else {
-          min_point = vertex;
-          max_point = vertex;
-          found_any = true;
-        }
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+        sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
-      for (int i = 0; i < cdata->_num_vertices; i++) {
+      if (!found_any) {
+        reader.set_row_unsafe(cdata->_first_vertex);
+        const LVecBase3 &first_vertex = reader.get_data3();
+        min_point = first_vertex;
+        max_point = first_vertex;
+        sq_center_dist = first_vertex.length_squared();
+        found_any = true;
+        ++i;
+      }
+
+      for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
         const LVecBase3 &vertex = reader.get_data3();
 
-        if (found_any) {
-          min_point.set(min(min_point[0], vertex[0]),
-                        min(min_point[1], vertex[1]),
-                        min(min_point[2], vertex[2]));
-          max_point.set(max(max_point[0], vertex[0]),
-                        max(max_point[1], vertex[1]),
-                        max(max_point[2], vertex[2]));
-        } else {
-          min_point = vertex;
-          max_point = vertex;
-          found_any = true;
-        }
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+        sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     }
 
   } else {
     // Indexed case.
     GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0, current_thread);
+    if (index.is_at_end()) {
+      return;
+    }
+
     int strip_cut_index = get_strip_cut_index(cdata->_index_type);
 
     if (got_mat) {
+      if (!found_any) {
+        int first_index = index.get_data1i();
+        nassertv(first_index != strip_cut_index);
+        reader.set_row_unsafe(first_index);
+        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
+        min_point = first_vertex;
+        max_point = first_vertex;
+        sq_center_dist = first_vertex.length_squared();
+        found_any = true;
+      }
+
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
         if (ii == strip_cut_index) {
@@ -1770,20 +1804,26 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         reader.set_row_unsafe(ii);
         LPoint3 vertex = mat.xform_point(reader.get_data3());
 
-        if (found_any) {
-          min_point.set(min(min_point[0], vertex[0]),
-                        min(min_point[1], vertex[1]),
-                        min(min_point[2], vertex[2]));
-          max_point.set(max(max_point[0], vertex[0]),
-                        max(max_point[1], vertex[1]),
-                        max(max_point[2], vertex[2]));
-        } else {
-          min_point = vertex;
-          max_point = vertex;
-          found_any = true;
-        }
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+        sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
+      if (!found_any) {
+        int first_index = index.get_data1i();
+        nassertv(first_index != strip_cut_index);
+        reader.set_row_unsafe(first_index);
+        const LVecBase3 &first_vertex = reader.get_data3();
+        min_point = first_vertex;
+        max_point = first_vertex;
+        sq_center_dist = first_vertex.length_squared();
+        found_any = true;
+      }
+
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
         if (ii == strip_cut_index) {
@@ -1792,19 +1832,77 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         reader.set_row_unsafe(ii);
         const LVecBase3 &vertex = reader.get_data3();
 
-        if (found_any) {
-          min_point.set(min(min_point[0], vertex[0]),
-                        min(min_point[1], vertex[1]),
-                        min(min_point[2], vertex[2]));
-          max_point.set(max(max_point[0], vertex[0]),
-                        max(max_point[1], vertex[1]),
-                        max(max_point[2], vertex[2]));
-        } else {
-          min_point = vertex;
-          max_point = vertex;
-          found_any = true;
-        }
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+        sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::calc_sphere_radius
+//       Access: Public, Virtual
+//  Description: Expands radius so that a sphere with the given
+//               center point fits all of the vertices.
+//
+//               The center point is assumed to already have been
+//               transformed by the matrix, if one is given.
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
+                   bool &found_any, const GeomVertexData *vertex_data,
+                   Thread *current_thread) const {
+  GeomVertexReader reader(vertex_data, InternalName::get_vertex(), current_thread);
+  if (!reader.has_column()) {
+    // No vertex data.
+    return;
+  }
+
+  if (!found_any) {
+    sq_radius = 0.0;
+  }
+
+  CDReader cdata(_cycler, current_thread);
+
+  if (cdata->_vertices.is_null()) {
+    // Nonindexed case.
+    nassertv(cdata->_num_vertices != -1);
+    if (cdata->_num_vertices == 0) {
+      return;
+    }
+    found_any = true;
+
+    for (int i = 0; i < cdata->_num_vertices; ++i) {
+      reader.set_row_unsafe(cdata->_first_vertex + i);
+      const LVecBase3 &vertex = reader.get_data3();
+
+      sq_radius = max(sq_radius, (vertex - center).length_squared());
+    }
+
+  } else {
+    // Indexed case.
+    GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0, current_thread);
+    if (index.is_at_end()) {
+      return;
+    }
+    found_any = true;
+
+    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
+
+    while (!index.is_at_end()) {
+      int ii = index.get_data1i();
+      if (ii == strip_cut_index) {
+        continue;
+      }
+      reader.set_row_unsafe(ii);
+      const LVecBase3 &vertex = reader.get_data3();
+
+      sq_radius = max(sq_radius, (vertex - center).length_squared());
     }
   }
 }

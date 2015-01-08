@@ -182,6 +182,9 @@ string_bounds_type(const string &str) {
   } else if (strcmp(str.c_str(), "best") == 0) {
     return BT_best;
 
+  } else if (strcmp(str.c_str(), "fastest") == 0) {
+    return BT_fastest;
+
   } else if (strcmp(str.c_str(), "sphere") == 0) {
     return BT_sphere;
 
@@ -520,6 +523,9 @@ operator << (ostream &out, BoundingVolume::BoundsType type) {
 
   case BoundingVolume::BT_best:
     return out << "best";
+
+  case BoundingVolume::BT_fastest:
+    return out << "fastest";
 
   case BoundingVolume::BT_sphere:
     return out << "sphere";

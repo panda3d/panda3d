@@ -48,7 +48,7 @@ make_cow_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const GeomVertexData *data) {
@@ -68,7 +68,7 @@ Geom(const GeomVertexData *data) {
 Geom::
 Geom(const Geom &copy) :
   CopyOnWriteObject(copy),
-  _cycler(copy._cycler)  
+  _cycler(copy._cycler)
 {
 }
 
@@ -98,7 +98,7 @@ operator = (const Geom &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Geom::
 ~Geom() {
@@ -224,7 +224,7 @@ offset_vertices(const GeomVertexData *data, int offset) {
       gobj_cat.warning()
         << *prim << " is invalid for " << *data << ":\n";
       prim->write(gobj_cat.warning(false), 4);
-      
+
       all_is_valid = false;
     }
 #endif
@@ -272,9 +272,9 @@ make_nonindexed(bool composite_only) {
     // making nonindexed, since there's no particular advantage to
     // having indexed points (as opposed to, say, indexed triangles or
     // indexed lines).
-    if (primitive->is_indexed() && 
-        (primitive->is_composite() || 
-         primitive->is_exact_type(GeomPoints::get_class_type()) || 
+    if (primitive->is_indexed() &&
+        (primitive->is_composite() ||
+         primitive->is_exact_type(GeomPoints::get_class_type()) ||
          !composite_only)) {
       primitive->make_nonindexed(new_data, orig_data);
       ++num_changed;
@@ -720,11 +720,11 @@ unify_in_place(int max_indices, bool preserve_order) {
       // Copy prim into smaller prims, no one of which has more than
       // max_indices vertices.
       int i = 0;
-      
+
       while (i < prim->get_num_primitives()) {
         PT(GeomPrimitive) smaller = prim->make_copy();
         smaller->clear_vertices();
-        while (i < prim->get_num_primitives() && 
+        while (i < prim->get_num_primitives() &&
                smaller->get_num_vertices() + prim->get_primitive_num_vertices(i) < max_indices) {
           int start = prim->get_primitive_start(i);
           int end = prim->get_primitive_end(i);
@@ -732,13 +732,13 @@ unify_in_place(int max_indices, bool preserve_order) {
             smaller->add_vertex(prim->get_vertex(n));
           }
           smaller->close_primitive();
-          
+
           ++i;
         }
-      
+
         cdata->_primitives.push_back(smaller.p());
       }
-      
+
     } else {
       // The prim has few enough vertices; keep it.
       cdata->_primitives.push_back(prim);
@@ -887,7 +887,7 @@ get_num_bytes() const {
 
   int num_bytes = sizeof(Geom);
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     num_bytes += (*pi).get_read_pointer()->get_num_bytes();
@@ -914,7 +914,7 @@ request_resident() const {
   bool resident = true;
 
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     if (!(*pi).get_read_pointer()->request_resident()) {
@@ -942,11 +942,11 @@ void Geom::
 transform_vertices(const LMatrix4 &mat) {
   PT(GeomVertexData) new_data = modify_vertex_data();
   CPT(GeomVertexFormat) format = new_data->get_format();
-  
+
   int ci;
   for (ci = 0; ci < format->get_num_points(); ci++) {
     GeomVertexRewriter data(new_data, format->get_point(ci));
-    
+
     while (!data.is_at_end()) {
       const LPoint3 &point = data.get_data3();
       data.set_data3(point * mat);
@@ -954,7 +954,7 @@ transform_vertices(const LMatrix4 &mat) {
   }
   for (ci = 0; ci < format->get_num_vectors(); ci++) {
     GeomVertexRewriter data(new_data, format->get_vector(ci));
-    
+
     while (!data.is_at_end()) {
       const LVector3 &vector = data.get_data3();
       data.set_data3(normalize(vector * mat));
@@ -1036,7 +1036,7 @@ get_nested_vertices(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 output(ostream &out) const {
@@ -1046,7 +1046,7 @@ output(ostream &out) const {
   int num_faces = 0;
   pset<TypeHandle> types;
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
@@ -1065,7 +1065,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::write
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 write(ostream &out, int indent_level) const {
@@ -1073,7 +1073,7 @@ write(ostream &out, int indent_level) const {
 
   // Get a list of the primitive types contained within this object.
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     (*pi).get_read_pointer()->write(out, indent_level);
@@ -1228,7 +1228,7 @@ release_all() {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 GeomContext *Geom::
-prepare_now(PreparedGraphicsObjects *prepared_objects, 
+prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1304,10 +1304,11 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
-  LPoint3 min, max;
+  LPoint3 pmin, pmax;
+  PN_stdfloat sq_center_dist;
   bool found_any = false;
-  do_calc_tight_bounds(min, max, found_any, vertex_data,
-                       false, LMatrix4::ident_mat(), 
+  do_calc_tight_bounds(pmin, pmax, sq_center_dist, found_any,
+                       vertex_data, false, LMatrix4::ident_mat(),
                        InternalName::get_vertex(),
                        cdata, current_thread);
 
@@ -1318,22 +1319,83 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 
   if (found_any) {
     // Then we put the bounding volume around both of those points.
-    if (btype == BoundingVolume::BT_sphere) {
-      // The user specifically requested a BoundingSphere, so oblige.
-      BoundingBox box(min, max);
-      box.local_object();
+    PN_stdfloat avg_box_area;
+    switch (btype) {
+    case BoundingVolume::BT_best:
+    case BoundingVolume::BT_fastest:
+    case BoundingVolume::BT_default:
+      {
+        // When considering a box, calculate (roughly) the average area
+        // of the sides.  We will use this to determine whether a sphere
+        // or box is a better fit.
+        PN_stdfloat min_extent = min(pmax[0] - pmin[0],
+                                 min(pmax[1] - pmin[1],
+                                     pmax[2] - pmin[2]));
+        PN_stdfloat max_extent = max(pmax[0] - pmin[0],
+                                 max(pmax[1] - pmin[1],
+                                     pmax[2] - pmin[2]));
+        avg_box_area = ((min_extent * min_extent) + (max_extent * max_extent)) / 2;
+      }
+      //  Fall through
+    case BoundingVolume::BT_sphere:
+      {
+        // Determine the best radius for a bounding sphere.
+        LPoint3 aabb_center = (pmin + pmax) * 0.5f;
+        PN_stdfloat best_sq_radius = (pmax - aabb_center).length_squared();
 
-      PT(BoundingSphere) sphere = new BoundingSphere;
-      sphere->extend_by(&box);
-      cdata->_internal_bounds = sphere;
+        if (btype != BoundingVolume::BT_fastest &&
+            aabb_center.length_squared() / best_sq_radius >= (0.2f * 0.2f)) {
+          // Hmm, this is an off-center model.  Maybe we can do a better
+          // job by calculating the bounding sphere from the AABB center.
 
-    } else {
-      // The user requested a BoundingBox, or did not specify.
-      cdata->_internal_bounds = new BoundingBox(min, max);
+          PN_stdfloat better_sq_radius;
+          bool found_any = false;
+          do_calc_sphere_radius(aabb_center, better_sq_radius, found_any,
+                                vertex_data, cdata, current_thread);
+
+          if (found_any && better_sq_radius <= best_sq_radius) {
+            // Great.  This is as good a sphere as we're going to get.
+            if (btype == BoundingVolume::BT_best &&
+                avg_box_area < better_sq_radius * MathNumbers::pi) {
+              // But the box is better, anyway.  Use that instead.
+              cdata->_internal_bounds = new BoundingBox(pmin, pmax);
+              break;
+            }
+            cdata->_internal_bounds =
+              new BoundingSphere(aabb_center, csqrt(better_sq_radius));
+            break;
+          }
+        }
+
+        if (btype != BoundingVolume::BT_sphere &&
+            avg_box_area < sq_center_dist * MathNumbers::pi) {
+          // A box is probably a tighter fit.
+          cdata->_internal_bounds = new BoundingBox(pmin, pmax);
+          break;
+
+        } else if (sq_center_dist <= best_sq_radius) {
+          // No, but a sphere centered on the origin is apparently
+          // still better than a sphere around the bounding box.
+          cdata->_internal_bounds =
+            new BoundingSphere(LPoint3::origin(), csqrt(sq_center_dist));
+          break;
+
+        } else if (btype == BoundingVolume::BT_sphere) {
+          // This is the worst sphere we can make, which is why we will only
+          // do it when the user specifically requests a sphere.
+          cdata->_internal_bounds =
+            new BoundingSphere(aabb_center, csqrt(best_sq_radius));
+          break;
+        }
+      }
+      // Fall through.
+
+    case BoundingVolume::BT_box:
+      cdata->_internal_bounds = new BoundingBox(pmin, pmax);
     }
 
     Primitives::const_iterator pi;
-    for (pi = cdata->_primitives.begin(); 
+    for (pi = cdata->_primitives.begin();
          pi != cdata->_primitives.end();
          ++pi) {
       CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
@@ -1360,18 +1422,38 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                     bool &found_any, 
+                     PN_stdfloat &sq_center_dist, bool &found_any,
                      const GeomVertexData *vertex_data,
                      bool got_mat, const LMatrix4 &mat,
                      const InternalName *column_name,
                      const CData *cdata, Thread *current_thread) const {
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
-    prim->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
-                            got_mat, mat, column_name, current_thread);
+    prim->calc_tight_bounds(min_point, max_point, sq_center_dist,
+                            found_any, vertex_data, got_mat, mat,
+                            column_name, current_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::do_calc_sphere_radius
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Geom::
+do_calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
+                      bool &found_any, const GeomVertexData *vertex_data,
+                      const CData *cdata, Thread *current_thread) const {
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin();
+       pi != cdata->_primitives.end();
+       ++pi) {
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    prim->calc_sphere_radius(center, sq_radius, found_any,
+                             vertex_data, current_thread);
   }
 }
 
@@ -1412,7 +1494,7 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
   CDReader cdata(_cycler);
 
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     if (!(*pi).get_read_pointer()->check_valid(vertex_data)) {
@@ -1432,10 +1514,10 @@ void Geom::
 reset_usage_hint(Geom::CData *cdata) {
   cdata->_usage_hint = UH_unspecified;
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    cdata->_usage_hint = min(cdata->_usage_hint, 
+    cdata->_usage_hint = min(cdata->_usage_hint,
                              (*pi).get_read_pointer()->get_usage_hint());
   }
   cdata->_got_usage_hint = true;
@@ -1450,7 +1532,7 @@ void Geom::
 reset_geom_rendering(Geom::CData *cdata) {
   cdata->_geom_rendering = 0;
   Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
+  for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
     cdata->_geom_rendering |= (*pi).get_read_pointer()->get_geom_rendering();
@@ -1626,7 +1708,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CDataCache::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Geom::CDataCache::
 ~CDataCache() {
@@ -1661,11 +1743,11 @@ evict_callback() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::CacheEntry::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::CacheEntry::
 output(ostream &out) const {
-  out << "geom " << (void *)_source << ", " 
+  out << "geom " << (void *)_source << ", "
       << (const void *)_key._modifier;
 }
 
@@ -1777,7 +1859,7 @@ check_usage_hint() const {
 #ifdef DO_PIPELINING
       unref_delete((CycleData *)_cdata);
 #endif
-      Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler, 
+      Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler,
                                  false, _current_thread);
       ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
 #ifdef DO_PIPELINING
@@ -1802,12 +1884,12 @@ check_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::check_valid
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomPipelineReader::
 check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   Geom::Primitives::const_iterator pi;
-  for (pi = _cdata->_primitives.begin(); 
+  for (pi = _cdata->_primitives.begin();
        pi != _cdata->_primitives.end();
        ++pi) {
     CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
@@ -1820,7 +1902,7 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 
   return true;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPipelineReader::draw
 //       Access: Public
@@ -1833,7 +1915,7 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
   bool all_ok = gsg->begin_draw_primitives(this, munger, data_reader, force);
   if (all_ok) {
     Geom::Primitives::const_iterator pi;
-    for (pi = _cdata->_primitives.begin(); 
+    for (pi = _cdata->_primitives.begin();
          pi != _cdata->_primitives.end();
          ++pi) {
       CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();

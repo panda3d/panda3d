@@ -174,11 +174,16 @@ private:
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                            bool &found_any,
+                            PN_stdfloat &sq_center_dist, bool &found_any,
                             const GeomVertexData *vertex_data,
                             bool got_mat, const LMatrix4 &mat,
                             const InternalName *column_name,
                             const CData *cdata, Thread *current_thread) const;
+
+  void do_calc_sphere_radius(const LPoint3 &center,
+                             PN_stdfloat &sq_radius, bool &found_any,
+                             const GeomVertexData *vertex_data,
+                             const CData *cdata, Thread *current_thread) const;
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
