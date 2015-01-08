@@ -68,7 +68,7 @@ class GraphicsEngine;
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsEngine *engine,
-                 GraphicsPipe *pipe, 
+                 GraphicsPipe *pipe,
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop, int flags,
@@ -314,7 +314,7 @@ protected:
   int _target_tex_page;
   int _target_tex_view;
   DisplayRegion *_prev_page_dr;
-  PT(Geom) _texture_card;
+  PT(GeomNode) _texture_card;
   bool _trigger_copy;
 
   class RenderTexture {
