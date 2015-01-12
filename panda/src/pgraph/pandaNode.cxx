@@ -4836,7 +4836,7 @@ check_cached(bool update_bounds) const {
     int pipeline_stage = _current_thread->get_pipeline_stage();
     PandaNode::CDLockedStageReader fresh_cdata(_node->_cycler, pipeline_stage, _current_thread);
     if (fresh_cdata->_last_update == fresh_cdata->_next_update &&
-        (!update_bounds || _cdata->_external_bounds != NULL)) {
+        (!update_bounds || fresh_cdata->_last_bounds_update == fresh_cdata->_next_update)) {
       // What luck, some other thread has already freshened the
       // cache for us.  Save the new pointer, and let the lock
       // release itself.
