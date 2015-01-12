@@ -3788,8 +3788,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     UpdateSeq last_update = cdata->_last_update;
     UpdateSeq next_update = cdata->_next_update;
     UpdateSeq last_bounds_update = cdata->_last_bounds_update;
-    nassertr(last_bounds_update != next_update &&
-             (!update_bounds || last_update != next_update),
+    nassertr(last_update != next_update ||
+             (update_bounds && last_bounds_update != next_update),
              CDStageWriter(_cycler, pipeline_stage, cdata));
 
     // Start with a clean slate.
