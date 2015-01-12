@@ -8,7 +8,7 @@ __all__ = ['ShowBase', 'WindowControls']
 #import VerboseImport
 
 from panda3d.core import *
-from panda3d.direct import get_config_showbase, throw_new_frame
+from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
 
 # This needs to be available early for DirectGUI imports
 import __builtin__
@@ -2757,7 +2757,7 @@ class ShowBase(DirectObject.DirectObject):
             # Don't do this twice.
             return
 
-        initAppForGui()
+        init_app_for_gui()
 
         import wx
         # Create a new base.wxApp.
@@ -2841,7 +2841,7 @@ class ShowBase(DirectObject.DirectObject):
         self.tkRoot = Pmw.initialise()
         __builtin__.tkroot = self.tkRoot
 
-        initAppForGui()
+        init_app_for_gui()
 
         if ConfigVariableBool('tk-main-loop', True):
             # Put Tkinter in charge of the main loop.  It really
