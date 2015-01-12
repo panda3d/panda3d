@@ -5,11 +5,8 @@ __all__ = ['EventManager']
 
 from MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import *
-
-# This module may not import pandac.PandaModules, since it is imported
-# by the Toontown Launcher before the complete PandaModules have been
-# downloaded.
-#from pandac.PandaModules import *
+from panda3d.core import PStatCollector, EventQueue, EventHandler
+from panda3d.core import EventStorePandaNode
 
 class EventManager:
 
@@ -43,7 +40,6 @@ class EventManager:
         """
         if self._wantPstats is None:
             self._wantPstats = config.GetBool('pstats-eventmanager', 0)
-            from pandac.PandaModules import PStatCollector
             EventManager.PStatCollector = PStatCollector
         # use different methods for handling events with and without pstats tracking
         # for efficiency
@@ -83,10 +79,7 @@ class EventManager:
             # which will be downcast to that type
             ptr = eventParameter.getPtr()
 
-            if EventManager.EventStorePandaNode is None:
-                from pandac.PandaModules import EventStorePandaNode
-                EventManager.EventStorePandaNode = EventStorePandaNode
-            if isinstance(ptr, EventManager.EventStorePandaNode):
+            if isinstance(ptr, EventStorePandaNode):
                 # Actually, it's a kludgey wrapper around a PandaNode
                 # pointer.  Return the node.
                 ptr = ptr.getValue()
@@ -190,22 +183,17 @@ class EventManager:
 
 
     def restart(self):
-        if None in (EventManager.EventQueue, EventManager.EventHandler):
-            from pandac.PandaModules import EventQueue, EventHandler
-            EventManager.EventQueue = EventQueue
-            EventManager.EventHandler = EventHandler
-        
         if self.eventQueue == None:
-            self.eventQueue = EventManager.EventQueue.getGlobalEventQueue()
+            self.eventQueue = EventQueue.getGlobalEventQueue()
 
         if self.eventHandler == None:
-            if self.eventQueue == EventManager.EventQueue.getGlobalEventQueue():
+            if self.eventQueue == EventQueue.getGlobalEventQueue():
                 # If we are using the global event queue, then we also
                 # want to use the global event handler.
-                self.eventHandler = EventManager.EventHandler.getGlobalEventHandler()
+                self.eventHandler = EventHandler.getGlobalEventHandler()
             else:
                 # Otherwise, we need our own event handler.
-                self.eventHandler = EventManager.EventHandler(self.eventQueue)
+                self.eventHandler = EventHandler(self.eventQueue)
 
         # Should be safe to import the global taskMgr by now.
         from direct.task.TaskManagerGlobal import taskMgr

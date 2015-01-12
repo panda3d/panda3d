@@ -8,9 +8,9 @@ import os, sys, subprocess, tarfile, shutil, time, zipfile, glob, socket, getpas
 from cStringIO import StringIO
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
-from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
-from pandac.PandaModules import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
-from pandac.PandaModules import PNMImage, PNMFileTypeRegistry
+from panda3d.core import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
+from panda3d.core import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
+from panda3d.core import PNMImage, PNMFileTypeRegistry
 from direct.stdpy.file import *
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
@@ -296,7 +296,7 @@ class Icon:
 
     def __init__(self):
         self.images = {}
-    
+
     def addImage(self, image):
         """ Adds an image to the icon.  Returns False on failure, True on success.
         Only one image per size can be loaded, and the image size must be square. """
@@ -1097,7 +1097,7 @@ class Installer:
 
         # Tell Vista that we require admin rights
         print >>nsi, 'RequestExecutionLevel admin'
-        print >>nsi 
+        print >>nsi
         if self.offerRun:
             print >>nsi, 'Function launch'
             print >>nsi, '  ExecShell "open" "$INSTDIR\\%s.exe"' % self.shortname
@@ -1112,7 +1112,7 @@ class Installer:
                 print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe" "" "$INSTDIR\\%s.ico"' % (self.fullname, self.shortname, self.shortname)
             print >>nsi, 'FunctionEnd'
             print >>nsi
-            
+
         print >>nsi, '!include "MUI2.nsh"'
         print >>nsi, '!define MUI_ABORTWARNING'
         if self.offerRun:
@@ -1213,7 +1213,7 @@ class Installer:
 
         if icofile is not None:
             icofile.unlink()
-        
+
         return output
 
     def os_walk(self, top):

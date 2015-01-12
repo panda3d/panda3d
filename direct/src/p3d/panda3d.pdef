@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename, PandaSystem, getModelPath
+from panda3d.core import Filename, PandaSystem, getModelPath
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -54,7 +54,11 @@ class panda3d(package):
            'direct.showutil.*',
            'direct.stdpy.*',
            'direct.task.*')
-    module('panda3d')
+
+    module('panda3d.core',
+           'panda3d.direct',
+           'panda3d.fx',
+           'panda3d.physics')
 
     # Include various standard Python encodings.  The rest is in morepy.
     module('encodings', 'encodings.aliases', 'encodings.undefined,'
@@ -65,9 +69,19 @@ class panda3d(package):
     import direct
     file(Filename(direct.__path__[0], 'filter/*.sha'), newDir = 'direct/filter')
 
+    # pandac.PandaModules pulls in other Panda3D libs automatically.
     # Exclude these Panda3D libs; they are big and many applications don't
     # use them.  We define them as separate, optional packages, below,
     # except for skel - this is useless in a shipped game anyways.
+    excludeModule('panda3d.egg')
+    excludeModule('panda3d.ode')
+    excludeModule('panda3d.bullet')
+    excludeModule('panda3d.vision')
+    excludeModule('panda3d.skel')
+    excludeModule('panda3d.physx')
+    excludeModule('panda3d.ai')
+    excludeModule('panda3d.vrpn')
+
     excludeModule('libpandaegg')
     excludeModule('libpandaode')
     excludeModule('libpandabullet')
@@ -88,6 +102,8 @@ class panda3d(package):
                   'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
     excludeModule('MySQLdb', '_mysql')
+
+    excludeModule('xml', 'xml.parsers.expat', 'xml.sax')
 
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
@@ -269,6 +285,7 @@ class egg(package):
     config(display_name = "Panda3D egg loader")
     require('panda3d')
 
+    module('panda3d.egg', required = True)
     file('libpandaegg.dll', required = True)
     file('libp3ptloader.dll', required = True)
 
@@ -286,6 +303,7 @@ class ode(package):
     config(display_name = "Panda3D Open Dynamics Engine integration")
     require('panda3d')
 
+    module('panda3d.ode', required = True)
     file('libpandaode.dll', required = True)
 
 class bullet(package):
@@ -296,6 +314,7 @@ class bullet(package):
     config(display_name = "Panda3D Bullet integration")
     require('panda3d')
 
+    module('panda3d.bullet', required = True)
     file('libpandabullet.dll', required = True)
 
 class physx(package):
@@ -306,6 +325,7 @@ class physx(package):
     config(display_name = "Panda3D PhysX integration")
     require('panda3d')
 
+    module('panda3d.physx', required = True)
     file('libpandaphysx.dll', required = True)
     file('physxcudart_20.dll')
     file('PhysXDevice.dll')
@@ -319,6 +339,7 @@ class ai(package):
     config(display_name = "Panda3D AI modules")
     require('panda3d')
 
+    module('panda3d.ai', required = True)
     file('libpandaai.dll', required = True)
 
 class vision(package):
@@ -330,6 +351,7 @@ class vision(package):
     config(display_name = "Panda3D vision modules")
     require('panda3d')
 
+    module('panda3d.vision', required = True)
     file('libp3vision.dll', required = True)
 
 class rocket(package):
@@ -340,6 +362,7 @@ class rocket(package):
     config(display_name = "Panda3D libRocket support")
     require('panda3d')
 
+    module('panda3d.rocket', required = True)
     module('_rocketcore', '_rocketcontrols')
     file('libp3rocket.dll', required = True)
 
@@ -350,6 +373,7 @@ class vrpn(package):
     config(display_name = "Panda3D VRPN support")
     require('panda3d')
 
+    module('panda3d.vrpn')
     file('libp3vrpn.dll', required = True)
 
 

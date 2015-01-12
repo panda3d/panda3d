@@ -1,4 +1,4 @@
-from pandac.PandaModules import getConfigShowbase
+from panda3d.direct import get_config_showbase
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr
 import sys
@@ -6,7 +6,7 @@ import types
 import traceback
 
 notify = directNotify.newCategory("ExceptionVarDump")
-config = getConfigShowbase()
+config = get_config_showbase()
 
 reentry = 0
 
@@ -154,7 +154,7 @@ def _excepthookDumpVars(eType, eValue, tb):
                     for attrName in attrNames:
                         obj = attrName2obj[attrName]
                         stateStack.push(['%s.%s' % (name, attrName), obj, ids])
-                
+
         tb = tb.tb_next
 
     if foundRun:

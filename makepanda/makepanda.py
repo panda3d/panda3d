@@ -68,7 +68,7 @@ COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
 UNIVERSAL=False
-HOST_URL="https://runtime.panda3d.org/"
+HOST_URL=None
 global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
@@ -429,10 +429,15 @@ SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
 if (RTDIST and DISTRIBUTOR == "cmu"):
+    HOST_URL = "https://runtime.panda3d.org/"
+
     if (RTDIST_VERSION == "cmu_1.7" and SDK["PYTHONVERSION"] != "python2.6"):
         exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
     elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
         exit("The CMU 1.8 runtime distribution must be built against Python 2.7!")
+
+elif RTDIST and not HOST_URL:
+    exit("You must specify a host URL when building the rtdist!")
 
 ########################################################################
 ##
@@ -1562,8 +1567,8 @@ def CompileLink(dll, obj, opts):
             CopyFile(new_path, dll)
             oscmd('%s --strip-unneeded %s' % (GetStrip(), BracketNameWithQuotes(new_path)))
 
-        elif (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
-            oscmd(GetStrip() + " -x " + BracketNameWithQuotes(dll))
+        elif (GetOptimizeOption(opts)==4 and GetTarget() == 'linux'):
+            oscmd(GetStrip() + " --strip-unneeded " + BracketNameWithQuotes(dll))
 
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
@@ -4681,7 +4686,7 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
-    TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'WINUSER'])
+    TargetAdd('p3dpython.exe', opts=['PYTHON', 'WINUSER'])
 
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
@@ -4719,7 +4724,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+      OPTS=['OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
       if GetTarget() == "darwin":
           OPTS += ['GL', 'OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
@@ -4836,7 +4841,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libp3tinyxml.ilb')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
-    TargetAdd('Panda3D.app', opts=['NOSTRIP', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('Panda3D.app', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   elif (GetTarget() == 'windows'):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
@@ -4899,7 +4904,7 @@ if (RTDIST):
     TargetAdd('p3dembed.exe', input='libp3subprocbuffer.ilb')
   TargetAdd('p3dembed.exe', input='libp3tinyxml.ilb')
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
   if GetTarget() == 'windows':
     OPTS.append("P3DEMBEDW")
@@ -4925,7 +4930,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_common.obj')
     TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
-    TargetAdd('p3dembedw.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
+    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/

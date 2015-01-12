@@ -17,9 +17,8 @@ except ImportError:
     p3extend_frozen = None
 
 import direct
-from pandac.PandaModules import *
+from panda3d.core import *
 from pandac.extension_native_helpers import dll_suffix, dll_ext
-import panda3d
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -578,6 +577,8 @@ class Freezer:
         if self.platform.startswith('win'):
             self.objectExtension = '.obj'
 
+        self.keepTemporaryFiles = True
+
         # Change any of these to change the generated startup and glue
         # code.
         self.frozenMainCode = frozenMainCode
@@ -912,7 +913,7 @@ class Freezer:
                 continue
             if origName in self.modules:
                 continue
-                
+
             # This module is missing.  Let it be missing in the
             # runtime also.
             self.modules[origName] = self.ModuleDef(origName, exclude = True,
@@ -1110,7 +1111,7 @@ class Freezer:
             # The "module" may end in __init__, but that really means
             # the parent directory.
             dirnames = dirnames[:-1]
-            
+
         self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1], compressionLevel)
 
         filename = '/'.join(dirnames)
@@ -1328,10 +1329,11 @@ class Freezer:
         try:
             compileFunc(filename, basename)
         finally:
-            if (os.path.exists(filename)):
-                os.unlink(filename)
-            if (os.path.exists(basename + self.objectExtension)):
-                os.unlink(basename + self.objectExtension)
+            if not self.keepTemporaryFiles:
+                if os.path.exists(filename):
+                    os.unlink(filename)
+                if os.path.exists(basename + self.objectExtension):
+                    os.unlink(basename + self.objectExtension)
 
         return target
 
@@ -1378,19 +1380,6 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
     def __init__(self, *args, **kw):
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
-    def import_module(self, partname, fqname, parent):
-        if parent and parent.__name__ == 'panda3d':
-            # A special case: map a reference to the "panda3d.blah"
-            # module into the appropriate Panda3D dll.
-            m = getattr(panda3d, partname, None)
-            if m and hasattr(m, '__libraries__'):
-                libname = m.__libraries__[-1]
-                partname = libname
-                fqname = libname
-                parent = None
-
-        return modulefinder.ModuleFinder.import_module(self, partname, fqname, parent)
-
     def find_module(self, name, path, parent=None):
         try:
             return modulefinder.ModuleFinder.find_module(self, name, path, parent = parent)
@@ -1425,7 +1414,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             m = self.add_module(fqname)
             m.__file__ = '<frozen>'
             if isPackage:
-                m.__path__ = pathname
+                m.__path__ = [pathname]
             co = marshal.loads(co)
             if self.replace_paths:
                 co = self.replace_paths_in_code(co)

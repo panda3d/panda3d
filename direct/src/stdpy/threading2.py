@@ -17,8 +17,8 @@ import sys as _sys
 
 from direct.stdpy import thread
 from direct.stdpy.thread import stack_size, _local as local
-from pandac import PandaModules as pm
-_sleep = pm.Thread.sleep
+from panda3d import core
+_sleep = core.Thread.sleep
 
 from time import time as _time
 from traceback import format_exc as _format_exc

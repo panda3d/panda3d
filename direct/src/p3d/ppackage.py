@@ -132,7 +132,7 @@ import getopt
 import os
 
 from direct.p3d import Packager
-from pandac.PandaModules import *
+from panda3d.core import *
 
 def usage(code, msg = ''):
     print >> sys.stderr, usageText % {
