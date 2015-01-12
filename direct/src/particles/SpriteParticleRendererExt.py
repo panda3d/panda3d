@@ -1,4 +1,4 @@
-from pandac.PandaModules import SpriteParticleRenderer
+from panda3d.physics import SpriteParticleRenderer
 
 
 class SpriteParticleRendererExt(SpriteParticleRenderer):
@@ -126,4 +126,3 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         m.removeNode()
 
         return True
-

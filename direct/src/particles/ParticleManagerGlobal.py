@@ -1,6 +1,6 @@
 """
 Contains the global particle system manager
 """
-from pandac.PandaModules import ParticleSystemManager
+from panda3d.physics import ParticleSystemManager
 
 particleMgr = ParticleSystemManager()
