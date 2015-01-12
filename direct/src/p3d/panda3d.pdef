@@ -373,7 +373,7 @@ class vrpn(package):
     config(display_name = "Panda3D VRPN support")
     require('panda3d')
 
-    module('panda3d.vrpn')
+    module('panda3d.vrpn', required = True)
     file('libp3vrpn.dll', required = True)
 
 

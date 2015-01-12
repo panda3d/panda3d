@@ -3634,7 +3634,7 @@ class Packager:
             for subfile in dirList:
                 filename = subfile.getFilename()
                 if filename.getBasename() == '__init__.py':
-                    moduleName = newName.replace("/", ".").rsplit('.', 1)[0]
+                    moduleName = newName.replace("/", ".")
                     self.addModule([moduleName], filename=filename)
 
             for subfile in dirList:

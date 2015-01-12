@@ -2206,7 +2206,8 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
-        plugin_config["PANDA_PACKAGE_HOST_URL"] = HOST_URL
+        if HOST_URL:
+            plugin_config["PANDA_PACKAGE_HOST_URL"] = HOST_URL
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
@@ -2416,7 +2417,7 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
     pandaversion_h = pandaversion_h.replace("$COREAPI_VERSION",COREAPI_VERSION)
-    pandaversion_h = pandaversion_h.replace("$HOST_URL",HOST_URL)
+    pandaversion_h = pandaversion_h.replace("$HOST_URL",(HOST_URL or ""))
     if (DISTRIBUTOR == "cmu"):
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
