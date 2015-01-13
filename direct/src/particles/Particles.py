@@ -1,27 +1,27 @@
 from pandac.PandaModules import *
 
-from pandac.PandaModules import ParticleSystem
-from pandac.PandaModules import BaseParticleFactory
-from pandac.PandaModules import PointParticleFactory
-from pandac.PandaModules import ZSpinParticleFactory
-#from pandac.PandaModules import OrientedParticleFactory
-from pandac.PandaModules import BaseParticleRenderer
-from pandac.PandaModules import PointParticleRenderer
-from pandac.PandaModules import LineParticleRenderer
-from pandac.PandaModules import GeomParticleRenderer
-from pandac.PandaModules import SparkleParticleRenderer
-#from pandac.PandaModules import SpriteParticleRenderer
-from pandac.PandaModules import BaseParticleEmitter
-from pandac.PandaModules import ArcEmitter
-from pandac.PandaModules import BoxEmitter
-from pandac.PandaModules import DiscEmitter
-from pandac.PandaModules import LineEmitter
-from pandac.PandaModules import PointEmitter
-from pandac.PandaModules import RectangleEmitter
-from pandac.PandaModules import RingEmitter
-from pandac.PandaModules import SphereSurfaceEmitter
-from pandac.PandaModules import SphereVolumeEmitter
-from pandac.PandaModules import TangentRingEmitter
+from panda3d.physics import ParticleSystem
+from panda3d.physics import BaseParticleFactory
+from panda3d.physics import PointParticleFactory
+from panda3d.physics import ZSpinParticleFactory
+#from panda3d.physics import OrientedParticleFactory
+from panda3d.physics import BaseParticleRenderer
+from panda3d.physics import PointParticleRenderer
+from panda3d.physics import LineParticleRenderer
+from panda3d.physics import GeomParticleRenderer
+from panda3d.physics import SparkleParticleRenderer
+#from panda3d.physics import SpriteParticleRenderer
+from panda3d.physics import BaseParticleEmitter
+from panda3d.physics import ArcEmitter
+from panda3d.physics import BoxEmitter
+from panda3d.physics import DiscEmitter
+from panda3d.physics import LineEmitter
+from panda3d.physics import PointEmitter
+from panda3d.physics import RectangleEmitter
+from panda3d.physics import RingEmitter
+from panda3d.physics import SphereSurfaceEmitter
+from panda3d.physics import SphereVolumeEmitter
+from panda3d.physics import TangentRingEmitter
 
 import SpriteParticleRendererExt
 
@@ -464,7 +464,7 @@ class Particles(ParticleSystem):
                     t_b = seg.getTimeBegin()
                     t_e = seg.getTimeEnd()
                     mod = seg.isModulated()
-                    fun = seg.getFunction()                    
+                    fun = seg.getFunction()
                     typ = type(fun).__name__
                     if typ == 'ColorInterpolationFunctionConstant':
                         c_a = fun.getColorA()
@@ -560,7 +560,7 @@ class Particles(ParticleSystem):
             file.write('# Tangent Ring parameters\n')
             file.write(targ + '.emitter.setRadius(%.4f)\n' % self.emitter.getRadius())
             file.write(targ + '.emitter.setRadiusSpread(%.4f)\n' % self.emitter.getRadiusSpread())
-            
+
     def getPoolSizeRanges(self):
         litterRange = [max(1,self.getLitterSize()-self.getLitterSpread()),
                        self.getLitterSize(),
@@ -573,9 +573,9 @@ class Particles(ParticleSystem):
         print 'Litter Ranges:    ',litterRange
         print 'LifeSpan Ranges:  ',lifespanRange
         print 'BirthRate Ranges: ',birthRateRange
-        
+
         return dict(zip(('min','median','max'),[l*s/b for l,s,b in zip(litterRange,lifespanRange,birthRateRange)]))
-            
+
 
     def accelerate(self,time,stepCount = 1,stepTime=0.0):
         if time > 0.0:
@@ -585,14 +585,13 @@ class Particles(ParticleSystem):
             else:
                 stepCount = int(float(time)/stepTime)
                 remainder = time-stepCount*stepTime
-                
+
             for step in range(stepCount):
                 base.particleMgr.doParticles(stepTime,self,False)
                 base.physicsMgr.doPhysics(stepTime,self)
-                
+
             if(remainder):
                 base.particleMgr.doParticles(remainder,self,False)
                 base.physicsMgr.doPhysics(remainder,self)
-                
+
             self.render()
-        
