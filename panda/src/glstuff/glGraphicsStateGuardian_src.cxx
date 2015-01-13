@@ -2412,6 +2412,7 @@ clear(DrawableRegion *clearable) {
   }
 
   if (clearable->get_clear_stencil_active()) {
+    glStencilMask(~0);
     glClearStencil(clearable->get_clear_stencil());
     mask |= GL_STENCIL_BUFFER_BIT;
   }
