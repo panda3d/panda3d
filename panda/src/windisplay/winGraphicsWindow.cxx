@@ -752,8 +752,8 @@ handle_reshape() {
   // _props origin should reflect upper left of view rectangle
   properties.set_origin(view_rect.left, view_rect.top);
 
-  if (windisplay_cat.is_spam()) {
-    windisplay_cat.spam()
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
       << "reshape to origin: (" << properties.get_x_origin() << ","
       << properties.get_y_origin() << "), size: (" << properties.get_x_size()
       << "," << properties.get_y_size() << ")\n";
@@ -1488,7 +1488,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
 
     // Resist calling handle_reshape before the window has opened.
-    if (_hWnd == NULL) {
+    if (_hWnd != NULL) {
       handle_reshape();
     }
     break;
