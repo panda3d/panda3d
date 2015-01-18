@@ -59,7 +59,7 @@ node_to_buffer(DeletedBufferChain::ObjectNode *node) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we increment the pointer so that the
   // returned data does not overlap our _flag member.
-  return (void *)(((char *)node) + get_flag_reserved_bytes());
+  return (void *)(((char *)node) + flag_reserved_bytes);
 #else
   return (void *)node;
 #endif  // NDEBUG
@@ -75,33 +75,8 @@ buffer_to_node(void *ptr) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we decrement the pointer to undo the
   // increment we did above.
-  return (ObjectNode *)(((char *)ptr) - get_flag_reserved_bytes());
+  return (ObjectNode *)(((char *)ptr) - flag_reserved_bytes);
 #else
   return (ObjectNode *)ptr;
 #endif  // NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::get_flag_reserved_bytes
-//       Access: Private, Static
-//  Description: Returns the number of extra bytes reserved at the
-//               beginning of each buffer for the _flag member.
-////////////////////////////////////////////////////////////////////
-INLINE size_t DeletedBufferChain::
-get_flag_reserved_bytes() {
-#ifndef USE_DELETEDCHAINFLAG
-  // Without DELETEDCHAINFLAG, we don't even store the _flag member at
-  // all, and this method is never called.
-  static const size_t flag_reserved_bytes = 0;
-
-#elif defined(LINMATH_ALIGN)
-  // With SSE2 alignment, we need all 16 bytes to preserve alignment.
-  static const size_t flag_reserved_bytes = 16;
-
-#else
-  // Otherwise, we only need enough space for the Integer itself.
-  static const size_t flag_reserved_bytes = sizeof(AtomicAdjust::Integer);
-#endif  // USE_DELETEDCHAINFLAG
-
-  return flag_reserved_bytes;
 }
