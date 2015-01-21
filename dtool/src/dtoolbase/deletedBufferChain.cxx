@@ -25,17 +25,10 @@ DeletedBufferChain::
 DeletedBufferChain(size_t buffer_size) {
   _deleted_chain = NULL;
   _buffer_size = buffer_size;
-  _alloc_size = _buffer_size;
-
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we also need to reserve space for _flag.
-  _alloc_size += get_flag_reserved_bytes();
-#endif  // USE_DELETEDCHAINFLAG
 
   // We must allocate at least this much space for bookkeeping
   // reasons.
   _buffer_size = max(_buffer_size, sizeof(ObjectNode));
-  _alloc_size = max(_alloc_size, sizeof(ObjectNode));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +43,9 @@ allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   //TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", " ", TAU_USER);
   assert(size <= _buffer_size);
+
+  // Determine how much space to allocate.
+  const size_t alloc_size = _buffer_size + flag_reserved_bytes;
 
   ObjectNode *obj;
 
@@ -67,8 +63,8 @@ allocate(size_t size, TypeHandle type_handle) {
     void *ptr = node_to_buffer(obj);
 
 #ifdef DO_MEMORY_USAGE
-    //    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, _alloc_size);
-    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, _alloc_size);
+    //    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
 #endif  // DO_MEMORY_USAGE
 
     return ptr;
@@ -78,7 +74,7 @@ allocate(size_t size, TypeHandle type_handle) {
   // If we get here, the deleted_chain is empty; we have to allocate a
   // new object from the system pool.
 
-  obj = (ObjectNode *)NeverFreeMemory::alloc(_alloc_size);
+  obj = (ObjectNode *)NeverFreeMemory::alloc(alloc_size);
 
 #ifdef USE_DELETEDCHAINFLAG
   obj->_flag = DCF_alive;
@@ -87,7 +83,7 @@ allocate(size_t size, TypeHandle type_handle) {
   void *ptr = node_to_buffer(obj);
 
 #ifdef DO_MEMORY_USAGE
-  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, _alloc_size);
+  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
 #endif  // DO_MEMORY_USAGE
 
   return ptr;
@@ -110,8 +106,10 @@ deallocate(void *ptr, TypeHandle type_handle) {
   assert(ptr != (void *)NULL);
 
 #ifdef DO_MEMORY_USAGE
-  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, _alloc_size);
-  //  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive, _alloc_size);
+  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active,
+                               _buffer_size + flag_reserved_bytes);
+  //  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive,
+  //                               _buffer_size + flag_reserved_bytes);
 
 #endif  // DO_MEMORY_USAGE
 

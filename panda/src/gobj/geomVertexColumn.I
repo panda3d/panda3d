@@ -117,6 +117,17 @@ get_num_values() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::get_num_elements
+//       Access: Published
+//  Description: Returns the number of times this column is repeated.
+//               This is usually 1, except for matrices.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexColumn::
+get_num_elements() const {
+  return _num_elements;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::get_numeric_type
 //       Access: Published
 //  Description: Returns the token representing the numeric type of
@@ -163,6 +174,18 @@ get_start() const {
 INLINE int GeomVertexColumn::
 get_column_alignment() const {
   return _column_alignment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::get_element_stride
+//       Access: Published
+//  Description: This value is only relevant for matrix types.
+//               Returns the number of bytes to add to access the
+//               next row of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexColumn::
+get_element_stride() const {
+  return _element_stride;
 }
 
 ////////////////////////////////////////////////////////////////////

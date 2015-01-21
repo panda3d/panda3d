@@ -138,10 +138,11 @@ PUBLISHED:
   INLINE static const GeomVertexFormat *get_v3t2();
   INLINE static const GeomVertexFormat *get_v3n3t2();
 
-  // These formats, with the DirectX-style packed color, are not
-  // supported directly by OpenGL.  If you use them, the
-  // GLGraphicsStateGuardian will automatically convert to OpenGL
-  // form (with a small runtime overhead).
+  // These formats, with the DirectX-style packed color, may not be
+  // supported directly by OpenGL.  If you use them and the driver
+  // does not support them, the GLGraphicsStateGuardian will
+  // automatically convert to native OpenGL form (with a small
+  // runtime overhead).
   INLINE static const GeomVertexFormat *get_v3cp();
   INLINE static const GeomVertexFormat *get_v3cpt2();
   INLINE static const GeomVertexFormat *get_v3n3cp();

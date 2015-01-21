@@ -525,6 +525,62 @@ get_data4f() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix3f
+//       Access: Published
+//  Description: Returns the 3-by-3 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix3f GeomVertexReader::
+get_matrix3f() {
+  nassertr(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() >= 3,
+           LMatrix3f::ident_mat());
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  const unsigned char *pointer = inc_pointer();
+
+  LMatrix3f mat;
+  mat.set_row(0, _packer->get_data3f(pointer));
+  pointer += col_stride;
+  mat.set_row(1, _packer->get_data3f(pointer));
+  pointer += col_stride;
+  mat.set_row(2, _packer->get_data3f(pointer));
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix4f
+//       Access: Published
+//  Description: Returns the 4-by-4 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix4f GeomVertexReader::
+get_matrix4f() {
+  nassertr(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() >= 4,
+           LMatrix4f::ident_mat());
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  const unsigned char *pointer = inc_pointer();
+
+  LMatrix4f mat;
+  mat.set_row(0, _packer->get_data4f(pointer));
+  pointer += col_stride;
+  mat.set_row(1, _packer->get_data4f(pointer));
+  pointer += col_stride;
+  mat.set_row(2, _packer->get_data4f(pointer));
+  pointer += col_stride;
+  mat.set_row(3, _packer->get_data4f(pointer));
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::get_data1d
 //       Access: Published
 //  Description: Returns the data associated with the read row,
@@ -574,6 +630,62 @@ INLINE const LVecBase4d &GeomVertexReader::
 get_data4d() {
   nassertr(has_column(), LVecBase4d::zero());
   return _packer->get_data4d(inc_pointer());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix3d
+//       Access: Published
+//  Description: Returns the 3-by-3 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix3d GeomVertexReader::
+get_matrix3d() {
+  nassertr(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() >= 3,
+           LMatrix3d::ident_mat());
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  const unsigned char *pointer = inc_pointer();
+
+  LMatrix3d mat;
+  mat.set_row(0, _packer->get_data3d(pointer));
+  pointer += col_stride;
+  mat.set_row(1, _packer->get_data3d(pointer));
+  pointer += col_stride;
+  mat.set_row(2, _packer->get_data3d(pointer));
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix4d
+//       Access: Published
+//  Description: Returns the 4-by-4 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix4d GeomVertexReader::
+get_matrix4d() {
+  nassertr(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() >= 4,
+           LMatrix4d::ident_mat());
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  const unsigned char *pointer = inc_pointer();
+
+  LMatrix4d mat;
+  mat.set_row(0, _packer->get_data4d(pointer));
+  pointer += col_stride;
+  mat.set_row(1, _packer->get_data4d(pointer));
+  pointer += col_stride;
+  mat.set_row(2, _packer->get_data4d(pointer));
+  pointer += col_stride;
+  mat.set_row(3, _packer->get_data4d(pointer));
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,6 +749,40 @@ get_data4() {
   return get_data4f();
 #else
   return get_data4d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix3
+//       Access: Published
+//  Description: Returns the 3-by-3 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix3 GeomVertexReader::
+get_matrix3() {
+#ifndef STDFLOAT_DOUBLE
+  return get_matrix3f();
+#else
+  return get_matrix3d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_matrix4
+//       Access: Published
+//  Description: Returns the 4-by-4 matrix associated with the read
+//               row and advances the read row.  This is a special
+//               method that only works when the column in question
+//               contains a matrix of an appropriate size.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix4 GeomVertexReader::
+get_matrix4() {
+#ifndef STDFLOAT_DOUBLE
+  return get_matrix4f();
+#else
+  return get_matrix4d();
 #endif
 }
 

@@ -1050,30 +1050,37 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
-      const GLint p = _glsl_parameter_map[bind._id._seqno];
+      GLint p = _glsl_parameter_map[bind._id._seqno];
 
-      if (_glgsg->_data_reader->get_array_info(name,
-                                               array_reader, num_values, numeric_type,
-                                               start, stride)) {
+      int num_elements, element_stride;
+      if (_glgsg->_data_reader->get_array_info(name, array_reader,
+                                               num_values, numeric_type,
+                                               start, stride,
+                                               num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
+        client_pointer += start;
 
-        _glgsg->_glEnableVertexAttribArray(p);
+        for (int i = 0; i < num_elements; ++i) {
+          _glgsg->_glEnableVertexAttribArray(p);
 
-#ifndef OPENGLES
-        if (bind._integer) {
-          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                          stride, client_pointer + start);
-        } else
-#endif
-        if (numeric_type == GeomEnums::NT_packed_dabc) {
-          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                         GL_TRUE, stride, client_pointer + start);
-        } else {
-          _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                         GL_TRUE, stride, client_pointer + start);
+  #ifndef OPENGLES
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                            stride, client_pointer);
+          } else
+  #endif
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
+            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                           GL_TRUE, stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                           GL_TRUE, stride, client_pointer);
+          }
+          ++p;
+          client_pointer += element_stride;
         }
       } else {
         _glgsg->_glDisableVertexAttribArray(p);

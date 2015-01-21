@@ -110,16 +110,22 @@ PUBLISHED:
   INLINE const LVecBase2f &get_data2f();
   INLINE const LVecBase3f &get_data3f();
   INLINE const LVecBase4f &get_data4f();
+  INLINE LMatrix3f get_matrix3f();
+  INLINE LMatrix4f get_matrix4f();
 
   INLINE double get_data1d();
   INLINE const LVecBase2d &get_data2d();
   INLINE const LVecBase3d &get_data3d();
   INLINE const LVecBase4d &get_data4d();
+  INLINE LMatrix3d get_matrix3d();
+  INLINE LMatrix4d get_matrix4d();
 
   INLINE PN_stdfloat get_data1();
   INLINE const LVecBase2 &get_data2();
   INLINE const LVecBase3 &get_data3();
   INLINE const LVecBase4 &get_data4();
+  INLINE LMatrix3 get_matrix3();
+  INLINE LMatrix4 get_matrix4();
 
   INLINE int get_data1i();
   INLINE const LVecBase2i &get_data2i();

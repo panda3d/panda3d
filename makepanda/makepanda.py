@@ -975,7 +975,12 @@ def CompileCxx(obj,src,opts):
             if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
                 cmd += " /bigobj"
 
-            cmd += " /Zm300 -D_HAS_EXCEPTIONS=0 /DWIN32_VC /DWIN32"
+            cmd += " /Zm300 /DWIN32_VC /DWIN32"
+            if 'EXCEPTIONS' in opts:
+                cmd += " /EHsc"
+            else:
+                cmd += " -D_HAS_EXCEPTIONS=0"
+
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
 
@@ -1139,8 +1144,10 @@ def CompileCxx(obj,src,opts):
             cmd += " -pthread"
 
         if not src.endswith(".c"):
-            # We don't use exceptions.
-            if 'EXCEPTIONS' not in opts:
+            # We don't use exceptions for most modules.
+            if 'EXCEPTIONS' in opts:
+                cmd += " -fexceptions"
+            else:
                 cmd += " -fno-exceptions"
 
             if 'RTTI' not in opts:
@@ -3646,14 +3653,14 @@ if (not RUNTIME):
 #
 
 if (PkgSkip("VISION") == 0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
+  OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
 
   TargetAdd('libp3vision.dll', input='p3vision_composite1.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
+  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
   IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vision.in', opts=['IMOD:panda3d.vision', 'ILIB:libp3vision', 'SRCDIR:panda/src/vision'])
