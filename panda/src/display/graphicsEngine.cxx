@@ -477,6 +477,42 @@ make_output(GraphicsPipe *pipe,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::add_window
+//       Access: Published
+//  Description: This can be used to add a newly-created
+//               GraphicsOutput object (and its GSG) to the engine's
+//               list of windows, and requests that it be opened.
+//               This shouldn't be called by user code as
+//               make_output normally does this under the hood; it
+//               may be useful in esoteric cases in which a custom
+//               window object is used.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+add_window(GraphicsOutput *window, int sort) {
+  nassertr(window != NULL, false);
+
+  GraphicsThreadingModel threading_model = get_threading_model();
+  nassertr(this == window->get_engine(), false);
+
+  window->_sort = sort;
+  do_add_window(window, threading_model);
+
+  open_windows();
+  if (window->is_valid()) {
+    do_add_gsg(window->get_gsg(), window->get_pipe(), threading_model);
+
+    display_cat.info()
+      << "Added output of type " << window->get_type() << "\n";
+
+    return true;
+
+  } else {
+    remove_window(window);
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::remove_window
 //       Access: Published
 //  Description: Removes the indicated window or offscreen buffer from
@@ -2107,6 +2143,8 @@ do_add_window(GraphicsOutput *window,
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
+  nassertv(gsg != NULL);
+
   ReMutexHolder holder(_lock);
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;
