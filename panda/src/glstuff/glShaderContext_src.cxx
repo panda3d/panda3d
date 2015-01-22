@@ -998,6 +998,9 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     const GLint p = _glsl_parameter_map[bind._id._seqno];
+    if (_glgsg->_supports_vertex_attrib_divisor) {
+      _glgsg->_glVertexAttribDivisor(p, 0);
+    }
     _glgsg->_glDisableVertexAttribArray(p);
   }
 
@@ -1052,10 +1055,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
       GLint p = _glsl_parameter_map[bind._id._seqno];
 
-      int num_elements, element_stride;
+      int num_elements, element_stride, divisor;
       if (_glgsg->_data_reader->get_array_info(name, array_reader,
                                                num_values, numeric_type,
-                                               start, stride,
+                                               start, stride, divisor,
                                                num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
@@ -1066,12 +1069,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         for (int i = 0; i < num_elements; ++i) {
           _glgsg->_glEnableVertexAttribArray(p);
 
-  #ifndef OPENGLES
+#ifndef OPENGLES
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
                                             stride, client_pointer);
           } else
-  #endif
+#endif
           if (numeric_type == GeomEnums::NT_packed_dabc) {
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
@@ -1079,6 +1082,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
                                            GL_TRUE, stride, client_pointer);
           }
+
+          if (_glgsg->_supports_vertex_attrib_divisor) {
+            _glgsg->_glVertexAttribDivisor(p, divisor);
+          }
+
           ++p;
           client_pointer += element_stride;
         }

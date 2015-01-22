@@ -2368,7 +2368,7 @@ get_array_info(const InternalName *name,
                const GeomVertexArrayDataHandle *&array_reader,
                int &num_values,
                GeomVertexDataPipelineReader::NumericType &numeric_type,
-               int &start, int &stride,
+               int &start, int &stride, int &divisor,
                int &num_elements, int &element_stride) const {
   nassertr(_got_array_readers, false);
   int array_index;
@@ -2379,6 +2379,7 @@ get_array_info(const InternalName *name,
     numeric_type = column->get_numeric_type();
     start = column->get_start();
     stride = _cdata->_format->get_array(array_index)->get_stride();
+    divisor = _cdata->_format->get_array(array_index)->get_divisor();
     num_elements = column->get_num_elements();
     element_stride = column->get_element_stride();
     return true;

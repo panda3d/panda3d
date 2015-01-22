@@ -88,6 +88,9 @@ PUBLISHED:
   INLINE int get_pad_to() const;
   INLINE void set_pad_to(int pad_to);
 
+  INLINE int get_divisor() const;
+  INLINE void set_divisor(int divisor);
+
   INLINE int get_total_bytes() const;
 
   int add_column(InternalName *name, int num_components,
@@ -135,6 +138,7 @@ private:
   int _stride;
   int _total_bytes;
   int _pad_to;
+  int _divisor;
 
   typedef pvector<GeomVertexColumn *> Columns;
   Columns _columns;

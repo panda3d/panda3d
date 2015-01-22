@@ -182,6 +182,7 @@ typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
 typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
@@ -572,6 +573,8 @@ protected:
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
 
+  bool _supports_vertex_attrib_divisor;
+
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have
   // to compute its data once.
@@ -785,6 +788,7 @@ public:
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
+  PFNGLVERTEXATTRIBDIVISORPROC _glVertexAttribDivisor;
 #endif  // OPENGLES_1
 #ifndef OPENGLES
   PFNGLGENSAMPLERSPROC _glGenSamplers;

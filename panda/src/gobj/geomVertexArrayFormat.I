@@ -107,6 +107,33 @@ set_pad_to(int pad_to) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::get_divisor
+//       Access: Published
+//  Description: Returns the divisor attribute for the data in this
+//               array.  If 0, it contains per-vertex data.  If 1,
+//               it contains per-instance data.  If higher than 1,
+//               the read row is advanced for each n instances.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexArrayFormat::
+get_divisor() const {
+  return _divisor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::set_divisor
+//       Access: Published
+//  Description: Set this to 0 to indicate that this array contains
+//               per-vertex data, or to 1 to indicate that it
+//               contains per-instance data.  If higher than 1,
+//               the read row is advanced for each n instances.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexArrayFormat::
+set_divisor(int divisor) {
+  nassertv(divisor >= 0);
+  _divisor = divisor;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::get_total_bytes
 //       Access: Published
 //  Description: Returns the total number of bytes used by the data

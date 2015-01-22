@@ -98,12 +98,10 @@ get_num_rows() const {
 //               was changed, false if the object already contained n
 //               rows (or if there was some error).
 //
-//               Although this method is Published, application code
-//               only very rarely has any need to call it.  Instead,
-//               you should use the GeomVertexWriter to build up the
-//               rows in a GeomVertexData object automatically,
-//               without need to explicitly set the number of
-//               rows.
+//               This can be used when you know exactly how many
+//               rows you will be needing.  It is faster than
+//               reserve_num_rows().  Also see unclean_set_num_rows()
+//               if you are planning to fill in all the data yourself.
 //
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
@@ -129,12 +127,9 @@ set_num_rows(int n) {
 //               anyway; it provides a tiny performance boost over
 //               set_num_rows().
 //
-//               Although this method is Published, application code
-//               only very rarely has any need to call it.  Instead,
-//               you should use the GeomVertexWriter to build up the
-//               rows in a GeomVertexData object automatically,
-//               without need to explicitly set the number of
-//               rows.
+//               This can be used when you know exactly how many
+//               rows you will be needing.  It is faster than
+//               reserve_num_rows().
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexData::
 unclean_set_num_rows(int n) {
@@ -152,6 +147,10 @@ unclean_set_num_rows(int n) {
 //               This is a performance optimization only; it is
 //               especially useful when you know ahead of time that
 //               you will be adding n rows to the data.
+//
+//               If you know exactly how many rows you will be
+//               needing, it is significantly faster to use
+//               set_num_rows() or unclean_set_num_rows() instead.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexData::
 reserve_num_rows(int n) {

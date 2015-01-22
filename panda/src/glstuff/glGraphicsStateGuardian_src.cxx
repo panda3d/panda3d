@@ -1359,6 +1359,22 @@ reset() {
   }
 #endif
 
+  _supports_vertex_attrib_divisor = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(3, 3)) {
+    _glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)
+      get_extension_func("glVertexAttribDivisor");
+
+    _supports_vertex_attrib_divisor = true;
+
+  } else if (has_extension("GL_ARB_instanced_arrays")) {
+    _glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)
+      get_extension_func("glVertexAttribDivisorARB");
+
+    _supports_vertex_attrib_divisor = true;
+  }
+#endif
+
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
   _supports_framebuffer_object = true;
