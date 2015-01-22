@@ -137,6 +137,28 @@ node_reader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::get_modelview_transform
+//       Access: Published
+//  Description: Returns the modelview transform: the relative
+//               transform from the camera to the model.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) CullTraverserData::
+get_modelview_transform(const CullTraverser *trav) const {
+  return trav->get_world_transform()->compose(_net_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::get_internal_transform
+//       Access: Published
+//  Description: Returns the internal transform: the modelview
+//               transform in the GSG's internal coordinate system.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) CullTraverserData::
+get_internal_transform(const CullTraverser *trav) const {
+  return trav->get_scene()->get_cs_world_transform()->compose(_net_transform);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::get_net_transform
 //       Access: Published
 //  Description: Returns the net transform: the relative transform

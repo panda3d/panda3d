@@ -27,7 +27,6 @@
 #include "drawMask.h"
 #include "typedReferenceCount.h"
 #include "pStatCollector.h"
-#include "cullTraverserData.h"
 #include "fogAttrib.h"
 
 class GraphicsStateGuardian;
@@ -90,8 +89,7 @@ PUBLISHED:
   INLINE static void flush_level();
 
   void draw_bounding_volume(const BoundingVolume *vol,
-                            const TransformState *net_transform,
-                            const TransformState *modelview_transform) const;
+                            const TransformState *internal_transform) const;
 
 protected:
   INLINE void do_traverse(CullTraverserData &data);
@@ -148,9 +146,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+#include "cullTraverserData.h"
+
 #include "cullTraverser.I"
 
 #endif
-
-
-

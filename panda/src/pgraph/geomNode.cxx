@@ -562,9 +562,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   Geoms geoms = get_geoms(trav->get_current_thread());
   int num_geoms = geoms.get_num_geoms();
   trav->_geoms_pcollector.add_level(num_geoms);
-  CPT(TransformState) net_transform = data.get_net_transform(trav);
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
-  CPT(TransformState) internal_transform = trav->get_scene()->get_cs_transform()->compose(modelview_transform);
+  CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = geoms.get_geom(i);
@@ -611,8 +609,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     }
 
     CullableObject *object =
-      new CullableObject(geom, state, net_transform,
-                         modelview_transform, internal_transform);
+      new CullableObject(geom, state, internal_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }

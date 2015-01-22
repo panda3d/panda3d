@@ -204,7 +204,7 @@ set_loader(Loader *loader) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_loader
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns the Loader object that will be used by this
 //               GSG to load textures when necessary, if
 //               get_incomplete_render() is true.

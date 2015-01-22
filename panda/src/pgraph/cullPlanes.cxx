@@ -116,11 +116,11 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           if (net_transform == (TransformState *)NULL) {
             net_transform = data->get_net_transform(trav);
           }
-          
+
           PlaneNode *plane_node = DCAST(PlaneNode, clip_plane.node());
-          CPT(TransformState) new_transform = 
+          CPT(TransformState) new_transform =
             net_transform->invert_compose(clip_plane.get_net_transform());
-          
+
           LPlane plane = plane_node->get_plane() * new_transform->get_mat();
           new_planes->_planes[clip_plane] = new BoundingPlane(-plane);
         }
@@ -174,17 +174,17 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         ccp[2] = occluder_node->get_vertex(2) * composed_mat;
         ccp[3] = occluder_node->get_vertex(3) * composed_mat;
 
-        LPoint3 ccp_min(min(min(ccp[0][0], ccp[1][0]), 
+        LPoint3 ccp_min(min(min(ccp[0][0], ccp[1][0]),
                      min(ccp[2][0], ccp[3][0])),
-                 min(min(ccp[0][1], ccp[1][1]), 
+                 min(min(ccp[0][1], ccp[1][1]),
                      min(ccp[2][1], ccp[3][1])),
-                 min(min(ccp[0][2], ccp[1][2]), 
+                 min(min(ccp[0][2], ccp[1][2]),
                      min(ccp[2][2], ccp[3][2])));
-        LPoint3 ccp_max(max(max(ccp[0][0], ccp[1][0]), 
+        LPoint3 ccp_max(max(max(ccp[0][0], ccp[1][0]),
                      max(ccp[2][0], ccp[3][0])),
-                 max(max(ccp[0][1], ccp[1][1]), 
+                 max(max(ccp[0][1], ccp[1][1]),
                      max(ccp[2][1], ccp[3][1])),
-                 max(max(ccp[0][2], ccp[1][2]), 
+                 max(max(ccp[0][2], ccp[1][2]),
                      max(ccp[2][2], ccp[3][2])));
 
         occluder_gbv = new BoundingBox(ccp_min, ccp_max);
@@ -209,7 +209,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         points_near[2] = occluder_node->get_vertex(2) * occluder_mat_cull;
         points_near[3] = occluder_node->get_vertex(3) * occluder_mat_cull;
         LPlane plane(points_near[0], points_near[1], points_near[2]);
-        
+
         if (plane.get_normal().dot(LVector3::forward()) >= 0.0) {
           if (occluder_node->is_double_sided()) {
             swap(points_near[0], points_near[3]);
@@ -294,22 +294,21 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         // With these points, construct the bounding frustum of the
         // occluded region.
-        PT(BoundingHexahedron) frustum = 
-          new BoundingHexahedron(points_far[1], points_far[2], points_far[3], points_far[0],  
+        PT(BoundingHexahedron) frustum =
+          new BoundingHexahedron(points_far[1], points_far[2], points_far[3], points_far[0],
                                  points_near[1], points_near[2], points_near[3], points_near[0]);
 
         new_planes->_occluders[occluder] = frustum;
-        
+
         if (show_occluder_volumes) {
           // Draw the frustum for visualization.
           nassertr(net_transform != NULL, new_planes);
-          trav->draw_bounding_volume(frustum, net_transform, 
-                                     data->get_modelview_transform(trav));
+          trav->draw_bounding_volume(frustum, data->get_internal_transform(trav));
         }
       }
     }
   }
-    
+
   return new_planes;
 }
 
@@ -330,13 +329,13 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 CPT(CullPlanes) CullPlanes::
 do_cull(int &result, CPT(RenderState) &state,
         const GeometricBoundingVolume *node_gbv) const {
-  result = 
+  result =
     BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
 
   CPT(ClipPlaneAttrib) orig_cpa = DCAST(ClipPlaneAttrib, state->get_attrib(ClipPlaneAttrib::get_class_slot()));
 
   CPT(CullPlanes) new_planes = this;
-  
+
   if (orig_cpa == (ClipPlaneAttrib *)NULL) {
     // If there are no clip planes in the state, the node is completely
     // in front of all zero of the clip planes.  (This can happen if
@@ -385,7 +384,7 @@ do_cull(int &result, CPT(RenderState) &state,
       // The node is completely in front of this occluder.  We don't
       // need to consider this occluder ever again for any descendents of
       // this node.
-      
+
       // Reverse the sense of the test, because an occluder volume is
       // the inverse of a cull plane volume: it describes the volume
       // that is to be culled, not the volume that is to be kept.
@@ -403,7 +402,7 @@ do_cull(int &result, CPT(RenderState) &state,
 
     result &= occluder_result;
   }
-    
+
   return new_planes;
 }
 
@@ -456,11 +455,11 @@ remove_occluder(const NodePath &occluder) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullPlanes::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullPlanes::
 write(ostream &out) const {
-  out << "CullPlanes (" << _planes.size() << " planes and " 
+  out << "CullPlanes (" << _planes.size() << " planes and "
       << _occluders.size() << " occluders):\n";
   Planes::const_iterator pi;
   for (pi = _planes.begin(); pi != _planes.end(); ++pi) {

@@ -76,7 +76,7 @@ static ConfigVariableInt occlusion_depth_bits
 ////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PipeOcclusionCullTraverser::
 PipeOcclusionCullTraverser(GraphicsOutput *host) {
@@ -103,7 +103,7 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
     win_prop.set_size(occlusion_size[0], occlusion_size[1]);
   }
 
-  _buffer = engine->make_output(pipe, "occlusion", 0, fb_prop, win_prop, 
+  _buffer = engine->make_output(pipe, "occlusion", 0, fb_prop, win_prop,
                                 GraphicsPipe::BF_refuse_window,
                                 gsg, host->get_host());
   nassertv(_buffer != (GraphicsOutput *)NULL);
@@ -125,7 +125,7 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PipeOcclusionCullTraverser::
 PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
@@ -137,7 +137,7 @@ PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::set_scene
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PipeOcclusionCullTraverser::
 set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
@@ -154,7 +154,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
 
   Thread *current_thread = get_current_thread();
   if (!_buffer->begin_frame(GraphicsOutput::FM_render, current_thread)) {
-    cerr << "begin_frame failed\n";
+    grutil_cat.error() << "begin_frame failed\n";
     return;
   }
   _buffer->clear(current_thread);
@@ -166,7 +166,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
 
   _scene = new SceneSetup(*scene_setup);
   _scene->set_display_region(_display_region);
-  _scene->set_viewport_size(_display_region->get_pixel_width(), 
+  _scene->set_viewport_size(_display_region->get_pixel_width(),
                             _display_region->get_pixel_height());
 
   if (_scene->get_cull_center() != _scene->get_camera_path()) {
@@ -177,13 +177,22 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
     NodePath scene_parent = _scene->get_scene_root().get_parent(current_thread);
     CPT(TransformState) camera_transform = cull_center.get_transform(scene_parent, current_thread);
     CPT(TransformState) world_transform = scene_parent.get_transform(cull_center, current_thread);
+    CPT(TransformState) cs_world_transform = _scene->get_cs_transform()->compose(world_transform);
     _scene->set_camera_transform(camera_transform);
     _scene->set_world_transform(world_transform);
+    _scene->set_cs_world_transform(cs_world_transform);
+
+    // We use this to recover the original net_transform.
+    _inv_cs_world_transform = cs_world_transform->get_inverse();
+  } else {
+    _inv_cs_world_transform = _scene->get_cs_world_transform()->get_inverse();
   }
-    
+
+  nassertv(_scene->get_cs_transform() == scene_setup->get_cs_transform());
+
   gsg->set_scene(_scene);
   if (!gsg->begin_scene()) {
-    cerr << "begin_scene failed\n";
+    grutil_cat.error() << "begin_scene failed\n";
     return;
   }
 
@@ -202,7 +211,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
 
   _current_query = NULL;
   _next_query = NULL;
-  
+
   // Begin by rendering all the occluders into our internal scene.
   PStatTimer timer2(_draw_occlusion_pcollector);
   _internal_trav->traverse(_scene->get_scene_root());
@@ -299,7 +308,7 @@ get_texture() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::is_in_view
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool PipeOcclusionCullTraverser::
 is_in_view(CullTraverserData &data) {
@@ -335,12 +344,12 @@ is_in_view(CullTraverserData &data) {
 
     CPT(BoundingVolume) vol = node_reader->get_bounds();
     CPT(TransformState) net_transform = data.get_net_transform(this);
-    CPT(TransformState) modelview_transform;
+    CPT(TransformState) internal_transform;
 
     CPT(Geom) geom;
-    if (get_volume_viz(vol, geom, net_transform, modelview_transform)) {
-      _next_query = 
-        perform_occlusion_test(geom, net_transform, modelview_transform);
+    if (get_volume_viz(vol, geom, net_transform, internal_transform)) {
+      _next_query =
+        perform_occlusion_test(geom, net_transform, internal_transform);
     }
   }
 
@@ -408,12 +417,12 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   } else {
     // Issue an occlusion test for this object.
     CPT(BoundingVolume) vol = object->_geom->get_bounds(current_thread);
-    CPT(TransformState) net_transform = object->_net_transform;
-    CPT(TransformState) modelview_transform;
+    CPT(TransformState) net_transform = _inv_cs_world_transform->compose(object->_internal_transform);
+    CPT(TransformState) internal_transform;
     CPT(Geom) geom;
-    if (get_volume_viz(vol, geom, net_transform, modelview_transform)) {
-      pobj._query = 
-        perform_occlusion_test(geom, net_transform, modelview_transform);
+    if (get_volume_viz(vol, geom, net_transform, internal_transform)) {
+      pobj._query =
+        perform_occlusion_test(geom, net_transform, internal_transform);
     }
   }
 
@@ -437,7 +446,7 @@ make_sphere() {
   PT(GeomVertexData) vdata = new GeomVertexData
     ("occlusion_sphere", GeomVertexFormat::get_v3(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   for (int sl = 0; sl < num_slices; ++sl) {
     PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
@@ -449,11 +458,11 @@ make_sphere() {
       vertex.add_data3(compute_sphere_point(latitude, longitude1));
     }
     vertex.add_data3(compute_sphere_point(1.0, longitude0));
-    
+
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
   }
-  
+
   _sphere_geom = new Geom(vdata);
   _sphere_geom->add_primitive(strip);
 }
@@ -462,7 +471,7 @@ make_sphere() {
 //     Function: PipeOcclusionCullTraverser::compute_sphere_point
 //       Access: Private, Static
 //  Description: Returns a point on the surface of the unit sphere.
-//               latitude and longitude range from 0.0 to 1.0.  
+//               latitude and longitude range from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 LVertex PipeOcclusionCullTraverser::
 compute_sphere_point(PN_stdfloat latitude, PN_stdfloat longitude) {
@@ -487,7 +496,7 @@ make_box() {
   PT(GeomVertexData) vdata = new GeomVertexData
     ("occlusion_box", GeomVertexFormat::get_v3(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   vertex.add_data3(0.0f, 0.0f, 0.0f);
   vertex.add_data3(0.0f, 0.0f, 1.0f);
   vertex.add_data3(0.0f, 1.0f, 0.0f);
@@ -496,7 +505,7 @@ make_box() {
   vertex.add_data3(1.0f, 0.0f, 1.0f);
   vertex.add_data3(1.0f, 1.0f, 0.0f);
   vertex.add_data3(1.0f, 1.0f, 1.0f);
-    
+
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
   tris->add_vertices(0, 4, 5);
   tris->close_primitive();
@@ -522,7 +531,7 @@ make_box() {
   tris->close_primitive();
   tris->add_vertices(2, 4, 0);
   tris->close_primitive();
-  
+
   _box_geom = new Geom(vdata);
   _box_geom->add_primitive(tris);
 }
@@ -554,14 +563,14 @@ make_solid_test_state() {
 //               transform to the bounding volume.  On exit (when
 //               return value is true), it will be composed with a
 //               suitable local transform to render the bounding
-//               volume properly, and modelview_transform will also be
+//               volume properly, and internal_transform will also be
 //               filled with the appropriate transform.
 ////////////////////////////////////////////////////////////////////
 bool PipeOcclusionCullTraverser::
-get_volume_viz(const BoundingVolume *vol, 
+get_volume_viz(const BoundingVolume *vol,
                CPT(Geom) &geom,  // OUT
                CPT(TransformState) &net_transform, // IN-OUT
-               CPT(TransformState) &modelview_transform  // OUT
+               CPT(TransformState) &internal_transform  // OUT
                ) {
   if (vol->is_infinite() || vol->is_empty()) {
     return false;
@@ -569,13 +578,14 @@ get_volume_viz(const BoundingVolume *vol,
 
   if (vol->is_exact_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
-    CPT(TransformState) local_transform = 
+    CPT(TransformState) local_transform =
       TransformState::make_pos_hpr_scale(sphere->get_center(),
                                          LVecBase3(0, 0, 0),
                                          sphere->get_radius());
     net_transform = net_transform->compose(local_transform);
 
-    modelview_transform = _internal_trav->get_world_transform()->compose(net_transform);
+    CPT(TransformState) modelview_transform =
+      _internal_trav->get_world_transform()->compose(net_transform);
 
     // See if the bounding sphere is clipped by the near plane.  If it
     // is, the occlusion test may fail, so we won't bother performing
@@ -587,19 +597,24 @@ get_volume_viz(const BoundingVolume *vol,
       return false;
     }
 
+    // Construct the internal transform for the internal traverser.
+    internal_transform = _internal_trav->get_scene()->
+      get_cs_transform()->compose(modelview_transform);
+
     // The sphere looks good.
     geom = _sphere_geom;
     return true;
 
   } else if (vol->is_exact_type(BoundingBox::get_class_type())) {
     const BoundingBox *box = DCAST(BoundingBox, vol);
-    CPT(TransformState) local_transform = 
+    CPT(TransformState) local_transform =
       TransformState::make_pos_hpr_scale(box->get_minq(),
                                          LVecBase3(0, 0, 0),
                                          box->get_maxq() - box->get_minq());
     net_transform = net_transform->compose(local_transform);
 
-    modelview_transform = _internal_trav->get_world_transform()->compose(net_transform);
+    CPT(TransformState) modelview_transform =
+      _internal_trav->get_world_transform()->compose(net_transform);
 
     // See if the bounding box is clipped by the near plane.  If it
     // is, the occlusion test may fail, so we won't bother performing
@@ -623,6 +638,10 @@ get_volume_viz(const BoundingVolume *vol,
       }
     }
 
+    // Construct the internal transform for the internal traverser.
+    internal_transform = _internal_trav->get_scene()->
+      get_cs_transform()->compose(modelview_transform);
+
     // The box looks good.
     geom = _box_geom;
     return true;
@@ -640,7 +659,7 @@ get_volume_viz(const BoundingVolume *vol,
 ////////////////////////////////////////////////////////////////////
 PT(OcclusionQueryContext) PipeOcclusionCullTraverser::
 perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
-                       const TransformState *modelview_transform) {
+                       const TransformState *internal_transform) {
   _occlusion_tests_pcollector.add_level(1);
   PStatTimer timer(_test_occlusion_pcollector);
 
@@ -648,9 +667,8 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
 
   gsg->begin_occlusion_query();
 
-  CullableObject *viz = 
-    new CullableObject(geom, _solid_test_state,
-                       net_transform, modelview_transform, get_scene());
+  CullableObject *viz =
+    new CullableObject(geom, _solid_test_state, internal_transform);
 
   static ConfigVariableBool test_occlude("test-occlude", false);
   if (test_occlude) {
@@ -658,16 +676,16 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
   } else {
     _internal_cull_handler->record_object(viz, _internal_trav);
   }
-  
+
   PT(OcclusionQueryContext) query = gsg->end_occlusion_query();
-    
+
   if (show_occlusion) {
     // Show the results of the occlusion.  To do this, we need to get
     // the results of the query immediately.  This will stall the
     // pipe, but we're rendering a debug effect, so we don't mind too
     // much.
     int num_fragments = query->get_num_fragments();
-    show_results(num_fragments, geom, net_transform, modelview_transform);
+    show_results(num_fragments, geom, net_transform, internal_transform);
   }
 
   return query;
@@ -680,18 +698,18 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
 //               test for a particular bounding volume.
 ////////////////////////////////////////////////////////////////////
 void PipeOcclusionCullTraverser::
-show_results(int num_fragments, const Geom *geom, 
-             const TransformState *net_transform, 
-             const TransformState *modelview_transform) {
+show_results(int num_fragments, const Geom *geom,
+             const TransformState *net_transform,
+             const TransformState *internal_transform) {
   LColor color;
   if (num_fragments == 0) {
     // Magenta: culled
-    color.set(0.8f, 0.0f, 1.0f, 0.4);
+    color.set(0.8f, 0.0f, 1.0f, 0.4f);
   } else {
     // Yellow: visible
-    color.set(1.0f, 1.0f, 0.5f, 0.4);
+    color.set(1.0f, 1.0f, 0.5f, 0.4f);
   }
-  
+
   CPT(RenderState) state = RenderState::make
     (DepthWriteAttrib::make(DepthWriteAttrib::M_off),
      DepthTestAttrib::make(DepthTestAttrib::M_less),
@@ -700,15 +718,13 @@ show_results(int num_fragments, const Geom *geom,
 
   GraphicsStateGuardian *gsg = _buffer->get_gsg();
 
-  CullableObject *internal_viz = 
-    new CullableObject(geom, state,
-                       net_transform, modelview_transform, get_scene());
+  CullableObject *internal_viz =
+    new CullableObject(geom, state, internal_transform);
   _internal_cull_handler->record_object(internal_viz, _internal_trav);
 
   // Also render the viz in the main scene.
-  modelview_transform = get_world_transform()->compose(net_transform);
-  CullableObject *main_viz = 
-    new CullableObject(geom, state,
-                       net_transform, modelview_transform, get_scene());
+  internal_transform = get_scene()->get_cs_world_transform()->compose(net_transform);
+  CullableObject *main_viz =
+    new CullableObject(geom, state, internal_transform);
   _true_cull_handler->record_object(main_viz, this);
 }

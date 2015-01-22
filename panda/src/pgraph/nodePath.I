@@ -109,6 +109,33 @@ operator = (const NodePath &copy) {
   _error_type = copy._error_type;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Move Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(NodePath &&from) NOEXCEPT :
+  _head(move(from._head)),
+  _backup_key(from._backup_key),
+  _error_type(from._error_type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Move Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+operator = (NodePath &&from) NOEXCEPT {
+  _head = move(from._head);
+  _backup_key = from._backup_key;
+  _error_type = from._error_type;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::not_found named constructor
 //       Access: Published, Static

@@ -79,7 +79,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
       geom_rendering = geom_reader.get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
-      geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
+      geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
 
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
@@ -237,7 +237,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     }
   }
 
-  PN_stdfloat point_size = 1.0f;
+  PN_stdfloat point_size = 1;
   bool perspective = false;
   const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
   if (render_mode != (RenderModeAttrib *)NULL) {
@@ -309,11 +309,15 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     }
   }
 
-  const LMatrix4 &modelview = _modelview_transform->get_mat();
+  CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
+  LMatrix4 internal = _internal_transform->get_mat();
+  PN_stdfloat scale = _internal_transform->get_scale()[1];
 
   SceneSetup *scene = traverser->get_scene();
   const Lens *lens = scene->get_lens();
-  const LMatrix4 &projection = lens->get_projection_mat();
+  LMatrix4 projection =
+    LMatrix4::convert_mat(internal_cs, lens->get_coordinate_system()) *
+                                       lens->get_projection_mat();
 
   int viewport_width = scene->get_viewport_width();
   int viewport_height = scene->get_viewport_height();
@@ -324,10 +328,10 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   if (perspective) {
     height_projection =
       LMatrix4::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
-      projection;
+                                          lens->get_projection_mat();
   }
 
-  LMatrix4 render_transform = modelview * projection;
+  LMatrix4 render_transform = internal * projection;
   LMatrix4 inv_render_transform;
   inv_render_transform.invert_from(render_transform);
 
@@ -357,15 +361,16 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     int vi = 0;
     while (!vertex.is_at_end()) {
       // Get the point in eye-space coordinates.
-      LPoint3 eye = modelview.xform_point(vertex.get_data3());
+      LPoint3 eye = internal.xform_point(vertex.get_data3());
+      PN_stdfloat dist = gsg->compute_distance_to(eye);
       points[vi]._eye = eye;
-      points[vi]._dist = gsg->compute_distance_to(points[vi]._eye);
+      points[vi]._dist = dist;
 
       // The point in clip coordinates.
       LPoint4 p4 = LPoint4(eye[0], eye[1], eye[2], 1.0f) * projection;
 
       if (has_size) {
-        point_size = size.get_data1f();
+        point_size = size.get_data1();
       }
 
       PN_stdfloat scale_y = point_size;
@@ -374,7 +379,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // height in 3-d units.  To arrange that, we need to figure out
         // the appropriate scaling factor based on the current viewport
         // and projection matrix.
-        PN_stdfloat scale = _modelview_transform->get_scale()[1];
         LVector3 height(0.0f, point_size * scale, scale);
         height = height * height_projection;
         scale_y = height[1] * viewport_height;
@@ -382,7 +386,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // We should then divide the radius by the distance from the
         // camera plane, to emulate the glPointParameters() behavior.
         if (!lens->is_orthographic()) {
-          scale_y /= gsg->compute_distance_to(eye);
+          scale_y /= dist;
         }
       }
 
@@ -392,7 +396,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
       PN_stdfloat scale_x = scale_y;
       if (has_aspect_ratio) {
-        scale_x *= aspect_ratio.get_data1f();
+        scale_x *= aspect_ratio.get_data1();
       }
 
       // Define the first two corners based on the scales in X and Y.
@@ -401,7 +405,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
       if (has_rotate) {
         // If we have a rotate factor, apply it to those two corners.
-        PN_stdfloat r = rotate.get_data1f();
+        PN_stdfloat r = rotate.get_data1();
         LMatrix3 mat = LMatrix3::rotate_mat(r);
         c0 = c0 * mat;
         c1 = c1 * mat;
@@ -474,11 +478,9 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   // Determine the format we should use to store the indices.
+  // Don't choose NT_uint8, as Direct3D 9 doesn't support it.
   const GeomVertexArrayFormat *new_prim_format = NULL;
-  if (new_verts < 0xff) {
-    new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint8);
-
-  } else if (new_verts < 0xffff) {
+  if (new_verts < 0xffff) {
     new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
 
   } else {

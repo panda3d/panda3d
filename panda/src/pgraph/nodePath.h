@@ -180,6 +180,11 @@ PUBLISHED:
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE NodePath(NodePath &&from) NOEXCEPT;
+  INLINE void operator = (NodePath &&from) NOEXCEPT;
+#endif
+
   EXTENSION(NodePath __copy__() const);
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
   EXTENSION(PyObject *__reduce__(PyObject *self) const);

@@ -198,9 +198,9 @@ public:
   // inconvenient to declare each of those types to be friends of this
   // class.
 
-  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
-                                     const GeomVertexDataPipelineReader *data_reader, 
+                                     const GeomVertexDataPipelineReader *data_reader,
                                      bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
@@ -218,7 +218,7 @@ public:
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id) { }
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id) { }

@@ -878,14 +878,14 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
+//  Description: This function will compute the distance to the
 //               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat GraphicsStateGuardian::
 compute_distance_to(const LPoint3 &point) const {
-  switch (_coordinate_system) {
+  switch (_internal_coordinate_system) {
   case CS_zup_right:
     return point[1];
 
@@ -901,7 +901,7 @@ compute_distance_to(const LPoint3 &point) const {
   default:
     gsg_cat.error()
       << "Invalid coordinate system in compute_distance_to: "
-      << (int)_coordinate_system << "\n";
+      << (int)_internal_coordinate_system << "\n";
     return 0.0f;
   }
 }

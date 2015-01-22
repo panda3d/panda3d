@@ -29,17 +29,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::get_modelview_transform
-//       Access: Published
-//  Description: Returns the modelview transform: the relative
-//               transform from the camera to the model.
-////////////////////////////////////////////////////////////////////
-CPT(TransformState) CullTraverserData::
-get_modelview_transform(const CullTraverser *trav) const {
-  return trav->get_world_transform()->compose(_net_transform);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
 //       Access: Published
 //  Description: Applies the transform and state from the current

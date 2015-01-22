@@ -73,6 +73,7 @@ PUBLISHED:
   INLINE CPT(Geom) get_geom(int n) const;
   MAKE_SEQ(get_geoms, get_num_geoms, get_geom);
   INLINE PT(Geom) modify_geom(int n);
+  MAKE_SEQ(modify_geoms, get_num_geoms, modify_geom);
   INLINE const RenderState *get_geom_state(int n) const;
   MAKE_SEQ(get_geom_states, get_num_geoms, get_geom_state);
   INLINE void set_geom_state(int n, const RenderState *state);

@@ -155,13 +155,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     NurbsSurfaceEvaluator *surface = get_surface();
     if (surface != (NurbsSurfaceEvaluator *)NULL) {
       PT(NurbsSurfaceResult) result = surface->evaluate(data._node_path.get_node_path());
-      
+
       if (result->get_num_u_segments() > 0 && result->get_num_v_segments() > 0) {
         render_sheet(trav, data, result);
       }
     }
   }
-  
+
   return true;
 }
 
@@ -183,7 +183,7 @@ is_renderable() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SheetNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
 output(ostream &out) const {
@@ -199,7 +199,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SheetNode::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
 write(ostream &out, int indent_level) const {
@@ -241,8 +241,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
                         int pipeline_stage,
                         Thread *current_thread) const {
-  PT(BoundingVolume) bounds = 
-    do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage, 
+  PT(BoundingVolume) bounds =
+    do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage,
                         current_thread);
 
   internal_bounds = bounds;
@@ -255,7 +255,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 //  Description: Does the actual internal recompute.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) SheetNode::
-do_recompute_bounds(const NodePath &rel_to, int pipeline_stage, 
+do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
                     Thread *current_thread) const {
   // TODO: fix the bounds so that it properly reflects the indicated
   // pipeline stage.  At the moment, we cheat and get some of the
@@ -263,12 +263,12 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
-  
+
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != (NurbsSurfaceEvaluator *)NULL) {
     NurbsSurfaceEvaluator::Vert3Array verts;
     get_surface()->get_vertices(verts, rel_to);
-    
+
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
     gbv->around(&verts[0], &verts[0] + verts.size());
@@ -283,7 +283,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 //               length.
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
-render_sheet(CullTraverser *trav, CullTraverserData &data, 
+render_sheet(CullTraverser *trav, CullTraverserData &data,
              NurbsSurfaceResult *result) {
   bool use_vertex_color = get_use_vertex_color();
 
@@ -312,12 +312,12 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
     for (int uni = 0; uni <= num_u_verts; uni++) {
       PN_stdfloat u0 = (PN_stdfloat)uni / (PN_stdfloat)num_u_verts;
       PN_stdfloat u0_tc = result->get_segment_u(ui, u0);
-      
+
       for (int vi = 0; vi < num_v_segments; vi++) {
         for (int vni = 0; vni < num_v_verts; vni++) {
           PN_stdfloat v = (PN_stdfloat)vni / (PN_stdfloat)(num_v_verts - 1);
           PN_stdfloat v_tc = result->get_segment_v(vi, v);
-          
+
           LPoint3 point;
           LVector3 norm;
           result->eval_segment_point(ui, vi, u0, v, point);
@@ -325,7 +325,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
           vertex.add_data3(point);
           normal.add_data3(norm);
           texcoord.add_data2(u0_tc, v_tc);
-          
+
           if (use_vertex_color) {
             LColor c0;
             result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
@@ -336,7 +336,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
     }
   }
   nassertv(vdata->get_num_rows() == expected_num_vertices);
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
 
   int expected_num_tristrips = num_u_segments * num_u_verts * num_v_segments;
@@ -364,7 +364,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
     }
   }
   nassertv(strip->get_num_vertices() == expected_prim_vertices);
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
@@ -372,12 +372,10 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
   if (use_vertex_color) {
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
-  
-  CullableObject *object = 
+
+  CullableObject *object =
     new CullableObject(geom, state,
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 

@@ -50,12 +50,6 @@ class EXPCL_PANDA_PGRAPH CullableObject
 public:
   INLINE CullableObject();
   INLINE CullableObject(const Geom *geom, const RenderState *state,
-                        const TransformState *net_transform,
-                        const TransformState *modelview_transform,
-                        SceneSetup *scene_setup);
-  INLINE CullableObject(const Geom *geom, const RenderState *state,
-                        const TransformState *net_transform,
-                        const TransformState *modelview_transform,
                         const TransformState *internal_transform);
 
   INLINE CullableObject(const CullableObject &copy);
@@ -82,8 +76,6 @@ public:
   PT(GeomMunger) _munger;
   CPT(GeomVertexData) _munged_data;
   CPT(RenderState) _state;
-  CPT(TransformState) _net_transform;
-  CPT(TransformState) _modelview_transform;
   CPT(TransformState) _internal_transform;
   PT(CallbackObject) _draw_callback;
 

@@ -326,6 +326,8 @@ public:
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
+  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
+
   virtual void clear(DrawableRegion *region);
 
   virtual bool framebuffer_copy_to_texture

@@ -5158,6 +5158,19 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::compute_distance_to
+//       Access: Public, Virtual
+//  Description: This function will compute the distance to the
+//               indicated point, assumed to be in eye coordinates,
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat GLGraphicsStateGuardian::
+compute_distance_to(const LPoint3 &point) const {
+  return -point[2];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::framebuffer_copy_to_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixels within the indicated display

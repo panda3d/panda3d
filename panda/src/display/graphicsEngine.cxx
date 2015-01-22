@@ -1994,6 +1994,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   CPT(TransformState) cs_transform = gsg->get_cs_transform_for(lens->get_coordinate_system());
   scene_setup->set_cs_transform(cs_transform);
 
+  CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
+  scene_setup->set_cs_world_transform(cs_world_transform);
+
   return scene_setup;
 }
 
