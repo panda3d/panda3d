@@ -202,6 +202,10 @@ PUBLISHED:
     C_color,        // 3- or 4-component color, ordered R, G, B, [A]
     C_index,        // An index value into some other table
     C_morph_delta,  // A delta from some base value, defining a blend shape
+
+    // A transformation matrix.  This is typically three or four
+    // columns, but we pretend it's only one for convenience.
+    C_matrix,
   };
 
   // The type of animation data that is represented by a particular
