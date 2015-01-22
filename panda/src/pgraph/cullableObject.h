@@ -89,7 +89,6 @@ public:
 
 private:
   bool munge_points_to_quads(const CullTraverser *traverser, bool force);
-  bool munge_texcoord_light_vector(const CullTraverser *traverser, bool force);
 
   static CPT(RenderState) get_flash_cpu_state();
   static CPT(RenderState) get_flash_hardware_state();
@@ -130,7 +129,6 @@ private:
   static PStatCollector _munge_sprites_pcollector;
   static PStatCollector _munge_sprites_verts_pcollector;
   static PStatCollector _munge_sprites_prims_pcollector;
-  static PStatCollector _munge_light_vector_pcollector;
   static PStatCollector _sw_sprites_pcollector;
 
 public:

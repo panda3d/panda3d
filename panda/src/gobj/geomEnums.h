@@ -134,11 +134,6 @@ PUBLISHED:
 
     // The union of the above shade model types.
     GR_shade_model_bits     = 0x06000,
-
-    // If there is a TexGenAttrib in effect with M_light_vector
-    // enabled, meaning we need to generate the tangent space light
-    // vector as the texture coordinates.
-    GR_texcoord_light_vector = 0x08000,
   };
 
   // The shade model specifies whether the per-vertex colors and

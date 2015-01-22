@@ -54,7 +54,6 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode) const;
-  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const string &source_name, const NodePath &light) const;
   CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode, const LTexCoord3 &constant_value) const;
   CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
 
@@ -62,16 +61,11 @@ PUBLISHED:
   bool has_stage(TextureStage *stage) const;
   Mode get_mode(TextureStage *stage) const;
   bool has_gen_texcoord_stage(TextureStage *stage) const;
-  string get_source_name(TextureStage *stage) const;
-  NodePath get_light(TextureStage *stage) const;
   const LTexCoord3 &get_constant_value(TextureStage *stage) const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
-  typedef pset<TextureStage *> LightVectors;
-  INLINE const LightVectors &get_light_vectors() const;
-
   virtual void output(ostream &out) const;
 
 protected:
@@ -105,16 +99,11 @@ private:
   typedef pset<TextureStage *> NoTexCoordStages;
   NoTexCoordStages _no_texcoords;
 
-  // This is another optimization during rendering; it lists the
-  // texture stages (if any) that use M_light_vector.
-  LightVectors _light_vectors;
-
   // This element is only used during reading from a bam file.  It has
   // no meaningful value any other time.
   pvector<Mode> _read_modes;
 
   int _num_point_sprites;
-  int _num_light_vectors;
 
   // _point_geom_rendering is the GeomRendering bits that are added by
   // the TexGenAttrib if there are any points in the Geom.
@@ -122,7 +111,7 @@ private:
   // regardless of the kind of Geom it is.
   int _point_geom_rendering;
   int _geom_rendering;
-  
+
   static CPT(RenderAttrib) _empty_attrib;
 
 PUBLISHED:
@@ -141,7 +130,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

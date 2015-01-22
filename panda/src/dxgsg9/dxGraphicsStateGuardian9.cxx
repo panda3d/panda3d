@@ -3751,7 +3751,7 @@ update_standard_texture_bindings() {
 
     switch (mode) {
     case TexGenAttrib::M_off:
-    case TexGenAttrib::M_light_vector:
+    case TexGenAttrib::M_unused2:
       set_texture_stage_state(si, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
 

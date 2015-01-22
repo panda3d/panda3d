@@ -705,16 +705,12 @@ PUBLISHED:
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
-                   const string &source_name, const NodePath &light,
-                   int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
                    const LTexCoord3 &constant_value,
                    int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
   bool has_tex_gen(TextureStage *stage) const;
   RenderAttrib::TexGenMode get_tex_gen(TextureStage *stage) const;
-  NodePath get_tex_gen_light(TextureStage *stage) const;
 
   void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
                          int lens_index = 0);
@@ -726,10 +722,6 @@ PUBLISHED:
 
   void project_texture(TextureStage *stage, Texture *tex, const NodePath &projector);
   INLINE void clear_project_texture(TextureStage *stage);
-
-  void set_normal_map(Texture *normal_map, const string &texcoord_name = string(),
-                      bool preserve_color = false);
-  void clear_normal_map();
 
   INLINE bool has_texcoord(const string &texcoord_name) const;
   bool has_vertex_column(const InternalName *name) const;

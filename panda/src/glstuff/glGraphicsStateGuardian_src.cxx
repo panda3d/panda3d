@@ -9645,7 +9645,7 @@ do_issue_tex_gen() {
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
-    case TexGenAttrib::M_light_vector:
+    case TexGenAttrib::M_unused2:
       break;
 
     case TexGenAttrib::M_eye_sphere_map:
