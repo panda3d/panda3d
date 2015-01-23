@@ -49,6 +49,7 @@ class EXPCL_PANDA_PGRAPH ModelPool {
 PUBLISHED:
   INLINE static bool has_model(const Filename &filename);
   INLINE static bool verify_model(const Filename &filename);
+  INLINE static ModelRoot *get_model(const Filename &filename, bool verify);
   BLOCKING INLINE static ModelRoot *load_model(const Filename &filename,
                                                const LoaderOptions &options = LoaderOptions());
 
@@ -70,6 +71,7 @@ private:
   INLINE ModelPool();
 
   bool ns_has_model(const Filename &filename);
+  ModelRoot *ns_get_model(const Filename &filename, bool verify);
   ModelRoot *ns_load_model(const Filename &filename,
                            const LoaderOptions &options);
   void ns_add_model(const Filename &filename, ModelRoot *model);
