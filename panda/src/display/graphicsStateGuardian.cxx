@@ -2732,6 +2732,13 @@ close_gsg() {
   Thread *current_thread = Thread::get_current_thread();
   _prepared_objects->begin_frame(this, current_thread);
   _prepared_objects->end_frame(current_thread);
+
+  // We have to clear the list of timer queries, though, otherwise
+  // their destructors will cause a crash when they try to access
+  // the GSG object.
+#ifdef DO_PSTATS
+  _pending_timer_queries.clear();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

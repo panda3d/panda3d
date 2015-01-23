@@ -5122,15 +5122,15 @@ issue_timer_query(int pstats_index) {
     }
   }
 
+  // Issue the timestamp query.
+  _glQueryCounter(query->_index, GL_TIMESTAMP);
+
   if (_use_object_labels) {
     // Assign a label to it based on the PStatCollector name.
     const PStatClient *client = PStatClient::get_global_pstats();
     string name = client->get_collector_fullname(pstats_index & 0x7fff);
     _glObjectLabel(GL_QUERY, query->_index, name.size(), name.data());
   }
-
-  // Issue the timestamp query.
-  _glQueryCounter(query->_index, GL_TIMESTAMP);
 
   _pending_timer_queries.push_back((TimerQueryContext *)query);
 

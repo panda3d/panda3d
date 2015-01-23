@@ -30,9 +30,14 @@ CLP(TimerQueryContext)::
 ~CLP(TimerQueryContext)() {
   if (_index != 0) {
     // Tell the GSG to recycle this index when it gets around to it.
-    LightMutexHolder holder(_glgsg->_lock);
-    _glgsg->_deleted_queries.push_back(_index);
-    _index = 0;
+    // If it has already shut down, though, too bad.  This means we
+    // never get to free this index, but presumably the app is
+    // already shutting down anyway.
+    if (!_glgsg.was_deleted()) {
+      LightMutexHolder holder(_glgsg->_lock);
+      _glgsg->_deleted_queries.push_back(_index);
+      _index = 0;
+    }
   }
 }
 
