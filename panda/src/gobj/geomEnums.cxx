@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomEnums::UsageHint output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, GeomEnums::UsageHint usage_hint) {
@@ -45,7 +45,7 @@ operator << (ostream &out, GeomEnums::UsageHint usage_hint) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomEnums::UsageHint input operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 istream &
 operator >> (istream &in, GeomEnums::UsageHint &usage_hint) {
@@ -73,32 +73,32 @@ operator >> (istream &in, GeomEnums::UsageHint &usage_hint) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomEnums::NumericType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, GeomEnums::NumericType numeric_type) {
   switch (numeric_type) {
   case GeomEnums::NT_uint8:
     return out << "uint8";
-    
+
   case GeomEnums::NT_uint16:
     return out << "uint16";
-    
+
   case GeomEnums::NT_uint32:
     return out << "uint32";
-    
+
   case GeomEnums::NT_packed_dcba:
     return out << "packed_dcba";
-    
+
   case GeomEnums::NT_packed_dabc:
     return out << "packed_dabc";
-    
+
   case GeomEnums::NT_float32:
     return out << "float32";
-    
+
   case GeomEnums::NT_float64:
     return out << "float64";
-    
+
   case GeomEnums::NT_stdfloat:
     return out << "stdfloat";
   }
@@ -108,7 +108,7 @@ operator << (ostream &out, GeomEnums::NumericType numeric_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomEnums::Contents output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, GeomEnums::Contents contents) {
@@ -136,6 +136,9 @@ operator << (ostream &out, GeomEnums::Contents contents) {
 
   case GeomEnums::C_morph_delta:
     return out << "morph_delta";
+
+  case GeomEnums::C_matrix:
+    return out << "matrix";
   }
 
   return out << "**invalid contents (" << (int)contents << ")**";

@@ -295,11 +295,14 @@ add_consecutive_vertices(int start, int num_vertices) {
   }
 
   PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
+  int old_num_rows = array_obj->get_num_rows();
+  array_obj->unclean_set_num_rows(old_num_rows + num_vertices);
+
   GeomVertexWriter index(array_obj, 0);
-  index.set_row_unsafe(array_obj->get_num_rows());
+  index.set_row_unsafe(old_num_rows);
 
   for (int v = start; v <= end; ++v) {
-    index.add_data1i(v);
+    index.set_data1i(v);
   }
 
   cdata->_modified = Geom::get_next_modified();
@@ -1019,11 +1022,13 @@ make_points() const {
 
   // Now construct a new index array with just those bits.
   PT(GeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->unclean_set_num_rows(bits.get_num_on_bits());
+
   GeomVertexWriter new_index(new_vertices, 0);
   int p = bits.get_lowest_on_bit();
   while (p != -1) {
     while (bits.get_bit(p)) {
-      new_index.add_data1i(p);
+      new_index.set_data1i(p);
       ++p;
     }
     int q = bits.get_next_higher_different_bit(p);
@@ -2020,10 +2025,14 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
       cdata->_mins = make_index_data();
       cdata->_maxs = make_index_data();
 
-      GeomVertexWriter mins(cdata->_mins.get_write_pointer(), 0);
-      mins.reserve_num_rows(cdata->_ends.size());
-      GeomVertexWriter maxs(cdata->_maxs.get_write_pointer(), 0);
-      maxs.reserve_num_rows(cdata->_ends.size());
+      GeomVertexArrayData *mins_data = cdata->_mins.get_write_pointer();
+      GeomVertexArrayData *maxs_data = cdata->_maxs.get_write_pointer();
+
+      mins_data->unclean_set_num_rows(cdata->_ends.size());
+      maxs_data->unclean_set_num_rows(cdata->_ends.size());
+
+      GeomVertexWriter mins(mins_data, 0);
+      GeomVertexWriter maxs(maxs_data, 0);
 
       int pi = 0;
 
@@ -2050,8 +2059,8 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
           }
           vertex = index.get_data1i();
 
-          mins.add_data1i(min_prim);
-          maxs.add_data1i(max_prim);
+          mins.set_data1i(min_prim);
+          maxs.set_data1i(max_prim);
           min_prim = vertex;
           max_prim = vertex;
           ++pi;
@@ -2066,8 +2075,8 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
         cdata->_max_vertex = max(cdata->_max_vertex, vertex);
       }
 
-      mins.add_data1i(min_prim);
-      maxs.add_data1i(max_prim);
+      mins.set_data1i(min_prim);
+      maxs.set_data1i(max_prim);
       nassertv(mins.get_array_data()->get_num_rows() == (int)cdata->_ends.size());
 
     } else {
@@ -2109,10 +2118,13 @@ do_make_indexed(CData *cdata) {
 
     nassertv(cdata->_num_vertices != -1);
     cdata->_vertices = make_index_data();
-    GeomVertexWriter index(cdata->_vertices.get_write_pointer(), 0);
-    index.reserve_num_rows(cdata->_num_vertices);
+
+    GeomVertexArrayData *array_data = cdata->_vertices.get_write_pointer();
+    array_data->unclean_set_num_rows(cdata->_num_vertices);
+    GeomVertexWriter index(array_data, 0);
+
     for (int i = 0; i < cdata->_num_vertices; ++i) {
-      index.add_data1i(i + cdata->_first_vertex);
+      index.set_data1i(i + cdata->_first_vertex);
     }
     cdata->_num_vertices = -1;
   }

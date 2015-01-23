@@ -363,7 +363,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       // Get the point in eye-space coordinates.
       LPoint3 eye = internal.xform_point(vertex.get_data3());
       PN_stdfloat dist = gsg->compute_distance_to(eye);
-      points[vi]._eye = eye;
       points[vi]._dist = dist;
 
       // The point in clip coordinates.
