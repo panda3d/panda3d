@@ -3194,16 +3194,6 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
   _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
-  if (_target_shader->auto_shader()) {
-    // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.
-    if (_target_rs->_generated_shader == NULL) {
-      if (_shader_generator == NULL) {
-        _shader_generator = new ShaderGenerator(this, _scene_setup->get_display_region()->get_window());
-      }
-      const_cast<RenderState*>(_target_rs.p())->_generated_shader = DCAST(ShaderAttrib, _shader_generator->synthesize_shader(_target_rs));
-    }
-    _target_shader = DCAST(ShaderAttrib, _target_rs->_generated_shader);
-  }
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||

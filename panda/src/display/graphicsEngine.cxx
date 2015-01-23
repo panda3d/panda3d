@@ -1360,9 +1360,9 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist,
                        Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t wlist_size = wlist.size();
+  for (size_t wi = 0; wi < wlist_size; ++wi) {
+    GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
         {
@@ -1486,9 +1486,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t wlist_size = wlist.size();
+  for (size_t wi = 0; wi < wlist_size; ++wi) {
+    GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
@@ -1996,6 +1996,14 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 
   CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
+
+  // Make sure that the GSG has a ShaderGenerator for the munger
+  // to use.  We have to do this here because the ShaderGenerator
+  // needs a host window pointer.  Hopefully we'll be able to
+  // eliminate that requirement in the future.
+  if (gsg->get_shader_generator() == NULL) {
+    gsg->set_shader_generator(new ShaderGenerator(gsg, window));
+  }
 
   return scene_setup;
 }

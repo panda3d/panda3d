@@ -215,7 +215,7 @@ public:
   // ShaderAttrib will be synthesized by the runtime and stored here.
   // I can't declare this as a ShaderAttrib because that would create
   // a circular include-file dependency problem.  Aaargh.
-  CPT(RenderAttrib) _generated_shader;
+  mutable CPT(RenderAttrib) _generated_shader;
 
 private:
   // This mutex protects _states.  It also protects any modification

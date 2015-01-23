@@ -266,8 +266,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-
-  _shader_generator = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,12 +276,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
-
-  if (_shader_generator) {
-    delete _shader_generator;
-    _shader_generator = 0;
-  }
-
   GeomMunger::unregister_mungers_for_gsg(this);
 }
 

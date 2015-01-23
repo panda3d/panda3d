@@ -215,6 +215,28 @@ get_loader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_shader_generator
+//       Access: Public
+//  Description: Sets the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_shader_generator(ShaderGenerator *shader_generator) {
+  _shader_generator = shader_generator;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_shader_generator
+//       Access: Public
+//  Description: Returns the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE ShaderGenerator *GraphicsStateGuardian::
+get_shader_generator() const {
+  return _shader_generator;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_pipe
 //       Access: Published
 //  Description: Returns the graphics pipe on which this GSG was
