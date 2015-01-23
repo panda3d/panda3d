@@ -331,8 +331,13 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
           model_root->set_timestamp(record->get_source_timestamp());
 
           if (allow_ram_cache) {
-            // Store the loaded model in the RAM cache.
+            // Store the loaded model in the RAM cache, and make sure
+            // we return a copy so that this node can be modified
+            // independently from the RAM cached version.
             ModelPool::add_model(pathname, model_root);
+            if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+              return model_root->copy_subgraph();
+            }
           }
         }
         return result;
@@ -347,9 +352,11 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
 
   bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;
   if (!cache_only) {
+    // Load the model from disk.
     PT(PandaNode) result = requested_type->load_file(pathname, options, record);
     if (result != (PandaNode *)NULL) {
       if (record != (BamCacheRecord *)NULL) {
+        // Store the loaded model in the model cache.
         record->set_data(result, result);
         cache->store(record);
       }
@@ -360,8 +367,13 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
       }
 
       if (allow_ram_cache && result->is_of_type(ModelRoot::get_class_type())) {
-        // Store the loaded model in the RAM cache.
+        // Store the loaded model in the RAM cache, and make sure
+        // we return a copy so that this node can be modified
+        // independently from the RAM cached version.
         ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
+        if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+          result = result->copy_subgraph();
+        }
       }
       return result;
     }
