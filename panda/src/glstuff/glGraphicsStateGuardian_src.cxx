@@ -8783,19 +8783,6 @@ set_state_and_transform(const RenderState *target,
 #ifndef OPENGLES
   _instance_count = _target_shader->get_instance_count();
 #endif
-#ifndef OPENGLES_1
-  if (_target_shader->auto_shader()) {
-    // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.
-    CPT(RenderState) shader = _target_rs->get_auto_shader_state();
-    if (shader->_generated_shader == NULL) {
-      if (_shader_generator == NULL) {
-        _shader_generator = new ShaderGenerator(this, _scene_setup->get_display_region()->get_window());
-      }
-      const_cast<RenderState*>(shader.p())->_generated_shader = DCAST(ShaderAttrib, _shader_generator->synthesize_shader(shader));
-    }
-    _target_shader = DCAST(ShaderAttrib, shader->_generated_shader);
-  }
-#endif
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
