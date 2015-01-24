@@ -40,6 +40,7 @@ EggToDAE() :
   EggToSomething("COLLADA", ".dae", true, false)
 {
   set_binary_output(false);
+  set_program_brief("convert .egg files into COLLADA asset files");
   set_program_description
     ("This program converts files from the egg format to the COLLADA "
      ".dae (Digital Asset Exchange) format.");

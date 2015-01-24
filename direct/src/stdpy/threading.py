@@ -21,11 +21,8 @@ easier to use and understand.
 It is permissible to mix-and-match both threading and threading2
 within the same application. """
 
-# We import PandaModules as the name pm, so we can avoid namespace
-# collisions between native Panda objects, and our own class
-# definitions in this module. """
 import direct
-from pandac import PandaModules as pm
+from panda3d import core
 from direct.stdpy import thread as _thread
 import sys as _sys
 
@@ -55,10 +52,10 @@ class ThreadBase:
 
     def getName(self):
         return self.name
-    
+
     def is_alive(self):
         return self.__thread.isStarted()
-    
+
     def isAlive(self):
         return self.__thread.isStarted()
 
@@ -68,9 +65,9 @@ class ThreadBase:
     def setDaemon(self, daemon):
         if self.is_alive():
             raise RuntimeError
-        
+
         self.__dict__['daemon'] = daemon
-        
+
     def __setattr__(self, key, value):
         if key == 'name':
             self.setName(value)
@@ -84,8 +81,8 @@ class ThreadBase:
 # Copy these static methods from Panda's Thread object.  These are
 # useful if you may be running in Panda's SIMPLE_THREADS compilation
 # mode.
-ThreadBase.forceYield = pm.Thread.forceYield
-ThreadBase.considerYield = pm.Thread.considerYield
+ThreadBase.forceYield = core.Thread.forceYield
+ThreadBase.considerYield = core.Thread.considerYield
 
 class Thread(ThreadBase):
     """ This class provides a wrapper around Panda's PythonThread
@@ -108,21 +105,21 @@ class Thread(ThreadBase):
         self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
 
-        self.__thread = pm.PythonThread(self.run, None, name, name)
+        self.__thread = core.PythonThread(self.run, None, name, name)
         threadId = _thread._add_thread(self.__thread, weakref.proxy(self))
         self.__dict__['ident'] = threadId
 
     def __del__(self):
         # On interpreter shutdown, the _thread module might have
         # already been cleaned up.
-        if _thread and _thread._remove_thread_id: 
+        if _thread and _thread._remove_thread_id:
             _thread._remove_thread_id(self.ident)
 
     def start(self):
         if self.__thread.isStarted():
             raise RuntimeError
-        
-        if not self.__thread.start(pm.TPNormal, True):
+
+        if not self.__thread.start(core.TPNormal, True):
             raise RuntimeError
 
     def run(self):
@@ -132,7 +129,7 @@ class Thread(ThreadBase):
             _sys.setprofile(_setprofile_func)
 
         self.__target(*self.__args, **self.__kwargs)
-        
+
     def join(self, timeout = None):
         # We don't support a timed join here, sorry.
         assert timeout is None
@@ -146,10 +143,10 @@ class Thread(ThreadBase):
 class ExternalThread(ThreadBase):
     """ Returned for a Thread object that wasn't created by this
     interface. """
-    
+
     def __init__(self, extThread, threadId):
         ThreadBase.__init__(self)
-        
+
         self.__thread = extThread
         self.__dict__['daemon'] = True
         self.__dict__['name'] = self.__thread.getName()
@@ -157,10 +154,10 @@ class ExternalThread(ThreadBase):
 
     def start(self):
         raise RuntimeError
-    
+
     def run(self):
         raise RuntimeError
-        
+
     def join(self, timeout = None):
         raise RuntimeError
 
@@ -169,53 +166,53 @@ class ExternalThread(ThreadBase):
 
 class MainThread(ExternalThread):
     """ Returned for the MainThread object. """
-    
+
     def __init__(self, extThread, threadId):
         ExternalThread.__init__(self, extThread, threadId)
         self.__dict__['daemon'] = False
 
-class Lock(pm.Mutex):
+class Lock(core.Mutex):
     """ This class provides a wrapper around Panda's Mutex object.
     The wrapper is designed to emulate Python's own threading.Lock
     object. """
 
     def __init__(self, name = "PythonLock"):
-        pm.Mutex.__init__(self, name)
+        core.Mutex.__init__(self, name)
 
     def acquire(self, blocking = True):
         if blocking:
-            pm.Mutex.acquire(self)
+            core.Mutex.acquire(self)
             return True
         else:
-            return pm.Mutex.tryAcquire(self)
-    
+            return core.Mutex.tryAcquire(self)
+
     __enter__ = acquire
 
     def __exit__(self, t, v, tb):
         self.release()
 
-class RLock(pm.ReMutex):
+class RLock(core.ReMutex):
     """ This class provides a wrapper around Panda's ReMutex object.
     The wrapper is designed to emulate Python's own threading.RLock
     object. """
 
     def __init__(self, name = "PythonRLock"):
-        pm.ReMutex.__init__(self, name)
+        core.ReMutex.__init__(self, name)
 
     def acquire(self, blocking = True):
         if blocking:
-            pm.ReMutex.acquire(self)
+            core.ReMutex.acquire(self)
             return True
         else:
-            return pm.ReMutex.tryAcquire(self)
-    
+            return core.ReMutex.tryAcquire(self)
+
     __enter__ = acquire
 
     def __exit__(self, t, v, tb):
         self.release()
 
 
-class Condition(pm.ConditionVarFull):
+class Condition(core.ConditionVarFull):
     """ This class provides a wrapper around Panda's ConditionVarFull
     object.  The wrapper is designed to emulate Python's own
     threading.Condition object. """
@@ -229,7 +226,7 @@ class Condition(pm.ConditionVarFull):
         assert isinstance(lock, Lock)
 
         self.__lock = lock
-        pm.ConditionVarFull.__init__(self, self.__lock)
+        core.ConditionVarFull.__init__(self, self.__lock)
 
     def acquire(self, *args, **kw):
         return self.__lock.acquire(*args, **kw)
@@ -239,35 +236,35 @@ class Condition(pm.ConditionVarFull):
 
     def wait(self, timeout = None):
         if timeout is None:
-            pm.ConditionVarFull.wait(self)
+            core.ConditionVarFull.wait(self)
         else:
-            pm.ConditionVarFull.wait(self, timeout)
+            core.ConditionVarFull.wait(self, timeout)
 
     def notifyAll(self):
-        pm.ConditionVarFull.notifyAll(self)
+        core.ConditionVarFull.notifyAll(self)
 
     notify_all = notifyAll
-    
+
     __enter__ = acquire
 
     def __exit__(self, t, v, tb):
         self.release()
 
-class Semaphore(pm.Semaphore):
+class Semaphore(core.Semaphore):
     """ This class provides a wrapper around Panda's Semaphore
     object.  The wrapper is designed to emulate Python's own
     threading.Semaphore object. """
 
     def __init__(self, value = 1):
-        pm.Semaphore.__init__(self, value)
+        core.Semaphore.__init__(self, value)
 
     def acquire(self, blocking = True):
         if blocking:
-            pm.Semaphore.acquire(self)
+            core.Semaphore.acquire(self)
             return True
         else:
-            return pm.Semaphore.tryAcquire(self)
-    
+            return core.Semaphore.tryAcquire(self)
+
     __enter__ = acquire
 
     def __exit__(self, t, v, tb):
@@ -293,8 +290,8 @@ class Event:
     object. """
 
     def __init__(self):
-        self.__lock = pm.Lock("Python Event")
-        self.__cvar = pm.ConditionVarFull(self.__lock)
+        self.__lock = core.Lock("Python Event")
+        self.__cvar = core.ConditionVarFull(self.__lock)
         self.__flag = False
 
     def is_set(self):
@@ -310,7 +307,7 @@ class Event:
 
         finally:
             self.__lock.release()
-            
+
     def clear(self):
         self.__lock.acquire()
         try:
@@ -318,7 +315,7 @@ class Event:
 
         finally:
             self.__lock.release()
-            
+
     def wait(self, timeout = None):
         self.__lock.acquire()
         try:
@@ -326,15 +323,15 @@ class Event:
                 while not self.__flag:
                     self.__cvar.wait()
             else:
-                clock = pm.TrueClock.getGlobalPtr()
+                clock = core.TrueClock.getGlobalPtr()
                 expires = clock.getShortTime() + timeout
                 while not self.__flag:
                     wait = expires - clock.getShortTime()
                     if wait < 0:
                         return
-                    
+
                     self.__cvar.wait(wait)
-                
+
         finally:
             self.__lock.release()
 
@@ -366,7 +363,7 @@ class Timer(Thread):
 
 def _create_thread_wrapper(t, threadId):
     """ Creates a thread wrapper for the indicated external thread. """
-    if isinstance(t, pm.MainThread):
+    if isinstance(t, core.MainThread):
         pyt = MainThread(t, threadId)
     else:
         pyt = ExternalThread(t, threadId)
@@ -374,7 +371,7 @@ def _create_thread_wrapper(t, threadId):
     return pyt
 
 def current_thread():
-    t = pm.Thread.getCurrentThread()
+    t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
 currentThread = current_thread
@@ -410,7 +407,7 @@ def stack_size(size = None):
 def _test():
 
     from collections import deque
-    _sleep = pm.Thread.sleep
+    _sleep = core.Thread.sleep
 
     _VERBOSE = False
 

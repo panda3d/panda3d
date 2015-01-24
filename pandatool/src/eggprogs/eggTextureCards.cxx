@@ -31,6 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 EggTextureCards::
 EggTextureCards() : EggWriter(true, true) {
+  set_program_brief("generate an .egg file containing texture cards");
   set_program_description
     ("egg-texture-cards generates an egg file consisting of several "
      "square polygons, one for each texture name that appears on the "

@@ -31,6 +31,7 @@ ObjToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert .obj files to .egg");
   set_program_description
     ("This program converts obj files to egg.  It "
      "only converts polygon data, with no fancy tricks.  "

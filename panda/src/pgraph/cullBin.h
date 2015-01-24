@@ -77,9 +77,6 @@ protected:
   BinType _bin_type;
   GraphicsStateGuardianBase *_gsg;
 
-  bool _has_flash_color;
-  LColor _flash_color;
-
   // Used in make_result_graph() and fill_result_graph().
   class ResultGraphBuilder {
   public:

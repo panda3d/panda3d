@@ -40,6 +40,7 @@ EggToMaya() :
   add_units_options();
 
   set_binary_output(true);
+  set_program_brief("convert .egg files to Maya .mb or .ma files");
   set_program_description
     ("egg2maya converts files from egg format to Maya .mb or .ma "
      "format.  It contains support for basic geometry (polygons with textures)."

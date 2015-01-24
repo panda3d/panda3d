@@ -1538,7 +1538,11 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qibi != _enqueued_index_buffers.end();
        ++qibi) {
     GeomPrimitive *data = (*qibi);
-    data->prepare_now(this, gsg);
+    // We need this check because the actual index data may
+    // not actually have propagated to the draw thread yet.
+    if (data->is_indexed()) {
+      data->prepare_now(this, gsg);
+    }
   }
 
   _enqueued_index_buffers.clear();

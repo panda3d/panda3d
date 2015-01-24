@@ -1,0 +1,56 @@
+.TH MAKE-PRC-KEY 1 "27 December 2014" "" Panda3D
+.SH NAME
+make-prc-key \- generate keys for signing .prc files
+.SH SYNOPSIS
+.B make-prc-key
+[\fIopts\fP]
+1[,"\fIpass_phrase\fP"] [2[,"\fIpass_phrase\fP"] 3 ...]
+.SH DESCRIPTION
+This program generates one or more new keys to be used for signing
+a prc file.  The key itself is a completely arbitrary random bit
+sequence.  It is divided into a public and a private key; the public
+key is not secret and will be compiled into libdtool, while the private
+key should be safeguarded and will be written into a .cxx file that
+can be compiled as a standalone application.
+.PP
+The output is a public and private key pair for each trust level.  The
+form of the output for both public and private keys will be compilable
+C++ code; see \-a and \-b, below, for a complete description.
+.PP
+After the options, the remaining arguments list the individual trust
+level keys to generate.  For each integer specified, a different key
+will be created.  There should be one key for each trust level
+required; a typical application will only need one or two keys.
+.SH OPTIONS
+.TP
+.BI "\-a " pub_outfile.cxx
+Specifies the name and location of the public key output file
+to generate.  This file must then be named by the Config.pp
+variable PRC_PUBLIC_KEYS_FILENAME so that it will be compiled
+in with libdtool and available to verify signatures.  If this
+option is omitted, the previously-compiled value is used.
+.TP
+.BI "\-b " priv_outfile#.cxx
+Specifies the name and location of the private key output file(s)
+to generate.  A different output file will be generated for each
+different trust level; the hash mark '#' appearing in the file
+name will be filled in with the corresponding numeric trust level.
+The hash mark may be omitted if you only require one trust level.
+When compiled against dtool, each of these files will generate
+a program that can be used to sign a prc file with the corresponding
+trust level.
+.TP
+.BI "\-p " passphrase
+Uses the indicated pass phrase to encrypt the private key.
+This specifies an overall pass phrase; you may also specify
+a different pass phrase for each key by using the
+\fIkey\fB,"\fIpassphrase\fB"\fR syntax.
+.PP
+If a pass phrase is not specified on the command line, you will be
+prompted interactively.  Every user of the signing programs
+(outfile_sign1.cxx, etc.) will need to know the pass phrase
+in order to sign prc files.
+.PP
+If this is specified as the empty string (""), then the key
+will not be encrypted, and anyone can run the signing
+programs without having to supply a pass phrase.

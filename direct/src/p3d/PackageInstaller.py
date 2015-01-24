@@ -3,7 +3,7 @@ from direct.stdpy.threading import Lock, RLock
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.p3d.PackageInfo import PackageInfo
-from pandac.PandaModules import TPLow, PStatCollector
+from panda3d.core import TPLow, PStatCollector
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class PackageInstaller(DirectObject):
@@ -33,7 +33,7 @@ class PackageInstaller(DirectObject):
     S_ready = 1      # donePackages() has been called
     S_started = 2    # download has started
     S_done = 3       # download is over
-    
+
     class PendingPackage:
         """ This class describes a package added to the installer for
         download. """
@@ -121,12 +121,12 @@ class PackageInstaller(DirectObject):
                 self.prevDownloadedEffort = self.package.getPrevDownloadedEffort()
 
             return True
-            
+
 
         def getDescFile(self, http):
             """ Synchronously downloads the desc files required for
             the package. """
-            
+
             if not self.host.downloadContentsFile(http):
                 return False
 
@@ -156,10 +156,10 @@ class PackageInstaller(DirectObject):
             PackageInstaller.nextUniqueId += 1
         finally:
             self.globalLock.release()
-        
+
         self.appRunner = appRunner
         self.taskChain = taskChain
-        
+
         # If we're to be running on an asynchronous task chain, and
         # the task chain hasn't yet been set up already, create the
         # default parameters now.
@@ -180,7 +180,7 @@ class PackageInstaller(DirectObject):
         # A list of packages that are waiting for their desc files.
         self.needsDescFile = []
         self.descFileTask = None
-        
+
         # A list of packages that are waiting to be downloaded and
         # installed.
         self.needsDownload = []
@@ -198,7 +198,7 @@ class PackageInstaller(DirectObject):
         # This task is spawned on the default task chain, to update
         # the status during the download.
         self.progressTask = None
-        
+
         self.accept('PackageInstaller-%s-allHaveDesc' % self.uniqueId,
                     self.__allHaveDesc)
         self.accept('PackageInstaller-%s-packageStarted' % self.uniqueId,
@@ -231,7 +231,7 @@ class PackageInstaller(DirectObject):
             self.progressTask = None
 
         self.ignoreAll()
-        
+
     def addPackage(self, packageName, version = None, hostUrl = None):
         """ Adds the named package to the list of packages to be
         downloaded.  Call donePackages() to finish the list. """
@@ -256,7 +256,7 @@ class PackageInstaller(DirectObject):
         if pp in self.packages:
             # Already added.
             return
-        
+
         self.packages.append(pp)
 
         # We always add the package to needsDescFile, even if we
@@ -323,7 +323,7 @@ class PackageInstaller(DirectObject):
         (beginning) to 1 (complete). """
 
         self.notify.debug("packageProgress: %s %s" % (package.packageName, progress))
-        
+
     def downloadProgress(self, overallProgress):
         """ This callback is made repeatedly between downloadStarted()
         and downloadFinished() to update the current progress through
@@ -384,7 +384,7 @@ class PackageInstaller(DirectObject):
         """ This method is called internally when all of the pending
         packages have their desc info. """
         working = True
-        
+
         self.packageLock.acquire()
         try:
             if self.state == self.S_ready:
@@ -489,7 +489,7 @@ class PackageInstaller(DirectObject):
         it extracts one package from self.needsDescFile and downloads
         its desc file.  On success, it adds the package to
         self.needsDownload. """
-        
+
         self.packageLock.acquire()
         try:
             # If we've finished all of the packages that need desc
@@ -515,7 +515,7 @@ class PackageInstaller(DirectObject):
         # This package is now ready to be downloaded.  We always add
         # it to needsDownload, even if it's already downloaded, to
         # guarantee ordering of packages.
-        
+
         self.packageLock.acquire()
         try:
             # Also add any packages required by this one.
@@ -527,7 +527,7 @@ class PackageInstaller(DirectObject):
             self.packageLock.release()
 
         return task.cont
-        
+
     def __downloadPackageTask(self, task):
 
         """ This task runs on the aysynchronous task chain; each pass,
@@ -543,7 +543,7 @@ class PackageInstaller(DirectObject):
                     self.packageLock.release()
                     yield task.done; return
 
-                assert self.state == self.S_started        
+                assert self.state == self.S_started
                 pp = self.needsDownload[0]
                 del self.needsDownload[0]
             except:
@@ -578,7 +578,7 @@ class PackageInstaller(DirectObject):
 
             # Continue the loop without yielding, so we pick up the
             # next package within this same frame.
-        
+
     def __donePackage(self, pp, success):
         """ Marks the indicated package as done, either successfully
         or otherwise. """
@@ -630,9 +630,9 @@ class PackageInstaller(DirectObject):
             else:
                 progress = float(currentDownloadSize) / float(downloadEffort)
             self.downloadProgress(progress)
-            
+
         finally:
             self.callbackLock.release()
 
         return task.cont
-    
+

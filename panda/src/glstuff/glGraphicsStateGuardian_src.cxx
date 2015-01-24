@@ -316,6 +316,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _force_flush = gl_force_flush;
 
   _scissor_enabled = false;
+  _scissor_attrib_active = false;
 
 #ifdef DO_PSTATS
   if (gl_finish) {
@@ -549,8 +550,7 @@ reset() {
   }
 
 #ifndef OPENGLES
-  _primitive_restart_gl3 = false;
-  _primitive_restart_nv = false;
+  _explicit_primitive_restart = false;
   _glPrimitiveRestartIndex = NULL;
 
   if (gl_support_primitive_restart_index) {
@@ -562,19 +562,16 @@ reset() {
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
     } else if (is_at_least_gl_version(3, 1)) {
-      _primitive_restart_gl3 = true;
+      // We have to use an explicit primitive restart enable/index.
+      _explicit_primitive_restart = true;
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
       _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
         get_extension_func("glPrimitiveRestartIndex");
 
-    } else if (has_extension("GL_NV_primitive_restart")) {
-      _primitive_restart_nv = true;
-      _supported_geom_rendering |= Geom::GR_strip_cut_index;
-
-      _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
-        get_extension_func("glPrimitiveRestartIndexNV");
     }
+    // We used to have a case here for GL_NV_primitive_restart, but it
+    // seems to cause garbled geometry bugs on some drivers.
   }
 #endif
 
@@ -799,6 +796,21 @@ reset() {
       _supports_tex_storage = false;
     }
   }
+
+  _supports_clear_texture = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEPROC)
+      get_extension_func("glClearTexImage");
+
+    if (_glClearTexImage == NULL) {
+      GLCAT.warning()
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
+#endif
 
   _supports_2d_texture_array = false;
 #ifndef OPENGLES
@@ -1344,6 +1356,22 @@ reset() {
   // a red color, indicating that something went wrong.
   if (_default_shader == NULL) {
     _default_shader = new Shader(default_shader_name, default_shader_body, Shader::SL_GLSL);
+  }
+#endif
+
+  _supports_vertex_attrib_divisor = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(3, 3)) {
+    _glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)
+      get_extension_func("glVertexAttribDivisor");
+
+    _supports_vertex_attrib_divisor = true;
+
+  } else if (has_extension("GL_ARB_instanced_arrays")) {
+    _glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)
+      get_extension_func("glVertexAttribDivisorARB");
+
+    _supports_vertex_attrib_divisor = true;
   }
 #endif
 
@@ -2272,6 +2300,7 @@ clear(DrawableRegion *clearable) {
     return;
   }
 
+  //XXX rdb: Is this line really necessary?
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
@@ -2399,6 +2428,7 @@ clear(DrawableRegion *clearable) {
   }
 
   if (clearable->get_clear_stencil_active()) {
+    glStencilMask(~0);
     glClearStencil(clearable->get_clear_stencil());
     mask |= GL_STENCIL_BUFFER_BIT;
   }
@@ -2453,6 +2483,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
 
+  int count = dr->get_num_regions();
+
   if (dr->get_scissor_enabled()) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2460,6 +2492,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glEnable(GL_SCISSOR_TEST);
     _scissor_enabled = true;
+    _scissor_array.resize(count);
   } else {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2467,27 +2500,35 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
     glDisable(GL_SCISSOR_TEST);
     _scissor_enabled = false;
+    _scissor_array.clear();
   }
+
+  _scissor_attrib_active = false;
 
 #ifndef OPENGLES
   if (_supports_viewport_arrays) {
-    int count = dr->get_num_regions();
-    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
-    GLint *scissors = (GLint *)alloca(sizeof(GLint) * 4 * count);
 
+    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
+
+    // We store the scissor regions in a vector since we may need
+    // to switch back to it in do_issue_scissor.
     for (int i = 0; i < count; ++i) {
-      GLint *sr = scissors + i * 4;
+      LVecBase4i sr;
       dr->get_region_pixels(i, sr[0], sr[1], sr[2], sr[3]);
       GLfloat *vr = viewports + i * 4;
       vr[0] = (GLfloat) sr[0];
       vr[1] = (GLfloat) sr[1];
       vr[2] = (GLfloat) sr[2];
       vr[3] = (GLfloat) sr[3];
+      if (_scissor_enabled) {
+        _scissor_array[i] = sr;
+      }
     }
     _glViewportArrayv(0, count, viewports);
-    if (dr->get_scissor_enabled()) {
-      _glScissorArrayv(0, count, scissors);
+    if (_scissor_enabled) {
+      _glScissorArrayv(0, count, _scissor_array[0].get_data());
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewportArrayv(0, " << count << ", [\n";
@@ -2496,12 +2537,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
         GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
       }
       GLCAT.spam(false) << "])\n";
-      if (dr->get_scissor_enabled()) {
+      if (_scissor_enabled) {
         GLCAT.spam()
           << "glScissorArrayv(0, " << count << ", [\n";
         for (int i = 0; i < count; ++i) {
-          GLint *sr = scissors + i * 4;
-          GLCAT.spam(false) << sr[0] << ", " << sr[1] << ", " << sr[2] << ", " << sr[3] << ",\n";
+          const LVecBase4i &sr = _scissor_array[i];
+          GLCAT.spam(false) << sr << ",\n";
         }
       }
       GLCAT.spam(false) << "])\n";
@@ -2511,9 +2552,13 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 #endif  // OPENGLES
   {
     glViewport(x, y, width, height);
-    if (dr->get_scissor_enabled()) {
+    if (_scissor_enabled) {
       glScissor(x, y, width, height);
+
+      _scissor_array.resize(1);
+      _scissor_array[0].set(x, y, width, height);
     }
+
     if (GLCAT.is_spam()) {
       GLCAT.spam()
         << "glViewport(" << x << ", " << y << ", " << width << ", " << height << ")\n";
@@ -2811,7 +2856,7 @@ end_frame(Thread *current_thread) {
 
   // Now is a good time to delete any pending display lists.
 #ifndef OPENGLES
-  {
+  if (display_lists) {
     LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
       DeletedNames::iterator ddli;
@@ -2826,10 +2871,13 @@ end_frame(Thread *current_thread) {
       }
       _deleted_display_lists.clear();
     }
+  }
 
-    // And deleted queries, too, unless we're using query timers
-    // in which case we'll need to reuse lots of them.
-    if (!get_timer_queries_active() && !_deleted_queries.empty()) {
+  // And deleted queries, too, unless we're using query timers
+  // in which case we'll need to reuse lots of them.
+  if (_supports_occlusion_query && !get_timer_queries_active()) {
+    LightMutexHolder holder(_lock);
+    if (!_deleted_queries.empty()) {
       if (GLCAT.is_spam()) {
         DeletedNames::iterator dqi;
         for (dqi = _deleted_queries.begin();
@@ -3919,12 +3967,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
       // One long triangle strip, connected by strip cut indices.
 #ifndef OPENGLES
-      if (_primitive_restart_gl3) {
+      if (_explicit_primitive_restart) {
         glEnable(GL_PRIMITIVE_RESTART);
-        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
-
-      } else if (_primitive_restart_nv) {
-        glEnableClientState(GL_PRIMITIVE_RESTART_NV);
         _glPrimitiveRestartIndex(reader->get_strip_cut_index());
       }
 #endif  // !OPENGLES
@@ -3954,11 +3998,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES
-      if (_primitive_restart_gl3) {
+      if (_explicit_primitive_restart) {
         glDisable(GL_PRIMITIVE_RESTART);
-
-      } else if (_primitive_restart_nv) {
-        glDisableClientState(GL_PRIMITIVE_RESTART_NV);
       }
 #endif  // !OPENGLES
     } else {
@@ -5081,6 +5122,9 @@ issue_timer_query(int pstats_index) {
     }
   }
 
+  // Issue the timestamp query.
+  _glQueryCounter(query->_index, GL_TIMESTAMP);
+
   if (_use_object_labels) {
     // Assign a label to it based on the PStatCollector name.
     const PStatClient *client = PStatClient::get_global_pstats();
@@ -5088,12 +5132,9 @@ issue_timer_query(int pstats_index) {
     _glObjectLabel(GL_QUERY, query->_index, name.size(), name.data());
   }
 
-  // Issue the timestamp query.
-  _glQueryCounter(query->_index, GL_TIMESTAMP);
+  _pending_timer_queries.push_back((TimerQueryContext *)query);
 
-  _pending_timer_queries.push_back(DCAST(TimerQueryContext, query));
-
-  return DCAST(TimerQueryContext, query);
+  return (TimerQueryContext *)query;
 
 #else
   return NULL;
@@ -5130,6 +5171,19 @@ PT(GeomMunger) CLP(GraphicsStateGuardian)::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return GeomMunger::register_munger(munger, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::compute_distance_to
+//       Access: Public, Virtual
+//  Description: This function will compute the distance to the
+//               indicated point, assumed to be in eye coordinates,
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat GLGraphicsStateGuardian::
+compute_distance_to(const LPoint3 &point) const {
+  return -point[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5606,7 +5660,9 @@ do_issue_transform() {
 void CLP(GraphicsStateGuardian)::
 do_issue_shade_model() {
 #ifndef OPENGLES_2
-  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  const ShadeModelAttrib *target_shade_model = (const ShadeModelAttrib *)
+    _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot());
+
   switch (target_shade_model->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     glShadeModel(GL_SMOOTH);
@@ -5689,7 +5745,9 @@ do_issue_shader(bool state_has_changed) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  const RenderModeAttrib *target_render_mode = (const RenderModeAttrib *)
+    _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot());
+
   _render_mode = target_render_mode->get_mode();
   _point_size = target_render_mode->get_thickness();
   _point_perspective = target_render_mode->get_perspective();
@@ -5733,7 +5791,9 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_antialias() {
-  const AntialiasAttrib *target_antialias = DCAST(AntialiasAttrib, _target_rs->get_attrib_def(AntialiasAttrib::get_class_slot()));
+  const AntialiasAttrib *target_antialias = (const AntialiasAttrib *)
+    _target_rs->get_attrib_def(AntialiasAttrib::get_class_slot());
+
   if (target_antialias->get_mode_type() == AntialiasAttrib::M_auto) {
     // In this special mode, we must enable antialiasing on a
     // case-by-case basis, because we enable it differently for
@@ -5799,7 +5859,9 @@ do_issue_antialias() {
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
 #ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
-  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
+  const RescaleNormalAttrib *target_rescale_normal = (const RescaleNormalAttrib *)
+    _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot());
+
   RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
@@ -5851,7 +5913,9 @@ do_issue_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_test() {
-  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  const DepthTestAttrib *target_depth_test = (const DepthTestAttrib *)
+    _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot());
+
   DepthTestAttrib::PandaCompareFunc mode = target_depth_test->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     enable_depth_test(false);
@@ -5872,7 +5936,9 @@ do_issue_alpha_test() {
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
   } else {
-    const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+    const AlphaTestAttrib *target_alpha_test = (const AlphaTestAttrib *)
+      _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot());
+
     AlphaTestAttrib::PandaCompareFunc mode = target_alpha_test->get_mode();
     if (mode == AlphaTestAttrib::M_none) {
       enable_alpha_test(false);
@@ -5893,7 +5959,9 @@ do_issue_alpha_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_write() {
-  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  const DepthWriteAttrib *target_depth_write = (const DepthWriteAttrib *)
+    _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot());
+
   DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
 #ifdef GSG_VERBOSE
@@ -5918,7 +5986,9 @@ do_issue_depth_write() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_cull_face() {
-  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  const CullFaceAttrib *target_cull_face = (const CullFaceAttrib *)
+    _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot());
+
   CullFaceAttrib::Mode mode = target_cull_face->get_effective_mode();
 
   switch (mode) {
@@ -5948,7 +6018,9 @@ do_issue_cull_face() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_fog() {
-  const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+  const FogAttrib *target_fog = (const FogAttrib *)
+    _target_rs->get_attrib_def(FogAttrib::get_class_slot());
+
   if (!target_fog->is_off()) {
     enable_fog(true);
     Fog *fog = target_fog->get_fog();
@@ -5967,7 +6039,9 @@ do_issue_fog() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
+     _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot());
+
   int offset = target_depth_offset->get_offset();
 
   if (offset != 0) {
@@ -6008,7 +6082,8 @@ do_issue_material() {
   static Material empty;
   const Material *material;
 
-  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  const MaterialAttrib *target_material = (const MaterialAttrib *)
+    _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
 
   if (target_material == (MaterialAttrib *)NULL ||
       target_material->is_off()) {
@@ -6115,7 +6190,8 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
+  const ColorWriteAttrib *target_color_write = (const ColorWriteAttrib *)
+    _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot());
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
@@ -6145,11 +6221,13 @@ do_issue_blending() {
   }
 
 
-  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  const ColorBlendAttrib *target_color_blend = (const ColorBlendAttrib *)
+    _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot());
   CPT(ColorBlendAttrib) color_blend = target_color_blend;
   ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
 
-  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *target_transparency = (const TransparencyAttrib *)
+    _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot());
   TransparencyAttrib::Mode transparency_mode = target_transparency->get_mode();
 
   _color_blend_involves_color_scale = color_blend->involves_color_scale();
@@ -7312,12 +7390,14 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba12:
       case Texture::F_rgba16:
       case Texture::F_rgba32:
+      case Texture::F_rgba8i:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
       case Texture::F_rgb5:
       case Texture::F_rgba5:
       case Texture::F_rgb8:
+      case Texture::F_rgb8i:
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
@@ -7330,11 +7410,13 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_red:
       case Texture::F_green:
       case Texture::F_blue:
+      case Texture::F_r8i:
       case Texture::F_r16:
       case Texture::F_r32:
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
+      case Texture::F_rg8i:
       case Texture::F_rg16:
       case Texture::F_rg32:
         return GL_COMPRESSED_RG;
@@ -7502,8 +7584,16 @@ get_external_image_format(Texture *tex) const {
     return GL_LUMINANCE_ALPHA;
 
 #ifndef OPENGLES
+  case Texture::F_r8i:
   case Texture::F_r32i:
     return GL_RED_INTEGER;
+  case Texture::F_rg8i:
+    return GL_RG_INTEGER;
+  case Texture::F_rgb8i:
+    return GL_RGB_INTEGER;
+  case Texture::F_rgba8i:
+    return GL_RGBA_INTEGER;
+
 #endif
   }
   GLCAT.error()
@@ -7519,7 +7609,7 @@ get_external_image_format(Texture *tex) const {
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_internal_image_format(Texture *tex) const {
+get_internal_image_format(Texture *tex, bool force_sized) const {
   Texture::CompressionMode compression = tex->get_compression();
   if (compression == Texture::CM_default) {
     compression = (compressed_textures) ? Texture::CM_on : Texture::CM_off;
@@ -7550,6 +7640,10 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_depth_component24:
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r8i:
+      case Texture::F_rg8i:
+      case Texture::F_rgb8i:
+      case Texture::F_rgba8i:
       case Texture::F_r32i:
         // Unsupported; fall through to below.
         break;
@@ -7752,7 +7846,7 @@ get_internal_image_format(Texture *tex) const {
       } else
 #endif
       {
-        return GL_DEPTH_STENCIL;
+        return force_sized ? GL_DEPTH24_STENCIL8 : GL_DEPTH_STENCIL;
       }
     }
     // Fall through.
@@ -7764,7 +7858,7 @@ get_internal_image_format(Texture *tex) const {
     } else
 #endif
     {
-      return GL_DEPTH_COMPONENT;
+      return force_sized ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT;
     }
   case Texture::F_depth_component16:
 #ifdef OPENGLES
@@ -7811,7 +7905,7 @@ get_internal_image_format(Texture *tex) const {
     } else
 #endif
     {
-      return GL_RGBA;
+      return force_sized ? GL_RGBA8 : GL_RGBA;
     }
 
   case Texture::F_rgba4:
@@ -7821,10 +7915,34 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_rgba8:
     return GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return GL_RGBA;
+    return force_sized ? GL_RGBA8 : GL_RGBA;
 #else
   case Texture::F_rgba8:
     return GL_RGBA8;
+  case Texture::F_r8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_R8UI;
+    } else {
+      return GL_R8I;
+    }
+  case Texture::F_rg8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RG8UI;
+    } else {
+      return GL_RG8I;
+    }
+  case Texture::F_rgb8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RGB8UI;
+    } else {
+      return GL_RGB8I;
+    }
+  case Texture::F_rgba8i:
+    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+      return GL_RGBA8UI;
+    } else {
+      return GL_RGBA8I;
+    }
   case Texture::F_rgba12:
     return GL_RGBA12;
 #endif  // OPENGLES
@@ -7843,7 +7961,7 @@ get_internal_image_format(Texture *tex) const {
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGB16F;
     } else {
-      return GL_RGB;
+      return force_sized ? GL_RGB8 : GL_RGB;
     }
 
   case Texture::F_rgb5:
@@ -7860,7 +7978,7 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_rgb8:
     return GL_RGB8_OES;
   case Texture::F_rgb12:
-    return GL_RGB;
+    return force_sized ? GL_RGB8 : GL_RGB;
   case Texture::F_rgb16:
     return GL_RGB16F;
 #else
@@ -7912,25 +8030,26 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_red:
   case Texture::F_green:
   case Texture::F_blue:
-    return GL_RED;
+    return force_sized ? GL_R8 : GL_RED;
 #endif
 
   case Texture::F_alpha:
-    return GL_ALPHA;
+    return force_sized ? GL_ALPHA8 : GL_ALPHA;
+
   case Texture::F_luminance:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
     } else if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE16;
     } else {
-      return GL_LUMINANCE;
+      return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
     }
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
     } else {
-      return GL_LUMINANCE_ALPHA;
+      return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
     }
 
 #ifndef OPENGLES_1
@@ -7953,7 +8072,7 @@ get_internal_image_format(Texture *tex) const {
     GLCAT.error()
       << "Invalid image format in get_internal_image_format(): "
       << (int)tex->get_format() << "\n";
-    return GL_RGB;
+    return force_sized ? GL_RGB8 : GL_RGB;
   }
 }
 
@@ -8659,22 +8778,10 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
-  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  _target_shader = (const ShaderAttrib *)
+    _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
 #ifndef OPENGLES
   _instance_count = _target_shader->get_instance_count();
-#endif
-#ifndef OPENGLES_1
-  if (_target_shader->auto_shader()) {
-    // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.
-    CPT(RenderState) shader = _target_rs->get_auto_shader_state();
-    if (shader->_generated_shader == NULL) {
-      if (_shader_generator == NULL) {
-        _shader_generator = new ShaderGenerator(this, _scene_setup->get_display_region()->get_window());
-      }
-      const_cast<RenderState*>(shader.p())->_generated_shader = DCAST(ShaderAttrib, _shader_generator->synthesize_shader(shader));
-    }
-    _target_shader = DCAST(ShaderAttrib, shader->_generated_shader);
-  }
 #endif
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
@@ -9359,6 +9466,8 @@ update_show_usage_texture_bindings(int show_stage_index) {
       GLuint index = (*ui).second;
       glBindTexture(GL_TEXTURE_2D, index);
     }
+
+    //TODO: glBindSampler(0) ?
   }
 
   report_my_gl_errors();
@@ -9484,7 +9593,9 @@ do_issue_tex_matrix() {
 
     glMatrixMode(GL_TEXTURE);
 
-    const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    const TexMatrixAttrib *target_tex_matrix = (const TexMatrixAttrib *)
+      _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot());
+
     if (target_tex_matrix->has_stage(stage)) {
       GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
     } else {
@@ -9550,7 +9661,7 @@ do_issue_tex_gen() {
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
-    case TexGenAttrib::M_light_vector:
+    case TexGenAttrib::M_unused2:
       break;
 
     case TexGenAttrib::M_eye_sphere_map:
@@ -10052,7 +10163,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
 
-  GLint internal_format = get_internal_image_format(tex);
+  // If we'll use immutable texture storage, we have to pick a sized
+  // image format.
+  bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage);
+
+  GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
   GLenum component_type = get_component_type(tex->get_component_type());
 
@@ -10207,6 +10322,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
 
     if (image.is_null()) {
+      // We don't even have a RAM image, so we have no choice but to let
+      // mipmaps be generated on the GPU.
       if (uses_mipmaps) {
         if (_supports_generate_mipmap) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
@@ -10372,7 +10489,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
        component_type, false, 0, image_compression);
   }
 
-  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL) {
+  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL &&
+      !image.is_null()) {
+    // We uploaded an image; we may need to generate mipmaps.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "generating mipmaps for texture " << tex->get_name() << ", "
@@ -10470,6 +10589,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   // Determine the number of images to upload.
+  int num_levels = 1;
+  if (uses_mipmaps) {
+    num_levels = tex->get_expected_num_mipmap_levels();
+  }
+
   int num_ram_mipmap_levels = 0;
   if (!image.is_null()) {
     if (uses_mipmaps) {
@@ -10494,49 +10618,85 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
     if (GLCAT.is_debug()) {
       if (num_ram_mipmap_levels == 0) {
-        GLCAT.debug()
-          << "not loading NULL image for tex " << tex->get_name() << ", " << width << " x " << height
-          << " x " << depth << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        if (tex->has_clear_color()) {
+          GLCAT.debug()
+            << "clearing texture " << tex->get_name() << ", "
+            << width << " x " << height << " x " << depth << ", z = " << z
+            << ", uses_mipmaps = " << uses_mipmaps << ", clear_color = "
+            << tex->get_clear_color() << "\n";
+        } else {
+          GLCAT.debug()
+            << "not loading NULL image for texture " << tex->get_name()
+            << ", " << width << " x " << height << " x " << depth
+            << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        }
       } else {
         GLCAT.debug()
-          << "updating image data of texture " << tex->get_name() << ", " << width << " x " << height
-          << " x " << depth << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
+          << "updating image data of texture " << tex->get_name()
+          << ", " << width << " x " << height << " x " << depth
+          << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
     }
 
-    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+    for (int n = mipmap_bias; n < num_levels; ++n) {
       // we grab the mipmap pointer first, if it is NULL we grab the
       // normal mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
         ptimage = tex->get_ram_mipmap_image(n);
-        if (ptimage == (const unsigned char *)NULL) {
-          GLCAT.warning()
-            << "No mipmap level " << n << " defined for " << tex->get_name()
-            << "\n";
-          // No mipmap level n; stop here.
-          break;
+        if (ptimage.is_null()) {
+          if (n < num_ram_mipmap_levels) {
+            // We were told we'd have this many RAM mipmap images, but
+            // we don't.  Raise a warning.
+            GLCAT.warning()
+              << "No mipmap level " << n << " defined for " << tex->get_name()
+              << "\n";
+            break;
+          }
+
+          if (tex->has_clear_color()) {
+            // The texture has a clear color, so we should fill this mipmap
+            // level to a solid color.
+            if (_supports_clear_texture) {
+              // We can do that with the convenient glClearTexImage function.
+              string clear_data = tex->get_clear_data();
+
+              _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                               component_type, (void *)clear_data.data());
+              continue;
+            } else {
+              // Ask the Texture class to create the mipmap level in RAM.
+              // It'll fill it in with the correct clear color, which we
+              // can then upload.
+              ptimage = tex->make_ram_mipmap_image(n);
+            }
+          } else {
+            // No clear color and no more images.
+            break;
+          }
         }
         image_ptr = ptimage;
       }
 
-      const unsigned char *orig_image_ptr = image_ptr;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
-      image_ptr += view_size * gtc->get_view();
-      if (one_page_only) {
-        view_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += view_size * z;
-      }
-      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
-
       PTA_uchar bgr_image;
-      if (!_supports_bgr && image_compression == Texture::CM_off) {
-        // If the GL doesn't claim to support BGR, we may have to reverse
-        // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
-                                           external_format, tex);
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      if (image_ptr != (const unsigned char *)NULL) {
+        const unsigned char *orig_image_ptr = image_ptr;
+        image_ptr += view_size * gtc->get_view();
+        if (one_page_only) {
+          view_size = tex->get_ram_mipmap_page_size(n);
+          image_ptr += view_size * z;
+        }
+        nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
+
+        if (!_supports_bgr && image_compression == Texture::CM_off) {
+          // If the GL doesn't claim to support BGR, we may have to reverse
+          // the component ordering of the image.
+          image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
+                                             external_format, tex);
+        }
       }
 
       int width = tex->get_expected_mipmap_x_size(n);
@@ -10651,63 +10811,56 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         component_type = GL_UNSIGNED_INT_24_8_EXT;
 #endif
       }
-
-      // We don't have any RAM mipmap levels, so we create an uninitialized OpenGL
-      // texture.  Presumably this will be used later for render-to-texture or so.
-      switch (page_target) {
-#ifndef OPENGLES
-        case GL_TEXTURE_1D:
-          glTexImage1D(page_target, 0, internal_format, width, 0, external_format, component_type, NULL);
-          break;
-        case GL_TEXTURE_2D_ARRAY:
-#endif
-#ifndef OPENGLES_1
-        case GL_TEXTURE_3D:
-          _glTexImage3D(page_target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
-          break;
-#endif
-        default:
-          glTexImage2D(page_target, 0, internal_format, width, height, 0, external_format, component_type, NULL);
-          break;
-      }
     }
 
-    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+    for (int n = mipmap_bias; n < num_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
       if (image_ptr == (const unsigned char *)NULL) {
         ptimage = tex->get_ram_mipmap_image(n);
-        if (ptimage == (const unsigned char *)NULL) {
-          GLCAT.warning()
-            << "No mipmap level " << n << " defined for " << tex->get_name()
-            << "\n";
-          // No mipmap level n; stop here.
-#ifndef OPENGLES
-          if (is_at_least_gl_version(1, 2)) {
-            // Tell the GL we have no more mipmaps for it to use.
-            glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+        if (ptimage.is_null()) {
+          if (n < num_ram_mipmap_levels) {
+            // We were told we'd have this many RAM mipmap images, but
+            // we don't.  Raise a warning.
+            GLCAT.warning()
+              << "No mipmap level " << n << " defined for " << tex->get_name()
+              << "\n";
+  #ifndef OPENGLES
+            if (is_at_least_gl_version(1, 2)) {
+              // Tell the GL we have no more mipmaps for it to use.
+              glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+            }
+  #endif
+            break;
           }
-#endif
-          break;
+
+          if (tex->has_clear_color()) {
+            // Ask the Texture class to create the mipmap level in RAM.
+            // It'll fill it in with the correct clear color, which we
+            // can then upload.
+            ptimage = tex->make_ram_mipmap_image(n);
+          }
         }
         image_ptr = ptimage;
       }
 
-      const unsigned char *orig_image_ptr = image_ptr;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
-      image_ptr += view_size * gtc->get_view();
-      if (one_page_only) {
-        view_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += view_size * z;
-      }
-      nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
-
       PTA_uchar bgr_image;
-      if (!_supports_bgr && image_compression == Texture::CM_off) {
-        // If the GL doesn't claim to support BGR, we may have to reverse
-        // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
-                                           external_format, tex);
+      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      if (image_ptr != (const unsigned char *)NULL) {
+        const unsigned char *orig_image_ptr = image_ptr;
+        image_ptr += view_size * gtc->get_view();
+        if (one_page_only) {
+          view_size = tex->get_ram_mipmap_page_size(n);
+          image_ptr += view_size * z;
+        }
+        nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
+
+        if (!_supports_bgr && image_compression == Texture::CM_off) {
+          // If the GL doesn't claim to support BGR, we may have to reverse
+          // the component ordering of the image.
+          image_ptr = fix_component_ordering(bgr_image, image_ptr, view_size,
+                                             external_format, tex);
+        }
       }
 
       int width = tex->get_expected_mipmap_x_size(n);
@@ -11200,6 +11353,36 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
+    break;
+
+  case GL_R8I:
+    format = Texture::F_r8i;
+    break;
+  case GL_RG8I:
+    format = Texture::F_rg8i;
+    break;
+  case GL_RGB8I:
+    format = Texture::F_rgb8i;
+    break;
+  case GL_RGBA8I:
+    format = Texture::F_rgba8i;
+    break;
+
+  case GL_R8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_r8i;
+    break;
+  case GL_RG8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rg8i;
+    break;
+  case GL_RGB8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgb8i;
+    break;
+  case GL_RGBA8UI:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgba8i;
     break;
 #endif
 
@@ -11740,7 +11923,8 @@ do_issue_stencil() {
     return;
   }
 
-  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
+  const StencilAttrib *stencil = (const StencilAttrib *)
+    _target_rs->get_attrib(StencilAttrib::get_class_slot());
 
   if (stencil != (const StencilAttrib *)NULL) {
     // DEBUG
@@ -11828,7 +12012,8 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
-  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const ScissorAttrib *target_scissor = (const ScissorAttrib *)
+    _target_rs->get_attrib_def(ScissorAttrib::get_class_slot());
 
   if (!target_scissor->is_off()) {
     // A non-off ScissorAttrib means to override the scissor setting
@@ -11854,5 +12039,30 @@ do_issue_scissor() {
         << "glScissor(" << x << ", " << y << ", " << width << ", " << height << ")\n";
     }
     glScissor(x, y, width, height);
+
+    _scissor_attrib_active = true;
+
+  } else if (_scissor_attrib_active) {
+    _scissor_attrib_active = false;
+
+    if (_scissor_array.size() > 0) {
+      // Scissoring is enabled on the display region.
+      // Revert to the scissor state specified in the DisplayRegion.
+      if (_supports_viewport_arrays) {
+        _glScissorArrayv(0, _scissor_array.size(), _scissor_array[0].get_data());
+      } else {
+        const LVecBase4i sr = _scissor_array[0];
+        glScissor(sr[0], sr[1], sr[2], sr[3]);
+      }
+
+    } else if (_scissor_enabled) {
+      // The display region had no scissor enabled.  Disable scissoring.
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glDisable(GL_SCISSOR_TEST)\n";
+      }
+      glDisable(GL_SCISSOR_TEST);
+      _scissor_enabled = false;
+    }
   }
 }

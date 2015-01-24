@@ -69,14 +69,14 @@ class GraphicsStateGuardianBase;
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable, 
+class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable,
                               public LinkedListNode,
                               virtual public ReferenceCount {
 PUBLISHED:
   PandaNode(const string &name);
   virtual ~PandaNode();
-  //published so that characters can be combined. 
-  virtual PandaNode *combine_with(PandaNode *other); 
+  //published so that characters can be combined.
+  virtual PandaNode *combine_with(PandaNode *other);
 
 protected:
   PandaNode(const PandaNode &copy);
@@ -105,7 +105,7 @@ public:
                       bool &found_any,
                       const TransformState *transform,
                       Thread *current_thread = Thread::get_current_thread()) const;
-  
+
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
@@ -195,9 +195,9 @@ PUBLISHED:
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
 
-  void set_tag(const string &key, const string &value, 
+  void set_tag(const string &key, const string &value,
                Thread *current_thread = Thread::get_current_thread());
-  INLINE string get_tag(const string &key, 
+  INLINE string get_tag(const string &key,
                         Thread *current_thread = Thread::get_current_thread()) const;
   INLINE bool has_tag(const string &key,
                       Thread *current_thread = Thread::get_current_thread()) const;
@@ -393,7 +393,7 @@ private:
 
   // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
-  static PT(NodePathComponent) attach(NodePathComponent *parent, 
+  static PT(NodePathComponent) attach(NodePathComponent *parent,
                                       PandaNode *child, int sort,
                                       int pipeline_stage, Thread *current_thread);
   static void detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread);
@@ -402,7 +402,7 @@ private:
                        NodePathComponent *child, int sort, bool as_stashed,
                        int pipeline_stage, Thread *current_thread);
   static bool reparent_one_stage(NodePathComponent *new_parent,
-                                 NodePathComponent *child, int sort, 
+                                 NodePathComponent *child, int sort,
                                  bool as_stashed, int pipeline_stage, Thread *current_thread);
   static PT(NodePathComponent) get_component(NodePathComponent *parent,
                                              PandaNode *child,
@@ -411,7 +411,7 @@ private:
                                                  int pipeline_stage, Thread *current_thread);
   PT(NodePathComponent) get_generic_component(bool accept_ambiguity,
                                               int pipeline_stage, Thread *current_thread);
-  PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity, 
+  PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity,
                                                 bool &ambiguity_detected,
                                                 int pipeline_stage, Thread *current_thread);
   void delete_component(NodePathComponent *component);
@@ -421,7 +421,7 @@ private:
                              int pipeline_stage, Thread *current_thread);
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
   void r_list_descendants(ostream &out, int indent_level) const;
-  
+
   INLINE void do_set_dirty_prev_transform();
   INLINE void do_clear_dirty_prev_transform();
 
@@ -461,14 +461,14 @@ private:
     static TypeHandle get_class_type() {
       return _type_handle;
     }
-    
+
   public:
     static void init_type() {
       BamReaderAuxData::init_type();
       register_type(_type_handle, "BamReaderAuxDataDown",
                     BamReaderAuxData::get_class_type());
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -513,8 +513,8 @@ private:
 #ifndef NDEBUG
   unsigned int _unexpected_change_flags;
 #endif // !NDEBUG
-  
-  // This is the data that must be cycled between pipeline stages. 
+
+  // This is the data that must be cycled between pipeline stages.
 
   class EXPCL_PANDA_PGRAPH CData : public BoundsData {
   public:
@@ -524,7 +524,7 @@ private:
     ALLOC_DELETED_CHAIN(CData);
 
     virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const; 
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     void update_bam_nested(BamWriter *manager) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
@@ -545,7 +545,7 @@ private:
     // are less likely to change as often: tags, collide mask.
 
     INLINE void set_fancy_bit(int bits, bool value);
-    
+
 #ifdef HAVE_PYTHON
     void inc_py_refs();
     void dec_py_refs();
@@ -616,6 +616,11 @@ private:
     // When _last_update != _next_update, this cache is stale.
     UpdateSeq _last_update, _next_update;
 
+    // We don't always update the bounding volume and number of
+    // nested vertices.  This indicates the last time they were changed.
+    // It is never higher than _last_update.
+    UpdateSeq _last_bounds_update;
+
   public:
     // This section stores the links to other nodes above and below
     // this node in the graph.
@@ -648,7 +653,7 @@ private:
     COWPT(Down) _down;
     COWPT(Down) _stashed;
     COWPT(Up) _up;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -656,7 +661,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "PandaNode::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -669,7 +674,8 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   int do_find_child(PandaNode *node, const Down *down) const;
-  CDStageWriter update_bounds(int pipeline_stage, CDLockedStageReader &cdata);
+  CDStageWriter update_cached(bool update_bounds, int pipeline_stage,
+                              CDLockedStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -691,6 +697,11 @@ public:
     INLINE Children(const Children &copy);
     INLINE void operator = (const Children &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+    INLINE Children(Children &&from) NOEXCEPT;
+    INLINE void operator = (Children &&from) NOEXCEPT;
+#endif
+
     INLINE int get_num_children() const;
     INLINE PandaNode *get_child(int n) const;
     INLINE int get_child_sort(int n) const;
@@ -707,6 +718,11 @@ public:
     INLINE Stashed(const Stashed &copy);
     INLINE void operator = (const Stashed &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+    INLINE Stashed(Stashed &&from) NOEXCEPT;
+    INLINE void operator = (Stashed &&from) NOEXCEPT;
+#endif
+
     INLINE int get_num_stashed() const;
     INLINE PandaNode *get_stashed(int n) const;
     INLINE int get_stashed_sort(int n) const;
@@ -722,6 +738,11 @@ public:
     INLINE Parents(const CData *cdata);
     INLINE Parents(const Parents &copy);
     INLINE void operator = (const Parents &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+    INLINE Parents(Parents &&from) NOEXCEPT;
+    INLINE void operator = (Parents &&from) NOEXCEPT;
+#endif
 
     INLINE int get_num_parents() const;
     INLINE PandaNode *get_parent(int n) const;
@@ -750,7 +771,7 @@ protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
   void fillin_recorder(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -808,7 +829,7 @@ public:
 
   INLINE void release();
 
-  void check_bounds() const;
+  void check_cached(bool update_bounds) const;
 
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,

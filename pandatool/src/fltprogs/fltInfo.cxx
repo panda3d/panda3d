@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 FltInfo::
 FltInfo() {
+  set_program_brief("describe the contents of a MultiGen .flt file");
   set_program_description
     ("This program reads a MultiGen OpenFlight (.flt) file and reports "
      "some interesting things about its contents.");

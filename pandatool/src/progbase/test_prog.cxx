@@ -28,6 +28,7 @@ public:
 
 TestProgram::
 TestProgram() {
+  set_program_brief("test program for ProgramBase class");
   set_program_description
     ("This is a simple test program to verify the effectiveness of the "
      "ProgramBase base class as a base class for simple programs.  It "

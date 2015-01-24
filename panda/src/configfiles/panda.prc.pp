@@ -27,9 +27,6 @@ aux-display pandadx9
 #if $[HAVE_GL]
 aux-display pandagl
 #endif
-#if $[HAVE_DX8]
-aux-display pandadx8
-#endif
 #if $[HAVE_TINYDISPLAY]
 aux-display p3tinydisplay
 #endif

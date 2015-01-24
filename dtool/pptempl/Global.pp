@@ -199,13 +199,6 @@
   #define egl_libs $[EGL_LIBS]
 #endif
 
-#if $[HAVE_DX8]
-  #define dx8_ipath $[wildcard $[DX8_IPATH]]
-  #define dx8_lpath $[wildcard $[DX8_LPATH]]
-  #define dx8_cflags $[DX8_CFLAGS]
-  #define dx8_libs $[DX8_LIBS]
-#endif
-
 #if $[HAVE_DX9]
   #define dx9_ipath $[wildcard $[DX9_IPATH]]
   #define dx9_lpath $[wildcard $[DX9_LPATH]]
@@ -327,13 +320,6 @@
   #define cggl_cflags $[CGGL_CFLAGS]
   #define cggl_libs $[CGGL_LIBS]
   #define cggl_framework $[CGGL_FRAMEWORK]
-#endif
-
-#if $[HAVE_CGDX8]
-  #define cgdx8_ipath $[wildcard $[CGDX8_IPATH]]
-  #define cgdx8_lpath $[wildcard $[CGDX8_LPATH]]
-  #define cgdx8_cflags $[CGDX8_CFLAGS]
-  #define cgdx8_libs $[CGDX8_LIBS]
 #endif
 
 #if $[HAVE_CGDX9]

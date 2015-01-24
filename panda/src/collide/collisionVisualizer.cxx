@@ -122,14 +122,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     const VizInfo &viz_info = (*di).second;
 
     CullTraverserData xform_data(data);
-    
+
     // We don't want to inherit the transform from above!  We ignore
     // whatever transforms were above the CollisionVisualizer node; it
     // always renders its objects according to their appropriate net
     // transform.
     xform_data._net_transform = TransformState::make_identity();
     xform_data._view_frustum = trav->get_view_frustum();
-    xform_data.apply_transform_and_state(trav, net_transform, 
+    xform_data.apply_transform_and_state(trav, net_transform,
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty(),
                                          ClipPlaneAttrib::make());
@@ -148,7 +148,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(xform_data, node);
-        
+
         // We don't want to inherit the render state from above for
         // these guys.
         next_data._state = get_viz_state();
@@ -161,16 +161,16 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       CPT(RenderState) empty_state = RenderState::make_empty();
       CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, false));
 
-      PT(GeomVertexArrayFormat) point_array_format = 
+      PT(GeomVertexArrayFormat) point_array_format =
         new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
                                   Geom::NT_stdfloat, Geom::C_point,
                                   InternalName::get_color(), 1,
                                   Geom::NT_packed_dabc, Geom::C_color,
-                                  InternalName::get_size(), 1, 
+                                  InternalName::get_size(), 1,
                                   Geom::NT_stdfloat, Geom::C_other);
-      CPT(GeomVertexFormat) point_format = 
+      CPT(GeomVertexFormat) point_format =
         GeomVertexFormat::register_format(point_array_format);
-        
+
       Points::const_iterator pi;
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
@@ -178,9 +178,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // Draw a small red point at the surface point, and a smaller
         // white point at the interior point.
         {
-          PT(GeomVertexData) point_vdata = 
+          PT(GeomVertexData) point_vdata =
             new GeomVertexData("viz", point_format, Geom::UH_stream);
-          
+
           PT(GeomPoints) points = new GeomPoints(Geom::UH_stream);
 
           GeomVertexWriter vertex(point_vdata, InternalName::get_vertex());
@@ -203,19 +203,17 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
           PT(Geom) geom = new Geom(point_vdata);
           geom->add_primitive(points);
-            
-          CullableObject *object = 
-            new CullableObject(geom, point_state, 
-                               xform_data.get_net_transform(trav),
-                               xform_data.get_modelview_transform(trav),
-                               trav->get_scene());
-          
+
+          CullableObject *object =
+            new CullableObject(geom, point_state,
+                               xform_data.get_internal_transform(trav));
+
           trav->get_cull_handler()->record_object(object, trav);
         }
 
         // Draw the normal vector at the surface point.
         if (!point._surface_normal.almost_equal(LVector3::zero())) {
-          PT(GeomVertexData) line_vdata = 
+          PT(GeomVertexData) line_vdata =
             new GeomVertexData("viz", GeomVertexFormat::get_v3cp(),
                                Geom::UH_stream);
 
@@ -225,7 +223,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           GeomVertexWriter color(line_vdata, InternalName::get_color());
 
           vertex.add_data3(point._surface_point);
-          vertex.add_data3(point._surface_point + 
+          vertex.add_data3(point._surface_point +
                             point._surface_normal * _normal_scale);
           color.add_data4(1.0f, 0.0f, 0.0f, 1.0f);
           color.add_data4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -234,13 +232,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
           PT(Geom) geom = new Geom(line_vdata);
           geom->add_primitive(lines);
-          
-          CullableObject *object = 
-            new CullableObject(geom, empty_state, 
-                               xform_data.get_net_transform(trav),
-                               xform_data.get_modelview_transform(trav),
-                               trav->get_scene());
-          
+
+          CullableObject *object =
+            new CullableObject(geom, empty_state,
+                               xform_data.get_internal_transform(trav));
+
           trav->get_cull_handler()->record_object(object, trav);
         }
       }

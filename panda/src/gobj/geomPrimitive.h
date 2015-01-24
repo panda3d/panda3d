@@ -207,11 +207,16 @@ public:
                     bool force) const=0;
 
   void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                         bool &found_any,
+                         PN_stdfloat &sq_center_dist, bool &found_any,
                          const GeomVertexData *vertex_data,
                          bool got_mat, const LMatrix4 &mat,
                          const InternalName *column_name,
                          Thread *current_thread) const;
+
+  void calc_sphere_radius(const LPoint3 &center,
+                          PN_stdfloat &sq_radius, bool &found_any,
+                          const GeomVertexData *vertex_data,
+                          Thread *current_thread) const;
 
 protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;

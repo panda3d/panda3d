@@ -80,7 +80,7 @@ PUBLISHED:
                               const WindowProperties &win_prop,
                               int flags, GraphicsStateGuardian *gsg = NULL,
                               GraphicsOutput *host = NULL);
-  
+
   // Syntactic shorthand versions of make_output
   INLINE GraphicsOutput *make_buffer(GraphicsOutput *host,
                                      const string &name, int sort,
@@ -91,7 +91,8 @@ PUBLISHED:
   INLINE GraphicsOutput *make_parasite(GraphicsOutput *host,
                                        const string &name, int sort,
                                        int x_size, int y_size);
-  
+
+  bool add_window(GraphicsOutput *window, int sort);
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();
   void reset_all_windows(bool swapchain);
@@ -104,7 +105,7 @@ PUBLISHED:
   BLOCKING void render_frame();
   BLOCKING void open_windows();
   BLOCKING void sync_frame();
-  BLOCKING void ready_flip();  
+  BLOCKING void ready_flip();
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
@@ -130,7 +131,7 @@ public:
 public:
   static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                       GraphicsStateGuardian *gsg, Thread *current_thread);
-  
+
 private:
   typedef ov_set< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
@@ -158,7 +159,7 @@ private:
   void do_flip_frame(Thread *current_thread);
   INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
-  PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg, 
+  PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg,
                              DisplayRegionPipelineReader *dr);
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
                GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
@@ -281,7 +282,7 @@ private:
     Windows _cull;    // cull stage
     Windows _cdraw;   // cull-and-draw-together stage
     Windows _draw;    // draw stage
-    Windows _window;  // window stage, i.e. process windowing events 
+    Windows _window;  // window stage, i.e. process windowing events
 
     // These are not kept sorted.
     Windows _pending_close;    // moved from _window, pending close.

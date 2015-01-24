@@ -8,5 +8,5 @@ StartupNotify=true
 NoDisplay=true
 Terminal=true
 Type=Application
-Categories=Viewer;
+Categories=Graphics;Utility;3DGraphics;Viewer;
 MimeType=model/x-egg;model/x-compressed-egg;model/x-bam;model/x-compressed-bam;

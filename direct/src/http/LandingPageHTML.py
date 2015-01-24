@@ -1,6 +1,6 @@
 # -- Text content for the landing page.  You should change these for yours! --
 
-from direct.showbase import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 title = "Landing Page"
 defaultTitle = title

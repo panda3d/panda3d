@@ -28,6 +28,7 @@ BamToEgg::
 BamToEgg() :
   SomethingToEgg("bam", ".bam")
 {
+  set_program_brief("convert a native Panda .bam file to an .egg file");
   set_program_description
     ("This program converts native Panda bam files to egg.  The conversion "
      "is somewhat incomplete; running egg2bam followed by bam2egg should not "

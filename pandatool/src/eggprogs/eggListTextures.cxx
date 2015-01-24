@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 EggListTextures::
 EggListTextures() {
+  set_program_brief("list textures referenced by an .egg file");
   set_program_description
     ("egg-list-textures reads an egg file and writes a list of the "
      "textures it references.  It is particularly useful for building "

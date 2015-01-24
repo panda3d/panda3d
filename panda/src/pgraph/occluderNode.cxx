@@ -164,20 +164,16 @@ bool OccluderNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Normally, an OccluderNode is invisible.  But if someone shows it,
   // we will draw a visualization, a checkerboard-textured polygon.
-  CullableObject *occluder_viz = 
-    new CullableObject(get_occluder_viz(trav, data), get_occluder_viz_state(trav, data), 
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+  CullableObject *occluder_viz =
+    new CullableObject(get_occluder_viz(trav, data), get_occluder_viz_state(trav, data),
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(occluder_viz, trav);
 
   // Also get the frame.
   nassertr(_frame_viz != (Geom *)NULL, false);
-  CullableObject *frame_viz = 
-    new CullableObject(_frame_viz, get_frame_viz_state(trav, data), 
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+  CullableObject *frame_viz =
+    new CullableObject(_frame_viz, get_frame_viz_state(trav, data),
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(frame_viz, trav);
 
   // Now carry on to render our child nodes.

@@ -266,8 +266,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-
-  _shader_generator = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,12 +276,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
-
-  if (_shader_generator) {
-    delete _shader_generator;
-    _shader_generator = 0;
-  }
-
   GeomMunger::unregister_mungers_for_gsg(this);
 }
 
@@ -364,6 +356,9 @@ void GraphicsStateGuardian::
 set_coordinate_system(CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
+  }
+  if (_coordinate_system == cs) {
+    return;
   }
   _coordinate_system = cs;
 
@@ -875,14 +870,14 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
+//  Description: This function will compute the distance to the
 //               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat GraphicsStateGuardian::
 compute_distance_to(const LPoint3 &point) const {
-  switch (_coordinate_system) {
+  switch (_internal_coordinate_system) {
   case CS_zup_right:
     return point[1];
 
@@ -898,7 +893,7 @@ compute_distance_to(const LPoint3 &point) const {
   default:
     gsg_cat.error()
       << "Invalid coordinate system in compute_distance_to: "
-      << (int)_coordinate_system << "\n";
+      << (int)_internal_coordinate_system << "\n";
     return 0.0f;
   }
 }
@@ -1041,7 +1036,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_material: {
-    const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+    const MaterialAttrib *target_material = (const MaterialAttrib *)
+      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
     if (target_material->is_off()) {
       t = LMatrix4(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0);
@@ -1060,7 +1056,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_color: {
-    const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+    const ColorAttrib *target_color = (const ColorAttrib *)
+      _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
     if (target_color->get_color_type() != ColorAttrib::T_flat) {
       return &LMatrix4::ones_mat();
     }
@@ -1069,7 +1066,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_colorscale: {
-    const ColorScaleAttrib *target_color = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+    const ColorScaleAttrib *target_color = (const ColorScaleAttrib *)
+      _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
     if (target_color->is_identity()) {
       return &LMatrix4::ones_mat();
     }
@@ -1078,7 +1076,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_fog: {
-    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    const FogAttrib *target_fog = (const FogAttrib *)
+      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == (Fog*) NULL) {
       return &LMatrix4::ones_mat();
@@ -1089,7 +1088,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_fogcolor: {
-    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    const FogAttrib *target_fog = (const FogAttrib *)
+      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == (Fog*) NULL) {
       return &LMatrix4::ones_mat();
@@ -2074,8 +2074,12 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform_for(CoordinateSystem cs) const {
-  if (_internal_coordinate_system == CS_default ||
-      _internal_coordinate_system == cs) {
+  if (_coordinate_system == cs) {
+    // We've already calculated this.
+    return _cs_transform;
+
+  } else if (_internal_coordinate_system == CS_default ||
+             _internal_coordinate_system == cs) {
     return TransformState::make_identity();
 
   } else {
@@ -2111,7 +2115,9 @@ do_issue_clip_plane() {
   int num_enabled = 0;
   int num_on_planes = 0;
 
-  const ClipPlaneAttrib *target_clip_plane = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+  const ClipPlaneAttrib *target_clip_plane = (const ClipPlaneAttrib *)
+    _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot());
+
   if (target_clip_plane != (ClipPlaneAttrib *)NULL) {
     CPT(ClipPlaneAttrib) new_plane = target_clip_plane->filter_to_max(_max_clip_planes);
 
@@ -2171,7 +2177,9 @@ do_issue_clip_plane() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 do_issue_color() {
-  const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+  const ColorAttrib *target_color = (const ColorAttrib *)
+    _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
+
   switch (target_color->get_color_type()) {
   case ColorAttrib::T_flat:
     // Color attribute flat: it specifies a scene graph color that
@@ -2219,7 +2227,9 @@ do_issue_color_scale() {
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 
-  const ColorScaleAttrib *target_color_scale = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+  const ColorScaleAttrib *target_color_scale = (const ColorScaleAttrib *)
+    _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
+
   _color_scale_enabled = target_color_scale->has_scale();
   _current_color_scale = target_color_scale->get_scale();
   _has_texture_alpha_scale = false;
@@ -2278,7 +2288,9 @@ do_issue_light() {
   int num_enabled = 0;
   int num_on_lights = 0;
 
-  const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
+  const LightAttrib *target_light = (const LightAttrib *)
+    _target_rs->get_attrib_def(LightAttrib::get_class_slot());
+
   if (display_cat.is_spam()) {
     display_cat.spam()
       << "do_issue_light: " << target_light << "\n";
@@ -2639,8 +2651,10 @@ end_bind_clip_planes() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 determine_target_texture() {
-  const TextureAttrib *target_texture = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, _target_rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+  const TextureAttrib *target_texture = (const TextureAttrib *)
+    _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
+  const TexGenAttrib *target_tex_gen = (const TexGenAttrib *)
+    _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
 
   nassertv(target_texture != (TextureAttrib *)NULL &&
            target_tex_gen != (TexGenAttrib *)NULL);
@@ -2710,6 +2724,13 @@ close_gsg() {
   Thread *current_thread = Thread::get_current_thread();
   _prepared_objects->begin_frame(this, current_thread);
   _prepared_objects->end_frame(current_thread);
+
+  // We have to clear the list of timer queries, though, otherwise
+  // their destructors will cause a crash when they try to access
+  // the GSG object.
+#ifdef DO_PSTATS
+  _pending_timer_queries.clear();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

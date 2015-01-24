@@ -28,6 +28,7 @@ SceneSetup() {
   _camera_transform = TransformState::make_identity();
   _world_transform = TransformState::make_identity();
   _cs_transform = TransformState::make_identity();
+  _cs_world_transform = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,4 +316,28 @@ set_cs_transform(const TransformState *cs_transform) {
 INLINE const TransformState *SceneSetup::
 get_cs_transform() const {
   return _cs_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_cs_world_transform
+//       Access: Published
+//  Description: Specifies the position from the starting node
+//               relative to the camera, in the GSG's internal
+//               coordinate system.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_cs_world_transform(const TransformState *cs_world_transform) {
+  _cs_world_transform = cs_world_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_cs_world_transform
+//       Access: Published
+//  Description: Returns the position from the starting node
+//               relative to the camera, in the GSG's internal
+//               coordinate system.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *SceneSetup::
+get_cs_world_transform() const {
+  return _cs_world_transform;
 }

@@ -34,11 +34,11 @@ TypeHandle P3DPythonRun::P3DWindowHandle::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 P3DPythonRun(const char *program_name, const char *archive_file,
-             FHandle input_handle, FHandle output_handle, 
+             FHandle input_handle, FHandle output_handle,
              const char *log_pathname, bool interactive_console) {
   P3DWindowHandle::init_type();
   init_xml();
@@ -115,7 +115,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 ~P3DPythonRun() {
@@ -150,72 +150,32 @@ run_python() {
   PyRun_SimpleString("import sys; sys.dll_suffix = '_d'");
 #endif
 
-  // We'll need libpandaexpress to be imported before we can load
-  // _vfsimporter.  So, find it and load it.
-  Filename libpandaexpress;
+  Filename dir = _archive_file.get_dirname();
 
-#ifdef _WIN32
-  // Of course it's already resident, so use that version.
-  wstring basename = Filename::dso_filename("libpandaexpress.so").to_os_specific_w();
-  HMODULE h = GetModuleHandleW(basename.c_str());
-
-  if (h == NULL) {
-    nout << "Can't find libpandaexpress in memory.\n";
-  } else {
-    static const int buffer_size = 4096;
-    wchar_t buffer[buffer_size];
-    GetModuleFileNameW(h, buffer, buffer_size);
-    libpandaexpress = Filename::from_os_specific_w(buffer);
-  }
-#endif  // _WIN32
-
-  if (libpandaexpress.empty()) {
-    // Go look for it on disk.
-    libpandaexpress = Filename(_archive_file.get_dirname(), 
-                               Filename::dso_filename("libpandaexpress.so"));
-#if defined(__APPLE__) && PY_VERSION_HEX < 0x02050000
-    // On OSX, for Python versions 2.4 and before, we have to load the
-    // .so file, not the .dylib file.
-    libpandaexpress.set_type(Filename::T_general);
-#endif
-  }
-
-  if (!libpandaexpress.exists()) {
-    nout << "Can't find " << libpandaexpress << "\n";
-    return false;
-  }
-
-  // We need the "imp" built-in module for that.
-  PyObject *imp_module = PyImport_ImportModule("imp");
-  if (imp_module == NULL) {
-    nout << "Failed to import module imp\n";
+  // We'll need to synthesize a 'panda3d' module before loading
+  // VFSImporter.  We could simply freeze it, but Python has a bug
+  // setting __path__ of frozen modules properly.
+  PyObject *panda3d_module = PyImport_AddModule("panda3d");
+  if (panda3d_module == NULL) {
+    nout << "Failed to create panda3d module:\n";
     PyErr_Print();
     return false;
   }
 
-  // And here's where we run into a brick wall attempting to make the
-  // whole plugin system Unicode-safe for Windows.  It turns out that
-  // this Python call, imp.load_dynamic(), will not accept a Unicode
-  // pathname.  So if the DLL in question is in a location that
-  // contains non-ASCII characters, it can't be loaded.
-  string os_specific = libpandaexpress.to_os_specific();
-  PyObject *result = PyObject_CallMethod
-    (imp_module, (char *)"load_dynamic", (char *)"ss", 
-     "libpandaexpress", os_specific.c_str());
-  if (result == NULL) {
-    nout << "Failed to import libpandaexpress as a module\n";
-    PyErr_Print();
-    return false;
-  }
-  Py_DECREF(result);
-  Py_DECREF(imp_module);
+  // Set the __path__ such that it can find panda3d/core.pyd, etc.
+  Filename panda3d_dir(dir, "panda3d");
+  string dir_str = panda3d_dir.to_os_specific();
+  PyObject *panda3d_dict = PyModule_GetDict(panda3d_module);
+  PyObject *panda3d_path = Py_BuildValue("[s#]", dir_str.data(), dir_str.length());
+  PyDict_SetItemString(panda3d_dict, "__path__", panda3d_path);
+  Py_DECREF(panda3d_path);
 
   // Now we can load _vfsimporter.pyd.  Since this is a magic frozen
   // pyd, importing it automatically makes all of its frozen contents
   // available to import as well.
   PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
   if (vfsimporter == NULL) {
-    nout << "Failed to import _vfsimporter\n";
+    nout << "Failed to import _vfsimporter:\n";
     PyErr_Print();
     return false;
   }
@@ -224,15 +184,15 @@ run_python() {
   // And now we can import the VFSImporter module that was so defined.
   PyObject *vfsimporter_module = PyImport_ImportModule("VFSImporter");
   if (vfsimporter_module == NULL) {
-    nout << "Failed to import VFSImporter\n";
+    nout << "Failed to import VFSImporter:\n";
     PyErr_Print();
     return false;
   }
 
   // And register the VFSImporter.
-  result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
+  PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
   if (result == NULL) {
-    nout << "Failed to call VFSImporter.register()\n";
+    nout << "Failed to call VFSImporter.register():\n";
     PyErr_Print();
     return false;
   }
@@ -248,7 +208,6 @@ run_python() {
     nout << "Could not read " << _archive_file << "\n";
     return false;
   }
-  Filename dir = _archive_file.get_dirname();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vfs->mount(mf, dir, VirtualFileSystem::MF_read_only)) {
     nout << "Could not mount " << _archive_file << "\n";
@@ -346,7 +305,7 @@ run_python() {
   }
   Py_DECREF(result);
   Py_DECREF(request_func);
- 
+
 
   // Now add check_comm() as a task.  It can be a threaded task, but
   // this does mean that application programmers will have to be alert
@@ -545,7 +504,7 @@ handle_command(TiXmlDocument *doc) {
         assert(!needs_response);
         int instance_id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
-        if (xwparams != (TiXmlElement *)NULL && 
+        if (xwparams != (TiXmlElement *)NULL &&
             xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
           setup_window(instance_id, xwparams);
         }
@@ -591,7 +550,7 @@ handle_command(TiXmlDocument *doc) {
             _sent_objects.erase(si);
           }
         }
-        
+
       } else {
         nout << "Unhandled command " << cmd << "\n";
         if (needs_response) {
@@ -678,7 +637,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         if (method_name == NULL) {
           // No method name; call the object directly.
           result = PyObject_CallObject(obj, params);
-          
+
           // Several special-case "method" names.
         } else if (strcmp(method_name, "__bool__") == 0) {
           result = PyBool_FromLong(PyObject_IsTrue(obj));
@@ -713,7 +672,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                 PyErr_Clear();
               }
             }
-            
+
             // If the object supports the mapping protocol, store it
             // in the object's dictionary.
             if (!success && PyMapping_Check(obj)) {
@@ -761,7 +720,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                 PyErr_Clear();
               }
             }
-            
+
             if (success) {
               result = Py_True;
             } else {
@@ -1066,8 +1025,8 @@ py_request_func(PyObject *args) {
     PyObject *value;
     int needs_response;
     int unique_id;
-    if (!PyArg_ParseTuple(extra_args, "sOsOii", 
-                          &operation, &object, &property_name, &value, 
+    if (!PyArg_ParseTuple(extra_args, "sOsOii",
+                          &operation, &object, &property_name, &value,
                           &needs_response, &unique_id)) {
       return NULL;
     }
@@ -1256,7 +1215,7 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   xinstance->Attribute("respect_per_platform", &respect_per_platform);
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setInstanceInfo", (char *)"sssiOi", root_dir, 
+    (_runner, (char *)"setInstanceInfo", (char *)"sssiOi", root_dir,
      log_directory, super_mirror, verify_contents, main, respect_per_platform);
   Py_DECREF(main);
 
@@ -1347,7 +1306,7 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
       value = value_c;
     }
 
-    PyObject *tuple = Py_BuildValue("(ss)", keyword.c_str(), 
+    PyObject *tuple = Py_BuildValue("(ss)", keyword.c_str(),
                                     value.c_str());
     PyList_Append(token_list, tuple);
     Py_DECREF(tuple);
@@ -1419,7 +1378,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   }
 
   int win_x, win_y, win_width, win_height;
-  
+
   xwparams->Attribute("win_x", &win_x);
   xwparams->Attribute("win_y", &win_y);
   xwparams->Attribute("win_width", &win_width);
@@ -1531,7 +1490,7 @@ terminate_session() {
         Py_DECREF(result);
       }
     }
-    
+
     _session_terminated = true;
   }
 }
@@ -1772,7 +1731,7 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
       // Construct a new BrowserObject wrapper around this object.
-      return PyObject_CallFunction(_browser_object_class, (char *)"Oi", 
+      return PyObject_CallFunction(_browser_object_class, (char *)"Oi",
                                    _runner, object_id);
     }
 
@@ -1852,7 +1811,7 @@ rt_thread_run() {
     }
 
     // Successfully read an XML document.
-    
+
     // Check for one special case: the "exit" command means we shut
     // down the read thread along with everything else.
     TiXmlElement *xcommand = doc->FirstChildElement("command");
@@ -1875,7 +1834,7 @@ rt_thread_run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::P3DWindowHandle::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::P3DWindowHandle::
 P3DWindowHandle(P3DPythonRun *p3dpython, P3DCInstance *inst,

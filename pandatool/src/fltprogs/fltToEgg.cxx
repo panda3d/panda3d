@@ -34,6 +34,7 @@ FltToEgg() :
   add_transform_options();
   add_merge_externals_options();
 
+  set_program_brief("convert a MultiGen .flt file to .egg");
   set_program_description
     ("This program converts MultiGen OpenFlight (.flt) files to egg.  Most "
      "features of MultiGen that are also recognized by egg are supported.");

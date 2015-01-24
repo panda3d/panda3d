@@ -43,6 +43,7 @@
 ////////////////////////////////////////////////////////////////////
 MayaCopy::
 MayaCopy() {
+  set_program_brief("copy Maya .mb files into a CVS source hierarchy");
   set_program_description
     ("mayacopy copies one or more Maya .mb files into a "
      "CVS source hierarchy.  "

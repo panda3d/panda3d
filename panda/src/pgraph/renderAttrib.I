@@ -96,11 +96,7 @@ compare_to(const RenderAttrib &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t RenderAttrib::
 get_hash() const {
-  size_t hash = get_hash_impl();
-
-  // The type is also added to the hash.
-  hash = int_hash::add_hash(hash, get_type().get_index());
-  return hash;
+  return _hash;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,6 +137,19 @@ get_unique() const {
 INLINE CPT(RenderAttrib) RenderAttrib::
 get_auto_shader_attrib(const RenderState *state) const {
   return get_auto_shader_attrib_impl(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::calc_hash
+//       Access: Published
+//  Description: Calculates a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE void RenderAttrib::
+calc_hash() {
+  size_t hash = get_hash_impl();
+
+  // The type is also added to the hash.
+  _hash = int_hash::add_hash(hash, get_type().get_index());
 }
 
 ////////////////////////////////////////////////////////////////////

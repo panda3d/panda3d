@@ -167,7 +167,7 @@ class CommonFilters:
                 auxbits |= AuxBitplaneAttrib.ABOGlow
 
             if ("VolumetricLighting" in configuration):
-                needtex[configuration["VolumetricLighting"].source] = True
+                needtex.add(configuration["VolumetricLighting"].source)
 
             for tex in needtex:
                 self.textures[tex] = Texture("scene-" + tex)

@@ -29,6 +29,7 @@
 EggMakeTube::
 EggMakeTube() {
 
+  set_program_brief("generate a tube or sphere from geometry in an .egg file");
   set_program_description
     ("egg-make-tube generates an egg file representing a \"tube\" model, "
      "a cylinder capped on both ends by hemispheres.  This is similar "

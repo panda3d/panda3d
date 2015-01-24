@@ -50,7 +50,9 @@ ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
 ("bounds-type", BoundingVolume::BT_sphere,
  PRC_DESC("Specify the type of bounding volume that is created automatically "
           "by Panda to enclose geometry.  Use 'sphere' or 'box', or use "
-          "'best' to let Panda decide which is most appropriate."));
+          "'best' to let Panda decide which is most appropriate.  You can "
+          "also use 'fastest' if you don't want Panda to waste much time "
+          "computing the most optimal bounding volume."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmathutil

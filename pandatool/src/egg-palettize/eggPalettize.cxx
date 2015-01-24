@@ -35,6 +35,7 @@
 ////////////////////////////////////////////////////////////////////
 EggPalettize::
 EggPalettize() : EggMultiFilter(true) {
+  set_program_brief("pack textures from various .egg models into palette images");
   set_program_description
     ("egg-palettize attempts to pack several texture maps from various models "
      "together into one or more palette images, for improved rendering performance "

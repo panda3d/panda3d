@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 ImageResize::
 ImageResize() : ImageFilter(true) {
+  set_program_brief("resize an image file");
   set_program_description
     ("This program reads an image file and resizes it to a larger or smaller "
      "image file.");

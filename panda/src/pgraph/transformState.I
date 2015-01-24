@@ -14,15 +14,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::operator <
+//     Function: TransformState::operator !=
 //       Access: Published
-//  Description: Provides an arbitrary ordering among all unique
-//               TransformStates, so we can store the essentially
-//               different ones in a big set and throw away the rest.
+//  Description: Opposite of operator ==.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TransformState::
-operator < (const TransformState &other) const {
-  return compare_to(other) < 0;
+operator != (const TransformState &other) const {
+  return !(operator == (other));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,10 +29,14 @@ operator < (const TransformState &other) const {
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
+//
+//               Note that if this returns 0, it doesn't necessarily
+//               imply that operator == returns true; it uses a very
+//               slightly different comparison threshold.
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 compare_to(const TransformState &other) const {
-  return compare_to(other, uniquify_matrix);
+  return compare_to(other, _uniquify_matrix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +58,7 @@ get_hash() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
 make_pos(const LVecBase3 &pos) {
-  return make_pos_hpr_scale(pos, 
+  return make_pos_hpr_scale(pos,
                             LVecBase3(0.0f, 0.0f, 0.0f),
                             LVecBase3(1.0f, 1.0f, 1.0f));
 }
@@ -70,7 +72,7 @@ make_pos(const LVecBase3 &pos) {
 INLINE CPT(TransformState) TransformState::
 make_hpr(const LVecBase3 &hpr) {
   return make_pos_hpr_scale(LVecBase3(0.0f, 0.0f, 0.0f),
-                            hpr, 
+                            hpr,
                             LVecBase3(1.0f, 1.0f, 1.0f));
 }
 
@@ -83,7 +85,7 @@ make_hpr(const LVecBase3 &hpr) {
 INLINE CPT(TransformState) TransformState::
 make_quat(const LQuaternion &quat) {
   return make_pos_quat_scale(LVecBase3(0.0f, 0.0f, 0.0f),
-                             quat, 
+                             quat,
                              LVecBase3(1.0f, 1.0f, 1.0f));
 }
 
@@ -146,7 +148,7 @@ make_shear(const LVecBase3 &shear) {
 //               components.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
-make_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr, 
+make_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr,
                    const LVecBase3 &scale) {
   return make_pos_hpr_scale_shear(pos, hpr, scale, LVecBase3::zero());
 }
@@ -158,7 +160,7 @@ make_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr,
 //               components.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
-make_pos_quat_scale(const LVecBase3 &pos, const LQuaternion &quat, 
+make_pos_quat_scale(const LVecBase3 &pos, const LQuaternion &quat,
                     const LVecBase3 &scale) {
   return make_pos_quat_scale_shear(pos, quat, scale, LVecBase3::zero());
 }
@@ -182,7 +184,7 @@ make_pos2d(const LVecBase2 &pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
 make_rotate2d(PN_stdfloat rotate) {
-  return make_pos_rotate_scale2d(LVecBase2(0.0f, 0.0f), rotate, 
+  return make_pos_rotate_scale2d(LVecBase2(0.0f, 0.0f), rotate,
                                  LVecBase2(1.0f, 1.0f));
 }
 
@@ -229,7 +231,7 @@ make_scale2d(const LVecBase2 &scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
 make_shear2d(PN_stdfloat shear) {
-  return make_pos_rotate_scale_shear2d(LVecBase2(0.0f, 0.0f), 0.0f, 
+  return make_pos_rotate_scale_shear2d(LVecBase2(0.0f, 0.0f), 0.0f,
                                        LVecBase2(1.0f, 1.0f), shear);
 }
 
@@ -240,7 +242,7 @@ make_shear2d(PN_stdfloat shear) {
 //               components.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) TransformState::
-make_pos_rotate_scale2d(const LVecBase2 &pos, PN_stdfloat rotate, 
+make_pos_rotate_scale2d(const LVecBase2 &pos, PN_stdfloat rotate,
                         const LVecBase2 &scale) {
   return make_pos_rotate_scale_shear2d(pos, rotate, scale, 0.0f);
 }
@@ -353,7 +355,7 @@ hpr_given() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::quat_given
 //       Access: Published
-//  Description: Returns true if the rotation was specified via a 
+//  Description: Returns true if the rotation was specified via a
 //               quaternion, false otherwise.  If this is true,
 //               get_quat() will be exactly as set; otherwise, it will
 //               return a computed value.
@@ -1142,7 +1144,7 @@ calc_mat() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 check_uniform_scale() {
-  if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) && 
+  if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) &&
       IS_NEARLY_EQUAL(_scale[0], _scale[2])) {
     _flags |= F_uniform_scale;
     if (IS_NEARLY_EQUAL(_scale[0], 1.0f)) {
@@ -1234,7 +1236,7 @@ consider_update_pstats(int old_referenced_bits) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::Composition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TransformState::Composition::
 Composition() {
@@ -1243,7 +1245,7 @@ Composition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::Composition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TransformState::Composition::
 Composition(const TransformState::Composition &copy) :
@@ -1254,7 +1256,7 @@ Composition(const TransformState::Composition &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::CompositionCycleDescEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TransformState::CompositionCycleDescEntry::
 CompositionCycleDescEntry(const TransformState *obj,

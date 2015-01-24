@@ -35,6 +35,32 @@ PointerTo(const PointerTo<T> &copy) :
 {
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE PointerTo<T>::
+PointerTo(PointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE PointerTo<T> &PointerTo<T>::
+operator = (PointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Destructor
 //       Access: Public
@@ -165,6 +191,56 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
   PointerToBase<T>((const PointerToBase<T> &)copy)
 {
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T>::
+ConstPointerTo(PointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T>::
+ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT :
+  PointerToBase<T>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (PointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (ConstPointerTo<T> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Dereference operator

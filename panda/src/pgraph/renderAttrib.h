@@ -105,7 +105,7 @@ PUBLISHED:
     M_greater,          // incoming > reference_alpha
     M_not_equal,        // incoming != reference_alpha
     M_greater_equal,    // incoming >= reference_alpha
-    M_always            // Always draw.  
+    M_always            // Always draw.
   };
 
   // This is the enumerated type for TexGenAttrib.  It is inherited
@@ -131,7 +131,7 @@ PUBLISHED:
     // Typically, a statically-generated cube map will be in eye
     // space, while a dynamically-generated map will be in world
     // space.
-
+    //
     // Cube mapping is not supported on all hardware.
     M_world_cube_map,
     M_eye_cube_map,
@@ -153,7 +153,7 @@ PUBLISHED:
     // lower-right across the point's face.  Without this, each point
     // will have just a single uniform texture coordinate value across
     // its face.
-
+    //
     // Unfortunately, the generated texture coordinates are inverted
     // (upside-down) from Panda's usual convention, but this is what
     // the graphics card manufacturers decided to use.  You could use
@@ -163,16 +163,12 @@ PUBLISHED:
     // hardware sprites.
     M_point_sprite,
 
-    // M_light_vector generates special 3-d texture coordinates that
-    // represent the vector to a particular Light in the scene graph,
-    // expressed in each vertex's tangent space.  This is used to
-    // implement bumpmapping.  It is always computed on the CPU.
-
-    // This requires a Light to be specified to the TexGenAttrib.  It
-    // also requires each vertex to define a normal, as well as a
-    // tangent and binormal for the particular named texture
-    // coordinate set.
-    M_light_vector,
+    // M_light_vector generated special 3-d texture coordinates that
+    // represented the vector to a particular Light in the scene graph,
+    // expressed in each vertex's tangent space.  This has now been
+    // removed.  We need to reserve the slot in the enum, though, to
+    // make sure the following enum value still has the same value.
+    M_unused2,
 
     // M_constant generates the same fixed texture coordinates at each
     // vertex.  Not terribly useful, of course, except for certain
@@ -181,6 +177,8 @@ PUBLISHED:
   };
 
 protected:
+  INLINE void calc_hash();
+
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
   static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -212,6 +210,7 @@ private:
   static Attribs *_attribs;
 
   int _saved_entry;
+  size_t _hash;
 
   // This keeps track of our current position through the garbage
   // collection cycle.
@@ -227,7 +226,7 @@ public:
 protected:
   static TypedWritable *new_from_bam(RenderAttrib *attrib, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

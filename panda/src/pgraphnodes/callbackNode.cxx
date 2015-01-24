@@ -149,7 +149,7 @@ void CallbackNode::
 add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
-      << "Found " << *this << " in state " << *data._state 
+      << "Found " << *this << " in state " << *data._state
       << " draw_mask = " << data._draw_mask << "\n";
   }
 
@@ -158,11 +158,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // pass any Geoms, however.
   CallbackObject *cbobj = get_draw_callback();
   if (cbobj != (CallbackObject *)NULL) {
-    CullableObject *object = 
+    CullableObject *object =
       new CullableObject(NULL, data._state,
-                         data.get_net_transform(trav),
-                         data.get_modelview_transform(trav),
-                         trav->get_scene());
+                         data.get_internal_transform(trav));
     object->set_draw_callback(cbobj);
     trav->get_cull_handler()->record_object(object, trav);
   }

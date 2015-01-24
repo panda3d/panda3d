@@ -46,6 +46,43 @@ INLINE PointerToBase<T>::
   reassign((To *)NULL);
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::Move Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE PointerToBase<T>::
+PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
+  _void_ptr = from._void_ptr;
+  from._void_ptr = (void *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToBase::reassign
+//       Access: Protected
+//  Description: This version of reassign is called when a PointerTo
+//               is assigned to this PointerTo as an rvalue.  In
+//               this case, we can steal the reference count from
+//               the other PointerTo, without needing to call ref()
+//               and unref() unnecessarily.
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE void PointerToBase<T>::
+reassign(PointerToBase<T> &&from) NOEXCEPT {
+  To *old_ptr = (To *)this->_void_ptr;
+
+  this->_void_ptr = from._void_ptr;
+  from._void_ptr = NULL;
+
+  // Now delete the old pointer.
+  if (old_ptr != (To *)NULL) {
+    unref_delete(old_ptr);
+  }
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::reassign
 //       Access: Protected

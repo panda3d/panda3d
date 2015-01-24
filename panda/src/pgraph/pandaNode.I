@@ -632,14 +632,14 @@ get_internal_vertices(Thread *current_thread) const {
 //     Function: PandaNode::is_bounds_stale
 //       Access: Published
 //  Description: Returns true if the bounding volume of this node is
-//                stale and will be implicitly recomputed at the next
-//                call to get_bounds(), or false if it is fresh and
-//                need not be recomputed.
+//               stale and will be implicitly recomputed at the next
+//               call to get_bounds(), or false if it is fresh and
+//               need not be recomputed.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 is_bounds_stale() const {
   CDReader cdata(_cycler);
-  return (cdata->_last_update != cdata->_next_update);
+  return (cdata->_last_bounds_update != cdata->_next_update);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -726,13 +726,12 @@ mark_bounds_stale(int pipeline_stage, Thread *current_thread) const {
   bool is_stale_bounds;
   {
     CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-    is_stale_bounds = (cdata->_last_update != cdata->_next_update);
+    is_stale_bounds = (cdata->_last_bounds_update != cdata->_next_update);
   }
   if (!is_stale_bounds) {
     ((PandaNode *)this)->force_bounds_stale(pipeline_stage, current_thread);
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::mark_internal_bounds_stale
@@ -907,7 +906,7 @@ operator < (const DownConnection &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::DownConnection::get_child
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::DownConnection::
 get_child() const {
@@ -927,7 +926,7 @@ set_child(PandaNode *child) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::DownConnection::get_sort
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::DownConnection::
 get_sort() const {
@@ -963,7 +962,7 @@ operator < (const UpConnection &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::UpConnection::get_parent
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::UpConnection::
 get_parent() const {
@@ -1130,6 +1129,29 @@ operator = (const PandaNode::Children &copy) {
   _down = copy._down;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Children::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Children::
+Children(PandaNode::Children &&from) NOEXCEPT :
+  _down(move(from._down))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Children::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::Children::
+operator = (PandaNode::Children &&from) NOEXCEPT {
+  _down = move(from._down);
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Children::get_num_children
 //       Access: Public
@@ -1208,6 +1230,29 @@ operator = (const PandaNode::Stashed &copy) {
   _stashed = copy._stashed;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Stashed::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Stashed::
+Stashed(PandaNode::Stashed &&from) NOEXCEPT :
+  _stashed(move(from._stashed))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Stashed::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::Stashed::
+operator = (PandaNode::Stashed &&from) NOEXCEPT {
+  _stashed = move(from._stashed);
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Stashed::get_num_stashed
 //       Access: Public
@@ -1285,6 +1330,29 @@ INLINE void PandaNode::Parents::
 operator = (const PandaNode::Parents &copy) {
   _up = copy._up;
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Parents::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::Parents::
+Parents(PandaNode::Parents &&from) NOEXCEPT :
+  _up(move(from._up))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Parents::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::Parents::
+operator = (PandaNode::Parents &&from) NOEXCEPT {
+  _up = move(from._up);
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Parents::get_num_parents
@@ -1876,7 +1944,7 @@ get_parents() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::BamReaderAuxDataDown::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::BamReaderAuxDataDown::
 BamReaderAuxDataDown() :

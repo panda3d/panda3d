@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 EggCrop::
 EggCrop() {
+  set_program_brief("crop geometry in an .egg file");
   set_program_description
     ("egg-crop strips out all parts of an egg file that fall outside of an "
      "arbitrary bounding volume, specified with a minimum and maximum point "

@@ -41,10 +41,11 @@ PUBLISHED:
   static int get_minor_version();
   static int get_sequence_version();
   static bool is_official_version();
-  
+
   static string get_distributor();
   static string get_compiler();
   static string get_build_date();
+  static string get_git_commit();
 
   static string get_platform();
 
@@ -106,4 +107,4 @@ inline ostream &operator << (ostream &out, const PandaSystem &ps) {
 
 #endif
 
-  
+

@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 FltCopy::
 FltCopy() {
+  set_program_brief("copy MultiGen .flt files into a CVS source hierarchy");
   set_program_description
     ("fltcopy copies one or more MultiGen .flt files into a "
      "CVS source hierarchy.  "

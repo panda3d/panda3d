@@ -52,13 +52,12 @@ ns_has_model(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_load_model
+//     Function: ModelPool::ns_get_model
 //       Access: Private
-//  Description: The nonstatic implementation of load_model().
+//  Description: The nonstatic implementation of get_model().
 ////////////////////////////////////////////////////////////////////
 ModelRoot *ModelPool::
-ns_load_model(const Filename &filename, const LoaderOptions &options) {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+ns_get_model(const Filename &filename, bool verify) {
 
   PT(ModelRoot) cached_model;
   bool got_cached_model = false;
@@ -74,7 +73,7 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
     }
   }
 
-  if (got_cached_model) {
+  if (got_cached_model && verify) {
     if (pgraph_cat.is_debug()) {
       pgraph_cat.debug()
         << "ModelPool found " << cached_model << " for " << filename << "\n";
@@ -85,6 +84,7 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
       // exist (or the model could not be loaded for some reason).
       if (cache_check_timestamps) {
         // Check to see if there is a file there now.
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
         if (vfs->exists(filename)) {
           // There is, so try to load it.
           got_cached_model = false;
@@ -93,9 +93,10 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
     } else {
       // This filename was previously attempted, and successfully
       // loaded.
-      if (cache_check_timestamps && cached_model->get_timestamp() != 0 && 
+      if (cache_check_timestamps && cached_model->get_timestamp() != 0 &&
           !cached_model->get_fullpath().empty()) {
         // Compare the timestamp to the file on-disk.
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
         PT(VirtualFile) vfile = vfs->get_file(cached_model->get_fullpath());
         if (vfile == NULL) {
           // The file has disappeared!  Look further along the model-path.
@@ -116,12 +117,29 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
         << "ModelPool returning " << cached_model << " for " << filename << "\n";
     }
     return cached_model;
+  } else {
+    return NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::ns_load_model
+//       Access: Private
+//  Description: The nonstatic implementation of load_model().
+////////////////////////////////////////////////////////////////////
+ModelRoot *ModelPool::
+ns_load_model(const Filename &filename, const LoaderOptions &options) {
+
+  // First check if it has already been loaded and is still current.
+  PT(ModelRoot) cached_model = ns_get_model(filename, true);
+  if (cached_model != (ModelRoot *)NULL) {
+    return cached_model;
   }
 
   // Look on disk for the current file.
   LoaderOptions new_options(options);
   new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
-                        ~(LoaderOptions::LF_search | LoaderOptions::LF_report_errors));
+                        ~LoaderOptions::LF_search);
 
   Loader *model_loader = Loader::get_global_ptr();
   PT(PandaNode) panda_node = model_loader->load_sync(filename, new_options);
@@ -133,7 +151,7 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
   } else {
     if (panda_node->is_of_type(ModelRoot::get_class_type())) {
       node = DCAST(ModelRoot, panda_node);
-      
+
     } else {
       // We have to construct a ModelRoot node to put it under.
       node = new ModelRoot(filename);
@@ -154,10 +172,6 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
       return (*ti).second;
     }
 
-    if (pgraph_cat.is_debug()) {
-      pgraph_cat.debug()
-        << "ModelPool storing " << node << " for " << filename << "\n";
-    }
     _models[filename] = node;
   }
 
@@ -172,6 +186,10 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
 void ModelPool::
 ns_add_model(const Filename &filename, ModelRoot *model) {
   LightMutexHolder holder(_lock);
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "ModelPool storing " << model << " for " << filename << "\n";
+  }
   // We blow away whatever model was there previously, if any.
   _models[filename] = model;
 }
@@ -270,19 +288,19 @@ ns_list_contents(ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << "model pool contents:\n";
-  
+
   Models::const_iterator ti;
   int num_models = 0;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     if ((*ti).second != NULL) {
       ++num_models;
       out << (*ti).first << "\n"
-          << "  (count = " << (*ti).second->get_model_ref_count() 
+          << "  (count = " << (*ti).second->get_model_ref_count()
           << ")\n";
     }
   }
-  
-  out << "total number of models: " << num_models << " (plus " 
+
+  out << "total number of models: " << num_models << " (plus "
       << _models.size() - num_models << " entries for nonexistent files)\n";
 }
 

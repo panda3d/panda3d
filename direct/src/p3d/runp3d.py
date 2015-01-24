@@ -28,7 +28,7 @@ import sys
 import getopt
 from AppRunner import AppRunner, ArgumentError
 from direct.task.TaskManagerGlobal import taskMgr
-from pandac.PandaModules import Filename
+from panda3d.core import Filename
 
 def parseSysArgs():
     """ Handles sys.argv, if there are any local arguments, and

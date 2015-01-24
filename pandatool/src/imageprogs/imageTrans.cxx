@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 ImageTrans::
 ImageTrans() : ImageFilter(true) {
+  set_program_brief("apply transformations to an image file");
   set_program_description
     ("This program reads an image file and writes a similar "
      "image file to the output.  It can implicitly convert from one image "

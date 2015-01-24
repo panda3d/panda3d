@@ -146,6 +146,11 @@ PUBLISHED:
     F_r32,
     F_rg32,
     F_rgb32,
+
+    F_r8i, // 8 integer bits per R channel
+    F_rg8i, // 8 integer bits per R,G channel
+    F_rgb8i, // 8 integer bits per R,G,B channel
+    F_rgba8i, // 8 integer bits per R,G,B,A channel
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -233,6 +238,12 @@ PUBLISHED:
                                      ComponentType component_type, Format format);
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
+
+  INLINE void clear_image();
+  INLINE bool has_clear_color() const;
+  INLINE LColor get_clear_color() const;
+  INLINE void set_clear_color(const LColor &color);
+  INLINE string get_clear_data() const;
 
   BLOCKING bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -569,6 +580,7 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
   PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
   void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
+  int do_get_clear_data(const CData *cdata, unsigned char *into) const;
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
   bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
@@ -843,6 +855,10 @@ protected:
     int _simple_x_size;
     int _simple_y_size;
     PN_int32 _simple_image_date_generated;
+
+    // This is the color that should be used when no image was given.
+    bool _has_clear_color;
+    LColor _clear_color;
 
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;

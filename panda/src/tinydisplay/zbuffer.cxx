@@ -107,6 +107,8 @@ void
 ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
   int size;
 
+  nassertv(zb != NULL);
+
   /* xsize must be a multiple of 4 */
   xsize = (xsize + 3) & ~3;
 

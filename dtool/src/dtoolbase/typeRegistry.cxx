@@ -498,7 +498,7 @@ get_parent_towards(TypeHandle child, TypeHandle base,
   TypeHandle handle;
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, NULL);
-  assert(child_node != (TypeRegistryNode *)NULL && 
+  assert(child_node != (TypeRegistryNode *)NULL &&
          base_node != (TypeRegistryNode *)NULL);
   freshen_derivations();
   handle = TypeRegistryNode::get_parent_towards(child_node, base_node);
@@ -688,22 +688,17 @@ write_node(ostream &out, int indent_level, const TypeRegistryNode *node) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistry::look_up
+//     Function: TypeRegistry::look_up_invalid
 //       Access: Private
-//  Description: Returns the TypeRegistryNode associated with the
-//               indicated TypeHandle.  If there is no associated
-//               TypeRegistryNode, reports an error condition and
-//               returns NULL.
-//
-//               The associated TypedObject pointer is the pointer to
-//               the object that owns the handle, if available.  It is
-//               only used in an error condition, if for some reason
-//               the handle was uninitialized.
+//  Description: Called by look_up when it detects an invalid
+//               TypeHandle pointer.  In non-release builds, this
+//               method will do what it can to recover from this
+//               and initialize the type anyway.
 //
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 TypeRegistryNode *TypeRegistry::
-look_up(TypeHandle handle, TypedObject *object) const {
+look_up_invalid(TypeHandle handle, TypedObject *object) const {
 #ifndef NDEBUG
   if (handle._index == 0) {
     // The TypeHandle is unregistered.  This is an error condition.

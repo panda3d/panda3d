@@ -32,13 +32,10 @@
 
 // Note the use of the Panda filename convention, with forward slashes
 // instead of backslashes, and /c/ instead of c:/ .
-#define DX8_IPATH /c/DXSDK-OCT2004/include
-#define DX8_LPATH /c/DXSDK-OCT2004/lib
 #define DX9_IPATH /c/DXSDK-DEC2006/include
 #define DX9_LPATH /c/DXSDK-DEC2006/lib
 
-// If for any reason you need to turn off either the DX8 or DX9 builds,
-// you can uncomment one of the following lines.  (Defining a
+// If for any reason you need to turn off the DX9 builds,
+// you can uncomment the following line.  (Defining a
 // variable to an empty string means setting it false.)
-//#define HAVE_DX8
 //#define HAVE_DX9

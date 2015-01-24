@@ -88,7 +88,8 @@ private:
   TypeRegistry();
 
   static void init_global_pointer();
-  TypeRegistryNode *look_up(TypeHandle type, TypedObject *object) const;
+  INLINE TypeRegistryNode *look_up(TypeHandle type, TypedObject *object) const;
+  TypeRegistryNode *look_up_invalid(TypeHandle type, TypedObject *object) const;
 
   INLINE void freshen_derivations();
   void rebuild_derivations();
@@ -119,6 +120,8 @@ private:
 ///////////////////////////////////////////
 // Helper function to allow for "C" interaction into the type system
 extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
+
+#include "typeHandle.h"
 
 #include "typeRegistry.I"
 

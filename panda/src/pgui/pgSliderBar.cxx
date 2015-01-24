@@ -717,7 +717,7 @@ reposition() {
   _needs_reposition = false;
 
   PN_stdfloat t = get_ratio();
-  
+
   if (_thumb_button != (PGButton *)NULL) {
     LPoint3 pos = (t * _range_x) * _axis + _thumb_start;
     CPT(TransformState) transform = TransformState::make_pos(pos);
@@ -727,7 +727,7 @@ reposition() {
     // we'll get caught in an update loop.
     if (transform == orig_transform) {
       // No change.
-    } else if (*transform < *orig_transform || *orig_transform < *transform) {
+    } else if (*transform != *orig_transform) {
       _thumb_button->set_transform(transform);
     }
   }

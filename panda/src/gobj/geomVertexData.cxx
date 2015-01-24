@@ -64,7 +64,7 @@ make_cow_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
 GeomVertexData(const string &name,
@@ -97,7 +97,7 @@ GeomVertexData(const string &name,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
 GeomVertexData(const GeomVertexData &copy) :
@@ -127,7 +127,7 @@ GeomVertexData(const GeomVertexData &copy) :
 //               and it allows you to specify a different format.
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
-GeomVertexData(const GeomVertexData &copy, 
+GeomVertexData(const GeomVertexData &copy,
                const GeomVertexFormat *format) :
   CopyOnWriteObject(copy),
   _name(copy._name),
@@ -159,7 +159,7 @@ GeomVertexData(const GeomVertexData &copy,
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Copy Assignment Operator
 //       Access: Published
@@ -186,14 +186,14 @@ operator = (const GeomVertexData &copy) {
     cdata->_modified = Geom::get_next_modified();
     cdata->_animated_vertices = NULL;
     cdata->_animated_vertices_modified = UpdateSeq();
-  } 
+  }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
 ~GeomVertexData() {
@@ -564,22 +564,22 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
   pset<int> done_arrays;
 
   for (source_i = 0; source_i < num_arrays; ++source_i) {
-    const GeomVertexArrayFormat *source_array_format = 
+    const GeomVertexArrayFormat *source_array_format =
       source_format->get_array(source_i);
 
     bool array_done = false;
 
     int dest_num_arrays = dest_format->get_num_arrays();
-    for (int dest_i = 0; 
-         dest_i < dest_num_arrays && !array_done; 
+    for (int dest_i = 0;
+         dest_i < dest_num_arrays && !array_done;
          ++dest_i) {
-      const GeomVertexArrayFormat *dest_array_format = 
+      const GeomVertexArrayFormat *dest_array_format =
         dest_format->get_array(dest_i);
       if (dest_array_format->is_data_subset_of(*source_array_format)) {
         // Great!  Just use the same data for this one.
         if (keep_data_objects) {
-          // Copy the data, but keep the same GeomVertexArrayData object.  
-          
+          // Copy the data, but keep the same GeomVertexArrayData object.
+
           PT(GeomVertexArrayData) dest_data = modify_array(dest_i);
           CPT(GeomVertexArrayData) source_data = source->get_array(source_i);
           dest_data->modify_handle()->copy_data_from(source_data->get_handle());
@@ -613,9 +613,9 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
       int dest_i = dest_format->get_array_with(source_column->get_name());
       if (dest_i >= 0 && done_arrays.count(dest_i) == 0) {
         // The data type exists in the new format; we have to copy it.
-        const GeomVertexArrayFormat *dest_array_format = 
+        const GeomVertexArrayFormat *dest_array_format =
           dest_format->get_array(dest_i);
-        const GeomVertexColumn *dest_column = 
+        const GeomVertexColumn *dest_column =
           dest_array_format->get_column(source_column->get_name());
         nassertv(dest_column != (const GeomVertexColumn *)NULL);
 
@@ -625,12 +625,12 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
-          bytewise_copy(dest_array_data + dest_column->get_start(), 
+          bytewise_copy(dest_array_data + dest_column->get_start(),
                         dest_array_format->get_stride(),
                         array_data + source_column->get_start(), source_array_format->get_stride(),
                         source_column, num_rows);
 
-        } else if (dest_column->is_packed_argb() && 
+        } else if (dest_column->is_packed_argb() &&
                    source_column->is_uint8_rgba()) {
           // A common special case: OpenGL color to DirectX color.
           PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
@@ -638,12 +638,12 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           uint8_rgba_to_packed_argb
-            (dest_array_data + dest_column->get_start(), 
+            (dest_array_data + dest_column->get_start(),
              dest_array_format->get_stride(),
              array_data + source_column->get_start(), source_array_format->get_stride(),
              num_rows);
 
-        } else if (dest_column->is_uint8_rgba() && 
+        } else if (dest_column->is_uint8_rgba() &&
                    source_column->is_packed_argb()) {
           // Another common special case: DirectX color to OpenGL
           // color.
@@ -652,7 +652,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           packed_argb_to_uint8_rgba
-            (dest_array_data + dest_column->get_start(), 
+            (dest_array_data + dest_column->get_start(),
              dest_array_format->get_stride(),
              array_data + source_column->get_start(), source_array_format->get_stride(),
              num_rows);
@@ -661,7 +661,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           // A generic copy.
           if (gobj_cat.is_debug()) {
             gobj_cat.debug()
-              << "generic copy " << *dest_column << " from " 
+              << "generic copy " << *dest_column << " from "
               << *source_column << "\n";
           }
           GeomVertexWriter to(this);
@@ -695,13 +695,13 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           GeomVertexWriter weight(this, InternalName::get_transform_weight());
           GeomVertexWriter index(this, InternalName::get_transform_index());
           GeomVertexReader from(source, InternalName::get_transform_blend());
-        
+
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
             LVecBase4i indices(0, 0, 0, 0);
             nassertv(blend.get_num_transforms() <= 4);
-            
+
             for (int i = 0; i < blend.get_num_transforms(); i++) {
               weights[i] = blend.get_weight(i);
               indices[i] = add_transform(transform_table, blend.get_transform(i),
@@ -717,11 +717,11 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           // use the same n transforms, in the same order, for each vertex.
           GeomVertexWriter weight(this, InternalName::get_transform_weight());
           GeomVertexReader from(source, InternalName::get_transform_blend());
-        
+
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
-            
+
             for (int i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
@@ -733,7 +733,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             }
           }
         }
-        
+
         clear_transform_blend_table();
         set_transform_table(TransformTable::register_table(transform_table));
       }
@@ -754,7 +754,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
-copy_row_from(int dest_row, const GeomVertexData *source, 
+copy_row_from(int dest_row, const GeomVertexData *source,
               int source_row, Thread *current_thread) {
   const GeomVertexFormat *source_format = source->get_format();
   const GeomVertexFormat *dest_format = get_format();
@@ -842,7 +842,7 @@ convert_to(const GeomVertexFormat *new_format) const {
   }
   PStatTimer timer(_convert_pcollector);
 
-  PT(GeomVertexData) new_data = 
+  PT(GeomVertexData) new_data =
     new GeomVertexData(get_name(), new_format, get_usage_hint());
   new_data->set_transform_blend_table(get_transform_blend_table());
   new_data->set_slider_table(get_slider_table());
@@ -852,7 +852,12 @@ convert_to(const GeomVertexFormat *new_format) const {
   // Record the new result in the cache.
   if (entry == (CacheEntry *)NULL) {
     // Create a new entry for the result.
-    entry = new CacheEntry((GeomVertexData *)this, new_format);
+#ifdef USE_MOVE_SEMANTICS
+    // We don't need the key anymore, move the pointers into the CacheEntry.
+    entry = new CacheEntry((GeomVertexData *)this, move(key));
+#else
+    entry = new CacheEntry((GeomVertexData *)this, key);
+#endif
     {
       LightMutexHolder holder(_cache_lock);
       bool inserted = ((GeomVertexData *)this)->_cache.insert(Cache::value_type(&entry->_key, entry)).second;
@@ -862,7 +867,7 @@ convert_to(const GeomVertexFormat *new_format) const {
         return new_data;
       }
     }
-    
+
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
@@ -876,7 +881,6 @@ convert_to(const GeomVertexFormat *new_format) const {
   return new_data;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::scale_color
 //       Access: Published
@@ -888,7 +892,7 @@ convert_to(const GeomVertexFormat *new_format) const {
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 scale_color(const LVecBase4 &color_scale) const {
-  const GeomVertexColumn *old_column = 
+  const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
     return this;
@@ -965,7 +969,7 @@ scale_color(const LVecBase4 &color_scale, int num_components,
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 set_color(const LColor &color) const {
-  const GeomVertexColumn *old_column = 
+  const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
     return this;
@@ -1026,7 +1030,7 @@ set_color(const LColor &color, int num_components,
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
 reverse_normals() const {
-  const GeomVertexColumn *old_column = 
+  const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_normal());
   if (old_column == (GeomVertexColumn *)NULL) {
     return this;
@@ -1094,16 +1098,16 @@ animate_vertices(bool force, Thread *current_thread) const {
     PStatTimer timer2(((GeomVertexData *)this)->_blends_pcollector, current_thread);
     if (!cdata->_transform_blend_table.is_null()) {
       if (cdata->_slider_table != (SliderTable *)NULL) {
-        modified = 
+        modified =
           max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
               cdata->_slider_table->get_modified(current_thread));
       } else {
         modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
       }
-      
+
     } else if (cdata->_slider_table != (SliderTable *)NULL) {
       modified = cdata->_slider_table->get_modified(current_thread);
-      
+
     } else {
       // No transform blend table or slider table--ergo, no vertex
       // animation.
@@ -1185,7 +1189,7 @@ transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
     GeomVertexRewriter data(this, format->get_point(ci));
     do_transform_point_column(format, data, mat, begin_row, end_row);
   }
-  
+
   for (ci = 0; ci < format->get_num_vectors(); ci++) {
     GeomVertexRewriter data(this, format->get_vector(ci));
     do_transform_vector_column(format, data, mat, begin_row, end_row);
@@ -1208,7 +1212,7 @@ bytewise_copy(unsigned char *to, int to_stride,
       << ", " << (const void *)from << ", " << from_stride
       << ", " << *from_type << ", " << num_records << ")\n";
   }
-  if (to_stride == from_type->get_total_bytes() && 
+  if (to_stride == from_type->get_total_bytes() &&
       from_stride == from_type->get_total_bytes()) {
     // Fantastic!  It's just a linear array of this one data type.
     // Copy the whole thing all at once.
@@ -1257,32 +1261,32 @@ replace_column(InternalName *name, int num_components,
       // just drop the whole array.
       new_format->remove_array(old_type_array);
       removed_type_array = true;
-      
+
     } else {
       // Remove the description for the type, but don't bother to
       // repack the array.
       array_format->remove_column(name);
     }
   }
-    
+
   // Now define a new array to contain just the type.
   int new_type_array = -1;
   if (num_components != 0) {
-    PT(GeomVertexArrayFormat) type_array_format = 
+    PT(GeomVertexArrayFormat) type_array_format =
       new GeomVertexArrayFormat(name, num_components, numeric_type, contents);
     new_type_array = new_format->add_array(type_array_format);
   }
 
-  CPT(GeomVertexFormat) format = 
+  CPT(GeomVertexFormat) format =
     GeomVertexFormat::register_format(new_format);
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "Replacing data type " << *name << "; converting "
-      << get_num_rows() << " rows from " 
+      << get_num_rows() << " rows from "
       << *cdata->_format << " to " << *format << "\n";
   }
-  
+
   PT(GeomVertexData) new_data = new GeomVertexData(*this, format);
 
   int j = 0;
@@ -1320,7 +1324,7 @@ replace_column(InternalName *name, int num_components,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 output(ostream &out) const {
@@ -1333,7 +1337,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 write(ostream &out, int indent_level) const {
@@ -1369,16 +1373,16 @@ describe_vertex(ostream &out, int row) const {
   if (format->get_animation().get_animation_type() == AT_panda) {
     tb_table = get_transform_blend_table();
   }
-  
+
   int num_columns = format->get_num_columns();
   for (int ci = 0; ci < num_columns; ++ci) {
     int ai = format->get_array_with(ci);
     const GeomVertexColumn *column = format->get_column(ci);
     reader.set_column(ai, column);
-    
+
     int num_values = min(column->get_num_values(), 4);
     const LVecBase4 &d = reader.get_data4();
-    
+
     out << "  " << *column->get_name();
     for (int v = 0; v < num_values; v++) {
       out << " " << d[v];
@@ -1545,7 +1549,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
   if (cdata->_animated_vertices == (GeomVertexData *)NULL) {
     new_format = orig_format->get_post_animated_format();
-    cdata->_animated_vertices = 
+    cdata->_animated_vertices =
       new GeomVertexData(get_name(), new_format,
                          min(get_usage_hint(), UH_dynamic));
   }
@@ -1670,7 +1674,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
     CPT(GeomVertexArrayFormat) blend_array_format = orig_format->get_array(blend_array_index);
 
-    if (blend_array_format->get_stride() == 2 && 
+    if (blend_array_format->get_stride() == 2 &&
         blend_array_format->get_column(0)->get_component_bytes() == 2) {
       // The blend indices are a table of ushorts.  Optimize this
       // common case.
@@ -1688,11 +1692,11 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
           int first_vertex = begin;
           int first_bi = blendt[first_vertex];
-          
+
           while (first_vertex < end) {
             // At this point, first_vertex is the first of a series of
             // vertices that shares the blend index first_bi.
-            
+
             // Scan for the end of this series of vertices--we're
             // looking for the next vertex with a different blend index.
             int next_vertex = first_vertex;
@@ -1705,13 +1709,13 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
               }
               ++next_vertex;
             }
-            
+
             // We've just reached the end of the vertices with a matching
             // blend index.  Transform all those vertices as a block.
             LMatrix4 mat;
             tb_table->get_blend(first_bi).get_blend(mat, current_thread);
             new_data->do_transform_point_column(new_format, data, mat, first_vertex, next_vertex);
-            
+
             first_vertex = next_vertex;
             first_bi = next_bi;
           }
@@ -1728,11 +1732,11 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
           int first_vertex = begin;
           int first_bi = blendt[first_vertex];
-          
+
           while (first_vertex < end) {
             // At this point, first_vertex is the first of a series of
             // vertices that shares the blend index first_bi.
-            
+
             // Scan for the end of this series of vertices--we're
             // looking for the next vertex with a different blend index.
             int next_vertex = first_vertex;
@@ -1745,13 +1749,13 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
               }
               ++next_vertex;
             }
-            
+
             // We've just reached the end of the vertices with a matching
             // blend index.  Transform all those vertices as a block.
             LMatrix4 mat;
             tb_table->get_blend(first_bi).get_blend(mat, current_thread);
             new_data->do_transform_vector_column(new_format, data, mat, first_vertex, next_vertex);
-            
+
             first_vertex = next_vertex;
             first_bi = next_bi;
           }
@@ -1773,14 +1777,14 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           int end = rows.get_subrange_end(i);
           nassertv(begin < end);
           blendi.set_row_unsafe(begin);
-          
+
           int first_vertex = begin;
           int first_bi = blendi.get_data1i();
-          
+
           while (first_vertex < end) {
             // At this point, first_vertex is the first of a series of
             // vertices that shares the blend index first_bi.
-            
+
             // Scan for the end of this series of vertices--we're
             // looking for the next vertex with a different blend index.
             int next_vertex = first_vertex;
@@ -1793,13 +1797,13 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
               }
               ++next_vertex;
             }
-            
+
             // We've just reached the end of the vertices with a matching
             // blend index.  Transform all those vertices as a block.
             LMatrix4 mat;
             tb_table->get_blend(first_bi).get_blend(mat, current_thread);
             new_data->do_transform_point_column(new_format, data, mat, first_vertex, next_vertex);
-            
+
             first_vertex = next_vertex;
             first_bi = next_bi;
           }
@@ -1814,14 +1818,14 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           int end = rows.get_subrange_end(i);
           nassertv(begin != end);
           blendi.set_row_unsafe(begin);
-          
+
           int first_vertex = begin;
           int first_bi = blendi.get_data1i();
-          
+
           while (first_vertex < end) {
             // At this point, first_vertex is the first of a series of
             // vertices that shares the blend index first_bi.
-            
+
             // Scan for the end of this series of vertices--we're
             // looking for the next vertex with a different blend index.
             int next_vertex = first_vertex;
@@ -1834,13 +1838,13 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
               }
               ++next_vertex;
             }
-            
+
             // We've just reached the end of the vertices with a matching
             // blend index.  Transform all those vertices as a block.
             LMatrix4 mat;
             tb_table->get_blend(first_bi).get_blend(mat, current_thread);
             new_data->do_transform_vector_column(new_format, data, mat, first_vertex, next_vertex);
-            
+
             first_vertex = next_vertex;
             first_bi = next_bi;
           }
@@ -1880,11 +1884,11 @@ do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &da
     } else {
       table_xform_vecbase4f(datat, num_rows, stride, matf);
     }
-    
+
   } else if (num_values == 4) {
     // Use the GeomVertexRewriter to adjust the 4-component
     // points.
-  
+
     data.set_row_unsafe(begin_row);
     for (int j = begin_row; j < end_row; ++j) {
       LPoint4 vertex = data.get_data4();
@@ -2110,7 +2114,7 @@ finalize(BamReader *manager) {
   CDWriter cdata(_cycler, true);
 
   for (size_t i = 0; i < cdata->_arrays.size(); ++i) {
-    CPT(GeomVertexFormat) new_format = 
+    CPT(GeomVertexFormat) new_format =
       GeomVertexFormat::register_format(cdata->_format);
     manager->change_pointer(cdata->_format, new_format);
     cdata->_format = new_format;
@@ -2124,14 +2128,14 @@ finalize(BamReader *manager) {
   }
 
   if (cdata->_transform_table != (TransformTable *)NULL) {
-    CPT(TransformTable) new_transform_table = 
+    CPT(TransformTable) new_transform_table =
       TransformTable::register_table(cdata->_transform_table);
     manager->change_pointer(cdata->_transform_table, new_transform_table);
     cdata->_transform_table = new_transform_table;
   }
 
   if (cdata->_slider_table != (SliderTable *)NULL) {
-    CPT(SliderTable) new_slider_table = 
+    CPT(SliderTable) new_slider_table =
       SliderTable::register_table(cdata->_slider_table);
     manager->change_pointer(cdata->_slider_table, new_slider_table);
     cdata->_slider_table = new_slider_table;
@@ -2181,11 +2185,11 @@ evict_callback() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::CacheEntry::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CacheEntry::
 output(ostream &out) const {
-  out << "vertex data " << (void *)_source << " to " 
+  out << "vertex data " << (void *)_source << " to "
       << *_key._modifier;
 }
 
@@ -2236,7 +2240,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   Arrays::iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    (*ai) = DCAST(GeomVertexArrayData, p_list[pi++]);    
+    (*ai) = DCAST(GeomVertexArrayData, p_list[pi++]);
   }
 
   _transform_table = DCAST(TransformTable, p_list[pi++]);
@@ -2295,7 +2299,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineBase::get_num_bytes
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomVertexDataPipelineBase::
 get_num_bytes() const {
@@ -2312,7 +2316,7 @@ get_num_bytes() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_num_rows
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomVertexDataPipelineReader::
 get_num_rows() const {
@@ -2332,13 +2336,13 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_array_info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineReader::
-get_array_info(const InternalName *name, 
+get_array_info(const InternalName *name,
                const GeomVertexArrayDataHandle *&array_reader,
-               int &num_values, 
-               GeomVertexDataPipelineReader::NumericType &numeric_type, 
+               int &num_values,
+               GeomVertexDataPipelineReader::NumericType &numeric_type,
                int &start, int &stride) const {
   nassertr(_got_array_readers, false);
   int array_index;
@@ -2355,14 +2359,43 @@ get_array_info(const InternalName *name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_array_info
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_array_info(const InternalName *name,
+               const GeomVertexArrayDataHandle *&array_reader,
+               int &num_values,
+               GeomVertexDataPipelineReader::NumericType &numeric_type,
+               int &start, int &stride, int &divisor,
+               int &num_elements, int &element_stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index;
+  const GeomVertexColumn *column;
+  if (_cdata->_format->get_array_info(name, array_index, column)) {
+    array_reader = _array_readers[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    divisor = _cdata->_format->get_array(array_index)->get_divisor();
+    num_elements = column->get_num_elements();
+    element_stride = column->get_element_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_vertex_info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineReader::
 get_vertex_info(const GeomVertexArrayDataHandle *&array_reader,
-                int &num_values, 
-                GeomVertexDataPipelineReader::NumericType &numeric_type, 
+                int &num_values,
+                GeomVertexDataPipelineReader::NumericType &numeric_type,
                 int &start, int &stride) const {
   nassertr(_got_array_readers, false);
   int array_index = _cdata->_format->get_vertex_array_index();
@@ -2382,11 +2415,11 @@ get_vertex_info(const GeomVertexArrayDataHandle *&array_reader,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_normal_info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineReader::
 get_normal_info(const GeomVertexArrayDataHandle *&array_reader,
-                GeomVertexDataPipelineReader::NumericType &numeric_type, 
+                GeomVertexDataPipelineReader::NumericType &numeric_type,
                 int &start, int &stride) const {
   nassertr(_got_array_readers, false);
   int array_index = _cdata->_format->get_normal_array_index();
@@ -2405,12 +2438,12 @@ get_normal_info(const GeomVertexArrayDataHandle *&array_reader,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_color_info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineReader::
 get_color_info(const GeomVertexArrayDataHandle *&array_reader,
-               int &num_values, 
-               GeomVertexDataPipelineReader::NumericType &numeric_type, 
+               int &num_values,
+               GeomVertexDataPipelineReader::NumericType &numeric_type,
                int &start, int &stride) const {
   nassertr(_got_array_readers, false);
   int array_index = _cdata->_format->get_color_array_index();
@@ -2430,7 +2463,7 @@ get_color_info(const GeomVertexArrayDataHandle *&array_reader,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::make_array_readers
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexDataPipelineReader::
 make_array_readers() {
@@ -2449,7 +2482,7 @@ make_array_readers() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::delete_array_readers
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexDataPipelineReader::
 delete_array_readers() {
@@ -2462,7 +2495,7 @@ delete_array_readers() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::get_num_rows
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomVertexDataPipelineWriter::
 get_num_rows() const {
@@ -2482,7 +2515,7 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::set_num_rows
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineWriter::
 set_num_rows(int n) {
@@ -2510,10 +2543,10 @@ set_num_rows(int n) {
     // (1, 1, 1, 1), for the programmer's convenience.
     GeomVertexArrayDataHandle *array_writer = _array_writers[color_array];
     const GeomVertexArrayFormat *array_format = array_writer->get_array_format();
-    const GeomVertexColumn *column = 
+    const GeomVertexColumn *column =
       array_format->get_column(InternalName::get_color());
     int stride = array_format->get_stride();
-    unsigned char *start = 
+    unsigned char *start =
       array_writer->get_write_pointer() + column->get_start();
     unsigned char *stop = start + array_writer->get_data_size_bytes();
     unsigned char *pointer = start + stride * orig_color_rows;
@@ -2554,7 +2587,7 @@ set_num_rows(int n) {
     case NT_stdfloat:
       // Shouldn't have this type in the format.
       nassertr(false, false);
-    }          
+    }
   }
 
   if (any_changed) {
@@ -2569,7 +2602,7 @@ set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::unclean_set_num_rows
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineWriter::
 unclean_set_num_rows(int n) {
@@ -2598,7 +2631,7 @@ unclean_set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::reserve_num_rows
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexDataPipelineWriter::
 reserve_num_rows(int n) {
@@ -2619,7 +2652,7 @@ reserve_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::modify_array
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexArrayData) GeomVertexDataPipelineWriter::
 modify_array(int i) {
@@ -2642,7 +2675,7 @@ modify_array(int i) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::set_array
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexDataPipelineWriter::
 set_array(int i, const GeomVertexArrayData *array) {
@@ -2660,7 +2693,7 @@ set_array(int i, const GeomVertexArrayData *array) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::make_array_writers
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexDataPipelineWriter::
 make_array_writers() {
@@ -2683,7 +2716,7 @@ make_array_writers() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineWriter::delete_array_writers
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexDataPipelineWriter::
 delete_array_writers() {

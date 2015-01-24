@@ -36,6 +36,7 @@ static void signal_handler(int) {
 ////////////////////////////////////////////////////////////////////
 TextStats::
 TextStats() {
+  set_program_brief("text-based PStats client");
   set_program_description
     ("This is a simple PStats server that listens on a TCP port for a "
      "connection from a PStatClient in a Panda player.  It will then report "

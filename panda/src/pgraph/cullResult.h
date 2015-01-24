@@ -66,18 +66,17 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
-  void check_flash_bin(CPT(RenderState) &state, CullBin *bin);
+  void do_flash_bin(CPT(RenderState) &state, const LColor &flash_color);
   void check_flash_transparency(CPT(RenderState) &state, const LColor &color);
 
   static CPT(RenderState) get_alpha_state();
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
-  static CPT(RenderState) get_dual_transparent_state_decals();
   static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;
   PStatCollector _draw_region_pcollector;
-  
+
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
 
@@ -90,7 +89,7 @@ public:
     register_type(_type_handle, "CullResult",
                   ReferenceCount::get_class_type());
   }
-  
+
 private:
   static TypeHandle _type_handle;
 };
@@ -99,5 +98,3 @@ private:
 
 #endif
 
-
-  

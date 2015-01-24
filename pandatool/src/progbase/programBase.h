@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class ProgramBase {
 public:
-  ProgramBase();
+  ProgramBase(const string &name = string());
   virtual ~ProgramBase();
 
   void show_description();
@@ -45,6 +45,8 @@ public:
 
   INLINE void show_text(const string &text);
   void show_text(const string &prefix, int indent_width, string text);
+
+  void write_man_page(ostream &out);
 
   virtual void parse_command_line(int argc, char **argv);
 
@@ -61,6 +63,7 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
+  void set_program_brief(const string &brief);
   void set_program_description(const string &description);
   void clear_runlines();
   void add_runline(const string &runline);
@@ -137,6 +140,8 @@ private:
     bool operator () (const Option *a, const Option *b) const;
   };
 
+  string _name;
+  string _brief;
   string _description;
   typedef vector_string Runlines;
   Runlines _runlines;

@@ -1,6 +1,5 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
-from pandac import PandaModules
-from libpandaexpress import ConfigVariableInt
+from panda3d.core import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
+import panda3d.core as core
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
 from direct.showbase import VFSImporter
@@ -55,7 +54,7 @@ class PackageInfo:
             tokens.  This function defines a new generator that yields
             each of those tokens, but wraps each call into the nested
             generator within a pair of start/stop collector calls. """
-            
+
             self.pStatCol.start()
             for token in self.__funcPtr(self):
                 self.pStatCol.stop()
@@ -76,7 +75,7 @@ class PackageInfo:
             if self.bytesNeeded == 0:
                 return 1
             return min(float(self.bytesDone) / float(self.bytesNeeded), 1)
-    
+
     def __init__(self, host, packageName, packageVersion, platform = None,
                  solo = False, asMirror = False, perPlatform = False):
         self.host = host
@@ -94,7 +93,7 @@ class PackageInfo:
         # This will be filled in when the host's contents.xml file is
         # read.
         self.packageDir = None
-            
+
         # These will be filled in by HostInfo when the package is read
         # from contents.xml.
         self.descFile = None
@@ -110,11 +109,11 @@ class PackageInfo:
         self.extracts = []
         self.requires = []
         self.installPlans = None
- 
+
         # This is updated during downloadPackage().  It is in the
         # range 0..1.
         self.downloadProgress = 0
-        
+
         # This is set true when the package file has been fully
         # downloaded and unpacked.
         self.hasPackage = False
@@ -133,12 +132,12 @@ class PackageInfo:
         This may not be known until the host's contents.xml file has
         been downloaded, which informs us of the host's own install
         directory. """
-        
+
         if not self.packageDir:
             if not self.host.hasContentsFile:
                 if not self.host.readContentsFile():
                     self.host.downloadContentsFile(self.http)
-            
+
             # Derive the packageDir from the hostDir.
             self.packageDir = Filename(self.host.hostDir, self.packageName)
             if self.packageVersion:
@@ -159,7 +158,7 @@ class PackageInfo:
                 # plugin--and we therefore shouldn't include the
                 # platform in the directory hierarchy.
                 includePlatform = False
-                
+
             if includePlatform and self.platform:
                 self.packageDir = Filename(self.packageDir, self.platform)
 
@@ -176,7 +175,7 @@ class PackageInfo:
         # Return the size of plan A, assuming it will work.
         plan = self.installPlans[0]
         size = sum([step.getEffort() for step in plan])
-        
+
         return size
 
     def getPrevDownloadedEffort(self):
@@ -209,13 +208,13 @@ class PackageInfo:
             name += ' rev %s' % (self.patchVersion)
 
         return name
-        
+
 
     def setupFilenames(self):
         """ This is called by the HostInfo when the package is read
         from contents.xml, to set up the internal filenames and such
         that rely on some of the information from contents.xml. """
-        
+
         dirname, basename = self.descFile.filename.rsplit('/', 1)
         self.descFileDirname = dirname
         self.descFileBasename = basename
@@ -264,7 +263,7 @@ class PackageInfo:
             Thread.considerYield()
 
         return (token == self.stepComplete)
-    
+
     def downloadDescFileGenerator(self, http):
         """ A generator function that implements downloadDescFile()
         one piece at a time.  It yields one of stepComplete,
@@ -343,9 +342,9 @@ class PackageInfo:
 
         filename = Filename(self.getPackageDir(), self.descFileBasename)
 
-        if not hasattr(PandaModules, 'TiXmlDocument'):
+        if not hasattr(core, 'TiXmlDocument'):
             return False
-        doc = PandaModules.TiXmlDocument(filename.toOsSpecific())
+        doc = core.TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
             return False
 
@@ -432,7 +431,7 @@ class PackageInfo:
         pc.start()
 
         self.hasPackage = False
-        
+
         if self.host.appRunner and self.host.appRunner.verifyContents == self.host.appRunner.P3DVCNever:
             # We're not allowed to download anything.
             self.installPlans = []
@@ -447,12 +446,12 @@ class PackageInfo:
             # archive.
             downloadSize = self.compressedArchive.size
             func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec, allowPartial = True)
-            
+
             step = self.InstallStep(func, downloadSize, self.downloadFactor, 'download')
             installPlan = [step]
             self.installPlans = [installPlan]
             pc.stop()
-            return 
+            return
 
         # The normal download process.  Determine what we will need to
         # download, and build a plan (or two) to download it all.
@@ -520,9 +519,9 @@ class PackageInfo:
             # plan B as the only plan.
             self.installPlans = [planB]
 
-        # In case of unexpected failures on the internet, we will retry 
+        # In case of unexpected failures on the internet, we will retry
         # the full download instead of just giving up.
-        for retry in range(ConfigVariableInt('package-full-dl-retries', 1)):
+        for retry in range(core.ConfigVariableInt('package-full-dl-retries', 1)):
             self.installPlans.append(planB[:])
 
         pc.stop()
@@ -530,7 +529,7 @@ class PackageInfo:
     def __scanDirectoryRecursively(self, dirname):
         """ Generates a list of Filename objects: all of the files
         (not directories) within and below the indicated dirname. """
-        
+
         contents = []
         for dirpath, dirnames, filenames in os.walk(dirname.toOsSpecific()):
             dirpath = Filename.fromOsSpecific(dirpath)
@@ -560,7 +559,7 @@ class PackageInfo:
 
         # Get a list of all of the files in the directory, so we can
         # remove files that don't belong.
-        contents = self.__scanDirectoryRecursively(self.getPackageDir()) 
+        contents = self.__scanDirectoryRecursively(self.getPackageDir())
         self.__removeFileFromList(contents, self.descFileBasename)
         self.__removeFileFromList(contents, self.compressedArchive.filename)
         self.__removeFileFromList(contents, self.UsageBasename)
@@ -582,7 +581,7 @@ class PackageInfo:
 
         if self.asMirror:
             return self.compressedArchive.quickVerify(self.getPackageDir(), notify = self.notify)
-            
+
         allExtractsOk = True
         if not self.uncompressedArchive.quickVerify(self.getPackageDir(), notify = self.notify):
             self.notify.debug("File is incorrect: %s" % (self.uncompressedArchive.filename))
@@ -593,7 +592,7 @@ class PackageInfo:
             # shouldn't be a compressed archive file here.
             pathname = Filename(self.getPackageDir(), self.compressedArchive.filename)
             pathname.unlink()
-            
+
             for file in self.extracts:
                 if not file.quickVerify(self.getPackageDir(), notify = self.notify):
                     self.notify.debug("File is incorrect: %s" % (file.filename))
@@ -614,7 +613,7 @@ class PackageInfo:
 
         size = self.totalPlanCompleted + self.currentStepEffort * step.getProgress()
         self.downloadProgress = min(float(size) / float(self.totalPlanSize), 1)
-    
+
     def downloadPackage(self, http):
         """ Downloads the package file, synchronously, then
         uncompresses and unpacks it.  Returns true on success, false
@@ -630,7 +629,7 @@ class PackageInfo:
             Thread.considerYield()
 
         return (token == self.stepComplete)
-    
+
     def downloadPackageGenerator(self, http):
         """ A generator function that implements downloadPackage() one
         piece at a time.  It yields one of stepComplete, stepFailed,
@@ -655,7 +654,7 @@ class PackageInfo:
                 yield token
             else:
                 break
-            
+
         while token == self.restartDownload:
             # Try again.
             for token in self.downloadDescFileGenerator(http):
@@ -675,7 +674,7 @@ class PackageInfo:
 
         assert token == self.stepComplete
         yield self.stepComplete; return
-            
+
 
     def __followInstallPlans(self):
         """ Performs all of the steps in self.installPlans.  Yields
@@ -701,16 +700,16 @@ class PackageInfo:
                         yield token
                     else:
                         break
-                    
+
                 if token == self.restartDownload:
                     yield token
                 if token == self.stepFailed:
                     planFailed = True
                     break
                 assert token == self.stepComplete
-                
+
                 self.totalPlanCompleted += self.currentStepEffort
-                
+
             if not planFailed:
                 # Successfully downloaded!
                 yield self.stepComplete; return
@@ -754,7 +753,7 @@ class PackageInfo:
     def __downloadFile(self, step, fileSpec, urlbase = None, filename = None,
                        allowPartial = False):
         """ Downloads the indicated file from the host into
-        packageDir.  Yields one of stepComplete, stepFailed, 
+        packageDir.  Yields one of stepComplete, stepFailed,
         restartDownload, or stepContinue. """
 
         if self.host.appRunner and self.host.appRunner.verifyContents == self.host.appRunner.P3DVCNever:
@@ -806,7 +805,7 @@ class PackageInfo:
                 url += '?' + str(int(time.time()))
                 request = DocumentSpec(url)
                 request.setCacheControl(DocumentSpec.CCNoCache)
-             
+
             self.notify.info("%s downloading %s" % (self.packageName, url))
 
             if not filename:
@@ -839,7 +838,7 @@ class PackageInfo:
                 targetPathname.makeDir()
                 targetPathname.unlink()
                 channel.beginGetDocument(request)
-                
+
             channel.downloadToFile(targetPathname)
             while channel.run():
                 if step:
@@ -849,7 +848,7 @@ class PackageInfo:
                         # it's the wrong file.
                         self.notify.warning("Got more data than expected for download %s" % (url))
                         break
-                    
+
                     self.__updateStepProgress(step)
 
                 if taskMgr.destroyed:
@@ -857,9 +856,9 @@ class PackageInfo:
                     # be shutting down.  Get out of here.
                     self.notify.warning("Task Manager destroyed, aborting %s" % (url))
                     yield self.stepFailed; return
-                    
+
                 yield self.stepContinue
-                
+
             if step:
                 step.bytesDone = channel.getBytesDownloaded() + channel.getFirstByteDelivered()
                 self.__updateStepProgress(step)
@@ -897,7 +896,7 @@ class PackageInfo:
     def __applyPatch(self, step, patchfile):
         """ Applies the indicated patching in-place to the current
         uncompressed archive.  The patchfile is removed after the
-        operation.  Yields one of stepComplete, stepFailed, 
+        operation.  Yields one of stepComplete, stepFailed,
         restartDownload, or stepContinue. """
 
         self.updated = True
@@ -907,7 +906,7 @@ class PackageInfo:
         result = Filename.temporary('', 'patch_')
         self.notify.info("Patching %s with %s" % (origPathname, patchPathname))
 
-        p = PandaModules.Patchfile()  # The C++ class
+        p = core.Patchfile()  # The C++ class
 
         ret = p.initiate(patchPathname, origPathname, result)
         if ret == EUSuccess:
@@ -925,7 +924,7 @@ class PackageInfo:
             ret = p.run()
         del p
         patchPathname.unlink()
-        
+
         if ret < 0:
             self.notify.warning("Patching of %s failed." % (origPathname))
             result.unlink()
@@ -934,12 +933,12 @@ class PackageInfo:
         if not result.renameTo(origPathname):
             self.notify.warning("Couldn't rename %s to %s" % (result, origPathname))
             yield self.stepFailed; return
-            
+
         yield self.stepComplete; return
 
     def __uncompressArchive(self, step):
         """ Turns the compressed archive into the uncompressed
-        archive.  Yields one of stepComplete, stepFailed, 
+        archive.  Yields one of stepComplete, stepFailed,
         restartDownload, or stepContinue. """
 
         if self.host.appRunner and self.host.appRunner.verifyContents == self.host.appRunner.P3DVCNever:
@@ -970,7 +969,7 @@ class PackageInfo:
 
         if result != EUSuccess:
             yield self.stepFailed; return
-            
+
         step.bytesDone = totalBytes
         self.__updateStepProgress(step)
 
@@ -985,10 +984,10 @@ class PackageInfo:
         # Now we can safely remove the compressed archive.
         sourcePathname.unlink()
         yield self.stepComplete; return
-    
+
     def __unpackArchive(self, step):
         """ Unpacks any files in the archive that want to be unpacked
-        to disk.  Yields one of stepComplete, stepFailed, 
+        to disk.  Yields one of stepComplete, stepFailed,
         restartDownload, or stepContinue. """
 
         if not self.extracts:
@@ -1008,7 +1007,7 @@ class PackageInfo:
         if not mf.openRead(mfPathname):
             self.notify.warning("Couldn't open %s" % (mfPathname))
             yield self.stepFailed; return
-        
+
         allExtractsOk = True
         step.bytesDone = 0
         for file in self.extracts:
@@ -1025,7 +1024,7 @@ class PackageInfo:
                 self.notify.warning("Couldn't extract: %s" % (file.filename))
                 allExtractsOk = False
                 continue
-            
+
             if not file.quickVerify(self.getPackageDir(), notify = self.notify):
                 self.notify.warning("After extracting, still incorrect: %s" % (file.filename))
                 allExtractsOk = False
@@ -1157,7 +1156,7 @@ class PackageInfo:
         """ Marks the package as having been used.  This is normally
         called automatically by installPackage(). """
 
-        if not hasattr(PandaModules, 'TiXmlDocument'):
+        if not hasattr(core, 'TiXmlDocument'):
             return
 
         if self.host.appRunner and self.host.appRunner.verifyContents == self.host.appRunner.P3DVCNever:
@@ -1174,14 +1173,14 @@ class PackageInfo:
         if not doc.LoadFile():
             decl = TiXmlDeclaration("1.0", "utf-8", "")
             doc.InsertEndChild(decl)
-            
+
         xusage = doc.FirstChildElement('usage')
         if not xusage:
             doc.InsertEndChild(TiXmlElement('usage'))
             xusage = doc.FirstChildElement('usage')
 
         now = int(time.time())
-        
+
         count = xusage.Attribute('count_app')
         try:
             count = int(count or '')
@@ -1214,22 +1213,22 @@ class PackageInfo:
         tfile = Filename.temporary(self.getPackageDir().cStr(), '.xml')
         if doc.SaveFile(tfile.toOsSpecific()):
             tfile.renameTo(filename)
-        
+
     def getUsage(self):
         """ Returns the xusage element that is read from the usage.xml
         file, or None if there is no usage.xml file. """
 
-        if not hasattr(PandaModules, 'TiXmlDocument'):
+        if not hasattr(core, 'TiXmlDocument'):
             return None
 
         filename = Filename(self.getPackageDir(), self.UsageBasename)
         doc = TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
             return None
-            
+
         xusage = doc.FirstChildElement('usage')
         if not xusage:
             return None
 
         return copy.copy(xusage)
-    
+

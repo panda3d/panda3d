@@ -226,7 +226,7 @@ is_official_version() {
   return false;
 #endif
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_distributor
 //       Access: Published, Static
@@ -239,7 +239,7 @@ string PandaSystem::
 get_distributor() {
   return PANDA_DISTRIBUTOR;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_compiler
 //       Access: Published, Static
@@ -279,7 +279,7 @@ get_compiler() {
   return "unknown";
 #endif
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_build_date
 //       Access: Published, Static
@@ -291,7 +291,23 @@ string PandaSystem::
 get_build_date() {
   return __DATE__ " " __TIME__;
 }
-  
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_git_commit
+//       Access: Published, Static
+//  Description: Returns a string representing the git commit hash
+//               that this source tree is based on, or the empty
+//               string if it has not been specified at build time.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_git_commit() {
+#ifdef PANDA_GIT_COMMIT_STR
+  return PANDA_GIT_COMMIT_STR;
+#else
+  return string();
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_platform
 //       Access: Published, Static
@@ -440,7 +456,7 @@ heap_trim(size_t pad) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PandaSystem::
 output(ostream &out) const {
@@ -450,7 +466,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PandaSystem::
 write(ostream &out) const {
@@ -472,7 +488,7 @@ write(ostream &out) const {
   }
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_global_ptr
 //       Access: Published, Static
@@ -498,12 +514,12 @@ void PandaSystem::
 reset_system_names() {
   _system_names.clear();
   _system_names.reserve(_systems.size());
-  
+
   Systems::const_iterator si;
   for (si = _systems.begin(); si != _systems.end(); ++si) {
     _system_names.push_back((*si).first);
   }
-  
+
   _system_names_dirty = false;
 }
 

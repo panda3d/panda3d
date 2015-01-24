@@ -1,0 +1,186 @@
+.TH INTERROGATE 1 "27 December 2014" "" Panda3D
+.SH NAME
+interrogate \- generate scripting language bindings for C/C++ APIs
+.SH SYNOPSIS
+.B interrogate
+[
+.I opts
+]
+.I file.C
+[
+.I file.C ...
+]
+.SH DESCRIPTION
+Interrogate is a program to parse a body of C++ code and build up a table
+of classes, methods, functions, and symbols found, for the purposes of
+calling into the codebase via a non-C++ scripting language like Scheme,
+Smalltalk, or Python.
+.PP
+In addition to identifying all the classes and their relationships,
+interrogate will generate a wrapper function for each callable function.
+The wrapper functions will be callable directly from the scripting language,
+with no understanding of C++ necessary; these wrapper functions will in turn
+call the actual C++ functions or methods.
+.PP
+Most exportable features of C++ are supported, including templates, default
+parameters, and function overloading.
+.SH OPTIONS
+.TP
+.BI "\-oc " output.C
+Specify the name of the file to which generated code will be written.
+This includes all of the function wrappers, as well as those tables
+which must be compiled into the library.
+.TP
+.BI "\-od " output.in
+Specify the name of the file to which the non-compiled data tables
+will be written.  This file describes the relationships between
+all the types and the functions, and associates the function wrappers
+above with this data.  This file will be opened and read at runtime
+when the scripting language first calls some interrogate query
+function.
+.TP
+.BI "\-srcdir " directory
+Specify the name of the directory to which the source filenames are
+relative.
+.TP
+.BI "\-module " module_name
+Defines the name of the module this data is associated with.  This
+is strictly a code-organizational tool.  Conceptually, a module is
+the highest level of grouping for interrogate data; a module may
+contain several libraries.  If this is omitted, no module name is
+specified.
+.PP
+Sometimes, depending on the type of wrappers being generated, there
+may be additional code that needs to be generated on the module
+level, above that which was already generated at the library level.
+Python, for instance, generates the table of python-callable function
+wrappers at the module level.  Use the program
+.BR interrogate_module (1)
+to generate the appropriate code at the module level.
+.TP
+.BI "\-library " library_name
+Defines the name of the library this data is associated with.  This
+is another code-organizational tool.  Typically, there will be one
+invocation of interrogate for each library, and there will be
+multiple libraries per module.  If this is omitted, no library name
+is specified.
+.TP
+.B \-do\-module
+Generate whatever module-level code should be generated immediately,
+rather than waiting for a special
+.BR interrogate_module (1)
+pass.  This, of course, prohibits grouping several libraries together
+into a single module.
+.TP
+.B \-fptrs
+Make void* pointers to the function wrappers directly available.  A
+scripting language will be able to call the interrogate functions
+directly by pointer.
+.TP
+.B \-fnames
+Make the names of the function wrappers public symbols so that the
+scripting language will be able to call the interrogate functions
+by name.
+.PP
+Either or both of \fB\-fptrs\fP and/or \fB\-fnames\fP may be specified.
+If both are omitted, the default is \fB\-fnames\fP.
+.TP
+.B \-string
+Treat char* and basic_string<char> as special cases, and map
+parameters of these types to type atomic string.  The scripting
+language will see only functions that receive and return strings,
+not pointers to character or structures of basic_string<char>.
+If C calling convention wrappers are being generated, the atomic
+string type means type char*.  In any other calling convention, the
+atomic string type is whatever the native string type is.
+.TP
+.B \-refcount
+Treat classes that inherit from a class called ReferenceCount as a
+special case.  Any wrapper function that returns a pointer to
+one of these classes will automatically increment the reference
+count by calling ref() on the object first, and any destructors
+that are generated will call unref_delete() on the object instead of
+simply delete.
+.PP
+Furthermore, parameters of type PointerTo<N> or ConstPointerTo<N>
+will automatically be mapped to N * and const N *, respectively.
+.TP
+.B \-assert
+Generate code in each wrapper that will check the state of the assert
+flag and trigger an exception in the scripting language when a
+C++ assertion fails.  Presently, this only has meaning to the Python
+wrappers.
+.TP
+.B \-true\-names
+Use the actual name of the function being wrapped as the name of
+the generated wrapper function, instead of an ugly hash name.
+This means the wrapper functions may be called directly using a
+meaningful name (especially if \fB\-fnames\fP is also given), but it
+also means that C++ function overloading (including default values
+for parameters) cannot be used, as it will lead to multiple wrapper
+functions with the same name.
+.TP
+.B \-c
+Generate function wrappers using the C calling convention.  Any
+scripting language that can call a C function should be able to
+make advantage of the interrogate database.
+.TP
+.B \-python
+Generate function wrappers using the Python calling convention.
+The shared library will be directly loadable as a Python module
+(especially if the module definitions are made available either by
+running
+.BR interrogate_module (1)
+later, or by specifying \fB\-do\-module\fP on the command line now).
+However, C++ objects and methods will be converted into an object
+handle and a list of independent Python functions.
+.TP
+.B \-python\-obj
+Generate Python function wrappers that convert C++ objects to true
+python objects, with all methods converted to Python methods.  This
+is currently experimental.
+.TP
+.B \-python\-native
+Generate Python function wrappers that convert C++ objects to true
+python objects, with all methods converted to Python methods.  This
+is the recommended method for creating Python wrappers.
+.PP
+Any combination of \fB\-c\fP, \fB\-python\fP, or \fB\-python\-obj\fP
+may be specified. If all are omitted, the default is \fB\-c\fP.
+.TP
+.B \-track\-interpreter
+Generate code within each wrapper function to adjust the global
+variable "in_interpreter" to indicated whether code is running
+within the Panda C++ environment or within the high-level language.
+.TP
+.B \-unique\-names
+Compile a table into the library (i.e. generate code into the
+\fB\-oc\fP file) that defines a lookup of each function wrapper by
+its unique name.  This makes it possible to consistently identify
+function wrappers between sessions, at the cost of having this
+additional table in memory.
+.TP
+.B \-nodb
+Do not build a full interrogate database, but just generate function
+wrappers.  It is assumed that the user will know how to call the
+function wrappers already, from some external source.  This is most
+useful in conjunction with \fB\-true\-names\fP.
+.TP
+.BI "\-longlong " typename
+Specify the name of the 64-bit integer type for the current compiler.
+By default, this is "long long".
+.TP
+.B \-promiscuous
+Export *all* public symbols, functions, and classes seen, even those
+not explicitly marked to be published.
+.TP
+.B \-spam
+Generate wrapper functions that report each invocation to Notify.
+This can sometimes be useful for tracking down bugs.
+.TP
+.B \-noangles
+Treat #include <file> the same as #include "file".  This means
+\fB\-I\fP and \fB\-S\fP are equivalent.
+.SH "SEE ALSO"
+.BR interrogate_module (1),
+.BR test_interrogate (1)

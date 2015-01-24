@@ -38,7 +38,6 @@ alias setbrowseinfo1 setenv CL_MAKE_BROWSE_INFO 1
 alias setbrowseinfo0 setenv CL_MAKE_BROWSE_INFO 0
 
 setenv HAVE_GL yes
-setenv HAVE_DX8 yes
 setenv HAVE_DX9 yes
 setenv USE_NSPR t
 

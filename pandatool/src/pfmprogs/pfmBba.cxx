@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 PfmBba::
 PfmBba() {
+  set_program_brief("generate .bba files from .pfm files");
   set_program_description
     ("pfm-bba generates a .bba file from a .pfm file that lists the "
      "planar bounding volume of the pfm's internal data.");

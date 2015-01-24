@@ -26,6 +26,7 @@ EggToX() : EggToSomething("DirectX", ".x", true, false) {
   add_texture_options();
   add_delod_options(0.0);
 
+  set_program_brief("convert an .egg file into a DirectX .x file");
   set_program_description
     ("This program reads an Egg file and outputs an equivalent, "
      "or nearly equivalent, DirectX-style .x file.  Only simple "

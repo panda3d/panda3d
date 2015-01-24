@@ -998,6 +998,9 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     const GLint p = _glsl_parameter_map[bind._id._seqno];
+    if (_glgsg->_supports_vertex_attrib_divisor) {
+      _glgsg->_glVertexAttribDivisor(p, 0);
+    }
     _glgsg->_glDisableVertexAttribArray(p);
   }
 
@@ -1050,30 +1053,42 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
-      const GLint p = _glsl_parameter_map[bind._id._seqno];
+      GLint p = _glsl_parameter_map[bind._id._seqno];
 
-      if (_glgsg->_data_reader->get_array_info(name,
-                                               array_reader, num_values, numeric_type,
-                                               start, stride)) {
+      int num_elements, element_stride, divisor;
+      if (_glgsg->_data_reader->get_array_info(name, array_reader,
+                                               num_values, numeric_type,
+                                               start, stride, divisor,
+                                               num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
+        client_pointer += start;
 
-        _glgsg->_glEnableVertexAttribArray(p);
+        for (int i = 0; i < num_elements; ++i) {
+          _glgsg->_glEnableVertexAttribArray(p);
 
 #ifndef OPENGLES
-        if (bind._integer) {
-          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                          stride, client_pointer + start);
-        } else
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                            stride, client_pointer);
+          } else
 #endif
-        if (numeric_type == GeomEnums::NT_packed_dabc) {
-          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                         GL_TRUE, stride, client_pointer + start);
-        } else {
-          _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                         GL_TRUE, stride, client_pointer + start);
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
+            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                           GL_TRUE, stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                           GL_TRUE, stride, client_pointer);
+          }
+
+          if (_glgsg->_supports_vertex_attrib_divisor) {
+            _glgsg->_glVertexAttribDivisor(p, divisor);
+          }
+
+          ++p;
+          client_pointer += element_stride;
         }
       } else {
         _glgsg->_glDisableVertexAttribArray(p);
@@ -1228,17 +1243,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
       } else {
         //TODO: automatically convert to sized type instead of plain GL_RGBA
         // If a base type is used, it will crash.
-        if (gtc->_internal_format == GL_RGBA || gtc->_internal_format == GL_RGB) {
+        GLenum internal_format = gtc->_internal_format;
+        if (internal_format == GL_RGBA || internal_format == GL_RGB) {
           GLCAT.error()
             << "Texture " << tex->get_name() << " has an unsized format.  Textures bound "
             << "to a shader as an image need a sized format.\n";
 
           // This may not actually be right, but may still prevent a crash.
-          if (gtc->_internal_format == GL_RGBA) {
-            gtc->_internal_format = GL_RGBA8;
-          } else {
-            gtc->_internal_format = GL_RGB8;
-          }
+          internal_format = _glgsg->get_internal_image_format(tex, true);
         }
 
         GLenum access = GL_READ_ONLY;

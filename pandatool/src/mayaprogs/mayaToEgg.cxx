@@ -64,6 +64,7 @@ MayaToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert Maya model files to .egg");
   set_program_description
     ("This program converts Maya model files to egg.  Static and animatable "
      "models can be converted, with polygon or NURBS output.  Animation tables "

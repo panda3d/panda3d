@@ -63,12 +63,11 @@ class LightAttrib;
 //               Thanks to them!
 //
 ////////////////////////////////////////////////////////////////////
-
-class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedObject {
+class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
-  ShaderGenerator(PT(GraphicsStateGuardianBase) gsg, PT(GraphicsOutputBase) host);
+  ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);
   virtual ~ShaderGenerator();
-  virtual CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
+  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs);
 
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
@@ -152,9 +151,9 @@ protected:
   void analyze_renderstate(const RenderState *rs);
   void clear_analysis();
 
-  PT(GraphicsStateGuardianBase) _gsg;
-  PT(GraphicsOutputBase) _host;
-  pmap<WCPT(RenderState), CPT(ShaderAttrib)> _generated_shaders;
+  // This is not a PT() to prevent a circular reference.
+  GraphicsStateGuardianBase *_gsg;
+  GraphicsOutputBase *_host;
 
 public:
   static TypeHandle get_class_type() {
@@ -177,4 +176,3 @@ public:
 #include "shaderGenerator.I"
 
 #endif  // SHADERGENERATOR_H
-

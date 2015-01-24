@@ -720,6 +720,10 @@ is_started(int collector_index, int thread_index) const {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -728,7 +732,7 @@ start(int collector_index, int thread_index) {
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
 
-  if (client_is_connected() && collector->is_active() && thread->_is_active) {
+  if (collector->is_active() && thread->_is_active) {
     LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
@@ -750,6 +754,10 @@ start(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 start(int collector_index, int thread_index, double as_of) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -758,7 +766,7 @@ start(int collector_index, int thread_index, double as_of) {
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
 
-  if (client_is_connected() && collector->is_active() && thread->_is_active) {
+  if (collector->is_active() && thread->_is_active) {
     LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
@@ -780,6 +788,10 @@ start(int collector_index, int thread_index, double as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -788,7 +800,7 @@ stop(int collector_index, int thread_index) {
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
 
-  if (client_is_connected() && collector->is_active() && thread->_is_active) {
+  if (collector->is_active() && thread->_is_active) {
     LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       if (pstats_cat.is_debug()) {
@@ -821,6 +833,10 @@ stop(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 stop(int collector_index, int thread_index, double as_of) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -829,7 +845,7 @@ stop(int collector_index, int thread_index, double as_of) {
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
 
-  if (client_is_connected() && collector->is_active() && thread->_is_active) {
+  if (collector->is_active() && thread->_is_active) {
     LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       if (pstats_cat.is_debug()) {

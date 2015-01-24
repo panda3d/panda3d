@@ -47,8 +47,8 @@ INLINE bool CullBinStateSorted::ObjectData::
 operator < (const ObjectData &other) const {
   // First group objects by transform, since transform changes are
   // supposed to be expensive.
-  if (_object->_modelview_transform != other._object->_modelview_transform) {
-    return _object->_modelview_transform < other._object->_modelview_transform;
+  if (_object->_internal_transform != other._object->_internal_transform) {
+    return _object->_internal_transform < other._object->_internal_transform;
   }
 
   // Then group by other state changes, in approximate order from

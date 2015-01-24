@@ -30,6 +30,7 @@ FltTrans() :
   // output files.
   _preferred_extension = ".flt";
 
+  set_program_brief("apply various operations to a MultiGen .flt file");
   set_program_description
     ("This program reads a MultiGen OpenFlight (.flt) file and writes an "
      "essentially equivalent .flt file, to the file specified with -o (or "

@@ -182,6 +182,7 @@ typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
 typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
@@ -194,6 +195,8 @@ typedef void (APIENTRYP PFNGLSAMPLERPARAMETERFVPROC) (GLuint sampler, GLenum pna
 typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIEXTPROC) (GLuint program, GLenum pname, GLint value);
 typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);
+typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
+typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLBINDSAMPLERSPROC) (GLuint first, GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
@@ -323,6 +326,8 @@ public:
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
+
+  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *region);
 
@@ -461,7 +466,7 @@ protected:
   static SamplerState::FilterType get_panda_filter_type(GLenum ft);
   GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;
-  GLint get_internal_image_format(Texture *tex) const;
+  GLint get_internal_image_format(Texture *tex, bool force_sized=false) const;
   static bool is_mipmap_filter(GLenum min_filter);
   static bool is_compressed_format(GLenum format);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
@@ -548,6 +553,8 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
   bool _scissor_enabled;
+  bool _scissor_attrib_active;
+  epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
   PT(Shader) _current_shader;
@@ -565,6 +572,8 @@ protected:
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
+
+  bool _supports_vertex_attrib_divisor;
 
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have
@@ -612,8 +621,7 @@ public:
 
 #ifndef OPENGLES
   PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
-  bool _primitive_restart_gl3;
-  bool _primitive_restart_nv;
+  bool _explicit_primitive_restart;
 #endif
 
   bool _supports_vertex_blend;
@@ -643,6 +651,11 @@ public:
   PFNGLTEXSTORAGE1DPROC _glTexStorage1D;
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
+
+  bool _supports_clear_texture;
+#ifndef OPENGLES
+  PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
+#endif
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
@@ -775,6 +788,7 @@ public:
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
+  PFNGLVERTEXATTRIBDIVISORPROC _glVertexAttribDivisor;
 #endif  // OPENGLES_1
 #ifndef OPENGLES
   PFNGLGENSAMPLERSPROC _glGenSamplers;

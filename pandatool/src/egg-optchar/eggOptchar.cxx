@@ -49,6 +49,7 @@ EggOptchar() {
   add_transform_options();
   add_fixrest_option();
 
+  set_program_brief("optimizes character models and animations in .egg files");
   set_program_description
     ("egg-optchar performs basic optimizations of a character model "
      "and its associated animations, primarily by analyzing the "
