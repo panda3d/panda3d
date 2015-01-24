@@ -5,8 +5,8 @@ __all__ = ['EventManager']
 
 from MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import *
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import PStatCollector, EventQueue, EventHandler
-from panda3d.core import EventStorePandaNode
 
 class EventManager:
 
@@ -15,11 +15,6 @@ class EventManager:
     # delayed import, since this is imported by the Toontown Launcher
     # before the complete PandaModules have been downloaded.
     PStatCollector = None
-
-    # for efficiency, only call import once per module
-    EventStorePandaNode = None
-    EventQueue = None
-    EventHandler = None
     
     def __init__(self, eventQueue = None):
         """
@@ -76,15 +71,8 @@ class EventManager:
             return None
         else:
             # Must be some user defined type, return the ptr
-            # which will be downcast to that type
-            ptr = eventParameter.getPtr()
-
-            if isinstance(ptr, EventStorePandaNode):
-                # Actually, it's a kludgey wrapper around a PandaNode
-                # pointer.  Return the node.
-                ptr = ptr.getValue()
-
-            return ptr
+            # which will be downcast to that type.
+            return eventParameter.getPtr()
         
     def processEvent(self, event):
         """
@@ -195,11 +183,7 @@ class EventManager:
                 # Otherwise, we need our own event handler.
                 self.eventHandler = EventHandler(self.eventQueue)
 
-        # Should be safe to import the global taskMgr by now.
-        from direct.task.TaskManagerGlobal import taskMgr
         taskMgr.add(self.eventLoopTask, 'eventManager')
 
     def shutdown(self):
-        # Should be safe to import the global taskMgr by now.
-        from direct.task.TaskManagerGlobal import taskMgr
         taskMgr.remove('eventManager')
