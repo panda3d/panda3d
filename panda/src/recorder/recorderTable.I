@@ -29,10 +29,8 @@ RecorderTable() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE RecorderTable::
-RecorderTable(const RecorderTable &copy) :
-  _recorders(copy._recorders),
-  _error(copy._error)
-{
+RecorderTable(const RecorderTable &copy) {
+  *this = copy;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,13 +42,62 @@ INLINE void RecorderTable::
 operator = (const RecorderTable &copy) {
   _recorders = copy._recorders;
   _error = copy._error;
+
+  Recorders::iterator ri;
+  for (ri = _recorders.begin(); ri != _recorders.end(); ++ri) {
+    ri->second->ref();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::Destructor
+//     Function: RecorderTable::add_recorder
 //       Access: Published
-//  Description:
+//  Description: Adds the named recorder to the set of recorders.
 ////////////////////////////////////////////////////////////////////
-INLINE RecorderTable::
-~RecorderTable() {
+INLINE void RecorderTable::
+add_recorder(const string &name, RecorderBase *recorder) {
+  nassertv(recorder != (RecorderBase *)NULL);
+  recorder->ref();
+
+  std::pair<Recorders::iterator, bool> result =
+    _recorders.insert(Recorders::value_type(name, recorder));
+
+  if (!result.second) {
+    // Take out the previous one first.
+    unref_delete(result.first->second);
+    result.first->second = recorder;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RecorderTable::get_recorder
+//       Access: Published
+//  Description: Returns the recorder with the indicated name, or NULL
+//               if there is no such recorder.
+////////////////////////////////////////////////////////////////////
+INLINE RecorderBase *RecorderTable::
+get_recorder(const string &name) const {
+  Recorders::const_iterator ri = _recorders.find(name);
+  if (ri != _recorders.end()) {
+    return (*ri).second;
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RecorderTable::remove_recorder
+//       Access: Published
+//  Description: Removes the named recorder from the table.  Returns
+//               true if successful, false if there was no such
+//               recorder.
+////////////////////////////////////////////////////////////////////
+INLINE bool RecorderTable::
+remove_recorder(const string &name) {
+  Recorders::iterator ri = _recorders.find(name);
+  if (ri != _recorders.end()) {
+    unref_delete(ri->second);
+    _recorders.erase(ri);
+    return true;
+  }
+  return false;
 }

@@ -69,9 +69,8 @@ class GraphicsStateGuardianBase;
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable,
-                              public LinkedListNode,
-                              virtual public ReferenceCount {
+class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
+                                     public Namable, public LinkedListNode {
 PUBLISHED:
   PandaNode(const string &name);
   virtual ~PandaNode();
@@ -84,7 +83,6 @@ private:
   void operator = (const PandaNode &copy);
 
 public:
-  virtual ReferenceCount *as_reference_count();
   virtual PandaNode *dupe_for_flatten() const;
 
   virtual bool safe_to_flatten() const;

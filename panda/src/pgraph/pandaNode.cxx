@@ -142,8 +142,7 @@ PandaNode::
 ////////////////////////////////////////////////////////////////////
 PandaNode::
 PandaNode(const PandaNode &copy) :
-  ReferenceCount(copy),
-  TypedWritable(copy),
+  TypedWritableReferenceCount(copy),
   Namable(copy),
   _paths_lock("PandaNode::_paths_lock"),
   _dirty_prev_transform(false)
@@ -207,17 +206,6 @@ PandaNode(const PandaNode &copy) :
 void PandaNode::
 operator = (const PandaNode &copy) {
   nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::as_reference_count
-//       Access: Public, Virtual
-//  Description: Returns the pointer cast to a ReferenceCount pointer,
-//               if it is in fact of that type.
-////////////////////////////////////////////////////////////////////
-ReferenceCount *PandaNode::
-as_reference_count() {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////

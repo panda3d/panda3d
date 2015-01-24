@@ -35,6 +35,8 @@ using namespace std;
 #define TYPENAME typename
 #define CONSTEXPR
 #define NOEXCEPT noexcept
+#define FINAL
+#define OVERRIDE
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -121,6 +123,7 @@ typedef ios::seekdir ios_seekdir;
 #define INLINE inline
 #endif
 
+// Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
 #    define CONSTEXPR constexpr
@@ -135,20 +138,30 @@ typedef ios::seekdir ios_seekdir;
 #  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
 #    define USE_MOVE_SEMANTICS
 #  endif
+#  if __has_extension(cxx_override_control)
+#    define FINAL final
+#    define OVERRIDE override
+#  endif
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
 // noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
 // GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
 #  define CONSTEXPR constexpr
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS
+#  define FINAL final
+#  define OVERRIDE override
 #elif defined(_MSC_VER) && _MSC_VER >= 1600
-// MSVC 2010 has move semantics.
+// MSVC 2010 has move semantics.  Not much else.
 #  define CONSTEXPR INLINE
 #  define NOEXCEPT throw()
 #  define USE_MOVE_SEMANTICS
+#  define FINAL
+#  define OVERRIDE
 #else
 #  define CONSTEXPR INLINE
 #  define NOEXCEPT
+#  define FINAL
+#  define OVERRIDE
 #endif
 
 #if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
