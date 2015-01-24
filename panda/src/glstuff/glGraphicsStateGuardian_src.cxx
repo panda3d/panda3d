@@ -6782,27 +6782,6 @@ report_extensions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::has_extension
-//       Access: Protected
-//  Description: Returns true if the indicated extension is reported
-//               by the GL system, false otherwise.  The extension
-//               name is case-sensitive.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-has_extension(const string &extension) const {
-
-  bool state;
-
-  state = _extensions.find(extension) != _extensions.end();
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "HAS EXT " << extension << " " << state << "\n";
-  }
-
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_extension_func
 //       Access: Public
 //  Description: Returns the pointer to the GL extension function with

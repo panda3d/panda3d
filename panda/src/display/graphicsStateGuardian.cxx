@@ -2973,6 +2973,18 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::has_extension
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG implements the extension
+//               identified by the given string.  This currently
+//               is only implemented by the OpenGL back-end.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+has_extension(const string &extension) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_vendor
 //       Access: Public, Virtual
 //  Description: Returns the vendor of the video card driver

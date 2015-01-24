@@ -406,7 +406,7 @@ protected:
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  bool has_extension(const string &extension) const;
+  INLINE virtual bool has_extension(const string &extension) const FINAL;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);

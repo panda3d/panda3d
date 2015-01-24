@@ -201,6 +201,7 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
+  virtual bool has_extension(const string &extension) const;
 
   virtual string get_driver_vendor();
   virtual string get_driver_renderer();
