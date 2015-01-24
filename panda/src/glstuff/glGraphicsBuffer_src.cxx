@@ -1394,9 +1394,7 @@ open_buffer() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 close_buffer() {
-
   check_host_valid();
-  report_my_gl_errors();
 
   if (_gsg == 0) {
     return;
