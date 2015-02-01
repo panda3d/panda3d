@@ -509,7 +509,7 @@ clear_analysis() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
-  PT(Shader) shader = Shader::make(txt);
+  PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
   CPT(RenderAttrib) shattr = ShaderAttrib::make();
   shattr = DCAST(ShaderAttrib, shattr)->set_shader(shader);
   if (_lighting) {

@@ -81,20 +81,20 @@ PUBLISHED:
     bit_AutoShaderShadow = 4, // bit for AS_shadow
   };
 
-  static PT(Shader) load(const Filename &file, const ShaderLanguage &lang = SL_none);
-  static PT(Shader) make(const string &body, const ShaderLanguage &lang = SL_none);
-  static PT(Shader) load(const ShaderLanguage &lang, 
-                         const Filename &vertex, const Filename &fragment, 
+  static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
+  static PT(Shader) make(const string &body, ShaderLanguage lang = SL_none);
+  static PT(Shader) load(ShaderLanguage lang,
+                         const Filename &vertex, const Filename &fragment,
                          const Filename &geometry = "",
                          const Filename &tess_control = "",
                          const Filename &tess_evaluation = "");
-  static PT(Shader) load_compute(const ShaderLanguage &lang, const Filename &fn);
-  static PT(Shader) make(const ShaderLanguage &lang, 
-                         const string &vertex, const string &fragment, 
+  static PT(Shader) load_compute(ShaderLanguage lang, const Filename &fn);
+  static PT(Shader) make(ShaderLanguage lang,
+                         const string &vertex, const string &fragment,
                          const string &geometry = "",
                          const string &tess_control = "",
                          const string &tess_evaluation = "");
-  static PT(Shader) make_compute(const ShaderLanguage &lang, const string &body);
+  static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
 
   INLINE Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
@@ -110,7 +110,7 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                              GraphicsStateGuardianBase *gsg);
 
 public:
@@ -407,6 +407,8 @@ public:
     INLINE void write_datagram(Datagram &dg) const;
     INLINE void read_datagram(DatagramIterator &source);
 
+    INLINE bool operator < (const ShaderFile &other) const;
+
   public:
     bool _separate;
     string _shared;
@@ -464,8 +466,8 @@ public:
 
   void clear_parameters();
 
-#ifdef HAVE_CG
 private:
+#ifdef HAVE_CG
   ShaderArgClass cg_parameter_class(CGparameter p);
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir cg_parameter_dir(CGparameter p);
@@ -496,7 +498,6 @@ private:
   CGprogram cg_program_from_shadertype(ShaderType type);
 
 public:
-
   bool cg_compile_for(const ShaderCaps &caps, CGcontext &ctx,
                       CGprogram &vprogram, CGprogram &fprogram,
                       CGprogram &gprogram, pvector<CGparameter> &map);
@@ -510,19 +511,25 @@ public:
   pvector <ShaderVarSpec> _var_spec;
 
   bool _error_flag;
-  CPT(ShaderFile) _text;
+  ShaderFile _text;
 
 protected:
-  CPT(ShaderFile) _filename;
+  ShaderFile _filename;
   int _parse;
   bool _loaded;
   ShaderLanguage _language;
+  pvector<Filename> _included_files;
+
+  // Stores full paths, and includes the fullpaths of the shaders
+  // themselves as well as the includes.
+  pvector<Filename> _source_files;
+  time_t _last_modified;
 
   static ShaderCaps _default_caps;
   static ShaderUtilization _shader_utilization;
   static int _shaders_generated;
 
-  typedef pmap < CPT(ShaderFile), Shader * > ShaderTable;
+  typedef pmap<ShaderFile, PT(Shader)> ShaderTable;
 
   static ShaderTable _load_table;
   static ShaderTable _make_table;
@@ -536,11 +543,20 @@ protected:
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  Shader();
+  Shader(ShaderLanguage lang);
+
+  bool read(const ShaderFile &sfile);
+  bool do_read_source(string &into, const Filename &fn);
+  bool r_preprocess_source(ostream &out, const Filename &fn,
+                           const Filename &source_dir,
+                           set<Filename> &open_files, int depth = 0);
+
+  bool check_modified() const;
 
 public:
-  Shader(CPT(ShaderFile) name, CPT(ShaderFile) text, const ShaderLanguage &lang = SL_none);
   ~Shader();
+
+  INLINE Filename get_filename_from_index(int index, ShaderType type) const;
 
 public:
   static void register_with_read_factory();
