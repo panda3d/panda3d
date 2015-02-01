@@ -2445,6 +2445,17 @@ get_num_primitives() const {
 ////////////////////////////////////////////////////////////////////
 bool GeomPrimitivePipelineReader::
 check_valid(const GeomVertexDataPipelineReader *data_reader) const {
-  return get_num_vertices() == 0 ||
-    get_max_vertex() < data_reader->get_num_rows();
+  if (get_num_vertices() != 0  &&
+      get_max_vertex() >= data_reader->get_num_rows()) {
+
+#ifndef NDEBUG
+    gobj_cat.error()
+      << get_object()->get_type() << " references vertices up to "
+      << get_max_vertex() << ", but GeomVertexData has only "
+      << data_reader->get_num_rows() << " rows!\n";
+#endif
+    return false;
+  }
+
+  return true;
 }
