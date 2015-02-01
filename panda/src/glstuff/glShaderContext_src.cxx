@@ -1305,14 +1305,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       view += stage->get_tex_view_offset();
     }
 
-    if (_shader->_tex_spec[i]._suffix != 0) {
-      // The suffix feature is inefficient. It is a temporary hack.
-      if (tex == 0) {
-        continue;
-      }
-      tex = tex->load_related(_shader->_tex_spec[i]._suffix);
-    }
-    if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
+    if (tex == NULL || tex->get_texture_type() != _shader->_tex_spec[i]._desired_type) {
       continue;
     }
 
@@ -1384,18 +1377,57 @@ update_shader_texture_bindings(ShaderContext *prev) {
 //  Description: This subroutine prints the infolog for a shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_shader_errors(GLuint shader) {
+glsl_report_shader_errors(GLuint shader, Shader::ShaderType type) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
 
   _glgsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-  if (length > 1) {
-    info_log = (char *) alloca(length);
-    _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
-    if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
-      GLCAT.error(false) << info_log << "\n";
+  if (length <= 1) {
+    return;
+  }
+
+  info_log = (char *) alloca(length);
+  _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
+  if (strcmp(info_log, "Success.\n") == 0 ||
+      strcmp(info_log, "No errors.\n") == 0) {
+    return;
+  }
+
+  // Parse the errors so that we can substitute in actual file
+  // locations instead of source indices.
+  istringstream log(info_log);
+  string line;
+  while (getline(log, line)) {
+    int fileno, lineno;
+    int prefixlen = 0;
+
+    // First is AMD/Intel driver syntax, second is NVIDIA syntax.
+    if (sscanf(line.c_str(), "ERROR: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
+        && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.error(false)
+        << "ERROR: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
+
+    } else if (sscanf(line.c_str(), "WARNING: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
+        && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.warning(false)
+        << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
+
+
+    } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
+               && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.error(false)
+        << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
+
+    } else {
+      GLCAT.error(false) << line << "\n";
     }
   }
 }
@@ -1483,9 +1515,9 @@ glsl_compile_shader(Shader::ShaderType type) {
 
   if (status != GL_TRUE) {
     GLCAT.error()
-      << "An error occurred while compiling shader "
-      << _shader->get_filename(type) << "\n";
-    glsl_report_shader_errors(handle);
+      << "An error occurred while compiling GLSL shader "
+      << _shader->get_filename(type) << ":\n";
+    glsl_report_shader_errors(handle, type);
     _glgsg->_glDeleteShader(handle);
     _glgsg->report_my_gl_errors();
     return false;
@@ -1493,6 +1525,10 @@ glsl_compile_shader(Shader::ShaderType type) {
 
   _glgsg->_glAttachShader(_glsl_program, handle);
   _glsl_shaders.push_back(handle);
+
+  // There might be warnings, so report those.
+  glsl_report_shader_errors(handle, type);
+
   return true;
 }
 
@@ -1553,10 +1589,10 @@ glsl_compile_and_link() {
   }
 
   // There might be warnings, so report those.
-  GLSLShaders::const_iterator it;
-  for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
-    glsl_report_shader_errors(*it);
-  }
+  //GLSLShaders::const_iterator it;
+  //for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
+  //  glsl_report_shader_errors(*it);
+  //}
 
   // If we requested to retrieve the shader, we should indicate that before linking.
 #if !defined(NDEBUG) && !defined(OPENGLES)
@@ -1570,10 +1606,13 @@ glsl_compile_and_link() {
   GLint status;
   _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while linking shader program!\n";
+    GLCAT.error() << "An error occurred while linking GLSL shader program!\n";
     glsl_report_program_errors(_glsl_program);
     return false;
   }
+
+  // Report any warnings.
+  glsl_report_program_errors(_glsl_program);
 
   // Dump the binary if requested.
 #if !defined(NDEBUG) && !defined(OPENGLES)

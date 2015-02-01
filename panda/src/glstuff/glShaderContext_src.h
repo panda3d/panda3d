@@ -73,7 +73,7 @@ private:
 
   bool _uses_standard_vertex_arrays;
 
-  void glsl_report_shader_errors(GLuint shader);
+  void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type);
   void glsl_report_program_errors(GLuint program);
   bool glsl_compile_shader(Shader::ShaderType type);
   bool glsl_compile_and_link();
