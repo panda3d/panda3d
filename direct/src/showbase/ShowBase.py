@@ -372,6 +372,7 @@ class ShowBase(DirectObject.DirectObject):
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
+        self.__prevWindowProperties = None
         self.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
@@ -2614,9 +2615,15 @@ class ShowBase(DirectObject.DirectObject):
             return Task.cont
 
     def windowEvent(self, win):
-        if win == self.win:
-            properties = win.getProperties()
-            self.notify.info("Got window event: %s" % (repr(properties)))
+        if win != self.win:
+            # This event isn't about our window.
+            return
+
+        properties = win.getProperties()
+        if properties != self.__prevWindowProperties:
+            self.__prevWindowProperties = properties
+
+            self.notify.debug("Got window event: %s" % (repr(properties)))
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
                 self.notify.info("User closed main window.")
