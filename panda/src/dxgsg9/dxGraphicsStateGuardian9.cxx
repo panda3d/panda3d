@@ -84,7 +84,9 @@ D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
 unsigned char *DXGraphicsStateGuardian9::_temp_buffer = NULL;
 unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = NULL;
 
+#ifdef HAVE_CG
 LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = NULL;
+#endif
 
 #define __D3DLIGHT_RANGE_MAX ((PN_stdfloat)sqrt(FLT_MAX))  //for some reason this is missing in dx9 hdrs
 
@@ -149,6 +151,10 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _vertex_shader_maximum_constants = 0;
 
   _supports_stream_offset = false;
+
+#ifdef HAVE_CG
+  _cg_context = 0;
+#endif
 
   get_gamma_table();
   atexit (atexit_function);
@@ -2372,6 +2378,8 @@ reset() {
 #ifdef HAVE_CG
   set_cg_device(_d3d_device);
 
+  _cg_context = cgCreateContext();
+
   if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
       cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
     _supports_basic_shaders = true;
@@ -2388,7 +2396,6 @@ reset() {
   }
 
   if (dxgsg9_cat.is_debug()) {
-
     CGprofile vertex_profile;
     CGprofile pixel_profile;
 
@@ -2408,8 +2415,8 @@ reset() {
     }
 
     dxgsg9_cat.debug()
-      << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
-      << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
+      << "\nCg latest vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
+      << "\nCg latest pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
       << "\nshader model = " << _shader_model
       << "\n";
   }
@@ -4152,6 +4159,12 @@ close_gsg() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 free_nondx_resources() {
+#ifdef HAVE_CG
+  if (_cg_context) {
+    cgDestroyContext(_cg_context);
+    _cg_context = 0;
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5627,9 +5640,6 @@ set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
   }
 #endif // HAVE_CG
 }
-
-
-
 
 typedef string KEY;
 

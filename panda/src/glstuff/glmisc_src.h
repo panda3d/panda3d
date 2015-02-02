@@ -74,6 +74,7 @@ extern ConfigVariableBool gl_enable_memory_barriers;
 extern ConfigVariableBool gl_vertex_array_objects;
 extern ConfigVariableBool gl_support_primitive_restart_index;
 extern ConfigVariableBool gl_support_sampler_objects;
+extern ConfigVariableBool gl_support_shadow_filter;
 
 extern EXPCL_GL void CLP(init_classes)();
 

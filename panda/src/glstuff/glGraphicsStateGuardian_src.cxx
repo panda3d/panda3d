@@ -318,6 +318,10 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _scissor_enabled = false;
   _scissor_attrib_active = false;
 
+#ifdef HAVE_CG
+  _cg_context = 0;
+#endif
+
 #ifdef DO_PSTATS
   if (gl_finish) {
     GLCAT.warning()
@@ -1083,15 +1087,19 @@ reset() {
     _supports_depth_texture = true;
   }
 
-  if (_supports_depth_texture &&
+  if (gl_support_shadow_filter &&
+      _supports_depth_texture &&
       has_extension("GL_ARB_shadow") &&
       has_extension("GL_ARB_fragment_program_shadow")) {
     _supports_shadow_filter = true;
   }
-  if (_gl_vendor.substr(0,3)=="ATI") {
+  // Actually, we can't keep forever disabling ARB_shadow on ATI cards,
+  // since they do work correctly now.  Maybe there is some feature
+  // level we can check somewhere?
+  /*if (_gl_vendor.substr(0,3)=="ATI") {
     // ATI drivers have never provided correct shadow support.
     _supports_shadow_filter = false;
-  }
+  }*/
 
   _supports_texture_combine =
     has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
@@ -1156,30 +1164,37 @@ reset() {
 
       // cgGLGetLatestProfile doesn't seem to return anything other
       // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
-      // Actually, it seems that these profiles are horribly broken on these
-      // cards.  Let's not do this.
-      //if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
-      //     _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
-      //    cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
-      //    cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
+      // So, if this happens, we set it to GLSL, which is
+      // usually supported on all cards.
+      // The GLSL profiles are horribly broken on non-NVIDIA cards, but
+      // I think I've worked around the issues sufficiently.
+      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
+           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
 
-      //  // So, if this happens, we set it to GLSL, which is
-      //  // usually supported on all cards.
-      //  _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-      //  _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
 #if CG_VERSION_NUM >= 2200
-      //  if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
-      //    _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-      //  }
+        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
+          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+        }
 #endif
-      //}
+      }
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
     _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
 
-    _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
-      get_extension_func("glBindProgramARB");
+    _cg_context = cgCreateContext();
+
+#if CG_VERSION_NUM >= 3100
+    // This just sounds like a good thing to do.
+    cgGLSetContextGLSLVersion(_cg_context, cgGLDetectGLSLVersion());
+    if (_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
+      cgGLSetContextOptimalOptions(_cg_context, CG_PROFILE_GLSLC);
+    }
+#endif
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -2244,9 +2259,17 @@ reset() {
     }
 #endif  // CG_VERSION_NUM >= 2200
 
+#if CG_VERSION_NUM >= 3100
+    if (GLCAT.is_debug()) {
+      CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
+      GLCAT.debug()
+        << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
+    }
+#endif
+
     GLCAT.debug()
-      << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
-      << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
+      << "\nCg latest vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
+      << "\nCg latest pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
       << "\nshader model = " << _shader_model
       << "\n";
   }
@@ -2591,6 +2614,7 @@ clear_before_callback() {
   // texture stage is still set to stage 0.  CEGUI, in particular,
   // makes this assumption.
   _glActiveTexture(GL_TEXTURE0);
+  _glClientActiveTexture(GL_TEXTURE0);
 
   // Clear the bound sampler object, so that we do not inadvertently
   // override the callback's desired sampler settings.
@@ -9009,6 +9033,12 @@ set_state_and_transform(const RenderState *target,
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
+#ifdef HAVE_CG
+  if (_cg_context != 0) {
+    cgDestroyContext(_cg_context);
+    _cg_context = 0;
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

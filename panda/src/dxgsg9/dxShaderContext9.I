@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXShaderContext9::valid
 //       Access: Public
@@ -22,12 +23,10 @@
 //               or if no shader languages are compiled into panda.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
-valid (GSG *gsg) {
+valid(GSG *gsg) {
 #ifdef HAVE_CG
-  if (_cg_context) {
-    return true;
-  }
-#endif
+  return (_cg_program != 0);
+#else
   return false;
+#endif
 }
-

@@ -63,6 +63,7 @@ PUBLISHED:
     ST_tess_control,
     ST_tess_evaluation,
     ST_compute,
+    ST_COUNT
   };
 
   enum AutoShaderSwitch {
@@ -472,12 +473,13 @@ private:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir cg_parameter_dir(CGparameter p);
 
-  CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_vertex);
+  CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
+                                   CGcontext context, ShaderType type);
 
   bool cg_analyze_entry_point(CGprogram prog, ShaderType type);
 
   bool cg_analyze_shader(const ShaderCaps &caps);
-  bool cg_compile_shader(const ShaderCaps &caps);
+  bool cg_compile_shader(const ShaderCaps &caps, CGcontext context);
   void cg_release_resources();
   void cg_report_errors();
 
@@ -486,7 +488,7 @@ private:
   void cg_get_profile_from_header(ShaderCaps &caps);
 
   ShaderCaps _cg_last_caps;
-  CGcontext  _cg_context;
+  static CGcontext  _cg_context;
   CGprogram  _cg_vprogram;
   CGprogram  _cg_fprogram;
   CGprogram  _cg_gprogram;
@@ -498,9 +500,8 @@ private:
   CGprogram cg_program_from_shadertype(ShaderType type);
 
 public:
-  bool cg_compile_for(const ShaderCaps &caps, CGcontext &ctx,
-                      CGprogram &vprogram, CGprogram &fprogram,
-                      CGprogram &gprogram, pvector<CGparameter> &map);
+  bool cg_compile_for(const ShaderCaps &caps, CGcontext context,
+                      CGprogram &combined_program, pvector<CGparameter> &map);
 
 #endif
 

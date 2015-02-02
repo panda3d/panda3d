@@ -568,6 +568,10 @@ protected:
   static PT(Shader)  _default_shader;
 #endif
 
+#ifdef HAVE_CG
+  CGcontext _cg_context;
+#endif
+
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
