@@ -27,6 +27,7 @@
 #include "autoTextureScale.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
+NotifyCategoryDecl(shader, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 
 BEGIN_PUBLISH
 enum ShaderUtilization {

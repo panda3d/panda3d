@@ -521,12 +521,12 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
             id._type  = type;
             id._seqno = -1;
             success &= compile_parameter(id, arg_class, arg_subclass, arg_type,
-                arg_dir, (vbl == CG_VARYING), arg_dim, gobj_cat.get_safe_ptr()); break;
+                arg_dir, (vbl == CG_VARYING), arg_dim, shader_cat.get_safe_ptr()); break;
           }
         }
       }
-    } else if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
+    } else if (shader_cat.is_debug()) {
+      shader_cat.debug()
         << "Parameter " << cgGetParameterName(parameter)
         << " is unreferenced within shader " << get_filename(type) << "\n";
     }
@@ -1096,7 +1096,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     if (pieces.size() == 3) {
       bind._suffix = InternalName::make(((string)"-") + pieces[2]);
-      gobj_cat.warning()
+      shader_cat.warning()
         << "Parameter " << p._id._name << ": use of a texture suffix is deprecated.\n";
     }
     _tex_spec.push_back(bind);
@@ -1448,17 +1448,17 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     // Print out some debug information about what we're doing.
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
+    if (shader_cat.is_debug()) {
+      shader_cat.debug()
         << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
         << " and active profile " << cgGetProfileString((CGprofile) active) << "\n";
 
       if (nargs > 0) {
-        gobj_cat.debug() << "Using compiler arguments:";
+        shader_cat.debug() << "Using compiler arguments:";
         for (int i = 0; i < nargs; ++i) {
-          gobj_cat.debug(false) << " " << compiler_args[i];
+          shader_cat.debug(false) << " " << compiler_args[i];
         }
-        gobj_cat.debug(false) << "\n";
+        shader_cat.debug(false) << "\n";
       }
     }
 
@@ -1472,14 +1472,14 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
     if (prog != 0) {
       cgDestroyProgram(prog);
     }
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
+    if (shader_cat.is_debug()) {
+      shader_cat.debug()
         << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
     }
   }
 
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
       << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
       << " and ultimate profile " << cgGetProfileString((CGprofile) ultimate) << "\n";
   }
@@ -1493,17 +1493,17 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
   const char *listing = cgGetLastListing(context);
 
   if (err == CG_NO_ERROR && listing != NULL && strlen(listing) > 1) {
-    gobj_cat.warning()
+    shader_cat.warning()
       << "Encountered warnings during compilation of " << get_filename(type)
       << ":\n" << listing;
 
   } else if (err == CG_COMPILER_ERROR) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Failed to compile Cg shader " << get_filename(type);
     if (listing != NULL) {
-      gobj_cat.error(false) << ":\n" << listing;
+      shader_cat.error(false) << ":\n" << listing;
     } else {
-      gobj_cat.error(false) << "!\n";
+      shader_cat.error(false) << "!\n";
     }
   }
 
@@ -1556,34 +1556,34 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
   }
 
   if (_cg_vprogram == 0 && _cg_fprogram == 0 && _cg_gprogram == 0) {
-    gobj_cat.error() << "Shader must at least have one program!\n";
+    shader_cat.error() << "Shader must at least have one program!\n";
     cg_release_resources();
     return false;
   }
 
   // DEBUG: output the generated program
-  if (gobj_cat.is_debug()) {
+  if (shader_cat.is_debug()) {
     const char *vertex_program;
     const char *fragment_program;
     const char *geometry_program;
 
     if (_cg_vprogram != 0) {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Cg vertex profile: " << cgGetProfileString((CGprofile)_cg_vprofile) << "\n";
       vertex_program = cgGetProgramString(_cg_vprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << vertex_program << "\n";
+      shader_cat.debug() << vertex_program << "\n";
     }
     if (_cg_fprogram != 0) {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Cg fragment profile: " << cgGetProfileString((CGprofile)_cg_fprofile) << "\n";
       fragment_program = cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << fragment_program << "\n";
+      shader_cat.debug() << fragment_program << "\n";
     }
     if (_cg_gprogram != 0) {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Cg geometry profile: " << cgGetProfileString((CGprofile)_cg_gprofile) << "\n";
       geometry_program = cgGetProgramString(_cg_gprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << geometry_program << "\n";
+      shader_cat.debug() << geometry_program << "\n";
     }
   }
 
@@ -1642,7 +1642,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
   if (_cg_context == 0) {
     _cg_context = cgCreateContext();
     if (_cg_context == 0) {
-      gobj_cat.error()
+      shader_cat.error()
         << "Could not create a Cg context object: "
         << cgGetErrorString(cgGetError()) << "\n";
       return false;
@@ -1662,7 +1662,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
   }
 
   if (_var_spec.size() != 0) {
-    gobj_cat.error() << "Cannot use vtx parameters in an fshader\n";
+    shader_cat.error() << "Cannot use vtx parameters in an fshader\n";
     cg_release_resources();
     clear_parameters();
     return false;
@@ -1828,19 +1828,19 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
   // active one, it means the active one isn't powerful enough to
   // compile the shader.
   if (_cg_vprogram != 0 && _cg_vprofile != caps._active_vprofile) {
-    gobj_cat.error() << "Cg vertex program not supported by profile "
+    shader_cat.error() << "Cg vertex program not supported by profile "
       << cgGetProfileString((CGprofile) caps._active_vprofile) << ": "
       << get_filename(ST_vertex) << ". Try choosing a different profile.\n";
     return false;
   }
   if (_cg_fprogram != 0 && _cg_fprofile != caps._active_fprofile) {
-    gobj_cat.error() << "Cg fragment program not supported by profile "
+    shader_cat.error() << "Cg fragment program not supported by profile "
       << cgGetProfileString((CGprofile) caps._active_fprofile) << ": "
       << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
     return false;
   }
   if (_cg_gprogram != 0 && _cg_gprofile != caps._active_gprofile) {
-    gobj_cat.error() << "Cg geometry program not supported by profile "
+    shader_cat.error() << "Cg geometry program not supported by profile "
       << cgGetProfileString((CGprofile) caps._active_gprofile) << ": "
       << get_filename(ST_geometry) << ". Try choosing a different profile.\n";
     return false;
@@ -1889,10 +1889,10 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     const ShaderArgId &id = _tex_spec[i]._id;
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
-    if (gobj_cat.is_debug()) {
+    if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(p);
       if (resource != NULL) {
-        gobj_cat.debug() << "Texture parameter " << id._name
+        shader_cat.debug() << "Texture parameter " << id._name
                          << " is bound to resource " << resource << "\n";
       }
     }
@@ -1904,8 +1904,8 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     const char *resource = cgGetParameterResourceName(p);
-    if (gobj_cat.is_debug() && resource != NULL) {
-      gobj_cat.debug()
+    if (shader_cat.is_debug() && resource != NULL) {
+      shader_cat.debug()
         << "Varying parameter " << id._name << " is bound to resource "
         << cgGetParameterResourceName(p) << "\n";
     }
@@ -1915,33 +1915,33 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
       // use the NORMAL0 semantic instead of NORMAL, or POSITION0
       // instead of POSITION, etc.  Not catching this results in a
       // continuous stream of errors at the renderer side.
-      gobj_cat.error()
+      shader_cat.error()
         << "Varying parameter " << id._name;
 
       const char *semantic = cgGetParameterSemantic(p);
       if (semantic != NULL) {
-        gobj_cat.error(false) << " : " << semantic;
+        shader_cat.error(false) << " : " << semantic;
       }
       if (resource != NULL) {
-        gobj_cat.error(false) << " (bound to resource " << resource << ")";
+        shader_cat.error(false) << " (bound to resource " << resource << ")";
       }
-      gobj_cat.error(false) << " is invalid!\n";
+      shader_cat.error(false) << " is invalid!\n";
 
 #ifndef NDEBUG
       // Let's try to give the developer a hint...
       if (semantic != NULL) {
         if (strcmp(semantic, "POSITION0") == 0) {
-          gobj_cat.error() << "Try using the semantic POSITION instead of POSITION0.\n";
+          shader_cat.error() << "Try using the semantic POSITION instead of POSITION0.\n";
         } else if (strcmp(semantic, "NORMAL0") == 0) {
-          gobj_cat.error() << "Try using the semantic NORMAL instead of NORMAL0.\n";
+          shader_cat.error() << "Try using the semantic NORMAL instead of NORMAL0.\n";
         } else if (strcmp(semantic, "DIFFUSE0") == 0) {
-          gobj_cat.error() << "Try using the semantic DIFFUSE instead of DIFFUSE0.\n";
+          shader_cat.error() << "Try using the semantic DIFFUSE instead of DIFFUSE0.\n";
         } else if (strcmp(semantic, "SPECULAR0") == 0) {
-          gobj_cat.error() << "Try using the semantic SPECULAR instead of SPECULAR0.\n";
+          shader_cat.error() << "Try using the semantic SPECULAR instead of SPECULAR0.\n";
         } else if (strcmp(semantic, "FOGCOORD0") == 0) {
-          gobj_cat.error() << "Try using the semantic FOGCOORD instead of FOGCOORD0.\n";
+          shader_cat.error() << "Try using the semantic FOGCOORD instead of FOGCOORD0.\n";
         } else if (strcmp(semantic, "PSIZE0") == 0) {
-          gobj_cat.error() << "Try using the semantic PSIZE instead of PSIZE0.\n";
+          shader_cat.error() << "Try using the semantic PSIZE instead of PSIZE0.\n";
         }
       }
 #endif  // NDEBUG
@@ -2022,7 +2022,7 @@ read(const ShaderFile &sfile) {
 
   if (sfile._separate) {
     if (_language == SL_none) {
-      gobj_cat.error()
+      shader_cat.error()
         << "No shader language was specified!\n";
       return false;
     }
@@ -2061,12 +2061,12 @@ read(const ShaderFile &sfile) {
       if (header == "//Cg") {
         _language = SL_Cg;
       } else {
-        gobj_cat.error()
+        shader_cat.error()
           << "Unable to determine shader language of " << sfile._shared << "\n";
         return false;
       }
     } else if (_language == SL_GLSL) {
-      gobj_cat.error()
+      shader_cat.error()
         << "GLSL shaders must have separate shader bodies!\n";
       return false;
     }
@@ -2077,16 +2077,16 @@ read(const ShaderFile &sfile) {
       cg_get_profile_from_header(_default_caps);
 
       if (!cg_analyze_shader(_default_caps)) {
-        gobj_cat.error()
+        shader_cat.error()
           << "Shader encountered an error.\n";
         return false;
       }
 #else
-      gobj_cat.error()
+      shader_cat.error()
         << "Tried to load Cg shader, but no Cg support is enabled.\n";
 #endif
     } else {
-      gobj_cat.error()
+      shader_cat.error()
         << "Shader is not in a supported shader-language.\n";
       return false;
     }
@@ -2117,18 +2117,18 @@ do_read_source(string &into, const Filename &fn) {
     into = sstr.str();
 
   } else {
-    gobj_cat.info() << "Reading shader file: " << fn << "\n";
+    shader_cat.info() << "Reading shader file: " << fn << "\n";
 
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
     if (vf == NULL) {
-      gobj_cat.error()
+      shader_cat.error()
         << "Could not find shader file: " << fn << "\n";
       return false;
     }
 
     if (!vf->read_file(into, true)) {
-      gobj_cat.error()
+      shader_cat.error()
         << "Could not read shader file: " << fn << "\n";
       return false;
     }
@@ -2154,7 +2154,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
                     set<Filename> &once_files, int depth) {
 
   if (depth > glsl_include_recursion_limit) {
-    gobj_cat.error()
+    shader_cat.error()
       << "#pragma include nested too deeply\n";
     return false;
   }
@@ -2167,7 +2167,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, path);
   if (vf == NULL) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Could not find shader file: " << fn << "\n";
     return false;
   }
@@ -2180,7 +2180,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
   istream *source = vf->open_read_file(true);
   if (source == NULL) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Could not open shader file: " << fn << "\n";
     return false;
   }
@@ -2204,12 +2204,12 @@ r_preprocess_source(ostream &out, const Filename &fn,
     _included_files.push_back(fn);
 
     out << "#line 1 " << fileno << " // " << fn << "\n";
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
+    if (shader_cat.is_debug()) {
+      shader_cat.debug()
         << "Preprocessing shader include " << fileno << ": " << fn << "\n";
     }
   } else {
-    gobj_cat.info()
+    shader_cat.info()
       << "Preprocessing shader file: " << fn << "\n";
   }
 
@@ -2258,7 +2258,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
         } else {
           // Couldn't parse it.
-          gobj_cat.error()
+          shader_cat.error()
             << "Malformed #pragma include at line " << lineno
             << " of file " << fn << ":\n  " << line << "\n";
           return false;
@@ -2268,7 +2268,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // OK, great.  Process the include.
       if (!r_preprocess_source(out, incfn, source_dir, once_files, depth + 1)) {
         // An error occurred.  Pass on the failure.
-        gobj_cat.error(false) << "included at line "
+        shader_cat.error(false) << "included at line "
           << lineno << " of file " << fn << ":\n  " << line << "\n";
         return false;
       }
@@ -2281,7 +2281,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // Do a stricter syntax check, just to be extra safe.
       if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
           nread != line.size()) {
-        gobj_cat.error()
+        shader_cat.error()
           << "Malformed #pragma once at line " << lineno
           << " of file " << fn << ":\n  " << line << "\n";
         return false;
@@ -2293,7 +2293,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // This is processed by NVIDIA drivers.  Don't touch it.
 
     } else {
-      gobj_cat.warning()
+      shader_cat.warning()
         << "Ignoring unknown pragma directive \"" << pragma << "\" at line "
         << lineno << " of file " << fn << ":\n  " << line << "\n";
     }
@@ -2487,10 +2487,10 @@ load(const Filename &file, ShaderLanguage lang) {
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
     // But check that someone hasn't modified it in the meantime.
     if (i->second->check_modified()) {
-      gobj_cat.info()
+      shader_cat.info()
         << "Shader " << file << " was modified on disk, reloading.\n";
     } else {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Shader " << file << " was found in shader cache.\n";
       return i->second;
     }
@@ -2520,10 +2520,10 @@ load(ShaderLanguage lang, const Filename &vertex,
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
     // But check that someone hasn't modified it in the meantime.
     if (i->second->check_modified()) {
-      gobj_cat.info()
+      shader_cat.info()
         << "Shader was modified on disk, reloading.\n";
     } else {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Shader was found in shader cache.\n";
       return i->second;
     }
@@ -2546,7 +2546,7 @@ load(ShaderLanguage lang, const Filename &vertex,
 PT(Shader) Shader::
 load_compute(ShaderLanguage lang, const Filename &fn) {
   if (lang != SL_GLSL) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
     return NULL;
   }
@@ -2559,10 +2559,10 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
     // But check that someone hasn't modified it in the meantime.
     if (i->second->check_modified()) {
-      gobj_cat.info()
+      shader_cat.info()
         << "Compute shader " << fn << " was modified on disk, reloading.\n";
     } else {
-      gobj_cat.debug()
+      shader_cat.debug()
         << "Compute shader " << fn << " was found in shader cache.\n";
       return i->second;
     }
@@ -2585,18 +2585,18 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 PT(Shader) Shader::
 make(const string &body, ShaderLanguage lang) {
   if (lang == SL_GLSL) {
-    gobj_cat.error()
+    shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
     return NULL;
 
   } else if (lang == SL_none) {
-    gobj_cat.warning()
+    shader_cat.warning()
       << "Shader::make() now requires an explicit shader language.  Assuming Cg.\n";
     lang = SL_Cg;
   }
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
-    gobj_cat.error() << "Support for Cg shaders is not enabled.\n";
+    shader_cat.error() << "Support for Cg shaders is not enabled.\n";
     return NULL;
   }
 #endif
@@ -2616,7 +2616,7 @@ make(const string &body, ShaderLanguage lang) {
     shader->cg_get_profile_from_header(_default_caps);
 
     if (!shader->cg_analyze_shader(_default_caps)) {
-      gobj_cat.error()
+      shader_cat.error()
         << "Shader encountered an error.\n";
       return NULL;
     }
@@ -2630,7 +2630,7 @@ make(const string &body, ShaderLanguage lang) {
     int index = _shaders_generated ++;
     fns << "genshader" << index;
     string fn = fns.str();
-    gobj_cat.warning() << "Dumping shader: " << fn << "\n";
+    shader_cat.warning() << "Dumping shader: " << fn << "\n";
 
     pofstream s;
     s.open(fn.c_str(), ios::out | ios::trunc);
@@ -2651,12 +2651,12 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
      const string &tess_evaluation) {
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
-    gobj_cat.error() << "Support for Cg shaders is not enabled.\n";
+    shader_cat.error() << "Support for Cg shaders is not enabled.\n";
     return NULL;
   }
 #endif
   if (lang == SL_none) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Shader::make() requires an explicit shader language.\n";
     return NULL;
   }
@@ -2675,7 +2675,7 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
 #ifdef HAVE_CG
   if (lang == SL_Cg) {
     if (!shader->cg_analyze_shader(_default_caps)) {
-      gobj_cat.error()
+      shader_cat.error()
         << "Shader encountered an error.\n";
       return NULL;
     }
@@ -2695,7 +2695,7 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
 PT(Shader) Shader::
 make_compute(ShaderLanguage lang, const string &body) {
   if (lang != SL_GLSL) {
-    gobj_cat.error()
+    shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
     return NULL;
   }

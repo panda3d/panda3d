@@ -69,6 +69,7 @@
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
+NotifyCategoryDef(shader, "");
 
 ConfigVariableInt max_texture_dimension
 ("max-texture-dimension", -1,
