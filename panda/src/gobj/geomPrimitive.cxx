@@ -296,7 +296,7 @@ add_consecutive_vertices(int start, int num_vertices) {
 
   PT(GeomVertexArrayData) array_obj = cdata->_vertices.get_write_pointer();
   int old_num_rows = array_obj->get_num_rows();
-  array_obj->unclean_set_num_rows(old_num_rows + num_vertices);
+  array_obj->set_num_rows(old_num_rows + num_vertices);
 
   GeomVertexWriter index(array_obj, 0);
   index.set_row_unsafe(old_num_rows);
