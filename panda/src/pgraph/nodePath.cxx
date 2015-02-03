@@ -1714,21 +1714,21 @@ set_hpr(const NodePath &other, const LVecBase3 &hpr) {
   CPT(TransformState) rel_transform = get_transform(other);
   nassertv(rel_transform->has_hpr());
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_hpr(hpr));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, new_transform->get_hpr(), orig_scale, orig_shear));
+                    (orig_pos, transform->get_hpr(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1787,21 +1787,21 @@ set_quat(const NodePath &other, const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_quat(quat));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_quat_scale_shear
-                    (orig_pos, new_transform->get_quat(), orig_scale, orig_shear));
+                    (orig_pos, transform->get_quat(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1835,21 +1835,21 @@ set_scale(const NodePath &other, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_hpr = transform->get_hpr();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_scale(scale));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, new_transform->get_scale(), orig_shear));
+                    (orig_pos, orig_hpr, transform->get_scale(), orig_shear));
     }
 
   } else {
@@ -1907,21 +1907,21 @@ set_shear(const NodePath &other, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_hpr = transform->get_hpr();
+    const LVecBase3 &orig_scale = transform->get_scale();
 
     set_transform(other, rel_transform->set_shear(shear));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, orig_scale, new_transform->get_shear()));
+                    (orig_pos, orig_hpr, orig_scale, transform->get_shear()));
     }
 
   } else {
@@ -1980,20 +1980,20 @@ set_pos_hpr(const NodePath &other, const LVecBase3 &pos,
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, TransformState::make_pos_hpr_scale_shear
                   (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
-      set_pos_hpr_scale_shear(new_transform->get_pos(), new_transform->get_hpr(),
+    transform = get_transform();
+    if (transform->has_components()) {
+      set_pos_hpr_scale_shear(transform->get_pos(), transform->get_hpr(),
                               orig_scale, orig_shear);
     }
 
@@ -2018,20 +2018,20 @@ set_pos_quat(const NodePath &other, const LVecBase3 &pos,
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, TransformState::make_pos_quat_scale_shear
                   (pos, quat, rel_transform->get_scale(), rel_transform->get_shear()));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
-      set_pos_quat_scale_shear(new_transform->get_pos(), new_transform->get_quat(),
+    transform = get_transform();
+    if (transform->has_components()) {
+      set_pos_quat_scale_shear(transform->get_pos(), transform->get_quat(),
                                orig_scale, orig_shear);
     }
 

@@ -163,32 +163,32 @@ PUBLISHED:
   void copy_children(PandaNode *other, Thread *current_thread = Thread::get_current_thread());
 
   void set_attrib(const RenderAttrib *attrib, int override = 0);
-  INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
-  INLINE const RenderAttrib *get_attrib(int slot) const;
+  INLINE CPT(RenderAttrib) get_attrib(TypeHandle type) const;
+  INLINE CPT(RenderAttrib) get_attrib(int slot) const;
   INLINE bool has_attrib(TypeHandle type) const;
   INLINE bool has_attrib(int slot) const;
   INLINE void clear_attrib(TypeHandle type);
   void clear_attrib(int slot);
 
   void set_effect(const RenderEffect *effect);
-  INLINE const RenderEffect *get_effect(TypeHandle type) const;
+  INLINE CPT(RenderEffect) get_effect(TypeHandle type) const;
   INLINE bool has_effect(TypeHandle type) const;
   void clear_effect(TypeHandle type);
 
   void set_state(const RenderState *state, Thread *current_thread = Thread::get_current_thread());
-  INLINE const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(RenderState) get_state(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_state(Thread *current_thread = Thread::get_current_thread());
 
   void set_effects(const RenderEffects *effects, Thread *current_thread = Thread::get_current_thread());
-  INLINE const RenderEffects *get_effects(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(RenderEffects) get_effects(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_effects(Thread *current_thread = Thread::get_current_thread());
 
   void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(TransformState) get_transform(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
 
   void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE const TransformState *get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(TransformState) get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
   void reset_prev_transform(Thread *current_thread = Thread::get_current_thread());
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
