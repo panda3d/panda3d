@@ -359,6 +359,7 @@ public:
     ShaderArgId       _id;
     PT(InternalName)  _name;
     int               _append_uv;
+    int               _elements;
     bool              _integer;
   };
 

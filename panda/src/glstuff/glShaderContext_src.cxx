@@ -734,6 +734,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       bind._id = arg_id;
       bind._name = NULL;
       bind._append_uv = -1;
+      bind._elements = 1;
 
       if (param_name.substr(0, 3) == "gl_") {
         // Not all drivers return -1 in glGetAttribLocation
@@ -792,6 +793,24 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
         continue;
       }
+
+      // Get the number of bind points.
+      switch (param_type) {
+      case GL_FLOAT_MAT3:
+      case GL_DOUBLE_MAT3:
+        bind._elements = 3 * param_size;
+        break;
+
+      case GL_FLOAT_MAT4:
+      case GL_DOUBLE_MAT4:
+        bind._elements = 4 * param_size;
+        break;
+
+      default:
+        bind._elements = param_size;
+        break;
+      }
+
       s->_var_spec.push_back(bind);
     }
   }
@@ -1001,7 +1020,9 @@ disable_shader_vertex_arrays() {
     if (_glgsg->_supports_vertex_attrib_divisor) {
       _glgsg->_glVertexAttribDivisor(p, 0);
     }
-    _glgsg->_glDisableVertexAttribArray(p);
+    for (int i = 0; i < bind._elements; ++i) {
+      _glgsg->_glDisableVertexAttribArray(p + i);
+    }
   }
 
   _glgsg->report_my_gl_errors();
@@ -1091,7 +1112,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           client_pointer += element_stride;
         }
       } else {
-        _glgsg->_glDisableVertexAttribArray(p);
+        for (int i = 0; i < bind._elements; ++i) {
+          _glgsg->_glDisableVertexAttribArray(p + i);
+        }
       }
     }
   }
