@@ -52,6 +52,9 @@ operator << (ostream &out, ConfigFlags::ValueType type) {
 
   case ConfigFlags::VT_int64:
     return out << "int64";
+
+  case ConfigFlags::VT_color:
+    return out << "color";
   }
 
   return out << "**invalid(" << (int)type << ")**";
