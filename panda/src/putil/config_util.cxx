@@ -34,6 +34,7 @@
 #include "factoryParam.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
+#include "parameter.h"
 #include "paramValue.h"
 #include "pythonCallbackObject.h"
 #include "referenceCount.h"
@@ -199,12 +200,12 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+  Parameter::init_type();
   ParamMatrix3d::init_type("ParamMatrix3d");
   ParamMatrix3f::init_type("ParamMatrix3f");
   ParamMatrix4d::init_type("ParamMatrix4d");
   ParamMatrix4f::init_type("ParamMatrix4f");
   ParamString::init_type("ParamString");
-  ParamTypedRefCount::init_type();
   ParamValueBase::init_type();
   ParamVecBase2d::init_type("ParamVecBase2d");
   ParamVecBase2f::init_type("ParamVecBase2f");

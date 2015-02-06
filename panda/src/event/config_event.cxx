@@ -42,14 +42,10 @@ ConfigureFn(config_event) {
   PointerEventList::init_type();
   Event::init_type();
   EventHandler::init_type();
-  EventStoreInt::init_type("EventStoreInt");
-  EventStoreDouble::init_type("EventStoreDouble");
   GenericAsyncTask::init_type();
 #ifdef HAVE_PYTHON
   PythonTask::init_type();
 #endif
 
   ButtonEventList::register_with_read_factory();
-  EventStoreInt::register_with_read_factory();
-  EventStoreDouble::register_with_read_factory();
 }

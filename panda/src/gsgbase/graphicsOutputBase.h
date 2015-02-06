@@ -16,7 +16,7 @@
 #define GRAPHICSOUTPUTBASE_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "typedReferenceCount.h"
 
 class Texture;
 
@@ -25,19 +25,19 @@ class Texture;
 // Description : An abstract base class for GraphicsOutput, for all
 //               the usual reasons.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GSGBASE GraphicsOutputBase : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GSGBASE GraphicsOutputBase : public TypedReferenceCount {
 PUBLISHED:
   virtual void set_sort(int sort)=0;
   virtual Texture *get_texture(int i=0) const=0;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "GraphicsOutputBase",
-                  TypedWritableReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -1407,15 +1407,15 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
   // We always pass the pixel_size data through.
   EventStoreVec2 *pixel_size;
-  DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
+  DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_typed_object());
   output.set_data(_pixel_size_output, pixel_size);
   _pixel_size = pixel_size;
 
   if (input.has_data(_xy_input)) {
     // The mouse is within the window.  Get the current mouse position.
     const EventStoreVec2 *xy, *pixel_xy;
-    DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
-    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
+    DCAST_INTO_V(xy, input.get_data(_xy_input).get_typed_object());
+    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_typed_object());
 
     LVecBase2 f = xy->get_value();
     LVecBase2 p = pixel_xy->get_value();
@@ -1451,7 +1451,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   _num_trail_recent = 0;
   if (input.has_data(_pointer_events_input) && (_trail_log_duration > 0.0)) {
     const PointerEventList *this_pointer_events;
-    DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_ptr());
+    DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_typed_object());
     _num_trail_recent = this_pointer_events->get_num_events();
     for (int i = 0; i < _num_trail_recent; i++) {
       bool in_win = this_pointer_events->get_in_window(i);
@@ -1482,7 +1482,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   // Look for new button events.
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *this_button_events;
-    DCAST_INTO_V(this_button_events, input.get_data(_button_events_input).get_ptr());
+    DCAST_INTO_V(this_button_events, input.get_data(_button_events_input).get_typed_object());
     int num_events = this_button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = this_button_events->get_event(i);

@@ -50,3 +50,27 @@ operator = (const TypedReferenceCount &copy) {
   TypedObject::operator = (copy);
   ReferenceCount::operator = (copy);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE TypedObject *TypedReferenceCount::
+as_typed_object() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE const TypedObject *TypedReferenceCount::
+as_typed_object() const {
+  return this;
+}

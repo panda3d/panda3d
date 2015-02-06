@@ -29,7 +29,7 @@
 //               each time they are needed, so that we can sensibly
 //               pass around pointers to things which are both
 //               TypedObjects and ReferenceCounters.
-//               
+//
 //               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
@@ -37,6 +37,9 @@ public:
   INLINE TypedReferenceCount();
   INLINE TypedReferenceCount(const TypedReferenceCount &copy);
   INLINE void operator = (const TypedReferenceCount &copy);
+
+  virtual INLINE TypedObject *as_typed_object();
+  virtual INLINE const TypedObject *as_typed_object() const;
 
 public:
   virtual TypeHandle get_type() const {

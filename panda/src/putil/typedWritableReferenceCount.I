@@ -33,7 +33,8 @@ TypedWritableReferenceCount() {
 INLINE TypedWritableReferenceCount::
 TypedWritableReferenceCount(const TypedWritableReferenceCount &copy) :
   TypedWritable(copy),
-  ReferenceCount(copy) {
+  ReferenceCount(copy)
+{
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
@@ -48,4 +49,28 @@ INLINE void TypedWritableReferenceCount::
 operator = (const TypedWritableReferenceCount &copy) {
   TypedWritable::operator = (copy);
   ReferenceCount::operator = (copy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritableReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE TypedObject *TypedWritableReferenceCount::
+as_typed_object() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritableReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE const TypedObject *TypedWritableReferenceCount::
+as_typed_object() const {
+  return this;
 }

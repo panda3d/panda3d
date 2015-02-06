@@ -18,76 +18,14 @@
 #include "pandabase.h"
 
 #include "typedef.h"
-#include "typedObject.h"
-#include "typedWritableReferenceCount.h"
-#include "pointerTo.h"
-#include "bamReader.h"
-#include "bamWriter.h"
-#include "paramValue.h"
+#include "parameter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventParameter
-// Description : An optional parameter associated with an event.  Each
-//               event may have zero or more of these.  Each parameter
-//               stores a pointer to a TypedWritableReferenceCount
-//               object, which of course could be pretty much
-//               anything.  To store a simple value like a double or a
-//               string, the EventParameter constructors transparently
-//               use the ParamValue template class from paramValue.h.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT EventParameter {
-PUBLISHED:
-  INLINE EventParameter();
-  INLINE EventParameter(const TypedWritableReferenceCount *ptr);
-  INLINE EventParameter(const TypedReferenceCount *ptr);
-  INLINE EventParameter(int value);
-  INLINE EventParameter(double value);
-  INLINE EventParameter(const string &value);
-  INLINE EventParameter(const wstring &value);
+// Some typedefs for backward compatibility.
+typedef Parameter EventParameter;
 
-  INLINE EventParameter(const EventParameter &copy);
-  INLINE EventParameter &operator = (const EventParameter &copy);
-  INLINE ~EventParameter();
-
-  // These functions are conveniences to easily determine if the
-  // EventParameter is one of the predefined parameter types, and
-  // retrieve the corresponding value.  Of course, it is possible that
-  // the EventParameter is some user-defined type, and is none of
-  // these.
-  INLINE bool is_empty() const;
-  INLINE bool is_int() const;
-  INLINE int get_int_value() const;
-  INLINE bool is_double() const;
-  INLINE double get_double_value() const;
-  INLINE bool is_string() const;
-  INLINE string get_string_value() const;
-  INLINE bool is_wstring() const;
-  INLINE wstring get_wstring_value() const;
-
-  INLINE bool is_typed_ref_count() const;
-  INLINE TypedReferenceCount *get_typed_ref_count_value() const;
-
-  INLINE TypedWritableReferenceCount *get_ptr() const;
-
-  void output(ostream &out) const;
-
-private:
-  PT(TypedWritableReferenceCount) _ptr;
-};
-
-INLINE ostream &operator << (ostream &out, const EventParameter &param);
-
-typedef ParamTypedRefCount EventStoreTypedRefCount;
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, ParamValue<int>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, ParamValue<double>);
-
-typedef ParamValue<int> EventStoreInt;
-typedef ParamValue<double> EventStoreDouble;
+typedef ParamValueBase EventStoreValueBase;
 typedef ParamString EventStoreString;
 typedef ParamWstring EventStoreWstring;
-
-#include "eventParameter.I"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

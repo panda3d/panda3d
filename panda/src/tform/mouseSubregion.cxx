@@ -71,7 +71,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
   if (input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
-    DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
+    DCAST_INTO_V(xy, input.get_data(_xy_input).get_typed_object());
     const LVecBase2 &p = xy->get_value();
 
     // Scale the old value into the new range.
@@ -87,12 +87,12 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       // pixel_size.
       if (input.has_data(_pixel_size_input)) {
         const EventStoreVec2 *pixel_size;
-        DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
+        DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_typed_object());
         const LVecBase2 &s = pixel_size->get_value();
 
         PN_stdfloat xf = (1.0f + n[0]) * 0.5f * s[0];
         PN_stdfloat yf = (1.0f - n[1]) * 0.5f * s[1];
-        
+
         _pixel_xy->set_value(LPoint2(xf, yf));
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
       }
@@ -110,7 +110,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
     if (input.has_data(_button_events_input)) {
       const ButtonEventList *button_events;
-      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_typed_object());
       int num_events = button_events->get_num_events();
       for (int i = 0; i < num_events; i++) {
         const ButtonEvent &be = button_events->get_event(i);
@@ -130,7 +130,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   // Now scale the window size.
   if (input.has_data(_pixel_size_input)) {
     const EventStoreVec2 *pixel_size;
-    DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
+    DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_typed_object());
     const LVecBase2 &s = pixel_size->get_value();
 
     LVecBase2 n(s[0] * (_r - _l), s[1] * (_t - _b));

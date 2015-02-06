@@ -73,6 +73,17 @@ add_parameter(const EventParameter &obj) {
   _parameters.push_back(obj);
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Event::add_parameter
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Event::
+add_parameter(EventParameter &&obj) {
+  _parameters.push_back(move(obj));
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::get_num_parameters

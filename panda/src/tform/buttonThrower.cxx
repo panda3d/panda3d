@@ -392,7 +392,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *button_events;
-    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_typed_object());
 
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {

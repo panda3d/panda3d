@@ -391,13 +391,6 @@ get_effect(TypeHandle type) const {
 //               breaks a cycle in the cache involving this object.
 //               This is designed to prevent leaks from cyclical
 //               references within the cache.
-//
-//               Note that this is not a virtual method, and cannot be
-//               because ReferenceCount itself declares no virtual
-//               methods (it avoids the overhead of a virtual function
-//               pointer).  But this doesn't matter, because
-//               PT(TransformState) is a template class, and will call
-//               the appropriate method even though it is non-virtual.
 ////////////////////////////////////////////////////////////////////
 bool RenderEffects::
 unref() const {
@@ -412,14 +405,14 @@ unref() const {
   // is removed from the global object pool, before anyone else finds
   // it and tries to ref it.
   ((RenderEffects *)this)->release_new();
-  
+
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 output(ostream &out) const {

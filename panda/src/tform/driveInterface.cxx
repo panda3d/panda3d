@@ -403,7 +403,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
   if (required_buttons_match && input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
-    DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
+    DCAST_INTO_V(xy, input.get_data(_xy_input).get_typed_object());
     const LVecBase2 &p = xy->get_value();
     x = p[0];
     y = p[1];
@@ -419,7 +419,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       const ButtonEvent &be = button_events->get_event(i);
       if (be._type != ButtonEvent::T_keystroke) {
         bool down = (be._type != ButtonEvent::T_up);
-        
+
         if (be._button == KeyboardButton::up()) {
           _up_arrow.set_key(down);
         } else if (be._button == KeyboardButton::down()) {

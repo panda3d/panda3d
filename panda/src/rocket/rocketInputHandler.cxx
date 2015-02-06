@@ -149,7 +149,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   if (input.has_data(_pixel_xy_input)) {
     // The mouse is within the window.  Get the current mouse position.
     const EventStoreVec2 *pixel_xy;
-    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
+    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_typed_object());
     LVecBase2 p = pixel_xy->get_value();
 
     // Determine if mouse moved from last position
@@ -164,7 +164,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   // Look for new button events.
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *this_button_events;
-    DCAST_INTO_V(this_button_events, input.get_data(_button_events_input).get_ptr());
+    DCAST_INTO_V(this_button_events, input.get_data(_button_events_input).get_typed_object());
     int num_events = this_button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = this_button_events->get_event(i);

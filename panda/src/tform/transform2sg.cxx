@@ -76,7 +76,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
   if (input.has_data(_transform_input)) {
     const TransformState *transform;
-    DCAST_INTO_V(transform, input.get_data(_transform_input).get_ptr());
+    DCAST_INTO_V(transform, input.get_data(_transform_input).get_typed_object());
     if (_node != (PandaNode *)NULL) {
       _node->set_transform(transform, current_thread);
     }

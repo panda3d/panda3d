@@ -25,7 +25,7 @@
 #include "renderBuffer.h"
 #include "graphicsOutputBase.h"
 #include "luse.h"
-#include "typedWritableReferenceCount.h"
+#include "typedReferenceCount.h"
 #include "pandaNode.h"
 #include "pStatCollector.h"
 #include "pnotify.h"
@@ -58,12 +58,6 @@ class GraphicsEngine;
 //               the graphics context itself, is managed by the
 //               associated GraphicsStateGuardian (which might output
 //               to multiple GraphicsOutput objects).
-//
-//               GraphicsOutputs are not actually writable to bam
-//               files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:

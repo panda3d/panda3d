@@ -107,6 +107,26 @@ FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4)::
+FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point) {
+  set(point[0], point[1], point[2], 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4)::
+FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector) {
+  set(vector[0], vector[1], vector[2], 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Destructor
 //       Access: Published
 //  Description:

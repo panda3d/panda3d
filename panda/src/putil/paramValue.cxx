@@ -21,7 +21,6 @@
 #endif
 
 TypeHandle ParamValueBase::_type_handle;
-TypeHandle ParamTypedRefCount::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParamValueBase::Destructor
@@ -30,28 +29,4 @@ TypeHandle ParamTypedRefCount::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ParamValueBase::
 ~ParamValueBase() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-ParamTypedRefCount::
-~ParamTypedRefCount() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void ParamTypedRefCount::
-output(ostream &out) const {
-  if (_value == (TypedReferenceCount *)NULL) {
-    out << "(empty)";
-
-  } else {
-    out << _value->get_type();
-  }
 }

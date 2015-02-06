@@ -12,6 +12,7 @@
 #include "mouseData.cxx"
 #include "nameUniquifier.cxx"
 #include "nodeCachedReferenceCount.cxx"
+#include "parameter.cxx"
 #include "paramValue.cxx"
 #include "pbitops.cxx"
 #include "pta_ushort.cxx"

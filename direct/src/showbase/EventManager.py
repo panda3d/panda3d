@@ -57,22 +57,12 @@ class EventManager:
         """
         Extract the actual data from the eventParameter
         """
-        if (eventParameter.isInt()):
-            return eventParameter.getIntValue()
-        elif (eventParameter.isDouble()):
-            return eventParameter.getDoubleValue()
-        elif (eventParameter.isString()):
+        if (eventParameter.isString()):
             return eventParameter.getStringValue()
         elif (eventParameter.isWstring()):
             return eventParameter.getWstringValue()
-        elif (eventParameter.isTypedRefCount()):
-            return eventParameter.getTypedRefCountValue()
-        elif (eventParameter.isEmpty()):
-            return None
         else:
-            # Must be some user defined type, return the ptr
-            # which will be downcast to that type.
-            return eventParameter.getPtr()
+            return eventParameter.value
         
     def processEvent(self, event):
         """

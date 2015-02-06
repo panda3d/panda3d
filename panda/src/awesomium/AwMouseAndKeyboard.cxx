@@ -30,8 +30,8 @@ void AwMouseAndKeyboard::do_transmit_data(DataGraphTraverser *trav, const DataNo
 
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *button_events;
-    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-    
+    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_typed_object());
+
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);

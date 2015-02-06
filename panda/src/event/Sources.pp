@@ -22,7 +22,7 @@
     pointerEventList.I pointerEventList.h \
     pythonTask.h pythonTask.I \
     event.I event.h eventHandler.h eventHandler.I \
-    eventParameter.I eventParameter.h \
+    eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
     pt_Event.h throw_event.I throw_event.h 
     
@@ -40,7 +40,7 @@
     pointerEventList.cxx \
     pythonTask.cxx \
     config_event.cxx event.cxx eventHandler.cxx \ 
-    eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
+    eventQueue.cxx eventReceiver.cxx \
     pt_Event.cxx
 
   #define INSTALL_HEADERS \
@@ -57,7 +57,7 @@
     pointerEventList.I pointerEventList.h \
     pythonTask.h pythonTask.I \
     event.I event.h eventHandler.h eventHandler.I \
-    eventParameter.I eventParameter.h \
+    eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
     pt_Event.h throw_event.I throw_event.h 
 

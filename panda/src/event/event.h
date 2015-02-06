@@ -47,6 +47,10 @@ PUBLISHED:
 
   void add_parameter(const EventParameter &obj);
 
+#ifdef USE_MOVE_SEMANTICS
+  void add_parameter(EventParameter &&obj);
+#endif
+
   int get_num_parameters() const;
   EventParameter get_parameter(int n) const;
   MAKE_SEQ(get_parameters, get_num_parameters, get_parameter);

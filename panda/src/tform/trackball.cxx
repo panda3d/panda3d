@@ -604,12 +604,12 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   // Now, check for mouse motion.
   if (required_buttons_match && input.has_data(_pixel_xy_input)) {
     const EventStoreVec2 *pixel_xy;
-    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
+    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_typed_object());
     const LVecBase2 &p = pixel_xy->get_value();
     PN_stdfloat this_x = p[0];
     PN_stdfloat this_y = p[1];
     int this_button = 0;
-    
+
     if (is_down(MouseButton::one())) {
       if (is_down(KeyboardButton::alt())) {
         // B1 + alt (option) = B2.
@@ -633,14 +633,14 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     if (is_down(MouseButton::three())) {
       this_button |= B3_MASK;
     }
-    
+
     PN_stdfloat x = this_x - _lastx;
     PN_stdfloat y = this_y - _lasty;
 
     if (this_button == _last_button) {
       apply(x, y, this_button);
     }
-    
+
     _last_button = this_button;
     _lastx = this_x;
     _lasty = this_y;

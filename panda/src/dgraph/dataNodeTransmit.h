@@ -46,6 +46,10 @@ public:
   INLINE bool has_data(int index) const;
   INLINE void set_data(int index, const EventParameter &data);
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE void set_data(int index, EventParameter &&data);
+#endif
+
 private:
   void slot_data(int index);
 
@@ -61,7 +65,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

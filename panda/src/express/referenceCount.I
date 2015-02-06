@@ -338,6 +338,30 @@ weak_unref(WeakPointerToVoid *ptv) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE TypedObject *ReferenceCount::
+as_typed_object() {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::as_typed_object
+//       Access: Public
+//  Description: If this object derives from TypedReferenceCount or
+//               TypedWritableReferenceCount, returns a pointer to
+//               the base TypedObject.  Otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE const TypedObject *ReferenceCount::
+as_typed_object() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: unref_delete
 //  Description: This global helper function will unref the given
 //               ReferenceCount object, and if the reference count
@@ -360,7 +384,7 @@ unref_delete(RefCountType *ptr) {
   if (!ptr->unref()) {
     // If the reference count has gone to zero, delete the object.
     delete ptr;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

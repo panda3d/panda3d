@@ -96,3 +96,19 @@ set_data(int index, const EventParameter &data) {
   nassertv(index >= 0 && index < (int)_data.size());
   _data[index] = data;
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: DataNodeTransmit::set_data
+//       Access: Public
+//  Description: Sets the data for the indicated parameter.
+////////////////////////////////////////////////////////////////////
+INLINE void DataNodeTransmit::
+set_data(int index, EventParameter &&data) {
+  if (index >= (int)_data.size()) {
+    slot_data(index);
+  }
+  nassertv(index >= 0 && index < (int)_data.size());
+  _data[index] = move(data);
+}
+#endif  // USE_MOVE_SEMANTICS

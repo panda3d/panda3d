@@ -111,7 +111,7 @@ event_Enter(const Event *, void *) {
   // set the toggle
   props.set_fullscreen(!props.get_fullscreen());
   int flags = GraphicsPipe::BF_require_window;
-  
+
   WindowFramework *window = framework.open_window(props, flags, pipe, gsg);
   if (window != (WindowFramework *)NULL) {
     window->enable_keyboard();
@@ -126,7 +126,7 @@ event_2(const Event *event, void *) {
 
   EventParameter param = event->get_parameter(0);
   WindowFramework *wf;
-  DCAST_INTO_V(wf, param.get_ptr());
+  DCAST_INTO_V(wf, param.get_typed_object());
 
   WindowFramework *split = wf->split_window();
   if (split != (WindowFramework *)NULL) {
@@ -141,7 +141,7 @@ event_0(const Event *event, void *) {
   // 0: run hacky test.
   EventParameter param = event->get_parameter(0);
   WindowFramework *wf;
-  DCAST_INTO_V(wf, param.get_ptr());
+  DCAST_INTO_V(wf, param.get_typed_object());
 
   // Create a new offscreen buffer.
   GraphicsOutput *win = wf->get_graphics_output();

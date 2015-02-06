@@ -29,7 +29,7 @@
 //               each time they are needed, so that we can sensibly
 //               pass around pointers to things which are both
 //               TypedWritables and ReferenceCounters.
-//               
+//
 //               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
@@ -39,6 +39,8 @@ public:
   INLINE void operator = (const TypedWritableReferenceCount &copy);
 
   virtual ReferenceCount *as_reference_count();
+  virtual INLINE TypedObject *as_typed_object();
+  virtual INLINE const TypedObject *as_typed_object() const;
 
 PUBLISHED:
   static PT(TypedWritableReferenceCount) decode_from_bam_stream(const string &data, BamReader *reader = NULL);

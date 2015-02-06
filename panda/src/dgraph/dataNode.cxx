@@ -156,7 +156,7 @@ write_connections(ostream &out) const {
       const string &name = (*wi).first;
       const WireDef &def = (*wi).second;
       if (def._index == connect._input_index) {
-        out << name << " " << def._data_type << " from " 
+        out << name << " " << def._data_type << " from "
             << *get_parent(connect._parent_index) << "\n";
         found = true;
       }
@@ -170,9 +170,10 @@ write_connections(ostream &out) const {
 //       Access: Protected
 //  Description: Adds a new input wire with the given name and the
 //               indicated data type.  The data type should be the
-//               TypeHandle for some type that derives from
-//               TypedReferenceCount, e.g. EventStoreInt,
-//               EventStoreDouble, or some fancier data type like
+//               TypeHandle for some type that can be stored in a
+//               Parameter, which includes simple types like int,
+//               float, bool, and double, or a fancier type that
+//               derives from TypedWritableReferenceCount, like
 //               Texture.
 //
 //               If there is already an input wire defined with the
@@ -209,9 +210,10 @@ define_input(const string &name, TypeHandle data_type) {
 //       Access: Protected
 //  Description: Adds a new output wire with the given name and the
 //               indicated data type.  The data type should be the
-//               TypeHandle for some type that derives from
-//               TypedReferenceCount, e.g. EventStoreInt,
-//               EventStoreDouble, or some fancier data type like
+//               TypeHandle for some type that can be stored in a
+//               Parameter, which includes simple types like int,
+//               float, bool, and double, or a fancier type that
+//               derives from TypedWritableReferenceCount, like
 //               Texture.
 //
 //               If there is already an output wire defined with the

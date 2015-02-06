@@ -28,7 +28,7 @@
 #include "pointerTo.h"
 #include "partGroup.h"
 #include "pvector.h"
-#include "typedWritableReferenceCount.h"
+#include "typedReferenceCount.h"
 #include "loaderOptions.h"
 #include "pgSliderBar.h"
 #include "textNode.h"
@@ -52,7 +52,7 @@ class DisplayRegion;
 //               the same GraphicsOutput pointer, but reference
 //               different display regions within that window).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
+class EXPCL_FRAMEWORK WindowFramework : public TypedReferenceCount {
 protected:
   WindowFramework(PandaFramework *panda_framework);
   WindowFramework(const WindowFramework &copy, DisplayRegion *display_region);
@@ -194,7 +194,7 @@ private:
 
   NodePath _alight;
   NodePath _dlight;
-  
+
   bool _got_keyboard;
   bool _got_trackball;
   bool _got_lights;
@@ -210,7 +210,7 @@ private:
   PT(SceneGraphAnalyzerMeter) _scene_graph_analyzer_meter;
 
   BackgroundType _background_type;
-  
+
   static PT(TextFont) _shuttle_controls_font;
 
 public:
@@ -218,9 +218,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "WindowFramework",
-                  TypedWritableReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

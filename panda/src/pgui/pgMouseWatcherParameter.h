@@ -25,11 +25,11 @@
 // Description : This specialization on MouseWatcherParameter allows
 //               us to tag on additional elements to events for the
 //               gui system, and also inherits from
-//               TypedWritableReferenceCount so we can attach this thing to an
-//               event.
+//               TypedReferenceCount so we can attach this thing to
+//               an event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGUI PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
-  // For now, this must inherit from TypedWritableReferenceCount on
+class EXPCL_PANDA_PGUI PGMouseWatcherParameter : public TypedReferenceCount, public MouseWatcherParameter {
+  // For now, this must inherit from TypedReferenceCount on
   // the left, because MSVC++ wants to make that base class be the one
   // at the front of the structure, not MouseWatcherParameter for some
   // reason, and interrogate assumes that whichever base class is on
@@ -48,9 +48,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "PGMouseWatcherParameter",
-                  TypedWritableReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

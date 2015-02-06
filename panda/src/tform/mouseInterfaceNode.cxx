@@ -140,11 +140,11 @@ check_button_events(const DataNodeTransmit &input,
   const ButtonEventList *button_events = NULL;
 
   if (input.has_data(_button_events_input)) {
-    DCAST_INTO_R(button_events, input.get_data(_button_events_input).get_ptr(), NULL);
+    DCAST_INTO_R(button_events, input.get_data(_button_events_input).get_typed_object(), NULL);
     button_events->update_mods(_current_button_state);
   }
 
-  required_buttons_match = 
+  required_buttons_match =
     (_current_button_state & _required_buttons_mask) == _required_buttons_state;
 
   return button_events;

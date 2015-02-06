@@ -153,9 +153,9 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     if (input.has_data(_xy_input)) {
       // The mouse is within the window.  Get the current mouse position.
       const EventStoreVec2 *xy;
-      DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
+      DCAST_INTO_V(xy, input.get_data(_xy_input).get_typed_object());
       mouse_xy = xy->get_value();
-      DCAST_INTO_V(xy, input.get_data(_pixel_xy_input).get_ptr());
+      DCAST_INTO_V(xy, input.get_data(_pixel_xy_input).get_typed_object());
       mouse_pixel_xy = xy->get_value();
       has_mouse = true;
     }
@@ -163,7 +163,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     // Look for button events.
     if (input.has_data(_button_events_input)) {
       const ButtonEventList *button_events;
-      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+      DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_typed_object());
       _live_button_events->add_events(*button_events);
     }
   }

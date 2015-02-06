@@ -960,7 +960,7 @@ event_esc(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     PT(GraphicsOutput) win = wf->get_graphics_output();
 
@@ -1010,7 +1010,7 @@ event_w(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_wireframe(!wf->get_wireframe());
   }
@@ -1026,7 +1026,7 @@ event_t(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_texture(!wf->get_texture());
   }
@@ -1043,7 +1043,7 @@ event_b(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_two_sided(!wf->get_two_sided());
   }
@@ -1059,7 +1059,7 @@ event_i(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_one_sided_reverse(!wf->get_one_sided_reverse());
   }
@@ -1075,7 +1075,7 @@ event_l(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_lighting(!wf->get_lighting());
   }
@@ -1091,7 +1091,7 @@ event_p(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->set_perpixel(!wf->get_perpixel());
   }
@@ -1108,7 +1108,7 @@ event_c(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     PandaFramework *self = (PandaFramework *)data;
 
@@ -1131,7 +1131,7 @@ event_a(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     wf->next_anim_control();
   }
@@ -1360,7 +1360,7 @@ event_f9(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     if (self->clear_text()) {
       // Render one more frame to remove the text.
@@ -1407,7 +1407,7 @@ event_comma(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     switch (wf->get_background_type()) {
     case WindowFramework::BT_other:
@@ -1435,7 +1435,7 @@ event_question(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
-    DCAST_INTO_V(wf, param.get_ptr());
+    DCAST_INTO_V(wf, param.get_typed_object());
 
     self->_screenshot_text.remove_node();
 
@@ -1494,7 +1494,7 @@ event_window_event(const Event *event, void *data) {
     // of the keyboard events).
     EventParameter param = event->get_parameter(0);
     const GraphicsOutput *win;
-    DCAST_INTO_V(win, param.get_ptr());
+    DCAST_INTO_V(win, param.get_typed_object());
 
     // Is this a window we've heard about?
     int window_index = self->find_window(win);

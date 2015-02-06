@@ -66,8 +66,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   Data::const_iterator di;
   for (di = _data.begin(); di != _data.end(); ++di) {
     const EventParameter &param = (*di);
-    TypedWritableReferenceCount *ptr = param.get_ptr();
-    manager->write_pointer(dg, ptr);
+    param.write_datagram(manager, dg);
   }
 }
 
@@ -84,7 +83,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   Data::iterator di;
   for (di = _data.begin(); di != _data.end(); ++di) {
-    (*di) = EventParameter(DCAST(TypedWritableReferenceCount, p_list[pi++]));
+    (*di).complete_pointers(&p_list[pi++], manager);
   }
 
   return pi;
@@ -124,7 +123,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_params = scan.get_uint16();
   _data.reserve(num_params);
   for (int i = 0; i < num_params; i++) {
-    manager->read_pointer(scan);
-    _data.push_back(EventParameter());
+    EventParameter param;
+    param.read_datagram(scan, manager);
+    _data.push_back(param);
   }
 }

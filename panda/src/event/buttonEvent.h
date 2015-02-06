@@ -37,7 +37,7 @@ class DatagramIterator;
 //               combination of buttons (e.g. "A" is the result of
 //               shift + "a"); and (b) it does not manage separate
 //               "up" and "down" events, but is itself an
-//               instantaneous event.  
+//               instantaneous event.
 //
 //               Normal up/down button events can be used to track the
 //               state of a particular button on the keyboard, while
@@ -97,7 +97,7 @@ public:
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start, 
+  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start,
                      size_t highlight_end, size_t cursor_pos);
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);

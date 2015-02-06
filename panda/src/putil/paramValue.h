@@ -41,6 +41,11 @@ PUBLISHED:
   virtual void output(ostream &out) const=0;
 
 public:
+  INLINE virtual bool extract_data(int *data, int width, size_t count) const;
+  INLINE virtual bool extract_data(float *data, int width, size_t count) const;
+  INLINE virtual bool extract_data(double *data, int width, size_t count) const;
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -59,43 +64,6 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ParamTypedRefCount
-// Description : A class object for storing specifically objects of
-//               type TypedReferenceCount, which is different than
-//               TypedWritableReferenceCount.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL ParamTypedRefCount : public ParamValueBase {
-PUBLISHED:
-  INLINE ParamTypedRefCount(const TypedReferenceCount *value);
-  virtual ~ParamTypedRefCount();
-
-  INLINE virtual TypeHandle get_value_type() const;
-  INLINE TypedReferenceCount *get_value() const;
-
-  virtual void output(ostream &out) const;
-
-private:
-  PT(TypedReferenceCount) _value;
-
-public:
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    ParamValueBase::init_type();
-    register_type(_type_handle, "ParamTypedRefCount",
-                  ParamValueBase::get_class_type());
-  }
-
-private:
-  static TypeHandle _type_handle;
-};
-
-////////////////////////////////////////////////////////////////////
 //       Class : ParamValue
 // Description : A handy class object for storing simple values (like
 //               integers or strings) passed along with an Event
@@ -106,7 +74,7 @@ private:
 //               passed along inside an EventParameter or ShaderInput.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-class ParamValue : public ParamValueBase {
+class ParamValue FINAL : public ParamValueBase {
 protected:
   INLINE ParamValue();
 
@@ -119,6 +87,11 @@ PUBLISHED:
   INLINE const Type &get_value() const;
 
   INLINE virtual void output(ostream &out) const;
+
+public:
+  INLINE virtual bool extract_data(int *data, int width, size_t count) const;
+  INLINE virtual bool extract_data(float *data, int width, size_t count) const;
+  INLINE virtual bool extract_data(double *data, int width, size_t count) const;
 
 private:
   Type _value;

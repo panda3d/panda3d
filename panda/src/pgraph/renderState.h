@@ -50,7 +50,7 @@ class ShaderAttrib;
 //               instead of modifying a RenderState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH RenderState : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH RenderState FINAL : public NodeCachedReferenceCount {
 protected:
   RenderState();
 

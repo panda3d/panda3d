@@ -63,6 +63,13 @@ public:
   INLINE void weak_ref(WeakPointerToVoid *ptv);
   INLINE void weak_unref(WeakPointerToVoid *ptv);
 
+  // These convenience methods are defined to resolve the cast from
+  // ReferenceCount to TypedObject through TypedReferenceCount
+  // or TypedWritableReferenceCount, since the latter does not
+  // directly derive from the former.
+  virtual INLINE TypedObject *as_typed_object();
+  virtual INLINE const TypedObject *as_typed_object() const;
+
 protected:
   bool do_test_ref_count_integrity() const;
   bool do_test_ref_count_nonzero() const;
@@ -71,7 +78,7 @@ private:
   void create_weak_list();
 
 private:
-  enum { 
+  enum {
     // We use this value as a flag to indicate an object has been
     // indicated as a local object, and should not be deleted except
     // by its own destructor.  Really, any nonzero value would do, but
