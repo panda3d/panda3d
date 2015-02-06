@@ -766,6 +766,7 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority = 0);
   void set_render_mode_thickness(PN_stdfloat thickness, int priority = 0);
   void set_render_mode_perspective(bool perspective, int priority = 0);
   void set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority = 0);

@@ -39,3 +39,35 @@ get_bin(int bin_index) {
   }
   return make_new_bin(bin_index);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::check_flash_bin
+//       Access: Private
+//  Description: If the user configured flash-bin-binname, then update
+//               the object's state to flash all the geometry in the
+//               bin.
+////////////////////////////////////////////////////////////////////
+INLINE void CullResult::
+check_flash_bin(CPT(RenderState) &state, CullBinManager *bin_manager, int bin_index) {
+#ifndef NDEBUG
+  if (bin_manager->get_bin_flash_active(bin_index)) {
+    apply_flash_color(state, bin_manager->get_bin_flash_color(bin_index));
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::check_flash_transparency
+//       Access: Private
+//  Description: If the user configured show-transparency, then
+//               update the object's state to flash the current
+//               geometry with the specified color.
+////////////////////////////////////////////////////////////////////
+INLINE void CullResult::
+check_flash_transparency(CPT(RenderState) &state, const LColor &color) {
+#ifndef NDEBUG
+  if (_show_transparency) {
+    apply_flash_color(state, color);
+  }
+#endif
+}

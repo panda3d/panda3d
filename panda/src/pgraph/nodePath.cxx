@@ -5214,6 +5214,22 @@ set_render_mode_filled(int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_render_mode_filled_wireframe
+//       Access: Published
+//  Description: Sets up the geometry at this level and below (unless
+//               overridden) to render in filled, but overlay the
+//               wireframe on top with a fixed color.  This is useful
+//               for debug visualizations.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
+  nassertv_always(!is_empty());
+  PN_stdfloat thickness = get_render_mode_thickness();
+  bool perspective = get_render_mode_perspective();
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, thickness, perspective, wireframe_color), priority);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_render_mode_perspective
 //       Access: Published
 //  Description: Sets up the point geometry at this level and below to
