@@ -59,7 +59,7 @@ class FactoryParams;
 //               instead of modifying a TransformState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH TransformState : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
 protected:
   TransformState();
 

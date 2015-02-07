@@ -52,31 +52,14 @@ GeomVertexReader(const GeomVertexData *vertex_data,
 //               reader specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data, const string &name,
+GeomVertexReader(const GeomVertexData *vertex_data,
+                 CPT_InternalName name,
                  Thread *current_thread) :
   _vertex_data(vertex_data),
   _current_thread(current_thread)
 {
   initialize();
-  set_column(name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexReader::Constructor
-//       Access: Published
-//  Description: Constructs a new reader to process the vertices of
-//               the indicated data object.  This flavor creates the
-//               reader specifically to process the named data type.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data, 
-                 const InternalName *name,
-                 Thread *current_thread) :
-  _vertex_data(vertex_data),
-  _current_thread(current_thread)
-{
-  initialize();
-  set_column(name);
+  set_column(MOVE(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,25 +300,7 @@ set_column(int column) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexReader::
-set_column(const string &name) {
-  return set_column(InternalName::make(name));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexReader::set_column
-//       Access: Published
-//  Description: Sets up the reader to use the data type with the
-//               indicated name.
-//
-//               This also resets the read row number to the start row
-//               (the same value passed to a previous call to
-//               set_row(), or 0 if set_row() was never called.)
-//
-//               The return value is true if the data type is valid,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexReader::
-set_column(const InternalName *name) {
+set_column(CPT_InternalName name) {
   if (_vertex_data != (const GeomVertexData *)NULL) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();

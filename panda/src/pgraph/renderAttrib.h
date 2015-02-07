@@ -84,7 +84,7 @@ PUBLISHED:
   INLINE CPT(RenderAttrib) get_unique() const;
   INLINE CPT(RenderAttrib) get_auto_shader_attrib(const RenderState *state) const;
 
-  virtual bool unref() const;
+  virtual bool unref() const FINAL;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

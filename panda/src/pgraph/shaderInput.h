@@ -52,43 +52,43 @@ PUBLISHED:
   };
 
   static const ShaderInput *get_blank();
-  INLINE ShaderInput(const InternalName *id, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const NodePath &np, int priority=0);
-  INLINE ShaderInput(const InternalName *id, Texture *tex, int priority=0);
-  INLINE ShaderInput(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority=0);
-  INLINE ShaderInput(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  INLINE ShaderInput(const InternalName *id, ParamValueBase *param, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_float &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase4f &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase3f &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase2f &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LMatrix4f &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LMatrix3f &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase4f &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase3f &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase2f &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LMatrix4f &mat, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LMatrix3f &mat, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const NodePath &np, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase4f &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase3f &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase2f &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LMatrix4f &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LMatrix3f &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase4f &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase3f &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase2f &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LMatrix4f &mat, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LMatrix3f &mat, int priority=0);
 
-  INLINE ShaderInput(const InternalName *id, const PTA_double &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase4d &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase3d &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase2d &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LMatrix4d &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LMatrix3d &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase4d &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase3d &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase2d &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LMatrix4d &mat, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LMatrix3d &mat, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_double &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase4d &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase3d &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase2d &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LMatrix4d &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LMatrix3d &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase4d &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase3d &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase2d &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LMatrix4d &mat, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LMatrix3d &mat, int priority=0);
 
-  INLINE ShaderInput(const InternalName *id, const PTA_int &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase4i &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase3i &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const PTA_LVecBase2i &ptr, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase4i &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase3i &vec, int priority=0);
-  INLINE ShaderInput(const InternalName *id, const LVecBase2i &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_int &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase4i &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase3i &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const PTA_LVecBase2i &ptr, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase4i &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase3i &vec, int priority=0);
+  INLINE ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority=0);
 
   enum ShaderInputType {
     M_invalid = 0,
@@ -119,7 +119,7 @@ private:
   LVecBase4 _stored_vector;
   NodePath _stored_nodepath;
   Shader::ShaderPtrData _stored_ptr;
-  CPT(InternalName) _name;
+  CPT_InternalName _name;
   PT(TypedWritableReferenceCount) _value;
   int _priority;
 

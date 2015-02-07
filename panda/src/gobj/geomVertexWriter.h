@@ -26,7 +26,7 @@
 //       Class : GeomVertexWriter
 // Description : This object provides a high-level interface for
 //               quickly writing a sequence of numeric values from a
-//               vertex table. 
+//               vertex table.
 //
 //               This object can be used both to replace existing
 //               vertices in the table, or to extend the table with
@@ -72,14 +72,11 @@ PUBLISHED:
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const string &name,
-                          Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const InternalName *name,
+                          CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexArrayData *array_data, 
+  INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 
@@ -99,8 +96,7 @@ PUBLISHED:
   INLINE Thread *get_current_thread() const;
 
   INLINE bool set_column(int column);
-  INLINE bool set_column(const string &name);
-  INLINE bool set_column(const InternalName *name);
+  INLINE bool set_column(CPT_InternalName name);
   bool set_column(int array, const GeomVertexColumn *column);
   INLINE void clear();
   bool reserve_num_rows(int num_rows);
@@ -225,7 +221,7 @@ private:
   PT(GeomVertexData) _vertex_data;
   int _array;
   PT(GeomVertexArrayData) _array_data;
-    
+
   Thread *_current_thread;
   GeomVertexColumn::Packer *_packer;
   int _stride;

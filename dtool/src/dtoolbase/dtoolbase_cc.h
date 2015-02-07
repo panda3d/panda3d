@@ -37,6 +37,7 @@ using namespace std;
 #define NOEXCEPT noexcept
 #define FINAL
 #define OVERRIDE
+#define MOVE(x) x
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -137,8 +138,11 @@ typedef ios::seekdir ios_seekdir;
 #  endif
 #  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
 #    define USE_MOVE_SEMANTICS
+#    define MOVE(x) move(x)
+#  else
+#    define MOVE(x) x
 #  endif
-#  if __has_extension(cxx_override_control)
+#  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
 #    define OVERRIDE override
 #  endif
@@ -150,6 +154,7 @@ typedef ios::seekdir ios_seekdir;
 #  define USE_MOVE_SEMANTICS
 #  define FINAL final
 #  define OVERRIDE override
+#  define MOVE(x) move(x)
 #elif defined(_MSC_VER) && _MSC_VER >= 1600
 // MSVC 2010 has move semantics.  Not much else.
 #  define CONSTEXPR INLINE
@@ -157,11 +162,13 @@ typedef ios::seekdir ios_seekdir;
 #  define USE_MOVE_SEMANTICS
 #  define FINAL
 #  define OVERRIDE
+#  define MOVE(x) move(x)
 #else
 #  define CONSTEXPR INLINE
 #  define NOEXCEPT
 #  define FINAL
 #  define OVERRIDE
+#  define MOVE(x) x
 #endif
 
 #if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)

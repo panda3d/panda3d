@@ -152,7 +152,7 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::unref
-//       Access: Published, Virtual
+//       Access: Published, Virtual, Final
 //  Description: This method overrides ReferenceCount::unref() to
 //               clear the pointer from the global object pool when
 //               its reference count goes to zero.

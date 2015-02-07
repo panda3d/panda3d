@@ -3842,7 +3842,7 @@ set_shader_input(const ShaderInput *inp) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 const ShaderInput *NodePath::
-get_shader_input(const InternalName *id) const {
+get_shader_input(CPT_InternalName id) const {
   nassertr_always(!is_empty(), NULL);
 
   const RenderAttrib *attrib =
@@ -3881,7 +3881,7 @@ get_instance_count() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-clear_shader_input(const InternalName *id) {
+clear_shader_input(CPT_InternalName id) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3890,259 +3890,6 @@ clear_shader_input(const InternalName *id) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader_input(id));
   }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_float &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_int &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, int priority) {
-  set_shader_input(new ShaderInput(id,tex,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority) {
-  set_shader_input(new ShaderInput(id,tex,sampler,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z, int n, int priority) {
-  set_shader_input(new ShaderInput(id,tex,read,write,z,n,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const NodePath &np, int priority) {
-  set_shader_input(new ShaderInput(id,np,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, int n1, int n2, int n3, int n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4i(n1, n2, n3, n4), priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4678,7 +4425,7 @@ find_all_vertex_columns(const string &name) const {
   InternalNameCollection tc;
   InternalNames::iterator ti;
   for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    InternalName *name = (*ti);
+    const InternalName *name = (*ti);
     if (glob.matches(name->get_name())) {
       tc.add_name(name);
     }
@@ -4725,12 +4472,12 @@ find_all_texcoords(const string &name) const {
   r_find_all_vertex_columns(node(), vertex_columns);
 
   GlobPattern glob(name);
-  CPT(InternalName) texcoord_name = InternalName::get_texcoord();
+  CPT_InternalName texcoord_name = InternalName::get_texcoord();
 
   InternalNameCollection tc;
   InternalNames::iterator ti;
   for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    InternalName *name = (*ti);
+    const InternalName *name = (*ti);
     if (name->get_top() == texcoord_name) {
       // This is a texture coordinate name.  Figure out the basename
       // of the texture coordinates.

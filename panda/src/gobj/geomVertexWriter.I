@@ -51,30 +51,13 @@ GeomVertexWriter(GeomVertexData *vertex_data, Thread *current_thread) :
 //               writer specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const string &name,
+GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
                  Thread *current_thread) :
   _vertex_data(vertex_data),
   _current_thread(current_thread)
 {
   initialize();
-  set_column(name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexWriter::Constructor
-//       Access: Published
-//  Description: Constructs a new writer to process the vertices of
-//               the indicated data object.  This flavor creates the
-//               writer specifically to process the named data type.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name,
-                 Thread *current_thread) :
-  _vertex_data(vertex_data),
-  _current_thread(current_thread)
-{
-  initialize();
-  set_column(name);
+  set_column(MOVE(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +114,7 @@ GeomVertexWriter(GeomVertexDataPipelineWriter *data_writer,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(const GeomVertexWriter &copy) :
@@ -152,7 +135,7 @@ GeomVertexWriter(const GeomVertexWriter &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 operator = (const GeomVertexWriter &copy) {
@@ -172,7 +155,7 @@ operator = (const GeomVertexWriter &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 ~GeomVertexWriter() {
@@ -274,24 +257,6 @@ set_column(int column) {
 //  Description: Sets up the writer to use the data type with the
 //               indicated name.
 //
-//               This also resets the write row number to the start
-//               row (the same value passed to a previous call to
-//               set_row(), or 0 if set_row() was never called.)
-//
-//               The return value is true if the data type is valid,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexWriter::
-set_column(const string &name) {
-  return set_column(InternalName::make(name));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexWriter::set_column
-//       Access: Published
-//  Description: Sets up the writer to use the data type with the
-//               indicated name.
-//
 //               This also resets the write number to the start row
 //               (the same value passed to a previous call to
 //               set_row(), or 0 if set_row() was never called.)
@@ -300,7 +265,7 @@ set_column(const string &name) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexWriter::
-set_column(const InternalName *name) {
+set_column(CPT_InternalName name) {
   if (_vertex_data != (GeomVertexData *)NULL) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();

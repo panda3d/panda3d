@@ -58,7 +58,7 @@ class GeomMunger;
 //               standard and/or user-defined columns in your custom
 //               GeomVertexFormat constructions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ GeomVertexFormat : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);
@@ -96,7 +96,7 @@ PUBLISHED:
   int get_array_with(const InternalName *name) const;
   const GeomVertexColumn *get_column(const InternalName *name) const;
   INLINE bool has_column(const InternalName *name) const;
-  
+
   MAKE_SEQ(get_columns, get_num_columns, get_column);
 
   void remove_column(const InternalName *name, bool keep_empty_array = false);
@@ -126,7 +126,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
-  void write_with_data(ostream &out, int indent_level, 
+  void write_with_data(ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
   // Some standard vertex formats.  No particular requirement to use
@@ -203,16 +203,16 @@ private:
   int _color_array_index;
   const GeomVertexColumn *_color_column;
 
-  typedef pvector< CPT(InternalName) > Columns;
+  typedef pvector<CPT_InternalName> Columns;
   Columns _points;
   Columns _vectors;
   Columns _texcoords;
 
   class MorphRecord {
   public:
-    CPT(InternalName) _slider;
-    CPT(InternalName) _base;
-    CPT(InternalName) _delta;
+    CPT_InternalName _slider;
+    CPT_InternalName _base;
+    CPT_InternalName _delta;
   };
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
@@ -237,12 +237,12 @@ private:
     CPT(GeomVertexFormat) _v3n3;
     CPT(GeomVertexFormat) _v3t2;
     CPT(GeomVertexFormat) _v3n3t2;
-    
+
     CPT(GeomVertexFormat) _v3cp;
     CPT(GeomVertexFormat) _v3n3cp;
     CPT(GeomVertexFormat) _v3cpt2;
     CPT(GeomVertexFormat) _v3n3cpt2;
-    
+
     CPT(GeomVertexFormat) _v3c4;
     CPT(GeomVertexFormat) _v3n3c4;
     CPT(GeomVertexFormat) _v3c4t2;

@@ -26,7 +26,7 @@ TypeHandle GeomVertexFormat::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::
 GeomVertexFormat() :
@@ -38,7 +38,7 @@ GeomVertexFormat() :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::
 GeomVertexFormat(const GeomVertexArrayFormat *array_format) :
@@ -51,7 +51,7 @@ GeomVertexFormat(const GeomVertexArrayFormat *array_format) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::
 GeomVertexFormat(const GeomVertexFormat &copy) :
@@ -65,7 +65,7 @@ GeomVertexFormat(const GeomVertexFormat &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
 operator = (const GeomVertexFormat &copy) {
@@ -78,7 +78,7 @@ operator = (const GeomVertexFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::
 ~GeomVertexFormat() {
@@ -109,7 +109,6 @@ unref() const {
   return false;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::get_post_animated_format
 //       Access: Published
@@ -129,7 +128,7 @@ get_post_animated_format() const {
   if (_post_animated_format == (GeomVertexFormat *)NULL) {
     PT(GeomVertexFormat) new_format = new GeomVertexFormat(*this);
     new_format->remove_column(InternalName::get_transform_blend());
-    
+
     int num_morphs = get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
       CPT(InternalName) delta_name = get_morph_delta(mi);
@@ -138,7 +137,7 @@ get_post_animated_format() const {
 
     new_format->_animation.set_none();
 
-    CPT(GeomVertexFormat) registered = 
+    CPT(GeomVertexFormat) registered =
       GeomVertexFormat::register_format(new_format);
     ((GeomVertexFormat *)this)->_post_animated_format = registered;
     if (_post_animated_format != this) {
@@ -215,13 +214,13 @@ get_union_format(const GeomVertexFormat *other) const {
           if (column_b != (GeomVertexColumn *)NULL &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
-            new_array->add_column(column_b->get_name(), 
+            new_array->add_column(column_b->get_name(),
                                   column_b->get_num_components(),
                                   column_b->get_numeric_type(),
                                   column_b->get_contents());
           } else {
             // Column a is larger.  Keep it.
-            new_array->add_column(column_a->get_name(), 
+            new_array->add_column(column_a->get_name(),
                                   column_a->get_num_components(),
                                   column_a->get_numeric_type(),
                                   column_a->get_contents());
@@ -242,13 +241,13 @@ get_union_format(const GeomVertexFormat *other) const {
           if (column_b != (GeomVertexColumn *)NULL &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
-            new_array->add_column(column_b->get_name(), 
+            new_array->add_column(column_b->get_name(),
                                   column_b->get_num_components(),
                                   column_b->get_numeric_type(),
                                   column_b->get_contents());
           } else {
             // Column a is larger.  Keep it.
-            new_array->add_column(column_a->get_name(), 
+            new_array->add_column(column_a->get_name(),
                                   column_a->get_num_components(),
                                   column_a->get_numeric_type(),
                                   column_a->get_contents());
@@ -517,7 +516,7 @@ get_column(const InternalName *name) const {
     if (ai != _columns_by_name.end()) {
       int array_index = (*ai).second._array_index;
       int column_index = (*ai).second._column_index;
-      
+
       nassertr(array_index >= 0 && array_index < (int)_arrays.size(), NULL);
       return _arrays[array_index]->get_column(column_index);
     }
@@ -628,7 +627,7 @@ maybe_align_columns_for_animation() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
 output(ostream &out) const {
@@ -654,7 +653,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
 write(ostream &out, int indent_level) const {
@@ -673,10 +672,10 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::write_with_data
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
-write_with_data(ostream &out, int indent_level, 
+write_with_data(ostream &out, int indent_level,
                 const GeomVertexData *data) const {
   indent(out, indent_level)
     << data->get_num_rows() << " rows.\n";
@@ -725,7 +724,7 @@ get_array_info(const InternalName *name, int &array_index,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomVertexFormat::
 compare_to(const GeomVertexFormat &other) const {
@@ -760,7 +759,7 @@ make_registry() {
     _registry->make_standard_formats();
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::do_register
 //       Access: Private
@@ -813,7 +812,7 @@ do_register() {
   // Go back through the index now and identify the points, vectors,
   // and morph descriptions, so we can quickly look these up later.
   DataTypesByName::iterator ni;
-  for (ni = _columns_by_name.begin(); 
+  for (ni = _columns_by_name.begin();
        ni != _columns_by_name.end();
        ++ni) {
     const DataTypeRecord &record = (*ni).second;
@@ -840,8 +839,8 @@ do_register() {
         // It's a morph description.
         MorphRecord morph;
         morph._delta = column->get_name();
-        
-        // The delta name must be of the form "basename.morph.slidername".  
+
+        // The delta name must be of the form "basename.morph.slidername".
         int n = morph._delta->find_ancestor("morph");
         if (n < 0) {
           gobj_cat.warning()
@@ -850,10 +849,10 @@ do_register() {
         } else {
           morph._slider = InternalName::make(morph._delta->get_net_basename(n - 1));
           morph._base = morph._delta->get_ancestor(n + 1);
-          
+
           if (_columns_by_name.find(morph._base) == _columns_by_name.end()) {
             gobj_cat.warning()
-              << "vertex format defines " 
+              << "vertex format defines "
               << *column->get_name() << " but does not define "
               << *morph._base << "\n";
           } else {
@@ -879,7 +878,7 @@ do_register() {
   get_array_info(InternalName::get_color(), _color_array_index,
                  _color_column);
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::do_unregister
 //       Access: Private
@@ -896,7 +895,7 @@ do_unregister() {
   _texcoords.clear();
   _morphs.clear();
 
-  if (_post_animated_format != (GeomVertexFormat *)NULL && 
+  if (_post_animated_format != (GeomVertexFormat *)NULL &&
       _post_animated_format != this) {
     unref_delete(_post_animated_format);
   }
@@ -997,7 +996,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Registry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::Registry::
 Registry() {
@@ -1006,32 +1005,32 @@ Registry() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::Registry::make_standard_formats
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::Registry::
 make_standard_formats() {
   _v3 = register_format(new GeomVertexArrayFormat
-                        (InternalName::get_vertex(), 3, 
+                        (InternalName::get_vertex(), 3,
                          NT_stdfloat, C_point));
 
   _v3n3 = register_format(new GeomVertexArrayFormat
-                          (InternalName::get_vertex(), 3, 
+                          (InternalName::get_vertex(), 3,
                            NT_stdfloat, C_point,
-                           InternalName::get_normal(), 3, 
+                           InternalName::get_normal(), 3,
                            NT_stdfloat, C_vector));
 
   _v3t2 = register_format(new GeomVertexArrayFormat
-                          (InternalName::get_vertex(), 3, 
+                          (InternalName::get_vertex(), 3,
                            NT_stdfloat, C_point,
-                           InternalName::get_texcoord(), 2, 
+                           InternalName::get_texcoord(), 2,
                            NT_stdfloat, C_texcoord));
 
   _v3n3t2 = register_format(new GeomVertexArrayFormat
-                            (InternalName::get_vertex(), 3, 
+                            (InternalName::get_vertex(), 3,
                              NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
                              NT_stdfloat, C_vector,
-                             InternalName::get_texcoord(), 2, 
+                             InternalName::get_texcoord(), 2,
                              NT_stdfloat, C_texcoord));
 
   // Define the DirectX-style packed color formats
