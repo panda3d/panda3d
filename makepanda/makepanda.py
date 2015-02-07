@@ -6184,11 +6184,15 @@ Description: Runtime binary and browser plugin for the Panda3D Game Engine
 
 """
 
+def python_sitepackages_path():
+    from distutils.sysconfig import get_python_lib
+    return get_python_lib(1)
+PYTHON_SITEPACKAGES=python_sitepackages_path()
+
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
 # naming for the Python package.
 INSTALLER_SPEC_FILE="""
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 Summary: The Panda3D free 3D engine SDK
 Name: panda3d
 Version: VERSION
@@ -6217,7 +6221,7 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 /usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/%_lib/panda3d
-%{python_sitearch}
+""" + PYTHON_SITEPACKAGES + """
 /usr/include/panda3d
 """
 
@@ -6285,7 +6289,17 @@ def MakeInstallerLinux():
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
     oscmd("mkdir --mode=0755 targetroot")
 
-    if os.path.exists("/usr/bin/dpkg-deb"):
+    dpkg_present = False
+    if os.path.exists("/usr/bin/dpkg-architecture"):
+        dpkg_present = True
+    rpmbuild_present = False
+    if os.path.exists("/usr/bin/rpmbuild"):
+        rpmbuild_present = True
+
+    if dpkg_present and rpmbuild_present:
+        print("Warning: both dpkg-architecture and rpmbuild present.")
+
+    if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
         lib_dir = GetDebLibDir()
         if RUNTIME:
@@ -6372,7 +6386,7 @@ def MakeInstallerLinux():
             oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
         oscmd("fakeroot dpkg-deb -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
 
-    elif os.path.exists("/usr/bin/rpmbuild"):
+    elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
         if RUNTIME:
             InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=GetRPMLibDir())
