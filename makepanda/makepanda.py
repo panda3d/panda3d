@@ -6286,14 +6286,14 @@ def MakeInstallerLinux():
     oscmd("mkdir --mode=0755 targetroot")
 
     dpkg_present = False
-    if os.path.exists("/usr/bin/dpkg-architecture"):
+    if os.path.exists("/usr/bin/dpkg-architecture") and os.path.exists("/usr/bin/dpkg-deb"):
         dpkg_present = True
     rpmbuild_present = False
     if os.path.exists("/usr/bin/rpmbuild"):
         rpmbuild_present = True
 
     if dpkg_present and rpmbuild_present:
-        print("Warning: both dpkg-architecture and rpmbuild present.")
+        print("Warning: both dpkg and rpmbuild present.")
 
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
