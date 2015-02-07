@@ -145,6 +145,9 @@ typedef ios::seekdir ios_seekdir;
 #  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
 #    define OVERRIDE override
+#  else
+#    define FINAL
+#    define OVERRIDE
 #  endif
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
 // noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
