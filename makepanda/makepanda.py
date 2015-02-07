@@ -6184,10 +6184,6 @@ Description: Runtime binary and browser plugin for the Panda3D Game Engine
 
 """
 
-def python_sitepackages_path():
-    from distutils.sysconfig import get_python_lib
-    return get_python_lib(1)
-PYTHON_SITEPACKAGES=python_sitepackages_path()
 
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
