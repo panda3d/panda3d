@@ -1377,6 +1377,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     static const CPT_InternalName IN_diffuse("diffuse");
     static const CPT_InternalName IN_specular("specular");
     static const CPT_InternalName IN_position("position");
+    static const CPT_InternalName IN_halfVector("halfVector");
     static const CPT_InternalName IN_spotDirection("spotDirection");
     static const CPT_InternalName IN_spotCutoff("spotCutoff");
     static const CPT_InternalName IN_spotCosCutoff("spotCosCutoff");
@@ -1435,6 +1436,39 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
         t = LMatrix4::translate_mat(pos);
         return &t;
       }
+
+    } else if (attrib == IN_halfVector) {
+      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+        LVector3 dir = -(light->get_direction() * transform->get_mat());
+        dir *= get_scene()->get_cs_world_transform()->get_mat();
+        dir.normalize();
+        dir += LVector3(0, 0, 1);
+        dir.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],1);
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+        const LMatrix4 &light_mat = transform->get_mat();
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        pos.normalize();
+        pos += LVector3(0, 0, 1);
+        pos.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,pos[0],pos[1],pos[2],1);
+        return &t;
+      }
+
     } else if (attrib == IN_spotDirection) {
       LightLensNode *light;
       DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
