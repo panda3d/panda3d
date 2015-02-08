@@ -25,21 +25,20 @@
 #include <intrin.h>
 #endif
 
-
 TypeHandle WinGraphicsPipe::_type_handle;
 
+#ifndef MAXIMUM_PROCESSORS
 #define MAXIMUM_PROCESSORS 32
+#endif
 
-typedef struct _PROCESSOR_POWER_INFORMATION 
-{  
-  ULONG Number;  
-  ULONG MaxMhz;  
-  ULONG CurrentMhz;  
-  ULONG MhzLimit;  
-  ULONG MaxIdleState;  
+typedef struct _PROCESSOR_POWER_INFORMATION {
+  ULONG Number;
+  ULONG MaxMhz;
+  ULONG CurrentMhz;
+  ULONG MhzLimit;
+  ULONG MaxIdleState;
   ULONG CurrentIdleState;
-} 
-PROCESSOR_POWER_INFORMATION,  *PPROCESSOR_POWER_INFORMATION;
+} PROCESSOR_POWER_INFORMATION, *PPROCESSOR_POWER_INFORMATION;
 
 typedef BOOL (WINAPI *GetProcessMemoryInfoType) (HANDLE Process, PROCESS_MEMORY_COUNTERS *ppsmemCounters, DWORD cb);
 typedef BOOL (WINAPI *GlobalMemoryStatusExType) (LPMEMORYSTATUSEX lpBuffer);

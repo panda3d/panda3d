@@ -11,6 +11,7 @@
 //  3. Handle Framing and Unframing properly ..
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "pandabase.h"
 #include "socket_base.h"
 #include "datagram.h"
@@ -19,9 +20,12 @@
 #include "buffered_datagramwriter.h"
 #include "config_nativenet.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
 
 ////////////////////////////////////////////////////////////////
-// there are 3 states   
+// there are 3 states
 //
 //      1. Socket not even assigned,,,,
 //      2. Socket Assigned and trying to get a active connect open

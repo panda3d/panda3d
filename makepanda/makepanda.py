@@ -1518,6 +1518,10 @@ def CompileLink(dll, obj, opts):
             else:
                 cmd = cxx + ' -shared'
                 if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
+                if GetOrigExt(dll) == ".pyd" and not os.path.basename(dll).startswith('core'):
+                    # Tell the other libraries where to find core.so.
+                    # Not sure if this is the best way to do that, but it works.
+                    cmd += " -Wl,-rpath '-Wl,$ORIGIN'"
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         for x in obj:

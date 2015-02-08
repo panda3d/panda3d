@@ -136,8 +136,8 @@ pm_allocarray(int const cols, int const rows, int const size )  {
     /* We couldn't get the whole heap in one block, so try fragmented
        format.
     */
-    unsigned int row;
-        
+    int row;
+
     rowIndex[rows] = NULL;   /* Declare it fragmented format */
 
     for (row = 0; row < rows; ++row) {
@@ -149,7 +149,7 @@ pm_allocarray(int const cols, int const rows, int const size )  {
     }
   } else {
     /* It's unfragmented format */
-    unsigned int row;
+    int row;
     rowIndex[rows] = rowheap;  /* Declare it unfragmented format */
 
     for (row = 0; row < rows; ++row)
@@ -159,17 +159,18 @@ pm_allocarray(int const cols, int const rows, int const size )  {
 }
 
 void
-pm_freearray(char ** const rowIndex, 
+pm_freearray(char ** const rowIndex,
              int     const rows) {
 
   void * const rowheap = rowIndex[rows];
 
-  if (rowheap != NULL)
+  if (rowheap != NULL) {
     PANDA_FREE_ARRAY(rowheap);
-  else {
-    unsigned int row;
-    for (row = 0; row < rows; ++row)
+  } else {
+    int row;
+    for (row = 0; row < rows; ++row) {
       pm_freerow(rowIndex[row]);
+    }
   }
   PANDA_FREE_ARRAY(rowIndex);
 }
@@ -191,7 +192,7 @@ pm_getuint(istream * const ifP) {
     -----------------------------------------------------------------------------*/
   char ch;
   unsigned int i;
-    
+
   // skip whitespace
   do {
     ch = ifP->get();
@@ -400,7 +401,7 @@ pgm_readpgmrow(istream* const file, gray* const grayrow,
     }
   }
     break;
-    
+
   case PBM_FORMAT:
   case RPBM_FORMAT:
     {
@@ -414,22 +415,22 @@ pgm_readpgmrow(istream* const file, gray* const grayrow,
       pbm_freerow(bitrow);
     }
     break;
-        
+
   default:
     pm_error( "can't happen" );
   }
 }
 
 static void
-ppm_readppmrow(istream*  const fileP, 
-               pixel* const pixelrow, 
-               int    const cols, 
-               pixval const maxval, 
+ppm_readppmrow(istream*  const fileP,
+               pixel* const pixelrow,
+               int    const cols,
+               pixval const maxval,
                int    const format) {
 
   switch (format) {
   case PPM_FORMAT: {
-    unsigned int col;
+    int col;
     for (col = 0; col < cols; ++col) {
       pixval const r = pm_getuint(fileP);
       pixval const g = pm_getuint(fileP);
@@ -440,7 +441,7 @@ ppm_readppmrow(istream*  const fileP,
     break;
 
   case RPPM_FORMAT: {
-    unsigned int col;
+    int col;
     for (col = 0; col < cols; ++col) {
       pixval const r = pgm_getrawsample(fileP, maxval);
       pixval const g = pgm_getrawsample(fileP, maxval);
@@ -453,7 +454,7 @@ ppm_readppmrow(istream*  const fileP,
   case PGM_FORMAT:
   case RPGM_FORMAT: {
     gray * const grayrow = pgm_allocrow(cols);
-    unsigned int col;
+    int col;
 
     pgm_readpgmrow(fileP, grayrow, cols, maxval, format);
     for (col = 0; col < cols; ++col) {
@@ -467,7 +468,7 @@ ppm_readppmrow(istream*  const fileP,
   case PBM_FORMAT:
   case RPBM_FORMAT: {
     bit * const bitrow = pbm_allocrow(cols);
-    unsigned int col;
+    int col;
 
     pbm_readpbmrow(fileP, bitrow, cols, format);
     for (col = 0; col < cols; ++col) {
@@ -626,7 +627,7 @@ packBitsGeneric(ostream *          const fileP,
 
     Don't use any special CPU facilities to do the packing.
     -----------------------------------------------------------------------------*/
-  unsigned int col;
+  int col;
 
 #define iszero(x) ((x) == 0 ? 0 : 1)
 
@@ -653,7 +654,7 @@ writePackedRawRow(ostream *                const fileP,
   fileP->write((const char *)packed_bits, pbm_packed_bytes(cols));
   if (fileP->fail())
     pm_error("I/O error writing packed row to raw PBM file.");
-} 
+}
 
 static void
 writePbmRowRaw(ostream *      const fileP,
@@ -900,24 +901,24 @@ ppm_writeppmrow(ostream *  const fileP,
 }
 
 static void
-pnm_writepnmrow(ostream * const fileP, 
-                xel *  const xelrow, 
-                int    const cols, 
-                xelval const maxval, 
-                int    const format, 
+pnm_writepnmrow(ostream * const fileP,
+                xel *  const xelrow,
+                int    const cols,
+                xelval const maxval,
+                int    const format,
                 int    const forceplain) {
 
   bool const plainFormat = forceplain || pm_plain_output;
-    
+
   switch (PNM_FORMAT_TYPE(format)) {
   case PPM_TYPE:
-    ppm_writeppmrow(fileP, (pixel*) xelrow, cols, (pixval) maxval, 
+    ppm_writeppmrow(fileP, (pixel*) xelrow, cols, (pixval) maxval,
                     plainFormat);
     break;
 
   case PGM_TYPE: {
     gray* grayrow;
-    unsigned int col;
+    int col;
 
     grayrow = pgm_allocrow(cols);
 
@@ -932,7 +933,7 @@ pnm_writepnmrow(ostream * const fileP,
 
   case PBM_TYPE: {
     bit* bitrow;
-    unsigned int col;
+    int col;
 
     bitrow = pbm_allocrow(cols);
 
@@ -942,12 +943,12 @@ pnm_writepnmrow(ostream * const fileP,
     pbm_writepbmrow(fileP, bitrow, cols, plainFormat);
 
     pbm_freerow(bitrow);
-  }    
+  }
     break;
-    
+
   default:
     pm_error("invalid format argument received by pnm_writepnmrow(): %d"
-             "PNM_FORMAT_TYPE(format) must be %d, %d, or %d", 
+             "PNM_FORMAT_TYPE(format) must be %d, %d, or %d",
              format, PBM_TYPE, PGM_TYPE, PPM_TYPE);
   }
 }
