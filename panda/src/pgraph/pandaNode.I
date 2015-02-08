@@ -231,7 +231,7 @@ find_stashed(PandaNode *node, Thread *current_thread) const {
 //               level, and has nothing to do with what render
 //               attributes may be inherited from parent nodes.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderAttrib *PandaNode::
+INLINE CPT(RenderAttrib) PandaNode::
 get_attrib(TypeHandle type) const {
   CDReader cdata(_cycler);
   return cdata->_state->get_attrib(type);
@@ -246,7 +246,7 @@ get_attrib(TypeHandle type) const {
 //               level, and has nothing to do with what render
 //               attributes may be inherited from parent nodes.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderAttrib *PandaNode::
+INLINE CPT(RenderAttrib) PandaNode::
 get_attrib(int slot) const {
   CDReader cdata(_cycler);
   return cdata->_state->get_attrib(slot);
@@ -299,7 +299,7 @@ clear_attrib(TypeHandle type) {
 //  Description: Returns the render effect of the indicated type,
 //               if it is defined on the node, or NULL if it is not.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderEffect *PandaNode::
+INLINE CPT(RenderEffect) PandaNode::
 get_effect(TypeHandle type) const {
   CDReader cdata(_cycler);
   int index = cdata->_effects->find_effect(type);
@@ -332,10 +332,10 @@ has_effect(TypeHandle type) const {
 //               particular node, and has nothing to do with state
 //               that might be inherited from above.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderState *PandaNode::
+INLINE CPT(RenderState) PandaNode::
 get_state(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_state;
+  return cdata->_state.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ clear_state(Thread *current_thread) {
 //  Description: Returns the complete RenderEffects that will be
 //               applied to this node.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderEffects *PandaNode::
+INLINE CPT(RenderEffects) PandaNode::
 get_effects(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   return cdata->_effects;
@@ -381,10 +381,10 @@ clear_effects(Thread *current_thread) {
 //               the root, but simply the transform on this particular
 //               node.
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformState *PandaNode::
+INLINE CPT(TransformState) PandaNode::
 get_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_transform;
+  return cdata->_transform.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,10 +405,10 @@ clear_transform(Thread *current_thread) {
 //               node's "previous" position.  See
 //               set_prev_transform().
 ////////////////////////////////////////////////////////////////////
-const TransformState *PandaNode::
+INLINE CPT(TransformState) PandaNode::
 get_prev_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_prev_transform;
+  return cdata->_prev_transform.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -632,14 +632,14 @@ get_internal_vertices(Thread *current_thread) const {
 //     Function: PandaNode::is_bounds_stale
 //       Access: Published
 //  Description: Returns true if the bounding volume of this node is
-//                stale and will be implicitly recomputed at the next
-//                call to get_bounds(), or false if it is fresh and
-//                need not be recomputed.
+//               stale and will be implicitly recomputed at the next
+//               call to get_bounds(), or false if it is fresh and
+//               need not be recomputed.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 is_bounds_stale() const {
   CDReader cdata(_cycler);
-  return (cdata->_last_update != cdata->_next_update);
+  return (cdata->_last_bounds_update != cdata->_next_update);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -726,13 +726,12 @@ mark_bounds_stale(int pipeline_stage, Thread *current_thread) const {
   bool is_stale_bounds;
   {
     CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-    is_stale_bounds = (cdata->_last_update != cdata->_next_update);
+    is_stale_bounds = (cdata->_last_bounds_update != cdata->_next_update);
   }
   if (!is_stale_bounds) {
     ((PandaNode *)this)->force_bounds_stale(pipeline_stage, current_thread);
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::mark_internal_bounds_stale
@@ -907,7 +906,7 @@ operator < (const DownConnection &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::DownConnection::get_child
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::DownConnection::
 get_child() const {
@@ -927,7 +926,7 @@ set_child(PandaNode *child) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::DownConnection::get_sort
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::DownConnection::
 get_sort() const {
@@ -963,7 +962,7 @@ operator < (const UpConnection &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::UpConnection::get_parent
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::UpConnection::
 get_parent() const {
@@ -1945,7 +1944,7 @@ get_parents() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::BamReaderAuxDataDown::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::BamReaderAuxDataDown::
 BamReaderAuxDataDown() :

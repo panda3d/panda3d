@@ -22,6 +22,19 @@
 TypeHandle RecorderTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RecorderTable::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+RecorderTable::
+~RecorderTable() {
+  Recorders::iterator ri;
+  for (ri = _recorders.begin(); ri != _recorders.end(); ++ri) {
+    unref_delete(ri->second);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RecorderTable::merge_from
 //       Access: Public
 //  Description: Combines the data in the current table (presumably
@@ -47,12 +60,16 @@ merge_from(const RecorderTable &other) {
     } else if ((*ri).second->get_type() == recorder->get_type()) {
       // If we already had a recorder by that name with the same type,
       // throw it away (otherwise, keep the one we had before).
-      (*ri).second = recorder;
+      if ((*ri).second != recorder) {
+        recorder->ref();
+        unref_delete((*ri).second);
+        (*ri).second = recorder;
+      }
 
     } else {
       recorder_cat.warning()
-        << "Keeping recorder " << name << " of type " 
-        << (*ri).second->get_type() << " instead of recorder of type " 
+        << "Keeping recorder " << name << " of type "
+        << (*ri).second->get_type() << " instead of recorder of type "
         << recorder->get_type() << "\n";
     }
   }
@@ -71,51 +88,73 @@ merge_from(const RecorderTable &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::add_recorder
+//     Function: RecorderTable::record_frame
 //       Access: Published
-//  Description: Adds the named recorder to the set of recorders.
+//  Description: Calls record_frame on all recorders.
 ////////////////////////////////////////////////////////////////////
 void RecorderTable::
-add_recorder(const string &name, RecorderBase *recorder) {
-  _recorders[name] = recorder;
+record_frame(BamWriter *manager, Datagram &dg) {
+  Recorders::iterator ri;
+  for (ri = _recorders.begin();
+       ri != _recorders.end();
+       ++ri) {
+    RecorderBase *recorder = (*ri).second;
+    recorder->record_frame(manager, dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::get_recorder
+//     Function: RecorderTable::play_frame
 //       Access: Published
-//  Description: Returns the recorder with the indicated name, or NULL
-//               if there is no such recorder.
+//  Description: Calls play_frame on all recorders.
 ////////////////////////////////////////////////////////////////////
-RecorderBase *RecorderTable::
-get_recorder(const string &name) const {
-  Recorders::const_iterator ri = _recorders.find(name);
-  if (ri != _recorders.end()) {
-    return (*ri).second;
+void RecorderTable::
+play_frame(DatagramIterator &scan, BamReader *manager) {
+  Recorders::iterator ri;
+  for (ri = _recorders.begin();
+       ri != _recorders.end();
+       ++ri) {
+    RecorderBase *recorder = (*ri).second;
+    recorder->play_frame(scan, manager);
   }
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RecorderTable::remove_recorder
+//     Function: RecorderTable::set_flags
 //       Access: Published
-//  Description: Removes the named recorder from the table.  Returns
-//               true if successful, false if there was no such
-//               recorder.
+//  Description: Sets the given flags on all recorders.
 ////////////////////////////////////////////////////////////////////
-bool RecorderTable::
-remove_recorder(const string &name) {
-  Recorders::iterator ri = _recorders.find(name);
-  if (ri != _recorders.end()) {
-    _recorders.erase(ri);
-    return true;
+void RecorderTable::
+set_flags(short flags) {
+  Recorders::iterator ri;
+  for (ri = _recorders.begin();
+       ri != _recorders.end();
+       ++ri) {
+    RecorderBase *recorder = (*ri).second;
+    recorder->_flags |= flags;
   }
-  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RecorderTable::clear_flags
+//       Access: Published
+//  Description: Clears the given flags on all recorders.
+////////////////////////////////////////////////////////////////////
+void RecorderTable::
+clear_flags(short flags) {
+  Recorders::iterator ri;
+  for (ri = _recorders.begin();
+       ri != _recorders.end();
+       ++ri) {
+    RecorderBase *recorder = (*ri).second;
+    recorder->_flags &= ~flags;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RecorderTable::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RecorderTable::
 write(ostream &out, int indent_level) const {
@@ -203,7 +242,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     FactoryParams fparams;
     fparams.add_param(new BamReaderParam(scan, manager));
 
-    PT(RecorderBase) recorder = 
+    RecorderBase *recorder =
       RecorderController::get_factory()->make_instance_more_general(type, fparams);
     if (recorder == (RecorderBase *)NULL) {
       recorder_cat.error()
@@ -211,6 +250,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _error = true;
 
     } else {
+      recorder->ref();
       bool inserted =
         _recorders.insert(Recorders::value_type(name, recorder)).second;
       nassertv(inserted);

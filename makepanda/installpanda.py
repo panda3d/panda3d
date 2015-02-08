@@ -17,6 +17,11 @@ from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
 
+def python_sitepackages_path():
+    from distutils.sysconfig import get_python_lib
+    return get_python_lib(1)
+PYTHON_SITEPACKAGES=python_sitepackages_path()
+
 MIME_INFO = (
   ("egg", "model/x-egg", "EGG model file", "pview"),
   ("bam", "model/x-bam", "Panda3D binary model file", "pview"),

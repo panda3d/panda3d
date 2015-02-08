@@ -47,6 +47,9 @@ TypeHandle InternalName::_texcoord_type_handle;
 InternalName::PyInternTable InternalName::_py_intern_table;
 #endif
 
+InternalName::LiteralTable InternalName::_literal_table;
+LightMutex InternalName::_literal_table_lock;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::Constructor
 //       Access: Private
@@ -225,7 +228,7 @@ get_ancestor(int n) const {
 
   } else {
     return get_root();
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,13 +270,13 @@ get_net_basename(int n) const {
 
   } else {
     return _basename;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InternalName::
 output(ostream &out) const {
@@ -366,7 +369,7 @@ make_from_bam(const FactoryParams &params) {
   // it later.
   me->ref();
   manager->register_finalize(me);
-  
+
   return me.p();
 }
 
@@ -393,7 +396,7 @@ make_texcoord_from_bam(const FactoryParams &params) {
 
   me->ref();
   manager->register_finalize(me);
-  
+
   return me.p();
 }
 

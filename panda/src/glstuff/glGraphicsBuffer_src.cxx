@@ -445,24 +445,25 @@ rebuild_bitplanes() {
     if (_fbo[layer] == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo[layer]);
 
-#ifndef OPENGLES
-      if (glgsg->_use_object_labels) {
-        if (num_fbos > 1) {
-          GLchar name[128];
-          GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
-          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
-        } else {
-          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
-        }
-      }
-#endif
-
       if (_fbo[layer] == 0) {
         report_my_gl_errors();
         return;
       }
     }
     glgsg->bind_fbo(_fbo[layer]);
+
+#ifndef OPENGLES
+    if (glgsg->_use_object_labels) {
+      // Assign a label for OpenGL to use when displaying debug messages.
+      if (num_fbos > 1) {
+        GLchar name[128];
+        GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
+        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
+      } else {
+        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
+      }
+    }
+#endif
 
     // For all slots, update the slot.
     if (_use_depth_stencil) {
@@ -1393,9 +1394,7 @@ open_buffer() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 close_buffer() {
-
   check_host_valid();
-  report_my_gl_errors();
 
   if (_gsg == 0) {
     return;

@@ -2359,6 +2359,35 @@ get_array_info(const InternalName *name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexDataPipelineReader::get_array_info
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool GeomVertexDataPipelineReader::
+get_array_info(const InternalName *name,
+               const GeomVertexArrayDataHandle *&array_reader,
+               int &num_values,
+               GeomVertexDataPipelineReader::NumericType &numeric_type,
+               int &start, int &stride, int &divisor,
+               int &num_elements, int &element_stride) const {
+  nassertr(_got_array_readers, false);
+  int array_index;
+  const GeomVertexColumn *column;
+  if (_cdata->_format->get_array_info(name, array_index, column)) {
+    array_reader = _array_readers[array_index];
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
+    stride = _cdata->_format->get_array(array_index)->get_stride();
+    divisor = _cdata->_format->get_array(array_index)->get_divisor();
+    num_elements = column->get_num_elements();
+    element_stride = column->get_element_stride();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexDataPipelineReader::get_vertex_info
 //       Access: Public
 //  Description:

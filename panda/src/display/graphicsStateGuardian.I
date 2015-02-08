@@ -204,7 +204,7 @@ set_loader(Loader *loader) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_loader
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns the Loader object that will be used by this
 //               GSG to load textures when necessary, if
 //               get_incomplete_render() is true.
@@ -212,6 +212,28 @@ set_loader(Loader *loader) {
 INLINE Loader *GraphicsStateGuardian::
 get_loader() const {
   return _loader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_shader_generator
+//       Access: Public
+//  Description: Sets the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_shader_generator(ShaderGenerator *shader_generator) {
+  _shader_generator = shader_generator;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_shader_generator
+//       Access: Public
+//  Description: Returns the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE ShaderGenerator *GraphicsStateGuardian::
+get_shader_generator() const {
+  return _shader_generator;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -47,24 +47,24 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
   virtual bool get_vector_to_light(LVector3 &result,
-                                   const LPoint3 &from_object_point, 
+                                   const LPoint3 &from_object_point,
                                    const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE PN_stdfloat get_exponent() const;
+  INLINE PN_stdfloat get_exponent() const FINAL;
   INLINE void set_exponent(PN_stdfloat exponent);
-  
-  INLINE const LColor &get_specular_color() const;
+
+  INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
-  
-  INLINE const LVecBase3 &get_attenuation() const;
+
+  INLINE const LVecBase3 &get_attenuation() const FINAL;
   INLINE void set_attenuation(const LVecBase3 &attenuation);
 
   virtual int get_class_priority() const;
 
   static PT(Texture) make_spot(int pixel_width, PN_stdfloat full_radius,
                                LColor &fg, LColor &bg);
-  
+
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id);

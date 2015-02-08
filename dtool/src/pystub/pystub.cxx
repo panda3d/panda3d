@@ -194,6 +194,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_SystemExit;
   EXPCL_PYSTUB extern void *PyExc_TypeError;
   EXPCL_PYSTUB extern void *PyExc_ValueError;
+  EXPCL_PYSTUB extern void *_Py_FalseStruct;
   EXPCL_PYSTUB extern void *_Py_NoneStruct;
   EXPCL_PYSTUB extern void *_Py_NotImplementedStruct;
   EXPCL_PYSTUB extern void *_Py_TrueStruct;
@@ -385,6 +386,7 @@ void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_SystemExit = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
+void *_Py_FalseStruct = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
 void *_Py_NotImplementedStruct = (void *)NULL;
 void *_Py_TrueStruct = (void *)NULL;

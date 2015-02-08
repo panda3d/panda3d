@@ -181,6 +181,11 @@ PUBLISHED:
   INLINE void operator = (const NodePath &copy);
   INLINE void clear();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE NodePath(NodePath &&from) NOEXCEPT;
+  INLINE void operator = (NodePath &&from) NOEXCEPT;
+#endif
+
   EXTENSION(NodePath __copy__() const);
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
@@ -620,39 +625,39 @@ PUBLISHED:
   void clear_shader();
 
   void set_shader_input(const ShaderInput *inp);
-  void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
-  void set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority=0);
-  void set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_int &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, int n1, int n2=0, int n3=0,
-                                                int n4=0, int priority=0);
-  void set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2=0,
-                        PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_double &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_int &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2=0, int n3=0,
+                                                    int n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
+                               PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-  void clear_shader_input(const InternalName *id);
+  void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(const InternalName *id) const;
+  const ShaderInput *get_shader_input(CPT_InternalName id) const;
   int get_instance_count() const;
 
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
@@ -706,16 +711,12 @@ PUBLISHED:
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
-                   const string &source_name, const NodePath &light,
-                   int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
                    const LTexCoord3 &constant_value,
                    int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
   bool has_tex_gen(TextureStage *stage) const;
   RenderAttrib::TexGenMode get_tex_gen(TextureStage *stage) const;
-  NodePath get_tex_gen_light(TextureStage *stage) const;
 
   void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
                          int lens_index = 0);
@@ -727,10 +728,6 @@ PUBLISHED:
 
   void project_texture(TextureStage *stage, Texture *tex, const NodePath &projector);
   INLINE void clear_project_texture(TextureStage *stage);
-
-  void set_normal_map(Texture *normal_map, const string &texcoord_name = string(),
-                      bool preserve_color = false);
-  void clear_normal_map();
 
   INLINE bool has_texcoord(const string &texcoord_name) const;
   bool has_vertex_column(const InternalName *name) const;
@@ -770,6 +767,7 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority = 0);
   void set_render_mode_thickness(PN_stdfloat thickness, int priority = 0);
   void set_render_mode_perspective(bool perspective, int priority = 0);
   void set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority = 0);
@@ -957,7 +955,7 @@ private:
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
-  typedef phash_set<InternalName *, pointer_hash> InternalNames;
+  typedef phash_set<const InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
   void r_find_all_vertex_columns(PandaNode *node,
                                  InternalNames &vertex_columns) const;
@@ -1010,6 +1008,9 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);
+
+// We have to put this down here, to work around a circular include.
+#include "shaderInput.h"
 
 #include "nodePath.I"
 

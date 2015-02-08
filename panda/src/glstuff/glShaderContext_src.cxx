@@ -412,6 +412,20 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             s->_mat_spec.push_back(bind);
             continue;
           }
+          if (noprefix == "LightModel.ambient") {
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._piece = Shader::SMP_row3;
+            bind._func = Shader::SMF_first;
+            bind._part[0] = Shader::SMO_light_ambient;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_light;
+            bind._part[1] = Shader::SMO_identity;
+            bind._arg[1] = NULL;
+            bind._dep[1] = Shader::SSD_NONE;
+            s->_mat_spec.push_back(bind);
+            continue;
+          }
           GLCAT.error() << "Unrecognized uniform name '" << param_name_cstr << "'!\n";
           continue;
 
@@ -565,7 +579,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._arg[1] = NULL;
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
-              continue; }
+              continue;
+            }
             case GL_FLOAT_MAT4: {
               Shader::ShaderMatSpec bind;
               bind._id = arg_id;
@@ -578,7 +593,43 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._arg[1] = NULL;
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
-              continue; }
+              continue;
+            }
+            case GL_FLOAT:
+            case GL_FLOAT_VEC2:
+            case GL_FLOAT_VEC3:
+            case GL_FLOAT_VEC4: {
+              PT(InternalName) iname = InternalName::make(param_name);
+              if (iname->get_parent() != InternalName::get_root()) {
+                // It might be something like an attribute of a shader
+                // input, like a light parameter.  It might also just be
+                // a custom struct parameter.  We can't know yet, sadly.
+                Shader::ShaderMatSpec bind;
+                bind._id = arg_id;
+                switch (param_type) {
+                case GL_FLOAT:
+                  bind._piece = Shader::SMP_row3x1;
+                  break;
+                case GL_FLOAT_VEC2:
+                  bind._piece = Shader::SMP_row3x2;
+                  break;
+                case GL_FLOAT_VEC3:
+                  bind._piece = Shader::SMP_row3x3;
+                  break;
+                default:
+                  bind._piece = Shader::SMP_row3;
+                }
+                bind._func = Shader::SMF_first;
+                bind._part[0] = Shader::SMO_vec_constant_x_attrib;
+                bind._arg[0] = iname;
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._part[1] = Shader::SMO_identity;
+                bind._arg[1] = NULL;
+                bind._dep[1] = Shader::SSD_NONE;
+                s->_mat_spec.push_back(bind);
+                continue;
+              } // else fall through
+            }
             case GL_BOOL:
             case GL_BOOL_VEC2:
             case GL_BOOL_VEC3:
@@ -586,11 +637,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_INT:
             case GL_INT_VEC2:
             case GL_INT_VEC3:
-            case GL_INT_VEC4:
-            case GL_FLOAT:
-            case GL_FLOAT_VEC2:
-            case GL_FLOAT_VEC3:
-            case GL_FLOAT_VEC4: {
+            case GL_INT_VEC4: {
               Shader::ShaderPtrSpec bind;
               bind._id = arg_id;
               switch (param_type) {
@@ -734,6 +781,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       bind._id = arg_id;
       bind._name = NULL;
       bind._append_uv = -1;
+      bind._elements = 1;
 
       if (param_name.substr(0, 3) == "gl_") {
         // Not all drivers return -1 in glGetAttribLocation
@@ -792,6 +840,24 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
         continue;
       }
+
+      // Get the number of bind points.
+      switch (param_type) {
+      case GL_FLOAT_MAT3:
+      case GL_DOUBLE_MAT3:
+        bind._elements = 3 * param_size;
+        break;
+
+      case GL_FLOAT_MAT4:
+      case GL_DOUBLE_MAT4:
+        bind._elements = 4 * param_size;
+        break;
+
+      default:
+        bind._elements = param_size;
+        break;
+      }
+
       s->_var_spec.push_back(bind);
     }
   }
@@ -998,7 +1064,12 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     const GLint p = _glsl_parameter_map[bind._id._seqno];
-    _glgsg->_glDisableVertexAttribArray(p);
+    if (_glgsg->_supports_vertex_attrib_divisor) {
+      _glgsg->_glVertexAttribDivisor(p, 0);
+    }
+    for (int i = 0; i < bind._elements; ++i) {
+      _glgsg->_glDisableVertexAttribArray(p + i);
+    }
   }
 
   _glgsg->report_my_gl_errors();
@@ -1050,33 +1121,47 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
-      const GLint p = _glsl_parameter_map[bind._id._seqno];
+      GLint p = _glsl_parameter_map[bind._id._seqno];
 
-      if (_glgsg->_data_reader->get_array_info(name,
-                                               array_reader, num_values, numeric_type,
-                                               start, stride)) {
+      int num_elements, element_stride, divisor;
+      if (_glgsg->_data_reader->get_array_info(name, array_reader,
+                                               num_values, numeric_type,
+                                               start, stride, divisor,
+                                               num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
+        client_pointer += start;
 
-        _glgsg->_glEnableVertexAttribArray(p);
+        for (int i = 0; i < num_elements; ++i) {
+          _glgsg->_glEnableVertexAttribArray(p);
 
 #ifndef OPENGLES
-        if (bind._integer) {
-          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                          stride, client_pointer + start);
-        } else
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                            stride, client_pointer);
+          } else
 #endif
-        if (numeric_type == GeomEnums::NT_packed_dabc) {
-          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                         GL_TRUE, stride, client_pointer + start);
-        } else {
-          _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                         GL_TRUE, stride, client_pointer + start);
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
+            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                           GL_TRUE, stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                           GL_TRUE, stride, client_pointer);
+          }
+
+          if (_glgsg->_supports_vertex_attrib_divisor) {
+            _glgsg->_glVertexAttribDivisor(p, divisor);
+          }
+
+          ++p;
+          client_pointer += element_stride;
         }
       } else {
-        _glgsg->_glDisableVertexAttribArray(p);
+        for (int i = 0; i < bind._elements; ++i) {
+          _glgsg->_glDisableVertexAttribArray(p + i);
+        }
       }
     }
   }
@@ -1290,14 +1375,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       view += stage->get_tex_view_offset();
     }
 
-    if (_shader->_tex_spec[i]._suffix != 0) {
-      // The suffix feature is inefficient. It is a temporary hack.
-      if (tex == 0) {
-        continue;
-      }
-      tex = tex->load_related(_shader->_tex_spec[i]._suffix);
-    }
-    if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
+    if (tex == NULL || tex->get_texture_type() != _shader->_tex_spec[i]._desired_type) {
       continue;
     }
 
@@ -1369,18 +1447,57 @@ update_shader_texture_bindings(ShaderContext *prev) {
 //  Description: This subroutine prints the infolog for a shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_shader_errors(GLuint shader) {
+glsl_report_shader_errors(GLuint shader, Shader::ShaderType type) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
 
   _glgsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-  if (length > 1) {
-    info_log = (char *) alloca(length);
-    _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
-    if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
-      GLCAT.error(false) << info_log << "\n";
+  if (length <= 1) {
+    return;
+  }
+
+  info_log = (char *) alloca(length);
+  _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
+  if (strcmp(info_log, "Success.\n") == 0 ||
+      strcmp(info_log, "No errors.\n") == 0) {
+    return;
+  }
+
+  // Parse the errors so that we can substitute in actual file
+  // locations instead of source indices.
+  istringstream log(info_log);
+  string line;
+  while (getline(log, line)) {
+    int fileno, lineno;
+    int prefixlen = 0;
+
+    // First is AMD/Intel driver syntax, second is NVIDIA syntax.
+    if (sscanf(line.c_str(), "ERROR: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
+        && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.error(false)
+        << "ERROR: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
+
+    } else if (sscanf(line.c_str(), "WARNING: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
+        && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.warning(false)
+        << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
+
+
+    } else if (sscanf(line.c_str(), "%d(%d) : %n", &fileno, &lineno, &prefixlen) == 2
+               && prefixlen > 0) {
+
+      Filename fn = _shader->get_filename_from_index(fileno, type);
+      GLCAT.error(false)
+        << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
+
+    } else {
+      GLCAT.error(false) << line << "\n";
     }
   }
 }
@@ -1468,9 +1585,9 @@ glsl_compile_shader(Shader::ShaderType type) {
 
   if (status != GL_TRUE) {
     GLCAT.error()
-      << "An error occurred while compiling shader "
-      << _shader->get_filename(type) << "\n";
-    glsl_report_shader_errors(handle);
+      << "An error occurred while compiling GLSL shader "
+      << _shader->get_filename(type) << ":\n";
+    glsl_report_shader_errors(handle, type);
     _glgsg->_glDeleteShader(handle);
     _glgsg->report_my_gl_errors();
     return false;
@@ -1478,6 +1595,10 @@ glsl_compile_shader(Shader::ShaderType type) {
 
   _glgsg->_glAttachShader(_glsl_program, handle);
   _glsl_shaders.push_back(handle);
+
+  // There might be warnings, so report those.
+  glsl_report_shader_errors(handle, type);
+
   return true;
 }
 
@@ -1538,10 +1659,10 @@ glsl_compile_and_link() {
   }
 
   // There might be warnings, so report those.
-  GLSLShaders::const_iterator it;
-  for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
-    glsl_report_shader_errors(*it);
-  }
+  //GLSLShaders::const_iterator it;
+  //for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
+  //  glsl_report_shader_errors(*it);
+  //}
 
   // If we requested to retrieve the shader, we should indicate that before linking.
 #if !defined(NDEBUG) && !defined(OPENGLES)
@@ -1555,10 +1676,13 @@ glsl_compile_and_link() {
   GLint status;
   _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while linking shader program!\n";
+    GLCAT.error() << "An error occurred while linking GLSL shader program!\n";
     glsl_report_program_errors(_glsl_program);
     return false;
   }
+
+  // Report any warnings.
+  glsl_report_program_errors(_glsl_program);
 
   // Dump the binary if requested.
 #if !defined(NDEBUG) && !defined(OPENGLES)

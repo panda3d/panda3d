@@ -74,25 +74,29 @@ ns_load_shader(const Filename &orig_filename) {
     }
   }
 
-/*
-  shader_cat.info()
+  // The shader was not found in the pool.
+  gobj_cat.info()
     << "Loading shader " << filename << "\n";
-*/
 
-  CPT(Shader) shader;
+  Shader::ShaderLanguage lang = Shader::SL_none;
 
-  shader = (CPT(Shader)) NULL;
-  string extension = filename.get_extension();
+  // Do some guesswork to see if we can figure out the shader language
+  // from the file extension.  This is really just guesswork - there are
+  // no standardized extensions for shaders, especially for GLSL.
+  // These are the ones that appear to be closest to "standard".
+  string ext = downcase(filename.get_extension());
+  if (ext == "cg" || ext == "sha") {
+    // "sha" is for historical reasons.
+    lang = Shader::SL_Cg;
 
-  if (extension.empty() || extension == "cg" || extension == "hlsl") {
-    // this does nothing for now
+  } else if (ext == "glsl" || ext == "vert" || ext == "frag" ||
+             ext == "geom" || ext == "tesc" || ext == "tese" ||
+             ext == "comp") {
+    lang = Shader::SL_GLSL;
   }
 
-  if (shader == (CPT(Shader)) NULL) {
-    shader = Shader::load (filename);
-  }
-
-  if (shader == (CPT(Shader)) NULL) {
+  PT(Shader) shader = Shader::load(filename, lang);
+  if (shader == (Shader *)NULL) {
     // This shader was not found or could not be read.
     return NULL;
   }

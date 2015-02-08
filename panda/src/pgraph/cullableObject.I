@@ -34,35 +34,9 @@ CullableObject() {
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
-               const TransformState *net_transform,
-               const TransformState *modelview_transform,
-               SceneSetup *scene_setup) :
-  _geom(geom),
-  _state(state),
-  _net_transform(net_transform),
-  _modelview_transform(modelview_transform),
-  _internal_transform(scene_setup->get_cs_transform()->compose(modelview_transform))
-{
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, get_class_type());
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Constructor
-//       Access: Public
-//  Description: Creates a CullableObject based the indicated geom,
-//               with the indicated render state and transform.
-////////////////////////////////////////////////////////////////////
-INLINE CullableObject::
-CullableObject(const Geom *geom, const RenderState *state,
-               const TransformState *net_transform,
-               const TransformState *modelview_transform,
                const TransformState *internal_transform) :
   _geom(geom),
   _state(state),
-  _net_transform(net_transform),
-  _modelview_transform(modelview_transform),
   _internal_transform(internal_transform)
 {
 #ifdef DO_MEMORY_USAGE
@@ -81,8 +55,6 @@ CullableObject(const CullableObject &copy) :
   _munger(copy._munger),
   _munged_data(copy._munged_data),
   _state(copy._state),
-  _net_transform(copy._net_transform),
-  _modelview_transform(copy._modelview_transform),
   _internal_transform(copy._internal_transform)
 {
 #ifdef DO_MEMORY_USAGE
@@ -101,8 +73,6 @@ operator = (const CullableObject &copy) {
   _munger = copy._munger;
   _munged_data = copy._munged_data;
   _state = copy._state;
-  _net_transform = copy._net_transform;
-  _modelview_transform = copy._modelview_transform;
   _internal_transform = copy._internal_transform;
   _draw_callback = copy._draw_callback;
 }

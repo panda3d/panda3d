@@ -49,28 +49,12 @@ GeomVertexRewriter(GeomVertexData *vertex_data, Thread *current_thread) :
 //               rewriter specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexData *vertex_data, const string &name,
+GeomVertexRewriter(GeomVertexData *vertex_data, CPT_InternalName name,
                    Thread *current_thread) :
   GeomVertexWriter(vertex_data, current_thread),
   GeomVertexReader(vertex_data, current_thread)
 {
-  set_column(name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexRewriter::Constructor
-//       Access: Published
-//  Description: Constructs a new rewriter to process the vertices of
-//               the indicated data object.  This flavor creates the
-//               rewriter specifically to process the named data type.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexRewriter::
-GeomVertexRewriter(GeomVertexData *vertex_data, const InternalName *name,
-                   Thread *current_thread) :
-  GeomVertexWriter(vertex_data, current_thread),
-  GeomVertexReader(vertex_data, current_thread)
-{
-  set_column(name);
+  set_column(MOVE(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,30 +221,11 @@ set_column(int column) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexRewriter::
-set_column(const string &name) {
-  return set_column(InternalName::make(name));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexRewriter::set_column
-//       Access: Published
-//  Description: Sets up the rewriter to use the data type with the
-//               indicated name.
-//
-//               This also resets both the read and write row
-//               numbers to the start row (the same value passed to
-//               a previous call to set_row(), or 0 if set_row()
-//               was never called.)
-//
-//               The return value is true if the data type is valid,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexRewriter::
-set_column(const InternalName *name) {
+set_column(CPT_InternalName name) {
   // It's important to invoke the writer first, then the reader.  See
   // set_row().
   GeomVertexWriter::set_column(name);
-  return GeomVertexReader::set_column(name);
+  return GeomVertexReader::set_column(MOVE(name));
 }
 
 ////////////////////////////////////////////////////////////////////

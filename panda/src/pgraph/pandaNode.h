@@ -69,9 +69,8 @@ class GraphicsStateGuardianBase;
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable,
-                              public LinkedListNode,
-                              virtual public ReferenceCount {
+class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
+                                     public Namable, public LinkedListNode {
 PUBLISHED:
   PandaNode(const string &name);
   virtual ~PandaNode();
@@ -84,7 +83,6 @@ private:
   void operator = (const PandaNode &copy);
 
 public:
-  virtual ReferenceCount *as_reference_count();
   virtual PandaNode *dupe_for_flatten() const;
 
   virtual bool safe_to_flatten() const;
@@ -165,32 +163,32 @@ PUBLISHED:
   void copy_children(PandaNode *other, Thread *current_thread = Thread::get_current_thread());
 
   void set_attrib(const RenderAttrib *attrib, int override = 0);
-  INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
-  INLINE const RenderAttrib *get_attrib(int slot) const;
+  INLINE CPT(RenderAttrib) get_attrib(TypeHandle type) const;
+  INLINE CPT(RenderAttrib) get_attrib(int slot) const;
   INLINE bool has_attrib(TypeHandle type) const;
   INLINE bool has_attrib(int slot) const;
   INLINE void clear_attrib(TypeHandle type);
   void clear_attrib(int slot);
 
   void set_effect(const RenderEffect *effect);
-  INLINE const RenderEffect *get_effect(TypeHandle type) const;
+  INLINE CPT(RenderEffect) get_effect(TypeHandle type) const;
   INLINE bool has_effect(TypeHandle type) const;
   void clear_effect(TypeHandle type);
 
   void set_state(const RenderState *state, Thread *current_thread = Thread::get_current_thread());
-  INLINE const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(RenderState) get_state(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_state(Thread *current_thread = Thread::get_current_thread());
 
   void set_effects(const RenderEffects *effects, Thread *current_thread = Thread::get_current_thread());
-  INLINE const RenderEffects *get_effects(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(RenderEffects) get_effects(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_effects(Thread *current_thread = Thread::get_current_thread());
 
   void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(TransformState) get_transform(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
 
   void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE const TransformState *get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(TransformState) get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
   void reset_prev_transform(Thread *current_thread = Thread::get_current_thread());
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
@@ -616,6 +614,11 @@ private:
     // When _last_update != _next_update, this cache is stale.
     UpdateSeq _last_update, _next_update;
 
+    // We don't always update the bounding volume and number of
+    // nested vertices.  This indicates the last time they were changed.
+    // It is never higher than _last_update.
+    UpdateSeq _last_bounds_update;
+
   public:
     // This section stores the links to other nodes above and below
     // this node in the graph.
@@ -669,7 +672,8 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   int do_find_child(PandaNode *node, const Down *down) const;
-  CDStageWriter update_bounds(int pipeline_stage, CDLockedStageReader &cdata);
+  CDStageWriter update_cached(bool update_bounds, int pipeline_stage,
+                              CDLockedStageReader &cdata);
 
   static DrawMask _overall_bit;
 
@@ -823,7 +827,7 @@ public:
 
   INLINE void release();
 
-  void check_bounds() const;
+  void check_cached(bool update_bounds) const;
 
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,

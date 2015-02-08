@@ -40,63 +40,40 @@ TypeHandle CLP(CgShaderContext)::_type_handle;
 CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
-  _cg_context = 0;
-  _cg_vprogram = 0;
-  _cg_fprogram = 0;
-  _cg_gprogram = 0;
-  _cg_vprofile = CG_PROFILE_UNKNOWN;
-  _cg_fprofile = CG_PROFILE_UNKNOWN;
-  _cg_gprofile = CG_PROFILE_UNKNOWN;
+  _cg_program = 0;
+  _glsl_profile = false;
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
+  CGcontext context = _glgsg->_cg_context;
+
   // Ask the shader to compile itself for us and
   // to give us the resulting Cg program objects.
-  if (!s->cg_compile_for(_glgsg->_shader_caps,
-                         _cg_context,
-                         _cg_vprogram,
-                         _cg_fprogram,
-                         _cg_gprogram,
-                         _cg_parameter_map)) {
+  if (!s->cg_compile_for(_glgsg->_shader_caps, context,
+                         _cg_program, _cg_parameter_map)) {
     return;
   }
 
   // Load the program.
-  if (_cg_vprogram != 0) {
-    _cg_vprofile = cgGetProgramProfile(_cg_vprogram);
-    cgGLLoadProgram(_cg_vprogram);
-    CGerror verror = cgGetError();
-    if (verror != CG_NO_ERROR) {
-      const char *str = cgGetErrorString(verror);
-      GLCAT.error()
-        << "Could not load Cg vertex program: " << s->get_filename(Shader::ST_vertex)
-        << " (" << cgGetProfileString(_cg_vprofile) << " " << str << ")\n";
-      release_resources();
-    }
-  }
+  if (_cg_program == 0) {
+    const char *str = cgGetErrorString(cgGetError());
+    GLCAT.error()
+      << "Could not combine Cg program: " << s->get_filename()
+      << " (" << str << ")\n";
+    release_resources();
 
-  if (_cg_fprogram != 0) {
-    _cg_fprofile = cgGetProgramProfile(_cg_fprogram);
-    cgGLLoadProgram(_cg_fprogram);
-    CGerror ferror = cgGetError();
-    if (ferror != CG_NO_ERROR) {
-      const char *str = cgGetErrorString(ferror);
-      GLCAT.error()
-        << "Could not load Cg fragment program: " << s->get_filename(Shader::ST_fragment)
-        << " (" << cgGetProfileString(_cg_fprofile) << " " << str << ")\n";
-      release_resources();
+  } else {
+    if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
+      _glsl_profile = true;
     }
-  }
 
-  if (_cg_gprogram != 0) {
-    _cg_gprofile = cgGetProgramProfile(_cg_gprogram);
-    cgGLLoadProgram(_cg_gprogram);
-    CGerror gerror = cgGetError();
-    if (gerror != CG_NO_ERROR) {
-      const char *str = cgGetErrorString(gerror);
+    cgGLLoadProgram(_cg_program);
+    CGerror error = cgGetError();
+    if (error != CG_NO_ERROR) {
+      const char *str = cgGetErrorString(error);
       GLCAT.error()
-        << "Could not load Cg geometry program: " << s->get_filename(Shader::ST_geometry)
-        << " (" << cgGetProfileString(_cg_gprofile) << " " << str << ")\n";
+        << "Could not load program: " << s->get_filename()
+        << " (" << str << ")\n";
       release_resources();
     }
   }
@@ -122,20 +99,14 @@ CLP(CgShaderContext)::
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 release_resources() {
-  if (_cg_context) {
-    cgDestroyContext(_cg_context);
-    _cg_context  = 0;
-    // Do *NOT* destroy the programs here! It causes problems.
-//  if (_cg_vprogram != 0) cgDestroyProgram(_cg_vprogram);
-//  if (_cg_fprogram != 0) cgDestroyProgram(_cg_fprogram);
-//  if (_cg_gprogram != 0) cgDestroyProgram(_cg_gprogram);
-    _cg_vprogram = 0;
-    _cg_fprogram = 0;
-    _cg_gprogram = 0;
-    _cg_parameter_map.clear();
+  if (_cg_program != 0) {
+    cgDestroyProgram(_cg_program);
+    _cg_program = 0;
   }
+  _cg_parameter_map.clear();
   if (_glgsg) {
     _glgsg->report_my_gl_errors();
+
   } else if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext destructor\n";
   }
@@ -155,25 +126,15 @@ release_resources() {
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 bind(bool reissue_parameters) {
-  if (reissue_parameters) {
-    // Pass in k-parameters and transform-parameters
-    issue_parameters(Shader::SSD_general);
-  }
+  if (_cg_program != 0) {
+    if (reissue_parameters) {
+      // Pass in k-parameters and transform-parameters
+      issue_parameters(Shader::SSD_general);
+    }
 
-  if (_cg_context != 0) {
     // Bind the shaders.
-    if (_cg_vprogram != 0) {
-      cgGLEnableProfile(_cg_vprofile);
-      cgGLBindProgram(_cg_vprogram);
-    }
-    if (_cg_fprogram != 0) {
-      cgGLEnableProfile(_cg_fprofile);
-      cgGLBindProgram(_cg_fprogram);
-    }
-    if (_cg_gprogram != 0) {
-      cgGLEnableProfile(_cg_gprofile);
-      cgGLBindProgram(_cg_gprogram);
-    }
+    cgGLEnableProgramProfiles(_cg_program);
+    cgGLBindProgram(_cg_program);
 
     cg_report_errors();
     _glgsg->report_my_gl_errors();
@@ -187,18 +148,12 @@ bind(bool reissue_parameters) {
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 unbind() {
-  if (_cg_context != 0) {
-    if (_cg_vprogram != 0) {
-      cgGLUnbindProgram(_cg_vprofile);
-      cgGLDisableProfile(_cg_vprofile);
-    }
-    if (_cg_fprogram != 0) {
-      cgGLUnbindProgram(_cg_fprofile);
-      cgGLDisableProfile(_cg_fprofile);
-    }
-    if (_cg_gprogram != 0) {
-      cgGLUnbindProgram(_cg_gprofile);
-      cgGLDisableProfile(_cg_gprofile);
+  if (_cg_program != 0) {
+    int num_domains = cgGetNumProgramDomains(_cg_program);
+    for (int i = 0; i < num_domains; ++i) {
+      CGprofile profile = cgGetProgramDomainProfile(_cg_program, i);
+      cgGLUnbindProgram(profile);
+      cgGLDisableProfile(profile);
     }
 
     cg_report_errors();
@@ -396,7 +351,25 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
     if (p == 0) continue;
-    cgGLDisableClientState(p);
+
+    if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+      int index = cgGetParameterResourceIndex(p);
+      if (index >= 8) {
+        _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+      } else if (index == 0) {
+        glDisableClientState(GL_VERTEX_ARRAY);
+
+      } else if (index == 2) {
+        glDisableClientState(GL_NORMAL_ARRAY);
+
+      } else if (index == 3) {
+        glDisableClientState(GL_COLOR_ARRAY);
+      }
+    } else {
+      cgGLDisableClientState(p);
+    }
   }
 
   cg_report_errors();
@@ -464,20 +437,68 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
 
         if (numeric_type == GeomEnums::NT_packed_dabc) {
-          cgGLSetParameterPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                  stride, client_pointer + start);
+          // Yes, this is a thing.
+          num_values = GL_BGRA;
+        }
+
+        // This is truly the most preposterous hack.  When using the GLSL
+        // profiles, cgGLSetParameterPointer relies on the the driver mapping
+        // standard attributes to fixed indices (and breaking the spec doing
+        // so), which only the NVIDIA drivers do.  Unbelievable.
+        if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+          int index = cgGetParameterResourceIndex(p);
+          switch (index) {
+          case 0:  // gl_Vertex
+            glVertexPointer(num_values, _glgsg->get_numeric_type(numeric_type),
+                            stride, client_pointer + start);
+            glEnableClientState(GL_VERTEX_ARRAY);
+            break;
+
+          case 2:  // gl_Normal
+            glNormalPointer(_glgsg->get_numeric_type(numeric_type),
+                            stride, client_pointer + start);
+            glEnableClientState(GL_NORMAL_ARRAY);
+            break;
+
+          case 3:  // gl_Color
+            glColorPointer(num_values, _glgsg->get_numeric_type(numeric_type),
+                           stride, client_pointer + start);
+            glEnableClientState(GL_COLOR_ARRAY);
+            break;
+
+          case 4:  // gl_SecondaryColor
+            //glSecondaryColorPointer(num_values, _glgsg->get_numeric_type(numeric_type),
+            //                        stride, client_pointer + start);
+            //glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
+            //break;
+          case 5:  // gl_FogCoord
+          case 6:  // PSIZE?
+          case 7:  // BLENDINDICES?
+          case 1:  // glWeightPointerARB?
+            GLCAT.error()
+              << "Unable to bind " << *name << " to "
+              << cgGetParameterResourceName(p) << "\n";
+            break;
+
+          default:
+            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
+            glTexCoordPointer(num_values, _glgsg->get_numeric_type(numeric_type),
+                              stride, client_pointer + start);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            break;
+          }
         } else {
           if (name == InternalName::get_normal() && num_values == 4) {
-            // In some cases, the normals are aligned to 4 values.
-            // This would cause an error on some rivers, so we tell it
-            // to use the first three values only.
+            // In some cases, the normals are aligned to 4 values.  We tell
+            // it to use three values exactly, otherwise we get the error:
+            // An unsupported GL extension was required to perform this operation.
             num_values = 3;
           }
-          cgGLSetParameterPointer(p,
-                                  num_values, _glgsg->get_numeric_type(numeric_type),
+          cgGLSetParameterPointer(p, num_values,
+                                  _glgsg->get_numeric_type(numeric_type),
                                   stride, client_pointer + start);
+          cgGLEnableClientState(p);
         }
-        cgGLEnableClientState(p);
       } else {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
         cgGLDisableClientState(p);
@@ -506,6 +527,7 @@ disable_shader_texture_bindings() {
   for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
     if (p == 0) continue;
+
     int texunit = cgGetParameterResourceIndex(p);
     _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
 
@@ -527,7 +549,7 @@ disable_shader_texture_bindings() {
       glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     // This is probably faster - but maybe not as safe?
-    // cgGLDisableTextureParameter(p);
+    //cgGLDisableTextureParameter(p);
   }
 #endif  // OPENGLES_2
 

@@ -182,6 +182,7 @@ typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
 typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
@@ -326,6 +327,8 @@ public:
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
+  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
+
   virtual void clear(DrawableRegion *region);
 
   virtual bool framebuffer_copy_to_texture
@@ -403,7 +406,7 @@ protected:
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  bool has_extension(const string &extension) const;
+  INLINE virtual bool has_extension(const string &extension) const FINAL;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -565,10 +568,16 @@ protected:
   static PT(Shader)  _default_shader;
 #endif
 
+#ifdef HAVE_CG
+  CGcontext _cg_context;
+#endif
+
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
+
+  bool _supports_vertex_attrib_divisor;
 
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have
@@ -616,8 +625,7 @@ public:
 
 #ifndef OPENGLES
   PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
-  bool _primitive_restart_gl3;
-  bool _primitive_restart_nv;
+  bool _explicit_primitive_restart;
 #endif
 
   bool _supports_vertex_blend;
@@ -784,6 +792,7 @@ public:
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
+  PFNGLVERTEXATTRIBDIVISORPROC _glVertexAttribDivisor;
 #endif  // OPENGLES_1
 #ifndef OPENGLES
   PFNGLGENSAMPLERSPROC _glGenSamplers;

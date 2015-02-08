@@ -43,15 +43,18 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
 
   _munge_color = false;
   _munge_color_scale = false;
+  _auto_shader = false;
 
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
-    CPT(ColorAttrib) color_attrib = DCAST(ColorAttrib, state->get_attrib(ColorAttrib::get_class_slot()));
-    CPT(ColorScaleAttrib) color_scale_attrib = DCAST(ColorScaleAttrib, state->get_attrib(ColorScaleAttrib::get_class_slot()));
+    const ColorAttrib *color_attrib = (const ColorAttrib *)
+      state->get_attrib(ColorAttrib::get_class_slot());
+    const ColorScaleAttrib *color_scale_attrib = (const ColorScaleAttrib *)
+      state->get_attrib(ColorScaleAttrib::get_class_slot());
 
     if (color_attrib != (ColorAttrib *)NULL && 
         color_attrib->get_color_type() == ColorAttrib::T_flat) {
-      
+
       if (!get_gsg()->get_color_scale_via_lighting()) {
         // We only need to munge the color directly if the GSG says it
         // can't cheat the color via lighting (presumably, in this case,
@@ -72,21 +75,28 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                color_scale_attrib->has_scale()) {
       _color_scale = color_scale_attrib->get_scale();
       
-      CPT(TextureAttrib) tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
-      
+      const TextureAttrib *tex_attrib = (const TextureAttrib *)
+        state->get_attrib(TextureAttrib::get_class_slot());
+
       // If the GSG says it can't cheat this RGB or alpha scale, we have
       // to apply the color scale directly.
       if ((color_scale_attrib->has_rgb_scale() && !get_gsg()->get_color_scale_via_lighting()) ||
           (color_scale_attrib->has_alpha_scale() && !get_gsg()->get_alpha_scale_via_texture(tex_attrib))) {
         _munge_color_scale = true;
       }
-      
+
       // Known bug: if there is a material on an object that would
       // obscure the effect of color_scale, we scale the lighting
       // anyway, thus applying the effect even if it should be obscured.
       // It doesn't seem worth the effort to detect this contrived
       // situation and handle it correctly.
     }
+  }
+
+  const ShaderAttrib *shader_attrib = (const ShaderAttrib *)
+    state->get_attrib_def(ShaderAttrib::get_class_slot());
+  if (shader_attrib->auto_shader()) {
+    _auto_shader = true;
   }
 }
 
@@ -297,6 +307,10 @@ compare_to_impl(const GeomMunger *other) const {
     }
   }
 
+  if (_auto_shader != om->_auto_shader) {
+    return (int)_auto_shader - (int)om->_auto_shader;
+  }
+
   return StateMunger::compare_to_impl(other);
 }
 
@@ -349,6 +363,21 @@ munge_state_impl(const RenderState *state) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   } else if (_munge_color_scale) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
+  }
+
+  if (_auto_shader) {
+    CPT(RenderState) shader_state = munged_state->get_auto_shader_state();
+    ShaderGenerator *shader_generator = get_gsg()->get_shader_generator();
+    if (shader_generator == NULL) {
+      pgraph_cat.error()
+        << "auto_shader enabled, but GSG has no shader generator assigned!\n";
+      return munged_state;
+    }
+    if (shader_state->_generated_shader == NULL) {
+      // Cache the generated ShaderAttrib on the shader state.
+      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state);
+    }
+    munged_state = munged_state->set_attrib(shader_state->_generated_shader);
   }
 
   return munged_state;

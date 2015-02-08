@@ -1,39 +1,37 @@
 
 """Undocumented Module"""
 
-__all__ = ['unique', 'indent', 'nonRepeatingRandomList',
-'writeFsmTree', 'StackTrace', 'traceFunctionCall', 'traceParentCall',
-'printThisCall', 'tron', 'trace', 'troff', 'getClassLineage', 'pdir',
-'_pdir', '_is_variadic', '_has_keywordargs', '_varnames', '_getcode',
-'Signature', 'doc', 'adjust', 'difference', 'intersection', 'union',
+__all__ = ['indent',
+'StackTrace', 'traceFunctionCall', 'traceParentCall', 'printThisCall',
+'doc', 'adjust', 'difference', 'intersection', 'union',
 'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
 'invertDictLossless', 'uniqueElements', 'disjoint', 'contains',
 'replace', 'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src',
 'closestDestAngle2', 'closestDestAngle', 'binaryRepr', 'profileFunc',
 'profiled', 'startProfile', 'printProfile', 'getSetterName',
-'getSetter', 'Functor', 'Stack', 'Queue', 'ParamObj', 
-'POD', 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
+'getSetter', 'Functor', 'Stack', 'Queue',
+'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
 'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
 'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
-'findPythonModule', 'describeException', 'mostDerivedLast',
-'clampScalar', 'weightedChoice', 'randFloat', 'normalDistrib',
+'findPythonModule', 'mostDerivedLast',
+'weightedChoice', 'randFloat', 'normalDistrib',
 'weightedRand', 'randUint31', 'randInt32', 'randUint32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
 'SingletonError', 'printListEnum', 'safeRepr',
-'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'set_trace', 'pm',
-'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
+'fastRepr', 'isDefaultValue',
+'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
 'getNumberedTypedSortedString', 'getNumberedTypedSortedStringWithReferrers',
 'getNumberedTypedSortedStringWithReferrersGen',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCall', 'SubframeCall', 'ArgumentEater', 'ClassTree', 'getBase',
+'FrameDelayedCall', 'SubframeCall', 'getBase',
 'HotkeyBreaker','logMethodCalls','GoldenRatio',
-'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
+'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
-'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
+'pandaBreak','pandaTrace','formatTimeCompact',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
 'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
-'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString', 'bpdb', ]
+'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString']
 
 import types
 import string
@@ -51,7 +49,6 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
-import BpDb
 import unicodedata
 import bisect
 
@@ -93,7 +90,7 @@ class Functor:
         del self._kargs
         del self.__name__
         del self.__doc__
-    
+
     def _do__call__(self, *args, **kargs):
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
@@ -184,10 +181,6 @@ if __debug__ and __name__ == '__main__':
     assert len(q) == 0
     assert q.isEmpty()
 
-def unique(L1, L2):
-    """Return a list containing all items in 'L1' that are not in 'L2'"""
-    L2 = dict([(k, None) for k in L2])
-    return [item for item in L1 if item not in L2]
 
 def indent(stream, numIndents, str):
     """
@@ -195,31 +188,6 @@ def indent(stream, numIndents, str):
     """
     # To match emacs, instead of a tab character we will use 4 spaces
     stream.write('    ' * numIndents + str)
-
-
-def nonRepeatingRandomList(vals, max):
-    random.seed(time.time())
-    #first generate a set of random values
-    valueList=range(max)
-    finalVals=[]
-    for i in range(vals):
-        index=int(random.random()*len(valueList))
-        finalVals.append(valueList[index])
-        valueList.remove(valueList[index])
-    return finalVals
-
-
-
-def writeFsmTree(instance, indent = 0):
-    if hasattr(instance, 'parentFSM'):
-        writeFsmTree(instance.parentFSM, indent-2)
-    elif hasattr(instance, 'fsm'):
-        name = ''
-        if hasattr(instance.fsm, 'state'):
-            name = instance.fsm.state.name
-        print "%s: %s"%(instance.fsm.name, name)
-
-
 
 
 #if __debug__: #RAU accdg to Darren its's ok that StackTrace is not protected by __debug__
@@ -246,7 +214,7 @@ class StackTrace:
                                                  limit=limit)
         else:
             self.trace = traceback.extract_stack(sys._getframe(1+start))
-            
+
     def compact(self):
         r = ''
         comma = ','
@@ -330,290 +298,10 @@ def printThisCall():
     print traceFunctionCall(sys._getframe(1))
     return 1 # to allow "assert printThisCall()"
 
-
-if __debug__:
-    def lineage(obj, verbose=0, indent=0):
-        """
-        return instance or class name in as a multiline string.
-
-        Usage: print lineage(foo)
-
-        (Based on getClassLineage())
-        """
-        r=""
-        if type(obj) == types.ListType:
-            r+=(" "*indent)+"python list\n"
-        elif type(obj) == types.DictionaryType:
-            r+=(" "*indent)+"python dictionary\n"
-        elif type(obj) == types.ModuleType:
-            r+=(" "*indent)+str(obj)+"\n"
-        elif type(obj) == types.InstanceType:
-            r+=lineage(obj.__class__, verbose, indent)
-        elif type(obj) == types.ClassType:
-            r+=(" "*indent)
-            if verbose:
-                r+=obj.__module__+"."
-            r+=obj.__name__+"\n"
-            for c in obj.__bases__:
-                r+=lineage(c, verbose, indent+2)
-        return r
-
-def tron():
-    sys.settrace(trace)
-def trace(frame, event, arg):
-    if event == 'line':
-        pass
-    elif event == 'call':
-        print traceFunctionCall(sys._getframe(1))
-    elif event == 'return':
-        print "returning"
-    elif event == 'exception':
-        print "exception"
-    return trace
-def troff():
-    sys.settrace(None)
-
-#-----------------------------------------------------------------------------
-
-def getClassLineage(obj):
-    """
-    print object inheritance list
-    """
-    if type(obj) == types.DictionaryType:
-        # Just a dictionary, return dictionary
-        return [obj]
-    elif (type(obj) == types.InstanceType):
-        # Instance, make a list with the instance and its class interitance
-        return [obj] + getClassLineage(obj.__class__)
-    elif ((type(obj) == types.ClassType) or
-          (type(obj) == types.TypeType)):
-        # Class or type, see what it derives from
-        lineage = [obj]
-        for c in obj.__bases__:
-            lineage = lineage + getClassLineage(c)
-        return lineage
-    # New FFI objects are types that are not defined.
-    # but they still act like classes
-    elif hasattr(obj, '__class__'):
-        # Instance, make a list with the instance and its class interitance
-        return [obj] + getClassLineage(obj.__class__)
-    else:
-        # Not what I'm looking for
-        return []
-
-def pdir(obj, str = None, width = None,
-            fTruncate = 1, lineWidth = 75, wantPrivate = 0):
-    # Remove redundant class entries
-    uniqueLineage = []
-    for l in getClassLineage(obj):
-        if type(l) == types.ClassType:
-            if l in uniqueLineage:
-                break
-        uniqueLineage.append(l)
-    # Pretty print out directory info
-    uniqueLineage.reverse()
-    for obj in uniqueLineage:
-        _pdir(obj, str, width, fTruncate, lineWidth, wantPrivate)
-        print
-
-def _pdir(obj, str = None, width = None,
-            fTruncate = 1, lineWidth = 75, wantPrivate = 0):
-    """
-    Print out a formatted list of members and methods of an instance or class
-    """
-    def printHeader(name):
-        name = ' ' + name + ' '
-        length = len(name)
-        if length < 70:
-            padBefore = int((70 - length)/2.0)
-            padAfter = max(0, 70 - length - padBefore)
-            header = '*' * padBefore + name + '*' * padAfter
-        print header
-        print
-    def printInstanceHeader(i, printHeader = printHeader):
-        printHeader(i.__class__.__name__ + ' INSTANCE INFO')
-    def printClassHeader(c, printHeader = printHeader):
-        printHeader(c.__name__ + ' CLASS INFO')
-    def printDictionaryHeader(d, printHeader = printHeader):
-        printHeader('DICTIONARY INFO')
-    # Print Header
-    if type(obj) == types.InstanceType:
-        printInstanceHeader(obj)
-    elif type(obj) == types.ClassType:
-        printClassHeader(obj)
-    elif type (obj) == types.DictionaryType:
-        printDictionaryHeader(obj)
-    # Get dict
-    if type(obj) == types.DictionaryType:
-        dict = obj
-    # FFI objects are builtin types, they have no __dict__
-    elif not hasattr(obj, '__dict__'):
-        dict = {}
-    else:
-        dict = obj.__dict__
-    # Adjust width
-    if width:
-        maxWidth = width
-    else:
-        maxWidth = 10
-    keyWidth = 0
-    aproposKeys = []
-    privateKeys = []
-    remainingKeys = []
-    for key in dict.keys():
-        if not width:
-            keyWidth = len(key)
-        if str:
-            if re.search(str, key, re.I):
-                aproposKeys.append(key)
-                if (not width) and (keyWidth > maxWidth):
-                    maxWidth = keyWidth
-        else:
-            if key[:1] == '_':
-                if wantPrivate:
-                    privateKeys.append(key)
-                    if (not width) and (keyWidth > maxWidth):
-                        maxWidth = keyWidth
-            else:
-                remainingKeys.append(key)
-                if (not width) and (keyWidth > maxWidth):
-                    maxWidth = keyWidth
-    # Sort appropriate keys
-    if str:
-        aproposKeys.sort()
-    else:
-        privateKeys.sort()
-        remainingKeys.sort()
-    # Print out results
-    if wantPrivate:
-        keys = aproposKeys + privateKeys + remainingKeys
-    else:
-        keys = aproposKeys + remainingKeys
-    format = '%-' + repr(maxWidth) + 's'
-    for key in keys:
-        value = dict[key]
-        if callable(value):
-            strvalue = repr(Signature(value))
-        else:
-            strvalue = repr(value)
-        if fTruncate:
-            # Cut off line (keeping at least 1 char)
-            strvalue = strvalue[:max(1, lineWidth - maxWidth)]
-        print (format % key)[:maxWidth] + '\t' + strvalue
-
 # Magic numbers: These are the bit masks in func_code.co_flags that
 # reveal whether or not the function has a *arg or **kw argument.
 _POS_LIST = 4
 _KEY_DICT = 8
-
-def _is_variadic(function):
-    return function.func_code.co_flags & _POS_LIST
-
-def _has_keywordargs(function):
-    return function.func_code.co_flags & _KEY_DICT
-
-def _varnames(function):
-    return function.func_code.co_varnames
-
-def _getcode(f):
-    """
-    _getcode(f)
-    This function returns the name and function object of a callable
-    object.
-    """
-    def method_get(f):
-        return f.__name__, f.im_func
-    def function_get(f):
-        return f.__name__, f
-    def instance_get(f):
-        if hasattr(f, '__call__'):
-            method = f.__call__
-            if (type(method) == types.MethodType):
-                func = method.im_func
-            else:
-                func = method
-            return ("%s%s" % (f.__class__.__name__, '__call__'), func)
-        else:
-            s = ("Instance %s of class %s does not have a __call__ method" %
-                 (f, f.__class__.__name__))
-            raise TypeError, s
-    def class_get(f):
-        if hasattr(f, '__init__'):
-            return f.__name__, f.__init__.im_func
-        else:
-            return f.__name__, lambda: None
-    codedict = { types.UnboundMethodType: method_get,
-                 types.MethodType:        method_get,
-                 types.FunctionType:      function_get,
-                 types.InstanceType:      instance_get,
-                 types.ClassType:         class_get,
-                 }
-    try:
-        return codedict[type(f)](f)
-    except KeyError:
-        if hasattr(f, '__call__'): # eg, built-in functions and methods
-            # raise ValueError, "type %s not supported yet." % type(f)
-            return f.__name__, None
-        else:
-            raise TypeError, ("object %s of type %s is not callable." %
-                                     (f, type(f)))
-
-class Signature:
-    def __init__(self, func):
-        self.type = type(func)
-        self.name, self.func = _getcode(func)
-    def ordinary_args(self):
-        n = self.func.func_code.co_argcount
-        return _varnames(self.func)[0:n]
-    def special_args(self):
-        n = self.func.func_code.co_argcount
-        x = {}
-        #
-        if _is_variadic(self.func):
-            x['positional'] = _varnames(self.func)[n]
-            if _has_keywordargs(self.func):
-                x['keyword'] = _varnames(self.func)[n+1]
-        elif _has_keywordargs(self.func):
-            x['keyword'] = _varnames(self.func)[n]
-        else:
-            pass
-        return x
-    def full_arglist(self):
-        base = list(self.ordinary_args())
-        x = self.special_args()
-        if 'positional' in x:
-            base.append(x['positional'])
-        if 'keyword' in x:
-            base.append(x['keyword'])
-        return base
-    def defaults(self):
-        defargs = self.func.func_defaults
-        args = self.ordinary_args()
-        mapping = {}
-        if defargs is not None:
-            for i in range(-1, -(len(defargs)+1), -1):
-                mapping[args[i]] = defargs[i]
-        else:
-            pass
-        return mapping
-    def __repr__(self):
-        if self.func:
-            defaults = self.defaults()
-            specials = self.special_args()
-            l = []
-            for arg in self.ordinary_args():
-                if arg in defaults:
-                    l.append(arg + '=' + str(defaults[arg]))
-                else:
-                    l.append(arg)
-            if 'positional' in specials:
-                l.append('*' + specials['positional'])
-            if 'keyword' in specials:
-                l.append('**' + specials['keyword'])
-            return "%s(%s)" % (self.name, ', '.join(l))
-        else:
-            return "%s(?)" % self.name
-
 
 def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
@@ -738,7 +426,7 @@ def listToIndex2item(L):
     return d
 
 assert listToIndex2item(['a','b']) == {0: 'a', 1: 'b',}
-    
+
 def listToItem2index(L):
     """converts list to dict of list item->list index
     This is lossy if there are duplicate list items"""
@@ -974,7 +662,7 @@ def profileFunc(callback, name, terse, log=True):
 def profiled(category=None, terse=False):
     """ decorator for profiling functions
     turn categories on and off via "want-profile-categoryName 1"
-    
+
     e.g.
 
     @profiled('particles')
@@ -1135,7 +823,7 @@ def _profileWithoutGarbageLeak(cmd, filename):
     # eliminate the garbage leak
     del prof.dispatcher
     return retVal
-    
+
 def startProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
@@ -1206,642 +894,6 @@ def mostDerivedLast(classList):
             return issubclass(other.classobj, self.classobj)
 
     classList.sort(key=ClassSortKey)
-
-"""
-ParamObj/ParamSet
-=================
-
-These two classes support you in the definition of a formal set of
-parameters for an object type. The parameters may be safely queried/set on
-an object instance at any time, and the object will react to newly-set
-values immediately.
-
-ParamSet & ParamObj also provide a mechanism for atomically setting
-multiple parameter values before allowing the object to react to any of the
-new values--useful when two or more parameters are interdependent and there
-is risk of setting an illegal combination in the process of applying a new
-set of values.
-
-To make use of these classes, derive your object from ParamObj. Then define
-a 'ParamSet' subclass that derives from the parent class' 'ParamSet' class,
-and define the object's parameters within its ParamSet class. (see examples
-below)
-
-The ParamObj base class provides 'get' and 'set' functions for each
-parameter if they are not defined. These default implementations
-respectively set the parameter value directly on the object, and expect the
-value to be available in that location for retrieval.
-
-Classes that derive from ParamObj can optionally declare a 'get' and 'set'
-function for each parameter. The setter should simply store the value in a
-location where the getter can find it; it should not do any further
-processing based on the new parameter value. Further processing should be
-implemented in an 'apply' function. The applier function is optional, and
-there is no default implementation.
-
-NOTE: the previous value of a parameter is available inside an apply
-function as 'self.getPriorValue()'
-
-The ParamSet class declaration lists the parameters and defines a default
-value for each. ParamSet instances represent a complete set of parameter
-values. A ParamSet instance created with no constructor arguments will
-contain the default values for each parameter. The defaults may be
-overriden by passing keyword arguments to the ParamSet's constructor. If a
-ParamObj instance is passed to the constructor, the ParamSet will extract
-the object's current parameter values.
-
-ParamSet.applyTo(obj) sets all of its parameter values on 'obj'.
-
-SETTERS AND APPLIERS
-====================
-Under normal conditions, a call to a setter function, i.e.
-
- cam.setFov(90)
-
-will actually result in the following calls being made:
-
- cam.setFov(90)
- cam.applyFov()
-
-Calls to several setter functions, i.e.
-
- cam.setFov(90)
- cam.setViewType('cutscene')
-
-will result in this call sequence:
-
- cam.setFov(90)
- cam.applyFov()
- cam.setViewType('cutscene')
- cam.applyViewType()
-
-Suppose that you desire the view type to already be set to 'cutscene' at
-the time when applyFov() is called. You could reverse the order of the set
-calls, but suppose that you also want the fov to be set properly at the
-time when applyViewType() is called.
-
-In this case, you can 'lock' the params, i.e.
-
- cam.lockParams()
- cam.setFov(90)
- cam.setViewType('cutscene')
- cam.unlockParams()
-
-This will result in the following call sequence:
-
- cam.setFov(90)
- cam.setViewType('cutscene')
- cam.applyFov()
- cam.applyViewType()
-
-NOTE: Currently the order of the apply calls following an unlock is not
-guaranteed.
-
-EXAMPLE CLASSES
-===============
-Here is an example of a class that uses ParamSet/ParamObj to manage its
-parameters:
-
-class Camera(ParamObj):
-    class ParamSet(ParamObj.ParamSet):
-        Params = {
-            'viewType': 'normal',
-            'fov': 60,
-            }
-    ...
-
-    def getViewType(self):
-        return self.viewType
-    def setViewType(self, viewType):
-        self.viewType = viewType
-    def applyViewType(self):
-        if self.viewType == 'normal':
-            ...
-
-    def getFov(self):
-        return self.fov
-    def setFov(self, fov):
-        self.fov = fov
-    def applyFov(self):
-        base.camera.setFov(self.fov)
-    ...
-
-
-EXAMPLE USAGE
-=============
-
-cam = Camera()
-...
-
-# set up for the cutscene
-savedSettings = cam.ParamSet(cam)
-cam.setViewType('closeup')
-cam.setFov(90)
-...
-
-# cutscene is over, set the camera back
-savedSettings.applyTo(cam)
-del savedSettings
-
-"""
-
-class ParamObj:
-    # abstract base for classes that want to support a formal parameter
-    # set whose values may be queried, changed, 'bulk' changed (defer reaction
-    # to changes until multiple changes have been performed), and
-    # extracted/stored/applied all at once (see documentation above)
-
-    # ParamSet subclass: container of parameter values. Derived class must
-    # derive a new ParamSet class if they wish to define new params. See
-    # documentation above.
-    class ParamSet:
-        Params = {
-            # base class does not define any parameters, but they would
-            # appear here as 'name': defaultValue,
-            #
-            # WARNING: default values of mutable types that do not copy by
-            # value (dicts, lists etc.) will be shared by all class instances
-            # if default value is callable, it will be called to get actual
-            # default value
-            #
-            # for example:
-            #
-            # class MapArea(ParamObj):
-            #     class ParamSet(ParamObj.ParamSet):
-            #         Params = {
-            #             'spawnIndices': Functor(list, [1,5,22]),
-            #         }
-            #
-            }
-
-        def __init__(self, *args, **kwArgs):
-            self.__class__._compileDefaultParams()
-            if len(args) == 1 and len(kwArgs) == 0:
-                # extract our params from an existing ParamObj instance
-                obj = args[0]
-                self.paramVals = {}
-                for param in self.getParams():
-                    self.paramVals[param] = getSetter(obj, param, 'get')()
-            else:
-                assert len(args) == 0
-                if __debug__:
-                    for arg in kwArgs.keys():
-                        assert arg in self.getParams()
-                self.paramVals = dict(kwArgs)
-        def getValue(self, param):
-            if param in self.paramVals:
-                return self.paramVals[param]
-            return self._Params[param]
-        def applyTo(self, obj):
-            # Apply our entire set of params to a ParamObj
-            obj.lockParams()
-            for param in self.getParams():
-                getSetter(obj, param)(self.getValue(param))
-            obj.unlockParams()
-        def extractFrom(self, obj):
-            # Extract our entire set of params from a ParamObj
-            obj.lockParams()
-            for param in self.getParams():
-                self.paramVals[param] = getSetter(obj, param, 'get')()
-            obj.unlockParams()
-        @classmethod
-        def getParams(cls):
-            # returns safely-mutable list of param names
-            cls._compileDefaultParams()
-            return cls._Params.keys()
-        @classmethod
-        def getDefaultValue(cls, param):
-            cls._compileDefaultParams()
-            dv = cls._Params[param]
-            if hasattr(dv, '__call__'):
-                dv = dv()
-            return dv
-        @classmethod
-        def _compileDefaultParams(cls):
-            if '_Params' in cls.__dict__:
-                # we've already compiled the defaults for this class
-                return
-            bases = list(cls.__bases__)
-            if object in bases:
-                bases.remove(object)
-            # bring less-derived classes to the front
-            mostDerivedLast(bases)
-            cls._Params = {}
-            for c in (bases + [cls]):
-                # make sure this base has its dict of param defaults
-                c._compileDefaultParams()
-                if 'Params' in c.__dict__:
-                    # apply this class' default param values to our dict
-                    cls._Params.update(c.Params)
-        def __repr__(self):
-            argStr = ''
-            for param in self.getParams():
-                argStr += '%s=%s,' % (param,
-                                      repr(self.getValue(param)))
-            return '%s.%s(%s)' % (
-                self.__class__.__module__, self.__class__.__name__, argStr)
-    # END PARAMSET SUBCLASS
-
-    def __init__(self, *args, **kwArgs):
-        assert issubclass(self.ParamSet, ParamObj.ParamSet)
-        # If you pass in a ParamSet obj, its values will be applied to this
-        # object in the constructor.
-        params = None
-        if len(args) == 1 and len(kwArgs) == 0:
-            # if there's one argument, assume that it's a ParamSet
-            params = args[0]
-        elif len(kwArgs) > 0:
-            assert len(args) == 0
-            # if we've got keyword arguments, make a ParamSet out of them
-            params = self.ParamSet(**kwArgs)
-
-        self._paramLockRefCount = 0
-        # these hold the current value of parameters while they are being set to
-        # a new value, to support getPriorValue()
-        self._curParamStack = []
-        self._priorValuesStack = []
-
-        # insert stub funcs for param setters, to handle locked params
-        for param in self.ParamSet.getParams():
-
-            # set the default value on the object
-            setattr(self, param, self.ParamSet.getDefaultValue(param))
-            
-            setterName = getSetterName(param)
-            getterName = getSetterName(param, 'get')
-
-            # is there a setter defined?
-            if not hasattr(self, setterName):
-                # no; provide the default
-                def defaultSetter(self, value, param=param):
-                    #print '%s=%s for %s' % (param, value, id(self))
-                    setattr(self, param, value)
-                self.__class__.__dict__[setterName] = defaultSetter
-
-            # is there a getter defined?
-            if not hasattr(self, getterName):
-                # no; provide the default. If there is no value set, return
-                # the default
-                def defaultGetter(self, param=param,
-                                  default=self.ParamSet.getDefaultValue(param)):
-                    return getattr(self, param, default)
-                self.__class__.__dict__[getterName] = defaultGetter
-
-            # have we already installed a setter stub?
-            origSetterName = '%s_ORIG' % (setterName,)
-            if not hasattr(self, origSetterName):
-                # move the original setter aside
-                origSetterFunc = getattr(self.__class__, setterName)
-                setattr(self.__class__, origSetterName, origSetterFunc)
-                """
-                # if the setter is a direct member of this instance, move the setter
-                # aside
-                if setterName in self.__dict__:
-                    self.__dict__[setterName + '_MOVED'] = self.__dict__[setterName]
-                    setterFunc = self.__dict__[setterName]
-                    """
-                # install a setter stub that will a) call the real setter and
-                # then the applier, or b) call the setter and queue the
-                # applier, depending on whether our params are locked
-                """
-                setattr(self, setterName, types.MethodType(
-                    Functor(setterStub, param, setterFunc), self, self.__class__))
-                    """
-                def setterStub(self, value, param=param, origSetterName=origSetterName):
-                    # should we apply the value now or should we wait?
-                    # if this obj's params are locked, we track which values have
-                    # been set, and on unlock, we'll call the applyers for those
-                    # values
-                    if self._paramLockRefCount > 0:
-                        priorValues = self._priorValuesStack[-1]
-                        if param not in priorValues:
-                            try:
-                                priorValue = getSetter(self, param, 'get')()
-                            except:
-                                priorValue = None
-                            priorValues[param] = priorValue
-                        self._paramsSet[param] = None
-                        getattr(self, origSetterName)(value)
-                    else:
-                        # prepare for call to getPriorValue
-                        try:
-                            priorValue = getSetter(self, param, 'get')()
-                        except:
-                            priorValue = None
-                        self._priorValuesStack.append({
-                            param: priorValue,
-                            })
-                        getattr(self, origSetterName)(value)
-                        # call the applier, if there is one
-                        applier = getattr(self, getSetterName(param, 'apply'), None)
-                        if applier is not None:
-                            self._curParamStack.append(param)
-                            applier()
-                            self._curParamStack.pop()
-                        self._priorValuesStack.pop()
-                        if hasattr(self, 'handleParamChange'):
-                            self.handleParamChange((param,))
-
-                setattr(self.__class__, setterName, setterStub)
-
-        if params is not None:
-            params.applyTo(self)
-
-    def destroy(self):
-        """
-        for param in self.ParamSet.getParams():
-            setterName = getSetterName(param)
-            self.__dict__[setterName].destroy()
-            del self.__dict__[setterName]
-            """
-        pass
-    
-    def setDefaultParams(self):
-        # set all the default parameters on ourself
-        self.ParamSet().applyTo(self)
-
-    def getCurrentParams(self):
-        params = self.ParamSet()
-        params.extractFrom(self)
-        return params
-
-    def lockParams(self):
-        self._paramLockRefCount += 1
-        if self._paramLockRefCount == 1:
-            self._handleLockParams()
-    def unlockParams(self):
-        if self._paramLockRefCount > 0:
-            self._paramLockRefCount -= 1
-            if self._paramLockRefCount == 0:
-                self._handleUnlockParams()
-    def _handleLockParams(self):
-        # this will store the names of the parameters that are modified
-        self._paramsSet = {}
-        # this will store the values of modified params (from prior to
-        # the lock).
-        self._priorValuesStack.append({})
-    def _handleUnlockParams(self):
-        for param in self._paramsSet:
-            # call the applier, if there is one
-            applier = getattr(self, getSetterName(param, 'apply'), None)
-            if applier is not None:
-                self._curParamStack.append(param)
-                applier()
-                self._curParamStack.pop()
-        self._priorValuesStack.pop()
-        if hasattr(self, 'handleParamChange'):
-            self.handleParamChange(tuple(self._paramsSet.keys()))
-        del self._paramsSet
-    def paramsLocked(self):
-        return self._paramLockRefCount > 0
-    def getPriorValue(self):
-        # call this within an apply function to find out what the prior value
-        # of the param was
-        return self._priorValuesStack[-1][self._curParamStack[-1]]
-
-    def __repr__(self):
-        argStr = ''
-        for param in self.ParamSet.getParams():
-            try:
-                value = getSetter(self, param, 'get')()
-            except:
-                value = '<unknown>'
-            argStr += '%s=%s,' % (param, repr(value))
-        return '%s(%s)' % (self.__class__.__name__, argStr)
-
-if __debug__ and __name__ == '__main__':
-    class ParamObjTest(ParamObj):
-        class ParamSet(ParamObj.ParamSet):
-            Params = {
-                'num': 0,
-            }
-        def applyNum(self):
-            self.priorValue = self.getPriorValue()
-    pto = ParamObjTest()
-    assert pto.getNum() == 0
-    pto.setNum(1)
-    assert pto.priorValue == 0
-    assert pto.getNum() == 1
-    pto.lockParams()
-    pto.setNum(2)
-    # make sure applyNum is not called until we call unlockParams
-    assert pto.priorValue == 0
-    assert pto.getNum() == 2
-    pto.unlockParams()
-    assert pto.priorValue == 1
-    assert pto.getNum() == 2
-
-"""
-POD (Plain Ol' Data)
-
-Like ParamObj/ParamSet, but without lock/unlock/getPriorValue and without
-appliers. Similar to a C++ struct, but with auto-generated setters and
-getters.
-
-Use POD when you want the generated getters and setters of ParamObj, but
-efficiency is a concern and you don't need the bells and whistles provided
-by ParamObj.
-
-POD.__init__ *MUST* be called. You should NOT define your own data getters
-and setters. Data values may be read, set, and modified directly. You will
-see no errors if you define your own getters/setters, but there is no
-guarantee that they will be called--and they will certainly be bypassed by
-POD internally.
-
-EXAMPLE CLASSES
-===============
-Here is an example of a class heirarchy that uses POD to manage its data:
-
-class Enemy(POD):
-  DataSet = {
-    'faction': 'navy',
-    }
-
-class Sailor(Enemy):
-  DataSet = {
-    'build': HUSKY,
-    'weapon': Cutlass(scale=.9),
-    }
-
-EXAMPLE USAGE
-=============
-s = Sailor(faction='undead', build=SKINNY)
-
-# make two copies of s
-s2 = s.makeCopy()
-s3 = Sailor(s)
-
-# example sets
-s2.setWeapon(Musket())
-s3.build = TALL
-
-# example gets
-faction2 = s2.getFaction()
-faction3 = s3.faction
-"""
-class POD:
-    DataSet = {
-        # base class does not define any data items, but they would
-        # appear here as 'name': defaultValue,
-        #
-        # WARNING: default values of mutable types that do not copy by
-        # value (dicts, lists etc.) will be shared by all class instances.
-        # if default value is callable, it will be called to get actual
-        # default value
-        #
-        # for example:
-        #
-        # class MapData(POD):
-        #     DataSet = {
-        #         'spawnIndices': Functor(list, [1,5,22]),
-        #         }
-        }
-    def __init__(self, **kwArgs):
-        self.__class__._compileDefaultDataSet()
-        if __debug__:
-            # make sure all of the keyword arguments passed in
-            # are present in our data set
-            for arg in kwArgs.keys():
-                assert arg in self.getDataNames(), (
-                    "unknown argument for %s: '%s'" % (
-                    self.__class__, arg))
-        # assign each of our data items directly to self
-        for name in self.getDataNames():
-            # if a value has been passed in for a data item, use
-            # that value, otherwise use the default value
-            if name in kwArgs:
-                getSetter(self, name)(kwArgs[name])
-            else:
-                getSetter(self, name)(self.getDefaultValue(name))
-
-    def setDefaultValues(self):
-        # set all the default data values on ourself
-        for name in self.getDataNames():
-            getSetter(self, name)(self.getDefaultValue(name))
-    # this functionality used to be in the constructor, triggered by a single
-    # positional argument; that was conflicting with POD subclasses that wanted
-    # to define different behavior for themselves when given a positional
-    # constructor argument
-    def copyFrom(self, other, strict=False):
-        # if 'strict' is true, other must have a value for all of our data items
-        # otherwise we'll use the defaults
-        for name in self.getDataNames():
-            if hasattr(other, getSetterName(name, 'get')):
-                setattr(self, name, getSetter(other, name, 'get')())
-            else:
-                if strict:
-                    raise "object '%s' doesn't have value '%s'" % (other, name)
-                else:
-                    setattr(self, name, self.getDefaultValue(name))
-        # support 'p = POD.POD().copyFrom(other)' syntax
-        return self
-    def makeCopy(self):
-        # returns a duplicate of this object
-        return self.__class__().copyFrom(self)
-    def applyTo(self, obj):
-        # Apply our entire set of data to another POD
-        for name in self.getDataNames():
-            getSetter(obj, name)(getSetter(self, name, 'get')())
-    def getValue(self, name):
-        return getSetter(self, name, 'get')()
-
-    @classmethod
-    def getDataNames(cls):
-        # returns safely-mutable list of datum names
-        cls._compileDefaultDataSet()
-        return cls._DataSet.keys()
-    @classmethod
-    def getDefaultValue(cls, name):
-        cls._compileDefaultDataSet()
-        dv = cls._DataSet[name]
-        # this allows us to create a new mutable object every time we ask
-        # for its default value, i.e. if the default value is dict, this
-        # method will return a new empty dictionary object every time. This
-        # will cause problems if the intent is to store a callable object
-        # as the default value itself; we need a way to specify that the
-        # callable *is* the default value and not a default-value creation
-        # function
-        if hasattr(dv, '__call__'):
-            dv = dv()
-        return dv
-    @classmethod
-    def _compileDefaultDataSet(cls):
-        if '_DataSet' in cls.__dict__:
-            # we've already compiled the defaults for this class
-            return
-        # create setters & getters for this class
-        if 'DataSet' in cls.__dict__:
-            for name in cls.DataSet:
-                setterName = getSetterName(name)
-                if not hasattr(cls, setterName):
-                    def defaultSetter(self, value, name=name):
-                        setattr(self, name, value)
-                    cls.__dict__[setterName] = defaultSetter
-                getterName = getSetterName(name, 'get')
-                if not hasattr(cls, getterName):
-                    def defaultGetter(self, name=name):
-                        return getattr(self, name)
-                    cls.__dict__[getterName] = defaultGetter
-        # this dict will hold all of the aggregated default data values for
-        # this particular class, including values from its base classes
-        cls._DataSet = {}
-        bases = list(cls.__bases__)
-        # process in reverse of inheritance order, so that base classes listed first
-        # will take precedence over later base classes
-        bases.reverse()
-        for curBase in bases:
-            # skip multiple-inheritance base classes that do not derive from POD
-            if issubclass(curBase, POD):
-                # make sure this base has its dict of data defaults
-                curBase._compileDefaultDataSet()
-                # grab all inherited data default values
-                cls._DataSet.update(curBase._DataSet)
-        # pull in our own class' default values if any are specified
-        if 'DataSet' in cls.__dict__:
-            cls._DataSet.update(cls.DataSet)
-
-    def __repr__(self):
-        argStr = ''
-        for name in self.getDataNames():
-            argStr += '%s=%s,' % (name, repr(getSetter(self, name, 'get')()))
-        return '%s(%s)' % (self.__class__.__name__, argStr)
-
-if __debug__ and __name__ == '__main__':
-    class PODtest(POD):
-        DataSet = {
-            'foo': dict,
-            }
-    p1 = PODtest()
-    p2 = PODtest()
-    assert hasattr(p1, 'foo')
-    # make sure the getter is working
-    assert p1.getFoo() is p1.foo
-    p1.getFoo()[1] = 2
-    assert p1.foo[1] == 2
-    # make sure that each instance gets its own copy of a mutable
-    # data item
-    assert p1.foo is not p2.foo
-    assert len(p1.foo) == 1
-    assert len(p2.foo) == 0
-    # make sure the setter is working
-    p2.setFoo({10:20})
-    assert p2.foo[10] == 20
-    # make sure modifications to mutable data items don't affect other
-    # instances
-    assert p1.foo[1] == 2
-
-    class DerivedPOD(PODtest):
-        DataSet = {
-            'bar': list,
-            }
-    d1 = DerivedPOD()
-    # make sure that derived instances get their own copy of mutable
-    # data items
-    assert hasattr(d1, 'foo')
-    assert len(d1.foo) == 0
-    # make sure derived instances get their own items
-    assert hasattr(d1, 'bar')
-    assert len(d1.bar) == 0
 
 def bound(value, bound1, bound2):
     """
@@ -2064,83 +1116,6 @@ def findPythonModule(module):
             return pathname
 
     return None
-
-def describeException(backTrace = 4):
-    # When called in an exception handler, returns a string describing
-    # the current exception.
-
-    def byteOffsetToLineno(code, byte):
-        # Returns the source line number corresponding to the given byte
-        # offset into the indicated Python code module.
-
-        import array
-        lnotab = array.array('B', code.co_lnotab)
-
-        line   = code.co_firstlineno
-        for i in range(0, len(lnotab), 2):
-            byte -= lnotab[i]
-            if byte <= 0:
-                return line
-            line += lnotab[i+1]
-
-        return line
-
-    infoArr = sys.exc_info()
-    exception = infoArr[0]
-    exceptionName = getattr(exception, '__name__', None)
-    extraInfo = infoArr[1]
-    trace = infoArr[2]
-
-    stack = []
-    while trace.tb_next:
-        # We need to call byteOffsetToLineno to determine the true
-        # line number at which the exception occurred, even though we
-        # have both trace.tb_lineno and frame.f_lineno, which return
-        # the correct line number only in non-optimized mode.
-        frame = trace.tb_frame
-        module = frame.f_globals.get('__name__', None)
-        lineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
-        stack.append("%s:%s, " % (module, lineno))
-        trace = trace.tb_next
-
-    frame = trace.tb_frame
-    module = frame.f_globals.get('__name__', None)
-    lineno = byteOffsetToLineno(frame.f_code, frame.f_lasti)
-    stack.append("%s:%s, " % (module, lineno))
-
-    description = ""
-    for i in range(len(stack) - 1, max(len(stack) - backTrace, 0) - 1, -1):
-        description += stack[i]
-
-    description += "%s: %s" % (exceptionName, extraInfo)
-    return description
-
-def clampScalar(value, a, b):
-    # calling this ought to be faster than calling both min and max
-    if a < b:
-        if value < a:
-            return a
-        elif value > b:
-            return b
-        else:
-            return value
-    else:
-        if value < b:
-            return b
-        elif value > a:
-            return a
-        else:
-            return value
-
-def pivotScalar(scalar, pivot):
-    # reflect scalar about pivot; see tests below
-    return pivot + (pivot - scalar)
-
-if __debug__ and __name__ == '__main__':
-    assert pivotScalar(1, 0) == -1
-    assert pivotScalar(-1, 0) == 1
-    assert pivotScalar(3, 5) == 7
-    assert pivotScalar(10, 1) == -8
 
 def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
@@ -2452,14 +1427,14 @@ def printListEnum(l):
 # libdtoolconfig doesn't seem to have this, grab it off of PandaNode
 dtoolSuperBase = None
 
-def _getDtoolSuperBase(): 
+def _getDtoolSuperBase():
     global dtoolSuperBase
-    from pandac.PandaModules import PandaNode
+    from panda3d.core import PandaNode
     dtoolSuperBase = PandaNode('').__class__.__bases__[0].__bases__[0].__bases__[0]
     assert repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPER_BASE111'>" \
         or repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPPER_BASE111'>" \
         or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE111'>"
-    
+
 safeReprNotify = None
 
 def _getSafeReprNotify():
@@ -2567,95 +1542,6 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
-baseLine = {}
-
-def baseLineCheck():
-    global baseLine
-    import gc
-    obj = gc.get_objects()
-    baseLine = {}
-    for i in obj:
-        baseLine[str(itype(i))] = 0
-    for i in obj:
-        baseLine[str(itype(i))] += 1
-
-def diffSinceBaseLine():
-    import copy
-    import gc
-    obj = gc.get_objects()    
-    since = copy.deepcopy(baseLine)
-    for i in obj:
-        since.setdefault(str(itype(i)), 0)
-    for i in obj:
-        since[str(itype(i))] -= 1
-    for i in since.keys():
-        if not since[i]:
-            del since[i]
-        else:
-            since[i] = abs(since[i])
-
-    final = [(since[x],x) for x in since]
-    final.sort()
-    final.reverse()
-    for i in final:
-        print i
-
-    final = []
-    since = []
-
-
-# Recursively expand slist's objects
-# into olist, using seen to track
-# already processed objects.
-def _getr(slist, olist, seen):
-  for e in slist:
-    if id(e) in seen:
-      continue
-    seen[id(e)] = None
-    olist.append(e)
-    tl = gc.get_referents(e)
-    if tl:
-      _getr(tl, olist, seen)
-
-# The public function.
-def get_all_objects():
-  """Return a list of all live Python
-  objects, not including the list itself."""
-  gcl = gc.get_objects()
-  olist = []
-  seen = {}
-  # Just in case:
-  seen[id(gcl)] = None
-  seen[id(olist)] = None
-  seen[id(seen)] = None
-  # _getr does the real work.
-  _getr(gcl, olist, seen)
-  return olist    
-
-def getIdList():
-    baseList = get_all_objects()
-    idList = {}
-    for i in baseList:
-        idList[id(i)] = i
-
-    return idList
-
-
-ftype = None
-
-def getTree(obj):
-    global ftype
-    if not ftype:
-        ftype = itype(sys._getframe())
-    objId = id(obj)
-    obj = None
-    idList = getIdList()
-    objList = [objId]
-    objTree = {objId:{}}
-    r_add_chain(objId, objList, objTree[objId], idList, 0 )
-    
-    return convertTree(objTree, idList)
-
 def convertTree(objTree, idList):
     newTree = {}
     for key in objTree.keys():
@@ -2666,86 +1552,32 @@ def convertTree(objTree, idList):
 
 def r_convertTree(oldTree, newTree, idList):
     for key in oldTree.keys():
-        
+
         obj = idList.get(key)
         if(not obj):
             continue
         obj = str(obj)[:100]
-        
+
         newTree[obj] = {}
-        r_convertTree(oldTree[key], newTree[obj], idList)        
+        r_convertTree(oldTree[key], newTree[obj], idList)
 
 
 def pretty_print(tree):
     for name in tree.keys():
         print name
         r_pretty_print(tree[name], 0)
-        
-            
+
 
 def r_pretty_print(tree, num):
     num+=1
     for name in tree.keys():
         print "  "*num,name
         r_pretty_print(tree[name],num)
-        
-def r_add_chain(objId, objList, objTree, idList, num):
-    num+=1
-    obj = idList.get(objId)
-    if(not obj):
-        return
-    
-    refList = gc.get_referrers(obj)
-    for ref in refList:
-        refId = id(ref)
-        if ref == __builtins__:
-            continue
-        if ref == objList:
-            continue
-        if refId in objList:
-            continue
-        if(ref == idList):
-            continue
-        if(itype(ref) == ftype):
-            continue
-        if(itype(ref) == itype(sys)):
-            continue
 
-        objList.append(refId)
-        
-        objTree[refId] = {}
-    refList = None
-    for refId in objTree:
-        r_add_chain(refId, objList, objTree[refId], idList, num)
-                    
-        
-    
-def tagRepr(obj, tag):
-    """adds a string onto the repr output of an instance"""
-    def reprWithTag(oldRepr, tag, self):
-        return oldRepr() + '::<TAG=' + tag + '>'
-    oldRepr = getattr(obj, '__repr__', None)
-    if oldRepr is None:
-        def stringer(s):
-            return s
-        oldRepr = Functor(stringer, repr(obj))
-        stringer = None
-    obj.__repr__ = types.MethodType(Functor(reprWithTag, oldRepr, tag), obj, obj.__class__)
-    reprWithTag = None
-    return obj
-
-def tagWithCaller(obj):
-    """add info about the caller of the caller"""
-    tagRepr(obj, str(callerInfo(howFarBack=1)))
 
 def isDefaultValue(x):
     return x == type(x)()
 
-def notNone(A, B):
-    # returns A if not None, B otherwise
-    if A is None:
-        return B
-    return A
 
 def appendStr(obj, st):
     """adds a string onto the __str__ output of an instance"""
@@ -2760,24 +1592,6 @@ def appendStr(obj, st):
     obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
     appendedStr = None
     return obj
-
-# convenience shortcuts for __dev__ debugging
-# we don't have the __dev__ flag at this point
-try:
-    import pdb
-    set_trace = pdb.set_trace
-    # set_trace that can be asserted
-    def setTrace():
-        set_trace()
-        return True
-    pm = pdb.pm
-except:
-    # we're in production, there is no pdb module. assign these to something so that the
-    # __builtin__ exports will work
-    # references in the code should either be if __dev__'d or asserted
-    set_trace = None
-    setTrace = None
-    pm = None
 
 
 class ScratchPad:
@@ -2802,19 +1616,6 @@ class ScratchPad:
     # allow 'in'
     def __contains__(self, itemName):
         return itemName in self._keys
-
-class DestructiveScratchPad(ScratchPad):
-    # automatically calls destroy() on elements passed to __init__
-    def add(self, **kArgs):
-        for key, value in kArgs.iteritems():
-            if hasattr(self, key):
-                getattr(self, key).destroy()
-            setattr(self, key, value)
-        self._keys.update(kArgs.keys())
-    def destroy(self):
-        for key in self._keys:
-            getattr(self, key).destroy()
-        ScratchPad.destroy(self)
 
 class Sync:
     _SeriesGen = SerialNumGen()
@@ -2843,29 +1644,6 @@ class Sync:
     def __repr__(self):
         return '%s(%s)<family=%s,value=%s>' % (self.__class__.__name__,
                               self._name, self._series, self._value)
-
-class RefCounter:
-    def __init__(self, byId=False):
-        self._byId = byId
-        self._refCounts = {}
-    def _getKey(self, item):
-        if self._byId:
-            key = id(item)
-        else:
-            key = item
-    def inc(self, item):
-        key = self._getKey(item)
-        self._refCounts.setdefault(key, 0)
-        self._refCounts[key] += 1
-    def dec(self, item):
-        """returns True if ref count has hit zero"""
-        key = self._getKey(item)
-        self._refCounts[key] -= 1
-        result = False
-        if self._refCounts[key] == 0:
-            result = True
-            del self._refCounts[key]
-        return result
 
 def itype(obj):
     # version of type that gives more complete information about instance types
@@ -3165,83 +1943,9 @@ class SubframeCall:
             taskMgr.remove(self._taskName)
             self._taskName = None
 
-class ArgumentEater:
-    def __init__(self, numToEat, func):
-        self._numToEat = numToEat
-        self._func = func
-    def destroy(self):
-        del self._func
-    def __call__(self, *args, **kwArgs):
-        self._func(*args[self._numToEat:], **kwArgs)
-
-class ClassTree:
-    def __init__(self, instanceOrClass):
-        if type(instanceOrClass) in (types.ClassType, types.TypeType):
-            cls = instanceOrClass
-        else:
-            cls = instanceOrClass.__class__
-        self._cls = cls
-        self._bases = []
-        for base in self._cls.__bases__:
-            if base not in (types.ObjectType, types.TypeType):
-                self._bases.append(ClassTree(base))
-    def getAllClasses(self):
-        # returns set of this class and all base classes
-        classes = set()
-        classes.add(self._cls)
-        for base in self._bases:
-            classes.update(base.getAllClasses())
-        return classes
-    def _getStr(self, indent=None, clsLeftAtIndent=None):
-        # indent is how far to the right to indent (i.e. how many levels
-        # deep in the hierarchy from the most-derived)
-        #
-        # clsLeftAtIndent is an array of # of classes left to be
-        # printed at each level of the hierarchy; most-derived is
-        # at index 0
-        if indent is None:
-            indent = 0
-            clsLeftAtIndent = [1]
-        s = ''
-        if (indent > 1):
-            for i in range(1, indent):
-                # if we have not printed all base classes at
-                # this indent level, keep printing the vertical
-                # column
-                if clsLeftAtIndent[i] > 0:
-                    s += ' |'
-                else:
-                    s += '  '
-        if (indent > 0):
-            s += ' +'
-        s += self._cls.__name__
-        clsLeftAtIndent[indent] -= 1
-        """
-        ### show the module to the right of the class name
-        moduleIndent = 48
-        if len(s) >= moduleIndent:
-            moduleIndent = (len(s) % 4) + 4
-        padding = moduleIndent - len(s)
-        s += padding * ' '
-        s += self._cls.__module__
-        ###
-        """
-        if len(self._bases):
-            newList = list(clsLeftAtIndent)
-            newList.append(len(self._bases))
-            bases = self._bases
-            # print classes with fewer bases first
-            bases.sort(lambda x,y: len(x._bases)-len(y._bases))
-            for base in bases:
-                s += '\n%s' % base._getStr(indent+1, newList)
-        return s
-    def __repr__(self):
-        return self._getStr()
-
-
 class PStatScope:
     collectors = {}
-    
+
     def __init__(self, level = None):
         self.levels = []
         if level:
@@ -3253,13 +1957,13 @@ class PStatScope:
         if push:
             c.push(push)
         return c
-    
+
     def __repr__(self):
         return 'PStatScope - \'%s\'' % (self,)
-    
+
     def __str__(self):
         return ':'.join(self.levels)
-    
+
     def push(self, level):
         self.levels.append(level.replace('_',''))
 
@@ -3276,26 +1980,26 @@ class PStatScope:
         self.getCollector().stop()
         if pop:
             self.pop()
-        
+
     def getCollector(self):
         label = str(self)
         if label not in self.collectors:
-            from pandac.PandaModules import PStatCollector
+            from panda3d.core import PStatCollector
             self.collectors[label] = PStatCollector(label)
             pass
         # print '  ',self.collectors[label]
         return self.collectors[label]
-            
+
 def pstatcollect(scope, level = None):
     def decorator(f):
         return f
 
     try:
-        
+
         if not (__dev__ or config.GetBool('force-pstatcollect', 0)) or \
            not scope:
             return decorator
-        
+
         def decorator(f):
             def wrap(*args, **kw):
                 scope.start(push = (level or f.__name__))
@@ -3303,7 +2007,7 @@ def pstatcollect(scope, level = None):
                 scope.stop(pop = True)
                 return val
             return wrap
-        
+
         pass
     except:
         pass
@@ -3323,7 +2027,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     If __dev__ is not defined, or resolves to False, this function
     has no effect and no wrapping/transform occurs.  So in production,
     it's as if the report has been asserted out.
-    
+
     Parameters::
     types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
             This allows you to specify certain useful bits of info.
@@ -3334,7 +2038,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                         this function.
             timeStamp:  Adds the current frame time to the output.
             deltaStamp: Adds the current AI synched frame time to
-                        the output 
+                        the output
             frameCount: Adds the current frame count to the output.
                         Usually cleaner than the timeStamp output.
             avLocation: Adds the localAvatar's network location
@@ -3342,7 +2046,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             interests:  Prints the current interest state after the
                         report.
             stackTrace: Prints a stack trace after the report.
-            
+
     prefix: Optional string to prepend to output, just before the function.
             Allows for easy grepping and is useful when merging AI/Client
             reports into a single file.
@@ -3350,26 +2054,26 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     xform:  Optional callback that accepts a single parameter: argument 0 to
             the decorated function. (assumed to be 'self')
             It should return a value to be inserted into the report output string.
-            
+
     notifyFunc: A notify function such as info, debug, warning, etc.
-                By default the report will be printed to stdout. This 
+                By default the report will be printed to stdout. This
                 will allow you send the report to a designated 'notify'
                 output.
-                
+
     dConfigParam: A list of Config.prc string variables.
                   By default the report will always print.  If you
                   specify this param, it will only print if one of the
                   specified config strings resolve to True.
     """
 
-    
+
     def indent(str):
         global __report_indent
         return ' '*__report_indent+str
-    
+
     def decorator(f):
         return f
-    
+
     try:
         if not (__dev__ or config.GetBool('force-reports', 0)):
             return decorator
@@ -3389,10 +2093,10 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             dConfigParamList = [param for param in dConfigParams \
                                 if config.GetBool('want-%s-report' % (param,), 0)]
-            
+
             doPrint = bool(dConfigParamList)
             pass
-        
+
         if not doPrint:
             return decorator
 
@@ -3402,17 +2106,17 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         else:
             prefixes = set()
             pass
-        
+
         for param in dConfigParamList:
             prefix = config.GetString('prefix-%s-report' % (param,), '')
             if prefix:
                 prefixes.add(prefix)
                 pass
             pass
-        
+
     except NameError,e:
         return decorator
-    
+
     from direct.distributed.ClockDelta import globalClockDelta
 
     def decorator(f):
@@ -3425,12 +2129,12 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             if 'args' in types:
                 rArgs += [repr(x)+', ' for x in args[1:]] + \
                          [ x + ' = ' + '%s, ' % repr(y) for x,y in kwargs.items()]
-            
+
             if not rArgs:
                 rArgs = '()'
             else:
                 rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
-                
+
 
             outStr = '%s%s' % (f.func_name, rArgs)
 
@@ -3441,16 +2145,16 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             if 'module' in types:
                 outStr = '%s {M:%s}' % (outStr, f.__module__.split('.')[-1])
-                
+
             if 'frameCount' in types:
                 outStr = '%-8d : %s' % (globalClock.getFrameCount(), outStr)
-                
+
             if 'timeStamp' in types:
                 outStr = '%-8.3f : %s' % (globalClock.getFrameTime(), outStr)
 
             if 'deltaStamp' in types:
                 outStr = '%-8.2f : %s' % (globalClock.getRealTime() - \
-                                         globalClockDelta.delta, outStr)                
+                                         globalClockDelta.delta, outStr)
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
 
@@ -3472,10 +2176,10 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             if 'interests' in types:
                 base.cr.printInterestSets()
-                    
+
             if 'stackTrace' in types:
                 print StackTrace()
-                
+
             global __report_indent
             rVal = None
             try:
@@ -3530,7 +2234,7 @@ def exceptionLogged(append=True):
         def nullDecorator(f):
             return f
         return nullDecorator
-    
+
     def _decoratorFunc(f, append=append):
         global exceptionLoggedNotify
         if exceptionLoggedNotify is None:
@@ -3650,11 +2354,11 @@ class HotkeyBreaker:
             breakKeys = (breakKeys,)
         for key in breakKeys:
             self.addBreakKey(key)
-        
+
     def addBreakKey(self,breakKey):
         if __dev__:
             self.do.accept(breakKey,self.breakFunc,extraArgs = [breakKey])
-        
+
     def removeBreakKey(self,breakKey):
         if __dev__:
             self.do.ignore(breakKey)
@@ -3741,7 +2445,7 @@ def flywheel(*args, **kArgs):
     """
     >>> for i in flywheel([1,2,3], countList=[10, 5, 1]):
     ...   print i,
-    ... 
+    ...
     1 2 3 1 2 1 2 1 2 1 2 1 1 1 1 1
     """
     for flywheel in makeFlywheelGen(*args, **kArgs):
@@ -3777,9 +2481,9 @@ if __debug__ and __name__ == '__main__':
     assert obj2count[1] == 1 * 3
     assert obj2count[2] == 2 * 3
     assert obj2count[3] == 3 * 3
-    assert obj2count[4] == 4 * 3                  
+    assert obj2count[4] == 4 * 3
 
-def quickProfile(name="unnamed"):    
+def quickProfile(name="unnamed"):
     import pstats
     def profileDecorator(f):
         if(not config.GetBool("use-profiler",0)):
@@ -3809,7 +2513,7 @@ def quickProfile(name="unnamed"):
                 s.strip_dirs()
                 s.sort_stats("cumulative")
                 base.stats[name].append(s)
-                    
+
         _profiled.__doc__ = f.__doc__
         return _profiled
     return profileDecorator
@@ -3848,11 +2552,11 @@ class MiniLog:
     def __str__(self):
         return '%s\nMiniLog: %s\n%s\n%s\n%s' % \
                ('*'*50, self.name, '-'*50, '\n'.join(self.lines), '*'*50)
-    
+
     def enterFunction(self, funcName, *args, **kw):
         rArgs = [repr(x)+', ' for x in args] + \
                 [ x + ' = ' + '%s, ' % repr(y) for x,y in kw.items()]
-            
+
         if not rArgs:
             rArgs = '()'
         else:
@@ -3863,7 +2567,7 @@ class MiniLog:
         self.indent += 1
 
         return line
-    
+
     def exitFunction(self):
         self.indent -= 1
         return self.indent
@@ -3871,7 +2575,7 @@ class MiniLog:
     def appendFunctionCall(self, line):
         self.lines.append(' '*(self.indent*2) + line)
         return line
-    
+
     def appendLine(self, line):
         self.lines.append(' '*(self.indent*2) + '<< ' + line + ' >>')
         return line
@@ -3909,12 +2613,12 @@ class HierarchyException(Exception):
 
     def __repr__(self):
         return 'HierarchyException(%s)' % (self.owner, )
-    
+
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
     global Functor
-    from pandac.PandaModules import getConfigShowbase
-    config = getConfigShowbase()
+    from panda3d.direct import get_config_showbase
+    config = get_config_showbase()
     # off by default, very slow
     if __dev__ and config.GetBool('record-functor-creation-stacks', 0):
         if not hasattr(Functor, '_functorCreationStacksRecorded'):
@@ -4059,7 +2763,7 @@ def setupPdb():
     globalPdb = pandaPdb()
     globalPdb.reset()
     sys.settrace(globalPdb.trace_dispatch)
-    
+
 def pandaTrace():
     if __dev__:
         if not globalPdb:
@@ -4074,12 +2778,12 @@ packageMap = {
     "otp":"$OTP",
     "pirates":"$PIRATES",
 }
-    
+
 
 #assuming . dereferncing for nice linking to imports
 def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
     if __dev__:
-        from pandac.PandaModules import Filename
+        from panda3d.core import Filename
         if not globalPdb:
             setupPdb()
         dirs = dotpath.split(".")
@@ -4089,7 +2793,7 @@ def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
             filename="%s\\%s"%(filename,d)
         print filename
         globalPdb.set_break(filename+".py", linenum, temporary, cond)
-            
+
 class Default:
     # represents 'use the default value'
     # useful for keyword arguments to virtual methods
@@ -4098,7 +2802,7 @@ class Default:
 superLogFile = None
 def startSuperLog(customFunction = None):
     global superLogFile
-    
+
     if(not superLogFile):
         superLogFile = open("c:\\temp\\superLog.txt", "w")
         def trace_dispatch(a,b,c):
@@ -4109,7 +2813,7 @@ def startSuperLog(customFunction = None):
                 if '__builtins__' in vars:
                     del vars['__builtins__']
                 for i in vars:
-                    vars[i] = safeReprTypeOnFail(vars[i]) 
+                    vars[i] = safeReprTypeOnFail(vars[i])
 
                 if customFunction:
                     superLogFile.write( "before = %s\n"%customFunction())
@@ -4119,18 +2823,18 @@ def startSuperLog(customFunction = None):
                 if customFunction:
                     superLogFile.write( "after = %s\n"%customFunction())
 
-        
+
 
                 return trace_dispatch
         sys.settrace(trace_dispatch)
-      
+
 def endSuperLog():
     global superLogFile
     if(superLogFile):
         sys.settrace(None)
         superLogFile.close()
         superLogFile = None
-    
+
 def isInteger(n):
     return type(n) in (types.IntType, types.LongType)
 
@@ -4199,51 +2903,6 @@ if __debug__ and __name__ == '__main__':
     assert unescapeHtmlString('as%32df') == 'as2df'
     assert unescapeHtmlString('asdf%32') == 'asdf2'
 
-def repeatableRepr(obj):
-    if type(obj) is types.DictType:
-        keys = obj.keys()
-        keys.sort()
-        s = '{'
-        for i in xrange(len(keys)):
-            key = keys[i]
-            s += repeatableRepr(key)
-            s += ': '
-            s += repeatableRepr(obj[key])
-            if i < (len(keys)-1):
-                s += ', '
-        s += '}'
-        return s
-    elif type(obj) is type(set()):
-        l = []
-        for item in obj:
-            l.append(item)
-        l.sort()
-        return repeatableRepr(l)
-    return repr(obj)
-
-if __debug__ and __name__ == '__main__':
-    assert repeatableRepr({1: 'a', 2: 'b'}) == repeatableRepr({2: 'b', 1: 'a'})
-    assert repeatableRepr(set([1,2,3])) == repeatableRepr(set([3,2,1]))
-
-#set up bpdb
-bpdb = BpDb.BpDb()
-def bpdbGetEnabled():
-    enabled = True
-    try:
-        enabled = __dev__
-        enabled = ConfigVariableBool('force-breakpoints', enabled).getValue()
-    finally:
-        return enabled
-bpdb.setEnabledCallback(bpdbGetEnabled)
-bpdb.setConfigCallback(lambda cfg: ConfigVariableBool('want-bp-%s' % (cfg.lower(),), 0).getValue())
-
-def u2ascii(s):
-    # Unicode -> ASCII
-    if type(s) is types.UnicodeType:
-        return unicodedata.normalize('NFKD', s).encode('ascii', 'backslashreplace')
-    else:
-        return str(s)
-
 def unicodeUtf8(s):
     # * -> Unicode UTF-8
     if type(s) is types.UnicodeType:
@@ -4255,76 +2914,6 @@ def encodedUtf8(s):
     # * -> 8-bit-encoded UTF-8
     return unicodeUtf8(s).encode('utf-8')
 
-class PriorityCallbacks:
-    """ manage a set of prioritized callbacks, and allow them to be invoked in order of priority """
-    def __init__(self):
-        self._callbacks = []
-
-    def clear(self):
-        while self._callbacks:
-            self._callbacks.pop()
-
-    def add(self, callback, priority=None):
-        if priority is None:
-            priority = 0
-        item = (priority, callback)
-        bisect.insort(self._callbacks, item)
-        return item
-
-    def remove(self, item):
-        self._callbacks.pop(bisect.bisect_left(self._callbacks, item))
-
-    def __call__(self):
-        for priority, callback in self._callbacks:
-            callback()
-
-if __debug__ and __name__ == '__main__':
-    l = []
-    def a(l=l):
-        l.append('a')
-    def b(l=l):
-        l.append('b')
-    def c(l=l):
-        l.append('c')
-    pc = PriorityCallbacks()
-    pc.add(a)
-    pc()
-    assert l == ['a']
-    while len(l):
-        l.pop()
-    bItem = pc.add(b)
-    pc()
-    assert 'a' in l
-    assert 'b' in l
-    assert len(l) == 2
-    while len(l):
-        l.pop()
-    pc.remove(bItem)
-    pc()
-    assert l == ['a']
-    while len(l):
-        l.pop()
-    pc.add(c, 2)
-    bItem = pc.add(b, 10)
-    pc()
-    assert l == ['a', 'c', 'b']
-    while len(l):
-        l.pop()
-    pc.remove(bItem)
-    pc()
-    assert l == ['a', 'c']
-    while len(l):
-        l.pop()
-    pc.clear()
-    pc()
-    assert len(l) == 0
-    del l
-    del a
-    del b
-    del c
-    del pc
-    del bItem
-
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -4333,21 +2922,15 @@ __builtin__.Enum = Enum
 __builtin__.SerialNumGen = SerialNumGen
 __builtin__.SerialMaskedGen = SerialMaskedGen
 __builtin__.ScratchPad = ScratchPad
-__builtin__.DestructiveScratchPad = DestructiveScratchPad
 __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
-__builtin__.set_trace = set_trace
-__builtin__.setTrace = setTrace
-__builtin__.pm = pm
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
 __builtin__.bound = bound
 __builtin__.clamp = clamp
 __builtin__.lerp = lerp
-__builtin__.notNone = notNone
-__builtin__.clampScalar = clampScalar
 __builtin__.makeList = makeList
 __builtin__.makeTuple = makeTuple
 __builtin__.printStack = printStack
@@ -4357,8 +2940,6 @@ __builtin__.DelayedCall = DelayedCall
 __builtin__.DelayedFunctor = DelayedFunctor
 __builtin__.FrameDelayedCall = FrameDelayedCall
 __builtin__.SubframeCall = SubframeCall
-__builtin__.ArgumentEater = ArgumentEater
-__builtin__.ClassTree = ClassTree
 __builtin__.invertDict = invertDict
 __builtin__.invertDictLossless = invertDictLossless
 __builtin__.getBase = getBase
@@ -4376,7 +2957,6 @@ __builtin__.MiniLog = MiniLog
 __builtin__.MiniLogSentry = MiniLogSentry
 __builtin__.logBlock = logBlock
 __builtin__.HierarchyException = HierarchyException
-__builtin__.pdir = pdir
 __builtin__.deeptype = deeptype
 __builtin__.Default = Default
 __builtin__.isInteger = isInteger
@@ -4384,8 +2964,5 @@ __builtin__.configIsToday = configIsToday
 __builtin__.typeName = typeName
 __builtin__.safeTypeName = safeTypeName
 __builtin__.histogramDict = histogramDict
-__builtin__.repeatableRepr = repeatableRepr
-__builtin__.bpdb = bpdb
-__builtin__.u2ascii = u2ascii
 __builtin__.unicodeUtf8 = unicodeUtf8
 __builtin__.encodedUtf8 = encodedUtf8

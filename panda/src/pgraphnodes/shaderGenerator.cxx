@@ -53,8 +53,8 @@ TypeHandle ShaderGenerator::_type_handle;
 //               which the shader generator belongs.
 ////////////////////////////////////////////////////////////////////
 ShaderGenerator::
-ShaderGenerator(PT(GraphicsStateGuardianBase) gsg, PT(GraphicsOutputBase) host) :
-  _gsg (gsg), _host (host) {
+ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
+  _gsg(gsg), _host(host) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ clear_analysis() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
-  PT(Shader) shader = Shader::make(txt);
+  PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
   CPT(RenderAttrib) shattr = ShaderAttrib::make();
   shattr = DCAST(ShaderAttrib, shattr)->set_shader(shader);
   if (_lighting) {
@@ -566,7 +566,7 @@ update_shadow_buffer(NodePath light_np) {
   }
 
   // See if we already have a buffer. If not, create one.
-  PT(Texture) tex;
+  Texture *tex;
   if (light->_sbuffers.count(_gsg) == 0) {
     // Nope, the light doesn't have a buffer for our GSG. Make one.
     tex = _gsg->make_shadow_buffer(light_np, _host);
@@ -612,7 +612,7 @@ update_shadow_buffer(NodePath light_np) {
 //               - omit attenuation calculations if attenuation off
 //
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderGenerator::
+CPT(ShaderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs) {
   analyze_renderstate(rs);
   reset_register_allocator();
@@ -1462,7 +1462,7 @@ synthesize_shader(const RenderState *rs) {
   }
   clear_analysis();
   reset_register_allocator();
-  return shattr;
+  return DCAST(ShaderAttrib, shattr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1636,4 +1636,3 @@ texture_type_as_string(Texture::TextureType ttype) {
       return "2D";
   }
 }
-

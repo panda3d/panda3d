@@ -27,8 +27,7 @@ INLINE bool CLP(CgShaderContext)::
 valid() {
   if (_shader->get_error_flag()) return false;
   if (_shader->get_language() != Shader::SL_Cg) return false;
-  if (_cg_context) return true;
-  return false;
+  return (_cg_program != 0);
 }
 
 ////////////////////////////////////////////////////////////////////

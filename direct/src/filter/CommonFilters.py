@@ -199,7 +199,7 @@ class CommonFilters:
                 self.ssao[0].setShaderInput("depth", self.textures["depth"])
                 self.ssao[0].setShaderInput("normal", self.textures["aux"])
                 self.ssao[0].setShaderInput("random", loader.loadTexture("maps/random.rgb"))
-                self.ssao[0].setShader(Shader.make(SSAO_BODY % configuration["AmbientOcclusion"].numsamples))
+                self.ssao[0].setShader(Shader.make(SSAO_BODY % configuration["AmbientOcclusion"].numsamples, Shader.SL_Cg))
                 self.ssao[1].setShaderInput("src", ssao0)
                 self.ssao[1].setShader(self.loadShader("filter-blurx.sha"))
                 self.ssao[2].setShaderInput("src", ssao1)
@@ -339,7 +339,7 @@ class CommonFilters:
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
             
-            self.finalQuad.setShader(Shader.make(text))
+            self.finalQuad.setShader(Shader.make(text, Shader.SL_Cg))
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
             

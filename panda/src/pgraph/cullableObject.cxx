@@ -38,7 +38,6 @@ PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
 PStatCollector CullableObject::_munge_sprites_prims_pcollector("*:Munge:Sprites:Prims");
-PStatCollector CullableObject::_munge_light_vector_pcollector("*:Munge:Light Vector");
 PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
@@ -80,7 +79,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
 
       geom_rendering = geom_reader.get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
-      geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
+      geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
 
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
@@ -123,23 +122,6 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       }
     }
 
-    bool cpu_animated = false;
-
-    if (unsupported_bits & Geom::GR_texcoord_light_vector) {
-      // If we have to compute the light vector, we have to animate
-      // the vertices in the CPU--and we have to do it before we call
-      // munge_geom(), which might lose the tangent and binormal.
-      CPT(GeomVertexData) animated_vertices =
-        _munged_data->animate_vertices(force, current_thread);
-      if (animated_vertices != _munged_data) {
-        cpu_animated = true;
-        swap(_munged_data, animated_vertices);
-      }
-      if (!munge_texcoord_light_vector(traverser, force)) {
-        return false;
-      }
-    }
-
     // Now invoke the munger to ensure the resulting geometry is in
     // a GSG-friendly form.
     if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
@@ -150,17 +132,17 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     DCAST_INTO_R(state_munger, munger, false);
     _state = state_munger->munge_state(_state);
 
-    if (!cpu_animated) {
-      // If there is any animation left in the vertex data after it
-      // has been munged--that is, we couldn't arrange to handle the
-      // animation in hardware--then we have to calculate that
-      // animation now.
-      CPT(GeomVertexData) animated_vertices =
-        _munged_data->animate_vertices(force, current_thread);
-      if (animated_vertices != _munged_data) {
-        cpu_animated = true;
-        swap(_munged_data, animated_vertices);
-      }
+    // If there is any animation left in the vertex data after it
+    // has been munged--that is, we couldn't arrange to handle the
+    // animation in hardware--then we have to calculate that
+    // animation now.
+    bool cpu_animated = false;
+
+    CPT(GeomVertexData) animated_vertices =
+      _munged_data->animate_vertices(force, current_thread);
+    if (animated_vertices != _munged_data) {
+      cpu_animated = true;
+      swap(_munged_data, animated_vertices);
     }
 
 #ifndef NDEBUG
@@ -255,7 +237,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     }
   }
 
-  PN_stdfloat point_size = 1.0f;
+  PN_stdfloat point_size = 1;
   bool perspective = false;
   const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
   if (render_mode != (RenderModeAttrib *)NULL) {
@@ -327,11 +309,15 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     }
   }
 
-  const LMatrix4 &modelview = _modelview_transform->get_mat();
+  CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
+  LMatrix4 internal = _internal_transform->get_mat();
+  PN_stdfloat scale = _internal_transform->get_scale()[1];
 
   SceneSetup *scene = traverser->get_scene();
   const Lens *lens = scene->get_lens();
-  const LMatrix4 &projection = lens->get_projection_mat();
+  LMatrix4 projection =
+    LMatrix4::convert_mat(internal_cs, lens->get_coordinate_system()) *
+                                       lens->get_projection_mat();
 
   int viewport_width = scene->get_viewport_width();
   int viewport_height = scene->get_viewport_height();
@@ -342,10 +328,10 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   if (perspective) {
     height_projection =
       LMatrix4::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
-      projection;
+                                          lens->get_projection_mat();
   }
 
-  LMatrix4 render_transform = modelview * projection;
+  LMatrix4 render_transform = internal * projection;
   LMatrix4 inv_render_transform;
   inv_render_transform.invert_from(render_transform);
 
@@ -375,15 +361,15 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     int vi = 0;
     while (!vertex.is_at_end()) {
       // Get the point in eye-space coordinates.
-      LPoint3 eye = modelview.xform_point(vertex.get_data3());
-      points[vi]._eye = eye;
-      points[vi]._dist = gsg->compute_distance_to(points[vi]._eye);
+      LPoint3 eye = internal.xform_point(vertex.get_data3());
+      PN_stdfloat dist = gsg->compute_distance_to(eye);
+      points[vi]._dist = dist;
 
       // The point in clip coordinates.
       LPoint4 p4 = LPoint4(eye[0], eye[1], eye[2], 1.0f) * projection;
 
       if (has_size) {
-        point_size = size.get_data1f();
+        point_size = size.get_data1();
       }
 
       PN_stdfloat scale_y = point_size;
@@ -392,7 +378,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // height in 3-d units.  To arrange that, we need to figure out
         // the appropriate scaling factor based on the current viewport
         // and projection matrix.
-        PN_stdfloat scale = _modelview_transform->get_scale()[1];
         LVector3 height(0.0f, point_size * scale, scale);
         height = height * height_projection;
         scale_y = height[1] * viewport_height;
@@ -400,7 +385,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // We should then divide the radius by the distance from the
         // camera plane, to emulate the glPointParameters() behavior.
         if (!lens->is_orthographic()) {
-          scale_y /= gsg->compute_distance_to(eye);
+          scale_y /= dist;
         }
       }
 
@@ -410,7 +395,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
       PN_stdfloat scale_x = scale_y;
       if (has_aspect_ratio) {
-        scale_x *= aspect_ratio.get_data1f();
+        scale_x *= aspect_ratio.get_data1();
       }
 
       // Define the first two corners based on the scales in X and Y.
@@ -419,7 +404,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
       if (has_rotate) {
         // If we have a rotate factor, apply it to those two corners.
-        PN_stdfloat r = rotate.get_data1f();
+        PN_stdfloat r = rotate.get_data1();
         LMatrix3 mat = LMatrix3::rotate_mat(r);
         c0 = c0 * mat;
         c1 = c1 * mat;
@@ -492,11 +477,9 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   // Determine the format we should use to store the indices.
+  // Don't choose NT_uint8, as Direct3D 9 doesn't support it.
   const GeomVertexArrayFormat *new_prim_format = NULL;
-  if (new_verts < 0xff) {
-    new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint8);
-
-  } else if (new_verts < 0xffff) {
+  if (new_verts < 0xffff) {
     new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
 
   } else {
@@ -595,109 +578,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 #else
   _munged_data = new_data;
 #endif
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_texcoord_light_vector
-//       Access: Private
-//  Description: Generates the vector from each vertex to the
-//               indicated light as a 3-d texture coordinate.
-//
-//               This may replace _geom, _munged_data, and _state.
-////////////////////////////////////////////////////////////////////
-bool CullableObject::
-munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
-  Thread *current_thread = traverser->get_current_thread();
-  PStatTimer timer(_munge_light_vector_pcollector, current_thread);
-
-  if (_net_transform->is_singular()) {
-    // If we're under a singular transform, never mind.
-    return true;
-  }
-
-  if (!_munged_data->has_column(InternalName::get_vertex()) ||
-      !_munged_data->has_column(InternalName::get_normal())) {
-    // No vertex or normal; can't compute light vector.
-    return true;
-  }
-
-  CPT(TexGenAttrib) tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
-  nassertr(tex_gen != (TexGenAttrib *)NULL, false);
-
-  const TexGenAttrib::LightVectors &light_vectors = tex_gen->get_light_vectors();
-  TexGenAttrib::LightVectors::const_iterator lvi;
-  for (lvi = light_vectors.begin();
-       lvi != light_vectors.end();
-       ++lvi) {
-    TextureStage *stage = (*lvi);
-    NodePath light = tex_gen->get_light(stage);
-    if (light.is_empty()) {
-      // If a particular light isn't specified in the TexGenAttrib,
-      // use the most important light in the current state.
-      CPT(RenderAttrib) attrib = _state->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (RenderAttrib *)NULL) {
-        CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
-        light = la->get_most_important_light();
-      }
-    }
-    if (!light.is_empty()) {
-      string source_name = tex_gen->get_source_name(stage);
-      Light *light_obj = light.node()->as_light();
-      nassertr(light_obj != (Light *)NULL, false);
-
-      // Determine the names of the tangent and binormal columns
-      // associated with the stage's texcoord name.
-      PT(InternalName) tangent_name = InternalName::get_tangent_name(source_name);
-      PT(InternalName) binormal_name = InternalName::get_binormal_name(source_name);
-
-      PT(InternalName) texcoord_name = stage->get_texcoord_name();
-
-      if (_munged_data->has_column(tangent_name) &&
-          _munged_data->has_column(binormal_name)) {
-
-        if (!force && !_munged_data->request_resident()) {
-          // The data isn't resident; give up.
-          return false;
-        }
-
-        // Create a new column for the new texcoords.
-        PT(GeomVertexData) new_data = _munged_data->replace_column
-          (texcoord_name, 3, Geom::NT_stdfloat, Geom::C_texcoord);
-        _munged_data = new_data;
-
-        // Remove this TexGen stage from the state, since we're handling
-        // it now.
-        _state = _state->add_attrib(tex_gen->remove_stage(stage));
-
-        // Get the transform from the light to the object.
-        CPT(TransformState) light_transform =
-          _net_transform->invert_compose(light.get_net_transform());
-        const LMatrix4 &light_mat = light_transform->get_mat();
-
-        GeomVertexWriter texcoord(new_data, texcoord_name, current_thread);
-        GeomVertexReader vertex(new_data, InternalName::get_vertex(),
-                                current_thread);
-        GeomVertexReader tangent(new_data, tangent_name, current_thread);
-        GeomVertexReader binormal(new_data, binormal_name, current_thread);
-        GeomVertexReader normal(new_data, InternalName::get_normal(),
-                                current_thread);
-
-        while (!vertex.is_at_end()) {
-          LPoint3 p = vertex.get_data3();
-          LVector3 t = tangent.get_data3();
-          LVector3 b = binormal.get_data3();
-          LVector3 n = normal.get_data3();
-
-          LVector3 lv;
-          if (light_obj->get_vector_to_light(lv, p, light_mat)) {
-            texcoord.add_data3(lv.dot(t), lv.dot(b), lv.dot(n));
-          }
-        }
-      }
-    }
-  }
 
   return true;
 }

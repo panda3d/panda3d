@@ -85,6 +85,7 @@ WindowFramework(PandaFramework *panda_framework) :
   _anim_controls_enabled = false;
   _anim_index = 0;
   _wireframe_enabled = false;
+  _wireframe_filled = false;
   _texture_enabled = true;
   _two_sided_enabled = false;
   _one_sided_reverse_enabled = false;
@@ -358,7 +359,7 @@ get_pixel_2d() {
     PGTop *top = new PGTop("pixel_2d");
     _pixel_2d = get_render_2d().attach_new_node(top);
     _pixel_2d.set_pos(-1, 0, 1);
-  
+
     if (_window->has_size()) {
       int x_size = _window->get_sbs_left_x_size();
       int y_size = _window->get_sbs_left_y_size();
@@ -649,7 +650,7 @@ load_model(const NodePath &parent, Filename filename) {
         // A texture object.  Not exactly an image, but certainly a
         // texture.
         is_image = true;
-        
+
       } else {
         TexturePool *texture_pool = TexturePool::get_global_ptr();
         if (texture_pool->get_texture_type(extension) != NULL) {
@@ -841,7 +842,7 @@ adjust_dimensions() {
     x_size = _window->get_sbs_left_x_size();
     y_size = _window->get_sbs_left_y_size();
   }
-  
+
   if (this_aspect_ratio == 0.0f) {
     // An aspect ratio of 0.0 means to try to infer it.
     this_aspect_ratio = 1.0f;
@@ -938,28 +939,42 @@ split_window(SplitType split_type) {
 //               rendering (false).
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-set_wireframe(bool enable) {
-  if (enable == _wireframe_enabled) {
+set_wireframe(bool enable, bool filled) {
+  if (enable == _wireframe_enabled && filled == _wireframe_filled) {
     return;
   }
 
   NodePath render = get_render();
 
+  if (!_two_sided_enabled) {
+    render.clear_two_sided();
+  }
+
   if (enable) {
-    render.set_render_mode_wireframe(override_priority);
-    render.set_two_sided(true, override_priority);
+    if (filled) {
+      render.set_attrib(RenderModeAttrib::make(
+        RenderModeAttrib::M_filled_wireframe,
+        1.4f, false, LColor(1, 1, 1, .5f)),
+        override_priority);
+      // Darken the scene so that the wireframe is clearly visible,
+      // even when the scene is completely white.
+      render.set_color_scale(LColor(0.7f, 0.7f, 0.7f, 1), override_priority);
+    } else {
+      render.set_render_mode_wireframe(override_priority);
+      render.set_two_sided(true, override_priority);
+      render.clear_color_scale();
+    }
   } else {
     render.clear_render_mode();
-    if (!_two_sided_enabled) {
-      render.clear_two_sided();
-    }
     if (_one_sided_reverse_enabled) {
       CPT(RenderAttrib) attrib = CullFaceAttrib::make_reverse();
       render.node()->set_attrib(attrib);
     }
+    render.clear_color_scale();
   }
 
   _wireframe_enabled = enable;
+  _wireframe_filled = filled;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1281,7 +1296,7 @@ load_image_as_model(const Filename &filename) {
   } else {
     framework_cat.warning()
       << "Texture size is 0 0: " << *tex << "\n";
-    
+
     left   = -scale;
     right  =  scale;
     top    =  scale;
@@ -1310,9 +1325,9 @@ load_image_as_model(const Filename &filename) {
     // Vertices and 3-d texture coordinates.
     vformat = GeomVertexFormat::register_format
       (new GeomVertexArrayFormat
-       (InternalName::get_vertex(), 3, 
+       (InternalName::get_vertex(), 3,
         GeomEnums::NT_stdfloat, GeomEnums::C_point,
-        InternalName::get_texcoord(), 3, 
+        InternalName::get_texcoord(), 3,
         GeomEnums::NT_stdfloat, GeomEnums::C_texcoord));
   }
 
@@ -1327,7 +1342,7 @@ load_image_as_model(const Filename &filename) {
     vertex.add_data3(LVertex::rfu(left, 0.02, bottom));
     vertex.add_data3(LVertex::rfu(right, 0.02, top));
     vertex.add_data3(LVertex::rfu(right, 0.02, bottom));
-    
+
     texcoord.add_data2(0.0f, tex_scale[1]);
     texcoord.add_data2(0.0f, 0.0f);
     texcoord.add_data2(tex_scale[0], tex_scale[1]);

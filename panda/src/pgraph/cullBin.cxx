@@ -108,12 +108,12 @@ ResultGraphBuilder(PandaNode *root_node) :
 ////////////////////////////////////////////////////////////////////
 void CullBin::ResultGraphBuilder::
 add_object(CullableObject *object) {
-  if (_current_transform != object->_modelview_transform ||
+  if (_current_transform != object->_internal_transform ||
       _current_state != object->_state) {
     // Create a new GeomNode to hold the net transform and state.  We
     // choose to create a new GeomNode for each new state, to make it
     // clearer to the observer when the state changes.
-    _current_transform = object->_modelview_transform;
+    _current_transform = object->_internal_transform;
     _current_state = object->_state;
     _current_node = new GeomNode("object_" + format_string(_object_index));
     _root_node->add_child(_current_node);

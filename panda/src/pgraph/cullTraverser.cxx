@@ -252,20 +252,19 @@ end_traverse() {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 draw_bounding_volume(const BoundingVolume *vol,
-                     const TransformState *net_transform,
-                     const TransformState *modelview_transform) const {
+                     const TransformState *internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
 
   if (bounds_viz != (Geom *)NULL) {
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz =
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
-                         net_transform, modelview_transform, get_scene());
+                         internal_transform);
     _cull_handler->record_object(outer_viz, this);
 
     CullableObject *inner_viz =
       new CullableObject(bounds_viz, get_bounds_inner_viz_state(),
-                         net_transform, modelview_transform, get_scene());
+                         internal_transform);
     _cull_handler->record_object(inner_viz, this);
   }
 }
@@ -292,8 +291,7 @@ is_in_view(CullTraverserData &data) {
 void CullTraverser::
 show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
-  CPT(TransformState) net_transform = data.get_net_transform(this);
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
+  CPT(TransformState) internal_transform = data.get_internal_transform(this);
 
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
@@ -302,24 +300,21 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz =
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
-                           net_transform, modelview_transform,
-                           get_scene());
+                           internal_transform);
       _cull_handler->record_object(outer_viz, this);
     }
 
   } else {
-    draw_bounding_volume(node->get_bounds(),
-                         net_transform, modelview_transform);
+    draw_bounding_volume(node->get_bounds(), internal_transform);
 
     if (node->is_geom_node()) {
       // Also show the bounding volumes of included Geoms.
-      net_transform = net_transform->compose(node->get_transform());
-      modelview_transform = modelview_transform->compose(node->get_transform());
+      internal_transform = internal_transform->compose(node->get_transform());
       GeomNode *gnode = DCAST(GeomNode, node);
       int num_geoms = gnode->get_num_geoms();
       for (int i = 0; i < num_geoms; ++i) {
         draw_bounding_volume(gnode->get_geom(i)->get_bounds(),
-                             net_transform, modelview_transform);
+                             internal_transform);
       }
     }
   }

@@ -102,7 +102,7 @@ Options:
      is licensed under.
      Only relevant when generating a graphical installer.
 
-  -O 
+  -O
      Specify this option when generating a graphical installer to omit
      the default checkboxes for "run this program" and "install a
      desktop shortcut" on completion.
@@ -147,7 +147,7 @@ import sys
 import os
 import getopt
 from direct.p3d.DeploymentTools import Standalone, Installer, Icon
-from pandac.PandaModules import Filename, PandaSystem
+from panda3d.core import Filename, PandaSystem
 
 def usage(code, msg = ''):
     if not msg:

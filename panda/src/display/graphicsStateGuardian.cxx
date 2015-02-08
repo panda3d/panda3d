@@ -266,8 +266,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-
-  _shader_generator = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,12 +276,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
-
-  if (_shader_generator) {
-    delete _shader_generator;
-    _shader_generator = 0;
-  }
-
   GeomMunger::unregister_mungers_for_gsg(this);
 }
 
@@ -878,14 +870,14 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
+//  Description: This function will compute the distance to the
 //               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat GraphicsStateGuardian::
 compute_distance_to(const LPoint3 &point) const {
-  switch (_coordinate_system) {
+  switch (_internal_coordinate_system) {
   case CS_zup_right:
     return point[1];
 
@@ -901,7 +893,7 @@ compute_distance_to(const LPoint3 &point) const {
   default:
     gsg_cat.error()
       << "Invalid coordinate system in compute_distance_to: "
-      << (int)_coordinate_system << "\n";
+      << (int)_internal_coordinate_system << "\n";
     return 0.0f;
   }
 }
@@ -1175,6 +1167,31 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
     return &t;
   }
+  case Shader::SMO_light_ambient: {
+    LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
+    const LightAttrib *target_light = (const LightAttrib *)
+      _target_rs->get_attrib_def(LightAttrib::get_class_slot());
+
+    int num_on_lights = target_light->get_num_on_lights();
+    if (num_on_lights == 0) {
+      // There are no lights at all.  This means, to follow the fixed-
+      // function model, we pretend there is an all-white ambient light.
+      t.set_row(3, LVecBase4(1, 1, 1, 1));
+    } else {
+      for (int li = 0; li < num_on_lights; li++) {
+        NodePath light = target_light->get_on_light(li);
+        nassertr(!light.is_empty(), &LMatrix4::zeros_mat());
+        Light *light_obj = light.node()->as_light();
+        nassertr(light_obj != (Light *)NULL, &LMatrix4::zeros_mat());
+
+        if (light_obj->get_type() == AmbientLight::get_class_type()) {
+          cur_ambient_light += light_obj->get_color();
+        }
+      }
+      t.set_row(3, cur_ambient_light);
+    }
+    return &t;
+  }
   case Shader::SMO_texmat_x: {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
     const TextureAttrib *ta = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
@@ -1337,6 +1354,167 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
       get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
       calc_projection_mat(lens)->get_mat();
     return &t;
+  }
+  case Shader::SMO_vec_constant_x_attrib: {
+    // This system is not ideal.  It will be improved in the future.
+    if (_target_shader->has_shader_input(name)) {
+      // There is an input specifying precisely this whole thing, with
+      // dot and all.  Support this, even if only for backward compatibility.
+      const LVecBase4 &data = _target_shader->get_shader_input_vector(name);
+      t = LMatrix4(data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3]);
+      return &t;
+    }
+
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name->get_parent());
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+
+    CPT_InternalName attrib = name->get_basename();
+
+    static const CPT_InternalName IN_ambient("ambient");
+    static const CPT_InternalName IN_diffuse("diffuse");
+    static const CPT_InternalName IN_specular("specular");
+    static const CPT_InternalName IN_position("position");
+    static const CPT_InternalName IN_spotDirection("spotDirection");
+    static const CPT_InternalName IN_spotCutoff("spotCutoff");
+    static const CPT_InternalName IN_spotCosCutoff("spotCosCutoff");
+    static const CPT_InternalName IN_spotExponent("spotExponent");
+    static const CPT_InternalName IN_constantAttenuation("constantAttenuation");
+    static const CPT_InternalName IN_linearAttenuation("linearAttenuation");
+    static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
+
+    if (attrib == IN_ambient) {
+#ifndef NDEBUG
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+#endif
+      // Lights don't currently have an ambient color in Panda3D.
+      // We still have to support the attribute.
+      t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      return &t;
+
+    } else if (attrib == IN_diffuse) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+
+      LColor c = light->get_color();
+      c.componentwise_mult(_light_color_scale);
+      t.set_row(3, c);
+      return &t;
+
+    } else if (attrib == IN_specular) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+      t.set_row(3, light->get_specular_color());
+      return &t;
+
+    } else if (attrib == IN_position) {
+      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+        LVector3 dir = -(light->get_direction() * transform->get_mat());
+        dir *= get_scene()->get_cs_world_transform()->get_mat();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],0);
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+        const LMatrix4 &light_mat = transform->get_mat();
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        t = LMatrix4::translate_mat(pos);
+        return &t;
+      }
+    } else if (attrib == IN_spotDirection) {
+      LightLensNode *light;
+      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      Lens *lens = light->get_lens();
+      nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+      CPT(TransformState) transform =
+        get_scene()->get_cs_world_transform()->compose(
+          np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+      const LMatrix4 &light_mat = transform->get_mat();
+      LVector3 dir = lens->get_view_vector() * light_mat;
+      t.set_row(3, dir);
+      return &t;
+
+    } else if (attrib == IN_spotCutoff) {
+      if (np.node()->is_of_type(Spotlight::get_class_type())) {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        float cutoff = lens->get_hfov() * 0.5f;
+        t.set_row(3, LVecBase4(cutoff));
+        return &t;
+      } else {
+        // Other lights have no cut-off.
+        t.set_row(3, LVecBase4(180));
+        return &t;
+      }
+
+    } else if (attrib == IN_spotCosCutoff) {
+      if (np.node()->is_of_type(Spotlight::get_class_type())) {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        float cutoff = lens->get_hfov() * 0.5f;
+        t.set_row(3, LVecBase4(ccos(deg_2_rad(cutoff))));
+        return &t;
+      } else {
+        // Other lights have no cut-off.
+        t.set_row(3, LVecBase4(-1));
+        return &t;
+      }
+    } else if (attrib == IN_spotExponent) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_exponent()));
+      return &t;
+
+    } else if (attrib == IN_constantAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[0]));
+      return &t;
+
+    } else if (attrib == IN_linearAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[1]));
+      return &t;
+
+    } else if (attrib == IN_quadraticAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[2]));
+      return &t;
+
+    } else {
+      display_cat.error()
+        << "Shader input requests invalid attribute " << *name
+        << " from node " << np << "\n";
+      return &LMatrix4::ident_mat();
+    }
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
@@ -2732,6 +2910,13 @@ close_gsg() {
   Thread *current_thread = Thread::get_current_thread();
   _prepared_objects->begin_frame(this, current_thread);
   _prepared_objects->end_frame(current_thread);
+
+  // We have to clear the list of timer queries, though, otherwise
+  // their destructors will cause a crash when they try to access
+  // the GSG object.
+#ifdef DO_PSTATS
+  _pending_timer_queries.clear();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2971,6 +3156,18 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   light->_sbuffers[this] = sbuffer;
 
   return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::has_extension
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG implements the extension
+//               identified by the given string.  This currently
+//               is only implemented by the OpenGL back-end.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+has_extension(const string &extension) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

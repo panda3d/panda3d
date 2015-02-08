@@ -1,7 +1,6 @@
-from pandac.PandaModules import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
-from pandac.PandaModules import HTTPChannel
-from pandac import PandaModules
-from libpandaexpress import ConfigVariableInt
+from panda3d.core import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
+from panda3d.core import HTTPChannel, ConfigVariableInt
+from panda3d import core
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -49,7 +48,7 @@ class HostInfo:
 
         if hostDir and not isinstance(hostDir, Filename):
             hostDir = Filename.fromOsSpecific(hostDir)
-            
+
         self.hostDir = hostDir
         self.asMirror = asMirror
         self.perPlatform = perPlatform
@@ -175,7 +174,7 @@ class HostInfo:
                         statusString = channel.getStatusString()
                         self.notify.warning("Could not contact download server at %s" % (url,))
                         self.notify.warning("Status code = %s %s" % (statusCode, statusString))
-                                    
+
                 if not rf:
                     self.notify.warning("Unable to download %s" % (url,))
                     try:
@@ -206,7 +205,7 @@ class HostInfo:
                         self.notify.warning("%s" % (str(e),))
                         pass
                     return False
-                    
+
         tempFilename = Filename.temporary('', 'p3d_', '.xml')
         if rf:
             f = open(tempFilename.toOsSpecific(), 'wb')
@@ -278,7 +277,7 @@ class HostInfo:
 
         now = int(time.time())
         return now < self.contentsExpiration and self.hasContentsFile
-        
+
     def readContentsFile(self, tempFilename = None, freshDownload = False):
         """ Reads the contents.xml file for this particular host, once
         it has been downloaded into the indicated temporary file.
@@ -290,7 +289,7 @@ class HostInfo:
         there already.  If tempFilename is not specified, the standard
         filename is read if it is known. """
 
-        if not hasattr(PandaModules, 'TiXmlDocument'):
+        if not hasattr(core, 'TiXmlDocument'):
             return False
 
         if not tempFilename:
@@ -304,7 +303,7 @@ class HostInfo:
 
             tempFilename = Filename(hostDir, 'contents.xml')
 
-        doc = PandaModules.TiXmlDocument(tempFilename.toOsSpecific())
+        doc = core.TiXmlDocument(tempFilename.toOsSpecific())
         if not doc.LoadFile():
             return False
 
@@ -337,12 +336,12 @@ class HostInfo:
                 xcontents.RemoveChild(xorig)
                 xorig = xcontents.FirstChildElement('orig')
 
-            xorig = PandaModules.TiXmlElement('orig')
+            xorig = core.TiXmlElement('orig')
             self.contentsSpec.storeXml(xorig)
             xorig.SetAttribute('expiration', str(self.contentsExpiration))
 
             xcontents.InsertEndChild(xorig)
-            
+
         else:
             # Read the download hash and expiration time from the XML.
             expiration = None
@@ -385,7 +384,7 @@ class HostInfo:
                 perPlatform = int(xpackage.Attribute('per_platform') or '')
             except ValueError:
                 perPlatform = False
-                
+
             package = self.__makePackage(name, platform, version, solo, perPlatform)
             package.descFile = FileSpec()
             package.descFile.loadXml(xpackage)
@@ -418,7 +417,7 @@ class HostInfo:
         """ Looks for the <host> or <alt_host> entry in the
         contents.xml that corresponds to the URL that we actually
         downloaded from. """
-        
+
         xhost = xcontents.FirstChildElement('host')
         while xhost:
             url = xhost.Attribute('url')
@@ -433,7 +432,7 @@ class HostInfo:
                     self.readHostXml(xalthost)
                     return
                 xalthost = xalthost.NextSiblingElement('alt_host')
-            
+
             xhost = xhost.NextSiblingElement('host')
 
     def __findHostXmlForHostDir(self, xcontents):
@@ -442,7 +441,7 @@ class HostInfo:
         contents.xml from.  This is used when reading a contents.xml
         file found on disk, as opposed to downloading it from a
         site. """
-        
+
         xhost = xcontents.FirstChildElement('host')
         while xhost:
             url = xhost.Attribute('url')
@@ -463,7 +462,7 @@ class HostInfo:
                     self.readHostXml(xalthost)
                     return
                 xalthost = xalthost.NextSiblingElement('alt_host')
-            
+
             xhost = xhost.NextSiblingElement('host')
 
     def readHostXml(self, xhost):
@@ -487,7 +486,7 @@ class HostInfo:
                 self.downloadUrlPrefix += '/'
         else:
             self.downloadUrlPrefix = self.hostUrlPrefix
-            
+
         xmirror = xhost.FirstChildElement('mirror')
         while xmirror:
             url = xmirror.Attribute('url')
@@ -611,7 +610,7 @@ class HostInfo:
         the list of packages that were NOT found. """
 
         packages = packages[:]
-        
+
         for key, platforms in self.packages.items():
             for platform, package in platforms.items():
                 if package in packages:

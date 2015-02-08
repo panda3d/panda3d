@@ -386,7 +386,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
 
-  do_calc_tight_bounds(min_point, max_point, found_any,
+  PN_stdfloat sq_radius;
+  do_calc_tight_bounds(min_point, max_point, sq_radius, found_any,
                        vertex_data, got_mat, mat,
                        InternalName::get_vertex(),
                        cdata, current_thread);
@@ -408,6 +409,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 INLINE void Geom::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, Thread *current_thread) const {
+
   calc_tight_bounds(min_point, max_point, found_any,
                     get_vertex_data(current_thread), false,
                     LMatrix4::ident_mat(),
@@ -429,7 +431,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
 
-  do_calc_tight_bounds(min_point, max_point, found_any,
+  PN_stdfloat sq_radius;
+  do_calc_tight_bounds(min_point, max_point, sq_radius, found_any,
                        vertex_data, got_mat, mat,
                        column_name, cdata, current_thread);
 }

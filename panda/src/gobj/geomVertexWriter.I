@@ -51,30 +51,13 @@ GeomVertexWriter(GeomVertexData *vertex_data, Thread *current_thread) :
 //               writer specifically to process the named data type.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const string &name,
+GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
                  Thread *current_thread) :
   _vertex_data(vertex_data),
   _current_thread(current_thread)
 {
   initialize();
-  set_column(name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexWriter::Constructor
-//       Access: Published
-//  Description: Constructs a new writer to process the vertices of
-//               the indicated data object.  This flavor creates the
-//               writer specifically to process the named data type.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, const InternalName *name,
-                 Thread *current_thread) :
-  _vertex_data(vertex_data),
-  _current_thread(current_thread)
-{
-  initialize();
-  set_column(name);
+  set_column(MOVE(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +114,7 @@ GeomVertexWriter(GeomVertexDataPipelineWriter *data_writer,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 GeomVertexWriter(const GeomVertexWriter &copy) :
@@ -152,7 +135,7 @@ GeomVertexWriter(const GeomVertexWriter &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 operator = (const GeomVertexWriter &copy) {
@@ -172,7 +155,7 @@ operator = (const GeomVertexWriter &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexWriter::
 ~GeomVertexWriter() {
@@ -274,24 +257,6 @@ set_column(int column) {
 //  Description: Sets up the writer to use the data type with the
 //               indicated name.
 //
-//               This also resets the write row number to the start
-//               row (the same value passed to a previous call to
-//               set_row(), or 0 if set_row() was never called.)
-//
-//               The return value is true if the data type is valid,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GeomVertexWriter::
-set_column(const string &name) {
-  return set_column(InternalName::make(name));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexWriter::set_column
-//       Access: Published
-//  Description: Sets up the writer to use the data type with the
-//               indicated name.
-//
 //               This also resets the write number to the start row
 //               (the same value passed to a previous call to
 //               set_row(), or 0 if set_row() was never called.)
@@ -300,7 +265,7 @@ set_column(const string &name) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexWriter::
-set_column(const InternalName *name) {
+set_column(CPT_InternalName name) {
   if (_vertex_data != (GeomVertexData *)NULL) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
@@ -539,6 +504,60 @@ set_data4f(const LVecBase4f &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix3f
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix3f(const LMatrix3f &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 3);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_pointer();
+
+  _packer->set_data3f(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data3f(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data3f(pointer, mat.get_row(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix4f
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix4f(const LMatrix4f &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 4);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_pointer();
+
+  _packer->set_data4f(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(2));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(3));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::set_data1d
 //       Access: Published
 //  Description: Sets the write row to a particular 1-component
@@ -638,6 +657,60 @@ INLINE void GeomVertexWriter::
 set_data4d(const LVecBase4d &data) {
   nassertv(has_column());
   _packer->set_data4d(inc_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix3d
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix3d(const LMatrix3d &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 3);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_pointer();
+
+  _packer->set_data3d(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data3d(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data3d(pointer, mat.get_row(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix4d
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix4d(const LMatrix4d &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 4);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_pointer();
+
+  _packer->set_data4d(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(2));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -763,6 +836,44 @@ set_data4(const LVecBase4 &data) {
   set_data4f(data);
 #else
   set_data4d(data);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix3
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix3(const LMatrix3 &mat) {
+#ifndef STDFLOAT_DOUBLE
+  set_matrix3f(mat);
+#else
+  set_matrix3d(mat);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::set_matrix4
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               It is an error for the write row to advance past
+//               the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+set_matrix4(const LMatrix4 &mat) {
+#ifndef STDFLOAT_DOUBLE
+  set_matrix4f(mat);
+#else
+  set_matrix4d(mat);
 #endif
 }
 
@@ -1013,6 +1124,60 @@ add_data4f(const LVecBase4f &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix3f
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix3f(const LMatrix3f &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 3);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_add_pointer();
+
+  _packer->set_data3f(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data3f(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data3f(pointer, mat.get_row(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix4f
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix4f(const LMatrix4f &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 4);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_add_pointer();
+
+  _packer->set_data4f(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(2));
+  pointer += col_stride;
+  _packer->set_data4f(pointer, mat.get_row(3));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::add_data1d
 //       Access: Published
 //  Description: Sets the write row to a particular 1-component
@@ -1112,6 +1277,60 @@ INLINE void GeomVertexWriter::
 add_data4d(const LVecBase4d &data) {
   nassertv(has_column());
   _packer->set_data4d(inc_add_pointer(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix3d
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix3d(const LMatrix3d &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 3);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_add_pointer();
+
+  _packer->set_data3d(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data3d(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data3d(pointer, mat.get_row(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix4d
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix4d(const LMatrix4d &mat) {
+  nassertv(has_column() &&
+           _packer->_column->get_contents() == C_matrix &&
+           _packer->_column->get_num_elements() == 4);
+
+  size_t col_stride = _packer->_column->get_element_stride();
+  unsigned char *pointer = inc_add_pointer();
+
+  _packer->set_data4d(pointer, mat.get_row(0));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(1));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(2));
+  pointer += col_stride;
+  _packer->set_data4d(pointer, mat.get_row(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1237,6 +1456,44 @@ add_data4(const LVecBase4 &data) {
   add_data4f(data);
 #else
   add_data4d(data);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix3
+//       Access: Published
+//  Description: Sets the write row to a 3-by-3 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix3(const LMatrix3 &mat) {
+#ifndef STDFLOAT_DOUBLE
+  add_matrix3f(mat);
+#else
+  add_matrix3d(mat);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_matrix4
+//       Access: Published
+//  Description: Sets the write row to a 4-by-4 matrix, and advances
+//               the write row.  This is a special method that can
+//               only be used on matrix columns.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_matrix4(const LMatrix4 &mat) {
+#ifndef STDFLOAT_DOUBLE
+  add_matrix4f(mat);
+#else
+  add_matrix4d(mat);
 #endif
 }
 

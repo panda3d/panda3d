@@ -123,14 +123,13 @@ render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vect
       << *state << ", translation (" << offset << ")\n";
   }
 
-  CPT(TransformState) net_transform, modelview_transform;
-  net_transform = _net_transform->compose(TransformState::make_pos(offset));
-  modelview_transform = _trav->get_world_transform()->compose(net_transform);
+  CPT(TransformState) internal_transform =
+    _trav->get_scene()->get_cs_world_transform()->compose(
+      _net_transform->compose(TransformState::make_pos(offset)));
 
   CullableObject *object =
     new CullableObject(geom, _net_state->compose(state),
-                       net_transform, modelview_transform,
-                       _trav->get_scene());
+                       internal_transform);
   _trav->get_cull_handler()->record_object(object, _trav);
 }
 

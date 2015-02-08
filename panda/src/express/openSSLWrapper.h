@@ -48,11 +48,14 @@ private:
   OpenSSLWrapper();
   ~OpenSSLWrapper();
 
-public:
+PUBLISHED:
   void clear_certificates();
   int load_certificates(const Filename &filename);
   int load_certificates_from_pem_ram(const char *data, size_t data_size);
   int load_certificates_from_der_ram(const char *data, size_t data_size);
+
+  INLINE int load_certificates_from_pem_ram(const string &data);
+  INLINE int load_certificates_from_der_ram(const string &data);
 
   X509_STORE *get_x509_store();
 

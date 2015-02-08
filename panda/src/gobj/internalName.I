@@ -12,9 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::make
-//       Access: Published, Static
+//       Access: Public, Static
 //  Description: The public interface for constructing an InternalName
 //               pointer.  This will return a new InternalName
 //               representing the indicated name, if this is the first
@@ -30,6 +31,34 @@
 INLINE PT(InternalName) InternalName::
 make(const string &name) {
   return get_root()->append(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::make
+//       Access: Public, Static
+//  Description: This version of make() is defined such as to accept
+//               mostly string literals, which may be string pooled
+//               by the compiler.  This allows us to make an
+//               additional optimization.
+//
+//               This constructor is also used for fixed-size arrays,
+//               since there is no neat way to catch string literals
+//               only.  Presumably people aren't using InternalName
+//               in that way.
+////////////////////////////////////////////////////////////////////
+template<int N>
+INLINE PT(InternalName) InternalName::
+make(const char (&literal)[N]) {
+  LightMutexHolder holder(_literal_table_lock);
+  LiteralTable::const_iterator it = _literal_table.find(literal);
+
+  if (it == _literal_table.end()) {
+    PT(InternalName) name = get_root()->append(literal);
+    _literal_table.insert(LiteralTable::value_type(literal, name));
+    return name;
+  } else {
+    return it->second;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -430,10 +459,147 @@ get_view() {
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::output operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &
 operator << (ostream &out, const InternalName &tcn) {
   tcn.output(out);
   return out;
 }
+
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(const InternalName *ptr) :
+  ConstPointerTo<InternalName>(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(const PointerTo<InternalName> &copy) :
+  ConstPointerTo<InternalName>(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(const ConstPointerTo<InternalName> &copy) :
+  ConstPointerTo<InternalName>(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Conversion Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(const string &name) :
+  ConstPointerTo<InternalName>(InternalName::make(name))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Conversion Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<int N>
+INLINE CPT_InternalName::
+CPT_InternalName(const char (&literal)[N]) :
+  ConstPointerTo<InternalName>(InternalName::make(literal))
+{
+}
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(PointerTo<InternalName> &&from) NOEXCEPT :
+  ConstPointerTo<InternalName>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName::
+CPT_InternalName(ConstPointerTo<InternalName> &&from) NOEXCEPT :
+  ConstPointerTo<InternalName>(move(from))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName &CPT_InternalName::
+operator = (PointerTo<InternalName> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName &CPT_InternalName::
+operator = (ConstPointerTo<InternalName> &&from) NOEXCEPT {
+  this->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Assignment operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName &CPT_InternalName::
+operator = (const To *ptr) {
+  this->reassign((To *)ptr);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Assignment operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName &CPT_InternalName::
+operator = (const PointerTo<InternalName> &copy) {
+  this->reassign((const ConstPointerTo<InternalName> &)copy);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPT_InternalName::Assignment operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT_InternalName &CPT_InternalName::
+operator = (const ConstPointerTo<InternalName> &copy) {
+  this->reassign((const ConstPointerTo<InternalName> &)copy);
+  return *this;
+}
+#endif  // CPPPARSER

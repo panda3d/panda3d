@@ -17,7 +17,7 @@
 #include "cullResult.h"
 #include "config_pgraph.h"
 #include "string_utils.h"
-
+#include "configVariableColor.h"
 
 CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)NULL;
 
@@ -111,24 +111,13 @@ add_bin(const string &name, BinType type, int sort) {
 
 #ifndef NDEBUG
   // Check if there was a flash color configured for this bin name.
-  ConfigVariableDouble flash_bin
+  ConfigVariableColor flash_bin
     ("flash-bin-" + name, "", "", ConfigVariable::F_dynamic);
   if (flash_bin.get_num_words() == 0) {
     def._flash_active = false;
-
-  } else if (flash_bin.get_num_words() == 3) {
-    def._flash_active = true;
-    def._flash_color.set(flash_bin[0], flash_bin[1], flash_bin[2], 1.0f);
-
-  } else if (flash_bin.get_num_words() == 4) {
-    def._flash_active = true;
-    def._flash_color.set(flash_bin[0], flash_bin[1], flash_bin[2], flash_bin[3]);
-
   } else {
-    def._flash_active = false;
-    pgraph_cat.warning()
-      << "Invalid value for flash-bin-" << name << ": "
-      << flash_bin.get_string_value() << "\n";
+    def._flash_active = true;
+    def._flash_color = flash_bin.get_value();
   }
 #endif
 

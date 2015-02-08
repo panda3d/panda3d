@@ -55,11 +55,9 @@ upcall() {
     // to pass any Geoms, however.
     CallbackObject *cbobj = cbnode->get_draw_callback();
     if (cbobj != (CallbackObject *)NULL) {
-      CullableObject *object = 
+      CullableObject *object =
         new CullableObject(NULL, _data._state,
-                           _data.get_net_transform(_trav),
-                           _data.get_modelview_transform(_trav),
-                           _trav->get_scene());
+                           _data.get_internal_transform(_trav));
       object->set_draw_callback(cbobj);
       _trav->get_cull_handler()->record_object(object, _trav);
     }

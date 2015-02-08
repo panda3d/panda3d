@@ -99,7 +99,7 @@ PlaneNode(const PlaneNode &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PlaneNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PlaneNode::
 output(ostream &out) const {
@@ -166,11 +166,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Normally, a PlaneNode is invisible.  But if someone shows it, we
   // will draw a visualization, a nice yellow wireframe.
 
-  CullableObject *plane_viz = 
-    new CullableObject(get_viz(trav, data), data._state, 
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+  CullableObject *plane_viz =
+    new CullableObject(get_viz(trav, data), data._state,
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(plane_viz, trav);
 
   // Now carry on to render our child nodes.
@@ -219,7 +217,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 PT(Geom) PlaneNode::
 get_viz(CullTraverser *trav, CullTraverserData &data) {
   CDLockedReader cdata(_cycler);
-  
+
   // Figure out whether we are looking at the front or the back of the
   // plane.
   const Lens *lens = trav->get_scene()->get_lens();
@@ -273,7 +271,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   static const int num_segs = 10;
   a *= cdataw->_viz_scale / (num_segs * 2);
   b *= cdataw->_viz_scale / (num_segs * 2);
-  
+
   for (int x = -num_segs; x <= num_segs; ++x) {
     vertex.add_data3(plane.project(a * x - b * num_segs));
     vertex.add_data3(plane.project(a * x + b * num_segs));

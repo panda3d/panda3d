@@ -42,7 +42,7 @@ public:
   virtual double get_timestamp() const;
 
   GLuint _index;
-  CLP(GraphicsStateGuardian) *_glgsg;
+  WPT(CLP(GraphicsStateGuardian)) _glgsg;
 
 public:
   static TypeHandle get_class_type() {

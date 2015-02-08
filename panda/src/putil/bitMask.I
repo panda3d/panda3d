@@ -503,7 +503,7 @@ get_next_higher_different_bit(int low_bit) const {
   // Mask out all of the bits below low_bit.  Since we already know
   // that low_bit is 0, we can use (1 << low_bit) instead of (1 <<
   // (low_bit + 1)), which becomes undefined when (low_bit + 1) == 32.
-  w &= ~((1 << low_bit) - 1);
+  w &= ~(((WordType)1 << low_bit) - 1);
 
   if (w == 0) {
     // All higher bits in the word have the same value.  Since every

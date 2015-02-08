@@ -450,6 +450,12 @@ public:
                       int &num_values, NumericType &numeric_type,
                       int &start, int &stride) const;
 
+  bool get_array_info(const InternalName *name,
+                      const GeomVertexArrayDataHandle *&array_reader,
+                      int &num_values, NumericType &numeric_type,
+                      int &start, int &stride, int &divisor,
+                      int &num_elements, int &element_stride) const;
+
   INLINE bool has_vertex() const;
   INLINE bool is_vertex_transformed() const;
   bool get_vertex_info(const GeomVertexArrayDataHandle *&array_reader,

@@ -265,6 +265,13 @@ ConfigVariableBool gl_support_sampler_objects
             "objects.  Set to false if you suspect a bug in the "
             "driver implementation."));
 
+ConfigVariableBool gl_support_shadow_filter
+  ("gl-support-shadow-filter", true,
+   PRC_DESC("Disable this if you suspect a bug in the driver "
+            "implementation of ARB_shadow.  Particularly, older ATI "
+            "cards suffered from a broken implementation of the "
+            "shadow map filtering features."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {

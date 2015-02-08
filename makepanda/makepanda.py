@@ -68,7 +68,7 @@ COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
 UNIVERSAL=False
-HOST_URL="https://runtime.panda3d.org/"
+HOST_URL=None
 global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
@@ -429,10 +429,15 @@ SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
 if (RTDIST and DISTRIBUTOR == "cmu"):
+    HOST_URL = "https://runtime.panda3d.org/"
+
     if (RTDIST_VERSION == "cmu_1.7" and SDK["PYTHONVERSION"] != "python2.6"):
         exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
     elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
         exit("The CMU 1.8 runtime distribution must be built against Python 2.7!")
+
+elif RTDIST and not HOST_URL:
+    exit("You must specify a host URL when building the rtdist!")
 
 ########################################################################
 ##
@@ -970,7 +975,12 @@ def CompileCxx(obj,src,opts):
             if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
                 cmd += " /bigobj"
 
-            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32"
+            cmd += " /Zm300 /DWIN32_VC /DWIN32"
+            if 'EXCEPTIONS' in opts:
+                cmd += " /EHsc"
+            else:
+                cmd += " -D_HAS_EXCEPTIONS=0"
+
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
 
@@ -1134,8 +1144,10 @@ def CompileCxx(obj,src,opts):
             cmd += " -pthread"
 
         if not src.endswith(".c"):
-            # We don't use exceptions.
-            if 'EXCEPTIONS' not in opts:
+            # We don't use exceptions for most modules.
+            if 'EXCEPTIONS' in opts:
+                cmd += " -fexceptions"
+            else:
                 cmd += " -fno-exceptions"
 
             if 'RTTI' not in opts:
@@ -1562,8 +1574,8 @@ def CompileLink(dll, obj, opts):
             CopyFile(new_path, dll)
             oscmd('%s --strip-unneeded %s' % (GetStrip(), BracketNameWithQuotes(new_path)))
 
-        elif (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
-            oscmd(GetStrip() + " -x " + BracketNameWithQuotes(dll))
+        elif (GetOptimizeOption(opts)==4 and GetTarget() == 'linux'):
+            oscmd(GetStrip() + " --strip-unneeded " + BracketNameWithQuotes(dll))
 
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
@@ -2201,7 +2213,8 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         prc_parameters["DEFAULT_PRC_DIR"] = '""'
-        plugin_config["PANDA_PACKAGE_HOST_URL"] = HOST_URL
+        if HOST_URL:
+            plugin_config["PANDA_PACKAGE_HOST_URL"] = HOST_URL
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
         plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
@@ -2411,7 +2424,7 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
     pandaversion_h = pandaversion_h.replace("$COREAPI_VERSION",COREAPI_VERSION)
-    pandaversion_h = pandaversion_h.replace("$HOST_URL",HOST_URL)
+    pandaversion_h = pandaversion_h.replace("$HOST_URL",(HOST_URL or ""))
     if (DISTRIBUTOR == "cmu"):
         pandaversion_h += "\n#define PANDA_OFFICIAL_VERSION\n"
     else:
@@ -3640,14 +3653,14 @@ if (not RUNTIME):
 #
 
 if (PkgSkip("VISION") == 0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
+  OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
 
   TargetAdd('libp3vision.dll', input='p3vision_composite1.obj')
   TargetAdd('libp3vision.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3vision.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
+  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG', 'EXCEPTIONS']
   IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vision.in', opts=['IMOD:panda3d.vision', 'ILIB:libp3vision', 'SRCDIR:panda/src/vision'])
@@ -4681,7 +4694,7 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
-    TargetAdd('p3dpython.exe', opts=['NOSTRIP', 'PYTHON', 'WINUSER'])
+    TargetAdd('p3dpython.exe', opts=['PYTHON', 'WINUSER'])
 
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
@@ -4719,7 +4732,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+      OPTS=['OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
       if GetTarget() == "darwin":
           OPTS += ['GL', 'OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
@@ -4836,7 +4849,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libp3tinyxml.ilb')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
-    TargetAdd('Panda3D.app', opts=['NOSTRIP', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('Panda3D.app', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
   elif (GetTarget() == 'windows'):
     TargetAdd('plugin_standalone_panda3dWinMain.obj', opts=OPTS, input='panda3dWinMain.cxx')
     TargetAdd('panda3dw.exe', input='plugin_standalone_panda3d.obj')
@@ -4899,7 +4912,7 @@ if (RTDIST):
     TargetAdd('p3dembed.exe', input='libp3subprocbuffer.ilb')
   TargetAdd('p3dembed.exe', input='libp3tinyxml.ilb')
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
 
   if GetTarget() == 'windows':
     OPTS.append("P3DEMBEDW")
@@ -4925,7 +4938,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_common.obj')
     TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
-    TargetAdd('p3dembedw.exe', opts=['NOICON', 'NOSTRIP', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
+    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
@@ -6171,11 +6184,11 @@ Description: Runtime binary and browser plugin for the Panda3D Game Engine
 
 """
 
+
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
 # naming for the Python package.
 INSTALLER_SPEC_FILE="""
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 Summary: The Panda3D free 3D engine SDK
 Name: panda3d
 Version: VERSION
@@ -6204,7 +6217,7 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 /usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/%_lib/panda3d
-%{python_sitearch}
+""" + PYTHON_SITEPACKAGES + """
 /usr/include/panda3d
 """
 
@@ -6272,7 +6285,17 @@ def MakeInstallerLinux():
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
     oscmd("mkdir --mode=0755 targetroot")
 
-    if os.path.exists("/usr/bin/dpkg-deb"):
+    dpkg_present = False
+    if os.path.exists("/usr/bin/dpkg-architecture") and os.path.exists("/usr/bin/dpkg-deb"):
+        dpkg_present = True
+    rpmbuild_present = False
+    if os.path.exists("/usr/bin/rpmbuild"):
+        rpmbuild_present = True
+
+    if dpkg_present and rpmbuild_present:
+        print("Warning: both dpkg and rpmbuild present.")
+
+    if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
         lib_dir = GetDebLibDir()
         if RUNTIME:
@@ -6359,7 +6382,7 @@ def MakeInstallerLinux():
             oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
         oscmd("fakeroot dpkg-deb -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
 
-    elif os.path.exists("/usr/bin/rpmbuild"):
+    elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
         if RUNTIME:
             InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=GetOutputDir(), libdir=GetRPMLibDir())

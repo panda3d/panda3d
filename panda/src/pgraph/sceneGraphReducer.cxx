@@ -117,8 +117,8 @@ flatten(PandaNode *root, int combine_siblings_bits) {
       num_pass_nodes += r_flatten(root, child_node, combine_siblings_bits);
     }
 
-    if (combine_siblings_bits != 0 && 
-        root->get_num_children() >= 2 && 
+    if (combine_siblings_bits != 0 &&
+        root->get_num_children() >= 2 &&
         root->safe_to_combine_children()) {
       num_pass_nodes += flatten_siblings(root, combine_siblings_bits);
     }
@@ -381,7 +381,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
             pgraph_cat.spam()
               << "Duplicated " << *child_node << "\n";
           }
-          
+
           new_node->copy_children(child_node);
           node->replace_child(child_node, new_node);
           child_node = new_node;
@@ -416,10 +416,17 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
           int combine_siblings_bits) {
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
-      << "SceneGraphReducer::r_flatten(" << *grandparent_node << ", " 
+      << "SceneGraphReducer::r_flatten(" << *grandparent_node << ", "
       << *parent_node << ", " << hex << combine_siblings_bits << dec
       << ")\n";
   }
+
+  if ((combine_siblings_bits & (CS_geom_node | CS_other | CS_recurse)) != 0) {
+    // Unset CS_within_radius, since we're going to flatten everything
+    // anyway.  This avoids needlessly calculating the bounding volume.
+    combine_siblings_bits &= ~CS_within_radius;
+  }
+
   int num_nodes = 0;
 
   if (!parent_node->safe_to_flatten_below()) {
@@ -428,7 +435,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
         << "Not traversing further; " << *parent_node
         << " doesn't allow flattening below itself.\n";
     }
-    
+
   } else {
     if ((combine_siblings_bits & CS_within_radius) != 0) {
       CPT(BoundingVolume) bv = parent_node->get_bounds();
@@ -462,16 +469,16 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
         num_nodes += r_flatten(parent_node, child_node, combine_siblings_bits);
       }
     }
-    
+
     // Now that the above loop has removed some children, the child
     // list saved above is no longer accurate, so hereafter we must
     // ask the node for its real child list.
-    
+
     // If we have CS_recurse set, then we flatten siblings before
     // trying to flatten children.  Otherwise, we flatten children
     // first, and then flatten siblings, which avoids overly
     // enthusiastic flattening.
-    if ((combine_siblings_bits & CS_recurse) != 0 && 
+    if ((combine_siblings_bits & CS_recurse) != 0 &&
         parent_node->get_num_children() >= 2 &&
         parent_node->safe_to_combine_children()) {
       num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
@@ -482,11 +489,11 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
       // out.
       PT(PandaNode) child_node = parent_node->get_child(0);
       int child_sort = parent_node->get_child_sort(0);
-      
+
       if (consider_child(grandparent_node, parent_node, child_node)) {
         // Ok, do it.
         parent_node->remove_child(child_node);
-        
+
         if (do_flatten_child(grandparent_node, parent_node, child_node)) {
           // Done!
           num_nodes++;
@@ -498,7 +505,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
     }
 
     if ((combine_siblings_bits & CS_recurse) == 0 &&
-        (combine_siblings_bits & ~CS_recurse) != 0 && 
+        (combine_siblings_bits & ~CS_recurse) != 0 &&
         parent_node->get_num_children() >= 2 &&
         parent_node->safe_to_combine_children()) {
       num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
@@ -617,7 +624,7 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
           ++ai2;
 
           if (consider_siblings(parent_node, child1, child2)) {
-            PT(PandaNode) new_node = 
+            PT(PandaNode) new_node =
               do_flatten_siblings(parent_node, child1, child2);
             if (new_node != (PandaNode *)NULL) {
               // We successfully collapsed a node.
@@ -644,7 +651,7 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
 //               node may be removed, false if it should be kept.
 ////////////////////////////////////////////////////////////////////
 bool SceneGraphReducer::
-consider_child(PandaNode *grandparent_node, PandaNode *parent_node, 
+consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
                PandaNode *child_node) {
   if (!parent_node->safe_to_combine() || !child_node->safe_to_combine()) {
     // One or both nodes cannot be safely combined with another node;
@@ -696,7 +703,7 @@ consider_siblings(PandaNode *parent_node, PandaNode *child1,
 //               successfully collapsed, false if we chickened out.
 ////////////////////////////////////////////////////////////////////
 bool SceneGraphReducer::
-do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node, 
+do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
                  PandaNode *child_node) {
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
@@ -707,7 +714,7 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
   if (new_parent == (PandaNode *)NULL) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
-        << "Decided not to collapse " << *parent_node 
+        << "Decided not to collapse " << *parent_node
         << " and " << *child_node << "\n";
     }
     return false;
@@ -820,7 +827,7 @@ r_remove_column(PandaNode *node, const InternalName *column,
       ++num_changed;
     }
   }
-    
+
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
@@ -845,7 +852,7 @@ r_make_compatible_state(PandaNode *node, GeomTransformer &transformer) {
       ++num_changed;
     }
   }
-  
+
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
@@ -890,7 +897,7 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      num_adjusted += 
+      num_adjusted +=
         r_collect_vertex_data(children.get_child(i), collect_bits, new_transformer, format_only);
     }
 
@@ -902,7 +909,7 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
     if (node->is_geom_node()) {
       num_adjusted += transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits, format_only);
     }
-    
+
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
@@ -943,7 +950,7 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
           geom->get_usage_hint() != Geom::UH_static) {
         this_geom_bits |= MN_avoid_dynamic;
       }
-      
+
       if ((nonindexed_bits & this_geom_bits) == 0) {
         // The geom meets the user's qualifications for making
         // nonindexed, so do it.
@@ -956,10 +963,10 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
-    num_changed += 
+    num_changed +=
       r_make_nonindexed(children.get_child(i), nonindexed_bits);
   }
-    
+
   return num_changed;
 }
 

@@ -27,27 +27,28 @@
 #include "clockObject.h"
 #include "config_pgraph.h"
 #include "depthOffsetAttrib.h"
+#include "colorBlendAttrib.h"
 
 TypeHandle CullResult::_type_handle;
 
 // This value is used instead of 1.0 to represent the alpha level of a
 // pixel that is to be considered "opaque" for the purposes of M_dual.
-
+//
 // Ideally, 1.0 is the only correct value for this.  Realistically, we
 // have to fudge it lower for two reasons:
-
+//
 // (1) The modelers tend to paint textures with very slight
 // transparency levels in places that are not intended to be
 // transparent, without realizing it.  These very faint transparency
 // regions are normally (almost) invisible, but when rendered with
 // M_dual they may be revealed as regions of poor alpha sorting.
-
+//
 // (2) There seems to be some problem in DX where, in certain
 // circumstances apparently related to automatic texture management,
 // it spontaneously drops out the bottom two bits of an eight-bit
 // alpha channel, causing a value of 255 to become a value of 252
 // instead.
-
+//
 // We use 256 as the denominator here (instead of, say, 255) because a
 // fractional power of two will have a terminating representation in
 // base 2, and thus will be more likely to have a precise value in
@@ -68,6 +69,10 @@ CullResult(GraphicsStateGuardianBase *gsg,
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
+#endif
+
+#ifndef NDEBUG
+  _show_transparency = show_transparency.get_value();
 #endif
 }
 
@@ -130,17 +135,13 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // M_alpha implies an alpha-write test, so we don't waste time
       // writing 0-valued pixels.
       object->_state = state->compose(get_alpha_state());
-#ifndef NDEBUG
       check_flash_transparency(object->_state, flash_alpha_color);
-#endif
       break;
 
     case TransparencyAttrib::M_binary:
       // M_binary is implemented by explicitly setting the alpha test.
       object->_state = state->compose(get_binary_state());
-#ifndef NDEBUG
       check_flash_transparency(object->_state, flash_binary_color);
-#endif
       break;
 
     case TransparencyAttrib::M_multisample:
@@ -150,9 +151,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       if (!_gsg->get_supports_multisample()) {
         object->_state = state->compose(get_binary_state());
       }
-#ifndef NDEBUG
       check_flash_transparency(object->_state, flash_multisample_color);
-#endif
       break;
 
     case TransparencyAttrib::M_dual:
@@ -192,12 +191,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                 int transparent_bin_index = transparent_part->_state->get_bin_index();
                 CullBin *bin = get_bin(transparent_bin_index);
                 nassertv(bin != (CullBin *)NULL);
-#ifndef NDEBUG
-                if (bin_manager->get_bin_flash_active(transparent_bin_index)) {
-                  do_flash_bin(transparent_part->_state,
-                    bin_manager->get_bin_flash_color(transparent_bin_index));
-                }
-#endif
+                check_flash_bin(transparent_part->_state, bin_manager, transparent_bin_index);
                 bin->add_object(transparent_part, current_thread);
               } else {
                 delete transparent_part;
@@ -225,16 +219,34 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     }
   }
 
+  // Check for a special wireframe setting.
+  const RenderModeAttrib *rmode = (const RenderModeAttrib *)
+    object->_state->get_attrib(RenderModeAttrib::get_class_slot());
+  if (rmode != (const RenderModeAttrib *)NULL) {
+    if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
+      CullableObject *wireframe_part = new CullableObject(*object);
+      wireframe_part->_state = get_wireframe_overlay_state(rmode);
+
+      if (wireframe_part->munge_geom
+          (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
+           traverser, force)) {
+        int wireframe_bin_index = bin_manager->find_bin("fixed");
+        CullBin *bin = get_bin(wireframe_bin_index);
+        nassertv(bin != (CullBin *)NULL);
+        check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
+        bin->add_object(wireframe_part, current_thread);
+      } else {
+        delete wireframe_part;
+      }
+
+      object->_state = object->_state->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled));
+    }
+  }
+
   int bin_index = object->_state->get_bin_index();
   CullBin *bin = get_bin(bin_index);
   nassertv(bin != (CullBin *)NULL);
-
-#ifndef NDEBUG
-  if (bin_manager->get_bin_flash_active(bin_index)) {
-    do_flash_bin(object->_state,
-      bin_manager->get_bin_flash_color(bin_index));
-  }
-#endif
+  check_flash_bin(object->_state, bin_manager, bin_index);
 
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
@@ -410,16 +422,15 @@ get_binary_state() {
   return state;
 }
 
+#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: CullResult::do-flash_bin
+//     Function: CullResult::apply_flash_color
 //       Access: Private
-//  Description: If the user configured flash-bin-binname, then update
-//               the object's state to flash all the geometry in the
-//               bin.
+//  Description: Update the object's state to flash the geometry
+//               with a solid color.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-do_flash_bin(CPT(RenderState) &state, const LColor &flash_color) {
-#ifndef NDEBUG
+apply_flash_color(CPT(RenderState) &state, const LColor &flash_color) {
   int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
   if ((cycle & 1) == 0) {
     state = state->remove_attrib(TextureAttrib::get_class_slot());
@@ -429,32 +440,8 @@ do_flash_bin(CPT(RenderState) &state, const LColor &flash_color) {
     state = state->add_attrib(ColorAttrib::make_flat(flash_color),
                               RenderState::get_max_priority());
   }
+}
 #endif  // NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::check_flash_transparency
-//       Access: Private
-//  Description: If the user configured show-transparency, then
-//               update the object's state to flash the current
-//               geometry with the specified color.
-////////////////////////////////////////////////////////////////////
-void CullResult::
-check_flash_transparency(CPT(RenderState) &state, const LColor &transparency) {
-#ifndef NDEBUG
-  if (show_transparency) {
-    int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
-    if ((cycle & 1) == 0) {
-      state = state->remove_attrib(TextureAttrib::get_class_slot());
-      state = state->remove_attrib(LightAttrib::get_class_slot());
-      state = state->remove_attrib(ColorScaleAttrib::get_class_slot());
-      state = state->remove_attrib(FogAttrib::get_class_slot());
-      state = state->add_attrib(ColorAttrib::make_flat(transparency),
-                                RenderState::get_max_priority());
-    }
-  }
-#endif
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::get_dual_transparent_state
@@ -533,5 +520,24 @@ get_dual_opaque_state() {
 #endif  // NDEBUG
 
   return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_wireframe_overlay_state
+//       Access: Private
+//  Description: Returns a RenderState that renders only the
+//               wireframe part of an M_filled_wireframe model.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_wireframe_overlay_state(const RenderModeAttrib *rmode) {
+  return RenderState::make(
+    DepthOffsetAttrib::make(1, 0, 0.99999f),
+    ColorAttrib::make_flat(rmode->get_wireframe_color()),
+    ColorBlendAttrib::make(ColorBlendAttrib::M_add,
+                           ColorBlendAttrib::O_incoming_alpha,
+                           ColorBlendAttrib::O_one_minus_incoming_alpha),
+    RenderModeAttrib::make(RenderModeAttrib::M_wireframe,
+                           rmode->get_thickness(),
+                           rmode->get_perspective()));
 }
 

@@ -110,7 +110,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   time_t timestamp = bam_file.get_reader()->get_source()->get_timestamp();
 
   PT(PandaNode) node = bam_file.read_node(report_errors);
-  if (node->is_of_type(ModelRoot::get_class_type())) {
+  if (node != (PandaNode *)NULL && node->is_of_type(ModelRoot::get_class_type())) {
     ModelRoot *model_root = DCAST(ModelRoot, node.p());
     model_root->set_fullpath(path);
     model_root->set_timestamp(timestamp);
