@@ -173,6 +173,16 @@ public:
     SMO_frame_time,
     SMO_frame_delta,
 
+    SMO_mat_constant_x_attrib,
+    SMO_vec_constant_x_attrib,
+
+    SMO_light_ambient,
+    SMO_light_source_i_attrib,
+
+    SMO_light_product_i_ambient,
+    SMO_light_product_i_diffuse,
+    SMO_light_product_i_specular,
+
     SMO_INVALID
   };
 
@@ -250,6 +260,7 @@ public:
     SSD_material      = 0x010,
     SSD_shaderinputs  = 0x020,
     SSD_fog           = 0x040,
+    SSD_light         = 0x080,
   };
 
   enum ShaderBug {
@@ -337,13 +348,14 @@ public:
   };
 
   struct ShaderMatSpec {
+    LMatrix4          _cache[2];
+    LMatrix4          _value;
     ShaderArgId       _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
     int               _dep[2];
-    LMatrix4          _cache[2];
-    LMatrix4          _value;
+    int               _index;
     ShaderMatPiece    _piece;
   };
 

@@ -114,6 +114,17 @@ get_flag(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::has_shader_input
+//       Access: Published
+//  Description: Returns true if there is a ShaderInput of the given
+//               name.
+////////////////////////////////////////////////////////////////////
+bool ShaderAttrib::
+has_shader_input(CPT_InternalName id) const {
+  return (_inputs.find(id) != _inputs.end());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::set_shader_input
 //       Access: Published
 //  Description:

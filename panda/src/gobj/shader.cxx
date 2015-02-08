@@ -423,6 +423,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_satten_x) ||
       (inp == SMO_mat_constant_x) ||
       (inp == SMO_vec_constant_x) ||
+      (inp == SMO_vec_constant_x_attrib) ||
       (inp == SMO_clipplane_x) ||
       (inp == SMO_view_x_to_view) ||
       (inp == SMO_view_to_view_x) ||
@@ -433,6 +434,15 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiclip_x_to_view) ||
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
+  }
+  if ((inp == SMO_light_ambient) ||
+      (inp == SMO_light_source_i_attrib)) {
+    dep |= SSD_light;
+  }
+  if ((inp == SMO_light_product_i_ambient) ||
+      (inp == SMO_light_product_i_diffuse) ||
+      (inp == SMO_light_product_i_specular)) {
+    dep |= (SSD_light | SSD_material);
   }
 
   return dep;

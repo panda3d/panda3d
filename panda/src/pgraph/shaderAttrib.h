@@ -98,13 +98,14 @@ PUBLISHED:
   CPT(RenderAttrib) clear_all_shader_inputs() const;
 
   INLINE bool get_flag(int flag) const;
+  INLINE bool has_shader_input(CPT_InternalName id) const;
 
   const Shader *get_shader() const;
   const ShaderInput *get_shader_input(const InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
-  const LVecBase4 &get_shader_input_vector(InternalName *id) const;
+  LVecBase4 get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id) const;
   const SamplerState &get_shader_input_sampler(const InternalName *id) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;

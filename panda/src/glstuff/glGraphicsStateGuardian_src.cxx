@@ -4220,8 +4220,8 @@ issue_memory_barrier(GLbitfield barriers) {
 
   PStatGPUTimer timer(this, _memory_barrier_pcollector);
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug() << "Issuing memory barriers:";
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "Issuing memory barriers:";
   }
 
   _glMemoryBarrier(barriers);
@@ -4230,25 +4230,25 @@ issue_memory_barrier(GLbitfield barriers) {
   // the relevant lists of textures.
   if (barriers & GL_TEXTURE_FETCH_BARRIER_BIT) {
     _textures_needing_fetch_barrier.clear();
-    GLCAT.debug(false) << " texture_fetch";
+    GLCAT.spam(false) << " texture_fetch";
   }
 
   if (barriers & GL_SHADER_IMAGE_ACCESS_BARRIER_BIT) {
     _textures_needing_image_access_barrier.clear();
-    GLCAT.debug(false) << " shader_image_access";
+    GLCAT.spam(false) << " shader_image_access";
   }
 
   if (barriers & GL_TEXTURE_UPDATE_BARRIER_BIT) {
     _textures_needing_update_barrier.clear();
-    GLCAT.debug(false) << " texture_update";
+    GLCAT.spam(false) << " texture_update";
   }
 
   if (barriers & GL_FRAMEBUFFER_BARRIER_BIT) {
     _textures_needing_framebuffer_barrier.clear();
-    GLCAT.debug(false) << " framebuffer";
+    GLCAT.spam(false) << " framebuffer";
   }
 
-  GLCAT.debug(false) << "\n";
+  GLCAT.spam(false) << "\n";
 
   report_my_gl_errors();
 #endif  // OPENGLES
@@ -8989,6 +8989,11 @@ set_state_and_transform(const RenderState *target,
     //PStatGPUTimer timer(this, _draw_set_state_light_pcollector);
     do_issue_light();
     _state_mask.set_bit(light_slot);
+#ifndef OPENGLES_1
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(Shader::SSD_light);
+    }
+#endif
   }
 
   int stencil_slot = StencilAttrib::get_class_slot();

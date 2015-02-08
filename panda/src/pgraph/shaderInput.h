@@ -94,6 +94,7 @@ PUBLISHED:
     M_invalid = 0,
     M_texture,
     M_nodepath,
+    M_vector,
     M_numeric,
     M_texture_sampler,
     M_param

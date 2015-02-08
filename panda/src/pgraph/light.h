@@ -51,6 +51,10 @@ PUBLISHED:
   INLINE const LColor &get_color() const;
   INLINE void set_color(const LColor &color);
 
+  virtual PN_stdfloat get_exponent() const;
+  virtual const LColor &get_specular_color() const;
+  virtual const LVecBase3 &get_attenuation() const;
+
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
   virtual int get_class_priority() const=0;

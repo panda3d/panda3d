@@ -412,6 +412,20 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             s->_mat_spec.push_back(bind);
             continue;
           }
+          if (noprefix == "LightModel.ambient") {
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._piece = Shader::SMP_row3;
+            bind._func = Shader::SMF_first;
+            bind._part[0] = Shader::SMO_light_ambient;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_light;
+            bind._part[1] = Shader::SMO_identity;
+            bind._arg[1] = NULL;
+            bind._dep[1] = Shader::SSD_NONE;
+            s->_mat_spec.push_back(bind);
+            continue;
+          }
           GLCAT.error() << "Unrecognized uniform name '" << param_name_cstr << "'!\n";
           continue;
 
@@ -565,7 +579,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._arg[1] = NULL;
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
-              continue; }
+              continue;
+            }
             case GL_FLOAT_MAT4: {
               Shader::ShaderMatSpec bind;
               bind._id = arg_id;
@@ -578,7 +593,43 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._arg[1] = NULL;
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
-              continue; }
+              continue;
+            }
+            case GL_FLOAT:
+            case GL_FLOAT_VEC2:
+            case GL_FLOAT_VEC3:
+            case GL_FLOAT_VEC4: {
+              PT(InternalName) iname = InternalName::make(param_name);
+              if (iname->get_parent() != InternalName::get_root()) {
+                // It might be something like an attribute of a shader
+                // input, like a light parameter.  It might also just be
+                // a custom struct parameter.  We can't know yet, sadly.
+                Shader::ShaderMatSpec bind;
+                bind._id = arg_id;
+                switch (param_type) {
+                case GL_FLOAT:
+                  bind._piece = Shader::SMP_row3x1;
+                  break;
+                case GL_FLOAT_VEC2:
+                  bind._piece = Shader::SMP_row3x2;
+                  break;
+                case GL_FLOAT_VEC3:
+                  bind._piece = Shader::SMP_row3x3;
+                  break;
+                default:
+                  bind._piece = Shader::SMP_row3;
+                }
+                bind._func = Shader::SMF_first;
+                bind._part[0] = Shader::SMO_vec_constant_x_attrib;
+                bind._arg[0] = iname;
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._part[1] = Shader::SMO_identity;
+                bind._arg[1] = NULL;
+                bind._dep[1] = Shader::SSD_NONE;
+                s->_mat_spec.push_back(bind);
+                continue;
+              } // else fall through
+            }
             case GL_BOOL:
             case GL_BOOL_VEC2:
             case GL_BOOL_VEC3:
@@ -586,11 +637,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_INT:
             case GL_INT_VEC2:
             case GL_INT_VEC3:
-            case GL_INT_VEC4:
-            case GL_FLOAT:
-            case GL_FLOAT_VEC2:
-            case GL_FLOAT_VEC3:
-            case GL_FLOAT_VEC4: {
+            case GL_INT_VEC4: {
               Shader::ShaderPtrSpec bind;
               bind._id = arg_id;
               switch (param_type) {
