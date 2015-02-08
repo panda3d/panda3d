@@ -57,6 +57,9 @@ PUBLISHED:
   INLINE void set_binormal(const LNormald &binormal);
   INLINE void clear_binormal();
 
+  static PT(EggVertexUV) make_average(const EggVertexUV *first,
+                                      const EggVertexUV *second);
+
   void transform(const LMatrix4d &mat);
 
   void write(ostream &out, int indent_level) const;
