@@ -255,7 +255,8 @@ public:
   virtual void clear(DrawableRegion *clearable);
 
   const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4 &t);
+  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                                       LMatrix4 &t, int index);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
