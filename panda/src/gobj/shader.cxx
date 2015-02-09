@@ -424,7 +424,6 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_mat_constant_x) ||
       (inp == SMO_vec_constant_x) ||
       (inp == SMO_vec_constant_x_attrib) ||
-      (inp == SMO_clipplane_x) ||
       (inp == SMO_view_x_to_view) ||
       (inp == SMO_view_to_view_x) ||
       (inp == SMO_apiview_x_to_view) ||
@@ -443,6 +442,10 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_light_product_i_diffuse) ||
       (inp == SMO_light_product_i_specular)) {
     dep |= (SSD_light | SSD_material);
+  }
+  if ((inp == SMO_clipplane_x) ||
+      (inp == SMO_apiview_clipplane_i)) {
+    dep |= SSD_clip_planes;
   }
 
   return dep;

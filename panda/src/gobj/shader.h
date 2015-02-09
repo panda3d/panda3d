@@ -183,6 +183,9 @@ public:
     SMO_light_product_i_diffuse,
     SMO_light_product_i_specular,
 
+    // SMO_clipplane_x is world coords, GLSL needs eye coords
+    SMO_apiview_clipplane_i,
+
     SMO_INVALID
   };
 
@@ -261,6 +264,7 @@ public:
     SSD_shaderinputs  = 0x020,
     SSD_fog           = 0x040,
     SSD_light         = 0x080,
+    SSD_clip_planes   = 0x100,
   };
 
   enum ShaderBug {
