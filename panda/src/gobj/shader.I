@@ -866,7 +866,7 @@ get_filename_from_index(int index, ShaderType type) const {
       return fn;
     }
   } else if (glsl_preprocess && index > 2048 &&
-             (index - 2048) < _included_files.size()) {
+             (index - 2048) < (int)_included_files.size()) {
     return _included_files[index - 2048];
   }
   // Must be a mistake.  Quietly put back the integer.

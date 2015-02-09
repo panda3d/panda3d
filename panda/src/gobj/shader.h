@@ -307,7 +307,7 @@ public:
     void *_ptr;
     ShaderPtrType _type;
     bool _updated;
-    int _size; //number of elements vec3[4]=12
+    size_t _size; //number of elements vec3[4]=12
 
   public:
     INLINE ShaderPtrData();

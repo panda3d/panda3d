@@ -643,7 +643,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
 
     bind._name = InternalName::get_root();
-    for (int i = 1; i < pieces.size(); ++i) {
+    for (size_t i = 1; i < pieces.size(); ++i) {
       bind._name = bind._name->append(pieces[i]);
     }
     _var_spec.push_back(bind);
