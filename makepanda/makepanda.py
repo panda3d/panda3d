@@ -1104,6 +1104,8 @@ def CompileCxx(obj,src,opts):
         arch = GetTargetArch()
 
         if GetTarget() == "android":
+            # Most of the specific optimization flags here were
+            # just copied from the default Android Makefiles.
             cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
             cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
             cmd += ' -ffunction-sections -funwind-tables'
@@ -1157,6 +1159,12 @@ def CompileCxx(obj,src,opts):
 
         if PkgSkip("SSE2") == 0 and not arch.startswith("arm"):
             cmd += " -msse2"
+
+        if optlevel >= 3:
+            cmd += " -ffast-math"
+        if optlevel == 3:
+            # Fast math is nice, but we'd like to see NaN in dev builds.
+            cmd += " -fno-finite-math-only"
 
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
