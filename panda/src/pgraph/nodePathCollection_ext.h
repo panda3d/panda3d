@@ -34,10 +34,8 @@ class Extension<NodePathCollection> : public ExtensionBase<NodePathCollection> {
 public:
   PyObject *__reduce__(PyObject *self) const;
 
-  INLINE PyObject *get_tight_bounds() const;
+  PyObject *get_tight_bounds() const;
 };
-
-#include "nodePathCollection_ext.I"
 
 #endif  // HAVE_PYTHON
 

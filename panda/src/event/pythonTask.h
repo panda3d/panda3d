@@ -25,7 +25,7 @@
 // Description : This class exists to allow association of a Python
 //               function with the AsyncTaskManager.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PIPELINE PythonTask : public AsyncTask {
+class PythonTask : public AsyncTask {
 PUBLISHED:
   PythonTask(PyObject *function = Py_None, const string &name = string());
   virtual ~PythonTask();

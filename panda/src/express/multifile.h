@@ -84,12 +84,12 @@ PUBLISHED:
                         int compression_level);
 
 #ifdef HAVE_OPENSSL
-  class CertRecord {
+  class EXPCL_PANDAEXPRESS CertRecord {
   public:
-    INLINE CertRecord(X509 *cert);
-    INLINE CertRecord(const CertRecord &copy);
-    INLINE ~CertRecord();
-    INLINE void operator = (const CertRecord &other);
+    CertRecord(X509 *cert);
+    CertRecord(const CertRecord &copy);
+    ~CertRecord();
+    void operator = (const CertRecord &other);
     X509 *_cert;
   };
   typedef pvector<CertRecord> CertChain;

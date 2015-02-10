@@ -35,7 +35,6 @@
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
 #include "paramValue.h"
-#include "pythonCallbackObject.h"
 #include "referenceCount.h"
 #include "sparseArray.h"
 #include "typedObject.h"
@@ -216,9 +215,6 @@ init_libputil() {
   ParamVecBase4d::init_type("ParamVecBase4d");
   ParamVecBase4i::init_type("ParamVecBase4i");
   ParamWstring::init_type("ParamWstring");
-#ifdef HAVE_PYTHON
-  PythonCallbackObject::init_type();
-#endif
   QuadBitMaskNative::init_type();
   ReferenceCount::init_type();
   SparseArray::init_type();

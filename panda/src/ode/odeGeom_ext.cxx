@@ -31,19 +31,19 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeBoxGeom;
-//extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeConvexGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeHashSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeCappedCylinderGeom;
-//extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeHeightfieldGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdePlaneGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeRayGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSimpleSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSphereGeom;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeTriMeshGeom;
+extern Dtool_PyTypedObject Dtool_OdeBoxGeom;
+//extern Dtool_PyTypedObject Dtool_OdeConvexGeom;
+extern Dtool_PyTypedObject Dtool_OdeGeom;
+extern Dtool_PyTypedObject Dtool_OdeHashSpace;
+extern Dtool_PyTypedObject Dtool_OdeCappedCylinderGeom;
+//extern Dtool_PyTypedObject Dtool_OdeHeightfieldGeom;
+extern Dtool_PyTypedObject Dtool_OdePlaneGeom;
+extern Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
+extern Dtool_PyTypedObject Dtool_OdeRayGeom;
+extern Dtool_PyTypedObject Dtool_OdeSimpleSpace;
+extern Dtool_PyTypedObject Dtool_OdeSpace;
+extern Dtool_PyTypedObject Dtool_OdeSphereGeom;
+extern Dtool_PyTypedObject Dtool_OdeTriMeshGeom;
 #endif
 
 ////////////////////////////////////////////////////////////////////

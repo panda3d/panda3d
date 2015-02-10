@@ -4,9 +4,6 @@
 #include "graphicsWindow.cxx"
 #include "graphicsWindowProc.cxx"
 #include "graphicsWindowProcCallbackData.cxx"
-#ifdef HAVE_PYTHON
-#include "pythonGraphicsWindowProc.cxx"
-#endif
 #include "graphicsWindowInputDevice.cxx"
 #include "lru.cxx"
 #include "nativeWindowHandle.cxx"

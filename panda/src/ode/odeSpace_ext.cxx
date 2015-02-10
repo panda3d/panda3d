@@ -24,10 +24,10 @@
 #include "odeQuadTreeSpace.h"
 
 #ifndef CPPPARSER
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeHashSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSimpleSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSpace;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
+extern Dtool_PyTypedObject Dtool_OdeHashSpace;
+extern Dtool_PyTypedObject Dtool_OdeSimpleSpace;
+extern Dtool_PyTypedObject Dtool_OdeSpace;
+extern Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
 #endif
 
 PyObject *Extension<OdeSpace>::_python_callback = NULL;

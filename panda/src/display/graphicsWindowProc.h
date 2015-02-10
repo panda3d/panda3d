@@ -31,7 +31,7 @@ class GraphicsWindow;
 // Description : Defines an interface for storing platform-specific
 //               window processor methods.
 ////////////////////////////////////////////////////////////////////
-class GraphicsWindowProc{
+class EXPCL_PANDA_DISPLAY GraphicsWindowProc {
 public:
   GraphicsWindowProc();
 #if defined(__WIN32__) || defined(_WIN32)

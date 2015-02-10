@@ -12,13 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-#ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
-#endif
-
 #ifdef FLOATTYPE_IS_INT
 #if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
@@ -99,6 +92,12 @@ __reduce__(PyObject *self) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
 __getattr__(const string &attr_name) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
+#endif
+
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'w' || *it > 'z') {

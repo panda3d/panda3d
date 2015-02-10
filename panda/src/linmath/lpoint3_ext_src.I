@@ -12,12 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint2);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint3);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint4);
-#endif
-
 #ifdef FLOATTYPE_IS_INT
 #if PY_MAJOR_VERSION >= 3
 #define PY_FROM_FLOATTYPE PyLong_FromLong
@@ -48,6 +42,12 @@ python_repr(ostream &out, const string &class_name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LPoint3)>::
 __getattr__(const string &attr_name) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint2);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint3);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint4);
+#endif
+
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'x' || *it > 'z') {
