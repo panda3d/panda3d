@@ -43,7 +43,7 @@ BamCache() :
   _index_stale_since(0)
 {
   ConfigVariableFilename model_cache_dir
-    ("model-cache-dir", Filename(), 
+    ("model-cache-dir", Filename(),
      PRC_DESC("The full path to a directory, local to this computer, in which "
               "model and texture files will be cached on load.  If a directory "
               "name is specified here, files may be loaded from the cache "
@@ -51,7 +51,7 @@ BamCache() :
               "especially if you are loading egg files instead of bam files, "
               "or if you are loading models from a shared network drive.  "
               "If this is the empty string, no cache will be used."));
-  
+
   ConfigVariableInt model_cache_flush
     ("model-cache-flush", 30,
      PRC_DESC("This is the amount of time, in seconds, between automatic "
@@ -138,7 +138,7 @@ set_root(const Filename &root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCache::lookup
 //       Access: Published
-//  Description: Looks up a file in the cache.  
+//  Description: Looks up a file in the cache.
 //
 //               If the file is cacheable, then regardless of whether
 //               the file is found in the cache or not, this returns a
@@ -163,7 +163,7 @@ lookup(const Filename &source_filename, const string &cache_extension) {
   consider_flush_index();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  
+
   Filename source_pathname(source_filename);
   source_pathname.make_absolute(vfs->get_cwd());
 
@@ -200,7 +200,7 @@ store(BamCacheRecord *record) {
   if (_read_only) {
     return false;
   }
-  
+
   consider_flush_index();
 
 #ifndef NDEBUG
@@ -231,7 +231,7 @@ store(BamCacheRecord *record) {
     emergency_read_only();
     return false;
   }
-  
+
   if (!dout.write_header(_bam_header)) {
     util_cat.error()
       << "Unable to write to " << temp_pathname << "\n";
@@ -247,7 +247,7 @@ store(BamCacheRecord *record) {
       vfs->delete_file(temp_pathname);
       return false;
     }
-    
+
     TypeRegistry *type_registry = TypeRegistry::ptr();
     TypeHandle texture_type = type_registry->find_type("Texture");
     if (record->get_data()->is_of_type(texture_type)) {
@@ -257,14 +257,14 @@ store(BamCacheRecord *record) {
       // Any other kinds of objects write texture references.
       writer.set_file_texture_mode(BamWriter::BTM_fullpath);
     }
-    
+
     if (!writer.write_object(record)) {
       util_cat.error()
         << "Unable to write object to " << temp_pathname << "\n";
       vfs->delete_file(temp_pathname);
       return false;
     }
-    
+
     if (!writer.write_object(record->get_data())) {
       util_cat.error()
         << "Unable to write object data to " << temp_pathname << "\n";
@@ -354,7 +354,7 @@ flush_index() {
       emergency_read_only();
       return;
     }
-    
+
     // Now atomically write the name of this index file to the index
     // reference file.
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -383,6 +383,16 @@ flush_index() {
     read_index();
   }
   check_cache_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::list_index
+//       Access: Published
+//  Description: Writes the contents of the index to standard output.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+list_index(ostream &out, int indent_level) const {
+  _index->write(out, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////

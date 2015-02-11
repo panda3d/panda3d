@@ -6171,7 +6171,7 @@ except:
 #
 ##########################################################################################
 
-def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
+def MakeInstallerNSIS(file, title, installdir):
     if (os.path.isfile(file)):
         os.remove(file)
     elif (os.path.isdir(file)):
@@ -6199,7 +6199,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
 
-    print("Building "+fullname+" installer. This can take up to an hour.")
+    print("Building "+title+" installer. This can take up to an hour.")
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if (os.path.exists("nsis-output.exe")):
@@ -6210,19 +6210,13 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
 
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
-        'NAME'        : fullname,
-        'SMDIRECTORY' : smdirectory,
+        'TITLE'       : title,
         'INSTALLDIR'  : installdir,
         'OUTFILE'     : os.path.join(psource, 'nsis-output.exe'),
         'LICENSE'     : os.path.join(panda, 'LICENSE'),
-        'LANGUAGE'    : "English",
-        'RUNTEXT'     : "Visit the Panda Manual",
-        'IBITMAP'     : "panda-install.bmp",
-        'UBITMAP'     : "panda-install.bmp",
-        'PANDA'       : panda,
+        'BUILT'       : panda,
+        'SOURCE'      : psource,
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
-        'PANDACONF'   : os.path.join(panda, 'etc'),
-        'PSOURCE'     : psource,
         'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
         'REGVIEW'     : regview,
     }
@@ -6236,7 +6230,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         for item in nsis_defs.items():
             cmd += ' -D%s="%s"' % item
 
-    cmd += ' "%s"' % (os.path.join(psource, 'direct', 'src', 'directscripts', 'packpanda.nsi'))
+    cmd += ' "%s"' % (os.path.join(psource, 'makepanda', 'installer.nsi'))
     oscmd(cmd)
     os.rename("nsis-output.exe", file)
 
@@ -6761,14 +6755,14 @@ try:
             if (GetOptimize() <= 2): dbg = "-dbg"
             if GetTargetArch() == 'x64':
                 if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
                 else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
             else:
                 if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
                 else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):
