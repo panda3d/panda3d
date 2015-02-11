@@ -93,17 +93,11 @@ begin_record(const Filename &filename) {
   _user_table_modified = true;
 
   // Tell all of our recorders that they're live now.
-  RecorderTable::Recorders::iterator ri;
-  for (ri = _user_table->_recorders.begin(); 
-       ri != _user_table->_recorders.end(); 
-       ++ri) {
-    RecorderBase *recorder = (*ri).second;
-    recorder->_flags |= RecorderBase::F_recording;
-  }
+  _user_table->set_flags(RecorderBase::F_recording);
 
-  recorder_cat.info() 
+  recorder_cat.info()
     << "Recording session to " << _filename << "\n";
-    
+
   return true;
 }
 
@@ -150,7 +144,7 @@ begin_playback(const Filename &filename) {
   // Start out by reading the RecorderHeader.
   TypedWritable *object = _reader->read_object();
 
-  if (object == (TypedWritable *)NULL || 
+  if (object == (TypedWritable *)NULL ||
       !object->is_of_type(RecorderHeader::get_class_type())) {
     recorder_cat.error()
       << _filename << " does not contain a recorded session.\n";
@@ -176,7 +170,7 @@ begin_playback(const Filename &filename) {
     return false;
   }
 
-  recorder_cat.info() 
+  recorder_cat.info()
     << "Playing back session from " << _filename << "\n";
 
   return true;
@@ -194,26 +188,14 @@ close() {
     _writer = NULL;
 
     // Tell all of our recorders that they're no longer recording.
-    RecorderTable::Recorders::iterator ri;
-    for (ri = _user_table->_recorders.begin(); 
-         ri != _user_table->_recorders.end(); 
-         ++ri) {
-      RecorderBase *recorder = (*ri).second;
-      recorder->_flags &= ~RecorderBase::F_recording;
-    }
+    _user_table->clear_flags(RecorderBase::F_recording);
   }
   if (_reader != (BamReader *)NULL) {
     delete _reader;
     _reader = NULL;
 
     // Tell all of our recorders that they're no longer playing.
-    RecorderTable::Recorders::iterator ri;
-    for (ri = _active_table->_recorders.begin(); 
-         ri != _active_table->_recorders.end(); 
-         ++ri) {
-      RecorderBase *recorder = (*ri).second;
-      recorder->_flags &= ~RecorderBase::F_playing;
-    }
+    _active_table->clear_flags(RecorderBase::F_playing);
   }
   _dout.close();
   _din.close();
@@ -244,7 +226,7 @@ record_frame() {
 
     RecorderFrame data(now, frame, _user_table_modified, _user_table);
     _user_table_modified = false;
-    
+
     _writer->write_object(&data);
   }
 }
@@ -300,27 +282,15 @@ play_frame() {
       if (_next_frame->_table_changed || _user_table_modified) {
         // We're about to change the active table.  Temporarily
         // disable the playing flag on the currently-active recorders.
-        RecorderTable::Recorders::iterator ri;
-        for (ri = _active_table->_recorders.begin(); 
-             ri != _active_table->_recorders.end(); 
-             ++ri) {
-          RecorderBase *recorder = (*ri).second;
-          recorder->_flags &= ~RecorderBase::F_playing;
-        }
-
+        _active_table->clear_flags(RecorderBase::F_playing);
         delete _active_table;
         _active_table = new RecorderTable(*_file_table);
         _active_table->merge_from(*_user_table);
         _user_table_modified = false;
-        
+
         // Now reenable the playing flag on the newly-active
         // recorders.
-        for (ri = _active_table->_recorders.begin(); 
-             ri != _active_table->_recorders.end(); 
-             ++ri) {
-          RecorderBase *recorder = (*ri).second;
-          recorder->_flags |= RecorderBase::F_playing;
-        }
+        _active_table->set_flags(RecorderBase::F_playing);
       }
 
       _next_frame->_table = _active_table;
@@ -353,7 +323,7 @@ RecorderFrame *RecorderController::
 read_frame() {
   TypedWritable *object = _reader->read_object();
 
-  if (object == (TypedWritable *)NULL || 
+  if (object == (TypedWritable *)NULL ||
       !object->is_of_type(RecorderFrame::get_class_type())) {
     return NULL;
   }

@@ -35,6 +35,7 @@ LwoToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert a Lightwave Object file to .egg");
   set_program_description
     ("This program converts Lightwave Object (.lwo) files to egg.  Many "
      "rendering characteristics of Lightwave (like layered shaders, etc.) "

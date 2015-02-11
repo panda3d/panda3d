@@ -21,9 +21,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPReferenceType::
-CPPReferenceType(CPPType *pointing_at) :
+CPPReferenceType(CPPType *pointing_at, ValueCategory vcat) :
   CPPType(CPPFile()),
-  _pointing_at(pointing_at)
+  _pointing_at(pointing_at),
+  _value_category(vcat)
 {
 }
 
@@ -146,8 +147,14 @@ void CPPReferenceType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
-  _pointing_at->output_instance(out, indent_level, scope, complete,
-                                "&" + prename, name);
+
+  if (_value_category == VC_rvalue) {
+    _pointing_at->output_instance(out, indent_level, scope, complete,
+                                  "&&" + prename, name);
+  } else {
+    _pointing_at->output_instance(out, indent_level, scope, complete,
+                                  "&" + prename, name);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +189,8 @@ is_equal(const CPPDeclaration *other) const {
   const CPPReferenceType *ot = ((CPPDeclaration *)other)->as_reference_type();
   assert(ot != NULL);
 
-  return _pointing_at == ot->_pointing_at;
+  return (_pointing_at == ot->_pointing_at) &&
+         (_value_category == ot->_value_category);
 }
 
 
@@ -197,6 +205,10 @@ bool CPPReferenceType::
 is_less(const CPPDeclaration *other) const {
   const CPPReferenceType *ot = ((CPPDeclaration *)other)->as_reference_type();
   assert(ot != NULL);
+
+  if (_value_category != ot->_value_category) {
+    return (_value_category < ot->_value_category);
+  }
 
   return _pointing_at < ot->_pointing_at;
 }

@@ -65,9 +65,16 @@ PUBLISHED:
   INLINE void set_bin_active(int bin_index, bool active);
   INLINE void set_bin_active(const string &name, bool active);
 
+#ifndef NDEBUG
+  INLINE bool get_bin_flash_active(int bin_index) const;
+  INLINE const LColor &get_bin_flash_color(int bin_index) const;
+  INLINE void set_bin_flash_active(int bin_index, bool active);
+  INLINE void set_bin_flash_color(int bin_index, const LColor &color);
+#endif
+
   void write(ostream &out) const;
 
-  static CullBinManager *get_global_ptr();
+  INLINE static CullBinManager *get_global_ptr();
 
 public:
   // This interface is only intended to be used by CullResult.
@@ -77,7 +84,7 @@ public:
   // This defines the factory interface for defining constructors to
   // bin types (the implementations are in the cull directory, not
   // here in pgraph, so we can't call the constructors directly).
-  typedef CullBin *BinConstructor(const string &name, 
+  typedef CullBin *BinConstructor(const string &name,
                                   GraphicsStateGuardianBase *gsg,
                                   const PStatCollector &draw_region_pcollector);
 
@@ -90,13 +97,17 @@ private:
 
   class EXPCL_PANDA_PGRAPH BinDefinition {
   public:
+#ifndef NDEBUG
+    LColorf _flash_color;
+    bool _flash_active;
+#endif
     bool _in_use;
     string _name;
     BinType _type;
     int _sort;
     bool _active;
   };
-  typedef pvector<BinDefinition> BinDefinitions;
+  typedef epvector<BinDefinition> BinDefinitions;
   BinDefinitions _bin_definitions;
 
   class SortBins {

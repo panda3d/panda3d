@@ -21,31 +21,35 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Shader::
 get_filename(const ShaderType &type) const {
-  if (_filename->_separate && type == ST_none) {
+  if (_filename._separate && type != ST_none) {
     switch (type) {
       case ST_vertex:
-        return _filename->_vertex;
+        return _filename._vertex;
         break;
       case ST_fragment:
-        return _filename->_fragment;
+        return _filename._fragment;
         break;
       case ST_geometry:
-        return _filename->_geometry;
+        return _filename._geometry;
         break;
       case ST_tess_control:
-        return _text->_tess_control;
+        return _filename._tess_control;
         break;
       case ST_tess_evaluation:
-        return _text->_tess_evaluation;
+        return _filename._tess_evaluation;
         break;
       case ST_compute:
-        return _text->_compute;
+        return _filename._compute;
         break;
       default:
-        return _filename->_shared;
+        return _filename._shared;
     }
+  } else if (!_filename._shared.empty()) {
+    return _filename._shared;
+
   } else {
-    return _filename->_shared;
+    // Um, better than nothing?
+    return _filename._vertex;
   }
 }
 
@@ -56,32 +60,32 @@ get_filename(const ShaderType &type) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Shader::
 get_text(const ShaderType &type) const {
-  if (_text->_separate) {
-    nassertr(type != ST_none || !_text->_shared.empty(), _text->_shared);
+  if (_text._separate) {
+    nassertr(type != ST_none || !_text._shared.empty(), _text._shared);
     switch (type) {
       case ST_vertex:
-        return _text->_vertex;
+        return _text._vertex;
         break;
       case ST_fragment:
-        return _text->_fragment;
+        return _text._fragment;
         break;
       case ST_geometry:
-        return _text->_geometry;
+        return _text._geometry;
         break;
       case ST_tess_control:
-        return _text->_tess_control;
+        return _text._tess_control;
         break;
       case ST_tess_evaluation:
-        return _text->_tess_evaluation;
+        return _text._tess_evaluation;
         break;
       case ST_compute:
-        return _text->_compute;
+        return _text._compute;
         break;
       default:
-        return _text->_shared;
+        return _text._shared;
     }
   } else {
-    return _text->_shared;
+    return _text._shared;
   }
 }
 
@@ -115,7 +119,7 @@ set_shader_utilization(ShaderUtilization sut) {
 //  Description: This flag returns SUT_none, SUT_basic, or
 //               SUT_advanced and controls the automatic generation
 //               of shaders.  It is initialized from the config
-//               variable of the same name, but it can be 
+//               variable of the same name, but it can be
 //               subsequently adjusted.
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderUtilization Shader::
@@ -154,7 +158,7 @@ get_language() const {
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderCapabilities Constructor
 //  Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderCaps::
 ShaderCaps() {
@@ -164,7 +168,7 @@ ShaderCaps() {
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderCapabilities::operator ==
 //  Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Shader::ShaderCaps::
 operator == (const ShaderCaps &other) const {
@@ -184,10 +188,10 @@ operator == (const ShaderCaps &other) const {
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
-ShaderPtrData() : 
+ShaderPtrData() :
   _ptr(NULL),
   _type(SPT_unknown),
   _updated(true),
@@ -198,7 +202,7 @@ ShaderPtrData() :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_float &ptr):
@@ -213,7 +217,7 @@ ShaderPtrData(const PTA_float &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4f &ptr):
@@ -228,7 +232,7 @@ ShaderPtrData(const PTA_LMatrix4f &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3f &ptr):
@@ -243,7 +247,7 @@ ShaderPtrData(const PTA_LMatrix3f &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4f &ptr):
@@ -258,7 +262,7 @@ ShaderPtrData(const PTA_LVecBase4f &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3f &ptr):
@@ -273,7 +277,7 @@ ShaderPtrData(const PTA_LVecBase3f &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2f &ptr):
@@ -288,7 +292,7 @@ ShaderPtrData(const PTA_LVecBase2f &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4f &vec) :
@@ -306,7 +310,7 @@ ShaderPtrData(const LVecBase4f &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3f &vec) :
@@ -324,7 +328,7 @@ ShaderPtrData(const LVecBase3f &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2f &vec) :
@@ -342,7 +346,7 @@ ShaderPtrData(const LVecBase2f &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4f &mat) :
@@ -360,7 +364,7 @@ ShaderPtrData(const LMatrix4f &mat) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3f &mat) :
@@ -378,7 +382,7 @@ ShaderPtrData(const LMatrix3f &mat) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_double &ptr):
@@ -393,7 +397,7 @@ ShaderPtrData(const PTA_double &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4d &ptr):
@@ -408,7 +412,7 @@ ShaderPtrData(const PTA_LMatrix4d &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3d &ptr):
@@ -423,7 +427,7 @@ ShaderPtrData(const PTA_LMatrix3d &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4d &ptr):
@@ -438,7 +442,7 @@ ShaderPtrData(const PTA_LVecBase4d &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3d &ptr):
@@ -453,7 +457,7 @@ ShaderPtrData(const PTA_LVecBase3d &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2d &ptr):
@@ -468,7 +472,7 @@ ShaderPtrData(const PTA_LVecBase2d &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4d &vec) :
@@ -486,7 +490,7 @@ ShaderPtrData(const LVecBase4d &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3d &vec) :
@@ -504,7 +508,7 @@ ShaderPtrData(const LVecBase3d &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2d &vec) :
@@ -522,7 +526,7 @@ ShaderPtrData(const LVecBase2d &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4d &mat) :
@@ -540,7 +544,7 @@ ShaderPtrData(const LMatrix4d &mat) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3d &mat) :
@@ -558,7 +562,7 @@ ShaderPtrData(const LMatrix3d &mat) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_int &ptr):
@@ -573,7 +577,7 @@ ShaderPtrData(const PTA_int &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4i &ptr):
@@ -588,7 +592,7 @@ ShaderPtrData(const PTA_LVecBase4i &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3i &ptr):
@@ -603,7 +607,7 @@ ShaderPtrData(const PTA_LVecBase3i &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2i &ptr):
@@ -618,7 +622,7 @@ ShaderPtrData(const PTA_LVecBase2i &ptr):
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4i &vec) :
@@ -636,7 +640,7 @@ ShaderPtrData(const LVecBase4i &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3i &vec) :
@@ -654,7 +658,7 @@ ShaderPtrData(const LVecBase3i &vec) :
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderPtrData Constructor
 //  Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2i &vec) :
@@ -753,8 +757,8 @@ ShaderFile(const string &shared) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderFile::
-ShaderFile(const string &vertex, 
-           const string &fragment, 
+ShaderFile(const string &vertex,
+           const string &fragment,
            const string &geometry,
            const string &tess_control,
            const string &tess_evaluation) :
@@ -810,4 +814,63 @@ read_datagram(DatagramIterator &scan) {
   } else {
     _shared = scan.get_string();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderFile::operator <
+//       Access: Public
+//  Description: Ordering operator
+////////////////////////////////////////////////////////////////////
+INLINE bool Shader::ShaderFile::
+operator < (const Shader::ShaderFile &other) const {
+  if (_separate != other._separate) {
+    return (!_separate && other._separate);
+  }
+  if (_shared != other._shared) {
+    return (_shared < other._shared);
+  }
+  if (_vertex != other._vertex) {
+    return (_vertex < other._vertex);
+  }
+  if (_fragment != other._fragment) {
+    return (_fragment < other._fragment);
+  }
+  if (_geometry != other._geometry) {
+    return (_geometry < other._geometry);
+  }
+  if (_tess_control != other._tess_control) {
+    return (_tess_control < other._tess_control);
+  }
+  if (_tess_evaluation != other._tess_evaluation) {
+    return (_tess_evaluation < other._tess_evaluation);
+  }
+  if (_compute != other._compute) {
+    return (_compute < other._compute);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_filename_from_index
+//       Access: Public
+//  Description: Returns the filename of the included shader with
+//               the given source file index (as recorded in the
+//               #line statement in r_preprocess_source).  We use
+//               this to associate error messages with included files.
+////////////////////////////////////////////////////////////////////
+INLINE Filename Shader::
+get_filename_from_index(int index, ShaderType type) const {
+  if (index == 0) {
+    Filename fn = get_filename(type);
+    if (!fn.empty()) {
+      return fn;
+    }
+  } else if (glsl_preprocess && index > 2048 &&
+             (index - 2048) < (int)_included_files.size()) {
+    return _included_files[index - 2048];
+  }
+  // Must be a mistake.  Quietly put back the integer.
+  char str[32];
+  sprintf(str, "%d", index);
+  return Filename(str);
 }

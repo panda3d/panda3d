@@ -34,6 +34,10 @@ using namespace std;
 #define INLINE inline
 #define TYPENAME typename
 #define CONSTEXPR
+#define NOEXCEPT noexcept
+#define FINAL
+#define OVERRIDE
+#define MOVE(x) x
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -120,16 +124,54 @@ typedef ios::seekdir ios_seekdir;
 #define INLINE inline
 #endif
 
+// Determine the availability of C++11 features.
 #if defined(__has_extension) // Clang magic.
-#if __has_extension(cxx_constexpr)
-#define CONSTEXPR constexpr
-#else
-#define CONSTEXPR INLINE
-#endif
+#  if __has_extension(cxx_constexpr)
+#    define CONSTEXPR constexpr
+#  else
+#    define CONSTEXPR INLINE
+#  endif
+#  if __has_extension(cxx_noexcept)
+#    define NOEXCEPT noexcept
+#  else
+#    define NOEXCEPT
+#  endif
+#  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
+#    define USE_MOVE_SEMANTICS
+#    define MOVE(x) move(x)
+#  else
+#    define MOVE(x) x
+#  endif
+#  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
+#    define FINAL final
+#    define OVERRIDE override
+#  else
+#    define FINAL
+#    define OVERRIDE
+#  endif
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
-#define CONSTEXPR constexpr
+// noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
+// GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
+#  define CONSTEXPR constexpr
+#  define NOEXCEPT noexcept
+#  define USE_MOVE_SEMANTICS
+#  define FINAL final
+#  define OVERRIDE override
+#  define MOVE(x) move(x)
+#elif defined(_MSC_VER) && _MSC_VER >= 1600
+// MSVC 2010 has move semantics.  Not much else.
+#  define CONSTEXPR INLINE
+#  define NOEXCEPT throw()
+#  define USE_MOVE_SEMANTICS
+#  define FINAL
+#  define OVERRIDE
+#  define MOVE(x) move(x)
 #else
-#define CONSTEXPR INLINE
+#  define CONSTEXPR INLINE
+#  define NOEXCEPT
+#  define FINAL
+#  define OVERRIDE
+#  define MOVE(x) x
 #endif
 
 #if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
@@ -209,7 +251,7 @@ public:
   TauProfile(void *&tautimer, char *name, char *type, int group, char *group_name) {
     Tau_profile_c_timer(&tautimer, name, type, group, group_name);
     _tautimer = tautimer;
-    TAU_PROFILE_START(_tautimer); 
+    TAU_PROFILE_START(_tautimer);
   }
   ~TauProfile() {
     if (!__tau_shutdown) {
@@ -232,17 +274,6 @@ private:
   Tau_exit(msg);
 
 #endif  // USE_TAU
-
-// Macros from hell.
-#define EXT_METHOD(cl, m) Extension<cl>::m()
-#define EXT_METHOD_ARGS(cl, m, ...) Extension<cl>::m(__VA_ARGS__)
-#define EXT_CONST_METHOD(cl, m) Extension<cl>::m() const
-#define EXT_CONST_METHOD_ARGS(cl, m, ...) Extension<cl>::m(__VA_ARGS__) const
-#define EXT_NESTED_METHOD(cl1, cl2, m) Extension<cl1::cl2>::m()
-#define EXT_NESTED_METHOD_ARGS(cl1, cl2, m, ...) Extension<cl1::cl2>::m(__VA_ARGS__)
-#define EXT_NESTED_CONST_METHOD(cl1, cl2, m) Extension<cl1::cl2>::m() const
-#define EXT_NESTED_CONST_METHOD_ARGS(cl1, cl2, m, ...) Extension<cl1::cl2>::m(__VA_ARGS__) const
-#define CALL_EXT_METHOD(cl, m, obj, ...) invoke_extension(obj).m(__VA_ARGS__)
 
 #endif  //  __cplusplus
 #endif

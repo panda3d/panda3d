@@ -14,7 +14,6 @@
 
 load-display pandagl
 #load-display pandadx9
-#load-display pandadx8
 #load-display pandagles
 #load-display p3tinydisplay
 

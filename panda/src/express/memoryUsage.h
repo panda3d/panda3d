@@ -96,7 +96,7 @@ protected:
 
 private:
   MemoryUsage(const MemoryHook &copy);
-  static MemoryUsage *get_global_ptr();
+  INLINE static MemoryUsage *get_global_ptr();
 
   void ns_record_pointer(ReferenceCount *ptr);
   void ns_update_type(ReferenceCount *ptr, TypeHandle type);

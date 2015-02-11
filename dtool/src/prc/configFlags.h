@@ -39,6 +39,7 @@ PUBLISHED:
     VT_enum,
     VT_search_path,
     VT_int64,
+    VT_color,
   };
 
   enum VariableFlags {
@@ -75,4 +76,3 @@ ostream &operator << (ostream &out, ConfigFlags::ValueType type);
 #include "configFlags.I"
 
 #endif
-

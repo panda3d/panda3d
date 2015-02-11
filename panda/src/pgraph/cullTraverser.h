@@ -27,6 +27,7 @@
 #include "drawMask.h"
 #include "typedReferenceCount.h"
 #include "pStatCollector.h"
+#include "fogAttrib.h"
 
 class GraphicsStateGuardian;
 class PandaNode;
@@ -87,11 +88,12 @@ PUBLISHED:
 
   INLINE static void flush_level();
 
-  void draw_bounding_volume(const BoundingVolume *vol, 
-                            const TransformState *net_transform,
-                            const TransformState *modelview_transform) const;
+  void draw_bounding_volume(const BoundingVolume *vol,
+                            const TransformState *internal_transform) const;
 
 protected:
+  INLINE void do_traverse(CullTraverserData &data);
+
   virtual bool is_in_view(CullTraverserData &data);
 
 public:
@@ -105,7 +107,7 @@ private:
   void show_bounds(CullTraverserData &data, bool tight);
   static PT(Geom) make_bounds_viz(const BoundingVolume *vol);
   PT(Geom) make_tight_bounds_viz(PandaNode *node) const;
-  static LVertex compute_point(const BoundingSphere *sphere, 
+  static LVertex compute_point(const BoundingSphere *sphere,
                                PN_stdfloat latitude, PN_stdfloat longitude);
   static CPT(RenderState) get_bounds_outer_viz_state();
   static CPT(RenderState) get_bounds_inner_viz_state();
@@ -121,12 +123,11 @@ private:
   bool _has_tag_state_key;
   string _tag_state_key;
   CPT(RenderState) _initial_state;
-  bool _depth_offset_decals;
   PT(GeometricBoundingVolume) _view_frustum;
   CullHandler *_cull_handler;
   PortalClipper *_portal_clipper;
   bool _effective_incomplete_render;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -145,9 +146,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+#include "cullTraverserData.h"
+
 #include "cullTraverser.I"
 
 #endif
-
-
-  

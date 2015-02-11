@@ -377,7 +377,10 @@ protected:
 
   int _supports_gamma_calibration;
 
+#ifdef HAVE_CG
+  CGcontext _cg_context;
   static LPDIRECT3DDEVICE9 _cg_device;
+#endif
 
 public:
   virtual TypeHandle get_type() const {

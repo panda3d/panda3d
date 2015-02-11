@@ -40,7 +40,7 @@ protected:
 PUBLISHED:
   virtual ~CallbackGraphicsWindow();
 
-  class WindowCallbackData : public CallbackData {
+  class EXPCL_PANDA_DISPLAY WindowCallbackData : public CallbackData {
   public:
     INLINE WindowCallbackData(CallbackGraphicsWindow *window);
 
@@ -68,8 +68,7 @@ PUBLISHED:
     static TypeHandle _type_handle;
   };
 
-
-  class EventsCallbackData : public WindowCallbackData {
+  class EXPCL_PANDA_DISPLAY EventsCallbackData : public WindowCallbackData {
   public:
     INLINE EventsCallbackData(CallbackGraphicsWindow *window);
 
@@ -94,7 +93,7 @@ PUBLISHED:
     static TypeHandle _type_handle;
   };
 
-  class PropertiesCallbackData : public WindowCallbackData {
+  class EXPCL_PANDA_DISPLAY PropertiesCallbackData : public WindowCallbackData {
   public:
     INLINE PropertiesCallbackData(CallbackGraphicsWindow *window, WindowProperties &properties);
 
@@ -131,7 +130,7 @@ PUBLISHED:
     RCT_end_flip,
   };
 
-  class RenderCallbackData : public WindowCallbackData {
+  class EXPCL_PANDA_DISPLAY RenderCallbackData : public WindowCallbackData {
   public:
     INLINE RenderCallbackData(CallbackGraphicsWindow *window, RenderCallbackType callback_type, FrameMode frame_mode);
 

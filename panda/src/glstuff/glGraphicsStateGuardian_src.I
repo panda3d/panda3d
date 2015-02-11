@@ -172,6 +172,25 @@ maybe_gl_finish() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::has_extension
+//       Access: Published, Final
+//  Description: Returns true if the indicated extension is reported
+//               by the GL system, false otherwise.  The extension
+//               name is case-sensitive.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+has_extension(const string &extension) const {
+  bool has_ext = (_extensions.find(extension) != _extensions.end());
+#ifndef NDEBUG
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "HAS EXT " << extension << " " << has_ext << "\n";
+  }
+#endif
+  return has_ext;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::is_at_least_gl_version
 //       Access: Public
 //  Description: Returns true if we are compiled for mainline OpenGL,

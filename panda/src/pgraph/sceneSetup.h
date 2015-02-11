@@ -74,6 +74,9 @@ PUBLISHED:
   INLINE void set_cs_transform(const TransformState *cs_transform);
   INLINE const TransformState *get_cs_transform() const;
 
+  INLINE void set_cs_world_transform(const TransformState *cs_world_transform);
+  INLINE const TransformState *get_cs_world_transform() const;
+
 private:
   DisplayRegion *_display_region;
   int _viewport_width;
@@ -87,6 +90,7 @@ private:
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _world_transform;
   CPT(TransformState) _cs_transform;
+  CPT(TransformState) _cs_world_transform;
 
 public:
   static TypeHandle get_class_type() {

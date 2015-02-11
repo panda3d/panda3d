@@ -3121,7 +3121,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
                          " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "basic_string<wchar_t>(" +
+        pexpr_string = "std::wstring(" +
           param_name + "_str, " +
           param_name + "_len)";
 
@@ -3140,7 +3140,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
                          " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "&basic_string<wchar_t>(" +
+        pexpr_string = "&std::wstring(" +
           param_name + "_str, " +
           param_name + "_len)";
 
@@ -3169,11 +3169,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         }
 
         if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
-          pexpr_string = "&basic_string<char>(" +
+          pexpr_string = "&std::string(" +
             param_name + "_str, " +
             param_name + "_len)";
         } else {
-          pexpr_string = "basic_string<char>(" +
+          pexpr_string = "std::string(" +
             param_name + "_str, " +
             param_name + "_len)";
         }

@@ -22,7 +22,7 @@ TypeHandle EggVertexAux::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexAux::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexAux::
 EggVertexAux(const string &name, const LVecBase4d &aux) :
@@ -34,7 +34,7 @@ EggVertexAux(const string &name, const LVecBase4d &aux) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexAux::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexAux::
 EggVertexAux(const EggVertexAux &copy) :
@@ -46,7 +46,7 @@ EggVertexAux(const EggVertexAux &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexAux::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexAux &EggVertexAux::
 operator = (const EggVertexAux &copy) {
@@ -59,16 +59,31 @@ operator = (const EggVertexAux &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexAux::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexAux::
 ~EggVertexAux() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexAux::make_average
+//       Access: Published, Static
+//  Description: Creates a new EggVertexAux that contains the
+//               averaged values of the two given objects.  It is
+//               an error if they don't have the same name.
+///////////////////////////////////////////////////////////////////
+PT(EggVertexAux) EggVertexAux::
+make_average(const EggVertexAux *first, const EggVertexAux *second) {
+  nassertr(first->get_name() == second->get_name(), NULL);
+
+  LVecBase4d aux = (first->_aux + second->_aux) / 2;
+  return new EggVertexAux(first->get_name(), aux);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexAux::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggVertexAux::
 write(ostream &out, int indent_level) const {

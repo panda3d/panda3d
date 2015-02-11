@@ -32,6 +32,7 @@ XFileToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert a DirectX .x file to an .egg file");
   set_program_description
     ("This program converts DirectX retained-mode (.x) files to egg.  "
      "Polygon meshes, materials, and textures, as well as skeleton "

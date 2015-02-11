@@ -14,13 +14,12 @@ __all__ = [
     'forceYield', 'considerYield',
     ]
 
-# Import PandaModules as pm, so we don't have any namespace collisions.
-from pandac import PandaModules as pm
+from panda3d import core
 
 # These methods are defined in Panda, and are particularly useful if
 # you may be running in Panda's SIMPLE_THREADS compilation mode.
-forceYield = pm.Thread.forceYield
-considerYield = pm.Thread.considerYield
+forceYield = core.Thread.forceYield
+considerYield = core.Thread.considerYield
 
 class error(StandardError):
     pass
@@ -31,10 +30,10 @@ class LockType:
     provide the described Python lock semantics.  In particular, this
     allows a different thread to release the lock than the one that
     acquired it. """
-    
+
     def __init__(self):
-        self.__lock = pm.Mutex('PythonLock')
-        self.__cvar = pm.ConditionVar(self.__lock)
+        self.__lock = core.Mutex('PythonLock')
+        self.__cvar = core.ConditionVar(self.__lock)
         self.__locked = False
 
     def acquire(self, waitflag = 1):
@@ -44,7 +43,7 @@ class LockType:
                 return False
             while self.__locked:
                 self.__cvar.wait()
-                
+
             self.__locked = True
             return True
 
@@ -56,16 +55,16 @@ class LockType:
         try:
             if not self.__locked:
                 raise error, 'Releasing unheld lock.'
-                
+
             self.__locked = False
             self.__cvar.notify()
 
         finally:
             self.__lock.release()
-        
+
     def locked(self):
         return self.__locked
-    
+
     __enter__ = acquire
 
     def __exit__(self, t, v, tb):
@@ -73,7 +72,7 @@ class LockType:
 
 _threads = {}
 _nextThreadId = 0
-_threadsLock = pm.Mutex('thread._threadsLock')
+_threadsLock = core.Mutex('thread._threadsLock')
 
 def start_new_thread(function, args, kwargs = {}, name = None):
     def threadFunc(threadId, function = function, args = args, kwargs = kwargs):
@@ -94,31 +93,31 @@ def start_new_thread(function, args, kwargs = {}, name = None):
 
         if name is None:
             name = 'PythonThread-%s' % (threadId)
-            
-        thread = pm.PythonThread(threadFunc, [threadId], name, name)
+
+        thread = core.PythonThread(threadFunc, [threadId], name, name)
         thread.setPythonData(threadId)
         _threads[threadId] = (thread, {}, None)
-        
-        thread.start(pm.TPNormal, False)
+
+        thread.start(core.TPNormal, False)
         return threadId
 
     finally:
         _threadsLock.release()
 
 def _add_thread(thread, wrapper):
-    """ Adds the indicated pm.Thread object, with the indicated Python
+    """ Adds the indicated core.Thread object, with the indicated Python
     wrapper, to the thread list.  Returns the new thread ID. """
-    
+
     global _nextThreadId
     _threadsLock.acquire()
     try:
         threadId = _nextThreadId
         _nextThreadId += 1
-            
+
         thread.setPythonData(threadId)
         _threads[threadId] = (thread, {}, wrapper)
         return threadId
-        
+
     finally:
         _threadsLock.release()
 
@@ -130,7 +129,7 @@ def _get_thread_wrapper(thread, wrapperClass):
     threadId = thread.getPythonData()
     if threadId is None:
         # The thread has never been assigned a threadId.  Go assign one.
-        
+
         global _nextThreadId
         _threadsLock.acquire()
         try:
@@ -166,7 +165,7 @@ def _get_thread_locals(thread, i):
     threadId = thread.getPythonData()
     if threadId is None:
         # The thread has never been assigned a threadId.  Go assign one.
-        
+
         global _nextThreadId
         _threadsLock.acquire()
         try:
@@ -195,14 +194,14 @@ def _get_thread_locals(thread, i):
 
 def _remove_thread_id(threadId):
     """ Removes the thread with the indicated ID from the thread list. """
-    
+
     _threadsLock.acquire()
     try:
         thread, locals, wrapper = _threads[threadId]
         assert thread.getPythonData() == threadId
         del _threads[threadId]
         thread.setPythonData(None)
-        
+
     finally:
         _threadsLock.release()
 
@@ -218,7 +217,7 @@ def allocate_lock():
     return LockType()
 
 def get_ident():
-    return pm.Thread.getCurrentThread().this
+    return core.Thread.getCurrentThread().this
 
 def stack_size(size = 0):
     raise error
@@ -244,18 +243,18 @@ class _local(object):
             _threadsLock.release()
 
     def __setattr__(self, key, value):
-        d = _get_thread_locals(pm.Thread.getCurrentThread(), id(self))
+        d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
         d[key] = value
-        
+
 ##     def __getattr__(self, key):
-##         d = _get_thread_locals(pm.Thread.getCurrentThread(), id(self))
+##         d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
 ##         try:
 ##             return d[key]
 ##         except KeyError:
 ##             raise AttributeError
 
     def __getattribute__(self, key):
-        d = _get_thread_locals(pm.Thread.getCurrentThread(), id(self))
+        d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
         if key == '__dict__':
             return d
         try:
@@ -263,5 +262,5 @@ class _local(object):
         except KeyError:
             return object.__getattribute__(self, key)
 
-        
-        
+
+

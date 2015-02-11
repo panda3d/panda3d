@@ -1,5 +1,6 @@
 
 #include "compose_matrix.cxx"
+#include "configVariableColor.cxx"
 #include "config_linmath.cxx"
 #include "coordinateSystem.cxx"
 #include "lmatrix.cxx"

@@ -1,6 +1,6 @@
 // Filename: cppBison.y
 // Created by:  drose (16Jan99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 %{
@@ -38,7 +38,7 @@ CPPScope *current_scope = NULL;
 CPPScope *global_scope = NULL;
 CPPPreprocessor *current_lexer = NULL;
 
-static CPPStructType *current_struct = NULL; 
+static CPPStructType *current_struct = NULL;
 static CPPEnumType *current_enum = NULL;
 static int current_storage_class = 0;
 static CPPType *current_type = NULL;
@@ -98,7 +98,7 @@ parse_cpp(CPPParser *cp) {
   current_scope = old_scope;
   global_scope = old_global_scope;
   current_lexer = old_lexer;
-    
+
 }
 
 CPPExpression *
@@ -140,7 +140,7 @@ parse_type(CPPPreprocessor *pp, CPPScope *new_current_scope,
   yyparse();
 
   CPPType *result = current_type;
-  
+
   current_scope = old_scope;
   global_scope = old_global_scope;
   current_lexer = old_lexer;
@@ -223,8 +223,8 @@ pop_struct() {
 %token UNARY_REF
 %token POINTSAT
 %token SCOPE
-%token PLUSPLUS 
-%token MINUSMINUS 
+%token PLUSPLUS
+%token MINUSMINUS
 %token TIMESEQUAL
 %token DIVIDEEQUAL
 %token MODEQUAL
@@ -242,14 +242,14 @@ pop_struct() {
 %token KW_CATCH
 %token KW_CHAR
 %token KW_WCHAR_T
-%token KW_CLASS 
-%token KW_CONST 
+%token KW_CLASS
+%token KW_CONST
 %token KW_DELETE
 %token KW_DOUBLE
 %token KW_DYNAMIC_CAST
 %token KW_ELSE
-%token KW_END_PUBLISH 
-%token KW_ENUM 
+%token KW_END_PUBLISH
+%token KW_ENUM
 %token KW_EXTENSION
 %token KW_EXTERN
 %token KW_EXPLICIT
@@ -269,6 +269,7 @@ pop_struct() {
 %token KW_MUTABLE
 %token KW_NAMESPACE
 %token KW_NEW
+%token KW_NOEXCEPT
 %token KW_OPERATOR
 %token KW_PRIVATE
 %token KW_PROTECTED
@@ -280,14 +281,14 @@ pop_struct() {
 %token KW_SIZEOF
 %token KW_STATIC
 %token KW_STATIC_CAST
-%token KW_STRUCT 
+%token KW_STRUCT
 %token KW_TEMPLATE
 %token KW_THROW
 %token KW_TRUE
 %token KW_TRY
-%token KW_TYPEDEF 
+%token KW_TYPEDEF
 %token KW_TYPENAME
-%token KW_UNION 
+%token KW_UNION
 %token KW_UNSIGNED
 %token KW_USING
 %token KW_VIRTUAL
@@ -417,7 +418,7 @@ constructor_init:
 extern_c:
         storage_class '{'
 {
-  push_storage_class((current_storage_class & ~CPPInstance::SC_c_binding) | 
+  push_storage_class((current_storage_class & ~CPPInstance::SC_c_binding) |
                      ($1 & CPPInstance::SC_c_binding));
 }
         cpp '}'
@@ -434,7 +435,7 @@ declaration:
         | using_declaration
         | friend_declaration
         | KW_TYPEDEF typedef_declaration
-        | KW_BEGIN_PUBLISH 
+        | KW_BEGIN_PUBLISH
 {
   if (publish_nest_level != 0) {
     yyerror("Unclosed __begin_publish", publish_loc);
@@ -447,7 +448,7 @@ declaration:
   publish_nest_level++;
   current_scope->set_current_vis(V_published);
 }
-        | KW_END_PUBLISH 
+        | KW_END_PUBLISH
 {
   if (publish_nest_level != 1) {
     yyerror("Unmatched __end_publish", @1);
@@ -765,7 +766,7 @@ typedef_const_instance_identifiers:
 function_prototype:
 
 /* Functions with implicit return types, and constructors */
-        IDENTIFIER '(' 
+        IDENTIFIER '('
 {
   push_scope($1->get_scope(current_scope, global_scope));
 }
@@ -821,13 +822,13 @@ function_prototype:
   if ($2->is_scoped()) {
     yyerror("Invalid destructor name: ~" + $2->get_fully_scoped_name(), @2);
   } else {
-    CPPIdentifier *ident = 
+    CPPIdentifier *ident =
       new CPPIdentifier("~" + $2->get_simple_name(), @2.file);
     delete $2;
 
     CPPType *type;
     type = new CPPSimpleType(CPPSimpleType::T_void);
-    
+
     CPPInstanceIdentifier *ii = new CPPInstanceIdentifier(ident);
     ii->add_func_modifier($5, $7);
 
@@ -932,7 +933,7 @@ function_prototype:
    avoid shift/reduce conflicts. */
         | IDENTIFIER
 {
-  CPPDeclaration *decl = 
+  CPPDeclaration *decl =
     $1->find_symbol(current_scope, global_scope, current_lexer);
   if (decl != (CPPDeclaration *)NULL) {
     $$ = decl->as_instance();
@@ -950,6 +951,10 @@ function_post:
         | KW_CONST
 {
   $$ = (int)CPPFunctionType::F_const_method;
+}
+        | function_post KW_NOEXCEPT
+{
+  $$ = (int)CPPFunctionType::F_noexcept;
 }
         | function_post KW_THROW '(' ')'
 {
@@ -1240,6 +1245,11 @@ instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_reference);
 }
+        | ANDAND instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
+}
         | SCOPING '*' instance_identifier  %prec UNARY
 {
   $$ = $3;
@@ -1437,6 +1447,11 @@ not_paren_formal_parameter_identifier:
   $$ = $2;
   $$->add_modifier(IIT_reference);
 }
+        | ANDAND not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
+}
         | SCOPING '*' not_paren_formal_parameter_identifier  %prec UNARY
 {
   $$ = $3;
@@ -1476,6 +1491,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_reference);
+}
+        | ANDAND formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
 }
         | SCOPING '*' formal_parameter_identifier  %prec UNARY
 {
@@ -1519,6 +1539,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_reference);
+}
+        | ANDAND empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_rvalue_reference);
 }
         | SCOPING '*' empty_instance_identifier  %prec UNARY
 {
@@ -1574,7 +1599,7 @@ type:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1590,7 +1615,7 @@ type:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1638,7 +1663,7 @@ type_decl:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1654,7 +1679,7 @@ type_decl:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1686,7 +1711,7 @@ predefined_type:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1702,7 +1727,7 @@ predefined_type:
   if (type != NULL) {
     $$ = type;
   } else {
-    CPPExtensionType *et = 
+    CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
@@ -1733,9 +1758,9 @@ full_type:
 anonymous_struct:
         struct_keyword '{'
 {
-  CPPVisibility starting_vis = 
+  CPPVisibility starting_vis =
   ($1 == CPPExtensionType::T_class) ? V_private : V_public;
-  
+
   CPPScope *new_scope = new CPPScope(current_scope, CPPNameComponent("anon"),
                                      starting_vis);
   CPPStructType *st = new CPPStructType($1, NULL, current_scope,
@@ -1757,7 +1782,7 @@ anonymous_struct:
 named_struct:
         struct_keyword name
 {
-  CPPVisibility starting_vis = 
+  CPPVisibility starting_vis =
   ($1 == CPPExtensionType::T_class) ? V_private : V_public;
 
   CPPScope *scope = $2->get_scope(current_scope, global_scope, current_lexer);
@@ -1771,7 +1796,7 @@ named_struct:
                                         new_scope, @1.file);
   new_scope->set_struct_type(st);
   current_scope->define_extension_type(st);
-  
+
   push_scope(new_scope);
   push_struct(st);
 }
@@ -1916,7 +1941,7 @@ namespace_declaration:
   CPPScope *scope = $2->find_scope(current_scope, global_scope, current_lexer);
   if (scope == NULL) {
     // This must be a new namespace declaration.
-    CPPScope *parent_scope = 
+    CPPScope *parent_scope =
       $2->get_scope(current_scope, global_scope, current_lexer);
     if (parent_scope == NULL) {
       parent_scope = current_scope;
@@ -2104,13 +2129,13 @@ element:
         | ELLIPSIS | OROR | ANDAND
         | EQCOMPARE | NECOMPARE | LECOMPARE | GECOMPARE
         | LSHIFT | RSHIFT | POINTSAT_STAR | DOT_STAR | POINTSAT
-        | SCOPE | PLUSPLUS | MINUSMINUS 
+        | SCOPE | PLUSPLUS | MINUSMINUS
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
         | KW_BOOL | KW_CATCH | KW_CHAR | KW_WCHAR_T | KW_CLASS | KW_CONST
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
-        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO 
+        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO
         | KW_IF | KW_INLINE | KW_INT
         | KW_LONG | KW_MUTABLE | KW_NEW | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_RETURN
@@ -2329,65 +2354,65 @@ const_expr:
 }
         | KW_INT '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_CHAR '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_WCHAR_T '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_wchar_t));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_BOOL '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_bool));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_SHORT '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_short));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_LONG '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_long));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_UNSIGNED '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_unsigned));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_SIGNED '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_signed));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_FLOAT '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_float));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_DOUBLE '(' optional_const_expr_comma ')'
 {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_double));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }

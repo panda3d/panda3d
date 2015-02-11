@@ -36,10 +36,10 @@ extern EXPCL_PANDA void init_libdxml();
 class TiXmlDocument;
 class TiXmlNode;
 BEGIN_PUBLISH
-TiXmlDocument *read_xml_stream(istream &in);
-void write_xml_stream(ostream &out, TiXmlDocument *doc);
-void print_xml(TiXmlNode *xnode);
-void print_xml_to_file(const Filename &filename, TiXmlNode *xnode);
+EXPCL_PANDA TiXmlDocument *read_xml_stream(istream &in);
+EXPCL_PANDA void write_xml_stream(ostream &out, TiXmlDocument *doc);
+EXPCL_PANDA void print_xml(TiXmlNode *xnode);
+EXPCL_PANDA void print_xml_to_file(const Filename &filename, TiXmlNode *xnode);
 END_PUBLISH
 
 #endif

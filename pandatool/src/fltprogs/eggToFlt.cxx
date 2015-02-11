@@ -47,6 +47,7 @@ EggToFlt() :
   EggToSomething("MultiGen", ".flt", true, false)
 {
   set_binary_output(true);
+  set_program_brief("convert files from .egg format to MultiGen .flt");
   set_program_description
     ("egg2lt converts files from egg format to MultiGen .flt "
      "format.  It attempts to be as robust as possible, and matches "

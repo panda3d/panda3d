@@ -7,5 +7,5 @@ StartupNotify=true
 NoDisplay=true
 Terminal=false
 Type=Application
-Categories=Game;Viewer;
+Categories=Game;3DGraphics;Viewer;
 MimeType=application/x-panda3d;

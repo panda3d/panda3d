@@ -37,7 +37,6 @@
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
-#include "eventStorePandaNode.h"
 #include "findApproxLevelEntry.h"
 #include "fog.h"
 #include "fogAttrib.h"
@@ -106,7 +105,8 @@ ConfigVariableBool fake_view_frustum_cull
 ("fake-view-frustum-cull", false,
  PRC_DESC("Set this true to cause culling to be performed by rendering the "
           "object in red wireframe, rather than actually culling it.  This "
-          "helps make culling errors obvious."));
+          "helps make culling errors obvious.  This variable only has an "
+          "effect when Panda is not compiled for a release build."));
 
 ConfigVariableBool clip_plane_cull
 ("clip-plane-cull", true,
@@ -167,15 +167,6 @@ ConfigVariableBool compose_componentwise
  PRC_DESC("Set this true to perform componentwise compose and invert "
           "operations when possible.  If this is false, the compositions "
           "are always computed by matrix."));
-
-ConfigVariableBool uniquify_matrix
-("uniquify-matrix", true,
- PRC_DESC("Set this true to look up arbitarary 4x4 transform matrices in the "
-          "cache, to ensure that two differently-computed transforms that "
-          "happen to encode the same matrix will be "
-          "collapsed into a single pointer.  Nowadays, "
-          "with the transforms stored in a hashtable, we're generally better "
-          "off with this set true."));
 
 ConfigVariableBool paranoid_const
 ("paranoid-const", false,
@@ -257,12 +248,12 @@ ConfigVariableBool retransform_sprites
           "necessary in order for fog to work correctly on the sprites."));
 
 ConfigVariableBool depth_offset_decals
-("depth-offset-decals", false,
+("depth-offset-decals", true,
  PRC_DESC("Set this true to allow decals to be implemented via the advanced "
           "depth offset feature, if supported, instead of via the traditional "
-          "(and slower) two-pass approach.  This is false by default "
-          "because it appears that many graphics drivers have issues with "
-          "their depth offset implementation."));
+          "(and slower) two-pass approach.  This is currently the only method "
+          "by which decals are implemented in Panda3D, and as such, this "
+          "setting is ignored."));
 
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 65534,
@@ -422,7 +413,6 @@ init_libpgraph() {
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
-  EventStorePandaNode::init_type();
   FindApproxLevelEntry::init_type();
   Fog::init_type();
   FogAttrib::init_type();

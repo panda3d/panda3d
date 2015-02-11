@@ -27,7 +27,7 @@ PStatCollector GeomMunger::_munge_pcollector("*:Munge");
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomMunger::
 GeomMunger(GraphicsStateGuardianBase *gsg) :
@@ -44,7 +44,7 @@ GeomMunger(GraphicsStateGuardianBase *gsg) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomMunger::
 GeomMunger(const GeomMunger &copy) :
@@ -60,7 +60,7 @@ GeomMunger(const GeomMunger &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::
 operator = (const GeomMunger &copy) {
@@ -70,7 +70,7 @@ operator = (const GeomMunger &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomMunger::
 ~GeomMunger() {
@@ -96,7 +96,7 @@ remove_data(const GeomVertexData *data) {
 //       Access: Public
 //  Description: Applies the indicated munger to the geom and its
 //               data, and returns a (possibly different) geom and
-//               data, according to the munger's whim.  
+//               data, according to the munger's whim.
 //
 //               The assumption is that for a particular geom and a
 //               particular munger, the result will always be the
@@ -110,13 +110,12 @@ remove_data(const GeomVertexData *data) {
 bool GeomMunger::
 munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
            bool force, Thread *current_thread) {
-  CPT(GeomVertexData) source_data = data;
 
   // Look up the munger in the geom's cache--maybe we've recently
   // applied it.
   PT(Geom::CacheEntry) entry;
 
-  Geom::CacheKey key(source_data, this);
+  Geom::CacheKey key(data, this);
 
   geom->_cache_lock.acquire();
   Geom::Cache::const_iterator ci = geom->_cache.find(&key);
@@ -126,12 +125,12 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     entry = (*ci).second;
     geom->_cache_lock.release();
     nassertr(entry->_source == geom, false);
-    
+
     // Here's an element in the cache for this computation.  Record a
     // cache hit, so this element will stay in the cache a while
     // longer.
     entry->refresh(current_thread);
-    
+
     // Now check that it's fresh.
     Geom::CDCacheReader cdata(entry->_cycler, current_thread);
     if (cdata->_source == geom &&
@@ -139,12 +138,12 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
         geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
         data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
       // The cache entry is still good; use it.
-      
+
       geom = cdata->_geom_result;
       data = cdata->_data_result;
       return true;
     }
-    
+
     // The cache entry is stale, but we'll recompute it below.  Note
     // that there's a small race condition here; another thread might
     // recompute the cache at the same time.  No big deal, since it'll
@@ -166,7 +165,12 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   // Record the new result in the cache.
   if (entry == (Geom::CacheEntry *)NULL) {
     // Create a new entry for the result.
-    entry = new Geom::CacheEntry(orig_geom, source_data, this);
+#ifdef USE_MOVE_SEMANTICS
+    // We don't need the key anymore, move the pointers into the CacheEntry.
+    entry = new Geom::CacheEntry(orig_geom, move(key));
+#else
+    entry = new Geom::CacheEntry(orig_geom, key);
+#endif
     {
       LightMutexHolder holder(orig_geom->_cache_lock);
       bool inserted = orig_geom->_cache.insert(Geom::Cache::value_type(&entry->_key, entry)).second;
@@ -176,7 +180,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
         return true;
       }
     }
-  
+
     // And tell the cache manager about the new entry.  (It might
     // immediately request a delete from the cache of the thing we
     // just added.)
@@ -198,7 +202,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
 //               exists just to cast away the const pointer.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexFormat) GeomMunger::
-do_munge_format(const GeomVertexFormat *format, 
+do_munge_format(const GeomVertexFormat *format,
                 const GeomVertexAnimationSpec &animation) {
   nassertr(_is_registered, NULL);
   nassertr(format->is_registered(), NULL);
@@ -248,7 +252,7 @@ munge_data_impl(const GeomVertexData *data) {
   nassertr(_is_registered, NULL);
 
   CPT(GeomVertexFormat) orig_format = data->get_format();
-  CPT(GeomVertexFormat) new_format = 
+  CPT(GeomVertexFormat) new_format =
     munge_format(orig_format, orig_format->get_animation());
 
   if (new_format == orig_format) {
@@ -384,7 +388,7 @@ make_registry() {
     _registry = new Registry;
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::do_register
 //       Access: Private
@@ -408,7 +412,7 @@ do_register(Thread *current_thread) {
 
   _is_registered = true;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::do_unregister
 //       Access: Private
@@ -430,7 +434,7 @@ do_unregister() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::CacheEntry::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::CacheEntry::
 output(ostream &out) const {
@@ -440,7 +444,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::Registry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomMunger::Registry::
 Registry() {

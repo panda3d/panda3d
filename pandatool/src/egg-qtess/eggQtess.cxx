@@ -26,9 +26,10 @@ EggQtess::
 EggQtess() {
   add_normals_options();
 
+  set_program_brief("tesselate NURBS surfaces in .egg files");
   set_program_description
-    ("egg-qtess reads an egg file, tesselates all of its NURBS surfaces "
-     "using a simple uniform tesselation, and outputs a polygonal "
+    ("egg-qtess reads an egg file, tessellates all of its NURBS surfaces "
+     "using a simple uniform tessellation, and outputs a polygonal "
      "egg file.\n\n"
 
      "Characters are supported, soft-skinned and otherwise; joint "
@@ -62,12 +63,12 @@ EggQtess() {
      "Specify an approximate number of triangles to produce.  This "
      "is the total number of triangles for the entire egg file, "
      "including those surfaces that have already been given an "
-     "explicit tesselation by a parameter file.",
+     "explicit tessellation by a parameter file.",
      &EggQtess::dispatch_int, NULL, &_total_tris);
 
   add_option
     ("ap", "", 0,
-     "Attempt to automatically place tesselation lines where they'll "
+     "Attempt to automatically place tessellation lines where they'll "
      "do the most good on each surface (once the number of polygons "
      "for the surface has already been determined).",
      &EggQtess::dispatch_none, &QtessGlobals::_auto_place);
@@ -93,7 +94,7 @@ EggQtess() {
      "Respect subdivision parameters given in the egg file.  If this "
      "is specified, the egg file may define the effective number of "
      "patches of each NURBS entry.  This can be used alone or in "
-     "conjunction with -u or -t to fine-tune the uniform tesselation "
+     "conjunction with -u or -t to fine-tune the uniform tessellation "
      "on a per-surface basis.  (This is ignored if -ad is in effect.)",
      &EggQtess::dispatch_none, &QtessGlobals::_respect_egg);
 

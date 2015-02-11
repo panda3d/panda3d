@@ -100,7 +100,7 @@ PUBLISHED:
 #endif
 #ifdef HAVE_NET
   BLOCKING bool try_connect_net(const URLSpec &url);
-  
+
   INLINE QueuedConnectionManager &get_qcm();
   INLINE ConnectionWriter &get_cw();
   INLINE QueuedConnectionReader &get_qcr();
@@ -117,13 +117,7 @@ PUBLISHED:
 #endif
 
   BLOCKING bool check_datagram();
-#ifdef HAVE_PYTHON
-#ifdef WANT_NATIVE_NET
-  BLOCKING bool check_datagram_ai(PyObject *PycallBackFunction);
-  BLOCKING bool network_based_reader_and_yielder(PyObject *PycallBackFunction,ClockObject &clock, float returnBy);
-#endif
-#endif
-    
+
   BLOCKING INLINE void get_datagram(Datagram &dg);
   BLOCKING INLINE void get_datagram_iterator(DatagramIterator &di);
   BLOCKING INLINE CHANNEL_TYPE get_msg_channel(int offset = 0) const;
@@ -167,18 +161,11 @@ PUBLISHED:
   INLINE float get_time_warning() const;
 
 private:
-#ifdef HAVE_PYTHON
-#ifdef WANT_NATIVE_NET
-    bool handle_update_field_ai(PyObject *doId2do);
-#endif
-#endif
-
-
   bool do_check_datagram();
   bool handle_update_field();
   bool handle_update_field_owner();
 
-  void describe_message(ostream &out, const string &prefix, 
+  void describe_message(ostream &out, const string &prefix,
                         const Datagram &dg) const;
 
 private:
@@ -186,7 +173,6 @@ private:
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;
-  PyObject *_python_ai_datagramiterator;
 #endif
 
 #ifdef HAVE_OPENSSL

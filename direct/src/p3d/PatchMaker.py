@@ -1,6 +1,6 @@
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
-from pandac.PandaModules import *
+from panda3d.core import *
 import copy
 
 class PatchMaker:
@@ -14,7 +14,7 @@ class PatchMaker:
         the package's "version" string; it also corresponds to the
         particular patch version, which increments independently of
         the "version". """
-        
+
         def __init__(self, packageName, platform, version, hostUrl, file):
             self.packageName = packageName
             self.platform = platform
@@ -84,7 +84,7 @@ class PatchMaker:
             apply in sequence, and the packageVersion object
             associated with each patch.  Returns (None, None, None) if
             there is no way to recreate this archive file.  """
-            
+
             if self.tempFile:
                 return (self.tempFile, self, [])
 
@@ -101,7 +101,7 @@ class PatchMaker:
                 # version of some package.
                 package = self.packageCurrent
                 return (Filename(package.packageDir, package.compressedFilename), self, [])
-            
+
             if self.packageBase:
                 # This PackageVersion instance represents the base
                 # (oldest) version of some package.
@@ -144,7 +144,7 @@ class PatchMaker:
                     # Failure trying to decompress the file.
                     return None
                 startFile = startPv.tempFile
-            
+
             if not plan:
                 # If plan is a zero-length list, we're already
                 # here--return startFile.  If plan is None, there's no
@@ -162,7 +162,7 @@ class PatchMaker:
                 if not result:
                     # Failure trying to re-create the file.
                     return None
-                
+
                 pv.tempFile = result
                 prevFile = result
 
@@ -194,10 +194,10 @@ class PatchMaker:
                     return patch.toPv
 
             return None
-        
+
     class Patchfile:
         """ A single patchfile for a package. """
-        
+
         def __init__(self, package):
             self.package = package
             self.packageName = package.packageName
@@ -233,7 +233,7 @@ class PatchMaker:
         def fromFile(self, packageDir, patchFilename, sourceFile, targetFile):
             """ Creates the data structures from an existing patchfile
             on disk. """
-            
+
             self.file = FileSpec()
             self.file.fromFile(packageDir, patchFilename)
             self.sourceFile = sourceFile
@@ -241,7 +241,7 @@ class PatchMaker:
 
         def loadXml(self, xpatch):
             """ Reads the data structures from an xml file. """
-            
+
             self.packageName = xpatch.Attribute('name') or self.packageName
             self.platform = xpatch.Attribute('platform') or self.platform
             self.version = xpatch.Attribute('version') or self.version
@@ -287,7 +287,7 @@ class PatchMaker:
     class Package:
         """ This is a particular package.  This contains all of the
         information needed to reconstruct the package's desc file. """
-        
+
         def __init__(self, packageDesc, patchMaker, xpackage = None):
             self.packageDir = Filename(patchMaker.installDir, packageDesc.getDirname())
             self.packageDesc = packageDesc
@@ -312,19 +312,19 @@ class PatchMaker:
         def getCurrentKey(self):
             """ Returns the key to locate the current version of this
             package. """
-            
+
             return (self.packageName, self.platform, self.version, self.hostUrl, self.currentFile)
 
         def getBaseKey(self):
             """ Returns the key to locate the "base" or oldest version
             of this package. """
-            
+
             return (self.packageName, self.platform, self.version, self.hostUrl, self.baseFile)
 
         def getTopKey(self):
             """ Returns the key to locate the "top" or newest version
             of this package. """
-            
+
             return (self.packageName, self.platform, self.version, self.hostUrl, self.topFile)
 
         def getGenericKey(self, fileSpec):
@@ -345,7 +345,7 @@ class PatchMaker:
             if not self.doc.LoadFile():
                 print "Couldn't read %s" % (packageDescFullpath)
                 return False
-            
+
             xpackage = self.doc.FirstChildElement('package')
             if not xpackage:
                 return False
@@ -358,7 +358,7 @@ class PatchMaker:
             # other hosts, which means we'll need to fill in a value
             # here for those hosts.
             self.hostUrl = None
-        
+
             self.currentFile = None
             self.baseFile = None
             self.topFile = None
@@ -388,7 +388,7 @@ class PatchMaker:
                 else:
                     # There's a new version this pass.  Update it.
                     self.anyChanges = True
-                
+
             else:
                 # If there isn't a top_version yet, we have to make
                 # one, by duplicating the currentFile.
@@ -516,7 +516,7 @@ class PatchMaker:
             xarchive = TiXmlElement('top_version')
             self.currentFile.storeXml(xarchive)
             xpackage.InsertEndChild(xarchive)
-            
+
             for patchfile in self.patches:
                 xpatch = patchfile.makeXml(self)
                 xpackage.InsertEndChild(xpatch)
@@ -571,7 +571,7 @@ class PatchMaker:
         patches for all packages; otherwise, it should be a list of
         package name strings, limiting the set of packages that are
         processed. """
-        
+
         if not self.readContentsFile():
             return False
         self.buildPatchChains()
@@ -587,7 +587,7 @@ class PatchMaker:
     def cleanup(self):
         """ Should be called on exit to remove temporary files and
         such created during processing. """
-        
+
         for pv in self.packageVersions.values():
             pv.cleanup()
 
@@ -596,11 +596,11 @@ class PatchMaker:
         constructs a patch chain from the version represented by
         fileSpec to the current version of this package, if possible.
         Returns the patch chain if successful, or None otherwise. """
-        
+
         package = self.readPackageDescFile(descFilename)
         if not package:
             return None
-        
+
         self.buildPatchChains()
         fromPv = self.getPackageVersion(package.getGenericKey(fileSpec))
         toPv = package.currentPv
@@ -619,7 +619,7 @@ class PatchMaker:
         package = self.Package(Filename(descFilename), self)
         if not package.readDescFile(doProcessing = False):
             return None
-        
+
         self.packages.append(package)
         return package
 
@@ -640,7 +640,7 @@ class PatchMaker:
             contentsSeq.loadXml(xcontents)
             contentsSeq += 1
             contentsSeq.storeXml(xcontents)
-            
+
             xpackage = xcontents.FirstChildElement('package')
             while xpackage:
                 solo = xpackage.Attribute('solo')
@@ -651,7 +651,7 @@ class PatchMaker:
                     package = self.Package(filename, self, xpackage)
                     package.readDescFile(doProcessing = True)
                     self.packages.append(package)
-                    
+
                 xpackage = xpackage.NextSiblingElement('package')
 
         self.contentsDoc = doc
@@ -685,7 +685,7 @@ class PatchMaker:
             pv = self.PackageVersion(*key)
             self.packageVersions[k] = pv
         return pv
-    
+
     def buildPatchChains(self):
         """ Builds up the chains of PackageVersions and the patchfiles
         that connect them. """
@@ -696,7 +696,7 @@ class PatchMaker:
             if not package.baseFile:
                 # This package doesn't have any versions yet.
                 continue
-            
+
             currentPv = self.getPackageVersion(package.getCurrentKey())
             package.currentPv = currentPv
             currentPv.packageCurrent = package
@@ -710,7 +710,7 @@ class PatchMaker:
             topPv = self.getPackageVersion(package.getTopKey())
             package.topPv = topPv
             topPv.packageTop = package
-            
+
             for patchfile in package.patches:
                 self.recordPatchfile(patchfile)
 
@@ -757,7 +757,7 @@ class PatchMaker:
         # What's the current version on the top of the tree?
         topPv = package.topPv
         currentPv = package.currentPv
-        
+
         if topPv != currentPv:
             # They're different, so build a new patch.
             filename = Filename(package.currentFile.filename + '.%s.patch' % (package.patchVersion))
@@ -786,7 +786,7 @@ class PatchMaker:
                            v1.file, v2.file)
         package.patches.append(patchfile)
         package.anyChanges = True
-        
+
         self.recordPatchfile(patchfile)
 
         return True

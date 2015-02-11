@@ -26,7 +26,9 @@
 class Thread;
 
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>  // For Sleep().
 #endif
 

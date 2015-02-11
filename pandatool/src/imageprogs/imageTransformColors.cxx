@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 ImageTransformColors::
 ImageTransformColors() {
+  set_program_brief("transform colors in an image file");
   set_program_description
     ("This program can apply a global color transform to all of the "
      "pixels in an image, or in a series of images.  This can be used, "

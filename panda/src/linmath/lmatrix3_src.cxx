@@ -77,7 +77,7 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
           shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
     }
     break;
-    
+
   case CS_zup_left:
     if (temp_hpr_fix) {
       set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
@@ -89,7 +89,7 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
           -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
     }
     break;
-    
+
   case CS_yup_right:
     if (temp_hpr_fix) {
       set(scale._v(0), 0.0f, shear._v(1) * scale._v(0),
@@ -101,7 +101,7 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
           shear._v(1) * scale._v(2), 0.0f, scale._v(2));
     }
     break;
-    
+
   case CS_yup_left:
     if (temp_hpr_fix) {
       set(scale._v(0), 0.0f, -shear._v(1) * scale._v(0),
@@ -113,7 +113,7 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
           -shear._v(1) * scale._v(2), 0.0f, scale._v(2));
     }
     break;
-    
+
   case CS_default:
   case CS_invalid:
   default:
@@ -352,6 +352,9 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LMatrix3::almost_equal(const LMatrix3 &, FLOATTYPE)", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  return ((_m - other._m).cwiseAbs().maxCoeff() < NEARLY_ZERO(FLOATTYPE));
+#else
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
@@ -361,8 +364,8 @@ almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
           IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
+#endif
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::output
@@ -440,7 +443,7 @@ void FLOATNAME(LMatrix3)::
 write_datagram_fixed(Datagram &destination) const {
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
-#if FLOATTOKEN == 'f' 
+#if FLOATTOKEN == 'f'
       destination.add_float32(get_cell(i,j));
 #else
       destination.add_float64(get_cell(i,j));

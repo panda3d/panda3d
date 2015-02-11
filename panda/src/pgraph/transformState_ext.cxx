@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<TransformState>::
 get_composition_cache() const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  extern struct Dtool_PyTypedObject Dtool_TransformState;
   LightReMutexHolder holder(*_this->_states_lock);
 
   size_t num_states = _this->_composition_cache.get_num_entries();
@@ -94,7 +94,7 @@ get_composition_cache() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<TransformState>::
 get_invert_composition_cache() const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  extern struct Dtool_PyTypedObject Dtool_TransformState;
   LightReMutexHolder holder(*_this->_states_lock);
 
   size_t num_states = _this->_invert_composition_cache.get_num_entries();
@@ -149,7 +149,7 @@ get_invert_composition_cache() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<TransformState>::
 get_states() {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  extern struct Dtool_PyTypedObject Dtool_TransformState;
   if (TransformState::_states == (TransformState::States *)NULL) {
     return PyList_New(0);
   }
@@ -186,7 +186,7 @@ get_states() {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<TransformState>::
 get_unused_states() {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  extern struct Dtool_PyTypedObject Dtool_TransformState;
   if (TransformState::_states == (TransformState::States *)NULL) {
     return PyList_New(0);
   }

@@ -67,7 +67,7 @@ PUBLISHED:
 
   static string get_host_name();
 
-  class Interface {
+  class EXPCL_PANDA_NET Interface {
   PUBLISHED:
     const string &get_name() const { return _name; }
     const string &get_mac_address() const { return _mac_address; }

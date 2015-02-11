@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 ImageInfo::
 ImageInfo() {
+  set_program_brief("report the size of image files");
   set_program_description
     ("This program reads the headers of a series of one or more "
      "image files and reports the image sizes to standard output.");

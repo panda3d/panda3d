@@ -589,7 +589,7 @@ PNMFileTypeTIFF::Reader::
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeTIFF::Reader::
 is_floating_point() {
-  return sample_format = SAMPLEFORMAT_IEEEFP;
+  return (sample_format == SAMPLEFORMAT_IEEEFP);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -988,7 +988,7 @@ write_pfm(const PfmFile &pfm) {
   const vector_float &table = pfm.get_table();
   for (int yi = 0; yi < y_size; ++yi) {
     const float *row = &table[(yi * x_size) * _num_channels];
-    
+
     if (TIFFWriteScanline(tif, (tdata_t)row, yi, 0 ) < 0) {
       pnmimage_tiff_cat.error()
         << "failed a scanline write on row " << yi << "\n";

@@ -36,6 +36,7 @@ public:
     F_method_pointer    = 0x10,
     F_unary_op          = 0x20,
     F_operator          = 0x40,
+    F_noexcept          = 0x80,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,

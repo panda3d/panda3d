@@ -40,6 +40,11 @@ public:
   INLINE void operator = (CopyOnWriteObject *object);
   INLINE ~CopyOnWritePointer();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE CopyOnWritePointer(CopyOnWritePointer &&move) NOEXCEPT;
+  INLINE void operator = (CopyOnWritePointer &&move) NOEXCEPT;
+#endif
+
   INLINE bool operator == (const CopyOnWritePointer &other) const;
   INLINE bool operator != (const CopyOnWritePointer &other) const;
   INLINE bool operator < (const CopyOnWritePointer &other) const;
@@ -82,6 +87,11 @@ public:
   INLINE CopyOnWritePointerTo(const CopyOnWritePointerTo<T> &copy);
   INLINE void operator = (const CopyOnWritePointerTo<T> &copy);
   INLINE void operator = (To *object);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&move) NOEXCEPT;
+  INLINE void operator = (CopyOnWritePointerTo &&move) NOEXCEPT;
+#endif
 
 #ifdef COW_THREADED
   INLINE CPT(To) get_read_pointer() const;

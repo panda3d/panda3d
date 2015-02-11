@@ -46,6 +46,43 @@ INLINE NodePointerToBase<T>::
   reassign((To *)NULL);
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: NodePointerToBase::Move Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE NodePointerToBase<T>::
+NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
+  _void_ptr = from._void_ptr;
+  from._void_ptr = (void *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePointerToBase::reassign
+//       Access: Protected
+//  Description: This version of reassign is called when a
+//               NodePointerTo is assigned to this Node PointerTo
+//               as an rvalue.  In this case, we can steal the
+//               reference count from the other PointerTo, without
+//               needing to call ref() and unref() unnecessarily.
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE void NodePointerToBase<T>::
+reassign(NodePointerToBase<T> &&from) NOEXCEPT {
+  To *old_ptr = (To *)this->_void_ptr;
+
+  this->_void_ptr = from._void_ptr;
+  from._void_ptr = NULL;
+
+  // Now delete the old pointer.
+  if (old_ptr != (To *)NULL) {
+    node_unref_delete(old_ptr);
+  }
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerToBase::reassign
 //       Access: Protected

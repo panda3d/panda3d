@@ -191,11 +191,6 @@
 #set CGGL_LIBS $[CGGL_LIBS]
 #set HAVE_CGGL $[HAVE_CGGL]
 
-#set CGDX8_IPATH $[unixfilename $[CGDX8_IPATH]]
-#set CGDX8_LPATH $[unixfilename $[CGDX8_LPATH]]
-#set CGDX8_LIBS $[CGDX8_LIBS]
-#set HAVE_CGDX8 $[HAVE_CGDX8]
-
 #set CGDX9_IPATH $[unixfilename $[CGDX9_IPATH]]
 #set CGDX9_LPATH $[unixfilename $[CGDX9_LPATH]]
 #set CGDX9_LIBS $[CGDX9_LIBS]
@@ -249,11 +244,6 @@
 
 #set HAVE_COCOA $[HAVE_COCOA]
 #set HAVE_CARBON $[HAVE_CARBON]
-
-#set DX8_IPATH $[unixfilename $[DX8_IPATH]]
-#set DX8_LPATH $[unixfilename $[DX8_LPATH]]
-#set DX8_LIBS $[DX8_LIBS]
-#set HAVE_DX8 $[HAVE_DX8]
 
 #set DX9_IPATH $[unixfilename $[DX9_IPATH]]
 #set DX9_LPATH $[unixfilename $[DX9_LPATH]]

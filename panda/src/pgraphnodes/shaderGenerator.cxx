@@ -53,8 +53,8 @@ TypeHandle ShaderGenerator::_type_handle;
 //               which the shader generator belongs.
 ////////////////////////////////////////////////////////////////////
 ShaderGenerator::
-ShaderGenerator(PT(GraphicsStateGuardianBase) gsg, PT(GraphicsOutputBase) host) :
-  _gsg (gsg), _host (host) {
+ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
+  _gsg(gsg), _host(host) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,35 +86,35 @@ reset_register_allocator() {
 //       Access: Protected
 //  Description: Allocate a vreg.
 ////////////////////////////////////////////////////////////////////
-INLINE char *ShaderGenerator::
+const char *ShaderGenerator::
 alloc_vreg() {
   switch (_vtregs_used) {
-  case  0: _vtregs_used += 1; return (char*)"TEXCOORD0";
-  case  1: _vtregs_used += 1; return (char*)"TEXCOORD1";
-  case  2: _vtregs_used += 1; return (char*)"TEXCOORD2";
-  case  3: _vtregs_used += 1; return (char*)"TEXCOORD3";
-  case  4: _vtregs_used += 1; return (char*)"TEXCOORD4";
-  case  5: _vtregs_used += 1; return (char*)"TEXCOORD5";
-  case  6: _vtregs_used += 1; return (char*)"TEXCOORD6";
-  case  7: _vtregs_used += 1; return (char*)"TEXCOORD7";
+  case  0: _vtregs_used += 1; return "TEXCOORD0";
+  case  1: _vtregs_used += 1; return "TEXCOORD1";
+  case  2: _vtregs_used += 1; return "TEXCOORD2";
+  case  3: _vtregs_used += 1; return "TEXCOORD3";
+  case  4: _vtregs_used += 1; return "TEXCOORD4";
+  case  5: _vtregs_used += 1; return "TEXCOORD5";
+  case  6: _vtregs_used += 1; return "TEXCOORD6";
+  case  7: _vtregs_used += 1; return "TEXCOORD7";
   }
   switch (_vcregs_used) {
-  case  0: _vcregs_used += 1; return (char*)"COLOR0";
-  case  1: _vcregs_used += 1; return (char*)"COLOR1";
+  case  0: _vcregs_used += 1; return "COLOR0";
+  case  1: _vcregs_used += 1; return "COLOR1";
   }
   // These don't exist in arbvp1, though they're reportedly
   // supported by other profiles.
   switch (_vtregs_used) {
-  case  8: _vtregs_used += 1; return (char*)"TEXCOORD8";
-  case  9: _vtregs_used += 1; return (char*)"TEXCOORD9";
-  case 10: _vtregs_used += 1; return (char*)"TEXCOORD10";
-  case 11: _vtregs_used += 1; return (char*)"TEXCOORD11";
-  case 12: _vtregs_used += 1; return (char*)"TEXCOORD12";
-  case 13: _vtregs_used += 1; return (char*)"TEXCOORD13";
-  case 14: _vtregs_used += 1; return (char*)"TEXCOORD14";
-  case 15: _vtregs_used += 1; return (char*)"TEXCOORD15";
+  case  8: _vtregs_used += 1; return "TEXCOORD8";
+  case  9: _vtregs_used += 1; return "TEXCOORD9";
+  case 10: _vtregs_used += 1; return "TEXCOORD10";
+  case 11: _vtregs_used += 1; return "TEXCOORD11";
+  case 12: _vtregs_used += 1; return "TEXCOORD12";
+  case 13: _vtregs_used += 1; return "TEXCOORD13";
+  case 14: _vtregs_used += 1; return "TEXCOORD14";
+  case 15: _vtregs_used += 1; return "TEXCOORD15";
   }
-  return (char*)"UNKNOWN";
+  return "UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,37 +122,37 @@ alloc_vreg() {
 //       Access: Protected
 //  Description: Allocate a freg.
 ////////////////////////////////////////////////////////////////////
-INLINE char *ShaderGenerator::
+const char *ShaderGenerator::
 alloc_freg() {
   switch (_ftregs_used) {
-  case  0: _ftregs_used += 1; return (char*)"TEXCOORD0";
-  case  1: _ftregs_used += 1; return (char*)"TEXCOORD1";
-  case  2: _ftregs_used += 1; return (char*)"TEXCOORD2";
-  case  3: _ftregs_used += 1; return (char*)"TEXCOORD3";
-  case  4: _ftregs_used += 1; return (char*)"TEXCOORD4";
-  case  5: _ftregs_used += 1; return (char*)"TEXCOORD5";
-  case  6: _ftregs_used += 1; return (char*)"TEXCOORD6";
-  case  7: _ftregs_used += 1; return (char*)"TEXCOORD7";
+  case  0: _ftregs_used += 1; return "TEXCOORD0";
+  case  1: _ftregs_used += 1; return "TEXCOORD1";
+  case  2: _ftregs_used += 1; return "TEXCOORD2";
+  case  3: _ftregs_used += 1; return "TEXCOORD3";
+  case  4: _ftregs_used += 1; return "TEXCOORD4";
+  case  5: _ftregs_used += 1; return "TEXCOORD5";
+  case  6: _ftregs_used += 1; return "TEXCOORD6";
+  case  7: _ftregs_used += 1; return "TEXCOORD7";
   }
   // We really shouldn't rely on COLOR fregs,
   // since the clamping can have unexpected side-effects.
   //switch (_fcregs_used) {
-  //case  0: _fcregs_used += 1; return (char*)"COLOR0";
-  //case  1: _fcregs_used += 1; return (char*)"COLOR1";
+  //case  0: _fcregs_used += 1; return "COLOR0";
+  //case  1: _fcregs_used += 1; return "COLOR1";
   //}
   // These don't exist in arbvp1/arbfp1, though they're
   // reportedly supported by other profiles.
   switch (_ftregs_used) {
-  case  8: _ftregs_used += 1; return (char*)"TEXCOORD8";
-  case  9: _ftregs_used += 1; return (char*)"TEXCOORD9";
-  case 10: _ftregs_used += 1; return (char*)"TEXCOORD10";
-  case 11: _ftregs_used += 1; return (char*)"TEXCOORD11";
-  case 12: _ftregs_used += 1; return (char*)"TEXCOORD12";
-  case 13: _ftregs_used += 1; return (char*)"TEXCOORD13";
-  case 14: _ftregs_used += 1; return (char*)"TEXCOORD14";
-  case 15: _ftregs_used += 1; return (char*)"TEXCOORD15";
+  case  8: _ftregs_used += 1; return "TEXCOORD8";
+  case  9: _ftregs_used += 1; return "TEXCOORD9";
+  case 10: _ftregs_used += 1; return "TEXCOORD10";
+  case 11: _ftregs_used += 1; return "TEXCOORD11";
+  case 12: _ftregs_used += 1; return "TEXCOORD12";
+  case 13: _ftregs_used += 1; return "TEXCOORD13";
+  case 14: _ftregs_used += 1; return "TEXCOORD14";
+  case 15: _ftregs_used += 1; return "TEXCOORD15";
   }
-  return (char*)"UNKNOWN";
+  return "UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ clear_analysis() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
-  PT(Shader) shader = Shader::make(txt);
+  PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
   CPT(RenderAttrib) shattr = ShaderAttrib::make();
   shattr = DCAST(ShaderAttrib, shattr)->set_shader(shader);
   if (_lighting) {
@@ -566,7 +566,7 @@ update_shadow_buffer(NodePath light_np) {
   }
 
   // See if we already have a buffer. If not, create one.
-  PT(Texture) tex;
+  Texture *tex;
   if (light->_sbuffers.count(_gsg) == 0) {
     // Nope, the light doesn't have a buffer for our GSG. Make one.
     tex = _gsg->make_shadow_buffer(light_np, _host);
@@ -612,7 +612,7 @@ update_shadow_buffer(NodePath light_np) {
 //               - omit attenuation calculations if attenuation off
 //
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) ShaderGenerator::
+CPT(ShaderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs) {
   analyze_renderstate(rs);
   reset_register_allocator();
@@ -624,18 +624,18 @@ synthesize_shader(const RenderState *rs) {
 
   // These variables will hold the results of register allocation.
 
-  char *tangent_freg = 0;
-  char *binormal_freg = 0;
+  const char *tangent_freg = 0;
+  const char *binormal_freg = 0;
   string tangent_input;
   string binormal_input;
-  pmap<const InternalName *, char *> texcoord_fregs;
-  pvector<char *> dlightcoord_fregs;
-  pvector<char *> slightcoord_fregs;
-  char *world_position_freg = 0;
-  char *world_normal_freg = 0;
-  char *eye_position_freg = 0;
-  char *eye_normal_freg = 0;
-  char *hpos_freg = 0;
+  pmap<const InternalName *, const char *> texcoord_fregs;
+  pvector<const char *> dlightcoord_fregs;
+  pvector<const char *> slightcoord_fregs;
+  const char *world_position_freg = 0;
+  const char *world_normal_freg = 0;
+  const char *eye_position_freg = 0;
+  const char *eye_normal_freg = 0;
+  const char *hpos_freg = 0;
 
   if (_vertex_colors) {
     // Reserve COLOR0
@@ -662,7 +662,7 @@ synthesize_shader(const RenderState *rs) {
       const InternalName *texcoord_name = stage->get_texcoord_name();
 
       if (texcoord_fregs.count(texcoord_name) == 0) {
-        char *freg = alloc_freg();
+        const char *freg = alloc_freg();
         string tcname = texcoord_name->join("_");
         texcoord_fregs[texcoord_name] = freg;
 
@@ -774,7 +774,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
-  pmap<const InternalName *, char *>::const_iterator it;
+  pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
     // Pass through all texcoord inputs as-is.
     string tcname = it->first->join("_");
@@ -1462,7 +1462,7 @@ synthesize_shader(const RenderState *rs) {
   }
   clear_analysis();
   reset_register_allocator();
-  return shattr;
+  return DCAST(ShaderAttrib, shattr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1636,4 +1636,3 @@ texture_type_as_string(Texture::TextureType ttype) {
       return "2D";
   }
 }
-

@@ -451,8 +451,8 @@ ConfigVariableDouble pixel_zoom
 ("pixel-zoom", 1.0,
  PRC_DESC("The default pixel_zoom factor for new windows."));
 
-ConfigVariableDouble background_color
-("background-color", "0.41 0.41 0.41",
+ConfigVariableColor background_color
+("background-color", "0.41 0.41 0.41 0.0",
  PRC_DESC("Specifies the rgb(a) value of the default background color for a "
           "new window or offscreen buffer."));
 

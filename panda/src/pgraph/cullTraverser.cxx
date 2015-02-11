@@ -17,7 +17,6 @@
 #include "cullTraverserData.h"
 #include "transformState.h"
 #include "renderState.h"
-#include "fogAttrib.h"
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
@@ -47,7 +46,7 @@ TypeHandle CullTraverser::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 CullTraverser() :
@@ -65,7 +64,7 @@ CullTraverser() :
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 CullTraverser(const CullTraverser &copy) :
@@ -76,7 +75,6 @@ CullTraverser(const CullTraverser &copy) :
   _has_tag_state_key(copy._has_tag_state_key),
   _tag_state_key(copy._tag_state_key),
   _initial_state(copy._initial_state),
-  _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
   _cull_handler(copy._cull_handler),
   _portal_clipper(copy._portal_clipper),
@@ -98,7 +96,6 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
   _gsg = gsg;
 
   _initial_state = scene_setup->get_initial_state();
-  _depth_offset_decals = _gsg->depth_offset_decals() && depth_offset_decals;
 
   _current_thread = Thread::get_current_thread();
 
@@ -129,44 +126,44 @@ traverse(const NodePath &root) {
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
     if (bv != (BoundingVolume *)NULL &&
         bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      
+
       local_frustum = DCAST(GeometricBoundingVolume, bv);
     }
-      
+
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
     if (debug_portal_cull) {
       portal_viewer.draw_camera_frustum();
     }
-    
+
     // Store this pointer in this
     set_portal_clipper(&portal_viewer);
 
     CullTraverserData data(root, TransformState::make_identity(),
-                           _initial_state, _view_frustum, 
+                           _initial_state, _view_frustum,
                            _current_thread);
-    
+
     traverse(data);
-    
+
     // Finally add the lines to be drawn
     if (debug_portal_cull) {
       portal_viewer.draw_lines();
     }
-    
+
     // Render the frustum relative to the cull center.
     NodePath cull_center = _scene_setup->get_cull_center();
     CPT(TransformState) transform = cull_center.get_transform(root);
-    
+
     CullTraverserData my_data(data, portal_viewer._previous);
     my_data._net_transform = my_data._net_transform->compose(transform);
     traverse(my_data);
 
   } else {
     CullTraverserData data(root, TransformState::make_identity(),
-                           _initial_state, _view_frustum, 
+                           _initial_state, _view_frustum,
                            _current_thread);
-    
-    traverse(data);
+
+    do_traverse(data);
   }
 }
 
@@ -179,55 +176,7 @@ traverse(const NodePath &root) {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(CullTraverserData &data) {
-  if (is_in_view(data)) {
-    if (pgraph_cat.is_spam()) {
-      pgraph_cat.spam() 
-        << "\n" << data._node_path
-        << " " << data._draw_mask << "\n";
-    }
-
-    PandaNodePipelineReader *node_reader = data.node_reader();
-    int fancy_bits = node_reader->get_fancy_bits();
-
-    if ((fancy_bits & (PandaNode::FB_transform |
-                       PandaNode::FB_state |
-                       PandaNode::FB_effects |
-                       PandaNode::FB_tag |
-                       PandaNode::FB_draw_mask |
-                       PandaNode::FB_cull_callback)) == 0 &&
-        data._cull_planes->is_empty()) {
-      // Nothing interesting in this node; just move on.
-      traverse_below(data);
-
-    } else {
-      // Something in this node is worth taking a closer look.
-      const RenderEffects *node_effects = node_reader->get_effects();
-      if (node_effects->has_show_bounds()) {
-        // If we should show the bounding volume for this node, make it
-        // up now.
-        show_bounds(data, node_effects->has_show_tight_bounds());
-      }
-      
-      data.apply_transform_and_state(this);
-      
-      const FogAttrib *fog = DCAST(FogAttrib, node_reader->get_state()->get_attrib(FogAttrib::get_class_slot()));
-      if (fog != (const FogAttrib *)NULL && fog->get_fog() != (Fog *)NULL) {
-        // If we just introduced a FogAttrib here, call adjust_to_camera()
-        // now.  This maybe isn't the perfect time to call it, but it's
-        // good enough; and at this time we have all the information we
-        // need for it.
-        fog->get_fog()->adjust_to_camera(get_camera_transform());
-      }
-      
-      if (fancy_bits & PandaNode::FB_cull_callback) {
-        PandaNode *node = data.node();
-        if (!node->cull_callback(this, data)) {
-          return;
-        }
-      }
-      traverse_below(data);
-    }
-  }
+  do_traverse(data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,21 +192,12 @@ traverse_below(CullTraverserData &data) {
   PandaNodePipelineReader *node_reader = data.node_reader();
   PandaNode *node = data.node();
 
-  bool this_node_hidden = data.is_this_node_hidden(this);
+  if (!data.is_this_node_hidden(_camera_mask)) {
+    node->add_for_draw(this, data);
 
-  const RenderEffects *node_effects = node_reader->get_effects();
-  bool has_decal = !this_node_hidden && node_effects->has_decal();
-  if (has_decal && !_depth_offset_decals) {
-    // Start the three-pass decal rendering if we're not using
-    // DepthOffsetAttribs to implement decals.
-    start_decal(data);
-    
-  } else {
-    if (!this_node_hidden) {
-      node->add_for_draw(this, data);
-    }
-
-    if (has_decal) {
+    // Check for a decal effect.
+    const RenderEffects *node_effects = node_reader->get_effects();
+    if (node_effects->has_decal()) {
       // If we *are* implementing decals with DepthOffsetAttribs,
       // apply it now, so that each child of this node gets offset by
       // a tiny amount.
@@ -270,24 +210,24 @@ traverse_below(CullTraverserData &data) {
       }
 #endif
     }
+  }
 
-    // Now visit all the node's children.
-    PandaNode::Children children = node_reader->get_children();
-    node_reader->release();
-    int num_children = children.get_num_children();
-    if (node->has_selective_visibility()) {
-      int i = node->get_first_visible_child();
-      while (i < num_children) {
-        CullTraverserData next_data(data, children.get_child(i));
-        traverse(next_data);
-        i = node->get_next_visible_child(i);
-      }
-      
-    } else {
-      for (int i = 0; i < num_children; i++) {
-        CullTraverserData next_data(data, children.get_child(i));
-        traverse(next_data);
-      }
+  // Now visit all the node's children.
+  PandaNode::Children children = node_reader->get_children();
+  node_reader->release();
+  int num_children = children.get_num_children();
+  if (node->has_selective_visibility()) {
+    int i = node->get_first_visible_child();
+    while (i < num_children) {
+      CullTraverserData next_data(data, children.get_child(i));
+      do_traverse(next_data);
+      i = node->get_next_visible_child(i);
+    }
+
+  } else {
+    for (int i = 0; i < num_children; i++) {
+      CullTraverserData next_data(data, children.get_child(i));
+      do_traverse(next_data);
     }
   }
 }
@@ -311,21 +251,20 @@ end_traverse() {
 //               bounding volume.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-draw_bounding_volume(const BoundingVolume *vol, 
-                     const TransformState *net_transform,
-                     const TransformState *modelview_transform) const {
+draw_bounding_volume(const BoundingVolume *vol,
+                     const TransformState *internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
-  
+
   if (bounds_viz != (Geom *)NULL) {
     _geoms_pcollector.add_level(2);
-    CullableObject *outer_viz = 
-      new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                         net_transform, modelview_transform, get_scene());
+    CullableObject *outer_viz =
+      new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
+                         internal_transform);
     _cull_handler->record_object(outer_viz, this);
-    
-    CullableObject *inner_viz = 
-      new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                         net_transform, modelview_transform, get_scene());
+
+    CullableObject *inner_viz =
+      new CullableObject(bounds_viz, get_bounds_inner_viz_state(),
+                         internal_transform);
     _cull_handler->record_object(inner_viz, this);
   }
 }
@@ -352,34 +291,30 @@ is_in_view(CullTraverserData &data) {
 void CullTraverser::
 show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
-  CPT(TransformState) net_transform = data.get_net_transform(this);
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
+  CPT(TransformState) internal_transform = data.get_internal_transform(this);
 
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
 
     if (bounds_viz != (Geom *)NULL) {
       _geoms_pcollector.add_level(1);
-      CullableObject *outer_viz = 
-        new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           net_transform, modelview_transform,
-                           get_scene());
+      CullableObject *outer_viz =
+        new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
+                           internal_transform);
       _cull_handler->record_object(outer_viz, this);
     }
-    
+
   } else {
-    draw_bounding_volume(node->get_bounds(),
-                         net_transform, modelview_transform);
+    draw_bounding_volume(node->get_bounds(), internal_transform);
 
     if (node->is_geom_node()) {
       // Also show the bounding volumes of included Geoms.
-      net_transform = net_transform->compose(node->get_transform());
-      modelview_transform = modelview_transform->compose(node->get_transform());
+      internal_transform = internal_transform->compose(node->get_transform());
       GeomNode *gnode = DCAST(GeomNode, node);
       int num_geoms = gnode->get_num_geoms();
       for (int i = 0; i < num_geoms; ++i) {
-        draw_bounding_volume(gnode->get_geom(i)->get_bounds(), 
-                             net_transform, modelview_transform);
+        draw_bounding_volume(gnode->get_geom(i)->get_bounds(),
+                             internal_transform);
       }
     }
   }
@@ -407,7 +342,7 @@ make_bounds_viz(const BoundingVolume *vol) {
       ("bounds", GeomVertexFormat::get_v3(),
        Geom::UH_stream);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    
+
     PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
     for (int sl = 0; sl < num_slices; ++sl) {
       PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
@@ -419,11 +354,11 @@ make_bounds_viz(const BoundingVolume *vol) {
         vertex.add_data3(compute_point(sphere, latitude, longitude1));
       }
       vertex.add_data3(compute_point(sphere, 1.0, longitude0));
-      
+
       strip->add_next_vertices(num_stacks * 2);
       strip->close_primitive();
     }
-    
+
     geom = new Geom(vdata);
     geom->add_primitive(strip);
 
@@ -438,7 +373,7 @@ make_bounds_viz(const BoundingVolume *vol) {
     for (int i = 0; i < 8; ++i ) {
       vertex.add_data3(fvol->get_point(i));
     }
-    
+
     PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
     lines->add_vertices(0, 1); lines->close_primitive();
     lines->add_vertices(1, 2); lines->close_primitive();
@@ -472,7 +407,7 @@ make_bounds_viz(const BoundingVolume *vol) {
     for (int i = 0; i < 8; ++i ) {
       vertex.add_data3(box.get_point(i));
     }
-    
+
     PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_stream);
     tris->add_vertices(0, 4, 5);
     tris->close_primitive();
@@ -533,7 +468,7 @@ make_tight_bounds_viz(PandaNode *node) const {
       Geom::UH_stream);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex(),
                             _current_thread);
-    
+
     vertex.add_data3(n[0], n[1], n[2]);
     vertex.add_data3(n[0], n[1], x[2]);
     vertex.add_data3(n[0], x[1], n[2]);
@@ -542,7 +477,7 @@ make_tight_bounds_viz(PandaNode *node) const {
     vertex.add_data3(x[0], n[1], x[2]);
     vertex.add_data3(x[0], x[1], n[2]);
     vertex.add_data3(x[0], x[1], x[2]);
-  
+
     PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
 
     // We wind one long linestrip around the wireframe cube.  This
@@ -564,7 +499,7 @@ make_tight_bounds_viz(PandaNode *node) const {
     strip->add_vertex(5);
     strip->add_vertex(1);
     strip->close_primitive();
-      
+
     geom = new Geom(vdata);
     geom->add_primitive(strip);
   }
@@ -576,10 +511,10 @@ make_tight_bounds_viz(PandaNode *node) const {
 //     Function: CullTraverser::compute_point
 //       Access: Private, Static
 //  Description: Returns a point on the surface of the sphere.
-//               latitude and longitude range from 0.0 to 1.0.  
+//               latitude and longitude range from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 LVertex CullTraverser::
-compute_point(const BoundingSphere *sphere, 
+compute_point(const BoundingSphere *sphere,
               PN_stdfloat latitude, PN_stdfloat longitude) {
   PN_stdfloat s1, c1;
   csincos(latitude * MathNumbers::pi, &s1, &c1);
@@ -647,232 +582,4 @@ get_depth_offset_state() {
       (DepthOffsetAttrib::make(1));
   }
   return state;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::start_decal
-//       Access: Private
-//  Description: Collects a base node and all of the decals applied to
-//               it.  This involves recursing below the base GeomNode
-//               to find all the decal geoms.
-////////////////////////////////////////////////////////////////////
-void CullTraverser::
-start_decal(const CullTraverserData &data) {
-  PandaNode *node = data.node();
-  if (!node->is_geom_node()) {
-    pgraph_cat.error()
-      << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
-    return;
-  }
-
-  const PandaNodePipelineReader *node_reader = data.node_reader();
-
-  // Build a chain of CullableObjects.  The head of the chain will be
-  // all of the base Geoms in order, followed by an empty
-  // CullableObject node, followed by all of the decal Geoms, in
-  // order.
-
-  // Since the CullableObject is a linked list which gets built in
-  // LIFO order, we start with the decals.
-  CullableObject *decals = (CullableObject *)NULL;
-  PandaNode::Children cr = node_reader->get_children();
-  int num_children = cr.get_num_children();
-  if (node->has_selective_visibility()) {
-    int i = node->get_first_visible_child();
-    while (i < num_children) {
-      CullTraverserData next_data(data, cr.get_child(i));
-      decals = r_get_decals(next_data, decals);
-      i = node->get_next_visible_child(i);
-    }
-    
-  } else {
-    for (int i = num_children - 1; i >= 0; i--) {
-      CullTraverserData next_data(data, cr.get_child(i));
-      decals = r_get_decals(next_data, decals);
-    }
-  }
-
-  // Now create a new, empty CullableObject to separate the decals
-  // from the non-decals.
-  CullableObject *separator = new CullableObject;
-  separator->set_next(decals);
-
-  // And now get the base Geoms, again in reverse order.
-  CullableObject *object = separator;
-  GeomNode *geom_node = DCAST(GeomNode, node);
-  GeomNode::Geoms geoms = geom_node->get_geoms();
-  int num_geoms = geoms.get_num_geoms();
-  _geoms_pcollector.add_level(num_geoms);
-  CPT(TransformState) net_transform = data.get_net_transform(this);
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
-  CPT(TransformState) internal_transform = _scene_setup->get_cs_transform()->compose(modelview_transform);
-  
-  for (int i = num_geoms - 1; i >= 0; i--) {
-    const Geom *geom = geoms.get_geom(i);
-    if (geom->is_empty()) {
-      continue;
-    }
-
-    CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-    if (state->has_cull_callback() && !state->cull_callback(this, data)) {
-      // Cull.
-      continue;
-    }
-    
-    // Cull the Geom bounding volume against the view frustum
-    // and/or the cull planes.  Don't bother unless we've got more
-    // than one Geom, since otherwise the bounding volume of the
-    // GeomNode is (probably) the same as that of the one Geom,
-    // and we've already culled against that.
-    if (num_geoms > 1) {
-      if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
-        // Cull the individual Geom against the view frustum.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
-        const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
-        
-        int result = data._view_frustum->contains(geom_gbv);
-        if (result == BoundingVolume::IF_no_intersection) {
-          // Cull this Geom.
-          continue;
-        }
-      }
-      if (!data._cull_planes->is_empty()) {
-        // Also cull the Geom against the cull planes.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
-        const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
-        int result;
-        data._cull_planes->do_cull(result, state, geom_gbv);
-        if (result == BoundingVolume::IF_no_intersection) {
-          // Cull.
-          continue;
-        }
-      }
-    }
-
-    CullableObject *next = object;
-    object =
-      new CullableObject(geom, state, net_transform, 
-                         modelview_transform, internal_transform);
-    object->set_next(next);
-  }
-
-  if (object != separator) {
-    // Finally, send the whole list down to the CullHandler for
-    // processing.  The first Geom in the node now represents the
-    // overall state.
-    _cull_handler->record_object(object, this);
-  } else {
-    // Never mind; there's nothing to render.
-    delete object;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::r_get_decals
-//       Access: Private
-//  Description: Recursively gets all the decals applied to a
-//               particular GeomNode.  These are built into a
-//               CullableObject list in LIFO order (so that the
-//               traversing the list will extract them in the order
-//               they were encountered in the scene graph).
-////////////////////////////////////////////////////////////////////
-CullableObject *CullTraverser::
-r_get_decals(CullTraverserData &data, CullableObject *decals) {
-  if (is_in_view(data)) {
-    PandaNodePipelineReader *node_reader = data.node_reader();
-    PandaNode *node = data.node();
-
-    const RenderEffects *node_effects = node_reader->get_effects();
-    if (node_effects->has_show_bounds()) {
-      // If we should show the bounding volume for this node, make it
-      // up now.
-      show_bounds(data, node_effects->has_show_tight_bounds());
-    }
-
-    data.apply_transform_and_state(this);
-
-    // First, visit all of the node's children.
-    int num_children = node_reader->get_num_children();
-    if (node->has_selective_visibility()) {
-      int i = node->get_first_visible_child();
-      while (i < num_children) {
-        CullTraverserData next_data(data, node_reader->get_child(i));
-        decals = r_get_decals(next_data, decals);
-        i = node->get_next_visible_child(i);
-      }
-      
-    } else {
-      for (int i = num_children - 1; i >= 0; i--) {
-        CullTraverserData next_data(data, node_reader->get_child(i));
-        decals = r_get_decals(next_data, decals);
-      }
-    }
-
-    // Now, tack on any geoms within the node.
-    if (node->is_geom_node()) {
-      GeomNode *geom_node = DCAST(GeomNode, node);
-      GeomNode::Geoms geoms = geom_node->get_geoms();
-      int num_geoms = geoms.get_num_geoms();
-      _geoms_pcollector.add_level(num_geoms);
-      CPT(TransformState) net_transform = data.get_net_transform(this);
-      CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
-      CPT(TransformState) internal_transform = _scene_setup->get_cs_transform()->compose(modelview_transform);
-
-      for (int i = num_geoms - 1; i >= 0; i--) {
-        const Geom *geom = geoms.get_geom(i);
-        if (geom->is_empty()) {
-          continue;
-        }
-
-        CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-        if (state->has_cull_callback() && !state->cull_callback(this, data)) {
-          // Cull.
-          continue;
-        }
-
-        // Cull the Geom bounding volume against the view frustum
-        // and/or the cull planes.  Don't bother unless we've got more
-        // than one Geom, since otherwise the bounding volume of the
-        // GeomNode is (probably) the same as that of the one Geom,
-        // and we've already culled against that.
-        if (num_geoms > 1) {
-          if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
-            // Cull the individual Geom against the view frustum.
-            CPT(BoundingVolume) geom_volume = geom->get_bounds();
-            const GeometricBoundingVolume *geom_gbv =
-              DCAST(GeometricBoundingVolume, geom_volume);
-
-            int result = data._view_frustum->contains(geom_gbv);
-            if (result == BoundingVolume::IF_no_intersection) {
-              // Cull this Geom.
-              continue;
-            }
-          }
-          if (!data._cull_planes->is_empty()) {
-            // Also cull the Geom against the cull planes.
-            CPT(BoundingVolume) geom_volume = geom->get_bounds();
-            const GeometricBoundingVolume *geom_gbv =
-              DCAST(GeometricBoundingVolume, geom_volume);
-            int result;
-            data._cull_planes->do_cull(result, state, geom_gbv);
-            if (result == BoundingVolume::IF_no_intersection) {
-              // Cull.
-              continue;
-            }
-          }
-        }
-
-        CullableObject *next = decals;
-        decals =
-          new CullableObject(geom, state, net_transform, 
-                             modelview_transform, internal_transform);
-        decals->set_next(next);
-      }
-    }
-  }
-
-  return decals;
 }

@@ -1,0 +1,50 @@
+.TH PVIEW 1 "27 December 2014" "" Panda3D
+.SH NAME
+pview \- quickly view a Panda model and/or animation
+.SH SYNOPSIS
+.B pview
+[
+.I opts
+]
+.I model
+[
+.I model ...
+]
+.br
+.B pview \-h
+.SH DESCRIPTION
+\fBpview\fP opens a quick Panda window for viewing one or more models
+and/or animations.
+.SH OPTIONS
+.TP
+.B \-a
+Convert and play animations, if loading an external file type
+(like .mb) directly and if the converter supports animations.
+Also implicitly enables the animation controls.
+.TP
+.B \-c
+Automatically center models within the viewing window on startup.
+This can also be achieved with the 'c' hotkey at runtime.
+.TP
+.B \-l
+Open the window before loading any models with the text "Loading"
+displayed in the window.  The default is not to open the window
+until all models are loaded.
+.TP
+.B \-i
+Ignore bundle/group names.  Normally, the <group> name must match
+the <bundle> name, or the animation will not be used.
+.TP
+.BI "\-s " filename
+After displaying the models, immediately take a screenshot and
+exit.
+.TP
+.B \-D
+Delete the model files after loading them (presumably this option
+will only be used when loading a temporary model file).
+.TP
+.B \-V
+Report the current version of Panda, and exit.
+.TP
+.B \-h
+Display this help text.

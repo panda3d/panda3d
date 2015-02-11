@@ -47,7 +47,7 @@ import getopt
 import os
 
 from direct.p3d import PackageMerger
-from pandac.PandaModules import *
+from panda3d.core import *
 
 def usage(code, msg = ''):
     print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
@@ -66,7 +66,7 @@ for opt, arg in opts:
         installDir = Filename.fromOsSpecific(arg)
     elif opt == '-p':
         packageNames += arg.split(',')
-        
+
     elif opt == '-h':
         usage(0)
     else:
@@ -92,7 +92,7 @@ try:
     for dir in inputDirs:
         pm.merge(dir, packageNames = packageNames)
     pm.close()
-        
+
 except PackageMerger.PackageMergerError:
     # Just print the error message and exit gracefully.
     inst = sys.exc_info()[1]

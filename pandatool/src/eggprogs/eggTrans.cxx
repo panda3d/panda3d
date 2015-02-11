@@ -30,6 +30,7 @@ EggTrans() {
   add_texture_options();
   add_delod_options();
 
+  set_program_brief("apply transformations and optimizations to an .egg file");
   set_program_description
     ("egg-trans reads an egg file and writes an essentially equivalent "
      "egg file to the standard output, or to the file specified with -o.  "

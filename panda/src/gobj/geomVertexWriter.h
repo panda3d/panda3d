@@ -26,7 +26,7 @@
 //       Class : GeomVertexWriter
 // Description : This object provides a high-level interface for
 //               quickly writing a sequence of numeric values from a
-//               vertex table. 
+//               vertex table.
 //
 //               This object can be used both to replace existing
 //               vertices in the table, or to extend the table with
@@ -72,14 +72,11 @@ PUBLISHED:
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const string &name,
-                          Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexData *vertex_data,
-                          const InternalName *name,
+                          CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexArrayData *array_data, 
+  INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 
@@ -99,8 +96,7 @@ PUBLISHED:
   INLINE Thread *get_current_thread() const;
 
   INLINE bool set_column(int column);
-  INLINE bool set_column(const string &name);
-  INLINE bool set_column(const InternalName *name);
+  INLINE bool set_column(CPT_InternalName name);
   bool set_column(int array, const GeomVertexColumn *column);
   INLINE void clear();
   bool reserve_num_rows(int num_rows);
@@ -123,6 +119,8 @@ PUBLISHED:
   INLINE void set_data3f(const LVecBase3f &data);
   INLINE void set_data4f(float x, float y, float z, float w);
   INLINE void set_data4f(const LVecBase4f &data);
+  INLINE void set_matrix3f(const LMatrix3f &mat);
+  INLINE void set_matrix4f(const LMatrix4f &mat);
 
   INLINE void set_data1d(double data);
   INLINE void set_data2d(double x, double y);
@@ -131,6 +129,8 @@ PUBLISHED:
   INLINE void set_data3d(const LVecBase3d &data);
   INLINE void set_data4d(double x, double y, double z, double w);
   INLINE void set_data4d(const LVecBase4d &data);
+  INLINE void set_matrix3d(const LMatrix3d &mat);
+  INLINE void set_matrix4d(const LMatrix4d &mat);
 
   INLINE void set_data1(PN_stdfloat data);
   INLINE void set_data2(PN_stdfloat x, PN_stdfloat y);
@@ -139,6 +139,8 @@ PUBLISHED:
   INLINE void set_data3(const LVecBase3 &data);
   INLINE void set_data4(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat w);
   INLINE void set_data4(const LVecBase4 &data);
+  INLINE void set_matrix3(const LMatrix3 &mat);
+  INLINE void set_matrix4(const LMatrix4 &mat);
 
   INLINE void set_data1i(int data);
   INLINE void set_data2i(int a, int b);
@@ -158,6 +160,8 @@ PUBLISHED:
   INLINE void add_data3f(const LVecBase3f &data);
   INLINE void add_data4f(float x, float y, float z, float w);
   INLINE void add_data4f(const LVecBase4f &data);
+  INLINE void add_matrix3f(const LMatrix3f &mat);
+  INLINE void add_matrix4f(const LMatrix4f &mat);
 
   INLINE void add_data1d(double data);
   INLINE void add_data2d(double x, double y);
@@ -166,6 +170,8 @@ PUBLISHED:
   INLINE void add_data3d(const LVecBase3d &data);
   INLINE void add_data4d(double x, double y, double z, double w);
   INLINE void add_data4d(const LVecBase4d &data);
+  INLINE void add_matrix3d(const LMatrix3d &mat);
+  INLINE void add_matrix4d(const LMatrix4d &mat);
 
   INLINE void add_data1(PN_stdfloat data);
   INLINE void add_data2(PN_stdfloat x, PN_stdfloat y);
@@ -174,6 +180,8 @@ PUBLISHED:
   INLINE void add_data3(const LVecBase3 &data);
   INLINE void add_data4(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat w);
   INLINE void add_data4(const LVecBase4 &data);
+  INLINE void add_matrix3(const LMatrix3 &mat);
+  INLINE void add_matrix4(const LMatrix4 &mat);
 
   INLINE void add_data1i(int data);
   INLINE void add_data2i(int a, int b);
@@ -213,7 +221,7 @@ private:
   PT(GeomVertexData) _vertex_data;
   int _array;
   PT(GeomVertexArrayData) _array_data;
-    
+
   Thread *_current_thread;
   GeomVertexColumn::Packer *_packer;
   int _stride;

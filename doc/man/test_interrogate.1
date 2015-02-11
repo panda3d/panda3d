@@ -1,0 +1,40 @@
+.TH TEST_INTERROGATE 1 "27 December 2014" "" Panda3D
+.SH NAME
+test_interrogate \- report symbols defined in an interrogate module
+.SH SYNOPSIS
+.B test_interrogate
+[
+.I opts
+]
+.I libfile.so
+[
+.I libfile.so ...
+]
+.SH DESCRIPTION
+Loads the given shared library or libraries, if possible, and reports the
+symbols, types, and functions available within those libraries as reported
+by interrogate.
+.PP
+In lieu of loading a shared library, you may also read the interrogate
+database file directly by specifying a filename like \fIlibfile.in\fP.
+This will report the symbols defined in that file only (without pulling
+in dependent files), and will not have any function pointers available.
+.SH OPTIONS
+.TP
+.BI "\-p " path
+Specify the search path for *.in files.  This option may be repeated.
+.TP
+.B \-f
+Give a detailed report of each function in the database, including
+synthesized functions like upcasts and downcasts.
+.TP
+.B \-t 
+Give a detailed report of every type in the database, including types
+like pointers and const pointers.
+.TP
+.B \-q
+Quickly load up each shared library, if possible, and then immediately
+exit.  Useful for quickly determining whether a library can even load.
+.SH "SEE ALSO"
+.BR interrogate (1),
+.BR interrogate_module (1)

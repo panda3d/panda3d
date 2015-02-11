@@ -17,7 +17,7 @@
 #include "cullResult.h"
 #include "config_pgraph.h"
 #include "string_utils.h"
-
+#include "configVariableColor.h"
 
 CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)NULL;
 
@@ -109,6 +109,18 @@ add_bin(const string &name, BinType type, int sort) {
   def._sort = sort;
   def._active = true;
 
+#ifndef NDEBUG
+  // Check if there was a flash color configured for this bin name.
+  ConfigVariableColor flash_bin
+    ("flash-bin-" + name, "", "", ConfigVariable::F_dynamic);
+  if (flash_bin.get_num_words() == 0) {
+    def._flash_active = false;
+  } else {
+    def._flash_active = true;
+    def._flash_color = flash_bin.get_value();
+  }
+#endif
+
   _bins_by_name.insert(BinsByName::value_type(name, new_bin_index));
   _sorted_bins.push_back(new_bin_index);
   _bins_are_sorted = false;
@@ -133,7 +145,7 @@ remove_bin(int bin_index) {
   nassertv(_bin_definitions[bin_index]._in_use);
 
   _bin_definitions[bin_index]._in_use = false;
-  SortedBins::iterator si = 
+  SortedBins::iterator si =
     find(_sorted_bins.begin(), _sorted_bins.end(), bin_index);
   nassertv(si != _sorted_bins.end());
   _sorted_bins.erase(si);
@@ -142,7 +154,7 @@ remove_bin(int bin_index) {
   // Now we have to make sure all of the data objects in the world
   // that had cached this bin index or have a bin object are correctly
   // updated.
-  
+
   // First, tell all the RenderStates in the world to reset their bin
   // index cache.
   RenderState::bin_removed(bin_index);
@@ -170,7 +182,7 @@ find_bin(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinManager::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullBinManager::
 write(ostream &out) const {
@@ -183,20 +195,6 @@ write(ostream &out) const {
     out << get_bin_name(bin_index) << ", " << get_bin_type(bin_index)
         << ", " << get_bin_sort(bin_index) << "\n";
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns the pointer to the global CullBinManager
-//               object.
-////////////////////////////////////////////////////////////////////
-CullBinManager *CullBinManager::
-get_global_ptr() {
-  if (_global_ptr == (CullBinManager *)NULL) {
-    _global_ptr = new CullBinManager;
-  }
-  return _global_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,11 +258,11 @@ do_sort_bins() {
 void CullBinManager::
 setup_initial_bins() {
   ConfigVariableList cull_bin
-    ("cull-bin", 
+    ("cull-bin",
      PRC_DESC("Creates a new cull bin by name, with the specified properties.  "
               "This is a string in three tokens, separated by whitespace: "
               "'bin_name sort type'."));
-  
+
   // First, add all of the bins specified in the Configrc file.
   int num_bins = cull_bin.get_num_unique_values();
 
@@ -351,26 +349,26 @@ parse_bin_type(const string &bin_type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullBinManager::BinType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, CullBinManager::BinType bin_type) {
   switch (bin_type) {
   case CullBinManager::BT_invalid:
     return out << "invalid";
-    
+
   case CullBinManager::BT_unsorted:
     return out << "unsorted";
-    
+
   case CullBinManager::BT_state_sorted:
     return out << "state_sorted";
-    
+
   case CullBinManager::BT_back_to_front:
     return out << "back_to_front";
-    
+
   case CullBinManager::BT_front_to_back:
     return out << "front_to_back";
-    
+
   case CullBinManager::BT_fixed:
     return out << "fixed";
   }

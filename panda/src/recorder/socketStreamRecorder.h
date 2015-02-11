@@ -42,7 +42,8 @@ class DatagramIterator;
 //               straight through to the socket if it is connected, or
 //               silently ignored if it is not.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase {
+class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase,
+                                                  public ReferenceCount {
 PUBLISHED:
   INLINE SocketStreamRecorder();
   INLINE SocketStreamRecorder(SocketStream *stream, bool owns_stream);
@@ -77,6 +78,9 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
+
+  INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
+  INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
 
 protected:
   static RecorderBase *make_recorder(const FactoryParams &params);

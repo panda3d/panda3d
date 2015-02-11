@@ -17,7 +17,7 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
+extern Dtool_PyTypedObject Dtool_BamWriter;
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////

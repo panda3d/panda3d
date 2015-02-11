@@ -52,7 +52,7 @@ operator = (const InternalNameCollection &copy) {
 //  Description: Adds a new InternalName to the collection.
 ////////////////////////////////////////////////////////////////////
 void InternalNameCollection::
-add_name(InternalName *name) {
+add_name(const InternalName *name) {
   // If the pointer to our internal array is shared by any other
   // InternalNameCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren InternalNameCollection
@@ -75,7 +75,7 @@ add_name(InternalName *name) {
 //               not a member of the collection.
 ////////////////////////////////////////////////////////////////////
 bool InternalNameCollection::
-remove_name(InternalName *name) {
+remove_name(const InternalName *name) {
   int name_index = -1;
   for (int i = 0; name_index == -1 && i < (int)_names.size(); i++) {
     if (_names[i] == name) {
@@ -131,7 +131,7 @@ remove_names_from(const InternalNameCollection &other) {
   InternalNames new_names;
   int num_names = get_num_names();
   for (int i = 0; i < num_names; i++) {
-    PT(InternalName) name = get_name(i);
+    const InternalName *name = get_name(i);
     if (!other.has_name(name)) {
       new_names.push_back(name);
     }
@@ -153,7 +153,7 @@ remove_duplicate_names() {
 
   int num_names = get_num_names();
   for (int i = 0; i < num_names; i++) {
-    PT(InternalName) name = get_name(i);
+    const InternalName *name = get_name(i);
     bool duplicated = false;
 
     for (int j = 0; j < i && !duplicated; j++) {
@@ -175,7 +175,7 @@ remove_duplicate_names() {
 //               this collection, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool InternalNameCollection::
-has_name(InternalName *name) const {
+has_name(const InternalName *name) const {
   for (int i = 0; i < get_num_names(); i++) {
     if (name == get_name(i)) {
       return true;
@@ -209,7 +209,7 @@ get_num_names() const {
 //       Access: Published
 //  Description: Returns the nth InternalName in the collection.
 ////////////////////////////////////////////////////////////////////
-InternalName *InternalNameCollection::
+const InternalName *InternalNameCollection::
 get_name(int index) const {
   nassertr(index >= 0 && index < (int)_names.size(), NULL);
 
@@ -223,7 +223,7 @@ get_name(int index) const {
 //               the same as get_name(), but it may be a more
 //               convenient way to access it.
 ////////////////////////////////////////////////////////////////////
-InternalName *InternalNameCollection::
+const InternalName *InternalNameCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_names.size(), NULL);
 

@@ -37,6 +37,7 @@ DAEToEgg():
      "that export models with inverted transparency, such as Google SketchUp.",
      &SomethingToEgg::dispatch_none, &_invert_transparency);
 
+  set_program_brief("convert COLLADA assets into .egg files");
   set_program_description
     ("This program converts .dae files (COLLADA Digital Asset Exchange) to .egg.");
 

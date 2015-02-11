@@ -85,16 +85,16 @@ PUBLISHED:
   BLOCKING INLINE void stop_threads();
   INLINE bool remove(AsyncTask *task);
 
-  BLOCKING INLINE PT(PandaNode) load_sync(const Filename &filename, 
+  BLOCKING INLINE PT(PandaNode) load_sync(const Filename &filename,
                                           const LoaderOptions &options = LoaderOptions()) const;
 
-  PT(AsyncTask) make_async_request(const Filename &filename, 
+  PT(AsyncTask) make_async_request(const Filename &filename,
                                    const LoaderOptions &options = LoaderOptions());
   INLINE void load_async(AsyncTask *request);
 
   INLINE bool save_sync(const Filename &filename, const LoaderOptions &options,
                         PandaNode *node) const;
-  PT(AsyncTask) make_async_save_request(const Filename &filename, 
+  PT(AsyncTask) make_async_save_request(const Filename &filename,
                                         const LoaderOptions &options,
                                         PandaNode *node);
   INLINE void save_async(AsyncTask *request);
@@ -140,7 +140,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 

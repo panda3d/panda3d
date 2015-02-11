@@ -3,7 +3,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from pandac.PandaModules import VirtualFileSystem
 from pandac.PandaModules import Filename
 from pandac.PandaModules import DSearchPath
-from direct.showbase import ElementTree as ET
+import xml.etree.ElementTree as ET
 import LandingPageHTML
 from StringIO import StringIO
 

@@ -17,12 +17,17 @@
 #include "config_event.h"
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
+#include "py_panda.h"
 
 TypeHandle PythonTask::_type_handle;
 
+Configure(config_pythonTask);
+ConfigureFn(config_pythonTask) {
+  PythonTask::init_type();
+}
+
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
+extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
 #endif
 
 ////////////////////////////////////////////////////////////////////

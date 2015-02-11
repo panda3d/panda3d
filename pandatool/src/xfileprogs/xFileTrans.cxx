@@ -29,6 +29,7 @@ XFileTrans() :
   // output files.
   _preferred_extension = ".x";
 
+  set_program_brief("reads and writes DirectX .x files");
   set_program_description
     ("This program reads a DirectX retained-mode file (.x) and writes an "
      "essentially equivalent .x file.  It is primarily useful for "

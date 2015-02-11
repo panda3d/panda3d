@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 ImageFixHiddenColor::
 ImageFixHiddenColor() : ImageFilter(true) {
+  set_program_brief("change the color of transparent pixels in an image");
   set_program_description
     ("This program is designed to fix the color channels of an "
      "alpha-cutout image, making the \"color\" of the invisible part of the "

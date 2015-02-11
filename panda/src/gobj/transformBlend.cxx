@@ -109,7 +109,7 @@ limit_transforms(int max_transforms) {
     return;
   }
 
-  while (_entries.size() > max_transforms) {
+  while ((int)_entries.size() > max_transforms) {
     // Repeatedly find and remove the least-important transform.
     nassertv(!_entries.empty());
     Entries::iterator ei_least = _entries.begin();

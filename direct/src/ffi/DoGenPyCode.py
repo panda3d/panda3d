@@ -143,7 +143,7 @@ def doGetopts():
             doSqueeze = False
         elif (flag == '-s'):
             deleteSourceAfterSqueeze = False
-            
+
         else:
             FFIConstants.notify.error('illegal option: ' + flag)
 
@@ -168,7 +168,7 @@ def doGetopts():
         if codeLib not in newLibs:
             newLibs.append(codeLib)
     codeLibs = newLibs
-        
+
 
 def doErrorCheck():
     global outputCodeDir
@@ -278,9 +278,9 @@ def generateNativeWrappers():
         # in the runtime (plugin) environment, where all libraries are
         # not necessarily downloaded.
         if sys.version_info >= (3, 0):
-            pandaModules.write('try:\n  from .%s import *\nexcept ImportError as err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (metaModuleName))
+            pandaModules.write('try:\n    from .%s import *\nexcept ImportError as err:\n    if "DLL loader cannot find" not in str(err):\n        raise\n' % (metaModuleName))
         else:
-            pandaModules.write('try:\n  from %s import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (metaModuleName))
+            pandaModules.write('try:\n    from %s import *\nexcept ImportError, err:\n    if "DLL loader cannot find" not in str(err):\n        raise\n' % (metaModuleName))
 
         # Not sure if this message is helpful or annoying.
         #pandaModules.write('  print("Failed to import %s")\n' % (moduleName))
@@ -306,7 +306,7 @@ def generateNativeWrappers():
                     extension = open(extensionFilename, 'r')
                     moduleModules.write(extension.read())
                     moduleModules.write('\n')
-        
+
 
 def run():
     global outputCodeDir

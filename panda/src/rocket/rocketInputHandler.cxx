@@ -259,6 +259,15 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
       case ButtonEvent::T_move:
         break;
+
+      case ButtonEvent::T_candidate:
+        break;
+
+      case ButtonEvent::T_raw_down:
+        break;
+
+      case ButtonEvent::T_raw_up:
+        break;
       }
     }
   }

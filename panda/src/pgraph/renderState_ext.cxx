@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<RenderState>::
 get_composition_cache() const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  extern struct Dtool_PyTypedObject Dtool_RenderState;
   LightReMutexHolder holder(*RenderState::_states_lock);
   size_t cache_size = _this->_composition_cache.get_size();
   PyObject *list = PyList_New(cache_size);
@@ -90,7 +90,7 @@ get_composition_cache() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<RenderState>::
 get_invert_composition_cache() const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  extern struct Dtool_PyTypedObject Dtool_RenderState;
   LightReMutexHolder holder(*RenderState::_states_lock);
   size_t cache_size = _this->_invert_composition_cache.get_size();
   PyObject *list = PyList_New(cache_size);
@@ -141,7 +141,7 @@ get_invert_composition_cache() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<RenderState>::
 get_states() {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  extern struct Dtool_PyTypedObject Dtool_RenderState;
   if (RenderState::_states == (RenderState::States *)NULL) {
     return PyList_New(0);
   }

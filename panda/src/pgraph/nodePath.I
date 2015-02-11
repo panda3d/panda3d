@@ -109,6 +109,33 @@ operator = (const NodePath &copy) {
   _error_type = copy._error_type;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Move Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(NodePath &&from) NOEXCEPT :
+  _head(move(from._head)),
+  _backup_key(from._backup_key),
+  _error_type(from._error_type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Move Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+operator = (NodePath &&from) NOEXCEPT {
+  _head = move(from._head);
+  _backup_key = from._backup_key;
+  _error_type = from._error_type;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::not_found named constructor
 //       Access: Published, Static
@@ -252,7 +279,7 @@ node() const {
 //  Description: Returns an integer that is guaranteed to be the same
 //               for all NodePaths that represent the same node
 //               instance, and different for all NodePaths that
-//               represent a different node instance.  
+//               represent a different node instance.
 //
 //               The same key will be returned for a particular
 //               instance as long as at least one NodePath exists that
@@ -1287,6 +1314,258 @@ get_sa() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_int &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) {
+  set_shader_input(new ShaderInput(id, v, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, Texture *tex, int priority) {
+  set_shader_input(new ShaderInput(id, tex, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority) {
+  set_shader_input(new ShaderInput(id, tex, sampler, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z, int n, int priority) {
+  set_shader_input(new ShaderInput(id, tex, read, write, z, n, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
+  set_shader_input(new ShaderInput(id, np, priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, int n1, int n2, int n3, int n4, int priority) {
+  set_shader_input(new ShaderInput(id, LVecBase4i(n1, n2, n3, n4), priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
+  set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_tex_offset
 //       Access: Published
 //  Description: Sets a texture matrix on the current node to apply
@@ -1312,7 +1591,7 @@ set_tex_offset(TextureStage *stage, PN_stdfloat u, PN_stdfloat v) {
 INLINE void NodePath::
 set_tex_offset(TextureStage *stage, const LVecBase2 &uv) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_pos2d(uv));
 }
 
@@ -1329,7 +1608,7 @@ set_tex_offset(TextureStage *stage, const LVecBase2 &uv) {
 INLINE void NodePath::
 set_tex_rotate(TextureStage *stage, PN_stdfloat r) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_rotate2d(r));
 }
 
@@ -1345,7 +1624,7 @@ set_tex_rotate(TextureStage *stage, PN_stdfloat r) {
 INLINE void NodePath::
 set_tex_scale(TextureStage *stage, PN_stdfloat scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_scale(scale));
 }
 
@@ -1375,7 +1654,7 @@ set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv) {
 INLINE void NodePath::
 set_tex_scale(TextureStage *stage, const LVecBase2 &scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_scale2d(scale));
 }
 
@@ -1448,7 +1727,7 @@ set_tex_pos(TextureStage *stage, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) {
 INLINE void NodePath::
 set_tex_pos(TextureStage *stage, const LVecBase3 &uvw) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_pos(uvw));
 }
 
@@ -1478,7 +1757,7 @@ set_tex_hpr(TextureStage *stage, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
 INLINE void NodePath::
 set_tex_hpr(TextureStage *stage, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_hpr(hpr));
 }
 
@@ -1506,7 +1785,7 @@ set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv, PN_stdfloat s
 INLINE void NodePath::
 set_tex_scale(TextureStage *stage, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(stage, 
+  set_tex_transform(stage,
                     get_tex_transform(stage)->set_scale(scale));
 }
 
@@ -1578,7 +1857,7 @@ set_tex_offset(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_std
 INLINE void NodePath::
 set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2 &uv) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(other, stage)->set_pos2d(uv));
 }
 
@@ -1595,7 +1874,7 @@ set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2 &uv) 
 INLINE void NodePath::
 set_tex_rotate(const NodePath &other, TextureStage *stage, PN_stdfloat r) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(other, stage)->set_rotate2d(r));
 }
 
@@ -1611,7 +1890,7 @@ set_tex_rotate(const NodePath &other, TextureStage *stage, PN_stdfloat r) {
 INLINE void NodePath::
 set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(stage)->set_scale(scale));
 }
 
@@ -1641,7 +1920,7 @@ set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_std
 INLINE void NodePath::
 set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2 &scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(stage)->set_scale2d(scale));
 }
 
@@ -1714,7 +1993,7 @@ set_tex_pos(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_stdflo
 INLINE void NodePath::
 set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3 &uvw) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(stage)->set_pos(uvw));
 }
 
@@ -1744,7 +2023,7 @@ set_tex_hpr(const NodePath &other, TextureStage *stage, PN_stdfloat h, PN_stdflo
 INLINE void NodePath::
 set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(stage)->set_hpr(hpr));
 }
 
@@ -1772,7 +2051,7 @@ set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_std
 INLINE void NodePath::
 set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_tex_transform(other, stage, 
+  set_tex_transform(other, stage,
                     get_tex_transform(stage)->set_scale(scale));
 }
 

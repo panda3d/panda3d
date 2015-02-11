@@ -214,6 +214,22 @@ do_command(const string &command, const string &params) {
   } else if (command == "noinclude") {
     insert_param_list(_noinclude, params);
 
+  } else if (command == "forceinclude") {
+    size_t nchars = params.size();
+    if (nchars >= 2 && params[0] == '"' && params[nchars-1] == '"') {
+      string incfile = params.substr(1, nchars - 2);
+      _include_files[incfile] = '"';
+
+    } else if (nchars >= 2 && params[0] == '<' && params[nchars-1] == '>') {
+      string incfile = params.substr(1, nchars - 2);
+      _include_files[incfile] = '<';
+
+    } else {
+      nout << "Ignoring invalid forceinclude " << params << "\n"
+              "Expected to be in one of the following forms:\n"
+              "  forceinclude \"file.h\"\n"
+              "  forceinclude <file.h>\n";
+    }
   } else {
     nout << "Ignoring " << command << " " << params << "\n";
   }

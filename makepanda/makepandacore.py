@@ -22,6 +22,8 @@ else:
 SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
+VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg"])
+VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
 MAINTHREAD = threading.currentThread()
 OUTPUTDIR = "built"
@@ -91,7 +93,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
 
 MAYAVERSIONS = []
 MAXVERSIONS = []
-DXVERSIONS = ["DX8","DX9"]
+DXVERSIONS = ["DX9"]
 
 for (ver,key) in MAYAVERSIONINFO:
     MAYAVERSIONS.append(ver)
@@ -523,9 +525,9 @@ def oscmd(cmd, ignoreError = False):
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             if sys.platform == "win32":
-                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
             else:
-                os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+                os.system(cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
         exit("The following command returned a non-zero value: " + str(cmd))
 
     return res
@@ -533,16 +535,6 @@ def oscmd(cmd, ignoreError = False):
 ########################################################################
 ##
 ## GetDirectoryContents
-##
-## At times, makepanda will use a function like "os.listdir" to process
-## all the files in a directory.  Unfortunately, that means that any
-## accidental addition of a file to a directory could cause makepanda
-## to misbehave without warning.
-##
-## To alleviate this weakness, we created GetDirectoryContents.  This
-## uses "os.listdir" to fetch the directory contents, but then it
-## compares the results to the appropriate CVS/Entries to see if
-## they match.  If not, it prints a big warning message.
 ##
 ########################################################################
 
@@ -555,33 +547,6 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
         for file in fnmatch.filter(files, filter):
             if (skip.count(file)==0) and (os.path.isfile(dir + "/" + file)):
                 actual[file] = 1
-    if (os.path.isfile(dir + "/CVS/Entries")):
-        cvs = {}
-        srchandle = open(dir + "/CVS/Entries", "r")
-        files = []
-        for line in srchandle:
-            if (line[0]=="/"):
-                s = line.split("/",2)
-                if (len(s)==3):
-                    files.append(s[1])
-        srchandle.close()
-        for filter in filters:
-            for file in fnmatch.filter(files, filter):
-                if (skip.count(file)==0):
-                    cvs[file] = 1
-
-        #XXX this happens all the time, do we really need to warn about this?
-        #for file in actual.keys():
-        #    if (file not in cvs and VERBOSE):
-        #        msg = "%sWARNING: %s is in %s, but not in CVS%s" % (GetColor("red"), ColorText("green", file), ColorText("green", dir), GetColor())
-        #        print msg
-        #        WARNINGS.append(msg)
-
-        for file in cvs.keys():
-            if (file not in actual and VERBOSE):
-                msg = "%sWARNING: %s is not in %s, but is in CVS%s" % (GetColor("red"), ColorText("green", file), ColorText("green", dir), GetColor())
-                print(msg)
-                WARNINGS.append(msg)
 
     results = list(actual.keys())
     results.sort()
@@ -1023,16 +988,16 @@ def ConditionalWriteFile(dest, desiredcontents):
         sys.stdout.flush()
         WriteFile(dest, desiredcontents)
 
-def DeleteCVS(dir):
+def DeleteVCS(dir):
     if dir == "": dir = "."
     for entry in os.listdir(dir):
         subdir = os.path.join(dir, entry)
         if (os.path.isdir(subdir)):
-            if (entry == "CVS" or entry == "CVSROOT"):
+            if entry in VCS_DIRS:
                 shutil.rmtree(subdir)
             else:
-                DeleteCVS(subdir)
-        elif (os.path.isfile(subdir) and (entry == ".cvsignore" or entry.startswith(".#"))):
+                DeleteVCS(subdir)
+        elif (os.path.isfile(subdir) and (entry in VCS_FILES or entry.startswith(".#"))):
             os.remove(subdir)
 
 def DeleteBuildFiles(dir):
@@ -1679,7 +1644,6 @@ def GetSdkDir(sdkname, sdkkey = None):
 def SdkLocateDirectX( strMode = 'default' ):
     if (GetHost() != "windows"): return
     if strMode == 'default':
-        GetSdkDir("directx8", "DX8")
         GetSdkDir("directx9", "DX9")
         if ("DX9" not in SDK):
             strMode = 'latest'
@@ -1716,18 +1680,12 @@ def SdkLocateDirectX( strMode = 'default' ):
                 print("Using DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = GetTargetArch()
-        if ("DX9" not in SDK) or ("DX8" not in SDK):
+        if ("DX9" not in SDK):
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
                     dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
                     if (dir != 0):
-                        if (("DX8" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d8.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
-                            (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
-                            SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -1778,18 +1736,12 @@ def SdkLocateDirectX( strMode = 'default' ):
             exit("Couldn't find DirectX March 2009 SDK")
     elif strMode == 'aug2006':
         archStr = GetTargetArch()
-        if ("DX9" not in SDK) or ("DX8" not in SDK):
+        if ("DX9" not in SDK):
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
                     dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
                     if (dir != 0):
-                        if (("DX8" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d8.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
-                            (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
-                            SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -2109,7 +2061,7 @@ def SdkLocateAndroid():
 ########################################################################
 
 def SdkAutoDisableDirectX():
-    for ver in ["DX8","DX9","DIRECTCAM"]:
+    for ver in ["DX9", "DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (ver not in SDK):
                 if (GetHost() == "windows"):
@@ -2432,16 +2384,16 @@ def CopyAllJavaSources(dir, skip=[]):
             WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
             JustBuilt([dstfile], [srcfile])
 
-def CopyTree(dstdir, srcdir, omitCVS=True):
+def CopyTree(dstdir, srcdir, omitVCS=True):
     if (os.path.isdir(dstdir)):
         for entry in os.listdir(srcdir):
             srcpth = os.path.join(srcdir, entry)
             dstpth = os.path.join(dstdir, entry)
             if (os.path.isfile(srcpth)):
-                if (not omitCVS or entry != ".cvsignore"):
+                if not omitVCS or entry not in VCS_FILES:
                     CopyFile(dstpth, srcpth)
             else:
-                if (not omitCVS or entry != "CVS"):
+                if not omitVCS or entry not in VCS_DIRS:
                     CopyTree(dstpth, srcpth)
     else:
         if sys.platform == 'win32':
@@ -2449,8 +2401,8 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
         else:
             cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
         oscmd(cmd)
-        if omitCVS:
-            DeleteCVS(dstdir)
+        if omitVCS:
+            DeleteVCS(dstdir)
 
 def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
     if (not os.path.isdir(dstdir)):
@@ -2470,7 +2422,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
         dstpth = os.path.join(dstdir, entry)
         if (os.path.isfile(srcpth)):
             base, ext = os.path.splitext(entry)
-            if (entry != ".cvsignore" and ext not in SUFFIX_INC + ['.pyc', '.pyo']):
+            if entry not in VCS_FILES and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 
@@ -2479,7 +2431,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
                     else:
                         JustBuilt([dstpth], [srcpth])
 
-        elif (entry != "CVS"):
+        elif entry not in VCS_DIRS:
             CopyPythonTree(dstpth, srcpth, lib2to3_fixers)
 
     for dstpth, srcpth in refactor:

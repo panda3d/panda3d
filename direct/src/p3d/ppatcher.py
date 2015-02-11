@@ -60,7 +60,7 @@ import getopt
 import os
 
 from direct.p3d.PatchMaker import PatchMaker
-from pandac.PandaModules import *
+from panda3d.core import *
 
 def usage(code, msg = ''):
     print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
@@ -76,7 +76,7 @@ installDir = None
 for opt, arg in opts:
     if opt == '-i':
         installDir = Filename.fromOsSpecific(arg)
-        
+
     elif opt == '-h':
         usage(0)
     else:

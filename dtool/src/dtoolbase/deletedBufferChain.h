@@ -93,13 +93,24 @@ private:
 
   static INLINE void *node_to_buffer(ObjectNode *node);
   static INLINE ObjectNode *buffer_to_node(void *buffer);
-  static INLINE size_t get_flag_reserved_bytes();
 
   ObjectNode *_deleted_chain;
   
   MutexImpl _lock;
   size_t _buffer_size;
-  size_t _alloc_size;
+
+#ifndef USE_DELETEDCHAINFLAG
+  // Without DELETEDCHAINFLAG, we don't even store the _flag member at all.
+  static const size_t flag_reserved_bytes = 0;
+
+#elif defined(LINMATH_ALIGN)
+  // With SSE2 alignment, we need all 16 bytes to preserve alignment.
+  static const size_t flag_reserved_bytes = 16;
+
+#else
+  // Otherwise, we only need enough space for the Integer itself.
+  static const size_t flag_reserved_bytes = sizeof(AtomicAdjust::Integer);
+#endif  // USE_DELETEDCHAINFLAG
 
   friend class MemoryHook;
 };

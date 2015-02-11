@@ -1,6 +1,8 @@
 #ifndef _tgl_zgl_h_
 #define _tgl_zgl_h_
 
+#include "dtoolbase.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

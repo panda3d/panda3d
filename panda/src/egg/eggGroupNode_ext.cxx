@@ -17,7 +17,7 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_EggNode;
+extern struct Dtool_PyTypedObject Dtool_EggNode;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ get_children() const {
   }
 
   // Fill in the list.
-  int i = 0;
+  size_t i = 0;
   for (it = _this->begin(); it != _this->end() && i < len; ++it) {
     EggNode *node = *it;
     node->ref();

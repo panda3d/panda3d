@@ -322,7 +322,7 @@ place(TexturePlacement *placement) {
     // [gjeon] create swappedImages
     TexturePlacement::TextureSwaps::iterator tsi;
     for (tsi = placement->_textureSwaps.begin(); tsi != placement->_textureSwaps.end(); ++tsi) {
-      if ((tsi - placement->_textureSwaps.begin()) >= _swappedImages.size()) {
+      if ((tsi - placement->_textureSwaps.begin()) >= (int)_swappedImages.size()) {
         PaletteImage *swappedImage = new PaletteImage(_page, _swappedImages.size(), tsi - placement->_textureSwaps.begin() + 1);
         swappedImage->_masterPlacements = &_placements;
         _swappedImages.push_back(swappedImage);
@@ -1010,10 +1010,11 @@ get_swapped_image(int index) {
   Placements::iterator pi;
   for (pi = _masterPlacements->begin(); pi != _masterPlacements->end(); ++pi) {
     TexturePlacement *placement = (*pi);
-    if (placement->_textureSwaps.size() > index)
+    if ((int)placement->_textureSwaps.size() > index) {
       placement->fill_swapped_image(_image, index);
-    else
+    } else {
       placement->fill_image(_image);
+    }
   }
 }
 

@@ -22,10 +22,8 @@
 #include "shader.h"
 #include "shaderContext.h"
 
-
 #define CLP(name) DX##name##9
 #define CLASSPREFIX_QUOTED "DX"
-
 
 class VertexElementArray;
 class CLP(GraphicsStateGuardian);
@@ -41,7 +39,7 @@ class CLP(GraphicsStateGuardian);
 //   D3DXCONSTANT_DESC *constant_description_array;
 // }
 // DX_PARAMETER;
-// 
+//
 // typedef struct
 // {
 //   int state;
@@ -52,7 +50,7 @@ class CLP(GraphicsStateGuardian);
 //   };
 //   LPD3DXCONSTANTTABLE constant_table;
 //   D3DXCONSTANTTABLE_DESC constant_table_description;
-// 
+//
 //   int total_semantics;
 //   D3DXSEMANTIC *semantic_array;
 // }
@@ -62,11 +60,10 @@ class CLP(GraphicsStateGuardian);
 //       Class : DXShaderContext9
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
-
-class EXPCL_PANDADX CLP(ShaderContext): public ShaderContext {
+class EXPCL_PANDADX CLP(ShaderContext) : public ShaderContext {
 public:
   typedef CLP(GraphicsStateGuardian) GSG;
-  
+
   CLP(ShaderContext)(Shader *s, GSG *gsg);
   ~CLP(ShaderContext)();
 
@@ -88,23 +85,14 @@ public:
 
   // FOR DEBUGGING
   string _name;
-  
+
 private:
-
 #ifdef HAVE_CG
-  CGcontext _cg_context;
-  CGprogram _cg_vprogram;
-  CGprogram _cg_fprogram;
-
-  // BEGIN CG2 CHANGE
-  CGprogram _cg_gprogram;   // Geometry program
-  // END CG2 CHANGE
-
+  CGprogram _cg_program;
   pvector <CGparameter> _cg_parameter_map;
 #endif
 
 private:
-
   void release_resources(void);
 
 public:

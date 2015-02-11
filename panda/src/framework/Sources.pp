@@ -15,8 +15,6 @@
     #define LOCAL_LIBS pandagl $[LOCAL_LIBS]
   #elif $[HAVE_DX9]
     #define LOCAL_LIBS pandadx9 $[LOCAL_LIBS]
-  #elif $[HAVE_DX8]
-    #define LOCAL_LIBS pandadx8 $[LOCAL_LIBS]
   #elif $[HAVE_TINYDISPLAY]
     #define LOCAL_LIBS p3tinydisplay $[LOCAL_LIBS]
   #endif

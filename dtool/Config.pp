@@ -588,12 +588,6 @@
 #define CGGL_LIBS $[if $[WINDOWS_PLATFORM],cgGL.lib,CgGL]
 #defer HAVE_CGGL $[or $[CGGL_FRAMEWORK],$[and $[HAVE_CG],$[libtest $[CGGL_LPATH],$[CGGL_LIBS]]]]
 
-// Is CgDX8 installed, and where?
-#defer CGDX8_IPATH $[CG_IPATH]
-#defer CGDX8_LPATH $[CG_LPATH]
-#define CGDX8_LIBS $[if $[WINDOWS_PLATFORM],cgD3D8.lib,CgDX8]
-#defer HAVE_CGDX8 $[and $[HAVE_CG],$[libtest $[CGDX8_LPATH],$[CGDX8_LIBS]]]
-
 // Is CgDX9 installed, and where?
 #defer CGDX9_IPATH $[CG_IPATH]
 #defer CGDX9_LPATH $[CG_LPATH]
@@ -739,12 +733,6 @@
 // These interfaces are for OSX only.
 #define HAVE_COCOA
 #define HAVE_CARBON
-
-// Is DirectX8 available, and should we try to build with it?
-#define DX8_IPATH
-#define DX8_LPATH
-#define DX8_LIBS d3d8.lib d3dx8.lib dxerr8.lib
-#defer HAVE_DX8 $[libtest $[DX8_LPATH],$[DX8_LIBS]]
 
 // Is DirectX9 available, and should we try to build with it?
 #define DX9_IPATH

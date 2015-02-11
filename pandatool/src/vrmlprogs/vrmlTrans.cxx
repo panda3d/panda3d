@@ -29,6 +29,7 @@ VRMLTrans() :
   // output files.
   _preferred_extension = ".wrl";
 
+  set_program_brief("reads and writes VRML 2.0 files");
   set_program_description
     ("This program reads a VRML 2.0 file (.wrl) and writes an "
      "essentially equivalent .wrl file.  It is primarily useful for "

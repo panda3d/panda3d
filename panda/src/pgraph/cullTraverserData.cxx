@@ -29,17 +29,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::get_modelview_transform
-//       Access: Published
-//  Description: Returns the modelview transform: the relative
-//               transform from the camera to the model.
-////////////////////////////////////////////////////////////////////
-CPT(TransformState) CullTraverserData::
-get_modelview_transform(const CullTraverser *trav) const {
-  return trav->get_world_transform()->compose(_net_transform);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
 //       Access: Published
 //  Description: Applies the transform and state from the current
@@ -50,7 +39,7 @@ void CullTraverserData::
 apply_transform_and_state(CullTraverser *trav) {
   CPT(RenderState) node_state = _node_reader.get_state();
 
-  if (trav->has_tag_state_key() && 
+  if (trav->has_tag_state_key() &&
       _node_reader.has_tag(trav->get_tag_state_key())) {
     // Here's a node that has been tagged with the special key for our
     // current camera.  This indicates some special state transition
@@ -74,8 +63,8 @@ apply_transform_and_state(CullTraverser *trav) {
 //               data.  This also evaluates billboards, etc.
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
-apply_transform_and_state(CullTraverser *trav, 
-                          CPT(TransformState) node_transform, 
+apply_transform_and_state(CullTraverser *trav,
+                          CPT(TransformState) node_transform,
                           CPT(RenderState) node_state,
                           CPT(RenderEffects) node_effects,
                           const RenderAttrib *off_clip_planes) {
@@ -98,7 +87,7 @@ apply_transform_and_state(CullTraverser *trav,
         _cull_planes = CullPlanes::make_empty();
 
       } else {
-        CPT(TransformState) inv_transform = 
+        CPT(TransformState) inv_transform =
           node_transform->invert_compose(TransformState::make_identity());
 
         // Copy the bounding volumes for the frustums so we can
@@ -116,7 +105,7 @@ apply_transform_and_state(CullTraverser *trav,
   _state = _state->compose(node_state);
 
   if (clip_plane_cull) {
-    _cull_planes = _cull_planes->apply_state(trav, this, 
+    _cull_planes = _cull_planes->apply_state(trav, this,
                                              DCAST(ClipPlaneAttrib, node_state->get_attrib(ClipPlaneAttrib::get_class_slot())),
                                              DCAST(ClipPlaneAttrib, off_clip_planes),
                                              DCAST(OccluderEffect, node_effects->get_effect(OccluderEffect::get_class_type())));
@@ -130,37 +119,40 @@ apply_transform_and_state(CullTraverser *trav,
 ////////////////////////////////////////////////////////////////////
 bool CullTraverserData::
 is_in_view_impl() {
-  CPT(BoundingVolume) node_volume = _node_reader.get_bounds();
-  nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), false);
-  const GeometricBoundingVolume *node_gbv =
-    DCAST(GeometricBoundingVolume, node_volume);
+  const GeometricBoundingVolume *node_gbv = NULL;
 
   if (_view_frustum != (GeometricBoundingVolume *)NULL) {
+    DCAST_INTO_R(node_gbv, _node_reader.get_bounds(), false)
+
     int result = _view_frustum->contains(node_gbv);
-    
+
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << _node_path << " cull result = " << hex << result << dec << "\n";
     }
-    
+
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
+#ifdef NDEBUG
+      return false;
+#else
       if (!fake_view_frustum_cull) {
         return false;
       }
-      
+
       // If we have fake view-frustum culling enabled, instead of
       // actually culling an object we simply force it to be drawn in
       // red wireframe.
       _view_frustum = (GeometricBoundingVolume *)NULL;
       CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
       _state = _state->compose(fake_state);
-      
+#endif
+
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely enclosed within
       // the frustum.  No need to cull further.
       _view_frustum = (GeometricBoundingVolume *)NULL;
-      
+
     } else {
       // The node is partially, but not completely, within the viewing
       // frustum.
@@ -175,10 +167,14 @@ is_in_view_impl() {
   }
 
   if (!_cull_planes->is_empty()) {
+    if (node_gbv == (const GeometricBoundingVolume *)NULL) {
+      DCAST_INTO_R(node_gbv, _node_reader.get_bounds(), false)
+    }
+
     // Also cull against the current clip planes.
     int result;
     _cull_planes = _cull_planes->do_cull(result, _state, node_gbv);
-    
+
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << _node_path << " cull planes cull result = " << hex
@@ -190,23 +186,27 @@ is_in_view_impl() {
       // Even though the node may be partially within the clip planes,
       // do no more culling against them below this node.
       _cull_planes = CullPlanes::make_empty();
-      
+
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
           << _node_path << " is_final, cull planes disabled, state:\n";
         _state->write(pgraph_cat.spam(false), 2);
       }
     }
-    
+
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
+#ifdef NDEBUG
+      return false;
+#else
       if (!fake_view_frustum_cull) {
         return false;
       }
       _cull_planes = CullPlanes::make_empty();
       CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
       _state = _state->compose(fake_state);
-      
+#endif
+
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely in front of all
       // of the clip planes and occluders.  The do_cull() call should
@@ -227,6 +227,9 @@ is_in_view_impl() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CullTraverserData::
 get_fake_view_frustum_cull_state() {
+#ifdef NDEBUG
+  return NULL;
+#else
   // Once someone asks for this pointer, we hold its reference count
   // and never free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
@@ -238,5 +241,5 @@ get_fake_view_frustum_cull_state() {
        RenderState::get_max_priority());
   }
   return state;
+#endif
 }
-

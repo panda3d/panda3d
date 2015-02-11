@@ -18,6 +18,7 @@
 #include "buttonThrower.h"
 #include "mouseSubregion.h"
 #include "mouseWatcher.h"
+#include "mouseWatcherBase.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
 #include "trackball.h"
@@ -67,6 +68,7 @@ ConfigureFn(config_tform) {
   MouseInterfaceNode::init_type();
   MouseSubregion::init_type();
   MouseWatcher::init_type();
+  MouseWatcherBase::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
   Trackball::init_type();

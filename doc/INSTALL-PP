@@ -251,13 +251,13 @@ indicate a variable is true by defining it to some nonempty string
 (e.g. "yes" or "1"), and false by defining it to nothing.  For
 example:
 
-  #define HAVE_DX8 1
+  #define HAVE_DX9 1
 
 Indicates you have the DirectX SDK installed, while
 
-  #define HAVE_DX8
+  #define HAVE_DX9
 
-Indicates you do not.  Do not be tempted to define HAVE_DX8 to no or 0;
+Indicates you do not.  Do not be tempted to define HAVE_DX9 to no or 0;
 since these are both nonempty strings, they are considered to
 represent true!  Also, don't try to use a pair of quotation marks to
 represent the empty string, since the quotation marks become part of
@@ -311,11 +311,6 @@ find useful are:
   VRPN_IPATH / VRPN_LPATH / VRPN_LIBS - the full pathname to VRPN
     header and library files, and the name of the VRPN libraries, if
     VRPN is installed on your system.
-
-  DX8_IPATH / DX8_LPATH / DX8_LIBS - the full pathname to the
-    DirectX 8.1 SDK header and library files, if you have installed
-    this SDK. (You must currently install this SDK in order to
-    build DirectX8 support for Panda.)
 
   DX9_IPATH / DX9_LPATH / DX9_LIBS - the full pathname to the
     DirectX 9 SDK header and library files, if you have installed

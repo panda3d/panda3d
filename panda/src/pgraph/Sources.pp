@@ -46,7 +46,6 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    eventStorePandaNode.I eventStorePandaNode.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
@@ -74,7 +73,7 @@
     nodePath.I nodePath.h nodePath.cxx \
     nodePath_ext.I nodePath_ext.h \
     nodePathCollection.I nodePathCollection.h \
-    nodePathCollection_ext.I nodePathCollection_ext.h \
+    nodePathCollection_ext.h \
     nodePathComponent.I nodePathComponent.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
@@ -113,7 +112,7 @@
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h \
     nodePath_ext.h nodePath_ext.I \
-    nodePathCollection_ext.h nodePathCollection_ext.I \
+    nodePathCollection_ext.h \
     pandaNode_ext.h \
     renderState_ext.h \
     transformState_ext.h
@@ -155,7 +154,6 @@
     depthOffsetAttrib.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
-    eventStorePandaNode.cxx \
     findApproxLevelEntry.cxx \
     findApproxPath.cxx \
     fog.cxx \
@@ -258,7 +256,6 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    eventStorePandaNode.I eventStorePandaNode.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
     geomDrawCallbackData.I geomDrawCallbackData.h \

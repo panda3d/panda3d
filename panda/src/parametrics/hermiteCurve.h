@@ -49,7 +49,7 @@ END_PUBLISH //]
 // Description : A single CV of a Hermite curve.  Hermite curve CV's
 //               include an in and out tangent, as well as a position.
 ////////////////////////////////////////////////////////////////////
-class HermiteCurveCV {
+class EXPCL_PANDA_PARAMETRICS HermiteCurveCV {
 public:
   HermiteCurveCV();
   HermiteCurveCV(const HermiteCurveCV &c);
@@ -85,7 +85,7 @@ public:
 //               list of the CV's that are used to define the curve
 //               (since the CubicCurveseg class doesn't retain these).
 ////////////////////////////////////////////////////////////////////
-class HermiteCurve : public PiecewiseCurve {
+class EXPCL_PANDA_PARAMETRICS HermiteCurve : public PiecewiseCurve {
 PUBLISHED:
   HermiteCurve();
   HermiteCurve(const ParametricCurve &pc);

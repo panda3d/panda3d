@@ -1714,21 +1714,21 @@ set_hpr(const NodePath &other, const LVecBase3 &hpr) {
   CPT(TransformState) rel_transform = get_transform(other);
   nassertv(rel_transform->has_hpr());
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_hpr(hpr));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, new_transform->get_hpr(), orig_scale, orig_shear));
+                    (orig_pos, transform->get_hpr(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1787,21 +1787,21 @@ set_quat(const NodePath &other, const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_quat(quat));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_quat_scale_shear
-                    (orig_pos, new_transform->get_quat(), orig_scale, orig_shear));
+                    (orig_pos, transform->get_quat(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1835,21 +1835,21 @@ set_scale(const NodePath &other, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_hpr = transform->get_hpr();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, rel_transform->set_scale(scale));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, new_transform->get_scale(), orig_shear));
+                    (orig_pos, orig_hpr, transform->get_scale(), orig_shear));
     }
 
   } else {
@@ -1907,21 +1907,21 @@ set_shear(const NodePath &other, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_pos = orig_transform->get_pos();
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_pos = transform->get_pos();
+    const LVecBase3 &orig_hpr = transform->get_hpr();
+    const LVecBase3 &orig_scale = transform->get_scale();
 
     set_transform(other, rel_transform->set_shear(shear));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
+    transform = get_transform();
+    if (transform->has_components()) {
       set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, orig_scale, new_transform->get_shear()));
+                    (orig_pos, orig_hpr, orig_scale, transform->get_shear()));
     }
 
   } else {
@@ -1980,20 +1980,20 @@ set_pos_hpr(const NodePath &other, const LVecBase3 &pos,
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, TransformState::make_pos_hpr_scale_shear
                   (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
-      set_pos_hpr_scale_shear(new_transform->get_pos(), new_transform->get_hpr(),
+    transform = get_transform();
+    if (transform->has_components()) {
+      set_pos_hpr_scale_shear(transform->get_pos(), transform->get_hpr(),
                               orig_scale, orig_shear);
     }
 
@@ -2018,20 +2018,20 @@ set_pos_quat(const NodePath &other, const LVecBase3 &pos,
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  CPT(TransformState) transform = get_transform();
+  if (transform->has_components()) {
     // If we had a componentwise transform before we started, we
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_shear = transform->get_shear();
 
     set_transform(other, TransformState::make_pos_quat_scale_shear
                   (pos, quat, rel_transform->get_scale(), rel_transform->get_shear()));
-    const TransformState *new_transform = get_transform();
-    if (new_transform->has_components()) {
-      set_pos_quat_scale_shear(new_transform->get_pos(), new_transform->get_quat(),
+    transform = get_transform();
+    if (transform->has_components()) {
+      set_pos_quat_scale_shear(transform->get_pos(), transform->get_quat(),
                                orig_scale, orig_shear);
     }
 
@@ -3842,7 +3842,7 @@ set_shader_input(const ShaderInput *inp) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 const ShaderInput *NodePath::
-get_shader_input(const InternalName *id) const {
+get_shader_input(CPT_InternalName id) const {
   nassertr_always(!is_empty(), NULL);
 
   const RenderAttrib *attrib =
@@ -3881,7 +3881,7 @@ get_instance_count() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-clear_shader_input(const InternalName *id) {
+clear_shader_input(CPT_InternalName id) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3890,259 +3890,6 @@ clear_shader_input(const InternalName *id) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader_input(id));
   }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_float &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_int &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase4i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase3i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LVecBase2i &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) {
-  set_shader_input(new ShaderInput(id,v,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, int priority) {
-  set_shader_input(new ShaderInput(id,tex,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority) {
-  set_shader_input(new ShaderInput(id,tex,sampler,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z, int n, int priority) {
-  set_shader_input(new ShaderInput(id,tex,read,write,z,n,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, const NodePath &np, int priority) {
-  set_shader_input(new ShaderInput(id,np,priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, int n1, int n2, int n3, int n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4i(n1, n2, n3, n4), priority));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_shader_input
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4364,38 +4111,6 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
 //       Access: Published
 //  Description: Enables automatic texture coordinate generation for
 //               the indicated texture stage.  This version of this
-//               method is useful when setting M_light_vector, which
-//               requires the name of the texture coordinate set that
-//               supplies the tangent and binormal, as well as the
-//               specific light to generate coordinates for.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
-            const string &source_name, const NodePath &light, int priority) {
-  nassertv_always(!is_empty());
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_slot());
-
-  CPT(TexGenAttrib) tga;
-
-  if (attrib != (const RenderAttrib *)NULL) {
-    priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
-    tga = DCAST(TexGenAttrib, attrib);
-
-  } else {
-    tga = DCAST(TexGenAttrib, TexGenAttrib::make());
-  }
-
-  node()->set_attrib(tga->add_stage(stage, mode, source_name, light), priority);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_tex_gen
-//       Access: Published
-//  Description: Enables automatic texture coordinate generation for
-//               the indicated texture stage.  This version of this
 //               method is useful when setting M_constant, which
 //               requires a constant texture coordinate value.
 ////////////////////////////////////////////////////////////////////
@@ -4498,28 +4213,6 @@ get_tex_gen(TextureStage *stage) const {
   }
 
   return TexGenAttrib::M_off;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_tex_gen_light
-//       Access: Published
-//  Description: Returns the particular Light set for the indicated
-//               texgen mode's texture stage, or empty NodePath if no
-//               light is set.  This is only meaningful if the texgen
-//               mode (returned by get_tex_gen()) is M_light_vector.
-////////////////////////////////////////////////////////////////////
-NodePath NodePath::
-get_tex_gen_light(TextureStage *stage) const {
-  nassertr_always(!is_empty(), NodePath::fail());
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
-    return tga->get_light(stage);
-  }
-
-  return NodePath();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4676,99 +4369,6 @@ project_texture(TextureStage *stage, Texture *tex, const NodePath &projector) {
   set_tex_projector(stage, NodePath(), projector);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_normal_map
-//       Access: Published
-//  Description: A convenience function to set up a normal map on this
-//               geometry.  This uses the single highest-priority
-//               light on the object only.  It also requires
-//               multitexture, and consumes at least two texture
-//               stages, in addition to what may already be in use.
-//
-//               The normal_map parameter is the texture that contains
-//               the normal map information (with a 3-d delta vector
-//               encoded into the r,g,b of each texel).  texcoord_name is
-//               the name of the texture coordinate set that contains
-//               the tangent and binormal we wish to use.  If
-//               preserve_color is true, then one additional texture
-//               stage is consumed to blend in the geometry's original
-//               vertex color.
-//
-//               Only one normal map may be in effect through this
-//               interface at any given time.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_normal_map(Texture *normal_map, const string &texcoord_name,
-               bool preserve_color) {
-  clear_normal_map();
-
-  // First, we apply the normal map itself, to the bottom layer.
-  PT(TextureStage) normal_map_ts = new TextureStage("__normal_map");
-  normal_map_ts->set_texcoord_name(texcoord_name);
-  normal_map_ts->set_sort(-20);
-  normal_map_ts->set_mode(TextureStage::M_replace);
-  set_texture(normal_map_ts, normal_map);
-
-  // Then, we apply a normalization map, to normalize, per-pixel, the
-  // vector to the light.
-  PT(Texture) normalization_map = TexturePool::get_normalization_cube_map(32);
-  PT(TextureStage) normalization_map_ts = new TextureStage("__normalization_map");
-  normalization_map_ts->set_combine_rgb
-    (TextureStage::CM_dot3_rgb,
-     TextureStage::CS_texture, TextureStage::CO_src_color,
-     TextureStage::CS_previous, TextureStage::CO_src_color);
-  normalization_map_ts->set_texcoord_name("light_vector");
-  normalization_map_ts->set_sort(-15);
-  set_texture(normalization_map_ts, normalization_map);
-
-  // Finally, we enable M_light_vector texture coordinate generation.
-  set_tex_gen(normalization_map_ts, TexGenAttrib::M_light_vector,
-              texcoord_name, NodePath());
-
-  if (preserve_color) {
-    // One more stage to get back the original color.
-    PT(TextureStage) orig_color_ts = new TextureStage("__orig_color");
-    orig_color_ts->set_combine_rgb
-      (TextureStage::CM_modulate,
-       TextureStage::CS_primary_color, TextureStage::CO_src_color,
-       TextureStage::CS_previous, TextureStage::CO_src_color);
-    set_texture(orig_color_ts, normal_map);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_normal_map
-//       Access: Published
-//  Description: Undoes the effect of a previous call to
-//               set_normal_map().
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_normal_map() {
-  // Scan through the TextureStages, and if we find any whose name
-  // matches one of the stages that would have been left by
-  // set_normal_map(), remove it from the state.
-
-  CPT(RenderAttrib) attrib =
-    get_state()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-    for (int i = 0; i < ta->get_num_on_stages(); i++) {
-      TextureStage *stage = ta->get_on_stage(i);
-      if (stage->get_name() == "__normal_map") {
-        clear_texture(stage);
-
-      } else if (stage->get_name() == "__normalization_map") {
-        clear_texture(stage);
-        clear_tex_gen(stage);
-
-      } else if (stage->get_name() == "__orig_color") {
-        clear_texture(stage);
-      }
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_vertex_column
 //       Access: Published
@@ -4825,7 +4425,7 @@ find_all_vertex_columns(const string &name) const {
   InternalNameCollection tc;
   InternalNames::iterator ti;
   for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    InternalName *name = (*ti);
+    const InternalName *name = (*ti);
     if (glob.matches(name->get_name())) {
       tc.add_name(name);
     }
@@ -4872,12 +4472,12 @@ find_all_texcoords(const string &name) const {
   r_find_all_vertex_columns(node(), vertex_columns);
 
   GlobPattern glob(name);
-  CPT(InternalName) texcoord_name = InternalName::get_texcoord();
+  CPT_InternalName texcoord_name = InternalName::get_texcoord();
 
   InternalNameCollection tc;
   InternalNames::iterator ti;
   for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    InternalName *name = (*ti);
+    const InternalName *name = (*ti);
     if (name->get_top() == texcoord_name) {
       // This is a texture coordinate name.  Figure out the basename
       // of the texture coordinates.
@@ -5358,6 +4958,22 @@ set_render_mode_filled(int priority) {
   PN_stdfloat thickness = get_render_mode_thickness();
   bool perspective = get_render_mode_perspective();
   node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, thickness, perspective), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_render_mode_filled_wireframe
+//       Access: Published
+//  Description: Sets up the geometry at this level and below (unless
+//               overridden) to render in filled, but overlay the
+//               wireframe on top with a fixed color.  This is useful
+//               for debug visualizations.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
+  nassertv_always(!is_empty());
+  PN_stdfloat thickness = get_render_mode_thickness();
+  bool perspective = get_render_mode_perspective();
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, thickness, perspective, wireframe_color), priority);
 }
 
 ////////////////////////////////////////////////////////////////////

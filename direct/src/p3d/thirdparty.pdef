@@ -13,7 +13,7 @@
 
 # Also see panda3d.pdef.
 
-from pandac.PandaModules import Filename
+from panda3d.core import Filename
 import sys
 
 class wx(package):
@@ -95,7 +95,7 @@ class twisted(package):
            'twisted.runner', 'twisted.scripts', 'twisted.spread',
            'twisted.tap', 'twisted.trial', 'twisted.vfs',
            'twisted.web', 'twisted.web2', 'twisted.words')
-           
+
     module('twisted.*', 'twisted.*.*')
 
 class pil(package):

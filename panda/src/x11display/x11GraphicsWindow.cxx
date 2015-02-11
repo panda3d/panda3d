@@ -47,6 +47,7 @@ static int xcursor_read(XcursorFile *file, unsigned char *buf, int len) {
 static int xcursor_write(XcursorFile *file, unsigned char *buf, int len) {
   // Not implemented, we don't need it.
   nassertr_always(false, 0);
+  return 0;
 }
 
 static int xcursor_seek(XcursorFile *file, long offset, int whence) {
@@ -263,6 +264,12 @@ process_events() {
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
 
+  XConfigureEvent configure_event;
+  bool got_configure_event = false;
+
+  WindowProperties properties;
+  bool changed_properties = false;
+
   while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     if (XFilterEvent(&event, None)) {
       continue;
@@ -295,7 +302,6 @@ process_events() {
       }
     }
 
-    WindowProperties properties;
     ButtonHandle button;
 
     switch (event.type) {
@@ -303,38 +309,11 @@ process_events() {
       break;
 
     case ConfigureNotify:
-      _awaiting_configure = false;
-
-      // Is this the inner corner or the outer corner?  The Xlib docs
-      // say it should be the outer corner, but it appears to be the
-      // inner corner on my own implementation, which is inconsistent
-      // with XConfigureWindow.  (Panda really wants to work with the
-      // inner corner, anyway, but that means we need to fix
-      // XConfigureWindow too.)
-      properties.set_origin(event.xconfigure.x, event.xconfigure.y);
-
-      if (_properties.get_fixed_size()) {
-        // If the window properties indicate a fixed size only, undo
-        // any attempt by the user to change them.  In X, there
-        // doesn't appear to be a way to universally disallow this
-        // directly (although we do set the min_size and max_size to
-        // the same value, which seems to work for most window
-        // managers.)
-        WindowProperties current_props = get_properties();
-        if (event.xconfigure.width != current_props.get_x_size() ||
-            event.xconfigure.height != current_props.get_y_size()) {
-          XWindowChanges changes;
-          changes.width = current_props.get_x_size();
-          changes.height = current_props.get_y_size();
-          int value_mask = (CWWidth | CWHeight);
-          XConfigureWindow(_display, _xwindow, value_mask, &changes);
-        }
-
-      } else {
-        // A normal window may be resized by the user at will.
-        properties.set_size(event.xconfigure.width, event.xconfigure.height);
-      }
-      system_changed_properties(properties);
+      // When resizing or moving the window, multiple ConfigureNotify
+      // events may be sent in rapid succession.  We only respond to
+      // the last one.
+      configure_event = event.xconfigure;
+      got_configure_event = true;
       break;
 
     case ButtonPress:
@@ -391,23 +370,23 @@ process_events() {
 
     case FocusIn:
       properties.set_foreground(true);
-      system_changed_properties(properties);
+      changed_properties = true;
       break;
 
     case FocusOut:
       _input_devices[0].focus_lost();
       properties.set_foreground(false);
-      system_changed_properties(properties);
+      changed_properties = true;
       break;
 
     case UnmapNotify:
       properties.set_minimized(true);
-      system_changed_properties(properties);
+      changed_properties = true;
       break;
 
     case MapNotify:
       properties.set_minimized(false);
-      system_changed_properties(properties);
+      changed_properties = true;
 
       // Auto-focus the window when it is mapped.
       XSetInputFocus(_display, _xwindow, RevertToPointerRoot, CurrentTime);
@@ -447,6 +426,47 @@ process_events() {
       x11display_cat.warning()
         << "unhandled X event type " << event.type << "\n";
     }
+  }
+
+  if (got_configure_event) {
+    // Now handle the last configure event we found.
+    _awaiting_configure = false;
+
+    // Is this the inner corner or the outer corner?  The Xlib docs
+    // say it should be the outer corner, but it appears to be the
+    // inner corner on my own implementation, which is inconsistent
+    // with XConfigureWindow.  (Panda really wants to work with the
+    // inner corner, anyway, but that means we need to fix
+    // XConfigureWindow too.)
+    properties.set_origin(configure_event.x, configure_event.y);
+
+    if (_properties.get_fixed_size()) {
+      // If the window properties indicate a fixed size only, undo
+      // any attempt by the user to change them.  In X, there
+      // doesn't appear to be a way to universally disallow this
+      // directly (although we do set the min_size and max_size to
+      // the same value, which seems to work for most window
+      // managers.)  Incidentally, this also works to force my
+      // tiling window manager into 'floating' mode.
+      WindowProperties current_props = get_properties();
+      if (configure_event.width != current_props.get_x_size() ||
+          configure_event.height != current_props.get_y_size()) {
+        XWindowChanges changes;
+        changes.width = current_props.get_x_size();
+        changes.height = current_props.get_y_size();
+        int value_mask = (CWWidth | CWHeight);
+        XConfigureWindow(_display, _xwindow, value_mask, &changes);
+      }
+
+    } else {
+      // A normal window may be resized by the user at will.
+      properties.set_size(configure_event.width, configure_event.height);
+    }
+    changed_properties = true;
+  }
+
+  if (changed_properties) {
+    system_changed_properties(properties);
   }
 
   if (got_keyrelease_event) {
