@@ -3260,8 +3260,7 @@ if (not RUNTIME):
   TargetAdd('libp3gobj.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3gobj.in', opts=['IMOD:panda3d.core', 'ILIB:libp3gobj', 'SRCDIR:panda/src/gobj'])
   TargetAdd('libp3gobj_igate.obj', input='libp3gobj.in', opts=["DEPENDENCYONLY"])
-  TargetAdd('p3gobj_geomVertexArrayData_ext.obj', opts=OPTS, input='geomVertexArrayData_ext.cxx')
-  TargetAdd('p3gobj_internalName_ext.obj', opts=OPTS, input='internalName_ext.cxx')
+  TargetAdd('p3gobj_ext_composite.obj', opts=OPTS, input='p3gobj_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/pgraphnodes/
@@ -3725,8 +3724,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3putil_pythonCallbackObject.obj')
   TargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('core.pyd', input='p3event_pythonTask.obj')
-  TargetAdd('core.pyd', input='p3gobj_geomVertexArrayData_ext.obj')
-  TargetAdd('core.pyd', input='p3gobj_internalName_ext.obj')
+  TargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
   TargetAdd('core.pyd', input='p3display_graphicsStateGuardian_ext.obj')
   TargetAdd('core.pyd', input='p3display_graphicsWindow_ext.obj')

@@ -24,11 +24,6 @@
 template<class Element>
 void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
-  // We have to pre-initialize self's "this" pointer when we receive
-  // self in the constructor--the caller can't initialize this for us.
-  new (this->_this) PointerToArray<Element>(get_type_handle(Element));
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = this->_this;
-
 #if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(source)) {
     // User passed a buffer object.

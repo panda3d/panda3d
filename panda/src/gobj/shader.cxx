@@ -27,9 +27,12 @@ TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;
 Shader::ShaderCaps Shader::_default_caps;
-CGcontext Shader::_cg_context = 0;
 int Shader::_shaders_generated;
 ShaderUtilization Shader::_shader_utilization = SUT_unspecified;
+
+#ifdef HAVE_CG
+CGcontext Shader::_cg_context = 0;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cp_report_error

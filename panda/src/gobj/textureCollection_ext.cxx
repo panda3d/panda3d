@@ -1,5 +1,5 @@
-// Filename: nodePathCollection_ext.cxx
-// Created by:  rdb (09Dec13)
+// Filename: textureCollection_ext.cxx
+// Created by:  rdb (11Feb15)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,30 +12,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "nodePathCollection_ext.h"
+#include "textureCollection_ext.h"
 
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-extern struct Dtool_PyTypedObject Dtool_NodePath;
-#ifdef STDFLOAT_DOUBLE
-extern struct Dtool_PyTypedObject Dtool_LPoint3d;
-#else
-extern struct Dtool_PyTypedObject Dtool_LPoint3f;
-#endif
+extern struct Dtool_PyTypedObject Dtool_Texture;
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::__init__
+//     Function: TextureCollection::__init__
 //       Access: Published
 //  Description: This special constructor accepts a Python list of
-//               NodePaths.  Since this constructor accepts a generic
+//               Textures.  Since this constructor accepts a generic
 //               PyObject *, it should be the last constructor listed
 //               in the class record.
 ////////////////////////////////////////////////////////////////////
-void Extension<NodePathCollection>::
+void Extension<TextureCollection>::
 __init__(PyObject *self, PyObject *sequence) {
-  PyObject *fast = PySequence_Fast(sequence, "NodePathCollection constructor requires a sequence");
+  PyObject *fast = PySequence_Fast(sequence, "TextureCollection constructor requires a sequence");
   if (fast == NULL) {
     return;
   }
@@ -49,18 +44,18 @@ __init__(PyObject *self, PyObject *sequence) {
       return;
     }
 
-    NodePath *path;
-    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_NodePath, (void **)&path);
-    if (path == (NodePath *)NULL) {
+    Texture *tex;
+    DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
+    if (tex == (Texture *)NULL) {
       // Unable to add item--probably it wasn't of the appropriate type.
       ostringstream stream;
-      stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
+      stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";
       string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       Py_DECREF(fast);
       return;
     } else {
-      _this->add_path(*path);
+      _this->add_texture(tex);
     }
   }
 
@@ -68,16 +63,16 @@ __init__(PyObject *self, PyObject *sequence) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::__reduce__
+//     Function: TextureCollection::__reduce__
 //       Access: Published
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
 ////////////////////////////////////////////////////////////////////
-PyObject *Extension<NodePathCollection>::
+PyObject *Extension<TextureCollection>::
 __reduce__(PyObject *self) const {
   // Here we will return a 4-tuple: (Class, (args), None, iterator),
   // where iterator is an iterator that will yield successive
-  // NodePaths.
+  // Textures.
 
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
@@ -89,41 +84,11 @@ __reduce__(PyObject *self) const {
     return NULL;
   }
 
-  // Since a NodePathCollection is itself an iterator, we can simply
+  // Since a TextureCollection is itself an iterator, we can simply
   // pass it as the fourth tuple component.
   PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
   Py_DECREF(this_class);
   return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<NodePathCollection>::get_tight_bounds
-//       Access: Published
-//  Description: Returns the tight bounds as a 2-tuple of LPoint3
-//               objects.  This is a convenience function for Python
-//               users, among which the use of calc_tight_bounds
-//               may be confusing.
-//               Returns None if calc_tight_bounds returned false.
-////////////////////////////////////////////////////////////////////
-PyObject *Extension<NodePathCollection>::
-get_tight_bounds() const {
-  LPoint3 *min_point = new LPoint3;
-  LPoint3 *max_point = new LPoint3;
-
-  if (_this->calc_tight_bounds(*min_point, *max_point)) {
-#ifdef STDFLOAT_DOUBLE
-    PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3d, true, false);
-    PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3d, true, false);
-#else
-    PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3f, true, false);
-    PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3f, true, false);
-#endif
-    return Py_BuildValue("NN", min_inst, max_inst);
-
-  } else {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
 }
 
 #endif  // HAVE_PYTHON

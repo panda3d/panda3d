@@ -163,14 +163,12 @@ call_function(ostream &out, int indent_level, bool convert_result,
     if (pexprs.empty() && !defconstruct.empty()) {
       return_expr = defconstruct;
     } else if (_extension) {
-      // Extension constructors are a special case.  We allocate memory, but
-      // the actual construction is done by an __init__ method, similar to how
-      // it works in Python.
+      // Extension constructors are a special case.  We assume there is a
+      // default constructor for the class, and the actual construction is
+      // done by an __init__ method.
       InterfaceMaker::indent(out, indent_level);
       _return_type->get_new_type()->output_instance(out, "result", &parser);
-      out << " = (" << _cpptype->get_local_name(&parser)
-          << " *) " << _cpptype->get_local_name(&parser)
-          << "::operator new(sizeof(" << _cpptype->get_local_name(&parser) << "));\n";
+      out << " = new " << _cpptype->get_local_name(&parser) << ";\n";
 
       InterfaceMaker::indent(out, indent_level)
         << get_call_str("result", pexprs) << ";\n";
