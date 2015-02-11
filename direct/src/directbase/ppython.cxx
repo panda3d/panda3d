@@ -7,6 +7,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+#include "dtoolbase.h"
+
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3
 #include <wchar.h>
@@ -71,7 +73,7 @@ int main(int argc, char *argv[]) {
   char *path = getenv("PATH");
   char *result = strtok(path, ";");
   while (result != NULL) {
-    struct stat st;       
+    struct stat st;
     char *ppython = (char*) malloc(strlen(result) + 13);
     strcpy(ppython, result);
     strcat(ppython, "\\ppython.exe");
@@ -79,13 +81,13 @@ int main(int argc, char *argv[]) {
       Py_SetPythonHome(result);
       free(ppython);
       break;
-    }                                
+    }
     result = strtok(NULL, ";");
     free(ppython);
   }
 #endif
 #endif
-  
+
   Py_Initialize();
 
   if (Py_VerboseFlag) {

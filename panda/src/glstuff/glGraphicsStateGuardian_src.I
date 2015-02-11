@@ -745,9 +745,12 @@ call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 //       Access: Public
 //  Description: Convert index to gl light id
 ////////////////////////////////////////////////////////////////////
-INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
+INLINE GLenum CLP(GraphicsStateGuardian)::
+get_light_id(int index) const {
 #ifndef OPENGLES_2
   return GL_LIGHT0 + index;
+#else
+  return 0;
 #endif
 }
 
@@ -760,6 +763,8 @@ INLINE GLenum CLP(GraphicsStateGuardian)::
 get_clip_plane_id(int index) const {
 #ifndef OPENGLES_2
   return GL_CLIP_PLANE0 + index;
+#else
+  return 0;
 #endif
 }
 

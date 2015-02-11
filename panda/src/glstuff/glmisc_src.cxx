@@ -283,7 +283,9 @@ void CLP(init_classes)() {
   CLP(ShaderContext)::init_type();
 #endif
   CLP(TextureContext)::init_type();
+#ifndef OPENGLES
   CLP(SamplerContext)::init_type();
+#endif
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
 

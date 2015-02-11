@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef OPENGLES
+
 #include "pandabase.h"
 #include "samplerContext.h"
 #include "deletedChain.h"
@@ -56,3 +58,5 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#endif  // OPENGLES
