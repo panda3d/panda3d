@@ -32,7 +32,6 @@ set(P3PGRAPH_HEADERS
   depthOffsetAttrib.I depthOffsetAttrib.h
   depthTestAttrib.I depthTestAttrib.h
   depthWriteAttrib.I depthWriteAttrib.h
-  eventStorePandaNode.I eventStorePandaNode.h
   findApproxLevelEntry.I findApproxLevelEntry.h
   findApproxPath.I findApproxPath.h
   fog.I fog.h
@@ -131,7 +130,6 @@ set(P3PGRAPH_SOURCES
   depthOffsetAttrib.cxx
   depthTestAttrib.cxx
   depthWriteAttrib.cxx
-  eventStorePandaNode.cxx
   findApproxLevelEntry.cxx
   findApproxPath.cxx
   fog.cxx
@@ -199,7 +197,6 @@ set(P3PGRAPH_SOURCES
 set(P3PGRAPH_IGATEEXT
   nodePathCollection_ext.cxx
   nodePathCollection_ext.h
-  nodePathCollection_ext.I
   nodePath_ext.cxx
   nodePath_ext.h
   nodePath_ext.I

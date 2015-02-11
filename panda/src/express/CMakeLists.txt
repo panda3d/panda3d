@@ -125,6 +125,7 @@ set(P3EXPRESS_SOURCES
 set(P3EXPRESS_IGATEEXT
   memoryUsagePointers_ext.cxx
   memoryUsagePointers_ext.h
+  pointerToArray_ext.h
   ramfile_ext.cxx
   ramfile_ext.h
   streamReader_ext.cxx

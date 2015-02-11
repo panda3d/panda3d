@@ -5,7 +5,7 @@ set(P3TFORM_HEADERS
   mouseInterfaceNode.I mouseInterfaceNode.h
   mouseSubregion.I mouseSubregion.h
   mouseWatcher.I mouseWatcher.h
-  mouseWatcherGroup.h
+  mouseWatcherBase.h mouseWatcherGroup.h
   mouseWatcherParameter.I mouseWatcherParameter.h
   mouseWatcherRegion.I mouseWatcherRegion.h
   trackball.h
@@ -18,8 +18,10 @@ set(P3TFORM_SOURCES
   mouseInterfaceNode.cxx
   mouseSubregion.cxx
   mouseWatcher.cxx
+  mouseWatcherBase.cxx
   mouseWatcherGroup.cxx
-  mouseWatcherParameter.cxx mouseWatcherRegion.cxx
+  mouseWatcherParameter.cxx
+  mouseWatcherRegion.cxx
   trackball.cxx
   transform2sg.cxx
 )

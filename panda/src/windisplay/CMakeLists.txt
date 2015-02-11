@@ -8,7 +8,7 @@ if(WIN32)
   set(P3WINDISPLAY_SOURCES
       config_windisplay.cxx winGraphicsPipe.cxx
       winGraphicsWindow.cxx
-      winDetectDx9.cxx winDetectDx8.cxx)
+      winDetectDx9.cxx)
 
   composite_sources(p3windisplay P3WINDISPLAY_SOURCES)
   add_library(p3windisplay ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})

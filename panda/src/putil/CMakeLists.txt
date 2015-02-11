@@ -47,6 +47,7 @@ set(P3PUTIL_HEADERS
   modifierButtons.I modifierButtons.h mouseButton.h
   mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h
   nodeCachedReferenceCount.h nodeCachedReferenceCount.I
+  paramValue.I paramValue.h
   pbitops.I pbitops.h
   portalMask.h
   pta_ushort.h
@@ -96,6 +97,7 @@ set(P3PUTIL_SOURCES
   modifierButtons.cxx mouseButton.cxx mouseData.cxx
   nameUniquifier.cxx
   nodeCachedReferenceCount.cxx
+  paramValue.cxx
   pbitops.cxx
   pta_ushort.cxx
   simpleHashMap.cxx
@@ -113,12 +115,11 @@ set(P3PUTIL_IGATEEXT
   typedWritable_ext.h
   pythonCallbackObject.cxx
   pythonCallbackObject.h
-  pythonCallbackObject.I
 )
 
 composite_sources(p3putil P3PUTIL_SOURCES)
 add_library(p3putil ${P3PUTIL_HEADERS} ${P3PUTIL_SOURCES})
-target_link_libraries(p3putil p3pipeline)
+target_link_libraries(p3putil p3linmath p3pipeline)
 target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 
 install(TARGETS p3putil DESTINATION lib)

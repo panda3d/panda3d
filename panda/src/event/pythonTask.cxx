@@ -19,11 +19,6 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-ConfigureDef(config_pythonTask);
-ConfigureFn(config_pythonTask) {
-  PythonTask::init_type();
-}
-
 TypeHandle PythonTask::_type_handle;
 
 Configure(config_pythonTask);

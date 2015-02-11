@@ -4,7 +4,6 @@ endif()
 
 # Include source directories which have C++ components:
 add_subdirectory(src/directbase)
-add_subdirectory(src/autorestart)
 add_subdirectory(src/dcparser)
 add_subdirectory(src/dcparse)
 add_subdirectory(src/deadrec)

@@ -18,7 +18,6 @@ set(P3GOBJ_HEADERS
   geomLinestrips.h
   geomPoints.h
   geomVertexArrayData.h geomVertexArrayData.I
-  geomVertexArrayData_ext.h geomVertexArrayData_ext.cxx
   geomVertexArrayFormat.h geomVertexArrayFormat.I
   geomCacheEntry.h geomCacheEntry.I
   geomCacheManager.h geomCacheManager.I
@@ -31,13 +30,13 @@ set(P3GOBJ_HEADERS
   geomVertexWriter.h geomVertexWriter.I
   indexBufferContext.I indexBufferContext.h
   internalName.I internalName.h
-  internalName_ext.h internalName_ext.cxx
   lens.h lens.I
   material.I material.h materialPool.I materialPool.h
   matrixLens.I matrixLens.h
   occlusionQueryContext.I occlusionQueryContext.h
-  orthographicLens.I orthographicLens.h perspectiveLens.I
-  perspectiveLens.h
+  orthographicLens.I orthographicLens.h
+  paramTexture.I paramTexture.h
+  perspectiveLens.I perspectiveLens.h
   preparedGraphicsObjects.I preparedGraphicsObjects.h
   queryContext.I queryContext.h
   savedContext.I savedContext.h
@@ -109,9 +108,12 @@ set(P3GOBJ_SOURCES
   materialPool.cxx matrixLens.cxx
   occlusionQueryContext.cxx
   orthographicLens.cxx
+  paramTexture.cxx
   perspectiveLens.cxx
   preparedGraphicsObjects.cxx
   queryContext.cxx
+  samplerContext.cxx
+  samplerState.cxx
   savedContext.cxx
   shader.cxx
   shaderContext.cxx
@@ -144,11 +146,20 @@ set(P3GOBJ_SOURCES
   videoTexture.cxx
 )
 
+set(P3GOBJ_IGATEEXT
+  internalName_ext.cxx
+  internalName_ext.h
+  geomVertexArrayData_ext.cxx
+  geomVertexArrayData_ext.h
+  textureCollection_ext.cxx
+  textureCollection_ext.h
+)
+
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage
   ${_ZLIB_LIBRARIES} ${_SQUISH_LIBRARY} ${_CG_LIBRARIES})
-target_interrogate(p3gobj ALL)
+target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 install(TARGETS p3gobj DESTINATION lib)
 

@@ -2,6 +2,7 @@ set(P3LINMATH_HEADERS
   aa_luse.h
   compose_matrix.h compose_matrix_src.I
   compose_matrix_src.h config_linmath.h
+  configVariableColor.h configVariableColor.I
   coordinateSystem.h dbl2fltnames.h dblnames.h
   deg_2_rad.h deg_2_rad.I
   flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h
@@ -34,8 +35,8 @@ set(P3LINMATH_HEADERS
 )
 
 set(P3LINMATH_SOURCES
-  compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx
-  lmatrix.cxx
+  compose_matrix.cxx config_linmath.cxx configVariableColor.cxx
+  coordinateSystem.cxx lmatrix.cxx
   lorientation.cxx lpoint2.cxx
   lpoint3.cxx lpoint4.cxx lquaternion.cxx lrotation.cxx
   luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx
