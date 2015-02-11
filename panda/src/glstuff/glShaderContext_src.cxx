@@ -412,6 +412,20 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             s->_mat_spec.push_back(bind);
             continue;
           }
+          if (noprefix == "Color") {
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._piece = Shader::SMP_row3;
+            bind._func = Shader::SMF_first;
+            bind._part[0] = Shader::SMO_attr_color;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_color;
+            bind._part[1] = Shader::SMO_identity;
+            bind._arg[1] = NULL;
+            bind._dep[1] = Shader::SSD_NONE;
+            s->_mat_spec.push_back(bind);
+            continue;
+          }
           if (noprefix == "ClipPlane") {
             for (int i = 0; i < param_size; ++i) {
               Shader::ShaderMatSpec bind;
