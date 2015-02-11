@@ -28,7 +28,7 @@
 //               a callback to directly call an arbitarary Python
 //               function.  Powerful!  But use with caution.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL PythonCallbackObject : public CallbackObject {
+class PythonCallbackObject : public CallbackObject {
 PUBLISHED:
   PythonCallbackObject(PyObject *function = Py_None);
   virtual ~PythonCallbackObject();

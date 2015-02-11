@@ -30,14 +30,7 @@ TypeHandle RecorderFrame::_type_handle;
 void RecorderFrame::
 play_frame(BamReader *manager) {
   DatagramIterator scan(_data, _data_pos);
-
-  RecorderTable::Recorders::iterator ri;
-  for (ri = _table->_recorders.begin(); 
-       ri != _table->_recorders.end(); 
-       ++ri) {
-    RecorderBase *recorder = (*ri).second;
-    recorder->play_frame(scan, manager);
-  }
+  _table->play_frame(scan, manager);
 
   // We expect to use up all of the data in the datagram.
   nassertv(scan.get_remaining_size() == 0);
@@ -77,14 +70,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     _local_table = *_table;
     manager->write_pointer(dg, &_local_table);
   }
-  
-  RecorderTable::Recorders::iterator ri;
-  for (ri = _table->_recorders.begin(); 
-       ri != _table->_recorders.end(); 
-       ++ri) {
-    RecorderBase *recorder = (*ri).second;
-    recorder->record_frame(manager, dg);
-  }
+
+  _table->record_frame(manager, dg);
 }
 
 ////////////////////////////////////////////////////////////////////

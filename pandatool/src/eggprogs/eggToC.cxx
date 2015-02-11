@@ -33,6 +33,7 @@ EggToC::
 EggToC() :
   EggToSomething("C", ".c", true, true)
 {
+  set_program_brief("convert .egg geometry into compilable C tables");
   set_program_description
     ("This program reads Egg files and outputs code that will almost "
      "compile as a C or C++ program.  You get to define the data structures "

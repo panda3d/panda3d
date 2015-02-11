@@ -1,4 +1,4 @@
-// Filename: glShaderContext_src.h
+// Filename: glCgShaderContext_src.h
 // Created by: jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -51,15 +51,10 @@ public:
   INLINE bool uses_custom_texture_bindings(void);
 
 private:
-  CGcontext _cg_context;
-  CGprogram _cg_vprogram;
-  CGprogram _cg_fprogram;
-  CGprogram _cg_gprogram;
-  CGprofile _cg_vprofile;
-  CGprofile _cg_fprofile;
-  CGprofile _cg_gprofile;
+  CGprogram _cg_program;
+  bool _glsl_profile;
 
-  pvector <CGparameter> _cg_parameter_map;
+  pvector<CGparameter> _cg_parameter_map;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

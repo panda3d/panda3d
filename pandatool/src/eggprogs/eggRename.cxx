@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 EggRename::
 EggRename() {
+  set_program_brief("rename nodes in .egg files");
   set_program_description
     ("egg-rename reads one or more egg files and writes back with modified"
      "node names. ie. suppressing prefix from all the nodes' names. ");

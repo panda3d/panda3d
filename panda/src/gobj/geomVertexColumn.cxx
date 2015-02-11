@@ -168,6 +168,7 @@ setup() {
   nassertv(_num_components > 0 && _start >= 0);
 
   _num_values = _num_components;
+  _num_elements = 1;
 
   if (_numeric_type == NT_stdfloat) {
     if (vertices_float64) {
@@ -209,6 +210,10 @@ setup() {
     break;
   }
 
+  if (_contents == C_matrix) {
+    _num_elements = _num_components;
+  }
+
   if (_column_alignment < 1) {
     // The default column alignment is to align to the individual
     // numeric components, or to vertex_column_alignment, whichever is
@@ -219,7 +224,8 @@ setup() {
   // Enforce the column alignment requirements on the _start byte.
   _start = ((_start + _column_alignment - 1) / _column_alignment) * _column_alignment;
 
-  _total_bytes = _component_bytes * _num_components;
+  _element_stride = _component_bytes * _num_components;
+  _total_bytes = _element_stride * _num_elements;
 
   if (_packer != NULL) {
     delete _packer;
@@ -334,7 +340,6 @@ make_packer() const {
       break;
     }
     return new Packer_color;
-
   default:
     // Otherwise, we just read it as a generic value.
     switch (get_numeric_type()) {

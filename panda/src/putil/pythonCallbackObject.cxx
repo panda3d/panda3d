@@ -15,7 +15,8 @@
 #include "pythonCallbackObject.h"
 
 #ifdef HAVE_PYTHON
-#include "py_panda.h"  
+
+#include "py_panda.h"
 #include "thread.h"
 #include "callbackData.h"
 #include "config_util.h"
@@ -27,8 +28,13 @@ ConfigureFn(config_pythonCallbackObject) {
 
 TypeHandle PythonCallbackObject::_type_handle;
 
+Configure(config_pythonCallbackObject);
+ConfigureFn(config_pythonCallbackObject) {
+  PythonCallbackObject::init_type();
+}
+
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_TypedObject;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -131,13 +137,13 @@ do_python_callback(CallbackData *cbdata) {
 
   // Wrap the cbdata up in a Python object, then put it in a tuple,
   // for the argument list.
-  PyObject *pycbdata = 
+  PyObject *pycbdata =
     DTool_CreatePyInstanceTyped(cbdata, Dtool_TypedObject,
                                 false, false, cbdata->get_type_index());
   PyObject *args = Py_BuildValue("(O)", pycbdata);
   Py_DECREF(pycbdata);
 
-  PyObject *result = 
+  PyObject *result =
     Thread::get_current_thread()->call_python_func(_function, args);
   Py_DECREF(args);
 

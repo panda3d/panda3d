@@ -22,6 +22,7 @@
 
 #include "graphicsStateGuardian.h"
 #include "texture.h"
+#include "samplerState.h"
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
@@ -67,7 +68,7 @@ public:
                        DWORD multisampletype, DWORD multisamplequality);
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
-  void apply_texture(int i, TextureContext *tc);
+  void apply_texture(int i, TextureContext *tc, const SamplerState &sampler);
   virtual bool update_texture(TextureContext *tc, bool force);
   bool upload_texture(DXTextureContext9 *dtc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -217,7 +218,7 @@ protected:
   void update_standard_texture_bindings();
 
 protected:
-  INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
+  INLINE static D3DTEXTUREADDRESS get_texture_wrap_mode(SamplerState::WrapMode wm);
   INLINE static D3DFOGMODE get_fog_mode_type(Fog::Mode m);
   const D3DCOLORVALUE &get_light_color(Light *light) const;
   INLINE static D3DTRANSFORMSTATETYPE get_tex_mat_sym(int stage_index);
@@ -242,8 +243,8 @@ protected:
   bool release_swap_chain (DXScreenData *new_context);
   void copy_pres_reset(DXScreenData *new_context);
 
-  static D3DTEXTUREFILTERTYPE get_d3d_min_type(Texture::FilterType filter_type);
-  static D3DTEXTUREFILTERTYPE get_d3d_mip_type(Texture::FilterType filter_type);
+  static D3DTEXTUREFILTERTYPE get_d3d_min_type(SamplerState::FilterType filter_type);
+  static D3DTEXTUREFILTERTYPE get_d3d_mip_type(SamplerState::FilterType filter_type);
   static D3DTEXTUREOP get_texture_operation(TextureStage::CombineMode mode, int scale);
   DWORD get_texture_argument(TextureStage::CombineSource source,
            TextureStage::CombineOperand operand) const;
@@ -376,7 +377,10 @@ protected:
 
   int _supports_gamma_calibration;
 
+#ifdef HAVE_CG
+  CGcontext _cg_context;
   static LPDIRECT3DDEVICE9 _cg_device;
+#endif
 
 public:
   virtual TypeHandle get_type() const {

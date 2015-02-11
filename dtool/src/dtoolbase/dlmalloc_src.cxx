@@ -462,7 +462,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #endif  /* _WIN32 */
 #endif  /* WIN32 */
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 #define HAVE_MMAP 1
 #define HAVE_MORECORE 0
@@ -597,9 +599,15 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
   malloc does support the following options.
 */
 
+#ifndef M_TRIM_THRESHOLD
 #define M_TRIM_THRESHOLD     (-1)
+#endif
+#ifndef M_GRANULARITY
 #define M_GRANULARITY        (-2)
+#endif
+#ifndef M_MMAP_THRESHOLD
 #define M_MMAP_THRESHOLD     (-3)
+#endif
 
 /* ------------------------ Mallinfo declarations ------------------------ */
 

@@ -42,6 +42,9 @@ PUBLISHED:
   INLINE const LVecBase4d &get_aux() const;
   INLINE void set_aux(const LVecBase4d &aux);
 
+  static PT(EggVertexAux) make_average(const EggVertexAux *first,
+                                       const EggVertexAux *second);
+
   void write(ostream &out, int indent_level) const;
   int compare_to(const EggVertexAux &other) const;
 

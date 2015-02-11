@@ -131,6 +131,32 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   (*si)._override = override;
   (*si)._texture = tex;
   (*si)._implicit_sort = attrib->_next_implicit_sort;
+  (*si)._has_sampler = false;
+  ++(attrib->_next_implicit_sort);
+
+  // We now need to re-sort the attrib list.
+  attrib->_sort_seq = UpdateSeq::old();
+  attrib->_filtered_seq = UpdateSeq::old();
+
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::add_on_stage
+//       Access: Published
+//  Description: Returns a new TextureAttrib, just like this one, but
+//               with the indicated stage added to the list of stages
+//               turned on by this attrib.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TextureAttrib::
+add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int override) const {
+  TextureAttrib *attrib = new TextureAttrib(*this);
+  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
+  (*si)._override = override;
+  (*si)._texture = tex;
+  (*si)._sampler = sampler;
+  (*si)._implicit_sort = attrib->_next_implicit_sort;
+  (*si)._has_sampler = true;
   ++(attrib->_next_implicit_sort);
 
   // We now need to re-sort the attrib list.
@@ -239,7 +265,7 @@ unify_texture_stages(TextureStage *stage) const {
   for (fsi = _off_stages.begin(); fsi != _off_stages.end(); ++fsi) {
     TextureStage *this_stage = (*fsi)._stage;
 
-    if (this_stage != stage && 
+    if (this_stage != stage &&
         this_stage->get_name() == stage->get_name()) {
       this_stage = stage;
       any_changed = true;
@@ -291,7 +317,7 @@ filter_to_max(int max_texture_stages) const {
   RenderStages priority_stages = _render_stages;
 
   // This sort function uses the STL function object defined above.
-  sort(priority_stages.begin(), priority_stages.end(), 
+  sort(priority_stages.begin(), priority_stages.end(),
        CompareTextureStagePriorities());
 
   // Now lop off all of the stages after the first max_texture_stages.
@@ -362,7 +388,7 @@ lower_attrib_can_override() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureAttrib::
 output(ostream &out) const {
@@ -399,7 +425,7 @@ output(ostream &out) const {
       out << " on";
     }
   }
-    
+
   RenderStages::const_iterator ri;
   for (ri = _render_stages.begin(); ri != _render_stages.end(); ++ri) {
     const StageNode &sn = *(*ri);
@@ -520,6 +546,22 @@ compare_to_impl(const RenderAttrib *other) const {
       return override < other_override ? -1 : 1;
     }
 
+    int has_sampler = (*si)._has_sampler;
+    int other_has_sampler = (*osi)._has_sampler;
+
+    if (has_sampler != other_has_sampler) {
+      return has_sampler < other_has_sampler ? -1 : 1;
+    }
+
+    if (has_sampler) {
+      const SamplerState &sampler = (*si)._sampler;
+      const SamplerState &other_sampler = (*osi)._sampler;
+
+      if (sampler != other_sampler) {
+        return sampler < other_sampler ? -1 : 1;
+      }
+    }
+
     ++si;
     ++osi;
   }
@@ -560,7 +602,7 @@ compare_to_impl(const RenderAttrib *other) const {
   if (ofi != ta->_off_stages.end()) {
     return -1;
   }
-  
+
   return 0;
 }
 
@@ -641,8 +683,8 @@ compose_impl(const RenderAttrib *other) const {
   // Create a new TextureAttrib that will hold the result.
   TextureAttrib *attrib = new TextureAttrib;
 
-  while (ai != _on_stages.end() && 
-         bi != ta->_on_stages.end() && 
+  while (ai != _on_stages.end() &&
+         bi != ta->_on_stages.end() &&
          ci != ta->_off_stages.end()) {
     if ((*ai)._stage < (*bi)._stage) {
       if ((*ai)._stage < (*ci)._stage) {
@@ -717,12 +759,12 @@ compose_impl(const RenderAttrib *other) const {
       // present in the secondary.
       attrib->_on_stages.insert(attrib->_on_stages.end(), *ai);
       ++ai;
-      
+
     } else if ((*ci)._stage < (*ai)._stage) {
       // Here is a stage that is turned off in the secondary, but
       // was not present in the original.
       ++ci;
-      
+
     } else { // (*ci)._stage == (*ai)._stage
       // Here is a stage that is turned off in the secondary, and
       // was present in the original.
@@ -772,7 +814,7 @@ invert_compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::get_auto_shader_attrib_impl
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TextureAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
@@ -821,6 +863,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     manager->write_pointer(dg, tex);
     dg.add_uint16((*si)._implicit_sort);
     dg.add_int32((*si)._override);
+    dg.add_bool((*si)._has_sampler);
+    if ((*si)._has_sampler) {
+      (*si)._sampler.write_datagram(dg);
+    }
   }
 }
 
@@ -850,13 +896,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // The Texture pointer filters itself through the TexturePool, so
     // we don't have to do anything special here.
     Texture *tex = DCAST(Texture, p_list[pi++]);
-    
+
     if (tex != (Texture *)NULL) {
       StageNode &sn = _on_stages[sni];
       sn._stage = ts;
       sn._texture = tex;
       ++sni;
-      
+
     } else {
       // If we couldn't load a texture pointer, turn off that
       // particular texture stage.
@@ -905,7 +951,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // read the _off_stages data.
   _off_all_stages = scan.get_bool();
   int num_off_stages = scan.get_uint16();
-  
+
   // Push back a NULL pointer for each off TextureStage for now, until
   // we get the actual list of pointers later in complete_pointers().
   int i;
@@ -938,8 +984,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     }
 
     _next_implicit_sort = max(_next_implicit_sort, implicit_sort + 1);
-    _on_stages.push_back(StageNode(NULL, _next_implicit_sort, override));
+    Stages::iterator si =
+      _on_stages.insert_nonunique(StageNode(NULL, _next_implicit_sort, override));
     ++_next_implicit_sort;
+
+    if (manager->get_file_minor_ver() >= 36) {
+      (*si)._has_sampler = scan.get_bool();
+      if ((*si)._has_sampler) {
+        (*si)._sampler.read_datagram(scan, manager);
+      }
+    }
   }
 }
 

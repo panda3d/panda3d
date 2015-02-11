@@ -57,6 +57,7 @@ private:
 
   bool _munge_color;
   bool _munge_color_scale;
+  bool _auto_shader;
 
   LColor _color;
   LVecBase4 _color_scale;

@@ -54,8 +54,8 @@ void text_keys(EventHandler& eh) {
   text_node->set_card_as_margin(0.25, 0.25, 0.25, 0.25);
   PT(Texture) tex = new Texture;
   tex->set_name("genericButton.rgb");
-  tex->set_minfilter(Texture::FT_linear);
-  tex->set_magfilter(Texture::FT_linear);
+  tex->set_minfilter(SamplerState::FT_linear);
+  tex->set_magfilter(SamplerState::FT_linear);
   tex->read("/beta/toons/textures/smGreyButtonUp.rgb");
   text_node->set_card_texture( tex );
   text_node->set_card_border(0.1, 0.1);

@@ -57,11 +57,13 @@ protected:
 private:
   // inputs
   int _pixel_xy_input;
+  int _pixel_size_input;
   int _xy_input;
   int _button_events_input;
 
   // outputs
   int _pixel_xy_output;
+  int _pixel_size_output;
   int _xy_output;
   int _button_events_output;
 
@@ -78,6 +80,9 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
+
+  INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
+  INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
@@ -106,4 +111,3 @@ private:
 };
 
 #endif
-

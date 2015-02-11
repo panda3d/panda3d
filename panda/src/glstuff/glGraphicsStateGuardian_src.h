@@ -182,12 +182,23 @@ typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
+typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
+typedef void (APIENTRYP PFNGLDELETESAMPLERSPROC) (GLsizei count, const GLuint *samplers);
+typedef void (APIENTRYP PFNGLBINDSAMPLERPROC) (GLuint unit, GLuint sampler);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERIPROC) (GLuint sampler, GLenum pname, GLint param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERIVPROC) (GLuint sampler, GLenum pname, const GLint *param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERFPROC) (GLuint sampler, GLenum pname, GLfloat param);
+typedef void (APIENTRYP PFNGLSAMPLERPARAMETERFVPROC) (GLuint sampler, GLenum pname, const GLfloat *param);
 typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIEXTPROC) (GLuint program, GLenum pname, GLint value);
 typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);
+typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
+typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
+typedef void (APIENTRYP PFNGLBINDSAMPLERSPROC) (GLuint first, GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLDISPATCHCOMPUTEPROC) (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
@@ -276,6 +287,9 @@ public:
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
 
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
+  virtual void release_sampler(SamplerContext *sc);
+
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
@@ -312,6 +326,8 @@ public:
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
+
+  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *region);
 
@@ -390,7 +406,7 @@ protected:
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  bool has_extension(const string &extension) const;
+  INLINE virtual bool has_extension(const string &extension) const FINAL;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -443,14 +459,14 @@ protected:
 
   static GLenum get_numeric_type(Geom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
-  GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
-  static Texture::WrapMode get_panda_wrap_mode(GLenum wm);
-  static GLenum get_texture_filter_type(Texture::FilterType ft,
+  GLenum get_texture_wrap_mode(SamplerState::WrapMode wm) const;
+  static SamplerState::WrapMode get_panda_wrap_mode(GLenum wm);
+  static GLenum get_texture_filter_type(SamplerState::FilterType ft,
                                         bool ignore_mipmaps);
-  static Texture::FilterType get_panda_filter_type(GLenum ft);
+  static SamplerState::FilterType get_panda_filter_type(GLenum ft);
   GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;
-  GLint get_internal_image_format(Texture *tex) const;
+  GLint get_internal_image_format(Texture *tex, bool force_sized=false) const;
   static bool is_mipmap_filter(GLenum min_filter);
   static bool is_compressed_format(GLenum format);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
@@ -476,9 +492,10 @@ protected:
 #endif  // NDEBUG
 
   void do_auto_rescale_normal();
-  bool specify_texture(CLP(TextureContext) *gtc);
+  bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
   bool apply_texture(TextureContext *tc);
-  bool upload_texture(CLP(TextureContext) *gtc, bool force);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc);
+  bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,
                             GLenum texture_target, GLenum page_target,
@@ -536,6 +553,8 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
   bool _scissor_enabled;
+  bool _scissor_attrib_active;
+  epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
   PT(Shader) _current_shader;
@@ -549,10 +568,16 @@ protected:
   static PT(Shader)  _default_shader;
 #endif
 
+#ifdef HAVE_CG
+  CGcontext _cg_context;
+#endif
+
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
+
+  bool _supports_vertex_attrib_divisor;
 
   // Cache the data necessary to bind each particular light each
   // frame, so if we bind a given light multiple times, we only have
@@ -600,8 +625,7 @@ public:
 
 #ifndef OPENGLES
   PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
-  bool _primitive_restart_gl3;
-  bool _primitive_restart_nv;
+  bool _explicit_primitive_restart;
 #endif
 
   bool _supports_vertex_blend;
@@ -631,6 +655,11 @@ public:
   PFNGLTEXSTORAGE1DPROC _glTexStorage1D;
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
+
+  bool _supports_clear_texture;
+#ifndef OPENGLES
+  PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
+#endif
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
@@ -763,13 +792,22 @@ public:
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
+  PFNGLVERTEXATTRIBDIVISORPROC _glVertexAttribDivisor;
 #endif  // OPENGLES_1
 #ifndef OPENGLES
+  PFNGLGENSAMPLERSPROC _glGenSamplers;
+  PFNGLDELETESAMPLERSPROC _glDeleteSamplers;
+  PFNGLBINDSAMPLERPROC _glBindSampler;
+  PFNGLSAMPLERPARAMETERIPROC _glSamplerParameteri;
+  PFNGLSAMPLERPARAMETERIVPROC _glSamplerParameteriv;
+  PFNGLSAMPLERPARAMETERFPROC _glSamplerParameterf;
+  PFNGLSAMPLERPARAMETERFVPROC _glSamplerParameterfv;
   PFNGLPROGRAMPARAMETERIPROC _glProgramParameteri;
   PFNGLPATCHPARAMETERIPROC _glPatchParameteri;
   PFNGLDRAWARRAYSINSTANCEDPROC _glDrawArraysInstanced;
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
   PFNGLBINDTEXTURESPROC _glBindTextures;
+  PFNGLBINDSAMPLERSPROC _glBindSamplers;
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
   PFNGLBINDIMAGETEXTURESPROC _glBindImageTextures;
   PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
@@ -780,6 +818,7 @@ public:
   PFNGLSCISSORARRAYVPROC _glScissorArrayv;
   PFNGLDEPTHRANGEARRAYVPROC _glDepthRangeArrayv;
   PFNGLGETTEXTUREHANDLEPROC _glGetTextureHandle;
+  PFNGLGETTEXTURESAMPLERHANDLEPROC _glGetTextureSamplerHandle;
   PFNGLMAKETEXTUREHANDLERESIDENTPROC _glMakeTextureHandleResident;
   PFNGLMAKETEXTUREHANDLENONRESIDENTPROC _glMakeTextureHandleNonResident;
   PFNGLUNIFORMHANDLEUI64PROC _glUniformHandleui64;

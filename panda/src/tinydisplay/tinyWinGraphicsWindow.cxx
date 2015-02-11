@@ -33,7 +33,7 @@ TypeHandle TinyWinGraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TinyWinGraphicsWindow::
-TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
@@ -85,7 +85,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   tinygsg->_current_frame_buffer = _frame_buffer;
   tinygsg->reset_if_new();
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
@@ -152,7 +152,7 @@ end_flip() {
                bmdc, 0, 0,fb_xsize, fb_ysize,
                SRCCOPY);
   }
-    
+
   DeleteDC(bmdc);
   DeleteObject(bm);
   GdiFlush();
@@ -220,7 +220,7 @@ open_window() {
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
   }
-  
+
   _hdc = GetDC(_hWnd);
 
   create_frame_buffer();
@@ -231,7 +231,7 @@ open_window() {
   }
 
   tinygsg->_current_frame_buffer = _frame_buffer;
-  
+
   tinygsg->reset_if_new();
   if (!tinygsg->is_valid()) {
     close_window();
@@ -251,8 +251,10 @@ open_window() {
 void TinyWinGraphicsWindow::
 handle_reshape() {
   WinGraphicsWindow::handle_reshape();
-  ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
-  setup_bitmap_info();
+  if (_frame_buffer != NULL) {
+    ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+    setup_bitmap_info();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

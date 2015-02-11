@@ -45,15 +45,14 @@
 #include "texture.h"
 #include "occlusionQueryContext.h"
 #include "timerQueryContext.h"
-#include "stencilRenderStates.h"
 #include "loader.h"
 #include "shaderAttrib.h"
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
+#include "shaderGenerator.h"
 
 class DrawableRegion;
 class GraphicsEngine;
-class ShaderGenerator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardian
@@ -88,6 +87,7 @@ PUBLISHED:
 
   INLINE void release_all();
   INLINE int release_all_textures();
+  INLINE int release_all_samplers();
   INLINE int release_all_geoms();
   INLINE int release_all_vertex_buffers();
   INLINE int release_all_index_buffers();
@@ -103,6 +103,9 @@ PUBLISHED:
 
   INLINE void set_loader(Loader *loader);
   INLINE Loader *get_loader() const;
+
+  INLINE void set_shader_generator(ShaderGenerator *shader_generator);
+  INLINE ShaderGenerator *get_shader_generator() const;
 
   INLINE GraphicsPipe *get_pipe() const;
   GraphicsEngine *get_engine() const;
@@ -144,6 +147,7 @@ PUBLISHED:
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
   INLINE bool get_supports_shadow_filter() const;
+  INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
   INLINE bool get_supports_geometry_shaders() const;
   INLINE bool get_supports_tessellation_shaders() const;
@@ -165,7 +169,6 @@ PUBLISHED:
 
   virtual int get_supported_geom_rendering() const;
   virtual bool get_supports_cg_profile(const string &name) const;
-
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -198,6 +201,7 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
+  virtual bool has_extension(const string &extension) const;
 
   virtual string get_driver_vendor();
   virtual string get_driver_renderer();
@@ -215,6 +219,9 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
+
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
+  virtual void release_sampler(SamplerContext *sc);
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
@@ -248,7 +255,8 @@ public:
   virtual void clear(DrawableRegion *clearable);
 
   const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4 &t);
+  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                                       LMatrix4 &t, int index);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
@@ -510,6 +518,7 @@ protected:
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;
+  bool _supports_sampler_objects;
   bool _supports_basic_shaders;
   bool _supports_geometry_shaders;
   bool _supports_tessellation_shaders;
@@ -532,8 +541,6 @@ protected:
 
   int  _stereo_buffer_mask;
 
-  StencilRenderStates *_stencil_render_states;
-
   int _auto_detect_shader_model;
   int _shader_model;
 
@@ -544,7 +551,7 @@ protected:
   PN_stdfloat _gamma;
   Texture::QualityLevel _texture_quality_override;
 
-  ShaderGenerator* _shader_generator;
+  PT(ShaderGenerator) _shader_generator;
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
@@ -589,6 +596,7 @@ public:
 
   static PStatCollector _prepare_pcollector;
   static PStatCollector _prepare_texture_pcollector;
+  static PStatCollector _prepare_sampler_pcollector;
   static PStatCollector _prepare_geom_pcollector;
   static PStatCollector _prepare_shader_pcollector;
   static PStatCollector _prepare_vertex_buffer_pcollector;

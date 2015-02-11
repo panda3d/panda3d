@@ -29,6 +29,7 @@ LwoScan() {
   clear_runlines();
   add_runline("[opts] input.lwo");
 
+  set_program_brief("describe the contents of a Lightwave object file");
   set_program_description
     ("This program simply reads a Lightwave object file and dumps its "
      "contents to standard output.  It's mainly useful for debugging "

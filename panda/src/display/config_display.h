@@ -24,6 +24,7 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 #include "configVariableFilename.h"
+#include "configVariableColor.h"
 #include "coordinateSystem.h"
 #include "dconfig.h"
 
@@ -96,6 +97,9 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_srgb;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_float;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt depth_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt color_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt red_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt green_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt blue_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt alpha_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt accum_bits;
@@ -104,7 +108,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
 
-extern EXPCL_PANDA_DISPLAY ConfigVariableDouble background_color;
+extern EXPCL_PANDA_DISPLAY ConfigVariableColor background_color;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool basic_shaders_only;
 

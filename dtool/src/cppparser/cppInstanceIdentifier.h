@@ -32,6 +32,7 @@ class CPPPreprocessor;
 enum CPPInstanceIdentifierType {
   IIT_pointer,
   IIT_reference,
+  IIT_rvalue_reference,
   IIT_scoped_pointer,
   IIT_array,
   IIT_const,

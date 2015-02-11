@@ -85,6 +85,11 @@ PUBLISHED:
   INLINE ~PointerTo();
 
 public:
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerTo(PointerTo<T> &&from) NOEXCEPT;
+  INLINE PointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
+#endif
+
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
@@ -144,6 +149,13 @@ PUBLISHED:
   INLINE ~ConstPointerTo();
 
 public:
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerTo(PointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
+  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) NOEXCEPT;
+#endif
+
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
   INLINE operator const T *() const;
@@ -161,6 +173,20 @@ PUBLISHED:
   // this works again in interrogate, we can remove this.
   INLINE void clear() { PointerToBase<T>::clear(); }
 };
+
+
+// The existence of these functions makes it possible to sort vectors
+// of PointerTo objects without incurring the cost of unnecessary
+// reference count changes.  The performance difference is dramatic!
+template <class T>
+void swap(PointerTo<T> &one, PointerTo<T> &two) NOEXCEPT {
+  one.swap(two);
+}
+
+template <class T>
+void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) NOEXCEPT {
+  one.swap(two);
+}
 
 
 // Finally, we'll define a couple of handy abbreviations to save on

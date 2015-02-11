@@ -42,6 +42,17 @@ add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ComputeNode::clear_dispatches
+//       Access: Published
+//  Description: Removes all dispatch commands.
+////////////////////////////////////////////////////////////////////
+INLINE void ComputeNode::
+clear_dispatches() {
+  Dispatcher::CDWriter cdata(_dispatcher->_cycler);
+  cdata->_dispatches.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ComputeNode::get_num_dispatches
 //       Access: Published
 //  Description: Returns the number of times add_dispatch has been
@@ -62,7 +73,7 @@ get_num_dispatches() const {
 INLINE const LVecBase3i &ComputeNode::
 get_dispatch(int n) const {
   Dispatcher::CDReader cdata(_dispatcher->_cycler);
-  nassertr(n >= 0 && n < cdata->_dispatches.size(), LVecBase3i::zero());
+  nassertr(n >= 0 && (size_t)n < cdata->_dispatches.size(), LVecBase3i::zero());
   return cdata->_dispatches[n];
 }
 

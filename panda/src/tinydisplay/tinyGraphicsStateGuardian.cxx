@@ -34,6 +34,7 @@
 #include "lightAttrib.h"
 #include "scissorAttrib.h"
 #include "bitMask.h"
+#include "samplerState.h"
 #include "zgl.h"
 #include "zmath.h"
 #include "ztriangle_table.h"
@@ -118,7 +119,7 @@ reset() {
   _c->draw_triangle_back = gl_draw_triangle_fill;
 
   _supported_geom_rendering =
-    Geom::GR_point | 
+    Geom::GR_point |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip |
     Geom::GR_flat_last_vertex;
@@ -568,7 +569,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
 
     // Compose the modelview and projection matrices.
-    load_matrix(&_c->matrix_model_projection, 
+    load_matrix(&_c->matrix_model_projection,
                 scissor_proj_mat->compose(_internal_transform));
 
     /* test to accelerate computation */
@@ -658,7 +659,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       {
         CPT(TransformState) render_transform =
           _cs_transform->compose(_scene_setup->get_world_transform());
-        CPT(TransformState) world_inv_transform = 
+        CPT(TransformState) world_inv_transform =
           render_transform->invert_compose(_internal_transform);
         tcdata[si]._mat = world_inv_transform->get_mat();
       }
@@ -709,7 +710,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     needs_normal = rnormal.has_column();
   }
 
-  GeomVertexReader rvertex(data_reader, InternalName::get_vertex(), force); 
+  GeomVertexReader rvertex(data_reader, InternalName::get_vertex(), force);
   rvertex.set_row_unsafe(_min_vertex);
 
   if (!rvertex.has_column()) {
@@ -1717,10 +1718,11 @@ update_texture(TextureContext *tc, bool force) {
 
   if (gtc->was_image_modified() || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
-    bool okflag = upload_texture(gtc, force);
+    Texture *tex = gtc->get_texture();
+    bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
     if (!okflag) {
       tinydisplay_cat.error()
-        << "Could not load " << *gtc->get_texture() << "\n";
+        << "Could not load " << *tex << "\n";
       return false;
     }
   }
@@ -1746,13 +1748,24 @@ update_texture(TextureContext *tc, bool force) {
 //               true).
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-update_texture(TextureContext *tc, bool force, int stage_index) {
+update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmaps) {
   if (!update_texture(tc, force)) {
     return false;
   }
 
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
   GLTexture *gltex = &gtc->_gltex;
+
+  if (uses_mipmaps && gltex->num_levels <= 1) {
+    // We don't have mipmaps, yet we are sampling with mipmaps.
+    Texture *tex = gtc->get_texture();
+    bool okflag = upload_texture(gtc, force, true);
+    if (!okflag) {
+      tinydisplay_cat.error()
+        << "Could not load " << *tex << "\n";
+      return false;
+    }
+  }
 
   _c->current_textures[stage_index] = gltex;
 
@@ -1762,13 +1775,13 @@ update_texture(TextureContext *tc, bool force, int stage_index) {
   texture_def->t_max = gltex->t_max;
 
   const V4 &bc = gltex->border_color;
-  int r = (int)(bc.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
+  int r = (int)(bc.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN)
                 + ZB_POINT_RED_MIN);
-  int g = (int)(bc.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN) 
+  int g = (int)(bc.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN)
                 + ZB_POINT_GREEN_MIN);
-  int b = (int)(bc.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
+  int b = (int)(bc.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN)
                 + ZB_POINT_BLUE_MIN);
-  int a = (int)(bc.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN) 
+  int a = (int)(bc.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN)
                 + ZB_POINT_ALPHA_MIN);
   texture_def->border_color = RGBA_TO_PIXEL(r, g, b, a);
 
@@ -1809,7 +1822,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::do_issue_light
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_light() {
@@ -2016,7 +2029,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
     gl_light->specular.v[1] = specular[1];
     gl_light->specular.v[2] = specular[2];
     gl_light->specular.v[3] = specular[3];
-  
+
     Lens *lens = light_obj->get_lens();
     nassertv(lens != (Lens *)NULL);
 
@@ -2267,16 +2280,19 @@ do_issue_texture() {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
-    
+
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
       // Something wrong with this texture; skip it.
       return;
     }
-    
+
+    // Get the sampler state that we are supposed to use.
+    const SamplerState &sampler = _target_texture->get_on_sampler(stage);
+
     // Then, turn on the current texture mode.
-    if (!update_texture(tc, false, si)) {
+    if (!update_texture(tc, false, si, sampler.uses_mipmaps())) {
       return;
     }
 
@@ -2297,51 +2313,51 @@ do_issue_texture() {
     best_quality_level = max(best_quality_level, quality_level);
 
     ZTextureDef *texture_def = &_c->zb->current_textures[si];
-    
+
     // Fill in the filter func pointers.  These may not actually get
     // called, if we decide below we can inline the filters.
-    Texture::FilterType minfilter = texture->get_minfilter();
-    Texture::FilterType magfilter = texture->get_magfilter();
+    SamplerState::FilterType minfilter = sampler.get_minfilter();
+    SamplerState::FilterType magfilter = sampler.get_magfilter();
 
-    if (td_ignore_mipmaps && Texture::is_mipmap(minfilter)) {
+    if (td_ignore_mipmaps && SamplerState::is_mipmap(minfilter)) {
       // Downgrade mipmaps.
-      if (minfilter == Texture::FT_nearest_mipmap_nearest) {
-        minfilter = Texture::FT_nearest;
+      if (minfilter == SamplerState::FT_nearest_mipmap_nearest) {
+        minfilter = SamplerState::FT_nearest;
       } else {
-        minfilter = Texture::FT_linear;
+        minfilter = SamplerState::FT_linear;
       }
     }
 
     // Depending on this particular texture's quality level, we may
     // downgrade the requested filters.
     if (quality_level == Texture::QL_fastest) {
-      minfilter = Texture::FT_nearest;
-      magfilter = Texture::FT_nearest;
+      minfilter = SamplerState::FT_nearest;
+      magfilter = SamplerState::FT_nearest;
 
     } else if (quality_level == Texture::QL_normal) {
-      if (Texture::is_mipmap(minfilter)) {
-        minfilter = Texture::FT_nearest_mipmap_nearest;
+      if (SamplerState::is_mipmap(minfilter)) {
+        minfilter = SamplerState::FT_nearest_mipmap_nearest;
       } else {
-        minfilter = Texture::FT_nearest;
+        minfilter = SamplerState::FT_nearest;
       }
-      magfilter = Texture::FT_nearest;
+      magfilter = SamplerState::FT_nearest;
 
     } else if (quality_level == Texture::QL_best) {
-      minfilter = texture->get_effective_minfilter();
-      magfilter = texture->get_effective_magfilter();
+      minfilter = sampler.get_effective_minfilter();
+      magfilter = sampler.get_effective_magfilter();
     }
 
     texture_def->tex_minfilter_func = get_tex_filter_func(minfilter);
     texture_def->tex_magfilter_func = get_tex_filter_func(magfilter);
-    
-    Texture::WrapMode wrap_u = texture->get_wrap_u();
-    Texture::WrapMode wrap_v = texture->get_wrap_v();
+
+    SamplerState::WrapMode wrap_u = sampler.get_wrap_u();
+    SamplerState::WrapMode wrap_v = sampler.get_wrap_v();
     if (td_ignore_clamp) {
-      wrap_u = Texture::WM_repeat;
-      wrap_v = Texture::WM_repeat;
+      wrap_u = SamplerState::WM_repeat;
+      wrap_v = SamplerState::WM_repeat;
     }
 
-    if (wrap_u != Texture::WM_repeat || wrap_v != Texture::WM_repeat) {
+    if (wrap_u != SamplerState::WM_repeat || wrap_v != SamplerState::WM_repeat) {
       // We have some nonstandard wrap mode.  This will force the use
       // of the general texfilter mode.
       needs_general = true;
@@ -2364,25 +2380,25 @@ do_issue_texture() {
 
       // The following special cases are handled inline, rather than
       // relying on the above wrap function pointers.
-      if (wrap_u && Texture::WM_border_color && wrap_v == Texture::WM_border_color) {
+      if (wrap_u && SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
         texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
-      } else if (wrap_u && Texture::WM_clamp && wrap_v == Texture::WM_clamp) {
+      } else if (wrap_u && SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
         texture_def->tex_minfilter_func = apply_wrap_clamp_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_clamp_magfilter;
       }
     }
 
-    if (minfilter != Texture::FT_nearest || magfilter != Texture::FT_nearest) {
+    if (minfilter != SamplerState::FT_nearest || magfilter != SamplerState::FT_nearest) {
       all_nearest = false;
     }
 
-    if (minfilter != Texture::FT_nearest_mipmap_nearest ||
-        magfilter != Texture::FT_nearest) {
+    if (minfilter != SamplerState::FT_nearest_mipmap_nearest ||
+        magfilter != SamplerState::FT_nearest) {
       all_mipmap_nearest = false;
     }
 
-    if (Texture::is_mipmap(minfilter)) {
+    if (SamplerState::is_mipmap(minfilter)) {
       any_mipmap = true;
     }
   }
@@ -2419,7 +2435,7 @@ do_issue_texture() {
     // perspective correctness.
     _texfilter_state = 0;    // tnearest
     _texturing_state = 1;    // textured (not perspective correct, no multitexture)
-  
+
   } else {
     // This is the default texture filter.  We use nearest sampling if
     // there are no mipmaps, and mipmap_nearest if there are any
@@ -2500,7 +2516,7 @@ apply_texture(TextureContext *tc) {
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-upload_texture(TinyTextureContext *gtc, bool force) {
+upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   Texture *tex = gtc->get_texture();
 
   if (_effective_incomplete_render && !force) {
@@ -2525,21 +2541,24 @@ upload_texture(TinyTextureContext *gtc, bool force) {
     return false;
   }
 
-  if (tinydisplay_cat.is_debug()) {
-    tinydisplay_cat.debug()
-      << "loading texture " << tex->get_name() << "\n";
-  }
 #ifdef DO_PSTATS
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
   GLTexture *gltex = &gtc->_gltex;
 
   int num_levels = 1;
-  if (tex->uses_mipmaps()) {
-    if (!tex->has_all_ram_mipmap_images()) {
+  if (uses_mipmaps) {
+    num_levels = tex->get_expected_num_mipmap_levels();
+    if (tex->get_num_ram_mipmap_images() < num_levels) {
       tex->generate_ram_mipmap_images();
     }
-    num_levels = tex->get_num_ram_mipmap_images();
+  }
+
+  if (tinydisplay_cat.is_debug()) {
+    tinydisplay_cat.debug()
+      << "loading texture " << tex->get_name() << ", "
+      << tex->get_x_size() << " x " << tex->get_y_size() << ", mipmaps = "
+      << num_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
   }
 
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), num_levels)) {
@@ -2616,7 +2635,7 @@ upload_texture(TinyTextureContext *gtc, bool force) {
   }
 
   gtc->update_data_size_bytes(bytecount);
-  
+
   get_engine()->texture_uploaded(tex);
   gtc->mark_loaded();
 
@@ -2687,7 +2706,7 @@ bool TinyGraphicsStateGuardian::
 setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   int s_bits = get_tex_shift(x_size);
   int t_bits = get_tex_shift(y_size);
-  
+
   if (s_bits < 0 || t_bits < 0) {
     return false;
   }
@@ -2701,7 +2720,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
 
   gltex->num_levels = num_levels;
-  
+
   // We allocate one big buffer, large enough to include all the
   // mipmap levels, and index into that buffer for each level.  This
   // cuts down on the number of individual alloc calls we have to make
@@ -2746,7 +2765,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     dest->t_mask = ((1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
     dest->s_shift = (ZB_POINT_ST_FRAC_BITS + level);
     dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits + level);
-    
+
     x_size = max((x_size >> 1), 1);
     y_size = max((y_size >> 1), 1);
     s_bits = max(s_bits - 1, 0);
@@ -3187,7 +3206,7 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
   }
   return 0;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::get_tex_filter_func
 //       Access: Private, Static
@@ -3195,31 +3214,31 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
 //               function according to the texture's filter type.
 ////////////////////////////////////////////////////////////////////
 ZB_lookupTextureFunc TinyGraphicsStateGuardian::
-get_tex_filter_func(Texture::FilterType filter) {
+get_tex_filter_func(SamplerState::FilterType filter) {
   switch (filter) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return &lookup_texture_nearest;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return &lookup_texture_bilinear;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return &lookup_texture_mipmap_nearest;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return &lookup_texture_mipmap_linear;
-      
-  case Texture::FT_linear_mipmap_nearest:
+
+  case SamplerState::FT_linear_mipmap_nearest:
     return &lookup_texture_mipmap_bilinear;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return &lookup_texture_mipmap_trilinear;
 
   default:
     return &lookup_texture_nearest;
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::get_tex_wrap_func
 //       Access: Private, Static
@@ -3227,20 +3246,20 @@ get_tex_filter_func(Texture::FilterType filter) {
 //               function according to the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 ZB_texWrapFunc TinyGraphicsStateGuardian::
-get_tex_wrap_func(Texture::WrapMode wrap_mode) {
+get_tex_wrap_func(SamplerState::WrapMode wrap_mode) {
   switch (wrap_mode) {
-  case Texture::WM_clamp:
-  case Texture::WM_border_color:  // border_color is handled later.
+  case SamplerState::WM_clamp:
+  case SamplerState::WM_border_color:  // border_color is handled later.
     return &texcoord_clamp;
 
-  case Texture::WM_repeat:
-  case Texture::WM_invalid:
+  case SamplerState::WM_repeat:
+  case SamplerState::WM_invalid:
     return &texcoord_repeat;
 
-  case Texture::WM_mirror:
+  case SamplerState::WM_mirror:
     return &texcoord_mirror;
 
-  case Texture::WM_mirror_once:
+  case SamplerState::WM_mirror_once:
     return &texcoord_mirror_once;
   }
 
@@ -3305,7 +3324,7 @@ texgen_sphere_map(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
 
   // Compute the reflection vector.
   LVector3 r = u - n * dot(n, u) * 2.0f;
-  
+
   // compute the denominator, m.
   PN_stdfloat m = 2.0f * csqrt(r[0] * r[0] + r[1] * r[1] + (r[2] + 1.0f) * (r[2] + 1.0f));
 

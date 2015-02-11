@@ -120,7 +120,6 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _sbs_left_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _sbs_right_dimensions.set(0.0f, 1.0f, 0.0f, 1.0f);
   _delete_flag = false;
-  _texture_card = 0;
   _trigger_copy = false;
 
   if (_fb_properties.is_single_buffered()) {
@@ -139,9 +138,9 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
     }
     _side_by_side_stereo = side_by_side_stereo && !fb_prop.is_stereo();
     if (_side_by_side_stereo) {
-      _sbs_left_dimensions.set(sbs_left_dimensions[0], sbs_left_dimensions[1], 
+      _sbs_left_dimensions.set(sbs_left_dimensions[0], sbs_left_dimensions[1],
                                sbs_left_dimensions[2], sbs_left_dimensions[3]);
-      _sbs_right_dimensions.set(sbs_right_dimensions[0], sbs_right_dimensions[1], 
+      _sbs_right_dimensions.set(sbs_right_dimensions[0], sbs_right_dimensions[1],
                                 sbs_right_dimensions[2], sbs_right_dimensions[3]);
     }
   }
@@ -164,29 +163,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   set_clear_color_active(true);
   set_clear_depth_active(true);
   set_clear_stencil_active(true);
-
-  switch (background_color.get_num_words()) {
-  case 1:
-    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], 0.0f));
-    break;
-
-  case 2:
-    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], background_color[1]));
-    break;
-
-  case 3:
-    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], 0.0f));
-    break;
-
-  case 4:
-    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], background_color[3]));
-    break;
-
-  default:
-    display_cat.warning()
-      << "Invalid background-color specification: "
-      << background_color.get_string_value() << "\n";
-  }
+  set_clear_color(background_color.get_value());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,8 +285,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Create texture if necessary.
   if (tex == (Texture *)NULL) {
     tex = new Texture(get_name());
-    tex->set_wrap_u(Texture::WM_clamp);
-    tex->set_wrap_v(Texture::WM_clamp);
+    tex->set_wrap_u(SamplerState::WM_clamp);
+    tex->set_wrap_v(SamplerState::WM_clamp);
   } else {
     tex->clear_ram_image();
   }
@@ -579,9 +556,9 @@ set_inverted(bool inverted) {
 void GraphicsOutput::
 set_side_by_side_stereo(bool side_by_side_stereo) {
   LVecBase4 left, right;
-  left.set(sbs_left_dimensions[0], sbs_left_dimensions[1], 
+  left.set(sbs_left_dimensions[0], sbs_left_dimensions[1],
            sbs_left_dimensions[2], sbs_left_dimensions[3]);
-  right.set(sbs_right_dimensions[0], sbs_right_dimensions[1], 
+  right.set(sbs_right_dimensions[0], sbs_right_dimensions[1],
             sbs_right_dimensions[2], sbs_right_dimensions[3]);
   set_side_by_side_stereo(side_by_side_stereo, left, right);
 }
@@ -984,7 +961,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                 flags, get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {
-    if (buffer->get_gsg() == (GraphicsStateGuardian *)NULL || 
+    if (buffer->get_gsg() == (GraphicsStateGuardian *)NULL ||
         buffer->get_gsg()->get_prepared_objects() != get_gsg()->get_prepared_objects()) {
       // If the newly-created buffer doesn't share texture objects
       // with the current GSG, then we will have to force the texture
@@ -1050,8 +1027,8 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 
   PT(Texture) tex = new Texture(name);
   tex->setup_cube_map();
-  tex->set_wrap_u(Texture::WM_clamp);
-  tex->set_wrap_v(Texture::WM_clamp);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
   GraphicsOutput *buffer;
 
   buffer = make_texture_buffer(name, size, size, tex, to_ram, fbp);
@@ -1101,19 +1078,20 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 ////////////////////////////////////////////////////////////////////
 NodePath GraphicsOutput::
 get_texture_card() {
-  if (_texture_card == 0) {
+  if (_texture_card == NULL) {
     PT(GeomVertexData) vdata = create_texture_card_vdata(get_x_size(), get_y_size());
     PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
     strip->set_shade_model(Geom::SM_uniform);
     strip->add_next_vertices(4);
     strip->close_primitive();
-    _texture_card = new Geom(vdata);
-    _texture_card->add_primitive(strip);
+    PT(Geom) geom = new Geom(vdata);
+    geom->add_primitive(strip);
+    _texture_card = new GeomNode("texture card");
+    _texture_card->add_geom(geom);
   }
 
-  PT(GeomNode) gnode = new GeomNode("texture card");
-  gnode->add_geom(_texture_card);
-  NodePath path(gnode);
+  NodePath path("texture card");
+  path.node()->add_child(_texture_card);
 
   // The texture card, by default, is textured with the first
   // render-to-texture output texture.  Depth and stencil
@@ -1277,8 +1255,8 @@ set_size_and_recalc(int x, int y) {
     (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
   }
 
-  if (_texture_card != 0) {
-    _texture_card->set_vertex_data(create_texture_card_vdata(x, y));
+  if (_texture_card != NULL && _texture_card->get_num_geoms() > 0) {
+    _texture_card->modify_geom(0)->set_vertex_data(create_texture_card_vdata(x, y));
   }
 }
 
@@ -1701,7 +1679,7 @@ add_display_region(DisplayRegion *display_region) {
   LightMutexHolder holder(_lock);
   CDWriter cdata(_cycler, true);
   cdata->_active_display_regions_stale = true;
-  
+
   _total_display_regions.push_back(display_region);
 
   return display_region;
@@ -1806,7 +1784,7 @@ parse_color_mask(const string &word) {
       result |= 0x008;
 
     } else if (w == "off") {
-      
+
     } else {
       display_cat.warning()
         << "Invalid color in red-blue-stereo-colors: " << (*ci) << "\n";
@@ -1819,7 +1797,7 @@ parse_color_mask(const string &word) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::CData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::CData::
 CData() {
@@ -1834,7 +1812,7 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::CData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :

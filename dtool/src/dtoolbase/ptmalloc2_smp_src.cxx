@@ -482,7 +482,9 @@ int tsd_key_next;
 #elif defined(WIN32)
 /* Win32 emulation */
 
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #define _WIN32_WINNT 0x600
 #include <windows.h>
 

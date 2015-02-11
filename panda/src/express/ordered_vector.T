@@ -27,10 +27,10 @@
 //               already present, it is not inserted, and the iterator
 //               referencing the original value is returned.
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-insert_unique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position, 
-              const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
+insert_unique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR position, 
+              const TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE &key) {
   TAU_PROFILE("ordered_vector::insert_unique(iterator, const value_type &)", " ", TAU_USER);
   if (position != end()) {
     // If we're not inserting at the end, the element we're
@@ -74,10 +74,10 @@ insert_unique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position,
 //               This flavor of insert allows multiple copies of the
 //               same key to be inserted.
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-insert_nonunique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position, 
-                 const TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
+insert_nonunique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR position, 
+                 const TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE &key) {
   TAU_PROFILE("ordered_vector::insert_nonunique(iterator, const value_type &)", " ", TAU_USER);
   if (position != end()) {
     // If we're not inserting at the end, the element we're
@@ -107,8 +107,8 @@ insert_nonunique(TYPENAME ordered_vector<Key, Compare>::ITERATOR position,
 //               sorted correctly.  Returns true if this is the case;
 //               otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-bool ordered_vector<Key, Compare>::
+template<class Key, class Compare, class Vector>
+bool ordered_vector<Key, Compare, Vector>::
 verify_list_unique() const {
   TAU_PROFILE("ordered_vector::verify_list_unique()", " ", TAU_USER);
   if (!empty()) {
@@ -134,8 +134,8 @@ verify_list_unique() const {
 //               sorted correctly.  Returns true if this is the case;
 //               otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-bool ordered_vector<Key, Compare>::
+template<class Key, class Compare, class Vector>
+bool ordered_vector<Key, Compare, Vector>::
 verify_list_nonunique() const {
   TAU_PROFILE("ordered_vector::verify_list_nonunique()", " ", TAU_USER);
   if (!empty()) {
@@ -161,11 +161,11 @@ verify_list_nonunique() const {
 //  Description: The recursive implementation of
 //               find_insert_position().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-r_find_insert_position(TYPENAME ordered_vector<Key, Compare>::ITERATOR first,
-                       TYPENAME ordered_vector<Key, Compare>::ITERATOR last,
-                       const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
+r_find_insert_position(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR first,
+                       TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR last,
+                       const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) {
   if (first == last) {
     // The list is empty; the insert position is the last of the list.
     return last;
@@ -189,12 +189,12 @@ r_find_insert_position(TYPENAME ordered_vector<Key, Compare>::ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of find().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_find(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-       TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-       TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
-       const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+r_find(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+       TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+       TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR not_found,
+       const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return not_found;
@@ -222,12 +222,12 @@ r_find(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of find_particular().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_find_particular(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-                  TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-                  TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
-                  const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+r_find_particular(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+                  TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+                  TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR not_found,
+                  const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return not_found;
@@ -275,12 +275,12 @@ r_find_particular(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of count().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
-r_count(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-        TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-        const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
-  typedef pair<TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::SIZE_TYPE ordered_vector<Key, Compare, Vector>::
+r_count(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+        TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+        const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
+  typedef pair<TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.
@@ -311,11 +311,11 @@ r_count(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of lower_bound().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_lower_bound(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+r_lower_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+              TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+              const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return last;
@@ -344,11 +344,11 @@ r_lower_bound(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of upper_bound().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_upper_bound(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+template<class Key, class Compare, class Vector>
+TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
+r_upper_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+              TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+              const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return last;
@@ -377,12 +377,12 @@ r_upper_bound(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //       Access: Private
 //  Description: The recursive implementation of equal_range().
 ////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-pair<TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
-r_equal_range(TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const TYPENAME ordered_vector<Key, Compare>::KEY_TYPE &key) const {
-  typedef pair<TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
+template<class Key, class Compare, class Vector>
+pair<TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
+r_equal_range(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
+              TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
+              const TYPENAME ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
+  typedef pair<TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.

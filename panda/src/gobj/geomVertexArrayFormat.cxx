@@ -28,7 +28,7 @@ TypeHandle GeomVertexArrayFormat::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
 GeomVertexArrayFormat() :
@@ -36,6 +36,7 @@ GeomVertexArrayFormat() :
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
+  _divisor(0),
   _columns_unsorted(false)
 {
 }
@@ -43,103 +44,107 @@ GeomVertexArrayFormat() :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
+  _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
+  _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      InternalName *name2, int num_components2,
+                      CPT_InternalName name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
+  _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
-  add_column(name2, num_components2, numeric_type2, contents2);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
+  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      InternalName *name2, int num_components2,
+                      CPT_InternalName name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2,
-                      InternalName *name3, int num_components3,
+                      CPT_InternalName name3, int num_components3,
                       GeomVertexArrayFormat::NumericType numeric_type3,
                       GeomVertexArrayFormat::Contents contents3) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
+  _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
-  add_column(name2, num_components2, numeric_type2, contents2);
-  add_column(name3, num_components3, numeric_type3, contents3);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
+  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
+  add_column(MOVE(name3), num_components3, numeric_type3, contents3);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
 GeomVertexArrayFormat(const GeomVertexArrayFormat &copy) :
@@ -147,6 +152,7 @@ GeomVertexArrayFormat(const GeomVertexArrayFormat &copy) :
   _stride(copy._stride),
   _total_bytes(copy._total_bytes),
   _pad_to(copy._pad_to),
+  _divisor(copy._divisor),
   _columns_unsorted(copy._columns_unsorted)
 {
   Columns::const_iterator dti;
@@ -158,7 +164,7 @@ GeomVertexArrayFormat(const GeomVertexArrayFormat &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::
 operator = (const GeomVertexArrayFormat &copy) {
@@ -166,6 +172,7 @@ operator = (const GeomVertexArrayFormat &copy) {
   _stride = copy._stride;
   _total_bytes = copy._total_bytes;
   _pad_to = copy._pad_to;
+  _divisor = copy._divisor;
 
   _columns.clear();
   _columns_by_name.clear();
@@ -175,11 +182,11 @@ operator = (const GeomVertexArrayFormat &copy) {
     add_column(*(*dti));
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
 ~GeomVertexArrayFormat() {
@@ -228,15 +235,15 @@ unref() const {
 //               type.
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayFormat::
-add_column(InternalName *name, int num_components, 
-           GeomVertexArrayFormat::NumericType numeric_type, 
+add_column(CPT_InternalName name, int num_components,
+           GeomVertexArrayFormat::NumericType numeric_type,
            GeomVertexArrayFormat::Contents contents, int start,
            int column_alignment) {
   if (start < 0) {
     start = _total_bytes;
   }
 
-  return add_column(GeomVertexColumn(name, num_components, numeric_type, contents, 
+  return add_column(GeomVertexColumn(MOVE(name), num_components, numeric_type, contents,
                                      start, column_alignment));
 }
 
@@ -500,7 +507,7 @@ count_unused_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::
 output(ostream &out) const {
@@ -526,7 +533,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::
 write(ostream &out, int indent_level) const {
@@ -537,7 +544,7 @@ write(ostream &out, int indent_level) const {
   for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
     const GeomVertexColumn *column = (*ci);
     indent(out, indent_level + 2)
-      << *column 
+      << *column
       << " " << column->get_numeric_type()
       << " " << column->get_contents()
       << " start at " << column->get_start() << "\n";
@@ -547,7 +554,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::write_with_data
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::
 write_with_data(ostream &out, int indent_level,
@@ -568,7 +575,7 @@ write_with_data(ostream &out, int indent_level,
       reader.set_column(0, column);
       const LVecBase4f &d = reader.get_data4f();
 
-      indent(out, indent_level + 2) 
+      indent(out, indent_level + 2)
         << *column->get_name();
       for (int v = 0; v < num_values; v++) {
         out << " " << d[v];
@@ -658,7 +665,7 @@ get_format_string(bool pad) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayFormat::
 compare_to(const GeomVertexArrayFormat &other) const {
@@ -670,6 +677,9 @@ compare_to(const GeomVertexArrayFormat &other) const {
   }
   if (_pad_to != other._pad_to) {
     return _pad_to - other._pad_to;
+  }
+  if (_divisor != other._divisor) {
+    return _divisor - other._divisor;
   }
   if (_columns.size() != other._columns.size()) {
     return (int)_columns.size() - (int)other._columns.size();
@@ -720,7 +730,7 @@ do_register() {
   nassertv(!_is_registered);
   _is_registered = true;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::do_unregister
 //       Access: Private
@@ -756,6 +766,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_stride);
   dg.add_uint16(_total_bytes);
   dg.add_uint8(_pad_to);
+  dg.add_uint16(_divisor);
 
   consider_sort_columns();
 
@@ -845,6 +856,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _stride = scan.get_uint16();
   _total_bytes = scan.get_uint16();
   _pad_to = scan.get_uint8();
+  if (manager->get_file_minor_ver() > 36) {
+    _divisor = scan.get_uint16();
+  } else {
+    _divisor = 0;
+  }
 
   int num_columns = scan.get_uint16();
   _columns.reserve(num_columns);
@@ -859,7 +875,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::Registry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::Registry::
 Registry() {
@@ -890,7 +906,7 @@ register_format(GeomVertexArrayFormat *format) {
   // a zero reference count and is not added into the map below, it
   // will be automatically deleted when this function returns.
   PT(GeomVertexArrayFormat) pt_format = format;
-  
+
   GeomVertexArrayFormat *new_format;
   {
     LightMutexHolder holder(_lock);

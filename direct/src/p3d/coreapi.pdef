@@ -1,4 +1,4 @@
-from pandac.PandaModules import getModelPath, Filename, ConfigVariableFilename, DSearchPath, ExecutionEnvironment, PandaSystem
+from panda3d.core import getModelPath, Filename, ConfigVariableFilename, DSearchPath, ExecutionEnvironment, PandaSystem
 
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
@@ -57,7 +57,7 @@ class images(package):
             basename = '%s.jpg' % (name)
             filename = Filename(basename)
             found = filename.resolveFilename(search)
-            
+
         if found:
             # Add the image file to the package
             file(filename, newName = basename, extract = True)
@@ -91,7 +91,7 @@ class certlist(package):
     # ".pem" or ".crt" extension, and they should be added with the
     # extract = True flag so they will be extracted to disk.
     pass
-    
+
 
 class p3dcert(package):
     # This special application, used to pop up a dialog to prompt the
@@ -102,7 +102,7 @@ class p3dcert(package):
         # On Mac, we package up a P3DCert.app bundle.  This includes
         # specifications in the plist file to avoid creating a dock
         # icon and stuff.
-        
+
         # Find p3dcert.plist in the direct source tree.
         import direct
         plist = Filename(direct.__path__[0], 'plugin/p3dcert.plist')

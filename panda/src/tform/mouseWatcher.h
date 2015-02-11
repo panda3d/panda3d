@@ -61,11 +61,11 @@ class DisplayRegion;
 //               it took to get there.  This information is mainly useful
 //               for gesture-recognition code.  To use trail logging,
 //               you need to enable the generation of pointer events
-//               in the GraphicsWindowInputDevice and set the trail 
+//               in the GraphicsWindowInputDevice and set the trail
 //               log duration in the MouseWatcher. Otherwise, the
 //               trail log will be empty.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherGroup {
+class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherBase {
 PUBLISHED:
   MouseWatcher(const string &name = "");
   ~MouseWatcher();
@@ -143,14 +143,14 @@ PUBLISHED:
 
   INLINE void set_inactivity_timeout_event(const string &event);
   INLINE const string &get_inactivity_timeout_event() const;
-  
+
   INLINE CPT(PointerEventList) get_trail_log() const;
   INLINE int   num_trail_recent() const;
   void         set_trail_log_duration(double duration);
   PT(GeomNode) get_trail_node();
   void         clear_trail_node();
   INLINE void  clear_trail_log();
-  
+
   void note_activity();
 
 public:
@@ -179,7 +179,7 @@ protected:
                                  MouseWatcherRegion *region);
   static bool has_region_in(const Regions &regions,
                             MouseWatcherRegion *region);
-    
+
   void throw_event_pattern(const string &pattern,
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
@@ -188,9 +188,9 @@ protected:
   void press(ButtonHandle button, bool keyrepeat);
   void release(ButtonHandle button);
   void keystroke(int keycode);
-  void candidate(const wstring &candidate, size_t highlight_start, 
+  void candidate(const wstring &candidate, size_t highlight_start,
                  size_t highlight_end, size_t cursor_pos);
-                 
+
   void global_keyboard_press(const MouseWatcherParameter &param);
   void global_keyboard_release(const MouseWatcherParameter &param);
 
@@ -207,10 +207,10 @@ private:
   void discard_excess_trail_log();
   void update_trail_node();
 
-  bool constrain_display_region(DisplayRegion *display_region, 
+  bool constrain_display_region(DisplayRegion *display_region,
                                 LVecBase2 &f, LVecBase2 &p,
                                 Thread *current_thread);
-  
+
 private:
   // This wants to be a set, but because you cannot export sets across
   // dlls in windows, we will make it a vector instead
@@ -230,7 +230,7 @@ private:
   int _num_trail_recent;
   double _trail_log_duration;
   PT(GeomNode) _trail_node;
-  
+
   Regions _current_regions;
   PT(MouseWatcherRegion) _preferred_region;
   PT(MouseWatcherRegion) _preferred_button_down_region;
@@ -248,7 +248,7 @@ private:
   string _without_pattern;
 
   PT(PandaNode) _geometry;
-  
+
   EventHandler *_eh;
   ModifierButtons _mods;
   DisplayRegion *_display_region;

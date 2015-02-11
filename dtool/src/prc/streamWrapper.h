@@ -105,7 +105,9 @@ private:
   // this flag is set true, we know we have a possibly-empty
   // stringstream, so we allow seekp(0) to fail silently, knowing that
   // there's no harm in this case.
+#ifdef WIN32_VC
   bool _stringstream_hack;
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////

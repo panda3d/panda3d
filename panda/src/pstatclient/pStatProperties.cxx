@@ -17,6 +17,7 @@
 #include "pStatClient.h"
 #include "config_pstats.h"
 #include "configVariableBool.h"
+#include "configVariableColor.h"
 #include "configVariableDouble.h"
 #include "configVariableInt.h"
 #include "configVariableString.h"
@@ -339,8 +340,8 @@ initialize_collector_def(const PStatClient *client, PStatCollectorDef *def) {
     ("pstats-units-" + config_name, def->_level_units, "", ConfigVariable::F_dynamic);
   ConfigVariableDouble pstats_factor
     ("pstats-factor-" + config_name, 1.0, "", ConfigVariable::F_dynamic);
-  ConfigVariableDouble pstats_color
-    ("pstats-color-" + config_name, 0.0, "", ConfigVariable::F_dynamic);
+  ConfigVariableColor pstats_color
+    ("pstats-color-" + config_name, LColor::zero(), "", ConfigVariable::F_dynamic);
 
   if (pstats_active.has_value()) {
     def->_is_active = pstats_active;

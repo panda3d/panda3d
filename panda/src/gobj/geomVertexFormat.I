@@ -236,7 +236,7 @@ get_texcoord(int n) const {
 INLINE int GeomVertexFormat::
 get_num_morphs() const {
   nassertr(_is_registered, 0);
-  
+
   return _morphs.size();
 }
 

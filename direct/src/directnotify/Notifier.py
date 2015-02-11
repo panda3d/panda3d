@@ -4,7 +4,7 @@ for the programmer/user
 """
 from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
-from panda3d.core import ConfigVariableBool
+from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notify
 import time
 import types
 import sys
@@ -18,9 +18,8 @@ class Notifier:
     # with the C++ notify system.
     streamWriter = None
     if ConfigVariableBool('notify-integrate', True):
-        from panda3d.core import StreamWriter, Notify
         streamWriter = StreamWriter(Notify.out(), False)
-        
+
     showTime = ConfigVariableBool('notify-timestamp', False)
 
     def __init__(self, name, logger=None):
@@ -44,9 +43,6 @@ class Notifier:
         self.__warning = 1
         self.__debug = 0
         self.__logging = 0
-        
-        
-
 
     def setServerDelta(self, delta, timezone):
         """
@@ -62,7 +58,6 @@ class Notifier:
         # The following call is necessary to make the output from C++
         # notify messages show the same timestamp as those generated
         # from Python-level notify messages.
-        from pandac.PandaModules import NotifyCategory
         NotifyCategory.setServerDelta(self.serverDelta)
 
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
@@ -92,7 +87,7 @@ class Notifier:
 
     # Severity funcs
     def setSeverity(self, severity):
-        from pandac.PandaModules import NSDebug, NSInfo, NSWarning, NSError
+        from panda3d.core import NSDebug, NSInfo, NSWarning, NSError
         if severity >= NSError:
             self.setWarning(0)
             self.setInfo(0)
@@ -111,7 +106,7 @@ class Notifier:
             self.setDebug(1)
 
     def getSeverity(self):
-        from pandac.PandaModules import NSDebug, NSInfo, NSWarning, NSError
+        from panda3d.core import NSDebug, NSInfo, NSWarning, NSError
         if self.getDebug():
             return NSDebug
         elif self.getInfo():

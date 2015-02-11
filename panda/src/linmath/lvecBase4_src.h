@@ -140,8 +140,8 @@ PUBLISHED:
   EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase4) __pow__(FLOATTYPE exponent) const);
   EXTENSION(INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent));
 
-  INLINE_LINMATH FLOATNAME(LVecBase4) fmax(const FLOATNAME(LVecBase4) &other);
-  INLINE_LINMATH FLOATNAME(LVecBase4) fmin(const FLOATNAME(LVecBase4) &other);
+  INLINE_LINMATH FLOATNAME(LVecBase4) fmax(const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH FLOATNAME(LVecBase4) fmin(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other,
                            FLOATTYPE threshold) const;

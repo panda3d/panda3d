@@ -33,6 +33,7 @@
 
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
+#include "glSamplerContext_src.h"
 #include "glVertexBufferContext_src.h"
 #include "glIndexBufferContext_src.h"
 #include "glOcclusionQueryContext_src.h"

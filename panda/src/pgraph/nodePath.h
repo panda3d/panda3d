@@ -54,6 +54,7 @@ class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
+class SamplerState;
 class Shader;
 class ShaderInput;
 
@@ -178,6 +179,11 @@ PUBLISHED:
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE NodePath(NodePath &&from) NOEXCEPT;
+  INLINE void operator = (NodePath &&from) NOEXCEPT;
+#endif
 
   EXTENSION(NodePath __copy__() const);
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
@@ -539,7 +545,7 @@ PUBLISHED:
   INLINE void compose_color_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat sa,
                                   int priority = 0);
   void set_color_scale_off(int priority = 0);
-  
+
   void set_alpha_scale(PN_stdfloat scale, int priority = 0);
   void set_all_color_scale(PN_stdfloat scale, int priority = 0);
   INLINE void set_sr(PN_stdfloat sr);
@@ -573,12 +579,12 @@ PUBLISHED:
 
   void set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
   void set_scissor(const LPoint3 &a, const LPoint3 &b);
-  void set_scissor(const LPoint3 &a, const LPoint3 &b, 
+  void set_scissor(const LPoint3 &a, const LPoint3 &b,
                    const LPoint3 &c, const LPoint3 &d);
-  void set_scissor(const NodePath &other, 
+  void set_scissor(const NodePath &other,
                    const LPoint3 &a, const LPoint3 &b);
   void set_scissor(const NodePath &other,
-                   const LPoint3 &a, const LPoint3 &b, 
+                   const LPoint3 &a, const LPoint3 &b,
                    const LPoint3 &c, const LPoint3 &d);
   void clear_scissor();
   bool has_scissor() const;
@@ -596,6 +602,8 @@ PUBLISHED:
 
   void set_texture(Texture *tex, int priority = 0);
   void set_texture(TextureStage *stage, Texture *tex, int priority = 0);
+  void set_texture(Texture *tex, const SamplerState &sampler, int priority = 0);
+  void set_texture(TextureStage *stage, Texture *tex, const SamplerState &sampler, int priority = 0);
   void set_texture_off(int priority = 0);
   void set_texture_off(TextureStage *stage, int priority = 0);
   void clear_texture();
@@ -606,6 +614,8 @@ PUBLISHED:
   bool has_texture_off(TextureStage *stage) const;
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
+  const SamplerState &get_texture_sampler() const;
+  const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
   void set_shader(const Shader *sha, int priority = 0);
   void set_shader_off(int priority = 0);
@@ -614,39 +624,40 @@ PUBLISHED:
   void clear_shader();
 
   void set_shader_input(const ShaderInput *inp);
-  void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
-  void set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_int &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, int n1, int n2=0, int n3=0,
-                                                int n4=0, int priority=0);
-  void set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2=0,
-                        PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_double &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_int &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2=0, int n3=0,
+                                                    int n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
+                               PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-  void clear_shader_input(const InternalName *id);
+  void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(const InternalName *id) const;
-  const int get_instance_count() const;
+  const ShaderInput *get_shader_input(CPT_InternalName id) const;
+  int get_instance_count() const;
 
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
   void clear_tex_transform();
@@ -698,17 +709,13 @@ PUBLISHED:
   INLINE LVecBase3 get_tex_scale_3d(const NodePath &other, TextureStage *stage) const;
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
-                   const string &source_name, const NodePath &light, 
-                   int priority = 0);
-  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
+  void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
                    const LTexCoord3 &constant_value,
                    int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
   bool has_tex_gen(TextureStage *stage) const;
   RenderAttrib::TexGenMode get_tex_gen(TextureStage *stage) const;
-  NodePath get_tex_gen_light(TextureStage *stage) const;
 
   void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
                          int lens_index = 0);
@@ -720,10 +727,6 @@ PUBLISHED:
 
   void project_texture(TextureStage *stage, Texture *tex, const NodePath &projector);
   INLINE void clear_project_texture(TextureStage *stage);
-
-  void set_normal_map(Texture *normal_map, const string &texcoord_name = string(),
-                      bool preserve_color = false);
-  void clear_normal_map();
 
   INLINE bool has_texcoord(const string &texcoord_name) const;
   bool has_vertex_column(const InternalName *name) const;
@@ -763,6 +766,7 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority = 0);
   void set_render_mode_thickness(PN_stdfloat thickness, int priority = 0);
   void set_render_mode_perspective(bool perspective, int priority = 0);
   void set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority = 0);
@@ -915,20 +919,20 @@ PUBLISHED:
 private:
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
-                       int &a_count, int &b_count, 
+                       int &a_count, int &b_count,
                        Thread *current_thread);
 
-  CPT(RenderState) r_get_net_state(NodePathComponent *comp, 
+  CPT(RenderState) r_get_net_state(NodePathComponent *comp,
                                    Thread *current_thread) const;
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n,
                                        Thread *current_thread) const;
-  CPT(TransformState) r_get_net_transform(NodePathComponent *comp, 
+  CPT(TransformState) r_get_net_transform(NodePathComponent *comp,
                                           Thread *current_thread) const;
   CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n,
                                               Thread *current_thread) const;
   CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp,
                                                Thread *current_thread) const;
-  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp, 
+  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp,
                                                    int n, Thread *current_thread) const;
 
   void find_matches(NodePathCollection &result,
@@ -937,7 +941,7 @@ private:
   void find_matches(NodePathCollection &result,
                     FindApproxPath &approx_path,
                     int max_matches) const;
-  void find_matches(NodePathCollection &result, 
+  void find_matches(NodePathCollection &result,
                     FindApproxLevelEntry *level,
                     int max_matches) const;
 
@@ -946,13 +950,13 @@ private:
 
   void r_force_recompute_bounds(PandaNode *node);
 
-  void r_set_collide_mask(PandaNode *node, 
+  void r_set_collide_mask(PandaNode *node,
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
-  typedef phash_set<InternalName *, pointer_hash> InternalNames;
+  typedef phash_set<const InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
-  void r_find_all_vertex_columns(PandaNode *node, 
+  void r_find_all_vertex_columns(PandaNode *node,
                                  InternalNames &vertex_columns) const;
 
   typedef phash_set<Texture *, pointer_hash> Textures;
@@ -1003,6 +1007,9 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);
+
+// We have to put this down here, to work around a circular include.
+#include "shaderInput.h"
 
 #include "nodePath.I"
 

@@ -22,8 +22,9 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #ifdef HAVE_CG
-#include "Cg/cgD3D9.h"
+#include <Cg/cgD3D9.h>
 #endif
 
 #define DEBUG_SHADER 0
@@ -37,89 +38,42 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
-
   _vertex_element_array = NULL;
   _vertex_declaration = NULL;
 
   _num_bound_streams = 0;
 
-  _name = s->get_filename ( );
+  _name = s->get_filename();
 
 #ifdef HAVE_CG
-  _cg_context = 0;
-  if (s->get_language() == Shader::SL_Cg) {
-    
-    // Ask the shader to compile itself for us and 
-    // to give us the resulting Cg program objects.
+  CGcontext context = DCAST(DXGraphicsStateGuardian9, gsg)->_cg_context;
 
-    if (!s->cg_compile_for(gsg->_shader_caps,
-                           _cg_context,
-                           _cg_vprogram,
-                           _cg_fprogram, 
-                           _cg_gprogram,        // CG2 CHANGE
-                           _cg_parameter_map)) {
+  if (s->get_language() == Shader::SL_Cg) {
+
+    // Ask the shader to compile itself for us and
+    // to give us the resulting Cg program objects.
+    if (!s->cg_compile_for(gsg->_shader_caps, context,
+                           _cg_program, _cg_parameter_map)) {
       return;
     }
-        
-    // Load the program.
 
-    BOOL paramater_shadowing;
-    DWORD assembly_flags;
-    
-    paramater_shadowing = FALSE;
-    assembly_flags = 0;
-    
+    // Load the program.
+    DWORD assembly_flags = 0;
 #if DEBUG_SHADER
     assembly_flags |= D3DXSHADER_DEBUG;
 #endif
 
     HRESULT hr;
     bool success = true;
-    hr = cgD3D9LoadProgram(_cg_vprogram, paramater_shadowing, assembly_flags);
+    hr = cgD3D9LoadProgram(_cg_program, FALSE, assembly_flags);
     if (FAILED (hr)) {
       dxgsg9_cat.error()
-        << "vertex shader cgD3D9LoadProgram failed "
-        << D3DERRORSTRING(hr);
-      
+        << "cgD3D9LoadProgram failed " << D3DERRORSTRING(hr);
+
       CGerror error = cgGetError();
       if (error != CG_NO_ERROR) {
         dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
       }
-      success = false;
-    }
-    
-    hr = cgD3D9LoadProgram(_cg_fprogram, paramater_shadowing, assembly_flags);
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "pixel shader cgD3D9LoadProgram failed "
-        << D3DERRORSTRING(hr);
-      
-      CGerror error = cgGetError();
-      if (error != CG_NO_ERROR) {
-        dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
-      }
-      success = false;
-    }    
-
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-    {
-        hr = cgD3D9LoadProgram(_cg_gprogram, paramater_shadowing, assembly_flags);
-        if (FAILED (hr)) {
-          dxgsg9_cat.error()
-            << "geometry shader cgD3D9LoadProgram failed "
-            << D3DERRORSTRING(hr);
-
-          CGerror error = cgGetError();
-          if (error != CG_NO_ERROR) {
-            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
-          }
-          success = false;
-        }
-    }
-    // END CG2 CHANGE
-
-    if (!success) {
       release_resources();
     }
   }
@@ -150,7 +104,7 @@ CLP(ShaderContext)::
 // {
 //   int state;
 //   int file_handle;
-// 
+//
 //   state = false;
 //   file_handle = _open (file_path, _O_CREAT | _O_RDWR | _O_TRUNC, _S_IREAD | _S_IWRITE);
 //   if (file_handle != -1) {
@@ -159,36 +113,36 @@ CLP(ShaderContext)::
 //     }
 //     _close (file_handle);
 //   }
-// 
+//
 //   return state;
 // }
-// 
+//
 //   if (dxgsg9_cat.is_debug()) {
 //     // DEBUG: output the generated program
 //     const char *vertex_program;
 //     const char *pixel_program;
-// 
+//
 //     vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
 //     pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
-// 
+//
 //     dxgsg9_cat.debug() << vertex_program << "\n";
 //     dxgsg9_cat.debug() << pixel_program << "\n";
-// 
+//
 //     // save the generated program to a file
 //     int size;
 //     char file_path [512];
-// 
+//
 //     char drive[_MAX_DRIVE];
 //     char dir[_MAX_DIR];
 //     char fname[_MAX_FNAME];
 //     char ext[_MAX_EXT];
-// 
+//
 //     _splitpath (_name.c_str ( ), drive, dir, fname, ext);
-// 
+//
 //     size = strlen (vertex_program);
 //     sprintf (file_path, "%s.vasm", fname);
 //     save_file (size, (void *) vertex_program, file_path);
-// 
+//
 //     size = strlen (pixel_program);
 //     sprintf (file_path, "%s.pasm", fname);
 //     save_file (size, (void *) pixel_program, file_path);
@@ -203,12 +157,9 @@ CLP(ShaderContext)::
 void CLP(ShaderContext)::
 release_resources() {
 #ifdef HAVE_CG
-  if (_cg_context) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
-    _cg_vprogram = 0;
-    _cg_fprogram = 0;
-    _cg_gprogram = 0;   // CG2 CHANGE
+  if (_cg_program) {
+    cgDestroyProgram(_cg_program);
+    _cg_program = 0;
     _cg_parameter_map.clear();
   }
 #endif
@@ -228,61 +179,32 @@ release_resources() {
 bool CLP(ShaderContext)::
 bind(GSG *gsg) {
 
-  bool bind_state;
+  bool bind_state = false;
 
-  bind_state = false;
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (_cg_program) {
     // clear the last cached FVF to make sure the next SetFVF call goes through
-                                                           
+
     gsg -> _last_fvf = 0;
 
     // Pass in k-parameters and transform-parameters
     issue_parameters(gsg, Shader::SSD_general);
-    
+
     HRESULT hr;
-    
+
     // Bind the shaders.
     bind_state = true;
-    hr = cgD3D9BindProgram(_cg_vprogram);
+    hr = cgD3D9BindProgram(_cg_program);
     if (FAILED (hr)) {
-      dxgsg9_cat.error() << "cgD3D9BindProgram vertex shader failed " << D3DERRORSTRING(hr);
-      
+      dxgsg9_cat.error() << "cgD3D9BindProgram failed " << D3DERRORSTRING(hr);
+
       CGerror error = cgGetError();
       if (error != CG_NO_ERROR) {
         dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
       }
-      
+
       bind_state = false;
     }
-    hr = cgD3D9BindProgram(_cg_fprogram);
-    if (FAILED (hr)) {
-      dxgsg9_cat.error() << "cgD3D9BindProgram pixel shader failed " << D3DERRORSTRING(hr);
-      
-      CGerror error = cgGetError();
-      if (error != CG_NO_ERROR) {
-        dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
-      }
-      
-      bind_state = false;
-    }
-
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-    {
-        hr = cgD3D9BindProgram(_cg_gprogram);
-        if (FAILED (hr)) {
-          dxgsg9_cat.error() << "cgD3D9BindProgram geometry shader failed " << D3DERRORSTRING(hr);
-
-          CGerror error = cgGetError();
-          if (error != CG_NO_ERROR) {
-            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
-          }
-
-          bind_state = false;
-        }
-    }
-    // END CG2 CHANGE
   }
 #endif
 
@@ -298,18 +220,12 @@ void CLP(ShaderContext)::
 unbind(GSG *gsg) {
 
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (_cg_program) {
     HRESULT hr;
-
-    hr = gsg -> _d3d_device -> SetVertexShader (NULL);
-    if (FAILED (hr)) {
+    hr = cgD3D9UnbindProgram(_cg_program);
+    if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "SetVertexShader (NULL) failed " << D3DERRORSTRING(hr);
-    }
-    hr = gsg -> _d3d_device -> SetPixelShader (NULL);
-    if (FAILED (hr)) {
-      dxgsg9_cat.error()
-        << "SetPixelShader (NULL) failed " << D3DERRORSTRING(hr);
+        << "cgD3D9UnbindProgram failed " << D3DERRORSTRING(hr);
     }
   }
 #endif
@@ -339,35 +255,34 @@ InternalName *global_internal_name_1 = 0;
 #endif
 
 void CLP(ShaderContext)::
-issue_parameters(GSG *gsg, int altered)
-{
+issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (_cg_program) {
 
   // Iterate through _ptr parameters
     for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
       if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
 #ifdef HAVE_CG
         const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-        Shader::ShaderPtrData* _ptr_data = 
+        Shader::ShaderPtrData* _ptr_data =
           const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
-        
+
         if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
           release_resources();
           return;
         }
 
         CGparameter p = _cg_parameter_map[_ptr._id._seqno];
-        
+
         switch(_ptr_data->_type) {
         case Shader::SPT_float:
-          cgD3D9SetUniform(p, (PN_stdfloat*)_ptr_data->_ptr); 
+          cgD3D9SetUniform(p, (PN_stdfloat*)_ptr_data->_ptr);
           break;
 
-        default: 
-          dxgsg9_cat.error() 
-            << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
-          release_resources(); 
+        default:
+          dxgsg9_cat.error()
+            << _ptr._id._name << ":" << "unrecognized parameter type\n";
+          release_resources();
           return;
         }
       }
@@ -379,7 +294,7 @@ issue_parameters(GSG *gsg, int altered)
         CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
         if (p == NULL) {
           continue;
-        }        
+        }
         const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
         if (val) {
           HRESULT hr;
@@ -510,7 +425,7 @@ bool CLP(ShaderContext)::
 update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CG
-  if (!_cg_context) {
+  if (!_cg_program) {
     return true;
   }
 
@@ -588,7 +503,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
           dxgsg9_cat.info() << "Geometry contains no data for shader parameter " << *name << "\n";
           continue;
         }
-        
+
         // If not associated with the array we're working on, move on.
         if ( param_array_reader != array_reader ) {
           continue;
@@ -717,11 +632,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
 
     if (( _vertex_element_array != NULL ) &&
         ( _vertex_element_array->add_end_vertex_element() != false )) {
-      if ( dxgsg9_cat.is_debug() ) {
+      if (dxgsg9_cat.is_debug()) {
         // Note that the currently generated vertex declaration works but never validates.
         // My theory is that this is due to the shader programs always using float4 whereas
         // the vertex declaration correctly sets the number of inputs (float2, float3, etc.).
-        if (cgD3D9ValidateVertexDeclaration(_cg_vprogram,
+        if (cgD3D9ValidateVertexDeclaration(_cg_program,
                                             _vertex_element_array->_vertex_element_array) == CG_TRUE) {
           dxgsg9_cat.debug() << "cgD3D9ValidateVertexDeclaration succeeded\n";
         } else {
@@ -763,12 +678,12 @@ void CLP(ShaderContext)::
 disable_shader_texture_bindings(GSG *gsg)
 {
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (_cg_program) {
     for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
         continue;
-      }        
+      }
       int texunit = cgGetParameterResourceIndex(p);
 
       HRESULT hr;
@@ -803,19 +718,23 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
   if (prev) prev->disable_shader_texture_bindings(gsg);
 
 #ifdef HAVE_CG
-  if (_cg_context) {
+  if (_cg_program) {
 
     for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
         continue;
-      }        
-      Texture *tex = 0;
+      }
+      Texture *tex = NULL;
       int view = gsg->get_current_tex_view_offset();
       InternalName *id = _shader->_tex_spec[i]._name;
-      if (id != 0) {
+      SamplerState sampler;
+
+      if (id != NULL) {
         const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
         tex = input->get_texture();
+        sampler = input->get_sampler();
+
       } else {
         // We get the TextureAttrib directly from the _target_rs, not the
         // filtered TextureAttrib in _target_texture.
@@ -827,6 +746,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         }
         TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
         tex = texattrib->get_on_texture(stage);
+        sampler = texattrib->get_on_sampler(stage);
         view += stage->get_tex_view_offset();
       }
       if (_shader->_tex_spec[i]._suffix != 0) {
@@ -843,10 +763,10 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       if (tc == (TextureContext*)NULL) {
         continue;
       }
-      
+
       int texunit = cgGetParameterResourceIndex(p);
-      
-      gsg->apply_texture(texunit, tc);
+
+      gsg->apply_texture(texunit, tc, sampler);
     }
   }
 #endif

@@ -21,10 +21,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE RenderModeAttrib::
 RenderModeAttrib(RenderModeAttrib::Mode mode, PN_stdfloat thickness,
-                 bool perspective) :
+                 bool perspective, const LColor &wireframe_color) :
   _mode(mode),
   _thickness(thickness),
-  _perspective(perspective)
+  _perspective(perspective),
+  _wireframe_color(wireframe_color)
 {
 }
 
@@ -66,6 +67,18 @@ get_thickness() const {
 INLINE bool RenderModeAttrib::
 get_perspective() const {
   return _perspective;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::get_wireframe_color
+//       Access: Published
+//  Description: Returns the color that is used in M_filled_wireframe
+//               mode to distinguish the wireframe from the rest of
+//               the geometry.
+////////////////////////////////////////////////////////////////////
+INLINE const LColor &RenderModeAttrib::
+get_wireframe_color() const {
+  return _wireframe_color;
 }
 
 ////////////////////////////////////////////////////////////////////

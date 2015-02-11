@@ -28,7 +28,9 @@
 #endif
 
 #ifdef WIN_PIPE_CALLS
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 #else  // WIN_PIPE_CALLS

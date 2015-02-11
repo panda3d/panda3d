@@ -41,6 +41,7 @@
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"
+#include "omniBoundingVolume.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
 #include "vertexDataPage.h"
@@ -473,6 +474,42 @@ make_output(GraphicsPipe *pipe,
   // Could not create a window to the user's specs.
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::add_window
+//       Access: Published
+//  Description: This can be used to add a newly-created
+//               GraphicsOutput object (and its GSG) to the engine's
+//               list of windows, and requests that it be opened.
+//               This shouldn't be called by user code as
+//               make_output normally does this under the hood; it
+//               may be useful in esoteric cases in which a custom
+//               window object is used.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+add_window(GraphicsOutput *window, int sort) {
+  nassertr(window != NULL, false);
+
+  GraphicsThreadingModel threading_model = get_threading_model();
+  nassertr(this == window->get_engine(), false);
+
+  window->_sort = sort;
+  do_add_window(window, threading_model);
+
+  open_windows();
+  if (window->is_valid()) {
+    do_add_gsg(window->get_gsg(), window->get_pipe(), threading_model);
+
+    display_cat.info()
+      << "Added output of type " << window->get_type() << "\n";
+
+    return true;
+
+  } else {
+    remove_window(window);
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1212,7 +1249,8 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
     if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+        bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
+        !bv->is_of_type(OmniBoundingVolume::get_class_type())) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
@@ -1322,9 +1360,9 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist,
                        Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
 
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t wlist_size = wlist.size();
+  for (size_t wi = 0; wi < wlist_size; ++wi) {
+    GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
         {
@@ -1448,9 +1486,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t wlist_size = wlist.size();
+  for (size_t wi = 0; wi < wlist_size; ++wi) {
+    GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
@@ -1956,6 +1994,17 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   CPT(TransformState) cs_transform = gsg->get_cs_transform_for(lens->get_coordinate_system());
   scene_setup->set_cs_transform(cs_transform);
 
+  CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
+  scene_setup->set_cs_world_transform(cs_world_transform);
+
+  // Make sure that the GSG has a ShaderGenerator for the munger
+  // to use.  We have to do this here because the ShaderGenerator
+  // needs a host window pointer.  Hopefully we'll be able to
+  // eliminate that requirement in the future.
+  if (gsg->get_shader_generator() == NULL) {
+    gsg->set_shader_generator(new ShaderGenerator(gsg, window));
+  }
+
   return scene_setup;
 }
 
@@ -2105,6 +2154,8 @@ do_add_window(GraphicsOutput *window,
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
+  nassertv(gsg != NULL);
+
   ReMutexHolder holder(_lock);
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;

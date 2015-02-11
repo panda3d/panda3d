@@ -1108,16 +1108,16 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
   switch (egg_tex->get_minfilter()) {
   case EggTexture::FT_nearest:
-    tex->set_minfilter(Texture::FT_nearest);
+    tex->set_minfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1125,13 +1125,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_nearest_mipmap_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
     }
     break;
 
@@ -1139,13 +1139,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(Texture::FT_linear_mipmap_nearest);
+      tex->set_minfilter(SamplerState::FT_linear_mipmap_nearest);
     }
     break;
 
@@ -1153,13 +1153,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(Texture::FT_nearest_mipmap_linear);
+      tex->set_minfilter(SamplerState::FT_nearest_mipmap_linear);
     }
     break;
 
@@ -1167,13 +1167,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(Texture::FT_nearest);
+      tex->set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(Texture::FT_linear);
+      tex->set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+      tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
     }
     break;
 
@@ -1185,7 +1185,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest:
   case EggTexture::FT_nearest_mipmap_nearest:
   case EggTexture::FT_nearest_mipmap_linear:
-    tex->set_magfilter(Texture::FT_nearest);
+    tex->set_magfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
@@ -1194,9 +1194,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring magfilter request\n";
-      tex->set_magfilter(Texture::FT_nearest);
+      tex->set_magfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_magfilter(Texture::FT_linear);
+      tex->set_magfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1397,35 +1397,35 @@ convert_compression_mode(EggTexture::CompressionMode compression_mode) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::convert_wrap_mode
 //       Access: Private
-//  Description: Returns the Texture::WrapMode enum corresponding to
+//  Description: Returns the SamplerState::WrapMode enum corresponding to
 //               the EggTexture::WrapMode.  Returns WM_repeat if the
 //               wrap mode is unspecified.
 ////////////////////////////////////////////////////////////////////
-Texture::WrapMode EggLoader::
+SamplerState::WrapMode EggLoader::
 convert_wrap_mode(EggTexture::WrapMode wrap_mode) const {
   switch (wrap_mode) {
   case EggTexture::WM_clamp:
-    return Texture::WM_clamp;
+    return SamplerState::WM_clamp;
 
   case EggTexture::WM_repeat:
-    return Texture::WM_repeat;
+    return SamplerState::WM_repeat;
 
   case EggTexture::WM_mirror:
-    return Texture::WM_mirror;
+    return SamplerState::WM_mirror;
 
   case EggTexture::WM_mirror_once:
-    return Texture::WM_mirror_once;
+    return SamplerState::WM_mirror_once;
 
   case EggTexture::WM_border_color:
-    return Texture::WM_border_color;
+    return SamplerState::WM_border_color;
 
   case EggTexture::WM_unspecified:
-    return Texture::WM_repeat;
+    return SamplerState::WM_repeat;
   }
 
   egg2pg_cat.warning()
     << "Unexpected texture wrap flag: " << (int)wrap_mode << "\n";
-  return Texture::WM_repeat;
+  return SamplerState::WM_repeat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2855,9 +2855,8 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
 //               This box is used by make_collision_box.
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
-make_box(EggGroup *egg_group, EggGroup::CollideFlags flags, 
-            LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
-  bool success = false;
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
+         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -2875,36 +2874,38 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
     }
 
     // Now find the min/max points
-    int num_vertices = 0;
-    bool first = true;
     pset<EggVertex *>::const_iterator vi;
-    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-      EggVertex *vtx = (*vi);
-      LVertex pos = LCAST(PN_stdfloat, vtx->get_pos3());
+    vi = vertices.begin();
 
-      if (first) {
-        min_p.set(pos[0], pos[1], pos[2]);
-        max_p.set(pos[0], pos[1], pos[2]);
-        first = false;
-      } else {
-        min_p.set(min(min_p[0], pos[0]),
-                  min(min_p[1], pos[1]),
-                  min(min_p[2], pos[2]));
-        max_p.set(max(max_p[0], pos[0]),
-                  max(max_p[1], pos[1]),
-                  max(max_p[2], pos[2]));
-      }
-      num_vertices++;
+    if (vi == vertices.end()) {
+      // No vertices, no bounding box.
+      min_p.set(0, 0, 0);
+      max_p.set(0, 0, 0);
+      return false;
     }
 
-    if (num_vertices > 1) {
-      vi = vertices.begin();
-      EggVertex *clr_vtx = (*vi);
-      color = clr_vtx->get_color();
-      success = true;
+    EggVertex *vertex = (*vi);
+    LVertexd min_pd = vertex->get_pos3();
+    LVertexd max_pd = min_pd;
+    color = vertex->get_color();
+
+    for (++vi; vi != vertices.end(); ++vi) {
+      vertex = (*vi);
+      const LVertexd &pos = vertex->get_pos3();
+      min_pd.set(min(min_pd[0], pos[0]),
+                 min(min_pd[1], pos[1]),
+                 min(min_pd[2], pos[2]));
+      max_pd.set(max(max_pd[0], pos[0]),
+                 max(max_pd[1], pos[1]),
+                 max(max_pd[2], pos[2]));
     }
+
+    LMatrix4d mat = egg_group->get_vertex_to_node();
+    min_p = LCAST(PN_stdfloat, min_pd * mat);
+    max_p = LCAST(PN_stdfloat, max_pd * mat);
+    return (min_pd != max_pd);
   }
-  return success;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

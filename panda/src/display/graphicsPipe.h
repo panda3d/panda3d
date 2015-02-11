@@ -101,7 +101,7 @@ PUBLISHED:
 
   DisplayInformation *get_display_information();
   virtual void lookup_cpu_data();
-  
+
   virtual string get_interface_name() const=0;
 
 public:
@@ -114,9 +114,11 @@ public:
   INLINE GraphicsDevice *get_device() const;
   virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
 
+  virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
+
 protected:
   virtual void close_gsg(GraphicsStateGuardian *gsg);
-  
+
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
@@ -126,8 +128,7 @@ protected:
                                          GraphicsOutput *host,
                                          int retry,
                                          bool &precertify);
-  virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
-  
+
   LightMutex _lock;
 
   bool _is_valid;
@@ -135,7 +136,7 @@ protected:
   int _display_width;
   int _display_height;
   PT(GraphicsDevice) _device;
-  
+
   DisplayInformation *_display_information;
 
   static const int strip_properties[];

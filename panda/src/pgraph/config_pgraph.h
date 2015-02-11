@@ -41,7 +41,6 @@ extern ConfigVariableBool no_unsupported_copy;
 extern ConfigVariableBool allow_unrelated_wrt;
 extern ConfigVariableBool paranoid_compose;
 extern ConfigVariableBool compose_componentwise;
-extern ConfigVariableBool uniquify_matrix;
 extern ConfigVariableBool paranoid_const;
 extern ConfigVariableBool auto_break_cycles;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool garbage_collect_states;

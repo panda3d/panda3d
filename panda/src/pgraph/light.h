@@ -39,11 +39,7 @@ class GraphicsStateGuardianBase;
 //               arbitrary point to define the coordinate system of
 //               effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH Light : virtual public ReferenceCount {
-  // We inherit from ReferenceCount instead of TypedReferenceCount so
-  // that LightNode does not inherit from TypedObject twice.  Note
-  // that we also inherit virtually from ReferenceCount for the same
-  // reason.
+class EXPCL_PANDA_PGRAPH Light {
 PUBLISHED:
   INLINE Light();
   INLINE Light(const Light &copy);
@@ -54,6 +50,10 @@ PUBLISHED:
 
   INLINE const LColor &get_color() const;
   INLINE void set_color(const LColor &color);
+
+  virtual PN_stdfloat get_exponent() const;
+  virtual const LColor &get_specular_color() const;
+  virtual const LVecBase3 &get_attenuation() const;
 
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
@@ -66,7 +66,7 @@ public:
                     int light_id)=0;
 
   virtual bool get_vector_to_light(LVector3 &result,
-                                   const LPoint3 &from_object_point, 
+                                   const LPoint3 &from_object_point,
                                    const LMatrix4 &to_object_space);
 
   GeomNode *get_viz();
@@ -76,7 +76,7 @@ public:
 protected:
   virtual void fill_viz_geom(GeomNode *viz_geom);
   INLINE void mark_viz_stale();
-  
+
   // This enumerated class defines the relative class priority of
   // different kinds of lights.  This hierarchy is only used to
   // resolve multiple lights of the same priority specified by
@@ -135,7 +135,7 @@ public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  
+
 private:
   static TypeHandle _type_handle;
 };

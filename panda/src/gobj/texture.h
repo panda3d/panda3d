@@ -39,6 +39,7 @@
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
+#include "samplerState.h"
 
 class PNMImage;
 class PfmFile;
@@ -145,52 +146,37 @@ PUBLISHED:
     F_r32,
     F_rg32,
     F_rgb32,
+
+    F_r8i, // 8 integer bits per R channel
+    F_rg8i, // 8 integer bits per R,G channel
+    F_rgb8i, // 8 integer bits per R,G,B channel
+    F_rgba8i, // 8 integer bits per R,G,B,A channel
   };
 
-  enum FilterType {
-    // Mag Filter and Min Filter
-
-    // Point sample the pixel
-    FT_nearest,
-
-    // Bilinear filtering of four neighboring pixels
-    FT_linear,
-
-    // Min Filter Only
-
-    // Point sample the pixel from the nearest mipmap level
-    FT_nearest_mipmap_nearest,
-
-    // Bilinear filter the pixel from the nearest mipmap level
-    FT_linear_mipmap_nearest,
-
-    // Point sample the pixel from two mipmap levels, and linearly blend
-    FT_nearest_mipmap_linear,
-
-    // A.k.a. trilinear filtering: Bilinear filter the pixel from
-    // two mipmap levels, and linearly blend the results.
-    FT_linear_mipmap_linear,
-
-    // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
-    FT_shadow,
-
-    // Default is usually linear, but it depends on format.
-    // This was added at the end of the list to avoid bumping TXO version #.
-    FT_default,
-
-    // Returned by string_filter_type() for an invalid match.
-    FT_invalid
+  // Deprecated.  See SamplerState.FilterType.
+  enum DeprecatedFilterType {
+    FT_nearest = SamplerState::FT_nearest,
+    FT_linear = SamplerState::FT_linear,
+    FT_nearest_mipmap_nearest = SamplerState::FT_nearest_mipmap_nearest,
+    FT_linear_mipmap_nearest = SamplerState::FT_linear_mipmap_nearest,
+    FT_nearest_mipmap_linear = SamplerState::FT_nearest_mipmap_linear,
+    FT_linear_mipmap_linear = SamplerState::FT_linear_mipmap_linear,
+    FT_shadow = SamplerState::FT_shadow,
+    FT_default = SamplerState::FT_default,
+    FT_invalid = SamplerState::FT_invalid
   };
+  typedef SamplerState::FilterType FilterType;
 
-  enum WrapMode {
-    WM_clamp,  // coords that would be outside [0-1] are clamped to 0 or 1
-    WM_repeat,
-    WM_mirror,
-    WM_mirror_once,   // mirror once, then clamp
-    WM_border_color,  // coords outside [0-1] use explict border color
-    // Returned by string_wrap_mode() for an invalid match.
-    WM_invalid
+  // Deprecated.  See SamplerState.WrapMode.
+  enum DeprecatedWrapMode {
+    WM_clamp = SamplerState::WM_clamp,
+    WM_repeat = SamplerState::WM_repeat,
+    WM_mirror = SamplerState::WM_mirror,
+    WM_mirror_once = SamplerState::WM_mirror_once,
+    WM_border_color = SamplerState::WM_border_color,
+    WM_invalid = SamplerState::WM_invalid
   };
+  typedef SamplerState::WrapMode WrapMode;
 
   enum CompressionMode {
     // Generic compression modes.  Usually, you should choose one of
@@ -253,11 +239,17 @@ PUBLISHED:
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
 
+  INLINE void clear_image();
+  INLINE bool has_clear_color() const;
+  INLINE LColor get_clear_color() const;
+  INLINE void set_clear_color(const LColor &color);
+  INLINE string get_clear_data() const;
+
   BLOCKING bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
                      int primary_file_num_channels, int alpha_file_channel,
                      const LoaderOptions &options = LoaderOptions());
-  BLOCKING bool read(const Filename &fullpath, int z, int n, 
+  BLOCKING bool read(const Filename &fullpath, int z, int n,
                      bool read_pages, bool read_mipmaps,
                      const LoaderOptions &options = LoaderOptions());
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -267,7 +259,7 @@ PUBLISHED:
                      const LoaderOptions &options = LoaderOptions());
 
   BLOCKING INLINE bool write(const Filename &fullpath);
-  BLOCKING INLINE bool write(const Filename &fullpath, int z, int n, 
+  BLOCKING INLINE bool write(const Filename &fullpath, int z, int n,
                              bool write_pages, bool write_mipmaps);
 
   BLOCKING bool read_txo(istream &in, const string &filename = "");
@@ -319,13 +311,14 @@ PUBLISHED:
   INLINE void set_compression(CompressionMode compression);
   INLINE void set_render_to_texture(bool render_to_texture);
 
-  INLINE WrapMode get_wrap_u() const;
-  INLINE WrapMode get_wrap_v() const;
-  INLINE WrapMode get_wrap_w() const;
-  INLINE FilterType get_minfilter() const;
-  INLINE FilterType get_magfilter() const;
-  FilterType get_effective_minfilter() const;
-  FilterType get_effective_magfilter() const;
+  INLINE const SamplerState &get_default_sampler() const;
+  INLINE SamplerState::WrapMode get_wrap_u() const;
+  INLINE SamplerState::WrapMode get_wrap_v() const;
+  INLINE SamplerState::WrapMode get_wrap_w() const;
+  INLINE SamplerState::FilterType get_minfilter() const;
+  INLINE SamplerState::FilterType get_magfilter() const;
+  INLINE SamplerState::FilterType get_effective_minfilter() const;
+  INLINE SamplerState::FilterType get_effective_magfilter() const;
   INLINE int get_anisotropic_degree() const;
   INLINE int get_effective_anisotropic_degree() const;
   INLINE LColor get_border_color() const;
@@ -458,7 +451,7 @@ PUBLISHED:
   INLINE int get_pad_y_size() const;
   INLINE int get_pad_z_size() const;
   INLINE LVecBase2 get_tex_scale() const;
-  
+
   INLINE void set_pad_size(int x=0, int y=0, int z=0);
   void set_size_padded(int x=1, int y=1, int z=1);
 
@@ -467,7 +460,7 @@ PUBLISHED:
   INLINE int get_orig_file_z_size() const;
 
   void set_orig_file_size(int x, int y, int z = 1);
-  
+
   INLINE void set_format(Format format);
   INLINE void set_component_type(ComponentType component_type);
   INLINE void set_loaded_from_image();
@@ -475,8 +468,6 @@ PUBLISHED:
 
   INLINE void set_loaded_from_txo();
   INLINE bool get_loaded_from_txo() const;
-
-  static bool is_mipmap(FilterType type);
 
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
@@ -503,22 +494,16 @@ PUBLISHED:
 
   static string format_format(Format f);
   static Format string_format(const string &str);
-  
-  static string format_filter_type(FilterType ft);
-  static FilterType string_filter_type(const string &str);
-  
-  static string format_wrap_mode(WrapMode wm);
-  static WrapMode string_wrap_mode(const string &str);
-  
+
   static string format_compression_mode(CompressionMode cm);
   static CompressionMode string_compression_mode(const string &str);
 
   static string format_quality_level(QualityLevel tql);
   static QualityLevel string_quality_level(const string &str);
-    
+
 public:
   void texture_uploaded();
-  
+
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
@@ -550,8 +535,8 @@ protected:
   // CData pointer representing that lock); generally, they also avoid
   // adjusting the _properties_modified and _image_modified
   // semaphores.
-  virtual bool do_adjust_this_size(const CData *cdata, 
-                                   int &x_size, int &y_size, const string &name, 
+  virtual bool do_adjust_this_size(const CData *cdata,
+                                   int &x_size, int &y_size, const string &name,
                                    bool for_padding) const;
 
   virtual bool do_read(CData *cdata,
@@ -577,7 +562,7 @@ protected:
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
   bool do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only);
 
-  bool do_write(CData *cdata, const Filename &fullpath, int z, int n, 
+  bool do_write(CData *cdata, const Filename &fullpath, int z, int n,
                 bool write_pages, bool write_mipmaps);
   bool do_write_one(CData *cdata, const Filename &fullpath, int z, int n);
   bool do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n);
@@ -590,14 +575,15 @@ protected:
 
   PTA_uchar do_modify_ram_image(CData *cdata);
   PTA_uchar do_make_ram_image(CData *cdata);
-  void do_set_ram_image(CData *cdata, CPTA_uchar image, 
+  void do_set_ram_image(CData *cdata, CPTA_uchar image,
                         CompressionMode compression = CM_off, size_t page_size = 0);
   PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
   PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
   void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
+  int do_get_clear_data(const CData *cdata, unsigned char *into) const;
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
-  bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps, 
+  bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
                                           bool allow_compression);
   bool do_compress_ram_image(CData *cdata, CompressionMode compression,
                              QualityLevel quality_level,
@@ -607,7 +593,7 @@ protected:
 
   bool do_reconsider_z_size(CData *cdata, int z, const LoaderOptions &options);
   virtual void do_allocate_pages(CData *cdata);
-  bool do_reconsider_image_properties(CData *cdata, 
+  bool do_reconsider_image_properties(CData *cdata,
                                       int x_size, int y_size, int num_components,
                                       ComponentType component_type, int z,
                                       const LoaderOptions &options);
@@ -617,7 +603,7 @@ protected:
   PT(Texture) do_make_copy(const CData *cdata) const;
   void do_assign(CData *cdata, const Texture *copy, const CData *cdata_copy);
   virtual void do_clear(CData *cdata);
-  void do_setup_texture(CData *cdata, 
+  void do_setup_texture(CData *cdata,
                         TextureType texture_type, int x_size, int y_size,
                         int z_size, ComponentType component_type,
                         Format format);
@@ -700,28 +686,28 @@ private:
                              int num_components, int component_width,
                              CPTA_uchar image, size_t page_size,
                              int z);
-  static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header,
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_rgb8(Texture *tex, CData *cdata, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_rgb8(Texture *tex, CData *cdata, const DDSHeader &header,
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header,
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header, 
+  static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header,
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata, 
-                                                       const DDSHeader &header, 
+  static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
+                                                       const DDSHeader &header,
                                                        int n, istream &in);
-  static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata, 
-                                                         const DDSHeader &header, 
+  static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata,
+                                                         const DDSHeader &header,
                                                          int n, istream &in);
-  static PTA_uchar read_dds_level_dxt1(Texture *tex, CData *cdata, 
-                                       const DDSHeader &header, 
+  static PTA_uchar read_dds_level_dxt1(Texture *tex, CData *cdata,
+                                       const DDSHeader &header,
                                        int n, istream &in);
-  static PTA_uchar read_dds_level_dxt23(Texture *tex, CData *cdata, 
-                                        const DDSHeader &header, 
+  static PTA_uchar read_dds_level_dxt23(Texture *tex, CData *cdata,
+                                        const DDSHeader &header,
                                         int n, istream &in);
-  static PTA_uchar read_dds_level_dxt45(Texture *tex, CData *cdata, 
-                                        const DDSHeader &header, 
+  static PTA_uchar read_dds_level_dxt45(Texture *tex, CData *cdata,
+                                        const DDSHeader &header,
                                         int n, istream &in);
 
   void clear_prepared(int view, PreparedGraphicsObjects *prepared_objects);
@@ -748,36 +734,36 @@ private:
                                  RamImage &to, const RamImage &from,
                                  int x_size, int y_size, int z_size) const;
 
-  typedef void Filter2DComponent(unsigned char *&p, 
+  typedef void Filter2DComponent(unsigned char *&p,
                                  const unsigned char *&q,
                                  size_t pixel_size, size_t row_size);
 
-  typedef void Filter3DComponent(unsigned char *&p, 
+  typedef void Filter3DComponent(unsigned char *&p,
                                  const unsigned char *&q,
                                  size_t pixel_size, size_t row_size,
                                  size_t page_size);
 
-  static void filter_2d_unsigned_byte(unsigned char *&p, 
+  static void filter_2d_unsigned_byte(unsigned char *&p,
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size);
-  static void filter_2d_unsigned_byte_srgb(unsigned char *&p, 
+  static void filter_2d_unsigned_byte_srgb(unsigned char *&p,
                                            const unsigned char *&q,
                                            size_t pixel_size, size_t row_size);
-  static void filter_2d_unsigned_short(unsigned char *&p, 
+  static void filter_2d_unsigned_short(unsigned char *&p,
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size);
   static void filter_2d_float(unsigned char *&p, const unsigned char *&q,
                               size_t pixel_size, size_t row_size);
 
-  static void filter_3d_unsigned_byte(unsigned char *&p, 
+  static void filter_3d_unsigned_byte(unsigned char *&p,
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size,
                                       size_t page_size);
-  static void filter_3d_unsigned_byte_srgb(unsigned char *&p, 
+  static void filter_3d_unsigned_byte_srgb(unsigned char *&p,
                                            const unsigned char *&q,
                                            size_t pixel_size, size_t row_size,
                                            size_t page_size);
-  static void filter_3d_unsigned_short(unsigned char *&p, 
+  static void filter_3d_unsigned_short(unsigned char *&p,
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,
                                        size_t page_size);
@@ -813,16 +799,16 @@ protected:
     Filename _alpha_filename;
     Filename _fullpath;
     Filename _alpha_fullpath;
-    
+
     // The number of channels of the primary file we use.  1, 2, 3, or 4.
     int _primary_file_num_channels;
-    
+
     // If we have a separate alpha file, this designates which channel
     // in the alpha file provides the alpha channel.  0 indicates the
     // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
     // valid.
     int _alpha_file_channel;
-    
+
     int _x_size;
     int _y_size;
     int _z_size;
@@ -832,19 +818,14 @@ protected:
     TextureType _texture_type;
     Format _format;
     ComponentType _component_type;
-    
+
     bool _loaded_from_image;
     bool _loaded_from_txo;
     bool _has_read_pages;
     bool _has_read_mipmaps;
     int _num_mipmap_levels_read;
-    
-    WrapMode _wrap_u;
-    WrapMode _wrap_v;
-    WrapMode _wrap_w;
-    FilterType _minfilter;
-    FilterType _magfilter;
-    int _anisotropic_degree;
+
+    SamplerState _default_sampler;
     bool _keep_ram_image;
     LColor _border_color;
     CompressionMode _compression;
@@ -852,14 +833,14 @@ protected:
     bool _match_framebuffer_format;
     bool _post_load_store_cache;
     QualityLevel _quality_level;
-    
+
     int _pad_x_size;
     int _pad_y_size;
     int _pad_z_size;
-    
+
     int _orig_file_x_size;
     int _orig_file_y_size;
-  
+
     AutoTextureScale _auto_texture_scale;
     CompressionMode _ram_image_compression;
 
@@ -874,11 +855,15 @@ protected:
     int _simple_x_size;
     int _simple_y_size;
     PN_int32 _simple_image_date_generated;
-  
+
+    // This is the color that should be used when no image was given.
+    bool _has_clear_color;
+    LColor _clear_color;
+
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;
     UpdateSeq _simple_image_modified;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -886,11 +871,11 @@ protected:
     static void init_type() {
       register_type(_type_handle, "Texture::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
- 
+
   PipelineCycler<CData> _cycler;
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
@@ -904,7 +889,7 @@ protected:
   // Used to implement unlocked_reload_ram_image().
   ConditionVarFull _cvar;  // condition: _reloading is true.
   bool _reloading;
-    
+
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Textures that
@@ -913,7 +898,7 @@ protected:
   typedef pmap<int, TextureContext *> Contexts;
   typedef pmap<PreparedGraphicsObjects *, Contexts> PreparedViews;
   PreparedViews _prepared_views;
-  
+
   // It is common, when using normal maps, specular maps, gloss maps,
   // and such, to use a file naming convention where the filenames
   // of the special maps are derived by concatenating a suffix to
@@ -924,7 +909,7 @@ protected:
 
   // The TexturePool finds this useful.
   Filename _texture_pool_key;
-  
+
 private:
   // The auxiliary data is not recorded to a bam file.
   typedef pmap<string, PT(TypedReferenceCount) > AuxData;
@@ -976,19 +961,10 @@ private:
 };
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;
-extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::FilterType> texture_minfilter;
-extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::FilterType> texture_magfilter;
-extern EXPCL_PANDA_GOBJ ConfigVariableInt texture_anisotropic_degree;
 
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::TextureType tt);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::ComponentType ct);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::Format f);
-
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::FilterType ft);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::FilterType &ft);
-
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::WrapMode wm);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::WrapMode &wm);
 
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::CompressionMode cm);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::QualityLevel tql);
@@ -997,4 +973,3 @@ EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::QualityLevel &tql);
 #include "texture.I"
 
 #endif
-

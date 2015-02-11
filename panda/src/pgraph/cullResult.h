@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "cullBin.h"
+#include "cullBinManager.h"
 #include "renderState.h"
 #include "cullableObject.h"
 #include "geomMunger.h"
@@ -26,12 +27,11 @@
 #include "pset.h"
 #include "pmap.h"
 
-
-class GraphicsStateGuardianBase;
 class CullTraverser;
-class TransformState;
+class GraphicsStateGuardianBase;
 class RenderState;
 class SceneSetup;
+class TransformState;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullResult
@@ -66,20 +66,29 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
-  void check_flash_bin(CPT(RenderState) &state, CullBin *bin);
-  void check_flash_transparency(CPT(RenderState) &state, const LColor &color);
+
+  INLINE void check_flash_bin(CPT(RenderState) &state, CullBinManager *bin_manager, int bin_index);
+  INLINE void check_flash_transparency(CPT(RenderState) &state, const LColor &color);
+
+#ifndef NDEBUG
+  void apply_flash_color(CPT(RenderState) &state, const LColor &flash_color);
+#endif
 
   static CPT(RenderState) get_alpha_state();
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
-  static CPT(RenderState) get_dual_transparent_state_decals();
   static CPT(RenderState) get_dual_opaque_state();
+  static CPT(RenderState) get_wireframe_overlay_state(const RenderModeAttrib *rmode);
 
   GraphicsStateGuardianBase *_gsg;
   PStatCollector _draw_region_pcollector;
-  
+
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
+
+#ifndef NDEBUG
+  bool _show_transparency;
+#endif
 
 public:
   static TypeHandle get_class_type() {
@@ -90,7 +99,7 @@ public:
     register_type(_type_handle, "CullResult",
                   ReferenceCount::get_class_type());
   }
-  
+
 private:
   static TypeHandle _type_handle;
 };
@@ -99,5 +108,3 @@ private:
 
 #endif
 
-
-  

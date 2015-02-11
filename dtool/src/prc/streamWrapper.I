@@ -127,8 +127,10 @@ get() {
 INLINE OStreamWrapper::
 OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack) :
   _ostream(stream),
-  _owns_pointer(owns_pointer),
-  _stringstream_hack(stringstream_hack)
+  _owns_pointer(owns_pointer)
+#ifdef WIN32_VC
+, _stringstream_hack(stringstream_hack)
+#endif
 {
 }
 
@@ -140,8 +142,10 @@ OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack) :
 INLINE OStreamWrapper::
 OStreamWrapper(ostream &stream) :
   _ostream(&stream),
-  _owns_pointer(false),
-  _stringstream_hack(false)
+  _owns_pointer(false)
+#ifdef WIN32_VC
+, _stringstream_hack(false)
+#endif
 {
 }
 

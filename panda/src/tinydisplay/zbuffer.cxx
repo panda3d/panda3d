@@ -1,7 +1,7 @@
 /*
 
  * Z buffer: 16 bits Z / 32 bits color
- * 
+ *
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -107,6 +107,8 @@ void
 ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
   int size;
 
+  nassertv(zb != NULL);
+
   /* xsize must be a multiple of 4 */
   xsize = (xsize + 3) & ~3;
 
@@ -159,7 +161,7 @@ ZB_copyBufferNoAlpha(const ZBuffer * zb, void *buf, int linesize) {
     PIXEL *p2 = p1 + xsize;
     while (p1 < p2) {
       // Make sure the alpha bits are set to 0xff.
-#ifdef WORDS_BIGENDIAN        
+#ifdef WORDS_BIGENDIAN
       *p1 = *q1 | 0x000000ff;
 #else
       *p1 = *q1 | 0xff000000;
@@ -176,8 +178,8 @@ ZB_copyBufferNoAlpha(const ZBuffer * zb, void *buf, int linesize) {
   (((v >> 8) & 0xf800) | (((v) >> 5) & 0x07e0) | (((v) & 0xff) >> 3))
 
 /* XXX: not optimized */
-static void ZB_copyFrameBuffer5R6G5B(const ZBuffer * zb, 
-                                     void *buf, int linesize) 
+static void ZB_copyFrameBuffer5R6G5B(const ZBuffer * zb,
+                                     void *buf, int linesize)
 {
   PIXEL *q;
   unsigned short *p, *p1;
@@ -202,8 +204,8 @@ static void ZB_copyFrameBuffer5R6G5B(const ZBuffer * zb,
 }
 
 /* XXX: not optimized */
-static void ZB_copyFrameBufferRGB24(const ZBuffer * zb, 
-                                    void *buf, int linesize) 
+static void ZB_copyFrameBufferRGB24(const ZBuffer * zb,
+                                    void *buf, int linesize)
 {
   PIXEL *q;
   unsigned char *p, *p1;
@@ -276,7 +278,7 @@ ZB_copyFrameBufferNoAlpha(const ZBuffer * zb, void *buf,
   }
 }
 
-// Copy from (source_xmin,source_ymin)+(source_xsize,source_ysize) to 
+// Copy from (source_xmin,source_ymin)+(source_xsize,source_ysize) to
 //  (dest_xmin,dest_ymin)+(dest_xsize,dest_ysize).
 void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, int dest_xsize, int dest_ysize,
                         const ZBuffer *source, int source_xmin, int source_ymin, int source_xsize, int source_ysize) {
@@ -483,14 +485,15 @@ lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned in
   PIXEL p1, p2;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level - 1);
+  p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
+  level = max((int)level - 1, 0);
   p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
 
-  unsigned int bitsize = (level - 1) + ZB_POINT_ST_FRAC_BITS;
-  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p1), PIXEL_R(p2), level_dx, bitsize);
-  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p1), PIXEL_G(p2), level_dx, bitsize);
-  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p1), PIXEL_B(p2), level_dx, bitsize);
-  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p1), PIXEL_A(p2), level_dx, bitsize); 
+  unsigned int bitsize = level + ZB_POINT_ST_FRAC_BITS;
+  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p2), PIXEL_R(p1), level_dx, bitsize);
+  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p2), PIXEL_G(p1), level_dx, bitsize);
+  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p2), PIXEL_B(p1), level_dx, bitsize);
+  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p2), PIXEL_A(p1), level_dx, bitsize);
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }
@@ -529,20 +532,22 @@ lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned
     int sf, tf;
     int r, g, b, a;
 
-    p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level - 1);
-    p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level - 1);
-    sf = (s >> (level - 1)) & ZB_ST_FRAC_MASK;
-    
-    p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level - 1);
-    p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level - 1);
-    tf = (t >> (level - 1)) & ZB_ST_FRAC_MASK;
-    
+    p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level);
+    p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level);
+    sf = (s >> level) & ZB_ST_FRAC_MASK;
+
+    p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level);
+    p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
+    tf = (t >> level) & ZB_ST_FRAC_MASK;
+
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
     g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
     b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
     a = BILINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), PIXEL_A(p3), PIXEL_A(p4), sf, tf);
     p1a = RGBA_TO_PIXEL(r, g, b, a);
   }
+
+  level = max((int)level - 1, 0);
 
   {
     PIXEL p1, p2, p3, p4;
@@ -552,11 +557,11 @@ lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned
     p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level);
     p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level);
     sf = (s >> level) & ZB_ST_FRAC_MASK;
-    
+
     p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level);
     p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
     tf = (t >> level) & ZB_ST_FRAC_MASK;
-    
+
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
     g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
     b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
@@ -565,11 +570,11 @@ lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned
   }
 
   int r, g, b, a;
-  unsigned int bitsize = (level - 1) + ZB_POINT_ST_FRAC_BITS;
-  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p1a), PIXEL_R(p2a), level_dx, bitsize);
-  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p1a), PIXEL_G(p2a), level_dx, bitsize);
-  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p1a), PIXEL_B(p2a), level_dx, bitsize);
-  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p1a), PIXEL_A(p2a), level_dx, bitsize); 
+  unsigned int bitsize = level + ZB_POINT_ST_FRAC_BITS;
+  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p2a), PIXEL_R(p1a), level_dx, bitsize);
+  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p2a), PIXEL_G(p1a), level_dx, bitsize);
+  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p2a), PIXEL_B(p1a), level_dx, bitsize);
+  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p2a), PIXEL_A(p1a), level_dx, bitsize);
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }

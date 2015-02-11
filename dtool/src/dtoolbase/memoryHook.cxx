@@ -19,7 +19,9 @@
 #ifdef WIN32
 
 // Windows case.
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 #else
@@ -51,6 +53,10 @@
 #define NO_MALLINFO 1
 #ifdef _DEBUG
   #define DEBUG 1
+#endif
+#ifdef assert
+  // dlmalloc defines its own assert, which clashes.
+  #undef assert
 #endif
 #include "dlmalloc.h"
 #include "dlmalloc_src.cxx"

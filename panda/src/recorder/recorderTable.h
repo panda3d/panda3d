@@ -37,18 +37,25 @@ public:
   INLINE RecorderTable();
   INLINE RecorderTable(const RecorderTable &copy);
   INLINE void operator = (const RecorderTable &copy);
-  INLINE ~RecorderTable();
+  ~RecorderTable();
 
   void merge_from(const RecorderTable &other);
 
-  void add_recorder(const string &name, RecorderBase *recorder);
-  RecorderBase *get_recorder(const string &name) const;
-  bool remove_recorder(const string &name);
+  INLINE void add_recorder(const string &name, RecorderBase *recorder);
+  INLINE RecorderBase *get_recorder(const string &name) const;
+  INLINE bool remove_recorder(const string &name);
+
+  void record_frame(BamWriter *manager, Datagram &dg);
+  void play_frame(DatagramIterator &scan, BamReader *manager);
+  void set_flags(short flags);
+  void clear_flags(short flags);
 
   void write(ostream &out, int indent_level) const;
 
-
-  typedef pmap<string, PT(RecorderBase) > Recorders;
+  // RecorderBase itself doesn't inherit from ReferenceCount, so
+  // we can't put a PT() around it.  Instead, we manage the reference
+  // count using calls to ref() and unref().
+  typedef pmap<string, RecorderBase*> Recorders;
   Recorders _recorders;
 
   bool _error;
@@ -60,7 +67,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

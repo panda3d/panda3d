@@ -105,7 +105,7 @@ void ComputeNode::
 add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
-      << "Found " << *this << " in state " << *data._state 
+      << "Found " << *this << " in state " << *data._state
       << " draw_mask = " << data._draw_mask << "\n";
   }
 
@@ -114,9 +114,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // any Geoms, however.
   CullableObject *object =
     new CullableObject(NULL, data._state,
-                         data.get_net_transform(trav),
-                         data.get_modelview_transform(trav),
-                         trav->get_scene());
+                       data.get_internal_transform(trav));
   object->set_draw_callback(_dispatcher);
   trav->get_cull_handler()->record_object(object, trav);
 }

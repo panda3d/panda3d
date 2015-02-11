@@ -117,7 +117,7 @@ load_bam_stream(istream &in) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Loader::
 output(ostream &out) const {
@@ -224,7 +224,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     int num_dirs = model_path.get_num_directories();
     for (int i = 0; i < num_dirs; ++i) {
       Filename pathname(model_path.get_directory(i), this_filename);
-      PT(PandaNode) result = try_load_file(pathname, this_options, 
+      PT(PandaNode) result = try_load_file(pathname, this_options,
                                            requested_type);
       if (result != (PandaNode *)NULL) {
         return result;
@@ -286,15 +286,14 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
               LoaderFileType *requested_type) const {
   BamCache *cache = BamCache::get_global_ptr();
 
-  bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;
+  bool allow_ram_cache = requested_type->get_allow_ram_cache(options);
 
-  if (requested_type->get_allow_ram_cache(options)) {
+  if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the
     // file.
-    if (!cache_only || ModelPool::has_model(pathname)) {
-      PT(PandaNode) node = ModelPool::load_model(pathname, options);
-      if (node != (PandaNode *)NULL &&
-          (options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+    PT(PandaNode) node = ModelPool::get_model(pathname, true);
+    if (node != (PandaNode *)NULL) {
+      if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
         if (loader_cat.is_debug()) {
           loader_cat.debug()
             << "Model " << pathname << " found in ModelPool.\n";
@@ -320,15 +319,26 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
             << "Model " << pathname << " found in disk cache.\n";
         }
         PT(PandaNode) result = DCAST(PandaNode, record->get_data());
-        if (result->is_of_type(ModelRoot::get_class_type())) {
-          ModelRoot *model_root = DCAST(ModelRoot, result.p());
-          model_root->set_fullpath(pathname);
-          model_root->set_timestamp(record->get_source_timestamp());
-        }
 
         if (premunge_data) {
           SceneGraphReducer sgr;
           sgr.premunge(result, RenderState::make_empty());
+        }
+
+        if (result->is_of_type(ModelRoot::get_class_type())) {
+          ModelRoot *model_root = DCAST(ModelRoot, result.p());
+          model_root->set_fullpath(pathname);
+          model_root->set_timestamp(record->get_source_timestamp());
+
+          if (allow_ram_cache) {
+            // Store the loaded model in the RAM cache, and make sure
+            // we return a copy so that this node can be modified
+            // independently from the RAM cached version.
+            ModelPool::add_model(pathname, model_root);
+            if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+              return model_root->copy_subgraph();
+            }
+          }
         }
         return result;
       }
@@ -339,18 +349,31 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     loader_cat.debug()
       << "Model " << pathname << " not found in cache.\n";
   }
-  
+
+  bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;
   if (!cache_only) {
+    // Load the model from disk.
     PT(PandaNode) result = requested_type->load_file(pathname, options, record);
-    if (result != (PandaNode *)NULL){ 
+    if (result != (PandaNode *)NULL) {
       if (record != (BamCacheRecord *)NULL) {
+        // Store the loaded model in the model cache.
         record->set_data(result, result);
         cache->store(record);
       }
-      
+
       if (premunge_data) {
         SceneGraphReducer sgr;
         sgr.premunge(result, RenderState::make_empty());
+      }
+
+      if (allow_ram_cache && result->is_of_type(ModelRoot::get_class_type())) {
+        // Store the loaded model in the RAM cache, and make sure
+        // we return a copy so that this node can be modified
+        // independently from the RAM cached version.
+        ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
+        if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+          result = result->copy_subgraph();
+        }
       }
       return result;
     }
@@ -454,7 +477,7 @@ bool Loader::
 try_save_file(const Filename &pathname, const LoaderOptions &options,
               PandaNode *node, LoaderFileType *requested_type) const {
   bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
-  
+
   bool result = requested_type->save_file(pathname, options, node);
   return result;
 }
@@ -493,7 +516,7 @@ load_file_types() {
           loader_cat.debug()
             << "done loading file type module: " << name << endl;
         }
-        
+
       } else if (words.size() > 1) {
         // Multiple words: the first n words are filename extensions,
         // and the last word is the name of the library to load should
@@ -501,13 +524,13 @@ load_file_types() {
         LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_global_ptr();
         size_t num_extensions = words.size() - 1;
         string library_name = words[num_extensions];
-        
+
         for (size_t i = 0; i < num_extensions; i++) {
           string extension = words[i];
           if (extension[0] == '.') {
             extension = extension.substr(1);
           }
-          
+
           registry->register_deferred_type(extension, library_name);
         }
       }

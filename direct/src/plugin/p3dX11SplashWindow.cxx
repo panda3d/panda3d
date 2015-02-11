@@ -28,10 +28,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DX11SplashWindow::
-P3DX11SplashWindow(P3DInstance *inst, bool make_visible) : 
+P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
   // Init for parent process
@@ -61,7 +61,7 @@ P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DX11SplashWindow::
 ~P3DX11SplashWindow() {
@@ -312,13 +312,13 @@ stop_subprocess() {
   _pipe_write.close();
 
   static const int max_wait_ms = 2000;
-  
+
   // Wait for a certain amount of time for the process to stop by
   // itself.
   struct timeval start;
   gettimeofday(&start, NULL);
   int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
-  
+
   int status;
   pid_t result = waitpid(_subprocess_pid, &status, WNOHANG);
   while (result != _subprocess_pid) {
@@ -326,20 +326,20 @@ stop_subprocess() {
       perror("waitpid");
       break;
     }
-    
+
     struct timeval now;
     gettimeofday(&now, NULL);
     int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
     int elapsed = now_ms - start_ms;
-    
+
     if (elapsed > max_wait_ms) {
       // Tired of waiting.  Kill the process.
-      nout << "Force-killing splash window process, pid " << _subprocess_pid 
+      nout << "Force-killing splash window process, pid " << _subprocess_pid
            << "\n";
       kill(_subprocess_pid, SIGKILL);
       start_ms = now_ms;
     }
-    
+
     // Yield the timeslice and wait some more.
     struct timeval tv;
     tv.tv_sec = 0;
@@ -353,7 +353,7 @@ stop_subprocess() {
     nout << "  exited normally, status = "
          << WEXITSTATUS(status) << "\n";
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -396,7 +396,7 @@ check_stopped() {
     nout << "  exited normally, status = "
          << WEXITSTATUS(status) << "\n";
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -522,14 +522,14 @@ subprocess_run() {
           _win_height = event.xconfigure.height;
 
           set_button_range(_button_ready_image);
-          
+
           // If the window changes size, we need to recompute the
           // composed image.
           _needs_new_composite = true;
         }
         needs_redraw = true;
         break;
-        
+
       case MotionNotify:
         set_mouse_data(event.xmotion.x, event.xmotion.y, _mouse_down);
         break;
@@ -537,7 +537,7 @@ subprocess_run() {
       case ButtonPress:
         set_mouse_data(_mouse_x, _mouse_y, true);
         break;
-        
+
       case ButtonRelease:
         set_mouse_data(_mouse_x, _mouse_y, false);
         break;
@@ -563,7 +563,7 @@ subprocess_run() {
       needs_redraw = true;
       prev_label = _install_label;
     }
-    
+
     if (_progress_known != prev_progress_known) {
       needs_update_progress = true;
       needs_redraw_progress = true;
@@ -592,7 +592,7 @@ subprocess_run() {
         needs_redraw = true;
       }
     }
-    
+
     if (needs_redraw) {
       redraw();
       XFlush(_display);
@@ -619,23 +619,23 @@ subprocess_run() {
                    text_width + 4, text_height + 4, false);
         XDrawString(_display, _window, _graphics_context, text_x, text_y,
                     _install_label.c_str(), _install_label.size());
-        
+
         needs_draw_label = false;
       }
-      
+
       if (needs_redraw_progress) {
-        XClearArea(_display, _window, 
+        XClearArea(_display, _window,
                    bar_x, bar_y, bar_width, bar_height, false);
-        XDrawRectangle(_display, _window, _graphics_context, 
+        XDrawRectangle(_display, _window, _graphics_context,
                        bar_x, bar_y, bar_width, bar_height);
         needs_update_progress = true;
         needs_redraw_progress = false;
       }
-      
+
       if (needs_update_progress) {
         if (_progress_known) {
           int progress_width = (int)((bar_width - 2) * _install_progress + 0.5);
-          XFillRectangle(_display, _window, _bar_context, 
+          XFillRectangle(_display, _window, _bar_context,
                          bar_x + 1, bar_y + 1,
                          progress_width + 1, bar_height - 1);
         } else {
@@ -649,7 +649,7 @@ subprocess_run() {
             progress = block_travel * 2 - progress;
           }
 
-          XFillRectangle(_display, _window, _bar_context, 
+          XFillRectangle(_display, _window, _bar_context,
                          bar_x + 1 + progress, bar_y + 1,
                          block_width + 1, bar_height - 1);
         }
@@ -665,7 +665,7 @@ subprocess_run() {
       fd_set fds;
       FD_ZERO(&fds);
       FD_SET(read_fd, &fds);
-      
+
       // Sleep a bit to yield the timeslice if there's nothing new.
       struct timeval tv;
       tv.tv_sec = 0;
@@ -729,26 +729,29 @@ receive_command() {
       } else if (strcmp(cmd, "set_image_filename") == 0) {
         const string *image_filename = xcommand->Attribute(string("image_filename"));
         int image_placement;
-        if (image_filename != NULL && 
+        if (image_filename != NULL &&
             xcommand->QueryIntAttribute("image_placement", &image_placement) == TIXML_SUCCESS) {
-          
+
           X11ImageData *image = NULL;
           switch ((ImagePlacement)image_placement) {
           case IP_background:
             image = &_background_image;
             break;
-            
+
           case IP_button_ready:
             image = &_button_ready_image;
             set_button_range(_button_ready_image);
             break;
-            
+
           case IP_button_rollover:
             image = &_button_rollover_image;
             break;
-            
+
           case IP_button_click:
             image = &_button_click_image;
+            break;
+
+          case IP_none:
             break;
           }
           if (image != NULL) {
@@ -804,7 +807,7 @@ redraw() {
     // If we have an image, draw it.
     int xo = (_win_width - _composite_width) / 2;
     int yo = (_win_height - _composite_height) / 2;
-    XPutImage(_display, _window, _graphics_context, _composite_image, 0, 0, 
+    XPutImage(_display, _window, _graphics_context, _composite_image, 0, 0,
               xo, yo, _composite_width, _composite_height);
 
     // Then clear the rectangles around it carefully (rather than just
@@ -840,12 +843,12 @@ make_window() {
   }
 
   X11_Window parent = 0;
-  
+
   // Hum, if we use the display provided by the browser,
   // it causes a crash in some browsers when you make an Xlib
   // call with the plugin window minimized.
   // So I kept XOpenDisplay until we have a better workaround.
-  
+
   //_display = (X11_Display*) _wparams.get_parent_window()._xdisplay;
   //_own_display = false;
   //if (_display == 0) {
@@ -871,7 +874,7 @@ make_window() {
     // Create a toplevel window.
     parent = XRootWindow(_display, _screen);
   }
-  
+
   assert(parent != None);
 
   int depth = DefaultDepth(_display, _screen);
@@ -955,7 +958,7 @@ setup_gc() {
   XFontStruct* fs = XLoadQueryFont(_display, "6x13");
 
   XGCValues gcval;
-  gcval.font = fs->fid; 
+  gcval.font = fs->fid;
   gcval.function = GXcopy;
   gcval.plane_mask = AllPlanes;
   gcval.foreground = BlackPixel(_display, _screen);
@@ -966,8 +969,8 @@ setup_gc() {
   if (_bg_pixel != -1) {
     gcval.background = _bg_pixel;
   }
-  _graphics_context = XCreateGC(_display, _window, 
-    GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval); 
+  _graphics_context = XCreateGC(_display, _window,
+    GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
 
   // Also create a gc for filling in the interior of the progress bar
   // in a pleasant blue color (or whatever color the user requested).
@@ -983,7 +986,7 @@ setup_gc() {
     gcval.foreground = bar.pixel;
   }
 
-  _bar_context = XCreateGC(_display, _window, 
+  _bar_context = XCreateGC(_display, _window,
     GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
 }
 
@@ -998,7 +1001,7 @@ close_window() {
     XDestroyImage(_composite_image);
     _composite_image = NULL;
   }
-  
+
   if (_bar_context != None) {
     if (_bar_context != _graphics_context) {
       XFreeGC(_display, _bar_context);
@@ -1009,22 +1012,22 @@ close_window() {
     Colormap colormap = DefaultColormap(_display, _screen);
     XFreeColors(_display, colormap, &_bar_pixel, 1, 0);
   }
-  
+
   if (_fg_pixel != -1) {
     Colormap colormap = DefaultColormap(_display, _screen);
     XFreeColors(_display, colormap, &_fg_pixel, 1, 0);
   }
-  
+
   if (_bg_pixel != -1) {
     Colormap colormap = DefaultColormap(_display, _screen);
     XFreeColors(_display, colormap, &_bg_pixel, 1, 0);
   }
-  
+
   if (_graphics_context != None) {
     XFreeGC(_display, _graphics_context);
     _graphics_context = None;
   }
-  
+
   if (_window != None) {
     XDestroyWindow(_display, _window);
     _window = None;
@@ -1150,7 +1153,7 @@ compose_image() {
   }
 
   // Now load the image.
-  _composite_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+  _composite_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen),
                                   ZPixmap, 0, (char *)new_data, image1_width, image1_height, 32, 0);
   _composite_width = image1_width;
   _composite_height = image1_height;

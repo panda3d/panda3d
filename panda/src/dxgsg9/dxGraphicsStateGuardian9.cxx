@@ -84,7 +84,9 @@ D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
 unsigned char *DXGraphicsStateGuardian9::_temp_buffer = NULL;
 unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = NULL;
 
+#ifdef HAVE_CG
 LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = NULL;
+#endif
 
 #define __D3DLIGHT_RANGE_MAX ((PN_stdfloat)sqrt(FLT_MAX))  //for some reason this is missing in dx9 hdrs
 
@@ -150,6 +152,10 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _supports_stream_offset = false;
 
+#ifdef HAVE_CG
+  _cg_context = 0;
+#endif
+
   get_gamma_table();
   atexit (atexit_function);
 }
@@ -206,7 +212,7 @@ prepare_texture(Texture *tex, int view) {
 //               rendering on the ith stage.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-apply_texture(int i, TextureContext *tc) {
+apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   if (tc == (TextureContext *)NULL) {
     // The texture wasn't bound properly or something, so ensure
     // texturing is disabled and just return.
@@ -231,31 +237,22 @@ apply_texture(int i, TextureContext *tc) {
     set_sampler_state(i, D3DSAMP_SRGBTEXTURE, FALSE);
   }
 
-  Texture::WrapMode wrap_u, wrap_v, wrap_w;
+  set_sampler_state(i, D3DSAMP_ADDRESSU,
+    get_texture_wrap_mode(sampler.get_wrap_u()));
 
-  DWORD address_u;
-  DWORD address_v;
-  DWORD address_w;
+  set_sampler_state(i, D3DSAMP_ADDRESSV,
+    get_texture_wrap_mode(sampler.get_wrap_v()));
 
-  wrap_u = tex->get_wrap_u();
-  wrap_v = tex->get_wrap_v();
-  wrap_w = tex->get_wrap_w();
-
-  address_u = get_texture_wrap_mode(wrap_u);
-  address_v = get_texture_wrap_mode(wrap_v);
-  address_w = get_texture_wrap_mode(wrap_w);
-
-  set_sampler_state(i, D3DSAMP_ADDRESSU, address_u);
-  set_sampler_state(i, D3DSAMP_ADDRESSV, address_v);
-  set_sampler_state(i, D3DSAMP_ADDRESSW, address_w);
+  set_sampler_state(i, D3DSAMP_ADDRESSW,
+    get_texture_wrap_mode(sampler.get_wrap_w()));
 
   DWORD border_color;
-  border_color = LColor_to_D3DCOLOR(tex->get_border_color());
+  border_color = LColor_to_D3DCOLOR(sampler.get_border_color());
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = tex->get_effective_anisotropic_degree();
-  Texture::FilterType ft = tex->get_effective_magfilter();
+  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
     set_sampler_state(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
@@ -266,7 +263,7 @@ apply_texture(int i, TextureContext *tc) {
 
   supports_anisotropic_mag_filter = (_screen -> _d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
   if (aniso_degree <= 1 || supports_anisotropic_mag_filter == 0) {
-    new_mag_filter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+    new_mag_filter = ((ft != SamplerState::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
   } else {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
@@ -276,12 +273,12 @@ apply_texture(int i, TextureContext *tc) {
   if (hr != D3D_OK) {
     dxgsg9_cat.error()
       << "ERROR: set_sampler_state (D3DSAMP_MAGFILTER, "
-      << new_mag_filter << ") failed for texture:" << tex -> get_name() << endl;
+      << new_mag_filter << ") failed for sampler: " << sampler << endl;
   }
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
-  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_effective_minfilter());
-  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_effective_minfilter());
+  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(sampler.get_effective_minfilter());
+  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(sampler.get_effective_minfilter());
 
   if (!tex->might_have_ram_image()) {
     // If the texture is completely dynamic, don't try to issue
@@ -301,6 +298,9 @@ apply_texture(int i, TextureContext *tc) {
 
   set_sampler_state(i, D3DSAMP_MINFILTER, new_min_filter);
   set_sampler_state(i, D3DSAMP_MIPFILTER, new_mip_filter);
+
+  float lod_bias = sampler.get_lod_bias();
+  set_sampler_state(i, D3DSAMP_MIPMAPLODBIAS, *(DWORD*)&lod_bias);
 
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
 }
@@ -2378,6 +2378,8 @@ reset() {
 #ifdef HAVE_CG
   set_cg_device(_d3d_device);
 
+  _cg_context = cgCreateContext();
+
   if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
       cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
     _supports_basic_shaders = true;
@@ -2394,7 +2396,6 @@ reset() {
   }
 
   if (dxgsg9_cat.is_debug()) {
-
     CGprofile vertex_profile;
     CGprofile pixel_profile;
 
@@ -2414,8 +2415,8 @@ reset() {
     }
 
     dxgsg9_cat.debug()
-      << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
-      << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
+      << "\nCg latest vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
+      << "\nCg latest pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
       << "\nshader model = " << _shader_model
       << "\n";
   }
@@ -2768,9 +2769,6 @@ reset() {
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
-
-  void dx_set_stencil_functions (StencilRenderStates *stencil_render_states);
-  dx_set_stencil_functions (_stencil_render_states);
 
   // Now that the GSG has been initialized, make it available for
   // optimizations.
@@ -3203,16 +3201,6 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
   _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
-  if (_target_shader->auto_shader()) {
-    // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.
-    if (_target_rs->_generated_shader == NULL) {
-      if (_shader_generator == NULL) {
-        _shader_generator = new ShaderGenerator(this, _scene_setup->get_display_region()->get_window());
-      }
-      const_cast<RenderState*>(_target_rs.p())->_generated_shader = DCAST(ShaderAttrib, _shader_generator->synthesize_shader(_target_rs));
-    }
-    _target_shader = DCAST(ShaderAttrib, _target_rs->_generated_shader);
-  }
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
@@ -3737,12 +3725,13 @@ update_standard_texture_bindings() {
 
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
+    const SamplerState &sampler = _target_texture->get_on_sampler(stage);
 
     // We always reissue every stage in DX, just in case the texcoord
     // index or texgen mode or some other property has changed.
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    apply_texture(si, tc);
+    apply_texture(si, tc, sampler);
     set_texture_blend_mode(si, stage);
 
     int texcoord_dimensions = 2;
@@ -3759,7 +3748,7 @@ update_standard_texture_bindings() {
 
     switch (mode) {
     case TexGenAttrib::M_off:
-    case TexGenAttrib::M_light_vector:
+    case TexGenAttrib::M_unused2:
       set_texture_stage_state(si, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
 
@@ -4170,6 +4159,12 @@ close_gsg() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 free_nondx_resources() {
+#ifdef HAVE_CG
+  if (_cg_context) {
+    cgDestroyContext(_cg_context);
+    _cg_context = 0;
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4939,28 +4934,28 @@ copy_pres_reset(DXScreenData *screen) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
-get_d3d_min_type(Texture::FilterType filter_type) {
+get_d3d_min_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_shadow:
-  case Texture::FT_default:
+  case SamplerState::FT_shadow:
+  case SamplerState::FT_default:
     return D3DTEXF_LINEAR;
   }
 
@@ -4975,28 +4970,28 @@ get_d3d_min_type(Texture::FilterType filter_type) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
-get_d3d_mip_type(Texture::FilterType filter_type) {
+get_d3d_mip_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
-  case Texture::FT_nearest:
+  case SamplerState::FT_nearest:
     return D3DTEXF_NONE;
 
-  case Texture::FT_linear:
+  case SamplerState::FT_linear:
     return D3DTEXF_NONE;
 
-  case Texture::FT_nearest_mipmap_nearest:
+  case SamplerState::FT_nearest_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_linear_mipmap_nearest:
+  case SamplerState::FT_linear_mipmap_nearest:
     return D3DTEXF_POINT;
 
-  case Texture::FT_nearest_mipmap_linear:
+  case SamplerState::FT_nearest_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_linear_mipmap_linear:
+  case SamplerState::FT_linear_mipmap_linear:
     return D3DTEXF_LINEAR;
 
-  case Texture::FT_shadow:
-  case Texture::FT_default:
+  case SamplerState::FT_shadow:
+  case SamplerState::FT_default:
     return D3DTEXF_NONE;
   }
 
@@ -5261,9 +5256,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 ////////////////////////////////////////////////////////////////////
 //  DX stencil code section
 ////////////////////////////////////////////////////////////////////
-
-static int dx_stencil_comparison_function_array [ ] =
-{
+static int dx_stencil_comparison_function_array[] = {
   D3DCMP_NEVER,
   D3DCMP_LESS,
   D3DCMP_EQUAL,
@@ -5274,8 +5267,7 @@ static int dx_stencil_comparison_function_array [ ] =
   D3DCMP_ALWAYS,
 };
 
-static int dx_stencil_operation_array [ ] =
-{
+static int dx_stencil_operation_array[] = {
   D3DSTENCILOP_KEEP,
   D3DSTENCILOP_ZERO,
   D3DSTENCILOP_REPLACE,
@@ -5286,93 +5278,6 @@ static int dx_stencil_operation_array [ ] =
   D3DSTENCILOP_INCRSAT,
   D3DSTENCILOP_DECRSAT,
 };
-
-void dx_stencil_function (StencilRenderStates::StencilRenderState stencil_render_state, StencilRenderStates *stencil_render_states) {
-  StencilType render_state_value;
-
-  DXGraphicsStateGuardian9 *gsg;
-
-  gsg = (DXGraphicsStateGuardian9 *) stencil_render_states -> _gsg;
-
-  render_state_value = stencil_render_states -> get_stencil_render_state (stencil_render_state);
-
-  // DEBUG
-  if (false) {
-    dxgsg9_cat.debug()
-      << "SRS: " <<  StencilAttrib::stencil_render_state_name_array [stencil_render_state] << ", " << render_state_value << "\n";
-  }
-
-  switch (stencil_render_state)
-  {
-    case StencilRenderStates::SRS_front_enable:
-      gsg -> set_render_state (D3DRS_STENCILENABLE, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_enable:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_TWOSIDEDSTENCILMODE, render_state_value);
-      }
-      break;
-
-    case StencilRenderStates::SRS_front_comparison_function:
-      gsg -> set_render_state (D3DRS_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_fail_operation:
-      gsg -> set_render_state (D3DRS_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_fail_operation:
-      gsg -> set_render_state (D3DRS_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
-      break;
-    case StencilRenderStates::SRS_front_stencil_pass_z_pass_operation:
-      gsg -> set_render_state (D3DRS_STENCILPASS, dx_stencil_operation_array [render_state_value]);
-      break;
-
-    case StencilRenderStates::SRS_reference:
-      gsg -> set_render_state (D3DRS_STENCILREF, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_read_mask:
-      gsg -> set_render_state (D3DRS_STENCILMASK, render_state_value);
-      break;
-    case StencilRenderStates::SRS_write_mask:
-      gsg -> set_render_state (D3DRS_STENCILWRITEMASK, render_state_value);
-      break;
-
-    case StencilRenderStates::SRS_back_comparison_function:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILFUNC, dx_stencil_comparison_function_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_fail_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILFAIL, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_fail_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILZFAIL, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-    case StencilRenderStates::SRS_back_stencil_pass_z_pass_operation:
-      if (gsg -> get_supports_two_sided_stencil()) {
-        gsg -> set_render_state (D3DRS_CCW_STENCILPASS, dx_stencil_operation_array [render_state_value]);
-      }
-      break;
-
-    default:
-      break;
-  }
-}
-
-void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
-  if (stencil_render_states) {
-    StencilRenderStates::StencilRenderState stencil_render_state;
-
-    for (stencil_render_state = StencilRenderStates::SRS_first; stencil_render_state < StencilRenderStates::SRS_total; stencil_render_state = (StencilRenderStates::StencilRenderState) ((int) stencil_render_state + 1)) {
-      stencil_render_states -> set_stencil_function (stencil_render_state, dx_stencil_function);
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::do_issue_stencil
@@ -5385,70 +5290,84 @@ do_issue_stencil() {
     return;
   }
 
-  StencilRenderStates *stencil_render_states;
-  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));
-  stencil_render_states = this -> _stencil_render_states;
-  if (stencil && stencil_render_states) {
+  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
 
+  if (stencil != (const StencilAttrib *)NULL) {
     // DEBUG
     if (false) {
       dxgsg9_cat.debug() << "STENCIL STATE CHANGE\n";
       dxgsg9_cat.debug() << "\n"
-        << "SRS_front_enable " << stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
-        << "SRS_back_enable " << stencil -> get_render_state (StencilAttrib::SRS_back_enable) << "\n"
-        << "SRS_front_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
-        << "SRS_front_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
-        << "SRS_front_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
-        << "SRS_reference " << stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
-        << "SRS_read_mask " << stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
-        << "SRS_write_mask " << stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n"
-        << "SRS_back_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function) << "\n"
-        << "SRS_back_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
-        << "SRS_back_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
-        << "SRS_back_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
+        << "SRS_front_comparison_function " << stencil->get_render_state(StencilAttrib::SRS_front_comparison_function) << "\n"
+        << "SRS_front_stencil_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_front_stencil_pass_z_pass_operation " << stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
+        << "SRS_reference " << stencil->get_render_state(StencilAttrib::SRS_reference) << "\n"
+        << "SRS_read_mask " << stencil->get_render_state(StencilAttrib::SRS_read_mask) << "\n"
+        << "SRS_write_mask " << stencil->get_render_state(StencilAttrib::SRS_write_mask) << "\n"
+        << "SRS_back_comparison_function " << stencil->get_render_state(StencilAttrib::SRS_back_comparison_function) << "\n"
+        << "SRS_back_stencil_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_fail_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
+        << "SRS_back_stencil_pass_z_pass_operation " << stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
     }
 
-    bool on;
+    bool on = false;
 
-    on = false;
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, stencil -> get_render_state (StencilAttrib::SRS_front_enable));
-    if (stencil -> get_render_state (StencilAttrib::SRS_front_enable)) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation));
+    unsigned int front_compare;
+    front_compare = stencil->get_render_state(StencilAttrib::SRS_front_comparison_function);
+
+    if (front_compare != RenderAttrib::M_none) {
+      set_render_state(D3DRS_STENCILENABLE, TRUE);
+      set_render_state(D3DRS_STENCILFUNC, dx_stencil_comparison_function_array[front_compare]);
+      set_render_state(D3DRS_STENCILFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_fail_operation)]);
+      set_render_state(D3DRS_STENCILZFAIL, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_fail_operation)]);
+      set_render_state(D3DRS_STENCILPASS, dx_stencil_operation_array[
+        stencil->get_render_state(StencilAttrib::SRS_front_stencil_pass_z_pass_operation)]);
       on = true;
+    } else {
+      set_render_state(D3DRS_STENCILENABLE, FALSE);
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, stencil -> get_render_state (StencilAttrib::SRS_back_enable));
-    if (stencil -> get_render_state (StencilAttrib::SRS_back_enable)) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_comparison_function, stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_fail_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_stencil_pass_z_pass_operation, stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation));
-      on = true;
+    if (_supports_two_sided_stencil) {
+      unsigned int back_compare;
+      back_compare = stencil->get_render_state(StencilAttrib::SRS_back_comparison_function);
+
+      if (back_compare != RenderAttrib::M_none) {
+        set_render_state(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
+        set_render_state(D3DRS_CCW_STENCILFUNC, dx_stencil_comparison_function_array[back_compare]);
+        set_render_state(D3DRS_CCW_STENCILFAIL, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_fail_operation)]);
+        set_render_state(D3DRS_CCW_STENCILZFAIL, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_fail_operation)]);
+        set_render_state(D3DRS_CCW_STENCILPASS, dx_stencil_operation_array[
+          stencil->get_render_state(StencilAttrib::SRS_back_stencil_pass_z_pass_operation)]);
+        on = true;
+      } else {
+        set_render_state(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+      }
     }
 
     if (on) {
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_reference, stencil -> get_render_state (StencilAttrib::SRS_reference));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_read_mask, stencil -> get_render_state (StencilAttrib::SRS_read_mask));
-      stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_write_mask, stencil -> get_render_state (StencilAttrib::SRS_write_mask));
+      set_render_state(D3DRS_STENCILREF, stencil->get_render_state(StencilAttrib::SRS_reference));
+      set_render_state(D3DRS_STENCILMASK, stencil->get_render_state(StencilAttrib::SRS_read_mask));
+      set_render_state(D3DRS_STENCILWRITEMASK, stencil->get_render_state(StencilAttrib::SRS_write_mask));
     }
 
-    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {
-      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil -> get_render_state (StencilAttrib::SRS_clear_value));
+    if (stencil->get_render_state(StencilAttrib::SRS_clear)) {
+      _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 0.0f, stencil->get_render_state(StencilAttrib::SRS_clear_value));
     }
-  }
-  else {
 
+  } else {
     // DEBUG
     if (false) {
-      dxgsg9_cat.debug() << "STENCIL STATE CHANGE TO OFF \n";
+      dxgsg9_cat.debug() << "STENCIL STATE CHANGE TO OFF\n";
     }
 
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
-    stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
+    set_render_state(D3DRS_STENCILENABLE, FALSE);
+    if (_supports_two_sided_stencil) {
+      set_render_state(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+    }
   }
 }
 
@@ -5482,32 +5401,34 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
                    DWORD multisampletype, DWORD multisamplequality) {
   FrameBufferProperties props;
   int index=0;
-  int alpha=0;
-  int color=0;
+  int r=0, g=0, b=0, a=0;
   switch (cformat) {
-  case D3DFMT_R8G8B8:      index=0; color=24; alpha=0; break;
-  case D3DFMT_A8R8G8B8:    index=0; color=24; alpha=8; break;
-  case D3DFMT_X8R8G8B8:    index=0; color=24; alpha=0; break;
-  case D3DFMT_R5G6B5:      index=0; color=16; alpha=0; break;
-  case D3DFMT_X1R5G5B5:    index=0; color=15; alpha=0; break;
-  case D3DFMT_A1R5G5B5:    index=0; color=15; alpha=1; break;
-  case D3DFMT_A4R4G4B4:    index=0; color=12; alpha=4; break;
-  case D3DFMT_R3G3B2:      index=0; color= 8; alpha=0; break;
-  case D3DFMT_A8R3G3B2:    index=0; color= 8; alpha=8; break;
-  case D3DFMT_X4R4G4B4:    index=0; color=12; alpha=0; break;
-  case D3DFMT_A2B10G10R10: index=0; color=30; alpha=2; break;
-  case D3DFMT_A8P8:        index=1; color= 8; alpha=8; break;
-  case D3DFMT_P8:          index=1; color= 8; alpha=0; break;
+  case D3DFMT_R8G8B8:      r=8; g=8; b=8; a=0; break;
+  case D3DFMT_A8R8G8B8:    r=8; g=8; b=8; a=8; break;
+  case D3DFMT_X8R8G8B8:    r=8; g=8; b=8; a=0; break;
+  case D3DFMT_R5G6B5:      r=5; g=6; b=5; a=0; break;
+  case D3DFMT_X1R5G5B5:    r=5; g=5; b=5; a=0; break;
+  case D3DFMT_A1R5G5B5:    r=5; g=5; b=5; a=1; break;
+  case D3DFMT_A4R4G4B4:    r=4; g=4; b=4; a=4; break;
+  case D3DFMT_R3G3B2:      r=3; g=3; b=2; a=0; break;
+  case D3DFMT_A8R3G3B2:    r=3; g=3; b=2; a=8; break;
+  case D3DFMT_X4R4G4B4:    r=4; g=4; b=4; a=0; break;
+  case D3DFMT_A2B10G10R10: r=10;g=10;b=10;a=2; break;
+  case D3DFMT_A8P8:        index=8; a=8; break;
+  case D3DFMT_P8:          index=8; a=0; break;
+  default: break;
   }
-  props.set_color_bits(color);
-  props.set_alpha_bits(alpha);
-  if (index) {
+  if (index > 0) {
     props.set_rgb_color(0);
     props.set_indexed_color(1);
-  } else if (color) {
+    props.set_color_bits(index);
+  } else if (r + g + b > 0) {
     props.set_rgb_color(1);
     props.set_indexed_color(0);
+    props.set_rgba_bits(r, g, b, a);
   }
+  props.set_alpha_bits(a);
+
   int depth=0;
   int stencil=0;
   switch (dformat) {
@@ -5517,6 +5438,7 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
   case D3DFMT_D16:     depth=16; stencil=0; break;
   case D3DFMT_D24X8:   depth=24; stencil=0; break;
   case D3DFMT_D24X4S4: depth=24; stencil=4; break;
+  default: break;
   }
   props.set_depth_bits(depth);
   props.set_stencil_bits(stencil);
@@ -5718,9 +5640,6 @@ set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
   }
 #endif // HAVE_CG
 }
-
-
-
 
 typedef string KEY;
 

@@ -36,6 +36,11 @@ public:
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
   INLINE ~NodePointerTo();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE NodePointerTo(NodePointerTo<T> &&from) NOEXCEPT;
+  INLINE NodePointerTo<T> &operator = (NodePointerTo<T> &&from) NOEXCEPT;
+#endif
+
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
 
@@ -67,6 +72,13 @@ public:
   INLINE NodeConstPointerTo(const NodeConstPointerTo<T> &copy);
   INLINE ~NodeConstPointerTo();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE NodeConstPointerTo(NodePointerTo<T> &&from) NOEXCEPT;
+  INLINE NodeConstPointerTo(NodeConstPointerTo<T> &&from) NOEXCEPT;
+  INLINE NodeConstPointerTo<T> &operator = (NodePointerTo<T> &&from) NOEXCEPT;
+  INLINE NodeConstPointerTo<T> &operator = (NodeConstPointerTo<T> &&from) NOEXCEPT;
+#endif
+
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
   INLINE operator const T *() const;
@@ -78,6 +90,16 @@ public:
   INLINE NodeConstPointerTo<T> &operator = (const NodeConstPointerTo<T> &copy);
 #endif  // CPPPARSER
 };
+
+template <class T>
+void swap(NodePointerTo<T> &one, NodePointerTo<T> &two) NOEXCEPT {
+  one.swap(two);
+}
+
+template <class T>
+void swap(NodeConstPointerTo<T> &one, NodeConstPointerTo<T> &two) NOEXCEPT {
+  one.swap(two);
+}
 
 #define NPT(type) NodePointerTo< type >
 #define NCPT(type) NodeConstPointerTo< type >

@@ -617,6 +617,18 @@ is_nan() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::is_identity
+//       Access: Public
+//  Description: Returns true if this is (close enough to) the
+//               identity matrix, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LMatrix4)::
+is_identity() const {
+  // Eigen has isIdentity, but it seems to be twice as slow as this.
+  return almost_equal(ident_mat(), NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::get_cell
 //       Access: Public
 //  Description: Returns a particular element of the matrix.
@@ -735,7 +747,7 @@ operator == (const FLOATNAME(LMatrix4) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator != (const FLOATNAME(LMatrix4) &other) const {
-  return !operator == (other);
+  return compare_to(other) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,7 +843,7 @@ xform(const FLOATNAME(LVecBase4) &v) const {
 
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m;
-#else 
+#else
   VECTOR4_MATRIX4_PRODUCT(v_res, v,(*this));
 #endif  // HAVE_EIGEN
   return v_res;
@@ -853,12 +865,12 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m.block<3, 3>(0, 0) + _m.block<1, 3>(3, 0);
-#else 
+#else
   v_res._v(0) = v._v(0)*_m(0, 0) + v._v(1)*_m(1, 0) + v._v(2)*_m(2, 0) + _m(3, 0);
   v_res._v(1) = v._v(0)*_m(0, 1) + v._v(1)*_m(1, 1) + v._v(2)*_m(2, 1) + _m(3, 1);
   v_res._v(2) = v._v(0)*_m(0, 2) + v._v(1)*_m(1, 2) + v._v(2)*_m(2, 2) + _m(3, 2);
 #endif  // HAVE_EIGEN
- 
+
   return v_res;
 }
 
@@ -888,17 +900,17 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_vec(const LVecBase3 &)", " ", TAU_USER);
   FLOATNAME(LVecBase3) v_res;
- 
+
   // v._v(3) == 0.0f for this case
- 
+
 #ifdef HAVE_EIGEN
   v_res._v.noalias() = v._v * _m.block<3, 3>(0, 0);
-#else 
+#else
   v_res._v(0) = v._v(0)*_m(0, 0) + v._v(1)*_m(1, 0) + v._v(2)*_m(2, 0);
   v_res._v(1) = v._v(0)*_m(0, 1) + v._v(1)*_m(1, 1) + v._v(2)*_m(2, 1);
   v_res._v(2) = v._v(0)*_m(0, 2) + v._v(1)*_m(1, 2) + v._v(2)*_m(2, 2);
 #endif  // HAVE_EIGEN
- 
+
   return v_res;
 }
 
@@ -934,7 +946,7 @@ xform_in_place(FLOATNAME(LVecBase4) &v) const {
 
 #ifdef HAVE_EIGEN
   v._v = v._v * _m;
-#else 
+#else
   v = xform(v);
 #endif  // HAVE_EIGEN
 }
@@ -953,7 +965,7 @@ xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
 
 #ifdef HAVE_EIGEN
   v._v = v._v * _m.block<3, 3>(0, 0) + _m.block<1, 3>(3, 0);
-#else 
+#else
   v = xform_point(v);
 #endif  // HAVE_EIGEN
 }
@@ -981,10 +993,10 @@ INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_vec_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_vec_in_place(LVecBase3 &)", " ", TAU_USER);
   // v._v(3) == 0.0f for this case
- 
+
 #ifdef HAVE_EIGEN
   v._v = v._v * _m.block<3, 3>(0, 0);
-#else 
+#else
   v = xform_vec(v);
 #endif  // HAVE_EIGEN
 }
@@ -1325,14 +1337,12 @@ transpose_in_place() {
   _m.transposeInPlace();
 
 #else
-  #define SWAP__(x,y) { FLOATTYPE temp = (x);  (x) = (y);  (y) = temp;}
-  SWAP__(_m(0, 1),_m(1, 0));
-  SWAP__(_m(0, 2),_m(2, 0));
-  SWAP__(_m(0, 3),_m(3, 0));
-  SWAP__(_m(1, 2),_m(2, 1));
-  SWAP__(_m(1, 3),_m(3, 1));
-  SWAP__(_m(2, 3),_m(3, 2));
-  #undef SWAP__
+  std::swap(_m(0, 1), _m(1, 0));
+  std::swap(_m(0, 2), _m(2, 0));
+  std::swap(_m(0, 3), _m(3, 0));
+  std::swap(_m(1, 2), _m(2, 1));
+  std::swap(_m(1, 3), _m(3, 1));
+  std::swap(_m(2, 3), _m(3, 2));
 #endif  // HAVE_EIGEN
 }
 
@@ -1356,13 +1366,19 @@ INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_from(const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("bool LMatrix4::invert_from(const LMatrix4 &)", " ", TAU_USER);
 #ifdef HAVE_EIGEN
+  // We use the squared nearly_zero value as determinant threshold
+  // for checking whether a matrix is singular, since that's the
+  // same constant we use in the non-Eigen case (see lmatrix3_src.I)
+  // and also because we otherwise run into issues very quickly.
   bool invertible;
-  other._m.computeInverseWithCheck(_m, invertible);
+  other._m.computeInverseWithCheck(_m, invertible,
+    NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE));
 
   if (!invertible) {
-#ifdef NDEBUG
+#ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix4.\n";
 #endif
+
     (*this) = ident_mat();
     nassertr(!no_singular_invert, false);
   }
@@ -1382,9 +1398,10 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
   int index[4];
 
   if (!decompose_mat(index)) {
-#ifdef NDEBUG
+#ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix4.\n";
 #endif
+
     (*this) = ident_mat();
     nassertr(!no_singular_invert, false);
     return false;
@@ -1441,11 +1458,11 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   _m(3, 0) = -(other._m(3, 0) * _m(0, 0) +
                other._m(3, 1) * _m(1, 0) +
                other._m(3, 2) * _m(2, 0));
- 
+
   _m(3, 1) = -(other._m(3, 0) * _m(0, 1) +
                other._m(3, 1) * _m(1, 1) +
                other._m(3, 2) * _m(2, 1));
- 
+
   _m(3, 2) = -(other._m(3, 0) * _m(0, 2) +
                other._m(3, 1) * _m(1, 2) +
                other._m(3, 2) * _m(2, 2));
@@ -1481,17 +1498,17 @@ accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {
   _m(0, 1) += other._m(0, 1) * weight;
   _m(0, 2) += other._m(0, 2) * weight;
   _m(0, 3) += other._m(0, 3) * weight;
- 
+
   _m(1, 0) += other._m(1, 0) * weight;
   _m(1, 1) += other._m(1, 1) * weight;
   _m(1, 2) += other._m(1, 2) * weight;
   _m(1, 3) += other._m(1, 3) * weight;
- 
+
   _m(2, 0) += other._m(2, 0) * weight;
   _m(2, 1) += other._m(2, 1) * weight;
   _m(2, 2) += other._m(2, 2) * weight;
   _m(2, 3) += other._m(2, 3) * weight;
- 
+
   _m(3, 0) += other._m(3, 0) * weight;
   _m(3, 1) += other._m(3, 1) * weight;
   _m(3, 2) += other._m(3, 2) * weight;

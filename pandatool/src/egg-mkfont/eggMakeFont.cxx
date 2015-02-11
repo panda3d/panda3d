@@ -41,6 +41,7 @@
 ////////////////////////////////////////////////////////////////////
 EggMakeFont::
 EggMakeFont() : EggWriter(true, false) {
+  set_program_brief("generates .egg files with rasterized font glyphs");
   set_program_description
     ("egg-mkfont uses the FreeType library to generate an egg file "
      "and a series of texture images from a font file "

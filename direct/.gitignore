@@ -1,5 +1,8 @@
 *.pyc
 /__init__.py
-/built/
+# These are files that are generated within the source tree by the
+# ppremake system.
 Makefile
 pp.dep
+/built/
+Opt?-*

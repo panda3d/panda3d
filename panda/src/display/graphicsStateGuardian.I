@@ -37,6 +37,17 @@ release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_samplers
+//       Access: Public
+//  Description: Frees the resources for all samplers associated with
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+release_all_samplers() {
+  return _prepared_objects->release_all_samplers();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_all_geoms
 //       Access: Public
 //  Description: Frees the resources for all geoms associated with
@@ -193,7 +204,7 @@ set_loader(Loader *loader) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_loader
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Returns the Loader object that will be used by this
 //               GSG to load textures when necessary, if
 //               get_incomplete_render() is true.
@@ -201,6 +212,28 @@ set_loader(Loader *loader) {
 INLINE Loader *GraphicsStateGuardian::
 get_loader() const {
   return _loader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_shader_generator
+//       Access: Public
+//  Description: Sets the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_shader_generator(ShaderGenerator *shader_generator) {
+  _shader_generator = shader_generator;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_shader_generator
+//       Access: Public
+//  Description: Returns the ShaderGenerator object that will be used
+//               by this GSG to generate shaders when necessary.
+////////////////////////////////////////////////////////////////////
+INLINE ShaderGenerator *GraphicsStateGuardian::
+get_shader_generator() const {
+  return _shader_generator;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -630,6 +663,22 @@ get_supports_depth_stencil() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_shadow_filter() const {
   return _supports_shadow_filter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_sampler_objects
+//       Access: Published
+//  Description: Returns true if this particular GSG supports the
+//               use of sampler objects to record texture sampling
+//               parameters separately from the texture objects.
+//               This doesn't really affect functionality, but if
+//               this is false, it may mean that using the same
+//               texture with different SamplerState objects will
+//               result in reduced performance.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_sampler_objects() const {
+  return _supports_sampler_objects;
 }
 
 ////////////////////////////////////////////////////////////////////

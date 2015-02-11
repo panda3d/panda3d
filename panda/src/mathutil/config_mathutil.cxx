@@ -24,7 +24,6 @@
 #include "boundingPlane.h"
 #include "unionBoundingVolume.h"
 #include "intersectionBoundingVolume.h"
-#include "linmath_events.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
 
@@ -51,7 +50,9 @@ ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
 ("bounds-type", BoundingVolume::BT_sphere,
  PRC_DESC("Specify the type of bounding volume that is created automatically "
           "by Panda to enclose geometry.  Use 'sphere' or 'box', or use "
-          "'best' to let Panda decide which is most appropriate."));
+          "'best' to let Panda decide which is most appropriate.  You can "
+          "also use 'fastest' if you don't want Panda to waste much time "
+          "computing the most optimal bounding volume."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmathutil
@@ -80,17 +81,9 @@ init_libmathutil() {
   IntersectionBoundingVolume::init_type();
   BoundingLine::init_type();
   BoundingPlane::init_type();
-  EventStoreVec2::init_type("EventStoreVec2");
-  EventStoreVec3::init_type("EventStoreVec3");
-  EventStoreMat4::init_type("EventStoreMat4");
-
-  EventStoreVec2::register_with_read_factory();
-  EventStoreVec3::register_with_read_factory();
-  EventStoreMat4::register_with_read_factory();
 
 #ifdef HAVE_FFTW
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("fftw");
 #endif  // FFTW
 }
-

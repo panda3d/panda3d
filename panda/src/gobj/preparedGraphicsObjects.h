@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "texture.h"
+#include "samplerState.h"
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
@@ -30,6 +31,7 @@
 #include "adaptiveLru.h"
 
 class TextureContext;
+class SamplerContext;
 class GeomContext;
 class ShaderContext;
 class VertexBufferContext;
@@ -82,7 +84,20 @@ PUBLISHED:
   int get_num_queued_textures() const;
   int get_num_prepared_textures() const;
 
-  TextureContext *prepare_texture_now(Texture *tex, int view, 
+  TextureContext *prepare_texture_now(Texture *tex, int view,
+                                      GraphicsStateGuardianBase *gsg);
+
+  void enqueue_sampler(const SamplerState &sampler);
+  bool is_sampler_queued(const SamplerState &sampler) const;
+  bool dequeue_sampler(const SamplerState &sampler);
+  bool is_sampler_prepared(const SamplerState &sampler) const;
+  void release_sampler(SamplerContext *sc);
+  void release_sampler(const SamplerState &sampler);
+  int release_all_samplers();
+  int get_num_queued_samplers() const;
+  int get_num_prepared_samplers() const;
+
+  SamplerContext *prepare_sampler_now(const SamplerState &sampler,
                                       GraphicsStateGuardianBase *gsg);
 
   void enqueue_geom(Geom *geom);
@@ -152,6 +167,12 @@ private:
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
 
+  // Sampler states are stored a little bit differently, as they are
+  // mapped by value and can't store the list of prepared samplers.
+  typedef pmap<SamplerState, SamplerContext *> PreparedSamplers;
+  typedef pset<SamplerContext *, pointer_hash> ReleasedSamplers;
+  typedef pset<SamplerState> EnqueuedSamplers;
+
   class BufferCacheKey {
   public:
     INLINE bool operator < (const BufferCacheKey &other) const;
@@ -171,7 +192,7 @@ private:
                                size_t &buffer_cache_size,
                                int released_buffer_cache_size,
                                Buffers &released_buffers);
-  BufferContext *get_cached_buffer(size_t data_size_bytes, 
+  BufferContext *get_cached_buffer(size_t data_size_bytes,
                                    GeomEnums::UsageHint usage_hint,
                                    BufferCache &buffer_cache,
                                    BufferCacheLRU &buffer_cache_lru,
@@ -179,15 +200,18 @@ private:
 
   ReMutex _lock;
   string _name;
-  Textures _prepared_textures, _released_textures;  
+  Textures _prepared_textures, _released_textures;
   EnqueuedTextures _enqueued_textures;
-  Geoms _prepared_geoms, _released_geoms;  
+  PreparedSamplers _prepared_samplers;
+  ReleasedSamplers _released_samplers;
+  EnqueuedSamplers _enqueued_samplers;
+  Geoms _prepared_geoms, _released_geoms;
   EnqueuedGeoms _enqueued_geoms;
   Shaders _prepared_shaders, _released_shaders;
   EnqueuedShaders _enqueued_shaders;
-  Buffers _prepared_vertex_buffers, _released_vertex_buffers;  
+  Buffers _prepared_vertex_buffers, _released_vertex_buffers;
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
-  Buffers _prepared_index_buffers, _released_index_buffers;  
+  Buffers _prepared_index_buffers, _released_index_buffers;
   EnqueuedIndexBuffers _enqueued_index_buffers;
 
   BufferCache _vertex_buffer_cache;
@@ -204,6 +228,7 @@ public:
   BufferResidencyTracker _ibuffer_residency;
 
   AdaptiveLru _graphics_memory_lru;
+  SimpleLru _sampler_object_lru;
 
 public:
   // This is only public as a temporary hack.  Don't mess with it

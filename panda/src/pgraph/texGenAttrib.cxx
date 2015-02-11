@@ -28,7 +28,7 @@ int TexGenAttrib::_attrib_slot;
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TexGenAttrib::
 ~TexGenAttrib() {
@@ -84,41 +84,13 @@ make_default() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
 add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
-  nassertr(mode != M_light_vector && mode != M_constant, this);
+  nassertr(mode != M_constant, this);
 
   CPT(RenderAttrib) removed = remove_stage(stage);
   TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
 
   ModeDef &mode_def = attrib->_stages[stage];
   mode_def._mode = mode;
-  attrib->record_stage(stage, mode_def);
-
-  return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::add_stage
-//       Access: Published, Static
-//  Description: Returns a new TexGenAttrib just like this one,
-//               with the indicated generation mode for the given
-//               stage.  If this stage already exists, its mode is
-//               replaced.
-//
-//               This variant also accepts source_name and light,
-//               which are only meaningful if mode is M_light_vector.
-////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) TexGenAttrib::
-add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
-          const string &source_name, const NodePath &light) const {
-  nassertr(mode == M_light_vector, this);
-
-  CPT(RenderAttrib) removed = remove_stage(stage);
-  TexGenAttrib *attrib = new TexGenAttrib(*DCAST(TexGenAttrib, removed));
-
-  ModeDef &mode_def = attrib->_stages[stage];
-  mode_def._mode = mode;
-  mode_def._source_name = source_name;
-  mode_def._light = light;
   attrib->record_stage(stage, mode_def);
 
   return return_new(attrib);
@@ -136,7 +108,7 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
 //               only meaningful if mode is M_constant.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
-add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
+add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
           const LTexCoord3 &constant_value) const {
   nassertr(mode == M_constant, this);
 
@@ -173,12 +145,6 @@ remove_stage(TextureStage *stage) const {
     attrib->_num_point_sprites--;
     if (attrib->_num_point_sprites == 0) {
       attrib->_point_geom_rendering &= ~Geom::GR_point_sprite;
-    }
-  } else if (mode == M_light_vector) {
-    attrib->_light_vectors.erase(stage);
-    attrib->_num_light_vectors--;
-    if (attrib->_num_light_vectors == 0) {
-      attrib->_geom_rendering &= ~Geom::GR_texcoord_light_vector;
     }
   }
   return return_new(attrib);
@@ -239,43 +205,6 @@ has_gen_texcoord_stage(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_source_name
-//       Access: Published
-//  Description: Returns the source name associated with the named
-//               texture stage, or the empty string if no name is
-//               associated with the indicated stage.  This is only
-//               meaningful if the mode is M_light_vector, in which
-//               case it indicates the name of the source texture
-//               coordinate set from which the tangent and binormal
-//               are derived.
-////////////////////////////////////////////////////////////////////
-string TexGenAttrib::
-get_source_name(TextureStage *stage) const {
-  Stages::const_iterator mi = _stages.find(stage);
-  if (mi != _stages.end()) {
-    return (*mi).second._source_name;
-  }
-  return string();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_light
-//       Access: Published
-//  Description: Returns the Light associated with the named texture
-//               stage, or the empty NodePath if no light is
-//               associated with the indicated stage.  This is only
-//               meaningful if the mode is M_light_vector.
-////////////////////////////////////////////////////////////////////
-NodePath TexGenAttrib::
-get_light(TextureStage *stage) const {
-  Stages::const_iterator mi = _stages.find(stage);
-  if (mi != _stages.end()) {
-    return (*mi).second._light;
-  }
-  return NodePath();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::get_constant_value
 //       Access: Published
 //  Description: Returns the constant value associated with the named
@@ -294,7 +223,7 @@ get_constant_value(TextureStage *stage) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TexGenAttrib::
 output(ostream &out) const {
@@ -339,16 +268,12 @@ output(ostream &out) const {
       out << "point_sprite";
       break;
 
-    case M_light_vector:
-      out << "light_vector: \"" << mode_def._source_name << "\", "
-          << mode_def._light;
-      break;
-
     case M_constant:
       out << "constant: " << mode_def._constant_value;
       break;
 
     case M_unused:
+    case M_unused2:
       break;
     }
     out << ")";
@@ -374,7 +299,7 @@ int TexGenAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const TexGenAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  
+
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
   bi = ta->_stages.begin();
@@ -566,7 +491,7 @@ invert_compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::get_auto_shader_attrib_impl
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
@@ -606,26 +531,6 @@ record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
     _no_texcoords.insert(stage);
     _point_geom_rendering |= Geom::GR_point_sprite;
     _num_point_sprites++;
-    break;
-
-  case M_light_vector:
-    {
-      if (!mode_def._light.is_empty()) {
-        Light *light_obj = mode_def._light.node()->as_light();
-        if (light_obj == (Light *)NULL) {
-#ifndef NDEBUG
-          ostringstream strm;
-          strm << "Not a light: " << mode_def._light;
-          nassert_raise(strm.str());
-#endif
-          mode_def._light = NodePath();
-        }
-      }
-
-      _light_vectors.insert(stage);
-      _geom_rendering |= Geom::GR_texcoord_light_vector;
-      _num_light_vectors++;
-    }
     break;
 
   case M_off:

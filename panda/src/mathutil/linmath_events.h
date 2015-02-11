@@ -17,29 +17,22 @@
 
 #include "pandabase.h"
 
-#include "eventParameter.h"
+#include "paramValue.h"
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //
 // This file defines a few more EventStore classes for storing linmath
-// objects in an EventParameter.  We can't define this with the other
-// EventStore classes, because linmath hasn't been defined yet at that
-// point.
+// objects in an EventParameter.  These are just for backward
+// compatibility; they are defined as typedefs to ParamVecBase types.
 //
-// See eventParameter.h.
+// See paramValue.h.
 //
 ////////////////////////////////////////////////////////////////////
 
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase2>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase3>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LMatrix4>);
-
-typedef EventStoreValue<LVecBase2> EventStoreVec2;
-typedef EventStoreValue<LVecBase3> EventStoreVec3;
-typedef EventStoreValue<LMatrix4> EventStoreMat4;
-
+typedef ParamVecBase2 EventStoreVec2;
+typedef ParamVecBase3 EventStoreVec3;
+typedef ParamMatrix4 EventStoreMat4;
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

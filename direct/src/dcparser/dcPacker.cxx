@@ -20,6 +20,10 @@
 #include "dcSwitchParameter.h"
 #include "dcClass.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 DCPacker::StackElement *DCPacker::StackElement::_deleted_chain = NULL;
 int DCPacker::StackElement::_num_ever_allocated = 0;
 

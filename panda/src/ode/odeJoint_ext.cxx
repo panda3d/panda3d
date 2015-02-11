@@ -30,18 +30,18 @@
 #include "odePlane2dJoint.h"
 
 #ifndef CPPPARSER
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeBallJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeHingeJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeSliderJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeContactJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeUniversalJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeHinge2Joint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeFixedJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeNullJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeAMotorJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeLMotorJoint;
-extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdePlane2dJoint;
+extern Dtool_PyTypedObject Dtool_OdeJoint;
+extern Dtool_PyTypedObject Dtool_OdeBallJoint;
+extern Dtool_PyTypedObject Dtool_OdeHingeJoint;
+extern Dtool_PyTypedObject Dtool_OdeSliderJoint;
+extern Dtool_PyTypedObject Dtool_OdeContactJoint;
+extern Dtool_PyTypedObject Dtool_OdeUniversalJoint;
+extern Dtool_PyTypedObject Dtool_OdeHinge2Joint;
+extern Dtool_PyTypedObject Dtool_OdeFixedJoint;
+extern Dtool_PyTypedObject Dtool_OdeNullJoint;
+extern Dtool_PyTypedObject Dtool_OdeAMotorJoint;
+extern Dtool_PyTypedObject Dtool_OdeLMotorJoint;
+extern Dtool_PyTypedObject Dtool_OdePlane2dJoint;
 #endif
 
 ////////////////////////////////////////////////////////////////////

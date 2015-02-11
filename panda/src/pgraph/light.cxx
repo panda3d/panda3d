@@ -59,7 +59,7 @@ fillin(DatagramIterator &scan, BamReader *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Light::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Light::
 ~Light() {
@@ -74,6 +74,45 @@ Light::
 bool Light::
 is_ambient_light() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_exponent
+//       Access: Public, Virtual
+//  Description: For spotlights, returns the exponent that controls
+//               the amount of light falloff from the center of the
+//               spotlight.  For other kinds of lights, returns 0.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat Light::
+get_exponent() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_specular_color
+//       Access: Public, Virtual
+//  Description: Returns the color of specular highlights generated
+//               by the light.  This value is meaningless for ambient
+//               lights.
+////////////////////////////////////////////////////////////////////
+const LColor &Light::
+get_specular_color() const {
+  static const LColor white(1, 1, 1, 1);
+  return white;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_attenuation
+//       Access: Public, Virtual
+//  Description: Returns the terms of the attenuation equation for the
+//               light.  These are, in order, the constant, linear,
+//               and quadratic terms based on the distance from the
+//               point to the vertex.
+////////////////////////////////////////////////////////////////////
+const LVecBase3 &Light::
+get_attenuation() const {
+  static const LVecBase3 no_atten(1, 0, 0);
+  return no_atten;
 }
 
 ////////////////////////////////////////////////////////////////////

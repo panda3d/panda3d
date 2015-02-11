@@ -44,10 +44,15 @@ int RenderModeAttrib::_attrib_slot;
 //               it is false, the point thickness is actually a width
 //               in pixels, and points are a uniform screen size
 //               regardless of distance from the camera.
+//
+//               In M_filled_wireframe mode, you should also specify
+//               the wireframe_color, indicating the flat color to
+//               assign to the overlayed wireframe.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderModeAttrib::
-make(RenderModeAttrib::Mode mode, PN_stdfloat thickness, bool perspective) {
-  RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective);
+make(RenderModeAttrib::Mode mode, PN_stdfloat thickness,
+     bool perspective, const LColor &wireframe_color) {
+  RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective, wireframe_color);
   return return_new(attrib);
 }
 
@@ -66,7 +71,7 @@ make_default() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderModeAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RenderModeAttrib::
 output(ostream &out) const {
@@ -90,6 +95,10 @@ output(ostream &out) const {
 
   case M_filled_flat:
     out << "filled_flat";
+    break;
+
+  case M_filled_wireframe:
+    out << "filled_wireframe(" << get_wireframe_color() << ")";
     break;
   }
 
@@ -130,6 +139,9 @@ compare_to_impl(const RenderAttrib *other) const {
   if (_perspective != ta->_perspective) {
     return (int)_perspective - (int)ta->_perspective;
   }
+  if (_mode == M_filled_wireframe && _wireframe_color != ta->_wireframe_color) {
+    return _wireframe_color.compare_to(ta->_wireframe_color);
+  }
   return 0;
 }
 
@@ -149,6 +161,9 @@ get_hash_impl() const {
   hash = int_hash::add_hash(hash, (int)_mode);
   hash = float_hash().add_hash(hash, _thickness);
   hash = int_hash::add_hash(hash, (int)_perspective);
+  if (_mode == M_filled_wireframe) {
+    hash = _wireframe_color.add_hash(hash);
+  }
   return hash;
 }
 
@@ -180,7 +195,8 @@ compose_impl(const RenderAttrib *other) const {
     mode = get_mode();
   }
 
-  return make(mode, ta->get_thickness(), ta->get_perspective());
+  return make(mode, ta->get_thickness(), ta->get_perspective(),
+              ta->get_wireframe_color());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,6 +223,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_int8(_mode);
   dg.add_stdfloat(_thickness);
   dg.add_bool(_perspective);
+
+  if (_mode == M_filled_wireframe) {
+    _wireframe_color.write_datagram(dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,4 +263,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = (Mode)scan.get_int8();
   _thickness = scan.get_stdfloat();
   _perspective = scan.get_bool();
+
+  if (_mode == M_filled_wireframe) {
+    _wireframe_color.read_datagram(scan);
+  }
 }

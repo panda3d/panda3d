@@ -2462,7 +2462,6 @@
 				<File RelativePath="..\panda\src\windisplay\winDetectDx9.cxx"></File>
 				<File RelativePath="..\panda\src\windisplay\config_windisplay.cxx"></File>
 				<File RelativePath="..\panda\src\windisplay\winGraphicsPipe.h"></File>
-				<File RelativePath="..\panda\src\windisplay\winDetectDx8.cxx"></File>
 				<File RelativePath="..\panda\src\windisplay\winDetectDx.h"></File>
 			</Filter>
 			<Filter Name="pgraph">

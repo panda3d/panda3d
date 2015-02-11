@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 TestCopy::
 TestCopy() {
+  set_program_brief("copy files into a CVS source hierarchy");
   set_program_description
     ("This program copies one or more files into a CVS source hierarchy.  "
      "Rather than copying the named files immediately into the current "

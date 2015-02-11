@@ -2080,6 +2080,86 @@ mult_sub_image(const PfmFile &copy, int xto, int yto,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::divide_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), except the copy pixels
+//               are divided into the pixels of the destination, after
+//               scaling by the specified pixel_scale. 
+//               dest(x, y) = dest(x, y) / (copy(x, y) * pixel_scale).
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+divide_sub_image(const PfmFile &copy, int xto, int yto,
+                 int xfrom, int yfrom, int x_size, int y_size,
+                 double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  int x, y;
+  switch (_num_channels) {
+  case 1:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            set_point1(x, y, get_point1(x, y) / copy.get_point1(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
+          }
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            LPoint2f p = copy.get_point2(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale;
+            LPoint2f &t = modify_point2(x, y);
+            t[0] /= p[0];
+            t[1] /= p[1];
+          }
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            LPoint3f p = copy.get_point3(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale;
+            LPoint3f &t = modify_point3(x, y);
+            t[0] /= p[0];
+            t[1] /= p[1];
+            t[2] /= p[2];
+          }
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          if (has_point(x, y) && copy.has_point(x - xmin + xfrom, y - ymin + yfrom)) {
+            LPoint4f p = copy.get_point4(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale;
+            LPoint4f &t = modify_point4(x, y);
+            t[0] /= p[0];
+            t[1] /= p[1];
+            t[2] /= p[2];
+            t[3] /= p[3];
+          }
+        }
+      }
+    }
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::operator *=
 //       Access: Published
 //  Description: Multiplies every point value in the image by

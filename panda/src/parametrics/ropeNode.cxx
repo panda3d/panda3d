@@ -167,15 +167,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         case RM_thread:
           render_thread(trav, data, result);
           break;
-          
+
         case RM_tape:
           render_tape(trav, data, result);
           break;
-          
+
         case RM_billboard:
           render_billboard(trav, data, result);
           break;
-          
+
         case RM_tube:
           render_tube(trav, data, result);
           break;
@@ -183,7 +183,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       }
     }
   }
-  
+
   return true;
 }
 
@@ -205,7 +205,7 @@ is_renderable() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 output(ostream &out) const {
@@ -221,7 +221,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 write(ostream &out, int indent_level) const {
@@ -258,8 +258,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
                         int pipeline_stage,
                         Thread *current_thread) const {
-  PT(BoundingVolume) bounds = 
-    do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage, 
+  PT(BoundingVolume) bounds =
+    do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage,
                         current_thread);
 
   internal_bounds = bounds;
@@ -304,7 +304,7 @@ get_format(bool support_normals) const {
 //  Description: Does the actual internal recompute.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) RopeNode::
-do_recompute_bounds(const NodePath &rel_to, int pipeline_stage, 
+do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
                     Thread *current_thread) const {
   // TODO: fix the bounds so that it properly reflects the indicated
   // pipeline stage.  At the moment, we cheat and get some of the
@@ -312,7 +312,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
-  
+
   NurbsCurveEvaluator *curve = get_curve();
   if (curve != (NurbsCurveEvaluator *)NULL) {
     NurbsCurveEvaluator::Vert3Array verts;
@@ -326,7 +326,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
         (*vi) = LPoint3(*vi) * mat;
       }
     }
-    
+
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
     gbv->around(&verts[0], &verts[0] + verts.size());
@@ -349,7 +349,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 //               per-vertex thickness.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-render_thread(CullTraverser *trav, CullTraverserData &data, 
+render_thread(CullTraverser *trav, CullTraverserData &data,
               NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
@@ -370,21 +370,19 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     lines->add_vertex(vi + 1);
     lines->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(lines);
-  
+
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
   CPT(RenderState) state = data._state->add_attrib(thick);
   if (get_use_vertex_color()) {
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
-  
-  CullableObject *object = 
+
+  CullableObject *object =
     new CullableObject(geom, state,
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -399,7 +397,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
 //               determines the width of the triangle strips.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-render_tape(CullTraverser *trav, CullTraverserData &data, 
+render_tape(CullTraverser *trav, CullTraverserData &data,
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
@@ -409,8 +407,8 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   // either side.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
-  
-  compute_billboard_vertices(vdata, -get_tube_up(), 
+
+  compute_billboard_vertices(vdata, -get_tube_up(),
                              curve_segments, num_curve_verts, result);
 
   // Since this will be a nonindexed primitive, no need to pre-reserve
@@ -419,11 +417,11 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
-    
+
     strip->add_next_vertices(segment.size() * 2);
     strip->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
@@ -431,12 +429,10 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   if (get_use_vertex_color()) {
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
-  
-  CullableObject *object = 
+
+  CullableObject *object =
     new CullableObject(geom, state,
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -451,7 +447,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
 //               determines the width of the triangle strips.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-render_billboard(CullTraverser *trav, CullTraverserData &data, 
+render_billboard(CullTraverser *trav, CullTraverserData &data,
                  NurbsCurveResult *result) const {
   const TransformState *net_transform = data.get_net_transform(trav);
   const TransformState *camera_transform = trav->get_camera_transform();
@@ -468,21 +464,21 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   // either side.
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(false), Geom::UH_stream);
-  
-  compute_billboard_vertices(vdata, camera_vec, 
+
+  compute_billboard_vertices(vdata, camera_vec,
                              curve_segments, num_curve_verts, result);
-  
+
   // Since this will be a nonindexed primitive, no need to pre-reserve
   // the number of vertices.
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
-    
+
     strip->add_next_vertices(segment.size() * 2);
     strip->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
@@ -490,12 +486,10 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   if (get_use_vertex_color()) {
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
-  
-  CullableObject *object = 
+
+  CullableObject *object =
     new CullableObject(geom, state,
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -509,7 +503,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
 //               determines the diameter of the tube.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-render_tube(CullTraverser *trav, CullTraverserData &data, 
+render_tube(CullTraverser *trav, CullTraverserData &data,
             NurbsCurveResult *result) const {
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
@@ -522,10 +516,10 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("rope", get_format(true), Geom::UH_stream);
-  
-  compute_tube_vertices(vdata, num_verts_per_slice, 
+
+  compute_tube_vertices(vdata, num_verts_per_slice,
                         curve_segments, num_curve_verts, result);
-  
+
   // Finally, go through and build up the index array, to tie all the
   // triangle strips together.  This is difficult to pre-calculate the
   // number of vertices we'll use, so we'll just let it dynamically
@@ -535,20 +529,20 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
-    
+
     for (int s = 0; s < num_slices; ++s) {
       int s1 = (s + 1) % num_verts_per_slice;
-      
+
       for (size_t j = 0; j < segment.size(); ++j) {
         strip->add_vertex((vi + j) * num_verts_per_slice + s);
         strip->add_vertex((vi + j) * num_verts_per_slice + s1);
       }
-      
+
       strip->close_primitive();
     }
     vi += (int)segment.size();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
@@ -556,12 +550,10 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   if (get_use_vertex_color()) {
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
-  
-  CullableObject *object = 
+
+  CullableObject *object =
     new CullableObject(geom, state,
-                       data.get_net_transform(trav),
-                       data.get_modelview_transform(trav),
-                       trav->get_scene());
+                       data.get_internal_transform(trav));
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -598,7 +590,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
     LPoint3 point;
     result->eval_segment_point(segment, 0.0f, point);
 
-    if (curve_segment == (CurveSegment *)NULL || 
+    if (curve_segment == (CurveSegment *)NULL ||
         !point.almost_equal(last_point)) {
       // If the first point of this segment is different from the last
       // point of the previous segment, end the previous segment and
@@ -610,13 +602,13 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       vtx._p = point;
       vtx._t = result->get_segment_t(segment, 0.0f);
       if (use_vertex_color) {
-        result->eval_segment_extended_points(segment, 0.0f, 
-                                             get_vertex_color_dimension(), 
+        result->eval_segment_extended_points(segment, 0.0f,
+                                             get_vertex_color_dimension(),
                                              &vtx._c[0], 4);
       }
       if (use_vertex_thickness) {
-        vtx._thickness = 
-          result->eval_segment_extended_point(segment, 0.0f, 
+        vtx._thickness =
+          result->eval_segment_extended_point(segment, 0.0f,
                                               get_vertex_thickness_dimension());
       }
 
@@ -632,13 +624,13 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
       result->eval_segment_point(segment, t, vtx._p);
       vtx._t = result->get_segment_t(segment, t);
       if (use_vertex_color) {
-        result->eval_segment_extended_points(segment, t, 
+        result->eval_segment_extended_points(segment, t,
                                              get_vertex_color_dimension(),
                                              &vtx._c[0], 4);
       }
       if (use_vertex_thickness) {
-        vtx._thickness = 
-          result->eval_segment_extended_point(segment, t, 
+        vtx._thickness =
+          result->eval_segment_extended_point(segment, t,
                                               get_vertex_thickness_dimension());
       }
 
@@ -868,7 +860,7 @@ compute_tube_vertices(GeomVertexData *vdata,
 //               point in the segment.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment, 
+compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment,
                 size_t j, NurbsCurveResult *result) {
   // First, try to evaluate the tangent at the curve.  This gives
   // better results at the ends at the endpoints where the tangent
@@ -908,17 +900,17 @@ compute_uv_t(PN_stdfloat &dist, const RopeNode::UVMode &uv_mode,
   switch (uv_mode) {
   case UV_none:
     return 0.0f;
-    
+
   case UV_parametric:
     return segment[j]._t * uv_scale;
-    
+
   case UV_distance:
     if (j != 0) {
       LVector3 vec = segment[j]._p - segment[j - 1]._p;
       dist += vec.length();
     }
     return dist * uv_scale;
-    
+
   case UV_distance2:
     if (j != 0) {
       LVector3 vec = segment[j]._p - segment[j - 1]._p;
@@ -929,7 +921,7 @@ compute_uv_t(PN_stdfloat &dist, const RopeNode::UVMode &uv_mode,
 
   return 0.0f;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::register_with_read_factory
 //       Access: Public, Static

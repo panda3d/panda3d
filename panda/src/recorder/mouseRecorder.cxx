@@ -26,14 +26,16 @@ TypeHandle MouseRecorder::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MouseRecorder::
-MouseRecorder(const string &name) : 
-  DataNode(name) 
+MouseRecorder(const string &name) :
+  DataNode(name)
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
+  _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
+  _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
@@ -127,7 +129,7 @@ write(ostream &out, int indent_level) const {
 //               calls.
 ////////////////////////////////////////////////////////////////////
 void MouseRecorder::
-do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input, 
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
   bool has_mouse = false;
   LPoint2 mouse_xy;
@@ -157,7 +159,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       mouse_pixel_xy = xy->get_value();
       has_mouse = true;
     }
-    
+
     // Look for button events.
     if (input.has_data(_button_events_input)) {
       const ButtonEventList *button_events;
@@ -165,7 +167,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       _live_button_events->add_events(*button_events);
     }
   }
-    
+
   // Now rebuild the output data for our children.
 
   if (has_mouse) {
@@ -187,8 +189,10 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     _mouse_pixel_xy = mouse_pixel_xy;
     _save_button_events->add_events(*_live_button_events);
   }
-}
 
+  // We always pass the pixel_size data through.
+  output.set_data(_pixel_size_output, input.get_data(_pixel_size_input));
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseRecorder::register_with_read_factory

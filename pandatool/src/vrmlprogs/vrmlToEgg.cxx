@@ -30,6 +30,7 @@ VRMLToEgg() :
   add_normals_options();
   add_transform_options();
 
+  set_program_brief("convert VRML 2.0 model files to .egg");
   set_program_description
     ("This program converts VRML 2.0 model files to egg.  Animated files, "
      "and VRML 1.0 files, are not supported.");

@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 BamInfo::
 BamInfo() {
+  set_program_brief("describe the contents of .bam files");
   set_program_description
     ("This program scans one or more Bam files--Panda's Binary Animation "
      "and Models native binary format--and describes their contents.");

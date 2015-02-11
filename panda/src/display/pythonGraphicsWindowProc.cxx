@@ -15,10 +15,7 @@
 #include "pythonGraphicsWindowProc.h"
 #include "graphicsWindowProcCallbackData.h"
 
-ConfigureDef(config_pythonGraphicsWindowProc);
-ConfigureFn(config_pythonGraphicsWindowProc) {
-  PythonGraphicsWindowProc::init_type();
-}
+#ifdef HAVE_PYTHON
 
 TypeHandle PythonGraphicsWindowProc::_type_handle;
 
@@ -77,3 +74,5 @@ PyObject* PythonGraphicsWindowProc::
 get_name(){
   return _name;
 }
+
+#endif  // HAVE_PYTHON

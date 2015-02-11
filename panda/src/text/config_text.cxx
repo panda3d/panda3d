@@ -182,14 +182,14 @@ ConfigVariableDouble text_default_underscore_height
  PRC_DESC("Specifies the default height of the underscore line, relative "
           "to the text baseline, when underscoring is enabled."));
 
-ConfigVariableEnum<Texture::FilterType> text_minfilter
-("text-minfilter", Texture::FT_linear,
+ConfigVariableEnum<SamplerState::FilterType> text_minfilter
+("text-minfilter", SamplerState::FT_linear,
  PRC_DESC("The default texture minfilter type for dynamic text fonts"));
-ConfigVariableEnum<Texture::FilterType> text_magfilter
-("text-magfilter", Texture::FT_linear,
+ConfigVariableEnum<SamplerState::FilterType> text_magfilter
+("text-magfilter", SamplerState::FT_linear,
  PRC_DESC("The default texture magfilter type for dynamic text fonts"));
-ConfigVariableEnum<Texture::WrapMode> text_wrap_mode
-("text-wrap-mode", Texture::WM_border_color,
+ConfigVariableEnum<SamplerState::WrapMode> text_wrap_mode
+("text-wrap-mode", SamplerState::WM_border_color,
  PRC_DESC("The default wrap mode for dynamic text fonts"));
 ConfigVariableEnum<Texture::QualityLevel> text_quality_level
 ("text-quality-level", Texture::QL_best,

@@ -36,9 +36,9 @@ extern ConfigVariableInt text_texture_margin;
 extern ConfigVariableDouble text_poly_margin;
 extern ConfigVariableInt text_page_size;
 extern ConfigVariableBool text_small_caps;
-extern ConfigVariableDouble text_small_caps_scale;
+extern EXPCL_PANDA_TEXT ConfigVariableDouble text_small_caps_scale;
 extern ConfigVariableFilename text_default_font;
-extern ConfigVariableDouble text_tab_width;
+extern EXPCL_PANDA_TEXT ConfigVariableDouble text_tab_width;
 extern ConfigVariableInt text_push_properties_key;
 extern ConfigVariableInt text_pop_properties_key;
 extern ConfigVariableInt text_soft_hyphen_key;
@@ -48,11 +48,11 @@ extern wstring get_text_soft_hyphen_output();
 extern ConfigVariableDouble text_hyphen_ratio;
 extern wstring get_text_never_break_before();
 extern ConfigVariableInt text_max_never_break;
-extern ConfigVariableDouble text_default_underscore_height;
+extern EXPCL_PANDA_TEXT ConfigVariableDouble text_default_underscore_height;
 
-extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
-extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
-extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
+extern ConfigVariableEnum<SamplerState::FilterType> text_minfilter;
+extern ConfigVariableEnum<SamplerState::FilterType> text_magfilter;
+extern ConfigVariableEnum<SamplerState::WrapMode> text_wrap_mode;
 extern ConfigVariableEnum<Texture::QualityLevel> text_quality_level;
 extern ConfigVariableEnum<TextFont::RenderMode> text_render_mode;
 

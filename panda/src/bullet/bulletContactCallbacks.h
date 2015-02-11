@@ -25,7 +25,6 @@
 #include "event.h"
 #include "eventQueue.h"
 #include "eventParameter.h"
-#include "eventStorePandaNode.h"
 #include "pandaNode.h"
 
 struct UserPersitentData {
@@ -77,8 +76,8 @@ contact_added_callback(btManifoldPoint &cp,
     if (bullet_enable_contact_events) {
 
       Event *event = new Event("bullet-contact-added");
-      event->add_parameter(EventParameter(new EventStorePandaNode(node0)));
-      event->add_parameter(EventParameter(new EventStorePandaNode(node1)));
+      event->add_parameter(EventParameter(node0));
+      event->add_parameter(EventParameter(node1));
 
       EventQueue::get_global_event_queue()->queue_event(event);
     }
@@ -137,8 +136,8 @@ contact_destroyed_callback(void *userPersistentData) {
   if (bullet_enable_contact_events) {
 
     Event *event = new Event("bullet-contact-destroyed");
-    event->add_parameter(EventParameter(new EventStorePandaNode(data->node0)));
-    event->add_parameter(EventParameter(new EventStorePandaNode(data->node1)));
+    event->add_parameter(EventParameter(data->node0));
+    event->add_parameter(EventParameter(data->node1));
 
     EventQueue::get_global_event_queue()->queue_event(event);
   }

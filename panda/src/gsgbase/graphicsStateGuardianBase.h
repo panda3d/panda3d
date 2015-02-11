@@ -54,8 +54,10 @@ class PreparedGraphicsObjects;
 class GraphicsOutput;
 class Texture;
 class TextureContext;
-class ShaderContext;
+class SamplerContext;
+class SamplerState;
 class Shader;
+class ShaderContext;
 class RenderState;
 class TransformState;
 class Material;
@@ -148,6 +150,9 @@ public:
   virtual void release_texture(TextureContext *tc)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
 
+  virtual SamplerContext *prepare_sampler(const SamplerState &sampler)=0;
+  virtual void release_sampler(SamplerContext *sc)=0;
+
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
 
@@ -193,9 +198,9 @@ public:
   // inconvenient to declare each of those types to be friends of this
   // class.
 
-  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader, 
+  virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
-                                     const GeomVertexDataPipelineReader *data_reader, 
+                                     const GeomVertexDataPipelineReader *data_reader,
                                      bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
@@ -213,7 +218,7 @@ public:
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
-  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id) { }
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
                           int light_id) { }

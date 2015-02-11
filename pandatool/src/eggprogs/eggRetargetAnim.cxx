@@ -34,6 +34,7 @@ EggRetargetAnim() {
   add_path_replace_options();
   add_path_store_options();
 
+  set_program_brief("remove transformations from animation data in .egg files");
   set_program_description
     ("egg-retarget-anim reads a character model and its associated animation "
      "files, and removes the translations and scales from the animation "

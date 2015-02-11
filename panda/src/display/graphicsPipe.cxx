@@ -82,9 +82,23 @@ GraphicsPipe::
 //               performed: typically either the app thread (e.g. X)
 //               or the draw thread (Windows).
 ////////////////////////////////////////////////////////////////////
-GraphicsPipe::PreferredWindowThread 
+GraphicsPipe::PreferredWindowThread
 GraphicsPipe::get_preferred_window_thread() const {
   return PWT_draw;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::make_callback_gsg
+//       Access: Public, Virtual
+//  Description: This is called when make_output() is used to create a
+//               CallbackGraphicsWindow.  If the GraphicsPipe can
+//               construct a GSG that's not associated with any
+//               particular window object, do so now, assuming the
+//               correct graphics context has been set up externally.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsStateGuardian) GraphicsPipe::
+make_callback_gsg(GraphicsEngine *engine) {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +109,7 @@ GraphicsPipe::get_preferred_window_thread() const {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsDevice) GraphicsPipe::
 make_device(void *scrn) {
-  display_cat.error() 
+  display_cat.error()
     << "make_device() unimplemented by " << get_type() << "\n";
   return NULL;
 }
@@ -135,20 +149,6 @@ make_output(const string &name,
             bool &precertify) {
   display_cat.error()
     << get_type() << " cannot create buffers or windows.\n";
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::make_callback_gsg
-//       Access: Protected, Virtual
-//  Description: This is called when make_output() is used to create a
-//               CallbackGraphicsWindow.  If the GraphicsPipe can
-//               construct a GSG that's not associated with any
-//               particular window object, do so now, assuming the
-//               correct graphics context has been set up externally.
-////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) GraphicsPipe::
-make_callback_gsg(GraphicsEngine *engine) {
   return NULL;
 }
 

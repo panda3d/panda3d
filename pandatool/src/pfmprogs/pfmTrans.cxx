@@ -37,6 +37,7 @@ PfmTrans() {
 
   add_transform_options();
 
+  set_program_brief("transform .pfm files");
   set_program_description
     ("pfm-trans reads an pfm file and transforms it, filters it, "
      "operates on it, writing the output to another pfm file.  A pfm "
@@ -242,7 +243,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
       if (tex == NULL) {
         nout << "Couldn't find " << _vistex_filename << "\n";
       } else {
-        tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+        tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
         mesh.set_texture(tex);
         if (tex->has_alpha(tex->get_format())) {
           mesh.set_transparency(TransparencyAttrib::M_dual);

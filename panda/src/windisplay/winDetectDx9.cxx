@@ -16,13 +16,14 @@
 
 #ifdef HAVE_DX9
 
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <d3d9.h>
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
 #include "displaySearchParameters.h"
 
-#define DX8 0
 #define Direct3DCreate Direct3DCreate9
 
 typedef LPDIRECT3D9 (WINAPI *DIRECT3DCREATE9)(UINT SDKVersion);

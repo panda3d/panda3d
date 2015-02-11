@@ -61,9 +61,11 @@ INLINE int cpow(int x, int y);
 
 // Returns true if the number is NaN, false if it's a genuine number
 // or infinity.
+INLINE bool cnan(float v);
 INLINE bool cnan(double v);
 
 // Returns true if the number is infinity.
+INLINE bool cinf(float v);
 INLINE bool cinf(double v);
 
 // Return NaN and infinity, respectively.

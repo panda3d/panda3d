@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InternalNameCollection
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH InternalNameCollection {
 PUBLISHED:
@@ -30,18 +30,18 @@ PUBLISHED:
   void operator = (const InternalNameCollection &copy);
   INLINE ~InternalNameCollection();
 
-  void add_name(InternalName *name);
-  bool remove_name(InternalName *name);
+  void add_name(const InternalName *name);
+  bool remove_name(const InternalName *name);
   void add_names_from(const InternalNameCollection &other);
   void remove_names_from(const InternalNameCollection &other);
   void remove_duplicate_names();
-  bool has_name(InternalName *name) const;
+  bool has_name(const InternalName *name) const;
   void clear();
 
   int get_num_names() const;
-  InternalName *get_name(int index) const;
+  const InternalName *get_name(int index) const;
   MAKE_SEQ(get_names, get_num_names, get_name);
-  InternalName *operator [] (int index) const;
+  const InternalName *operator [] (int index) const;
   int size() const;
   INLINE void operator += (const InternalNameCollection &other);
   INLINE InternalNameCollection operator + (const InternalNameCollection &other) const;
@@ -50,7 +50,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef PTA(PT(InternalName)) InternalNames;
+  typedef PTA(CPT(InternalName)) InternalNames;
   InternalNames _names;
 };
 

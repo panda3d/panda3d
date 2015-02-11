@@ -38,24 +38,25 @@ class GeomVertexWriter;
 //               to completely define a particular array structure.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
-PUBLISHED:
 private:
   INLINE GeomVertexColumn();
 PUBLISHED:
-  INLINE GeomVertexColumn(InternalName *name, int num_components,
+  INLINE GeomVertexColumn(CPT_InternalName name, int num_components,
                           NumericType numeric_type, Contents contents,
                           int start, int column_alignment = 0);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();
 
-  INLINE InternalName *get_name() const;
+  INLINE const InternalName *get_name() const;
   INLINE int get_num_components() const;
   INLINE int get_num_values() const;
+  INLINE int get_num_elements() const;
   INLINE NumericType get_numeric_type() const;
   INLINE Contents get_contents() const;
   INLINE int get_start() const;
   INLINE int get_column_alignment() const;
+  INLINE int get_element_stride() const;
   INLINE int get_component_bytes() const;
   INLINE int get_total_bytes() const;
   INLINE bool has_homogeneous_coord() const;
@@ -93,13 +94,15 @@ public:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  PT(InternalName) _name;
+  CPT_InternalName _name;
   int _num_components;
   int _num_values;
+  int _num_elements;
   NumericType _numeric_type;
   Contents _contents;
   int _start;
   int _column_alignment;
+  int _element_stride;
   int _component_bytes;
   int _total_bytes;
   Packer *_packer;
@@ -137,7 +140,7 @@ private:
     virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
     virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
     virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
-    
+
     virtual void set_data1i(unsigned char *pointer, int data);
     virtual void set_data2i(unsigned char *pointer, const LVecBase2i &data);
     virtual void set_data3i(unsigned char *pointer, const LVecBase3i &data);

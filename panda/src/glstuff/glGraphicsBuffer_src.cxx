@@ -445,24 +445,25 @@ rebuild_bitplanes() {
     if (_fbo[layer] == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo[layer]);
 
-#ifndef OPENGLES
-      if (glgsg->_use_object_labels) {
-        if (num_fbos > 1) {
-          GLchar name[128];
-          GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
-          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
-        } else {
-          glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
-        }
-      }
-#endif
-
       if (_fbo[layer] == 0) {
         report_my_gl_errors();
         return;
       }
     }
     glgsg->bind_fbo(_fbo[layer]);
+
+#ifndef OPENGLES
+    if (glgsg->_use_object_labels) {
+      // Assign a label for OpenGL to use when displaying debug messages.
+      if (num_fbos > 1) {
+        GLchar name[128];
+        GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
+        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
+      } else {
+        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
+      }
+    }
+#endif
 
     // For all slots, update the slot.
     if (_use_depth_stencil) {
@@ -626,18 +627,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     // Adjust the texture format based on the requested framebuffer settings.
     switch (slot) {
     case RTP_depth:
-      if (_fb_properties.get_float_depth()) {
-        tex->set_format(Texture::F_depth_component32);
-        tex->set_component_type(Texture::T_float);
-      } else if (_fb_properties.get_depth_bits() > 24) {
-        tex->set_format(Texture::F_depth_component32);
-      } else if (_fb_properties.get_depth_bits() > 16) {
-        tex->set_format(Texture::F_depth_component24);
-      } else if (_fb_properties.get_depth_bits() > 8) {
-        tex->set_format(Texture::F_depth_component16);
-      } else {
-        tex->set_format(Texture::F_depth_component);
-      }
+      _fb_properties.setup_depth_texture(tex);
       break;
     case RTP_depth_stencil:
       tex->set_format(Texture::F_depth_stencil);
@@ -663,25 +653,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       tex->set_component_type(Texture::T_float);
       break;
     default:
-      if (_fb_properties.get_srgb_color()) {
-        if (_fb_properties.get_alpha_bits() == 0) {
-          tex->set_format(Texture::F_srgb);
-        } else {
-          tex->set_format(Texture::F_srgb_alpha);
-        }
-      } else {
-        if (_fb_properties.get_float_color()) {
-          tex->set_component_type(Texture::T_float);
-        }
-        if (_fb_properties.get_color_bits() > 16 * 3) {
-          tex->set_format(Texture::F_rgba32);
-          tex->set_component_type(Texture::T_float);
-        } else if (_fb_properties.get_color_bits() > 8 * 3) {
-          tex->set_format(Texture::F_rgba16);
-        } else {
-          tex->set_format(Texture::F_rgba);
-        }
-      }
+      _fb_properties.setup_color_texture(tex);
     }
 
 #ifndef OPENGLES
@@ -1422,9 +1394,7 @@ open_buffer() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 close_buffer() {
-
   check_host_valid();
-  report_my_gl_errors();
 
   if (_gsg == 0) {
     return;

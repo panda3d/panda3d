@@ -965,22 +965,22 @@ get_egg_texture(Texture *tex) {
       }
 
       switch (tex->get_minfilter()) {
-      case Texture::FT_nearest:
+      case SamplerState::FT_nearest:
         temp.set_minfilter(EggTexture::FT_nearest);
         break;
-      case Texture::FT_linear:
+      case SamplerState::FT_linear:
         temp.set_minfilter(EggTexture::FT_linear);
         break;
-      case Texture::FT_nearest_mipmap_nearest:
+      case SamplerState::FT_nearest_mipmap_nearest:
         temp.set_minfilter(EggTexture::FT_nearest_mipmap_nearest);
         break;
-      case Texture::FT_linear_mipmap_nearest:
+      case SamplerState::FT_linear_mipmap_nearest:
         temp.set_minfilter(EggTexture::FT_linear_mipmap_nearest);
         break;
-      case Texture::FT_nearest_mipmap_linear:
+      case SamplerState::FT_nearest_mipmap_linear:
         temp.set_minfilter(EggTexture::FT_nearest_mipmap_linear);
         break;
-      case Texture::FT_linear_mipmap_linear:
+      case SamplerState::FT_linear_mipmap_linear:
         temp.set_minfilter(EggTexture::FT_linear_mipmap_linear);
         break;
 
@@ -989,10 +989,10 @@ get_egg_texture(Texture *tex) {
       }
 
       switch (tex->get_magfilter()) {
-      case Texture::FT_nearest:
+      case SamplerState::FT_nearest:
         temp.set_magfilter(EggTexture::FT_nearest);
         break;
-      case Texture::FT_linear:
+      case SamplerState::FT_linear:
         temp.set_magfilter(EggTexture::FT_linear);
         break;
 
@@ -1001,10 +1001,10 @@ get_egg_texture(Texture *tex) {
       }
 
       switch (tex->get_wrap_u()) {
-      case Texture::WM_clamp:
+      case SamplerState::WM_clamp:
         temp.set_wrap_u(EggTexture::WM_clamp);
         break;
-      case Texture::WM_repeat:
+      case SamplerState::WM_repeat:
         temp.set_wrap_u(EggTexture::WM_repeat);
         break;
 
@@ -1015,10 +1015,10 @@ get_egg_texture(Texture *tex) {
       }
 
       switch (tex->get_wrap_v()) {
-      case Texture::WM_clamp:
+      case SamplerState::WM_clamp:
         temp.set_wrap_v(EggTexture::WM_clamp);
         break;
-      case Texture::WM_repeat:
+      case SamplerState::WM_repeat:
         temp.set_wrap_v(EggTexture::WM_repeat);
         break;
 

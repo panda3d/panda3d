@@ -220,7 +220,7 @@ private:
   const DCPackerCatalog *_catalog;
   const DCPackerCatalog::LiveCatalog *_live_catalog;
 
-  class StackElement {
+  class EXPCL_DIRECT StackElement {
   public:
     // As an optimization, we implement operator new and delete here
     // to minimize allocation overhead during push() and pop().

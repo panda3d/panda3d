@@ -31,12 +31,13 @@
 #include "geomVertexArrayFormat.h"
 #include "geomVertexData.h"
 #include "geomVertexFormat.h"
+#include "lens.h"
 #include "material.h"
 #include "occlusionQueryContext.h"
 #include "orthographicLens.h"
 #include "matrixLens.h"
+#include "paramTexture.h"
 #include "perspectiveLens.h"
-#include "lens.h"
 #include "queryContext.h"
 #include "sliderTable.h"
 #include "texture.h"
@@ -45,6 +46,8 @@
 #include "textureStage.h"
 #include "textureContext.h"
 #include "timerQueryContext.h"
+#include "samplerContext.h"
+#include "samplerState.h"
 #include "shader.h"
 #include "shaderContext.h"
 #include "transformBlend.h"
@@ -66,6 +69,7 @@
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
+NotifyCategoryDef(shader, "");
 
 ConfigVariableInt max_texture_dimension
 ("max-texture-dimension", -1,
@@ -480,6 +484,16 @@ ConfigVariableInt graphics_memory_limit
           "Set this to -1 to have no limit other than the normal "
           "hardware-imposed limit."));
 
+ConfigVariableInt sampler_object_limit
+("sampler-object-limit", 2048,
+ PRC_DESC("This is a default limit that is imposed on each GSG at "
+          "GSG creation time.  It limits the total amount of sampler "
+          "objects that will be k.ept by the GSG, regardless of whether "
+          "the hardware claims to provide more sampler objects than this. "
+          "Direct3D 10-capable hardware supports at least 4096 distinct "
+          "sampler objects, but we provide a slightly more conservative "
+          "limit by default."));
+
 ConfigVariableDouble adaptive_lru_weight
 ("adaptive-lru-weight", 0.2,
  PRC_DESC("Specifies the weight factor used to compute the AdaptiveLru's "
@@ -528,6 +542,22 @@ ConfigVariableString cg_glsl_version
           "glslv, glslf or glslg profiles.  Use this when you are having "
           "problems with these profiles.  Example values are 120 or 150."));
 
+ConfigVariableBool glsl_preprocess
+("glsl-preprocess", true,
+ PRC_DESC("If this is enabled, Panda looks for lines starting with "
+          "#pragma include when loading a GLSL shader and processes "
+          "it appropriately.  This can be useful if you have code that "
+          "is shared between multiple shaders.  Set this to false if "
+          "you have no need for this feature or if you do your own "
+          "preprocessing of GLSL shaders."));
+
+ConfigVariableInt glsl_include_recursion_limit
+("glsl-include-recursion-limit", 10,
+ PRC_DESC("This sets a limit on how many nested #pragma include "
+          "directives that Panda will follow when glsl-preprocess is "
+          "enabled.  This is used to prevent infinite recursion when "
+          "two shader files include each other."));
+
 ConfigureFn(config_gobj) {
   AnimateVerticesRequest::init_type();
   BufferContext::init_type();
@@ -559,8 +589,12 @@ ConfigureFn(config_gobj) {
   MatrixLens::init_type();
   OcclusionQueryContext::init_type();
   OrthographicLens::init_type();
+  ParamTextureImage::init_type();
+  ParamTextureSampler::init_type();
   PerspectiveLens::init_type();
   QueryContext::init_type();
+  SamplerContext::init_type();
+  SamplerState::init_type();
   ShaderContext::init_type();
   Shader::init_type();
   SliderTable::init_type();
@@ -600,6 +634,8 @@ ConfigureFn(config_gobj) {
   Material::register_with_read_factory();
   MatrixLens::register_with_read_factory();
   OrthographicLens::register_with_read_factory();
+  ParamTextureImage::register_with_read_factory();
+  ParamTextureSampler::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
   Shader::register_with_read_factory();
   SliderTable::register_with_read_factory();

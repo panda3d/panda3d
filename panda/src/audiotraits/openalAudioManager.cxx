@@ -15,8 +15,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENAL //[
-
 //Panda headers.
 #include "config_audio.h"
 #include "config_util.h"
@@ -1109,5 +1107,3 @@ discard_excess_cache(int sample_limit) {
     delete sd;
   }
 }
-
-#endif //]

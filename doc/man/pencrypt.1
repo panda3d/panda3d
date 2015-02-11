@@ -1,0 +1,92 @@
+.TH PENCRYPT 1 "27 December 2014" "" Panda3D
+.SH NAME
+pencrypt, pdecrypt \- encrypt or decrypt a file
+.SH SYNOPSIS
+.B pencrypt
+[
+.I opts
+]
+.I file
+[
+.I file2 file3 ...
+]
+.br
+.B pencrypt -o
+.I dest_file file
+.PP
+.B pdecrypt
+[
+.B -p
+.I password
+]
+.I file.pe
+[
+.I file2.pe file3.pe ...
+]
+.br
+.B pdecrypt
+[
+.B -p
+.I password
+]
+.B -o
+.I dest_file file.pe
+.SH DESCRIPTION
+\fBpencrypt\fP will apply an encryption algorithm to a file (or multiple files),
+creating an encrypted version of each file which can only be recovered using
+pdecrypt and the same password that was supplied to \fBpencrypt\fP.  The
+compressed versions are written to a file with the same name as the original,
+but the extension .pe added to the filename, and the original file is removed
+(unless the version with \fB\-o\fP is used, in which case you can encrypt only
+one file, you specify the destination file name, and the original file is not
+removed).
+.PP
+Note that if you are adding files to a Panda multifile (.mf file) with the
+.BR multify (1)
+command, it is not necessary to encrypt them separately; \fBmultify\fP has an
+inline encryption option.
+.PP
+\fBpdecrypt\fP reverses the operation of a previous \fBpdecrypt\fP command.
+It decrypts the contents of the named source file(s) and removes the .pe
+extension.  The encryption algorithm need not be specified; it can be
+determined by examining the header of each encrypted file.  The password
+must match the encryption password exactly.  If it does not, an error may
+or may not be reported; but the file will not be decrypted correctly even
+if no error is reported.
+.SH OPTIONS
+.TP
+.BI "\-p " \"password\"
+Specifies the password to use for encryption.  There are no
+restrictions on the password length or contents, but longer passwords
+are more secure.  If this is not specified, the user is prompted from
+standard input.
+.PP
+The following options are only available to \fBpencrypt\fP.  These settings
+are automatically read from the header of the encrypted file by \fBpdecrypt\fP.
+.TP
+.B \-t
+Read the file as a text file.  This will automatically convert universal
+end-of-line characters into a newline character, ascii 10.
+.TP
+.BI "\-a " \"algorithm\"
+Specifies the particular encryption algorithm to use.  The complete
+set of available algorithms is defined by the current version of
+OpenSSL.  The default algorithm is taken from the encryption-
+algorithm config variable.
+.TP
+.BI "\-k " key_length
+Specifies the key length, in bits, for the selected encryption
+algorithm.  This only makes sense for those algorithms that support
+a variable key length.  The default value is taken from the
+\fBencryption\-key\-length\fP config variable.
+.TP
+.BI "\-i " iteration_count
+Specifies the number of times the password is hashed to generate
+a key.  The only purpose of this is to make it computationally
+more expensive for an attacker to search the key space exhaustively.
+This should be a multiple of 1,000 and should not exceed about 65
+million; the value 0 indicates just one application of the hashing
+algorithm.  The default value is taken from the
+\fBencryption\-iteration\-count\fP config variable.
+.SH "SEE ALSO"
+.BR multify (1)

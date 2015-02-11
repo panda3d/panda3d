@@ -158,7 +158,7 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
         string uvset_semantic (FROM_FSTRING(uvset->GetSemantic()));
 
         // Only set the UV name if this UV set actually exists.
-        for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+        for (size_t i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
           if (_materials[semantic]->_uvsets[i]->_semantic == uvset_semantic) {
             egg_texture->set_uv_name(uvset_semantic);
             break;
@@ -273,7 +273,7 @@ get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semanti
     if (input_set == -1 && _materials[semantic]->_uvsets.size() == 1) {
       return _materials[semantic]->_uvsets[0]->_semantic;
     } else {
-      for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+      for (size_t i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
         if (_materials[semantic]->_uvsets[i]->_input_set == input_set &&
             _materials[semantic]->_uvsets[i]->_input_semantic == input_semantic) {
           return _materials[semantic]->_uvsets[i]->_semantic;
@@ -283,7 +283,7 @@ get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semanti
       // input_semantic this time. The reason for this is that some tools
       // export textangents and texbinormals bound to a uvset with input
       // semantic TEXCOORD.
-      for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+      for (size_t i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
         if (_materials[semantic]->_uvsets[i]->_input_set == input_set) {
           daeegg_cat.debug() << "Using uv set with non-matching input semantic " << _materials[semantic]->_uvsets[i]->_semantic << "\n";
           return _materials[semantic]->_uvsets[i]->_semantic;

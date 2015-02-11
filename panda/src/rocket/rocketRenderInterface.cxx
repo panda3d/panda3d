@@ -123,14 +123,13 @@ render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vect
       << *state << ", translation (" << offset << ")\n";
   }
 
-  CPT(TransformState) net_transform, modelview_transform;
-  net_transform = _net_transform->compose(TransformState::make_pos(offset));
-  modelview_transform = _trav->get_world_transform()->compose(net_transform);
+  CPT(TransformState) internal_transform =
+    _trav->get_scene()->get_cs_world_transform()->compose(
+      _net_transform->compose(TransformState::make_pos(offset)));
 
   CullableObject *object =
     new CullableObject(geom, _net_state->compose(state),
-                       net_transform, modelview_transform,
-                       _trav->get_scene());
+                       internal_transform);
   _trav->get_cull_handler()->record_object(object, _trav);
 }
 
@@ -231,8 +230,8 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
     return false;
   }
 
-  tex->set_minfilter(Texture::FT_nearest);
-  tex->set_magfilter(Texture::FT_nearest);
+  tex->set_minfilter(SamplerState::FT_nearest);
+  tex->set_magfilter(SamplerState::FT_nearest);
 
   texture_dimensions.x = tex->get_x_size();
   texture_dimensions.y = tex->get_y_size();
@@ -271,10 +270,10 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
     }
   }
 
-  tex->set_wrap_u(Texture::WM_clamp);
-  tex->set_wrap_v(Texture::WM_clamp);
-  tex->set_minfilter(Texture::FT_nearest);
-  tex->set_magfilter(Texture::FT_nearest);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
+  tex->set_minfilter(SamplerState::FT_nearest);
+  tex->set_magfilter(SamplerState::FT_nearest);
 
   tex->ref();
   texture_handle = (Rocket::Core::TextureHandle) tex.p();

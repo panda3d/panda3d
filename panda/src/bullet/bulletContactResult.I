@@ -51,7 +51,7 @@ get_manifold_point() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const int BulletContact::
+INLINE int BulletContact::
 get_idx0() const {
 
   return _idx0;
@@ -62,7 +62,7 @@ get_idx0() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const int BulletContact::
+INLINE int BulletContact::
 get_idx1() const {
 
   return _idx1;
@@ -73,7 +73,7 @@ get_idx1() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const int BulletContact::
+INLINE int BulletContact::
 get_part_id0() const {
 
   return _part_id0;
@@ -84,7 +84,7 @@ get_part_id0() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const int BulletContact::
+INLINE int BulletContact::
 get_part_id1() const {
 
   return _part_id1;
@@ -112,4 +112,3 @@ get_contact(int idx) {
   nassertr(idx >= 0 && idx < (int)_contacts.size(), _empty);
   return _contacts[idx];
 }
-

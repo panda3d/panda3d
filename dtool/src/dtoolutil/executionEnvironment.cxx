@@ -55,13 +55,15 @@
 #ifdef IS_FREEBSD
 extern char **environ;
 
-// For Link_map and dlinfo.
-#include <link.h>
-#include <dlfcn.h>
-
 // This is for sysctl.
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#endif
+
+#if defined(IS_LINUX) || defined(IS_OSX)
+// For link_map and dlinfo.
+#include <link.h>
+#include <dlfcn.h>
 #endif
 
 #ifdef HAVE_PYTHON
@@ -507,7 +509,7 @@ ns_get_binary_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::ns_get_dtool_name
 //       Access: Private
-//  Description: Returns the name of the libdtool DLL that
+//  Description: Returns the name of the libp3dtool DLL that
 //               is used in this program, if it can be determined.  The
 //               nonstatic implementation.
 ////////////////////////////////////////////////////////////////////
@@ -646,9 +648,29 @@ read_args() {
       const char *buffer = _dyld_get_image_name(i);
       const char *tail = strrchr(buffer, '/');
       if (tail && (strcmp(tail, "/libp3dtool." PANDA_ABI_VERSION_STR ".dylib") == 0
-                || strcmp(tail, "/libp3dtool.dylib") == 0
-                || strcmp(tail, "/libdtool.dylib") == 0)) {
+                || strcmp(tail, "/libp3dtool.dylib") == 0)) {
         _dtool_name = buffer;
+      }
+    }
+  }
+#endif
+
+#if defined(IS_FREEBSD) || defined(IS_LINUX)
+  // FreeBSD and Linux have a function to get the origin of a loaded library.
+
+  char origin[PATH_MAX + 1];
+
+  if (_dtool_name.empty()) {
+    void *dtool_handle = dlopen("libp3dtool.so." PANDA_ABI_VERSION_STR, RTLD_NOW | RTLD_NOLOAD);
+    if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
+      _dtool_name = origin;
+      _dtool_name += "/libp3dtool.so." PANDA_ABI_VERSION_STR;
+    } else {
+      // Try the version of libp3dtool.so without ABI suffix.
+      dtool_handle = dlopen("libp3dtool.so", RTLD_NOW | RTLD_NOLOAD);
+      if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
+        _dtool_name = origin;
+        _dtool_name += "/libp3dtool.so";
       }
     }
   }
@@ -665,8 +687,7 @@ read_args() {
       char *tail = strrchr(map->l_name, '/');
       char *head = strchr(map->l_name, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0
-                        || strcmp(tail, "/libdtool.so") == 0)) {
+                        || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;
       }
       map = map->l_next;
@@ -690,8 +711,7 @@ read_args() {
       char *tail = strrchr(buffer, '/');
       char *head = strchr(buffer, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0
-                        || strcmp(tail, "/libdtool.so") == 0)) {
+                        || strcmp(tail, "/libp3dtool.so") == 0)) {
         _dtool_name = head;
       }
     }

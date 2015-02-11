@@ -81,7 +81,7 @@ specified a power-of-2 size.)  You can extract this Texture and set
 various properties on it, then apply it to geometry:
 
   Texture *tex = buffer->get_texture();
-  tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+  tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
   screen.set_texture(tex);
 
 

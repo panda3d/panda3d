@@ -28,6 +28,7 @@ EggToObj::
 EggToObj() :
   EggToSomething("Obj", ".obj", true, false)
 {
+  set_program_brief("convert .egg files to .obj");
   set_program_description
     ("This program converts egg files to obj.  It "
      "only converts polygon data, with no fancy tricks.  "

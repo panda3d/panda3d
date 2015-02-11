@@ -119,34 +119,35 @@ extern int cppyydebug;
      KW_MUTABLE = 328,
      KW_NAMESPACE = 329,
      KW_NEW = 330,
-     KW_OPERATOR = 331,
-     KW_PRIVATE = 332,
-     KW_PROTECTED = 333,
-     KW_PUBLIC = 334,
-     KW_REGISTER = 335,
-     KW_RETURN = 336,
-     KW_SHORT = 337,
-     KW_SIGNED = 338,
-     KW_SIZEOF = 339,
-     KW_STATIC = 340,
-     KW_STATIC_CAST = 341,
-     KW_STRUCT = 342,
-     KW_TEMPLATE = 343,
-     KW_THROW = 344,
-     KW_TRUE = 345,
-     KW_TRY = 346,
-     KW_TYPEDEF = 347,
-     KW_TYPENAME = 348,
-     KW_UNION = 349,
-     KW_UNSIGNED = 350,
-     KW_USING = 351,
-     KW_VIRTUAL = 352,
-     KW_VOID = 353,
-     KW_VOLATILE = 354,
-     KW_WHILE = 355,
-     START_CPP = 356,
-     START_CONST_EXPR = 357,
-     START_TYPE = 358
+     KW_NOEXCEPT = 331,
+     KW_OPERATOR = 332,
+     KW_PRIVATE = 333,
+     KW_PROTECTED = 334,
+     KW_PUBLIC = 335,
+     KW_REGISTER = 336,
+     KW_RETURN = 337,
+     KW_SHORT = 338,
+     KW_SIGNED = 339,
+     KW_SIZEOF = 340,
+     KW_STATIC = 341,
+     KW_STATIC_CAST = 342,
+     KW_STRUCT = 343,
+     KW_TEMPLATE = 344,
+     KW_THROW = 345,
+     KW_TRUE = 346,
+     KW_TRY = 347,
+     KW_TYPEDEF = 348,
+     KW_TYPENAME = 349,
+     KW_UNION = 350,
+     KW_UNSIGNED = 351,
+     KW_USING = 352,
+     KW_VIRTUAL = 353,
+     KW_VOID = 354,
+     KW_VOLATILE = 355,
+     KW_WHILE = 356,
+     START_CPP = 357,
+     START_CONST_EXPR = 358,
+     START_TYPE = 359
    };
 #endif
 /* Tokens.  */
@@ -223,34 +224,35 @@ extern int cppyydebug;
 #define KW_MUTABLE 328
 #define KW_NAMESPACE 329
 #define KW_NEW 330
-#define KW_OPERATOR 331
-#define KW_PRIVATE 332
-#define KW_PROTECTED 333
-#define KW_PUBLIC 334
-#define KW_REGISTER 335
-#define KW_RETURN 336
-#define KW_SHORT 337
-#define KW_SIGNED 338
-#define KW_SIZEOF 339
-#define KW_STATIC 340
-#define KW_STATIC_CAST 341
-#define KW_STRUCT 342
-#define KW_TEMPLATE 343
-#define KW_THROW 344
-#define KW_TRUE 345
-#define KW_TRY 346
-#define KW_TYPEDEF 347
-#define KW_TYPENAME 348
-#define KW_UNION 349
-#define KW_UNSIGNED 350
-#define KW_USING 351
-#define KW_VIRTUAL 352
-#define KW_VOID 353
-#define KW_VOLATILE 354
-#define KW_WHILE 355
-#define START_CPP 356
-#define START_CONST_EXPR 357
-#define START_TYPE 358
+#define KW_NOEXCEPT 331
+#define KW_OPERATOR 332
+#define KW_PRIVATE 333
+#define KW_PROTECTED 334
+#define KW_PUBLIC 335
+#define KW_REGISTER 336
+#define KW_RETURN 337
+#define KW_SHORT 338
+#define KW_SIGNED 339
+#define KW_SIZEOF 340
+#define KW_STATIC 341
+#define KW_STATIC_CAST 342
+#define KW_STRUCT 343
+#define KW_TEMPLATE 344
+#define KW_THROW 345
+#define KW_TRUE 346
+#define KW_TRY 347
+#define KW_TYPEDEF 348
+#define KW_TYPENAME 349
+#define KW_UNION 350
+#define KW_UNSIGNED 351
+#define KW_USING 352
+#define KW_VIRTUAL 353
+#define KW_VOID 354
+#define KW_VOLATILE 355
+#define KW_WHILE 356
+#define START_CPP 357
+#define START_CONST_EXPR 358
+#define START_TYPE 359
 
 
 

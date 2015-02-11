@@ -46,8 +46,13 @@ class TypedWritable;
 //               write_recorder() to do exactly the same thing as
 //               write_datagram(), or they may choose to write
 //               something slightly different.
+//
+//               Most types of recorders should derive from Recorder,
+//               as it derives from ReferenceCount, except for
+//               MouseRecorder, which would otherwise doubly inherit
+//               from ReferenceCount.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_RECORDER RecorderBase : virtual public ReferenceCount {
+class EXPCL_PANDA_RECORDER RecorderBase {
 protected:
   RecorderBase();
 
@@ -63,6 +68,11 @@ public:
 
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
+  // We can't let RecorderBase inherit from ReferenceCount, so we
+  // define these so we can still manage the reference count.
+  virtual void ref() const=0;
+  virtual bool unref() const=0;
+
 protected:
   void fillin_recorder(DatagramIterator &scan, BamReader *manager);
 
@@ -72,7 +82,7 @@ private:
     F_playing   = 0x0002,
   };
   short _flags;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -90,9 +100,9 @@ private:
   static TypeHandle _type_handle;
 
   friend class RecorderController;
+  friend class RecorderTable;
 };
 
 #include "recorderBase.I"
 
 #endif
-

@@ -15,8 +15,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENAL //[
-
 //Panda Headers
 #include "throw_event.h"
 #include "openalAudioSound.h"
@@ -916,5 +914,3 @@ status() const {
     return AudioSound::PLAYING;
   }
 }
-
-#endif //]

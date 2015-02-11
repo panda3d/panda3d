@@ -10,10 +10,10 @@ __all__ = [
     'execfile',
     ]
 
-from pandac import PandaModules as pm
+from panda3d import core
 import types
 
-_vfs = pm.VirtualFileSystem.getGlobalPtr()
+_vfs = core.VirtualFileSystem.getGlobalPtr()
 
 class file:
     def __init__(self, filename, mode = 'r', bufsize = None,
@@ -36,14 +36,14 @@ class file:
         readMode = False
         writeMode = False
 
-        if isinstance(filename, pm.Istream) or isinstance(filename, pm.Ostream):
+        if isinstance(filename, core.Istream) or isinstance(filename, core.Ostream):
             # If we were given a stream instead of a filename, assign
             # it directly.
             self.__stream = filename
-            readMode = isinstance(filename, pm.Istream)
-            writeMode = isinstance(filename, pm.Ostream)
+            readMode = isinstance(filename, core.Istream)
+            writeMode = isinstance(filename, core.Ostream)
 
-        elif isinstance(filename, pm.VirtualFile):
+        elif isinstance(filename, core.VirtualFile):
             # We can also "open" a VirtualFile object for reading.
             self.__stream = filename.openReadFile(autoUnwrap)
             if not self.__stream:
@@ -57,10 +57,10 @@ class file:
             if isinstance(filename, types.StringTypes):
                 # If a raw string is given, assume it's an os-specific
                 # filename.
-                filename = pm.Filename.fromOsSpecific(filename)
+                filename = core.Filename.fromOsSpecific(filename)
             else:
                 # If a Filename is given, make a writable copy anyway.
-                filename = pm.Filename(filename)
+                filename = core.Filename(filename)
 
             self.filename = filename
             self.name = filename.toOsSpecific()
@@ -97,7 +97,7 @@ class file:
                     message = 'Could not open %s for writing' % (filename)
                     raise IOError, message
                 writeMode = True
-                
+
             elif mode == 'a':
                 self.__stream = _vfs.openAppendFile(filename)
                 if not self.__stream:
@@ -142,14 +142,14 @@ class file:
             self.__needsVfsClose = True
 
         if readMode:
-            self.__reader = pm.StreamReader(self.__stream, False)
+            self.__reader = core.StreamReader(self.__stream, False)
         if writeMode:
-            self.__writer = pm.StreamWriter(self.__stream, False)
+            self.__writer = core.StreamWriter(self.__stream, False)
             self.__lastWrite = True
 
     def __del__(self):
         self.close()
-        
+
     def close(self):
         if self.__needsVfsClose:
             if self.__reader and self.__writer:
@@ -158,13 +158,13 @@ class file:
                 _vfs.closeReadFile(self.__stream)
             else:  # self.__writer:
                 _vfs.closeWriteFile(self.__stream)
-                
+
             self.__needsVfsClose = False
         self.__stream = None
         self.__needsVfsClose = False
         self.__reader = None
         self.__writer = None
-        
+
     def flush(self):
         if self.__stream:
             self.__stream.clear()  # clear eof flag
@@ -188,7 +188,7 @@ class file:
             # The stream is open only in write mode.
             message = 'Attempt to read from write-only stream'
             raise IOError, message
-        
+
         self.__stream.clear()  # clear eof flag
         self.__lastWrite = False
         if size >= 0:
@@ -199,7 +199,7 @@ class file:
             while not self.__stream.eof():
                 result += self.__reader.extractBytes(1024)
         return result
-        
+
     def readline(self, size = -1):
         if not self.__reader:
             if not self.__writer:
@@ -213,7 +213,7 @@ class file:
         self.__stream.clear()  # clear eof flag
         self.__lastWrite = False
         return self.__reader.readline()
-        
+
     def readlines(self, sizehint = -1):
         lines = []
         line = self.readline()
@@ -241,7 +241,7 @@ class file:
                 return self.__stream.tellg()
         message = 'I/O operation on closed file'
         raise ValueError, message
-    
+
     def truncate(self):
         """ Sorry, this isn't supported by Panda's low-level I/O,
         because it isn't supported by the standard C++ library. """
@@ -287,7 +287,7 @@ open = file
 def listdir(path):
     """ Implements os.listdir over vfs. """
     files = []
-    dirlist = _vfs.scanDirectory(pm.Filename.fromOsSpecific(path))
+    dirlist = _vfs.scanDirectory(core.Filename.fromOsSpecific(path))
     if dirlist is None:
         message = 'No such file or directory: %s' % (path)
         raise OSError, message
@@ -338,31 +338,31 @@ def join(path, *args):
     return path
 
 def isfile(path):
-    return _vfs.isRegularFile(pm.Filename.fromOsSpecific(path))
+    return _vfs.isRegularFile(core.Filename.fromOsSpecific(path))
 
 def isdir(path):
-    return _vfs.isDirectory(pm.Filename.fromOsSpecific(path))
+    return _vfs.isDirectory(core.Filename.fromOsSpecific(path))
 
 def exists(path):
-    return _vfs.exists(pm.Filename.fromOsSpecific(path))
+    return _vfs.exists(core.Filename.fromOsSpecific(path))
 
 def lexists(path):
-    return _vfs.exists(pm.Filename.fromOsSpecific(path))
-    
+    return _vfs.exists(core.Filename.fromOsSpecific(path))
+
 def getmtime(path):
-    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)
     if not file:
         raise os.error
     return file.getTimestamp()
-    
+
 def getsize(path):
-    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)
     if not file:
         raise os.error
     return file.getFileSize()
 
 def execfile(path, globals=None, locals=None):
-    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)
     if not file:
         raise os.error
 

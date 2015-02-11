@@ -28,13 +28,13 @@ GeomVertexColumn() :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexColumn::
-GeomVertexColumn(InternalName *name, int num_components,
+GeomVertexColumn(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,
                  int start, int column_alignment) :
-  _name(name),
+  _name(MOVE(name)),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
@@ -48,7 +48,7 @@ GeomVertexColumn(InternalName *name, int num_components,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexColumn::
 GeomVertexColumn(const GeomVertexColumn &copy) :
@@ -66,7 +66,7 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexColumn::
 ~GeomVertexColumn() {
@@ -82,7 +82,7 @@ INLINE GeomVertexColumn::
 //               system-defined field types.  Only the system-defined
 //               field types are used for the actual rendering.
 ////////////////////////////////////////////////////////////////////
-INLINE InternalName *GeomVertexColumn::
+INLINE const InternalName *GeomVertexColumn::
 get_name() const {
   return _name;
 }
@@ -114,6 +114,17 @@ get_num_components() const {
 INLINE int GeomVertexColumn::
 get_num_values() const {
   return _num_values;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::get_num_elements
+//       Access: Published
+//  Description: Returns the number of times this column is repeated.
+//               This is usually 1, except for matrices.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexColumn::
+get_num_elements() const {
+  return _num_elements;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,6 +174,18 @@ get_start() const {
 INLINE int GeomVertexColumn::
 get_column_alignment() const {
   return _column_alignment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::get_element_stride
+//       Access: Published
+//  Description: This value is only relevant for matrix types.
+//               Returns the number of bytes to add to access the
+//               next row of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexColumn::
+get_element_stride() const {
+  return _element_stride;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,7 +334,7 @@ operator == (const GeomVertexColumn &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexColumn::
 operator != (const GeomVertexColumn &other) const {
@@ -328,7 +351,7 @@ operator != (const GeomVertexColumn &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexColumn::
 operator < (const GeomVertexColumn &other) const {
-  if (_start != other._start) { 
+  if (_start != other._start) {
     return _start < other._start;
   }
   if (_total_bytes < other._total_bytes) {
@@ -359,7 +382,7 @@ maybe_scale_color_f(unsigned int value) {
     return (float)value;
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_f
 //       Access: Public
@@ -371,11 +394,11 @@ maybe_scale_color_f(unsigned int a, unsigned int b) {
   if (_column->get_contents() == C_color) {
     _v2.set((float)a / 255.0f,
             (float)b / 255.0f);
-  } else {    
+  } else {
     _v2.set((float)a, (float)b);
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_f
 //       Access: Public
@@ -388,11 +411,11 @@ maybe_scale_color_f(unsigned int a, unsigned int b, unsigned int c) {
     _v3.set((float)a / 255.0f,
             (float)b / 255.0f,
             (float)c / 255.0f);
-  } else {    
+  } else {
     _v3.set((float)a, (float)b, (float)c);
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_f
 //       Access: Public
@@ -411,7 +434,6 @@ maybe_scale_color_f(unsigned int a, unsigned int b, unsigned int c,
     _v4.set((float)a, (float)b, (float)c, (float)d);
   }
 }
-    
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
@@ -429,7 +451,7 @@ maybe_unscale_color_f(float data) {
     return (unsigned int)data;
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
 //       Access: Public
@@ -447,7 +469,7 @@ maybe_unscale_color_f(const LVecBase2f &data) {
     _b = (unsigned int)data[1];
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
 //       Access: Public
@@ -467,7 +489,7 @@ maybe_unscale_color_f(const LVecBase3f &data) {
     _c = (unsigned int)data[2];
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
 //       Access: Public
@@ -506,7 +528,7 @@ maybe_scale_color_d(unsigned int value) {
     return (double)value;
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_d
 //       Access: Public
@@ -518,11 +540,11 @@ maybe_scale_color_d(unsigned int a, unsigned int b) {
   if (_column->get_contents() == C_color) {
     _v2d.set((double)a / 255.0,
              (double)b / 255.0);
-  } else {    
+  } else {
     _v2d.set((double)a, (double)b);
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_d
 //       Access: Public
@@ -535,11 +557,11 @@ maybe_scale_color_d(unsigned int a, unsigned int b, unsigned int c) {
     _v3d.set((double)a / 255.0,
              (double)b / 255.0,
              (double)c / 255.0);
-  } else {    
+  } else {
     _v3d.set((double)a, (double)b, (double)c);
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_scale_color_d
 //       Access: Public
@@ -558,7 +580,6 @@ maybe_scale_color_d(unsigned int a, unsigned int b, unsigned int c,
     _v4d.set((double)a, (double)b, (double)c, (double)d);
   }
 }
-    
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
@@ -576,7 +597,7 @@ maybe_unscale_color_d(double data) {
     return (unsigned int)data;
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
 //       Access: Public
@@ -594,7 +615,7 @@ maybe_unscale_color_d(const LVecBase2d &data) {
     _b = (unsigned int)data[1];
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
 //       Access: Public
@@ -614,7 +635,7 @@ maybe_unscale_color_d(const LVecBase3d &data) {
     _c = (unsigned int)data[2];
   }
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
 //       Access: Public

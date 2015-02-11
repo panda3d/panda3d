@@ -148,10 +148,15 @@ void* dlvalloc(size_t);
 */
 int dlmallopt(int, int);
 
+#ifndef M_TRIM_THRESHOLD
 #define M_TRIM_THRESHOLD     (-1)
+#endif
+#ifndef M_GRANULARITY
 #define M_GRANULARITY        (-2)
+#endif
+#ifndef M_MMAP_THRESHOLD
 #define M_MMAP_THRESHOLD     (-3)
-
+#endif
 
 /*
   malloc_footprint();

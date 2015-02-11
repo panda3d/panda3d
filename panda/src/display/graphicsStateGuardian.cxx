@@ -98,6 +98,7 @@ PStatCollector GraphicsStateGuardian::_command_latency_pcollector("Command laten
 
 PStatCollector GraphicsStateGuardian::_prepare_pcollector("Draw:Prepare");
 PStatCollector GraphicsStateGuardian::_prepare_texture_pcollector("Draw:Prepare:Texture");
+PStatCollector GraphicsStateGuardian::_prepare_sampler_pcollector("Draw:Prepare:Sampler");
 PStatCollector GraphicsStateGuardian::_prepare_geom_pcollector("Draw:Prepare:Geom");
 PStatCollector GraphicsStateGuardian::_prepare_shader_pcollector("Draw:Prepare:Shader");
 PStatCollector GraphicsStateGuardian::_prepare_vertex_buffer_pcollector("Draw:Prepare:Vertex buffer");
@@ -230,6 +231,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_texture = false;
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
+  _supports_sampler_objects = false;
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
@@ -258,16 +260,12 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // it is rendered.
   _runtime_color_scale = false;
 
-  _stencil_render_states = 0;
-
   // The default is no shader support.
   _auto_detect_shader_model = SM_00;
   _shader_model = SM_00;
 
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-
-  _shader_generator = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,17 +276,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
-
-  if (_stencil_render_states) {
-    delete _stencil_render_states;
-    _stencil_render_states = 0;
-  }
-
-  if (_shader_generator) {
-    delete _shader_generator;
-    _shader_generator = 0;
-  }
-
   GeomMunger::unregister_mungers_for_gsg(this);
 }
 
@@ -369,6 +356,9 @@ void GraphicsStateGuardian::
 set_coordinate_system(CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
+  }
+  if (_coordinate_system == cs) {
+    return;
   }
   _coordinate_system = cs;
 
@@ -634,6 +624,35 @@ extract_texture_data(Texture *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_sampler
+//       Access: Public, Virtual
+//  Description: Creates whatever structures the GSG requires to
+//               represent the sampler internally, and returns a
+//               newly-allocated SamplerContext object with this data.
+//               It is the responsibility of the calling function to
+//               later call release_sampler() with this same pointer
+//               (which will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a sampler.  Instead, call Texture::prepare().
+////////////////////////////////////////////////////////////////////
+SamplerContext *GraphicsStateGuardian::
+prepare_sampler(const SamplerState &sampler) {
+  return (SamplerContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_sampler
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_sampler(), including deleting the
+//               SamplerContext itself, if it is non-NULL.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_sampler(SamplerContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prepare_geom
 //       Access: Public, Virtual
 //  Description: Prepares the indicated Geom for retained-mode
@@ -851,14 +870,14 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::compute_distance_to
 //       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
+//  Description: This function will compute the distance to the
 //               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.
+//               from the camera plane.  The point is assumed to be
+//               in the GSG's internal coordinate system.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat GraphicsStateGuardian::
 compute_distance_to(const LPoint3 &point) const {
-  switch (_coordinate_system) {
+  switch (_internal_coordinate_system) {
   case CS_zup_right:
     return point[1];
 
@@ -874,7 +893,7 @@ compute_distance_to(const LPoint3 &point) const {
   default:
     gsg_cat.error()
       << "Invalid coordinate system in compute_distance_to: "
-      << (int)_coordinate_system << "\n";
+      << (int)_internal_coordinate_system << "\n";
     return 0.0f;
   }
 }
@@ -917,13 +936,13 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3 v;
 
   if (altered & spec._dep[0]) {
-    const LMatrix4 *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0]);
+    const LMatrix4 *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0], spec._index);
     if (t != &spec._cache[0]) {
       spec._cache[0] = *t;
     }
   }
   if (altered & spec._dep[1]) {
-    const LMatrix4 *t = fetch_specified_part(spec._part[1], spec._arg[1], spec._cache[1]);
+    const LMatrix4 *t = fetch_specified_part(spec._part[1], spec._arg[1], spec._cache[1], spec._index);
     if (t != &spec._cache[1]) {
       spec._cache[1] = *t;
     }
@@ -968,8 +987,9 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
 //  Description: See fetch_specified_value
 ////////////////////////////////////////////////////////////////////
 const LMatrix4 *GraphicsStateGuardian::
-fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &t) {
-  switch(part) {
+fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
+                     LMatrix4 &t, int index) {
+  switch (part) {
   case Shader::SMO_identity: {
     return &LMatrix4::ident_mat();
   }
@@ -1017,7 +1037,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_material: {
-    const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+    const MaterialAttrib *target_material = (const MaterialAttrib *)
+      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
     if (target_material->is_off()) {
       t = LMatrix4(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0);
@@ -1036,7 +1057,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_color: {
-    const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+    const ColorAttrib *target_color = (const ColorAttrib *)
+      _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
     if (target_color->get_color_type() != ColorAttrib::T_flat) {
       return &LMatrix4::ones_mat();
     }
@@ -1045,7 +1067,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_colorscale: {
-    const ColorScaleAttrib *target_color = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+    const ColorScaleAttrib *target_color = (const ColorScaleAttrib *)
+      _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
     if (target_color->is_identity()) {
       return &LMatrix4::ones_mat();
     }
@@ -1054,7 +1077,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_fog: {
-    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    const FogAttrib *target_fog = (const FogAttrib *)
+      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == (Fog*) NULL) {
       return &LMatrix4::ones_mat();
@@ -1065,7 +1089,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_attr_fogcolor: {
-    const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+    const FogAttrib *target_fog = (const FogAttrib *)
+      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == (Fog*) NULL) {
       return &LMatrix4::ones_mat();
@@ -1143,6 +1168,31 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
     return &t;
   }
+  case Shader::SMO_light_ambient: {
+    LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
+    const LightAttrib *target_light = (const LightAttrib *)
+      _target_rs->get_attrib_def(LightAttrib::get_class_slot());
+
+    int num_on_lights = target_light->get_num_on_lights();
+    if (num_on_lights == 0) {
+      // There are no lights at all.  This means, to follow the fixed-
+      // function model, we pretend there is an all-white ambient light.
+      t.set_row(3, LVecBase4(1, 1, 1, 1));
+    } else {
+      for (int li = 0; li < num_on_lights; li++) {
+        NodePath light = target_light->get_on_light(li);
+        nassertr(!light.is_empty(), &LMatrix4::zeros_mat());
+        Light *light_obj = light.node()->as_light();
+        nassertr(light_obj != (Light *)NULL, &LMatrix4::zeros_mat());
+
+        if (light_obj->get_type() == AmbientLight::get_class_type()) {
+          cur_ambient_light += light_obj->get_color();
+        }
+      }
+      t.set_row(3, cur_ambient_light);
+    }
+    return &t;
+  }
   case Shader::SMO_texmat_x: {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
     const TextureAttrib *ta = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
@@ -1172,6 +1222,25 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     LPlane p (DCAST(PlaneNode, np.node())->get_plane());
     p.xform(np.get_net_transform()->get_mat()); // World-space
     t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+    return &t;
+  }
+  case Shader::SMO_apiview_clipplane_i: {
+    const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+    if (index >= cpa->get_num_on_planes()) {
+      return &LMatrix4::zeros_mat();
+    }
+
+    const NodePath &plane = cpa->get_on_plane(index);
+    nassertr(!plane.is_empty(), &LMatrix4::zeros_mat());
+    const PlaneNode *plane_node;
+    DCAST_INTO_R(plane_node, plane.node(), &LMatrix4::zeros_mat());
+
+    CPT(TransformState) transform =
+      get_scene()->get_cs_world_transform()->compose(
+        plane.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+    LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
+    t.set_row(3, xformed_plane);
     return &t;
   }
   case Shader::SMO_mat_constant_x: {
@@ -1305,6 +1374,201 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
       get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
       calc_projection_mat(lens)->get_mat();
     return &t;
+  }
+  case Shader::SMO_vec_constant_x_attrib: {
+    // This system is not ideal.  It will be improved in the future.
+    if (_target_shader->has_shader_input(name)) {
+      // There is an input specifying precisely this whole thing, with
+      // dot and all.  Support this, even if only for backward compatibility.
+      const LVecBase4 &data = _target_shader->get_shader_input_vector(name);
+      t = LMatrix4(data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3],
+                   data[0],data[1],data[2],data[3]);
+      return &t;
+    }
+
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name->get_parent());
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+
+    CPT_InternalName attrib = name->get_basename();
+
+    static const CPT_InternalName IN_ambient("ambient");
+    static const CPT_InternalName IN_diffuse("diffuse");
+    static const CPT_InternalName IN_specular("specular");
+    static const CPT_InternalName IN_position("position");
+    static const CPT_InternalName IN_halfVector("halfVector");
+    static const CPT_InternalName IN_spotDirection("spotDirection");
+    static const CPT_InternalName IN_spotCutoff("spotCutoff");
+    static const CPT_InternalName IN_spotCosCutoff("spotCosCutoff");
+    static const CPT_InternalName IN_spotExponent("spotExponent");
+    static const CPT_InternalName IN_constantAttenuation("constantAttenuation");
+    static const CPT_InternalName IN_linearAttenuation("linearAttenuation");
+    static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
+
+    if (attrib == IN_ambient) {
+#ifndef NDEBUG
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+#endif
+      // Lights don't currently have an ambient color in Panda3D.
+      // We still have to support the attribute.
+      t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      return &t;
+
+    } else if (attrib == IN_diffuse) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+
+      LColor c = light->get_color();
+      c.componentwise_mult(_light_color_scale);
+      t.set_row(3, c);
+      return &t;
+
+    } else if (attrib == IN_specular) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+      t.set_row(3, light->get_specular_color());
+      return &t;
+
+    } else if (attrib == IN_position) {
+      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+        LVector3 dir = -(light->get_direction() * transform->get_mat());
+        dir *= get_scene()->get_cs_world_transform()->get_mat();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],0);
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+        const LMatrix4 &light_mat = transform->get_mat();
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        t = LMatrix4::translate_mat(pos);
+        return &t;
+      }
+
+    } else if (attrib == IN_halfVector) {
+      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+        LVector3 dir = -(light->get_direction() * transform->get_mat());
+        dir *= get_scene()->get_cs_world_transform()->get_mat();
+        dir.normalize();
+        dir += LVector3(0, 0, 1);
+        dir.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],1);
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+        const LMatrix4 &light_mat = transform->get_mat();
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        pos.normalize();
+        pos += LVector3(0, 0, 1);
+        pos.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,pos[0],pos[1],pos[2],1);
+        return &t;
+      }
+
+    } else if (attrib == IN_spotDirection) {
+      LightLensNode *light;
+      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+      Lens *lens = light->get_lens();
+      nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+      CPT(TransformState) transform =
+        get_scene()->get_cs_world_transform()->compose(
+          np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+      const LMatrix4 &light_mat = transform->get_mat();
+      LVector3 dir = lens->get_view_vector() * light_mat;
+      t.set_row(3, dir);
+      return &t;
+
+    } else if (attrib == IN_spotCutoff) {
+      if (np.node()->is_of_type(Spotlight::get_class_type())) {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        float cutoff = lens->get_hfov() * 0.5f;
+        t.set_row(3, LVecBase4(cutoff));
+        return &t;
+      } else {
+        // Other lights have no cut-off.
+        t.set_row(3, LVecBase4(180));
+        return &t;
+      }
+
+    } else if (attrib == IN_spotCosCutoff) {
+      if (np.node()->is_of_type(Spotlight::get_class_type())) {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        float cutoff = lens->get_hfov() * 0.5f;
+        t.set_row(3, LVecBase4(ccos(deg_2_rad(cutoff))));
+        return &t;
+      } else {
+        // Other lights have no cut-off.
+        t.set_row(3, LVecBase4(-1));
+        return &t;
+      }
+    } else if (attrib == IN_spotExponent) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_exponent()));
+      return &t;
+
+    } else if (attrib == IN_constantAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[0]));
+      return &t;
+
+    } else if (attrib == IN_linearAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[1]));
+      return &t;
+
+    } else if (attrib == IN_quadraticAttenuation) {
+      Light *light = np.node()->as_light();
+      nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+
+      t.set_row(3, LVecBase4(light->get_attenuation()[2]));
+      return &t;
+
+    } else {
+      display_cat.error()
+        << "Shader input requests invalid attribute " << *name
+        << " from node " << np << "\n";
+      return &LMatrix4::ident_mat();
+    }
   }
   default:
     nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
@@ -1988,12 +2252,6 @@ reset() {
   _last_max_stage_index = 0;
 
   _is_valid = true;
-
-  if (_stencil_render_states) {
-    delete _stencil_render_states;
-    _stencil_render_states = 0;
-  }
-  _stencil_render_states = new StencilRenderStates(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2056,8 +2314,12 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform_for(CoordinateSystem cs) const {
-  if (_internal_coordinate_system == CS_default ||
-      _internal_coordinate_system == cs) {
+  if (_coordinate_system == cs) {
+    // We've already calculated this.
+    return _cs_transform;
+
+  } else if (_internal_coordinate_system == CS_default ||
+             _internal_coordinate_system == cs) {
     return TransformState::make_identity();
 
   } else {
@@ -2093,7 +2355,9 @@ do_issue_clip_plane() {
   int num_enabled = 0;
   int num_on_planes = 0;
 
-  const ClipPlaneAttrib *target_clip_plane = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+  const ClipPlaneAttrib *target_clip_plane = (const ClipPlaneAttrib *)
+    _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot());
+
   if (target_clip_plane != (ClipPlaneAttrib *)NULL) {
     CPT(ClipPlaneAttrib) new_plane = target_clip_plane->filter_to_max(_max_clip_planes);
 
@@ -2153,7 +2417,9 @@ do_issue_clip_plane() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 do_issue_color() {
-  const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+  const ColorAttrib *target_color = (const ColorAttrib *)
+    _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
+
   switch (target_color->get_color_type()) {
   case ColorAttrib::T_flat:
     // Color attribute flat: it specifies a scene graph color that
@@ -2201,7 +2467,9 @@ do_issue_color_scale() {
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 
-  const ColorScaleAttrib *target_color_scale = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+  const ColorScaleAttrib *target_color_scale = (const ColorScaleAttrib *)
+    _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
+
   _color_scale_enabled = target_color_scale->has_scale();
   _current_color_scale = target_color_scale->get_scale();
   _has_texture_alpha_scale = false;
@@ -2260,7 +2528,9 @@ do_issue_light() {
   int num_enabled = 0;
   int num_on_lights = 0;
 
-  const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
+  const LightAttrib *target_light = (const LightAttrib *)
+    _target_rs->get_attrib_def(LightAttrib::get_class_slot());
+
   if (display_cat.is_spam()) {
     display_cat.spam()
       << "do_issue_light: " << target_light << "\n";
@@ -2621,8 +2891,10 @@ end_bind_clip_planes() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 determine_target_texture() {
-  const TextureAttrib *target_texture = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, _target_rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+  const TextureAttrib *target_texture = (const TextureAttrib *)
+    _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
+  const TexGenAttrib *target_tex_gen = (const TexGenAttrib *)
+    _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
 
   nassertv(target_texture != (TextureAttrib *)NULL &&
            target_tex_gen != (TexGenAttrib *)NULL);
@@ -2692,6 +2964,13 @@ close_gsg() {
   Thread *current_thread = Thread::get_current_thread();
   _prepared_objects->begin_frame(this, current_thread);
   _prepared_objects->end_frame(current_thread);
+
+  // We have to clear the list of timer queries, though, otherwise
+  // their destructors will cause a crash when they try to access
+  // the GSG object.
+#ifdef DO_PSTATS
+  _pending_timer_queries.clear();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2896,22 +3175,22 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 
   // Set the wrap mode
   if (is_point) {
-    tex->set_wrap_u(Texture::WM_clamp);
-    tex->set_wrap_v(Texture::WM_clamp);
+    tex->set_wrap_u(SamplerState::WM_clamp);
+    tex->set_wrap_v(SamplerState::WM_clamp);
   } else {
-    tex->set_wrap_u(Texture::WM_border_color);
-    tex->set_wrap_v(Texture::WM_border_color);
+    tex->set_wrap_u(SamplerState::WM_border_color);
+    tex->set_wrap_v(SamplerState::WM_border_color);
     tex->set_border_color(LVecBase4(1, 1, 1, 1));
   }
 
   if (get_supports_shadow_filter()) {
     // If we have the ARB_shadow extension, enable shadow filtering.
-    tex->set_minfilter(Texture::FT_shadow);
-    tex->set_magfilter(Texture::FT_shadow);
+    tex->set_minfilter(SamplerState::FT_shadow);
+    tex->set_magfilter(SamplerState::FT_shadow);
   } else {
     // We only accept linear - this tells the GPU to use hardware PCF.
-    tex->set_minfilter(Texture::FT_linear);
-    tex->set_magfilter(Texture::FT_linear);
+    tex->set_minfilter(SamplerState::FT_linear);
+    tex->set_magfilter(SamplerState::FT_linear);
   }
 
   // Assign display region(s) to the buffer and camera
@@ -2931,6 +3210,18 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   light->_sbuffers[this] = sbuffer;
 
   return tex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::has_extension
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG implements the extension
+//               identified by the given string.  This currently
+//               is only implemented by the OpenGL back-end.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+has_extension(const string &extension) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -32,6 +32,7 @@ CPT(TransformState) TransformState::_identity_state;
 CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
 int TransformState::_garbage_index = 0;
+bool TransformState::_uniquify_matrix = true;
 
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector TransformState::_garbage_collect_pcollector("*:State Cache:Garbage Collect");
@@ -98,7 +99,7 @@ TransformState::
   // We'd better not call the destructor twice on a particular object.
   nassertv(!is_destructing());
   set_destructing();
- 
+
   // Free the inverse matrix computation, if it has been stored.
   if (_inv_mat != (LMatrix4 *)NULL) {
     delete _inv_mat;
@@ -124,6 +125,10 @@ TransformState::
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
 //
+//               Note that if this returns 0, it doesn't necessarily
+//               imply that operator == returns true; it uses a very
+//               slightly different comparison threshold.
+//
 //               If uniquify_matrix is true, then matrix-defined
 //               TransformStates are also uniqified.  If
 //               uniquify_matrix is false, then only component-defined
@@ -132,7 +137,7 @@ TransformState::
 ////////////////////////////////////////////////////////////////////
 int TransformState::
 compare_to(const TransformState &other, bool uniquify_matrix) const {
-  static const int significant_flags = 
+  static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
@@ -192,6 +197,73 @@ compare_to(const TransformState &other, bool uniquify_matrix) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::operator ==
+//       Access: Published
+//  Description: Tests equivalence between two transform states.
+//               We use this instead of compare_to since this is
+//               faster, and we don't need an ordering between
+//               TransformStates because we use a hash map.
+//
+//               If uniquify_matrix is true, then matrix-defined
+//               TransformStates are also uniqified.  If
+//               uniquify_matrix is false, then only component-defined
+//               TransformStates are uniquified, which is less
+//               expensive.
+////////////////////////////////////////////////////////////////////
+bool TransformState::
+operator == (const TransformState &other) const {
+  static const int significant_flags =
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given | F_is_2d);
+
+  int flags = (_flags & significant_flags);
+  int other_flags = (other._flags & significant_flags);
+  if (flags != other_flags) {
+    return false;
+  }
+
+  if ((_flags & (F_is_invalid | F_is_identity)) != 0) {
+    // All invalid transforms are equivalent to each other, and all
+    // identity transforms are equivalent to each other.
+    return true;
+  }
+
+  if ((_flags & F_components_given) != 0) {
+    // If the transform was specified componentwise, compare them
+    // componentwise.
+    if (_pos != other._pos) {
+      return false;
+    }
+
+    if ((_flags & F_hpr_given) != 0) {
+      if (_hpr != other._hpr) {
+        return false;
+      }
+    } else if ((_flags & F_quat_given) != 0) {
+      if (_quat != other._quat) {
+        return false;
+      }
+    }
+
+    if (_scale != other._scale) {
+      return false;
+    }
+
+    return (_shear == other._shear);
+  }
+
+  // Otherwise, compare the matrices . . .
+  if (_uniquify_matrix) {
+    // . . . but only if the user thinks that's a worthwhile
+    // comparison.
+    return get_mat().almost_equal(other.get_mat());
+
+  } else {
+    // If not, we just compare the pointers.
+    return (this == &other);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_identity
 //       Access: Published, Static
 //  Description: Constructs an identity transform.
@@ -232,7 +304,7 @@ make_invalid() {
 //               components.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
-make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr, 
+make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
                          const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertr(!(pos.is_nan() || hpr.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
   // Make a special-case check for the identity transform.
@@ -260,7 +332,7 @@ make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
 //               components.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
-make_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat, 
+make_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
                           const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertr(!(pos.is_nan() || quat.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
   // Make a special-case check for the identity transform.
@@ -291,7 +363,7 @@ CPT(TransformState) TransformState::
 make_mat(const LMatrix4 &mat) {
   nassertr(!mat.is_nan(), make_invalid());
   // Make a special-case check for the identity matrix.
-  if (mat == LMatrix4::ident_mat()) {
+  if (mat.is_identity()) {
     return make_identity();
   }
 
@@ -300,7 +372,6 @@ make_mat(const LMatrix4 &mat) {
   state->_flags = F_mat_known;
   return return_new(state);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos_rotate_scale_shear2d
@@ -356,7 +427,7 @@ CPT(TransformState) TransformState::
 make_mat3(const LMatrix3 &mat) {
   nassertr(!mat.is_nan(), make_invalid());
   // Make a special-case check for the identity matrix.
-  if (mat == LMatrix3::ident_mat()) {
+  if (mat.is_identity()) {
     return make_identity();
   }
 
@@ -529,7 +600,7 @@ set_rotate2d(PN_stdfloat rotate) const {
     }
   }
 
-  return make_pos_rotate_scale_shear2d(get_pos2d(), rotate, get_scale2d(), 
+  return make_pos_rotate_scale_shear2d(get_pos2d(), rotate, get_scale2d(),
                                        get_shear2d());
 }
 
@@ -592,7 +663,7 @@ compose(const TransformState *other) const {
   if (other->is_identity()) {
     return this;
   }
- 
+
   // If either transform is invalid, the result is invalid.
   if (is_invalid()) {
     return this;
@@ -754,7 +825,7 @@ unref() const {
   // it and tries to ref it.
   ((TransformState *)this)->release_new();
   ((TransformState *)this)->remove_cache_pointers();
-  
+
   return false;
 }
 
@@ -821,7 +892,7 @@ validate_composition_cache() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 output(ostream &out) const {
@@ -913,7 +984,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 write(ostream &out, int indent_level) const {
@@ -1037,7 +1108,7 @@ get_num_unused_states() {
 
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
-          << "Unused state: " << (void *)state << ":" 
+          << "Unused state: " << (void *)state << ":"
           << state->get_ref_count() << " =\n";
         state->write(pgraph_cat.debug(false), 2);
       }
@@ -1167,7 +1238,7 @@ garbage_collect() {
   }
   num_this_pass = min(num_this_pass, size);
   int stop_at_element = (_garbage_index + num_this_pass) % size;
-  
+
   int num_elements = 0;
   int si = _garbage_index;
   do {
@@ -1197,8 +1268,8 @@ garbage_collect() {
         state->cache_unref();
         delete state;
       }
-    }      
-    
+    }
+
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
@@ -1276,7 +1347,7 @@ list_cycles(ostream &out) {
         if (r_detect_reverse_cycles(state, state, 1, _last_cycle_detect, &cycle_desc)) {
           // This state begins a cycle.
           CompositionCycleDesc::iterator csi;
-          
+
           out << "\nReverse cycle detected of length " << cycle_desc.size() + 1 << ":\n"
               << "state ";
           for (csi = cycle_desc.begin(); csi != cycle_desc.end(); ++csi) {
@@ -1292,7 +1363,7 @@ list_cycles(ostream &out) {
           out << (void *)state << ":"
               << state->get_ref_count() << " =\n";
           state->write(out, 2);
-          
+
           cycle_desc.clear();
         }
       }
@@ -1355,7 +1426,7 @@ validate_states() {
     pgraph_cat.error()
       << "TransformState::_states cache is invalid!\n";
     return false;
-  }    
+  }
 
   int size = _states->get_size();
   int si = 0;
@@ -1376,13 +1447,11 @@ validate_states() {
       return false;
     }
     const TransformState *ssnext = _states->get_key(snext);
-    int c = ssi->compare_to(*ssnext);
-    int ci = ssnext->compare_to(*ssi);
-    if ((ci < 0) != (c > 0) ||
-        (ci > 0) != (c < 0) ||
-        (ci == 0) != (c == 0)) {
+    bool c = (*ssi) == (*ssnext);
+    bool ci = (*ssnext) == (*ssi);
+    if (c != ci) {
       pgraph_cat.error()
-        << "TransformState::compare_to() not defined properly!\n";
+        << "TransformState::operator == () not defined properly!\n";
       pgraph_cat.error(false)
         << "(a, b): " << c << "\n";
       pgraph_cat.error(false)
@@ -1415,6 +1484,18 @@ void TransformState::
 init_states() {
   _states = new States;
 
+  ConfigVariableBool uniquify_matrix
+  ("uniquify-matrix", true,
+   PRC_DESC("Set this true to look up arbitrary 4x4 transform matrices in "
+            "the cache, to ensure that two differently-computed transforms "
+            "that happen to encode the same matrix will be collapsed into "
+            "a single pointer.  Nowadays, with the transforms stored in a "
+            "hashtable, we're generally better off with this set true."));
+
+  // Store this at the beginning, so that we don't have to query this
+  // every time that the comparison operator is invoked.
+  _uniquify_matrix = uniquify_matrix;
+
   // TODO: we should have a global Panda mutex to allow us to safely
   // create _states_lock without a startup race condition.  For the
   // meantime, this is OK because we guarantee that this method is
@@ -1424,7 +1505,7 @@ init_states() {
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::return_new
 //       Access: Private, Static
@@ -1519,8 +1600,8 @@ do_compose(const TransformState *other) const {
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
-  if (compose_componentwise && 
-      has_uniform_scale() && 
+  if (compose_componentwise &&
+      has_uniform_scale() &&
       !has_nonzero_shear() && !other->has_nonzero_shear() &&
       ((components_given() && other->has_components()) ||
        (other->components_given() && has_components()))) {
@@ -1541,7 +1622,7 @@ do_compose(const TransformState *other) const {
 
       rotate += other->get_rotate2d();
       LVecBase2 new_scale = other->get_scale2d() * scale;
-      
+
       result = make_pos_rotate_scale2d(pos, rotate, new_scale);
 
     } else {
@@ -1549,14 +1630,14 @@ do_compose(const TransformState *other) const {
       LVecBase3 pos = get_pos();
       LQuaternion quat = get_norm_quat();
       PN_stdfloat scale = get_uniform_scale();
-      
+
       pos += quat.xform(other->get_pos()) * scale;
       quat = other->get_norm_quat() * quat;
       LVecBase3 new_scale = other->get_scale() * scale;
-      
+
       result = make_pos_quat_scale(pos, quat, new_scale);
     }
-      
+
 #ifndef NDEBUG
     if (paranoid_compose) {
       // Now verify against the matrix.
@@ -1653,7 +1734,7 @@ store_compose(const TransformState *other, const TransformState *result) {
     // to decrement it again later, when the composition entry is
     // removed from the cache.
     result->cache_ref();
-    
+
     // (If the result was just this again, we still store the
     // result, but we don't increment the reference count, since
     // that would be a self-referential leak.)
@@ -1730,7 +1811,7 @@ store_invert_compose(const TransformState *other, const TransformState *result) 
     // to decrement it again later, when the composition entry is
     // removed from the cache.
     result->cache_ref();
-    
+
     // (If the result was just this again, we still store the
     // result, but we don't increment the reference count, since
     // that would be a self-referential leak.)
@@ -1751,8 +1832,8 @@ do_invert_compose(const TransformState *other) const {
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
-  if (compose_componentwise && 
-      has_uniform_scale() && 
+  if (compose_componentwise &&
+      has_uniform_scale() &&
       !has_nonzero_shear() && !other->has_nonzero_shear() &&
       ((components_given() && other->has_components()) ||
        (other->components_given() && has_components()))) {
@@ -1767,7 +1848,7 @@ do_invert_compose(const TransformState *other) const {
       PN_stdfloat rotate = get_rotate2d();
       LQuaternion quat = get_norm_quat();
       PN_stdfloat scale = get_uniform_scale();
-      
+
       // First, invert our own transform.
       if (scale == 0.0f) {
         ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
@@ -1779,7 +1860,7 @@ do_invert_compose(const TransformState *other) const {
       LVecBase3 mp = quat.xform(-LVecBase3(pos[0], pos[1], 0.0f));
       pos = LVecBase2(mp[0], mp[1]) * scale;
       LVecBase2 new_scale(scale, scale);
-      
+
       // Now compose the inverted transform with the other transform.
       if (!other->is_identity()) {
         LPoint3 op = quat.xform(other->get_pos());
@@ -1796,7 +1877,7 @@ do_invert_compose(const TransformState *other) const {
       LVecBase3 pos = get_pos();
       LQuaternion quat = get_norm_quat();
       PN_stdfloat scale = get_uniform_scale();
-      
+
       // First, invert our own transform.
       if (scale == 0.0f) {
         ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
@@ -1806,7 +1887,7 @@ do_invert_compose(const TransformState *other) const {
       quat.invert_in_place();
       pos = quat.xform(-pos) * scale;
       LVecBase3 new_scale(scale, scale, scale);
-      
+
       // Now compose the inverted transform with the other transform.
       if (!other->is_identity()) {
         pos += quat.xform(other->get_pos()) * scale;
@@ -1879,7 +1960,7 @@ do_invert_compose(const TransformState *other) const {
 void TransformState::
 detect_and_break_cycles() {
   PStatTimer timer(_transform_break_cycles_pcollector);
-  
+
   ++_last_cycle_detect;
   if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
     // Ok, we have a cycle.  This will be a leak unless we break the
@@ -1888,7 +1969,7 @@ detect_and_break_cycles() {
       pgraph_cat.debug()
         << "Breaking cycle involving " << (*this) << "\n";
     }
-    
+
     remove_cache_pointers();
   } else {
     ++_last_cycle_detect;
@@ -1897,7 +1978,7 @@ detect_and_break_cycles() {
         pgraph_cat.debug()
           << "Breaking cycle involving " << (*this) << "\n";
       }
-      
+
       remove_cache_pointers();
     }
   }
@@ -1936,7 +2017,7 @@ r_detect_cycles(const TransformState *start_state,
     if (current_state->_composition_cache.has_element(i)) {
       const TransformState *result = current_state->_composition_cache.get_data(i)._result;
       if (result != (const TransformState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1, 
+        if (r_detect_cycles(start_state, result, length + 1,
                             this_seq, cycle_desc)) {
           // Cycle detected.
           if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -2008,7 +2089,7 @@ r_detect_reverse_cycles(const TransformState *start_state,
 
         const TransformState *result = other->_composition_cache.get_data(oi)._result;
         if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+          if (r_detect_reverse_cycles(start_state, result, length + 1,
                                       this_seq, cycle_desc)) {
             // Cycle detected.
             if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -2033,7 +2114,7 @@ r_detect_reverse_cycles(const TransformState *start_state,
 
         const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
         if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+          if (r_detect_reverse_cycles(start_state, result, length + 1,
                                       this_seq, cycle_desc)) {
             // Cycle detected.
             if (cycle_desc != (CompositionCycleDesc *)NULL) {
@@ -2065,7 +2146,7 @@ r_detect_reverse_cycles(const TransformState *start_state,
 void TransformState::
 release_new() {
   nassertv(_states_lock->debug_is_locked());
-   
+
   if (_saved_entry != -1) {
     //nassertv(_states->find(this) == _saved_entry);
     _saved_entry = _states->find(this);
@@ -2088,7 +2169,7 @@ release_new() {
 void TransformState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
-   
+
   // Fortunately, since we added CompositionCache records in pairs, we
   // know exactly the set of TransformState objects that have us in their
   // cache: it's the same set of TransformState objects that we have in
@@ -2150,11 +2231,11 @@ remove_cache_pointers() {
       if (oi != -1) {
         // Hold a copy of the other composition result, too.
         Composition ocomp = other->_composition_cache.get_data(oi);
-        
+
         other->_composition_cache.remove_element(oi);
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
-        
+
         // It's finally safe to let our held pointers go away.  This may
         // have cascading effects as other TransformState objects are
         // destructed, but there will be no harm done if they destruct
@@ -2213,7 +2294,7 @@ do_calc_hash() {
   PStatTimer timer(_transform_hash_pcollector);
   _hash = 0;
 
-  static const int significant_flags = 
+  static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
@@ -2222,7 +2303,7 @@ do_calc_hash() {
   if ((_flags & (F_is_invalid | F_is_identity)) == 0) {
     // Only bother to put the rest of the stuff in the hash if the
     // transform is not invalid or empty.
-    
+
     if ((_flags & F_components_given) != 0) {
       // If the transform was specified componentwise, hash it
       // componentwise.
@@ -2239,7 +2320,7 @@ do_calc_hash() {
 
     } else {
       // Otherwise, hash the matrix . . .
-      if (uniquify_matrix) {
+      if (_uniquify_matrix) {
         // . . . but only if the user thinks that's worthwhile.
         if ((_flags & F_mat_known) == 0) {
           // Calculate the matrix without doubly-locking.
@@ -2556,7 +2637,7 @@ change_this(TypedWritableReferenceCount *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
   TransformState *state = DCAST(TransformState, old_ptr);
   CPT(TransformState) pointer = return_unique(state);
-  
+
   // We have to cast the pointer back to non-const, because the bam
   // reader expects that.
   return (TransformState *)pointer.p();

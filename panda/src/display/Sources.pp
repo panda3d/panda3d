@@ -14,6 +14,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.h] \
+    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.I callbackGraphicsWindow.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
@@ -43,7 +44,6 @@
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
     displayInformation.h \
@@ -55,7 +55,6 @@
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
     config_display.cxx \
-    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \
@@ -80,7 +79,6 @@
     parasiteBuffer.cxx \
     windowHandle.cxx \
     windowProperties.cxx \
-    stencilRenderStates.cxx \
     stereoDisplayRegion.cxx \
     subprocessWindow.cxx \
     touchInfo.cxx
@@ -118,7 +116,6 @@
     windowHandle.I windowHandle.h \
     windowProperties.I windowProperties.h \
     renderBuffer.h \
-    stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     subprocessWindow.h subprocessWindow.I \
     subprocessWindowBuffer.h subprocessWindowBuffer.I \

@@ -419,7 +419,18 @@ ConfigVariableInt depth_bits
  PRC_DESC("The minimum number of depth buffer bits requested."));
 ConfigVariableInt color_bits
 ("color-bits", 0,
- PRC_DESC("The minimum number of color buffer bits requested."));
+ PRC_DESC("The minimum number of total color buffer bits requested.  This "
+          "value is like red-bits + blue-bits + green-bits except Panda "
+          "won't care how the bits are divided up."));
+ConfigVariableInt red_bits
+("red-bits", 0,
+ PRC_DESC("The minimum number of red color buffer bits requested."));
+ConfigVariableInt green_bits
+("green-bits", 0,
+ PRC_DESC("The minimum number of green color buffer bits requested."));
+ConfigVariableInt blue_bits
+("blue-bits", 0,
+ PRC_DESC("The minimum number of blue color buffer bits requested."));
 ConfigVariableInt alpha_bits
 ("alpha-bits", 0,
  PRC_DESC("The minimum number of alpha buffer bits requested."));
@@ -440,8 +451,8 @@ ConfigVariableDouble pixel_zoom
 ("pixel-zoom", 1.0,
  PRC_DESC("The default pixel_zoom factor for new windows."));
 
-ConfigVariableDouble background_color
-("background-color", "0.41 0.41 0.41",
+ConfigVariableColor background_color
+("background-color", "0.41 0.41 0.41 0.0",
  PRC_DESC("Specifies the rgb(a) value of the default background color for a "
           "new window or offscreen buffer."));
 
