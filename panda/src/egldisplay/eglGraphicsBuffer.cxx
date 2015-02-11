@@ -1,5 +1,5 @@
 // Filename: eglGraphicsBuffer.cxx
-// Created by:  pro-rsoft (13Jun09)
+// Created by:  rdb (13Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -28,7 +28,7 @@ TypeHandle eglGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 eglGraphicsBuffer::
-eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -187,7 +187,7 @@ open_buffer() {
       _gsg = eglgsg;
     }
   }
-  
+
   if (eglgsg->_fbconfig == None) {
     // If we didn't use an fbconfig to create the GSG, we can't create
     // a PBuffer.
@@ -195,11 +195,11 @@ open_buffer() {
   }
 
   int attrib_list[] = {
-    EGL_WIDTH, _x_size,
-    EGL_HEIGHT, _y_size,
+    EGL_WIDTH, _size.get_x(),
+    EGL_HEIGHT, _size.get_y(),
     EGL_NONE
   };
-  
+
   _pbuffer = eglCreatePbufferSurface(eglgsg->_egl_display, eglgsg->_fbconfig, attrib_list);
 
   if (_pbuffer == EGL_NO_SURFACE) {
@@ -224,7 +224,7 @@ open_buffer() {
     return false;
   }
   _fb_properties = eglgsg->get_fb_properties();
-  
+
   _is_valid = true;
   return true;
 }

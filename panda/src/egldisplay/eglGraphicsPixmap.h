@@ -1,5 +1,5 @@
 // Filename: eglGraphicsPixmap.h
-// Created by:  pro-rsoft (13Jun09)
+// Created by:  rdb (13Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class eglGraphicsPixmap : public GraphicsBuffer {
 public:
-  eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

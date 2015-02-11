@@ -821,10 +821,12 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                        param_type == GL_INT_VEC2 ||
                        param_type == GL_INT_VEC3 ||
                        param_type == GL_INT_VEC4 ||
-                       param_type == GL_UNSIGNED_INT ||
+#ifndef OPENGLES
                        param_type == GL_UNSIGNED_INT_VEC2 ||
                        param_type == GL_UNSIGNED_INT_VEC3 ||
-                       param_type == GL_UNSIGNED_INT_VEC4);
+                       param_type == GL_UNSIGNED_INT_VEC4 ||
+#endif
+                       param_type == GL_UNSIGNED_INT );
 
       if (noprefix.empty()) {
         // Arbitrarily named attribute.
@@ -863,12 +865,16 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       // Get the number of bind points.
       switch (param_type) {
       case GL_FLOAT_MAT3:
+#ifndef OPENGLES
       case GL_DOUBLE_MAT3:
+#endif
         bind._elements = 3 * param_size;
         break;
 
       case GL_FLOAT_MAT4:
+#ifndef OPENGLES
       case GL_DOUBLE_MAT4:
+#endif
         bind._elements = 4 * param_size;
         break;
 
