@@ -162,6 +162,18 @@ call_function(ostream &out, int indent_level, bool convert_result,
     string defconstruct = builder.in_defconstruct(_cpptype->get_local_name(&parser));
     if (pexprs.empty() && !defconstruct.empty()) {
       return_expr = defconstruct;
+    } else if (_extension) {
+      // Extension constructors are a special case.  We assume there is a
+      // default constructor for the class, and the actual construction is
+      // done by an __init__ method.
+      InterfaceMaker::indent(out, indent_level);
+      _return_type->get_new_type()->output_instance(out, "result", &parser);
+      out << " = new " << _cpptype->get_local_name(&parser) << ";\n";
+
+      InterfaceMaker::indent(out, indent_level)
+        << get_call_str("result", pexprs) << ";\n";
+
+      return_expr = "result";
     } else {
       return_expr = "new " + get_call_str(container, pexprs);
     }
@@ -329,7 +341,7 @@ make_wrapper_entry(FunctionIndex function_index) {
       // understands that if the destructor function is zero, it
       // should use the regular class destructor.
 
-      //          nout << "Warning!  Destructor for " 
+      //          nout << "Warning!  Destructor for "
       //               << *_return_type->get_orig_type()
       //               << " is unavailable.\n"
       //               << "  Cannot manage return value for:\n  "
@@ -385,11 +397,13 @@ get_call_str(const string &container, const vector_string &pexprs) const {
         call << "Extension<" << _cpptype->get_local_name(&parser) << ">::";
       }
 
-      call << _cppfunc->get_local_name();
-      call << "(";
-
+      if (_type == T_constructor) {
+        // Constructor extensions are named __init__, by convention.
+        call << "__init__";
+      } else {
+        call << _cppfunc->get_local_name();
+      }
     } else {
-
       if (_type == T_constructor) {
         // Constructors are called differently.
         call << _cpptype->get_local_name(&parser);
@@ -402,9 +416,8 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       } else {
         call << _cppfunc->get_local_name(&parser);
       }
-
-      call << "(";
     }
+    call << "(";
 
     if (_flags & F_explicit_self) {
       // Pass on the PyObject * that we stripped off above.
@@ -690,7 +703,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   if (_has_this || _type == T_constructor) {
-    if ((int)_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
+    if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
         TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
       // Here's a special case.  If the first parameter of a nonstatic
       // method is a PyObject * called "self", then we will

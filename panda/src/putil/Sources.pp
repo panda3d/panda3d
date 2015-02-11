@@ -60,6 +60,7 @@
     pbitops.I pbitops.h \
     portalMask.h \
     pta_ushort.h \
+    pythonCallbackObject.cxx \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
@@ -110,7 +111,6 @@
     paramValue.cxx \
     pbitops.cxx \
     pta_ushort.cxx \
-    pythonCallbackObject.cxx \
     simpleHashMap.cxx \
     sparseArray.cxx \
     timedCycle.cxx typedWritable.cxx \

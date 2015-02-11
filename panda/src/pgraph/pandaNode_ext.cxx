@@ -53,7 +53,7 @@ __copy__() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<PandaNode>::
 __deepcopy__(PyObject *self, PyObject *memo) const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_PandaNode;
+  extern struct Dtool_PyTypedObject Dtool_PandaNode;
 
   // Borrowed reference.
   PyObject *dupe = PyDict_GetItem(memo, self);

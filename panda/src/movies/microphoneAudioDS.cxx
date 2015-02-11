@@ -22,7 +22,9 @@
 
 #ifdef HAVE_DIRECTCAM
 
-#define WIN32_LEAN_AND_MEAN 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 
 #undef Configure
 
@@ -33,9 +35,7 @@
 //       Class : MicrophoneAudioDS
 // Description : The directshow implementation of microphones.
 ////////////////////////////////////////////////////////////////////
-
-class MicrophoneAudioDS : public MicrophoneAudio
-{
+class MicrophoneAudioDS : public MicrophoneAudio {
 public:
   static void find_all_microphones_ds();
   friend void find_all_microphones_ds();
@@ -56,7 +56,7 @@ private:
   typedef pvector <AudioBuf> AudioBuffers;
 
   static void delete_buffers(AudioBuffers &buffers);
-  
+
   friend class MicrophoneAudioCursorDS;
 
 public:
@@ -90,7 +90,7 @@ public:
   typedef MicrophoneAudioDS::AudioBuffers AudioBuffers;
   MicrophoneAudioCursorDS(MicrophoneAudioDS *src, AudioBuffers &bufs, HWAVEIN hwav);
   virtual ~MicrophoneAudioCursorDS();
-  
+
   AudioBuffers _buffers;
   HWAVEIN _hwavein;
   int _samples_per_buffer;
@@ -105,7 +105,7 @@ public:
   HWAVEIN _handle;
   int     _next;    // Which buffer is the next one to read from.
   int     _offset;  // How many samples to skip in the buffer.
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -129,7 +129,7 @@ TypeHandle MicrophoneAudioCursorDS::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioDS::find_all_microphones_ds
 //       Access: Public, Static
-//  Description: Finds all DirectShow microphones and adds them to 
+//  Description: Finds all DirectShow microphones and adds them to
 //               the global list _all_microphones.
 ////////////////////////////////////////////////////////////////////
 void MicrophoneAudioDS::
@@ -205,7 +205,7 @@ delete_buffers(AudioBuffers &buffers) {
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudioCursor) MicrophoneAudioDS::
 open() {
-  
+
   // Allocate the buffers. 64 buffers, not quite 1/20 sec each.
   int samples;
   switch (_rate) {
@@ -248,7 +248,7 @@ open() {
     nassert_raise("Could not allocate audio input buffers.");
     return NULL;
   }
-  
+
   WAVEFORMATEX format;
   format.wFormatTag = WAVE_FORMAT_PCM;
   format.nChannels = _channels;
@@ -260,7 +260,7 @@ open() {
 
   HWAVEIN hwav;
   MMRESULT stat = waveInOpen(&hwav, _device_id, &format, NULL, NULL, CALLBACK_NULL);
-  
+
   if (stat != MMSYSERR_NOERROR) {
     delete_buffers(buffers);
     nassert_raise("Could not open audio input device.");
@@ -284,7 +284,7 @@ open() {
     waveInClose(hwav);
     delete_buffers(buffers);
     nassert_raise("Could not start recording on input device.");
-    return NULL;    
+    return NULL;
   }
   return new MicrophoneAudioCursorDS(this, buffers, hwav);
 }
@@ -292,7 +292,7 @@ open() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioCursorDS::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MicrophoneAudioCursorDS::
 MicrophoneAudioCursorDS(MicrophoneAudioDS *src, AudioBuffers &bufs, HWAVEIN hwav) :
@@ -314,7 +314,7 @@ MicrophoneAudioCursorDS(MicrophoneAudioDS *src, AudioBuffers &bufs, HWAVEIN hwav
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioCursorDS::cleanup
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MicrophoneAudioCursorDS::
 cleanup() {
@@ -330,7 +330,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioCursorDS::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MicrophoneAudioCursorDS::
 ~MicrophoneAudioCursorDS() {
@@ -340,7 +340,7 @@ MicrophoneAudioCursorDS::
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioCursorDS::read_samples
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MicrophoneAudioCursorDS::
 read_samples(int n, PN_int16 *data) {
@@ -351,19 +351,19 @@ read_samples(int n, PN_int16 *data) {
       if ((_buffers[index]._header->dwFlags & WHDR_DONE)==0) {
         break;
       }
-      
+
       // Find start of data in buffer.
       PN_int16 *src = (PN_int16*)(_buffers[index]._storage);
       src += (_offset * _audio_channels);
-      
+
       // Decide how many samples to extract from this buffer.
       int samples = _samples_per_buffer;
       samples -= _offset;
       if (samples > n) samples = n;
-      
+
       // Copy data to output buffer.
       memcpy(data, src, samples * 2 * _audio_channels);
-      
+
       // Advance pointers.
       data += samples * _audio_channels;
       n -= samples;
@@ -397,7 +397,7 @@ read_samples(int n, PN_int16 *data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MicrophoneAudioCursorDS::ready
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int MicrophoneAudioCursorDS::
 ready() const {

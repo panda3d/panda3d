@@ -35,12 +35,8 @@ class URLSpec;
 //               authorization requests in the past, which can
 //               possibly be re-used for future requests to the same
 //               server.
-//
-//               This class does not need to be exported from the DLL
-//               because it has no public interface; it is simply a
-//               helper class for HTTPChannel.
 ////////////////////////////////////////////////////////////////////
-class HTTPAuthorization : public ReferenceCount {
+class EXPCL_PANDAEXPRESS HTTPAuthorization : public ReferenceCount {
 public:
   typedef pmap<string, string> Tokens;
   typedef pmap<string, Tokens> AuthenticationSchemes;

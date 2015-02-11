@@ -27,9 +27,12 @@ TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;
 Shader::ShaderCaps Shader::_default_caps;
-CGcontext Shader::_cg_context = 0;
 int Shader::_shaders_generated;
 ShaderUtilization Shader::_shader_utilization = SUT_unspecified;
+
+#ifdef HAVE_CG
+CGcontext Shader::_cg_context = 0;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cp_report_error
@@ -424,7 +427,6 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_mat_constant_x) ||
       (inp == SMO_vec_constant_x) ||
       (inp == SMO_vec_constant_x_attrib) ||
-      (inp == SMO_clipplane_x) ||
       (inp == SMO_view_x_to_view) ||
       (inp == SMO_view_to_view_x) ||
       (inp == SMO_apiview_x_to_view) ||
@@ -443,6 +445,10 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_light_product_i_diffuse) ||
       (inp == SMO_light_product_i_specular)) {
     dep |= (SSD_light | SSD_material);
+  }
+  if ((inp == SMO_clipplane_x) ||
+      (inp == SMO_apiview_clipplane_i)) {
+    dep |= SSD_clip_planes;
   }
 
   return dep;
@@ -643,7 +649,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
 
     bind._name = InternalName::get_root();
-    for (int i = 1; i < pieces.size(); ++i) {
+    for (size_t i = 1; i < pieces.size(); ++i) {
       bind._name = bind._name->append(pieces[i]);
     }
     _var_spec.push_back(bind);

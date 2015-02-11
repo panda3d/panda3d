@@ -20,10 +20,6 @@
 #include "colorAttrib.h"
 #include "indent.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
 //       Access: Published
@@ -53,48 +49,6 @@ void NodePathCollection::
 operator = (const NodePathCollection &copy) {
   _node_paths = copy._node_paths;
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::Constructor
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               NodePaths.  Since this constructor accepts a generic
-//               PyObject *, it should be the last constructor listed
-//               in the class record.
-////////////////////////////////////////////////////////////////////
-NodePathCollection::
-NodePathCollection(PyObject *self, PyObject *sequence) {
-  // We have to pre-initialize self's "this" pointer when we receive
-  // self in the constructor--the caller can't initialize this for us.
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
-
-  if (!PySequence_Check(sequence)) {
-    // If passed with a non-sequence, this isn't the right constructor.
-    PyErr_SetString(PyExc_TypeError, "NodePathCollection constructor requires a sequence");
-    return;
-  }
-
-  int size = PySequence_Size(sequence);
-  for (int i = 0; i < size; ++i) {
-    PyObject *item = PySequence_GetItem(sequence, i);
-    if (item == NULL) {
-      return;
-    }
-    PyObject *result = PyObject_CallMethod(self, (char *)"addPath", (char *)"O", item);
-    Py_DECREF(item);
-    if (result == NULL) {
-      // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
-      stream << "Element " << i << " in sequence passed to NodePathCollection constructor could not be added";
-      string str = stream.str();
-      PyErr_SetString(PyExc_TypeError, str.c_str());
-      return;
-    }
-    Py_DECREF(result);
-  }
-}
-#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::add_path
@@ -245,6 +199,18 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::reserve
+//       Access: Published
+//  Description: This is a hint to Panda to allocate enough memory
+//               to hold the given number of NodePaths, if you know
+//               ahead of time how many you will be adding.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+reserve(size_t num) {
+  _node_paths.reserve(num);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::is_empty
 //       Access: Published
 //  Description: Returns true if there are no NodePaths in the
@@ -335,7 +301,7 @@ find_all_matches(const string &path) const {
     if (!is_empty()) {
       FindApproxLevelEntry *level = NULL;
       for (int i = 0; i < get_num_paths(); i++) {
-        FindApproxLevelEntry *start = 
+        FindApproxLevelEntry *start =
           new FindApproxLevelEntry(get_path(i), approx_path);
         start->_next = level;
         level = start;

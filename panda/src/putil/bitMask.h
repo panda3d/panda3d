@@ -160,8 +160,12 @@ INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask)
 
 // We need to define this temporary macro so we can pass a parameter
 // containing a comma through the macro.
+#define BITMASK16_DEF BitMask<PN_uint16, 16>
 #define BITMASK32_DEF BitMask<PN_uint32, 32>
+#define BITMASK64_DEF BitMask<PN_uint64, 64>
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK16_DEF);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK32_DEF);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK64_DEF);
 
 typedef BitMask<PN_uint16, 16> BitMask16;
 typedef BitMask<PN_uint32, 32> BitMask32;

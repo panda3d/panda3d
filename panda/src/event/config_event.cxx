@@ -24,7 +24,6 @@
 #include "eventParameter.h"
 #include "genericAsyncTask.h"
 #include "pointerEventList.h"
-#include "pythonTask.h"
 
 #include "dconfig.h"
 
@@ -45,9 +44,6 @@ ConfigureFn(config_event) {
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
   GenericAsyncTask::init_type();
-#ifdef HAVE_PYTHON
-  PythonTask::init_type();
-#endif
 
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();

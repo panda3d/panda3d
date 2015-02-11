@@ -936,13 +936,13 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3 v;
 
   if (altered & spec._dep[0]) {
-    const LMatrix4 *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0]);
+    const LMatrix4 *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0], spec._index);
     if (t != &spec._cache[0]) {
       spec._cache[0] = *t;
     }
   }
   if (altered & spec._dep[1]) {
-    const LMatrix4 *t = fetch_specified_part(spec._part[1], spec._arg[1], spec._cache[1]);
+    const LMatrix4 *t = fetch_specified_part(spec._part[1], spec._arg[1], spec._cache[1], spec._index);
     if (t != &spec._cache[1]) {
       spec._cache[1] = *t;
     }
@@ -987,8 +987,9 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
 //  Description: See fetch_specified_value
 ////////////////////////////////////////////////////////////////////
 const LMatrix4 *GraphicsStateGuardian::
-fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &t) {
-  switch(part) {
+fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
+                     LMatrix4 &t, int index) {
+  switch (part) {
   case Shader::SMO_identity: {
     return &LMatrix4::ident_mat();
   }
@@ -1223,6 +1224,25 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
     return &t;
   }
+  case Shader::SMO_apiview_clipplane_i: {
+    const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+    if (index >= cpa->get_num_on_planes()) {
+      return &LMatrix4::zeros_mat();
+    }
+
+    const NodePath &plane = cpa->get_on_plane(index);
+    nassertr(!plane.is_empty(), &LMatrix4::zeros_mat());
+    const PlaneNode *plane_node;
+    DCAST_INTO_R(plane_node, plane.node(), &LMatrix4::zeros_mat());
+
+    CPT(TransformState) transform =
+      get_scene()->get_cs_world_transform()->compose(
+        plane.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+    LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
+    t.set_row(3, xformed_plane);
+    return &t;
+  }
   case Shader::SMO_mat_constant_x: {
     return &_target_shader->get_shader_input_matrix(name, t);
   }
@@ -1377,6 +1397,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     static const CPT_InternalName IN_diffuse("diffuse");
     static const CPT_InternalName IN_specular("specular");
     static const CPT_InternalName IN_position("position");
+    static const CPT_InternalName IN_halfVector("halfVector");
     static const CPT_InternalName IN_spotDirection("spotDirection");
     static const CPT_InternalName IN_spotCutoff("spotCutoff");
     static const CPT_InternalName IN_spotCosCutoff("spotCosCutoff");
@@ -1435,6 +1456,39 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
         t = LMatrix4::translate_mat(pos);
         return &t;
       }
+
+    } else if (attrib == IN_halfVector) {
+      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+        LVector3 dir = -(light->get_direction() * transform->get_mat());
+        dir *= get_scene()->get_cs_world_transform()->get_mat();
+        dir.normalize();
+        dir += LVector3(0, 0, 1);
+        dir.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],1);
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
+
+        const LMatrix4 &light_mat = transform->get_mat();
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        pos.normalize();
+        pos += LVector3(0, 0, 1);
+        pos.normalize();
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,pos[0],pos[1],pos[2],1);
+        return &t;
+      }
+
     } else if (attrib == IN_spotDirection) {
       LightLensNode *light;
       DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());

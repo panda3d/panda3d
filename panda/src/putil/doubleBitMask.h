@@ -142,7 +142,10 @@ INLINE ostream &operator << (ostream &out, const DoubleBitMask<BMType> &doubleBi
   return out;
 }
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, DoubleBitMask<BitMaskNative>);
 typedef DoubleBitMask<BitMaskNative> DoubleBitMaskNative;
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, DoubleBitMask<DoubleBitMaskNative>);
 typedef DoubleBitMask<DoubleBitMaskNative> QuadBitMaskNative;
 
 // Tell GCC that we'll take care of the instantiation explicitly here.

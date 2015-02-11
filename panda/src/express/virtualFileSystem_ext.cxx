@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileSystem_ext.h"
+#include "vector_uchar.h"
 
 #ifdef HAVE_PYTHON
 
@@ -30,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<VirtualFileSystem>::
 read_file(const Filename &filename, bool auto_unwrap) const {
-  pvector<unsigned char> pv;
+  vector_uchar pv;
   bool okflag = _this->read_file(filename, pv, auto_unwrap);
   nassertr(okflag, NULL);
 

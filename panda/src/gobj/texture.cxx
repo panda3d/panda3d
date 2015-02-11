@@ -3325,7 +3325,7 @@ do_load_one(CData *cdata, const PfmFile &pfm, const string &name, int z, int n,
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_load_sub_image(CData *cdata, const PNMImage &image, int x, int y, int z, int n) {
-  nassertr(n >= 0 && n < cdata->_ram_images.size(), false);
+  nassertr(n >= 0 && (size_t)n < cdata->_ram_images.size(), false);
 
   int tex_x_size = do_get_expected_mipmap_x_size(cdata, n);
   int tex_y_size = do_get_expected_mipmap_y_size(cdata, n);
@@ -4378,11 +4378,11 @@ do_make_ram_mipmap_image(CData *cdata, int n) {
   if (cdata->_has_clear_color) {
     // Fill the image with the clear color.
     unsigned char pixel[16];
-    const int pixel_size = do_get_clear_data(cdata, pixel);
+    const size_t pixel_size = (size_t)do_get_clear_data(cdata, pixel);
     nassertr(pixel_size > 0, cdata->_ram_images[n]._image);
 
     unsigned char *image_data = cdata->_ram_images[n]._image;
-    for (int i = 0; i < image_size; i += pixel_size) {
+    for (size_t i = 0; i < image_size; i += pixel_size) {
       memcpy(image_data + i, pixel, pixel_size);
     }
   }

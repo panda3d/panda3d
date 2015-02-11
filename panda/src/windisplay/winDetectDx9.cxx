@@ -16,7 +16,9 @@
 
 #ifdef HAVE_DX9
 
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <d3d9.h>
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"

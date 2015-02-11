@@ -13,7 +13,6 @@
 #include "paramValue.cxx"
 #include "pbitops.cxx"
 #include "pta_ushort.cxx"
-#include "pythonCallbackObject.cxx"
 #include "simpleHashMap.cxx"
 #include "sparseArray.cxx"
 #include "timedCycle.cxx"

@@ -3413,7 +3413,7 @@ write_function_instance(ostream &out,
           << "PyUnicode_AsWideChar(" << param_name << ", " << param_name << "_str, " << param_name << "_len);\n"
           << "#endif\n";
 
-        pexpr_string = "basic_string<wchar_t>(" +
+        pexpr_string = "std::wstring(" +
           param_name + "_str, " + param_name + "_len)";
 
         extra_cleanup
@@ -3439,7 +3439,7 @@ write_function_instance(ostream &out,
           << "PyUnicode_AsWideChar(" << param_name << ", " << param_name << "_str, " << param_name << "_len);\n"
           << "#endif\n";
 
-        pexpr_string = "&basic_string<wchar_t>(" +
+        pexpr_string = "&std::wstring(" +
           param_name + "_str, " + param_name + "_len)";
 
         extra_cleanup
@@ -3473,10 +3473,10 @@ write_function_instance(ostream &out,
         }
 
         if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
-          pexpr_string = "&basic_string<char>(" +
+          pexpr_string = "&std::string(" +
             param_name + "_str, " + param_name + "_len)";
         } else {
-          pexpr_string = "basic_string<char>(" +
+          pexpr_string = "std::string(" +
             param_name + "_str, " + param_name + "_len)";
         }
         expected_params += "str";

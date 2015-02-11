@@ -636,7 +636,7 @@ void DisplayRegion::
 compute_pixels() {
   if (_window != (GraphicsOutput *)NULL) {
     CDWriter cdata(_cycler, false);
-    for (int i = 0; i < cdata->_regions.size(); ++i) {
+    for (size_t i = 0; i < cdata->_regions.size(); ++i) {
       do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
                         cdata);
     }
@@ -658,7 +658,7 @@ compute_pixels_all_stages() {
   if (_window != (GraphicsOutput *)NULL) {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);
-      for (int i = 0; i < cdata->_regions.size(); ++i) {
+      for (size_t i = 0; i < cdata->_regions.size(); ++i) {
         do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
                           cdata);
       }
@@ -677,7 +677,7 @@ compute_pixels_all_stages() {
 void DisplayRegion::
 compute_pixels(int x_size, int y_size) {
   CDWriter cdata(_cycler, false);
-  for (int i = 0; i < cdata->_regions.size(); ++i) {
+  for (size_t i = 0; i < cdata->_regions.size(); ++i) {
     do_compute_pixels(i, x_size, y_size, cdata);
   }
 }
@@ -695,7 +695,7 @@ void DisplayRegion::
 compute_pixels_all_stages(int x_size, int y_size) {
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
-    for (int i = 0; i < cdata->_regions.size(); ++i) {
+    for (size_t i = 0; i < cdata->_regions.size(); ++i) {
       do_compute_pixels(i, x_size, y_size, cdata);
     }
   } 

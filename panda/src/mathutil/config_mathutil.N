@@ -66,3 +66,5 @@ forcetype PointerToBase<ReferenceCountedVector<LVecBase2i> >
 forcetype PointerToArrayBase<LVecBase2i>
 forcetype PointerToArray<LVecBase2i>
 forcetype ConstPointerToArray<LVecBase2i>
+
+forceinclude "pointerToArray_ext.h"

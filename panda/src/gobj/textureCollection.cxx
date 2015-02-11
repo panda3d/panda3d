@@ -49,79 +49,6 @@ operator = (const TextureCollection &copy) {
   _textures = copy._textures;
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::Constructor
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               Textures.  Since this constructor accepts a generic
-//               PyObject *, it should be the last constructor listed
-//               in the class record.
-////////////////////////////////////////////////////////////////////
-TextureCollection::
-TextureCollection(PyObject *self, PyObject *sequence) {
-  // We have to pre-initialize self's "this" pointer when we receive
-  // self in the constructor--the caller can't initialize this for us.
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
-
-  if (!PySequence_Check(sequence)) {
-    // If passed with a non-sequence, this isn't the right constructor.
-    PyErr_SetString(PyExc_TypeError, "TextureCollection constructor requires a sequence");
-    return;
-  }
-
-  int size = PySequence_Size(sequence);
-  for (int i = 0; i < size; ++i) {
-    PyObject *item = PySequence_GetItem(sequence, i);
-    if (item == NULL) {
-      return;
-    }
-    PyObject *result = PyObject_CallMethod(self, (char *)"add_texture", (char *)"O", item);
-    Py_DECREF(item);
-    if (result == NULL) {
-      // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
-      stream << "Element " << i << " in sequence passed to TextureCollection constructor could not be added";
-      string str = stream.str();
-      PyErr_SetString(PyExc_TypeError, str.c_str());
-      return;
-    }
-    Py_DECREF(result);
-  }
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
-PyObject *TextureCollection::
-__reduce__(PyObject *self) const {
-  // Here we will return a 4-tuple: (Class, (args), None, iterator),
-  // where iterator is an iterator that will yield successive
-  // Textures.
-
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
-
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
-
-  // Since a TextureCollection is itself an iterator, we can simply
-  // pass it as the fourth tuple component.
-  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
-  Py_DECREF(this_class);
-  return result;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::add_texture
 //       Access: Published
@@ -268,6 +195,18 @@ has_texture(Texture *texture) const {
 void TextureCollection::
 clear() {
   _textures.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::reserve
+//       Access: Published
+//  Description: This is a hint to Panda to allocate enough memory
+//               to hold the given number of NodePaths, if you know
+//               ahead of time how many you will be adding.
+////////////////////////////////////////////////////////////////////
+void TextureCollection::
+reserve(size_t num) {
+  _textures.reserve(num);
 }
 
 ////////////////////////////////////////////////////////////////////

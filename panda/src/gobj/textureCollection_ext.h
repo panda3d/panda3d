@@ -1,5 +1,5 @@
-// Filename: nodePathCollection_ext.h
-// Created by:  rdb (09Dec13)
+// Filename: textureCollection_ext.h
+// Created by:  rdb (11Feb15)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,33 +12,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NODEPATHCOLLECTION_EXT_H
-#define NODEPATHCOLLECTION_EXT_H
+#ifndef TEXTURECOLLECTION_EXT_H
+#define TEXTURECOLLECTION_EXT_H
 
 #include "dtoolbase.h"
 
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "nodePathCollection.h"
+#include "textureCollection.h"
 #include "py_panda.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Extension<NodePathCollection>
+//       Class : Extension<TextureCollection>
 // Description : This class defines the extension methods for
-//               NodePathCollection, which are called instead of
+//               TextureCollection, which are called instead of
 //               any C++ methods with the same prototype.
 ////////////////////////////////////////////////////////////////////
 template<>
-class Extension<NodePathCollection> : public ExtensionBase<NodePathCollection> {
+class Extension<TextureCollection> : public ExtensionBase<TextureCollection> {
 public:
   void __init__(PyObject *self, PyObject *sequence);
 
   PyObject *__reduce__(PyObject *self) const;
-
-  PyObject *get_tight_bounds() const;
 };
 
 #endif  // HAVE_PYTHON
 
-#endif  // NODEPATHCOLLECTION_EXT_H
+#endif  // TEXTURECOLLECTION_EXT_H

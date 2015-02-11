@@ -103,6 +103,15 @@
 #endif
 #endif
 
+// This is a workaround for a glibc bug that is triggered by
+// clang when compiling with -ffast-math.
+#ifdef __clang__
+#include <sys/cdefs.h>
+#ifndef __extern_always_inline
+#define __extern_always_inline extern __always_inline
+#endif
+#endif
+
 #ifdef HAVE_PYTHON
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE

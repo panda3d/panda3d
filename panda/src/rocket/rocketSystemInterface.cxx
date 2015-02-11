@@ -51,6 +51,10 @@ LogMessage(Rocket::Core::Log::Type type, const Rocket::Core::String& message) {
     return true;
   case Rocket::Core::Log::LT_DEBUG:
     rocket_cat->debug() << message.CString() << "\n";
+    return true;
+  case Rocket::Core::Log::LT_MAX:
+    // Not really sent; just to keep compiler happy
+    break;
   }
   return true;
 }

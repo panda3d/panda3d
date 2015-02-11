@@ -606,6 +606,53 @@ update_subfile(const string &subfile_name, const Filename &filename,
 
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Constructor
+//       Access: Public
+//  Description: Ownership of the X509 object is passed into the
+//               CertRecord; it will be freed when the CertRecord
+//               destructs.
+////////////////////////////////////////////////////////////////////
+Multifile::CertRecord::
+CertRecord(X509 *cert) :
+  _cert(cert)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+Multifile::CertRecord::
+CertRecord(const Multifile::CertRecord &copy) :
+  _cert(X509_dup(copy._cert))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+Multifile::CertRecord::
+~CertRecord() {
+  X509_free(_cert);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Copy Assignment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Multifile::CertRecord::
+operator = (const Multifile::CertRecord &other) {
+  X509_free(_cert);
+  _cert = X509_dup(other._cert);
+}
+#endif  // HAVE_OPENSSL
+
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::add_signature
 //       Access: Published
 //  Description: Adds a new signature to the Multifile.  This

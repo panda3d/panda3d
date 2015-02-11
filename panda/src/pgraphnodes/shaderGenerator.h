@@ -85,8 +85,8 @@ protected:
   int _vtregs_used;
   int _ftregs_used;
   void reset_register_allocator();
-  char *alloc_vreg();
-  char *alloc_freg();
+  const char *alloc_vreg();
+  const char *alloc_freg();
 
   // RenderState analysis information.  Created by analyze_renderstate:
 

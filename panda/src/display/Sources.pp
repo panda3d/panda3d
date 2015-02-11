@@ -14,6 +14,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.h] \
+    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.I callbackGraphicsWindow.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
@@ -54,7 +55,6 @@
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
     config_display.cxx \
-    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \

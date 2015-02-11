@@ -17,3 +17,6 @@ forcetype PointerToBase<ReferenceCountedVector<ushort> >
 forcetype PointerToArrayBase<ushort>
 forcetype PointerToArray<ushort>
 forcetype ConstPointerToArray<ushort>
+
+# This is so the extensions for PTA_ushort are made available.
+forceinclude "pointerToArray_ext.h"

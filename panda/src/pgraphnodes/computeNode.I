@@ -73,7 +73,7 @@ get_num_dispatches() const {
 INLINE const LVecBase3i &ComputeNode::
 get_dispatch(int n) const {
   Dispatcher::CDReader cdata(_dispatcher->_cycler);
-  nassertr(n >= 0 && n < cdata->_dispatches.size(), LVecBase3i::zero());
+  nassertr(n >= 0 && (size_t)n < cdata->_dispatches.size(), LVecBase3i::zero());
   return cdata->_dispatches[n];
 }
 

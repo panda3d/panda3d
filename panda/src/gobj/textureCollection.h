@@ -32,8 +32,8 @@ PUBLISHED:
   INLINE ~TextureCollection();
 
 #ifdef HAVE_PYTHON
-  TextureCollection(PyObject *self, PyObject *sequence);
-  PyObject *__reduce__(PyObject *self) const;
+  EXTENSION(TextureCollection(PyObject *self, PyObject *sequence));
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 #endif
 
   void add_texture(Texture *texture);
@@ -43,6 +43,7 @@ PUBLISHED:
   void remove_duplicate_textures();
   bool has_texture(Texture *texture) const;
   void clear();
+  void reserve(size_t num);
 
   Texture *find_texture(const string &name) const;
 
@@ -74,5 +75,3 @@ INLINE ostream &operator << (ostream &out, const TextureCollection &col) {
 #include "textureCollection.I"
 
 #endif
-
-

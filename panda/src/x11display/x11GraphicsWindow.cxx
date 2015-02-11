@@ -47,6 +47,7 @@ static int xcursor_read(XcursorFile *file, unsigned char *buf, int len) {
 static int xcursor_write(XcursorFile *file, unsigned char *buf, int len) {
   // Not implemented, we don't need it.
   nassertr_always(false, 0);
+  return 0;
 }
 
 static int xcursor_seek(XcursorFile *file, long offset, int whence) {

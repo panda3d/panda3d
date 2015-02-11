@@ -382,18 +382,11 @@ $[cdefine USE_GENERIC_DXERR_LIBRARY]
 /* Define if we have zlib installed.  */
 $[cdefine HAVE_ZLIB]
 
-/* Define if we have OpenGL installed and want to build for GL.  */
-$[cdefine HAVE_GL]
+/* Define the preconfigured minimum GL version number.  */
 #if HAVE_GL
 # define MIN_GL_VERSION_MAJOR $[word 1,$[MIN_GL_VERSION]]
 # define MIN_GL_VERSION_MINOR $[word 2,$[MIN_GL_VERSION]]
 #endif
-
-/* Define if we have OpenGL ES installed and want to build for GLES. */
-$[cdefine HAVE_GLES]
-
-/* Define if we have OpenGL ES installed and want to build for GLES2. */
-$[cdefine HAVE_GLES2]
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]
