@@ -200,7 +200,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
 
       // Now a simple special-case test.  Often, we will have converted
       // the reference-returning assignment operator to a pointer.  In
-      // this case, we might inadventent generate code like "return
+      // this case, we might inadvertently generate code like "return
       // &(*this)", when "return this" would do.  We check for this here
       // and undo it as a special case.
 
@@ -234,8 +234,14 @@ call_function(ostream &out, int indent_level, bool convert_result,
                                                            &parser);
         out << " = " << call << ";\n";
 
+        // MOVE() expands to std::move() when we are compiling with a
+        // compiler that supports rvalue references.  It basically turns
+        // an lvalue into an rvalue, allowing a move constructor to be
+        // called instead of a copy constructor (since we won't be using
+        // the return value any more), which is usually more efficient if
+        // it exists.  If it doesn't, it shouldn't do any harm.
         string new_str =
-          _return_type->prepare_return_expr(out, indent_level, "result");
+          _return_type->prepare_return_expr(out, indent_level, "MOVE(result)");
         return_expr = _return_type->get_return_expr(new_str);
 
       } else {
@@ -258,11 +264,11 @@ call_function(ostream &out, int indent_level, bool convert_result,
 //               comment.
 ////////////////////////////////////////////////////////////////////
 void FunctionRemap::
-write_orig_prototype(ostream &out, int indent_level, bool local) const {
+write_orig_prototype(ostream &out, int indent_level, bool local, int num_default_args) const {
   if (local) {
-    _cppfunc->output(out, indent_level, NULL, false, _num_default_parameters);
+    _cppfunc->output(out, indent_level, NULL, false, num_default_args);
   } else {
-    _cppfunc->output(out, indent_level, &parser, false, _num_default_parameters);
+    _cppfunc->output(out, indent_level, &parser, false, num_default_args);
   }
 }
 
@@ -426,7 +432,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     int pn = _first_true_parameter;
-    int num_parameters = _parameters.size();
+    int num_parameters = pexprs.size();
 
     if (_type == T_item_assignment_operator) {
       // The last parameter is the value to set.
@@ -716,7 +722,8 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
   if ((int)_parameters.size() == first_param) {
     _args_type = InterfaceMaker::AT_no_args;
-  } else if ((int)_parameters.size() == first_param + 1) {
+  } else if ((int)_parameters.size() == first_param + 1 &&
+             _parameters[first_param]._remap->get_default_value() == NULL) {
     _args_type = InterfaceMaker::AT_single_arg;
   } else {
     _args_type = InterfaceMaker::AT_varargs;

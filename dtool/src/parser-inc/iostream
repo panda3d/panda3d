@@ -36,6 +36,13 @@ __published:
   };
   enum openmode {
   };
+  // Don't define these lest interrogate get tempted to actually
+  // substitute in the values, which are implementation-defined.
+  static const openmode app;
+  static const openmode binary;
+  static const openmode in;
+  static const openmode out;
+  static const openmode trunc;
 };
 class ios : public ios_base {
 __published:

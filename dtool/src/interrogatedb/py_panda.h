@@ -110,6 +110,7 @@ inline PyObject* doPy_RETURN_FALSE()
 #define nb_divide nb_true_divide
 #define nb_inplace_divide nb_inplace_true_divide
 
+#define PyLongOrInt_Check(x) PyLong_Check(x)
 #define PyLongOrInt_FromSize_t PyLong_FromSize_t
 #define PyLongOrInt_FromLong PyLong_FromLong
 #define PyLongOrInt_FromUnsignedLong PyLong_FromUnsignedLong
@@ -117,6 +118,7 @@ inline PyObject* doPy_RETURN_FALSE()
 #define PyInt_AsLong PyLong_Aslong
 #define PyInt_AS_LONG PyLong_AS_LONG
 #else
+#define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
 // PyInt_FromSize_t automatically picks the right type.
 #define PyLongOrInt_FromSize_t PyInt_FromSize_t
 #define PyLongOrInt_FromLong PyInt_FromLong
@@ -160,14 +162,26 @@ typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
 ////////////////////////////////////////////////////////////////////////
 // THIS IS THE INSTANCE CONTAINER FOR ALL panda py objects....
 ////////////////////////////////////////////////////////////////////////
-// this should save   8 bytes per object ....
 struct Dtool_PyInstDef {
   PyObject_HEAD
+
+  // Pointer to the underlying C++ object.
   void *_ptr_to_object;
+
+  // This is a pointer to the Dtool_PyTypedObject type.  It's tempting
+  // not to store this and to instead use PY_TYPE(self) and upcast that,
+  // but that breaks when someone inherits from our class in Python.
   struct Dtool_PyTypedObject *_My_Type;
+
+  // This is always set to PY_PANDA_SIGNATURE, so that we can quickly
+  // detect whether an object is a Panda object.
   unsigned short _signature;
-  int _memory_rules : 1;   // true if we own the pointer and should delete it or unref it
-  int _is_const     : 1;       // true if this is a "const" pointer.
+
+  // True if we own the pointer and should delete it or unref it.
+  bool _memory_rules;
+
+  // True if this is a "const" pointer.
+  bool _is_const;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -345,6 +359,11 @@ EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyT
 
 EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThis(PyObject *self);
 
+EXPCL_DTOOLCONFIG bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer);
+
+EXPCL_DTOOLCONFIG bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
+                                                              void **answer, const char *method_name);
+
 template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&into) {
   if (DtoolCanThisBeAPandaInstance(self)) {
     Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
@@ -356,6 +375,17 @@ template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&
   into = NULL;
   return false;
 }
+
+// Functions related to error reporting.
+
+#ifdef NDEBUG
+// _PyErr_OCCURRED is an undocumented inline version of PyErr_Occurred.
+#define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
+#else
+EXPCL_DTOOLCONFIG bool Dtool_CheckErrorOccurred();
+#endif
+
+EXPCL_DTOOLCONFIG void Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
 
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped

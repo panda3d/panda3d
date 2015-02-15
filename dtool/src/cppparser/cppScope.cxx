@@ -796,9 +796,14 @@ get_local_name(CPPScope *scope) const {
   }
   */
 
-  if (scope != NULL && _parent_scope != NULL && _parent_scope != scope) {
-    return _parent_scope->get_local_name(scope) + "::" +
-      _name.get_name_with_templ();
+  if (scope != NULL && _parent_scope != NULL/* && _parent_scope != scope*/) {
+    string parent_scope_name = _parent_scope->get_local_name(scope);
+    if (parent_scope_name.empty()) {
+      return _name.get_name_with_templ();
+    } else {
+      return parent_scope_name + "::" +
+        _name.get_name_with_templ();
+    }
   } else {
     return _name.get_name_with_templ();
   }
@@ -1040,6 +1045,10 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
+      // I don't know if this _native_scope assignment is right, but it
+      // fixes some issues with variables in instantiated template scopes
+      // being printed out with an uninstantiated template scope prefix. ~rdb
+      inst->_ident->_native_scope = to_scope;
       anything_changed = true;
     }
   }
@@ -1125,6 +1134,13 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
   CPPInstance *inst = decl->as_instance();
   if (inst != NULL) {
     inst->check_for_constructor(this, global_scope);
+
+    if (inst->_ident != NULL) {
+      // Not sure if this is the best place to assign this.  However,
+      // this fixes a bug with variables in expressions not having
+      // the proper scoping prefix. ~rdb
+      inst->_ident->_native_scope = this;
+    }
 
     string name = inst->get_simple_name();
     if (!name.empty() && inst->get_scope(this, global_scope) == this) {

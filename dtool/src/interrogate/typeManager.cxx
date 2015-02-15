@@ -670,7 +670,11 @@ bool TypeManager::
 is_const_char_pointer(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
-    return is_char_pointer(type->as_const_type()->_wrapped_around);
+    return is_const_char_pointer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return (is_const(type->as_pointer_type()->_pointing_at) &&
+            is_char(type->as_pointer_type()->_pointing_at));
 
   case CPPDeclaration::ST_typedef:
     return is_const_char_pointer(type->as_typedef_type()->_type);

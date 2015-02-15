@@ -63,6 +63,7 @@ public:
     int as_integer() const;
     double as_real() const;
     void *as_pointer() const;
+    bool as_boolean() const;
     void output(ostream &out) const;
 
     ResultType _type;

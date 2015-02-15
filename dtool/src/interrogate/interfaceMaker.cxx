@@ -871,6 +871,12 @@ delete_return_value(ostream &out, int indent_level,
 void InterfaceMaker::
 output_ref(ostream &out, int indent_level, FunctionRemap *remap,
            const string &varname) const {
+
+  if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
+    // Actually, we have it stored in a PointerTo.  No need to do anything.
+    return;
+  }
+
   if (remap->_type == FunctionRemap::T_constructor ||
       remap->_type == FunctionRemap::T_typecast) {
     // In either of these cases, we can safely assume the pointer will
@@ -901,6 +907,12 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
 void InterfaceMaker::
 output_unref(ostream &out, int indent_level, FunctionRemap *remap,
              const string &varname) const {
+
+  if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
+    // Actually, we have it stored in a PointerTo.  No need to do anything.
+    return;
+  }
+
   if (remap->_type == FunctionRemap::T_constructor ||
       remap->_type == FunctionRemap::T_typecast) {
     // In either of these cases, we can safely assume the pointer will

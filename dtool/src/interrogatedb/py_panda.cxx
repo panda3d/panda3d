@@ -19,16 +19,20 @@
 
 PyMemberDef standard_type_members[] = {
   {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
-//  {(char *)"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
-//  {(char *)"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
+  {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
+  {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
 //  {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY, (char *)"A type check signature"},
   {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
   {NULL}  /* Sentinel */
 };
 
-////////////////////////////////////////////////////////////////////////
-/// Simple Recognition Functions..
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: DtoolCanThisBeAPandaInstance
+//  Description: Given a valid (non-NULL) PyObject, does a simple
+//               check to see if it might be an instance of a Panda
+//               type.  It does this using a signature that is
+//               encoded on each instance.
+////////////////////////////////////////////////////////////////////
 bool DtoolCanThisBeAPandaInstance(PyObject *self) {
   // simple sanity check for the class type..size.. will stop basic foobars..
   // It is arguably better to use something like this:
@@ -56,6 +60,53 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
   } else {
     *answer = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Call_ExtractThisPointer
+//  Description: This is a support function for the Python bindings:
+//               it extracts the underlying C++ pointer of the given
+//               type for a given Python object.  If it was of the
+//               wrong type, raises an AttributeError.
+////////////////////////////////////////////////////////////////////
+bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
+  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
+    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+    return true;
+  }
+
+  PyErr_SetString(PyExc_AttributeError, "C++ object is not yet constructed, or already destructed.");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Call_ExtractThisPointer_NonConst
+//  Description: The same thing as Dtool_Call_ExtractThisPointer,
+//               except that it performs the additional check that
+//               the pointer is a non-const pointer.  This is called
+//               by function wrappers for functions of which all
+//               overloads are non-const, and saves a bit of code.
+//
+//               The extra method_name argument is used in formatting
+//               the error message.
+////////////////////////////////////////////////////////////////////
+bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
+                                            void **answer, const char *method_name) {
+
+  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
+    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+    return true;
+  }
+
+  if (((Dtool_PyInstDef *)self)->_is_const) {
+    // All overloads of this function are non-const.
+    PyErr_Format(PyExc_TypeError,
+                 "Cannot call %s() on a const object.",
+                 method_name);
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,12 +169,8 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
   }
 
   if (report_errors) {
-    PyTypeObject *tp = Py_TYPE(self);
-
-    PyErr_Format(PyExc_TypeError,
-                 "%s() argument %d must be %s, not %s",
-                 function_name.c_str(), param,
-                 classdef->_PyType.tp_name, tp->tp_name);
+    Dtool_Raise_ArgTypeError(self, param, function_name.c_str(), classdef->_PyType.tp_name);
+    return NULL;
   }
 
   return NULL;
@@ -138,6 +185,48 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
   }
 
   return NULL;
+}
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_CheckErrorOccurred
+//  Description: This is similar to a PyErr_Occurred() check, except
+//               that it also checks Notify to see if an assertion
+//               has occurred.  If that is the case, then it raises
+//               an AssertionError.
+//
+//               Returns true if there is an active exception, false
+//               otherwise.
+//
+//               In the NDEBUG case, this is simply a #define to
+//               _PyErr_OCCURRED() (which is an undocumented inline
+//               version of PyErr_Occurred()).
+////////////////////////////////////////////////////////////////////
+bool Dtool_CheckErrorOccurred() {
+  if (_PyErr_OCCURRED()) {
+    return true;
+  }
+  Notify *notify = Notify::ptr();
+  if (notify->has_assert_failed()) {
+    PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());
+    notify->clear_assert_failed();
+    return true;
+  }
+  return false;
+}
+#endif  // NDEBUG
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Raise_ArgTypeError
+//  Description: Raises a TypeError of the form:
+//               function_name() argument n must be type, not type
+//               for a given object passed to a function.
+////////////////////////////////////////////////////////////////////
+void Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name) {
+  PyErr_Format(PyExc_TypeError,
+               "%s() argument %d must be %s, not %s",
+               function_name, param, type_name,
+               Py_TYPE(obj)->tp_name);
 }
 
 ////////////////////////////////////////////////////////////////////////

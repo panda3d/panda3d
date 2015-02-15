@@ -148,6 +148,30 @@ as_pointer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::Result::as_boolean
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool CPPExpression::Result::
+as_boolean() const {
+  switch (_type) {
+  case RT_integer:
+    return (_u._integer != 0);
+
+  case RT_real:
+    return (_u._real != 0.0);
+
+  case RT_pointer:
+    return (_u._pointer != NULL);
+
+  default:
+    cerr << "Invalid type\n";
+    assert(false);
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Result::output
 //       Access: Public
 //  Description:
@@ -1098,8 +1122,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_variable:
+    // We can just refer to the variable by name, except if it's a
+    // private constant, in which case we have to compute the value,
+    // since we may have to use it in generated code.
     if (_u._variable->_type != NULL &&
-        _u._variable->_initializer != NULL) {
+        _u._variable->_initializer != NULL &&
+        _u._variable->_vis > V_public) {
       // A const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
       if (const_type != NULL) {
@@ -1536,4 +1564,3 @@ is_less(const CPPDeclaration *other) const {
 
   return false;
 }
-

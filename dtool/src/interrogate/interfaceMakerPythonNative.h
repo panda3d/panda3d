@@ -46,6 +46,7 @@ public:
   virtual void write_sub_module(ostream &out, Object *obj);
 
   virtual bool synthesize_this_parameter();
+  virtual bool separate_overloading();
 
   virtual Object *record_object(TypeIndex type_index);
 
@@ -127,15 +128,21 @@ private:
                                ArgsType args_type, int return_flags);
   void write_coerce_constructor(ostream &out, Object *obj, bool is_const);
 
+  int collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
+                              int max_required_args);
+
   void write_function_forset(ostream &out,
                              const std::set<FunctionRemap*> &remaps,
+                             int min_num_args, int max_num_args,
                              string &expected_params, int indent_level,
                              bool coercion_allowed, bool report_errors,
                              ArgsType args_type, int return_flags,
                              bool check_exceptions = true,
+                             bool verify_const = false,
                              const string &first_expr = string());
 
   void write_function_instance(ostream &out, FunctionRemap *remap,
+                               int min_num_args, int max_num_args,
                                string &expected_params, int indent_level,
                                bool coercion_allowed, bool report_errors,
                                ArgsType args_type, int return_flags,
@@ -144,7 +151,7 @@ private:
 
   void error_return(ostream &out, int indent_level, int return_flags);
   void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
-                         const std::string &return_expr);
+                         std::string return_expr);
 
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                       MakeSeq *make_seq);
