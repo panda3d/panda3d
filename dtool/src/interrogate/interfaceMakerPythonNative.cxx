@@ -4930,11 +4930,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     if (TypeManager::is_reference_count(return_type)) {
-      out << "#ifdef USE_MOVE_SEMANTICS\n";
-      indent(out, indent_level) << "coerced = std::move(" << return_expr << ");\n";
-      out << "#else\n";
-      indent(out, indent_level) << "swap(coerced, " << return_expr << ");\n";
-      out << "#endif\n";
+      indent(out, indent_level) << "coerced = MOVE(" << return_expr << ");\n";
     } else {
       indent(out, indent_level) << "coerced = " << return_expr << ";\n";
       indent(out, indent_level) << "manage = true;\n";
