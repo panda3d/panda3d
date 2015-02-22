@@ -298,12 +298,12 @@ begin_send_update(DCPacker &packer, const string &field_name) {
     packer.RAW_PACK_CHANNEL(_do_id);
     packer.RAW_PACK_CHANNEL(_ai_id);
     //packer.raw_pack_uint8('A');
-    packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
+    packer.raw_pack_uint16(STATESERVER_OBJECT_SET_FIELD);
     packer.raw_pack_uint32(_do_id);
     packer.raw_pack_uint16(field->get_number());
 
   } else {
-    packer.raw_pack_uint16(CLIENT_OBJECT_UPDATE_FIELD);
+    packer.raw_pack_uint16(CLIENT_OBJECT_SET_FIELD);
     packer.raw_pack_uint32(_do_id);
     packer.raw_pack_uint16(field->get_number());
   }

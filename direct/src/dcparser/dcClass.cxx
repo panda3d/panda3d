@@ -581,15 +581,9 @@ receive_update_broadcast_required_owner(PyObject *distobj,
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     DCField *field = get_inherited_field(i);
     if (field->as_molecular_field() == (DCMolecularField *)NULL &&
-        field->is_required()) {
+        field->is_required() && (field->is_ownrecv() || field->is_broadcast())) {
       packer.begin_unpack(field);
-      if (field->is_ownrecv()) {
-        field->receive_update(packer, distobj);
-      } else {
-        // It's not an ownrecv field; skip over it. It's difficult
-        // to filter this on the server, ask Roger for the reason.
-        packer.unpack_skip();
-      }
+      field->receive_update(packer, distobj);
       if (!packer.end_unpack()) {
         break;
       }
@@ -1051,20 +1045,18 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
   bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
 
   if (has_optional_fields) {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER);
+    packer.raw_pack_uint16(STATESERVER_CREATE_OBJECT_WITH_REQUIRED_OTHER);
   } else {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
+    packer.raw_pack_uint16(STATESERVER_CREATE_OBJECT_WITH_REQUIRED);
   }
-  
+
+  packer.raw_pack_uint32(do_id);
   // Parent is a bit overloaded; this parent is not about inheritance,
   // this one is about the visibility container parent, i.e. the zone
   // parent:
-  if (parent_id) {
-    packer.raw_pack_uint32(parent_id);
-  }
+  packer.raw_pack_uint32(parent_id);
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number);
-  packer.raw_pack_uint32(do_id);
 
   // Specify all of the required fields.
   int num_fields = get_num_inherited_fields();
@@ -1108,90 +1100,6 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
       if (!pack_required_field(packer, distobj, field)) {
         return Datagram();
       }
-      packer.end_pack();
-    }
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_database_generate_context
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to create a new database distributed object from the AI.
-//
-//               First Pass is to only incldue required values
-//               (with Defaults).                   
-////////////////////////////////////////////////////////////////////
-Datagram DCClass::
-ai_database_generate_context(
-    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-    CHANNEL_TYPE owner_channel,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
-{
-  DCPacker packer;
-  packer.raw_pack_uint8(1);
-  packer.RAW_PACK_CHANNEL(database_server_id);
-  packer.RAW_PACK_CHANNEL(from_channel_id);
-  //packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);  
-  packer.raw_pack_uint32(zone_id);
-  packer.RAW_PACK_CHANNEL(owner_channel);
-  packer.raw_pack_uint16(_number); // DCD class ID
-  packer.raw_pack_uint32(context_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      packer.pack_default_value();
-      packer.end_pack();
-    }
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-// TODO: remove this once Skyler has things working with the new server
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_database_generate_context_old
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to create a new database distributed object from the AI.
-//
-//               First Pass is to only incldue required values
-//               (with Defaults).                   
-////////////////////////////////////////////////////////////////////
-Datagram DCClass::
-ai_database_generate_context_old(
-    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
-{
-  DCPacker packer;
-  packer.raw_pack_uint8(1);
-  packer.RAW_PACK_CHANNEL(database_server_id);
-  packer.RAW_PACK_CHANNEL(from_channel_id);
-  //packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);  
-  packer.raw_pack_uint32(zone_id);
-  packer.raw_pack_uint16(_number); // DCD class ID
-  packer.raw_pack_uint32(context_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      packer.pack_default_value();
       packer.end_pack();
     }
   }
