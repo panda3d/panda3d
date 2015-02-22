@@ -36,7 +36,7 @@ make(PyUnicodeObject *str) {
     }
 
     string name(c_str, len);
-    return InternalName::make(c_str, len);
+    return InternalName::make(name);
   }
 
   InternalName::PyInternTable::const_iterator it;
