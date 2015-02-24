@@ -35,6 +35,7 @@
 #include "FMath/FMMatrix44.h"
 
 #include "daeMaterials.h"
+#include "daeCharacter.h"
 #include "pvector.h" // Include last
 
 ////////////////////////////////////////////////////////////////////
@@ -47,39 +48,41 @@ public:
   DAEToEggConverter();
   DAEToEggConverter(const DAEToEggConverter &copy);
   ~DAEToEggConverter();
-  
+
   virtual SomethingToEggConverter *make_copy();
-  
+
   virtual string get_name() const;
   virtual string get_extension() const;
-  
+
   virtual bool convert_file(const Filename &filename);
+  virtual DistanceUnit get_input_units();
 
   bool _invert_transparency;
 
 private:
+  string _unit_name;
+  double _unit_meters;
   PT(EggTable) _table;
   FCDocument* _document;
   FUErrorSimpleHandler* _error_handler;
-  pmap<const string, PT(EggGroup)> _joints;
-  pmap<const string, PT(EggVertexPool)> _vertex_pools;
-  pvector<string> _skeletons;
-  int _frame_rate;
-  
+  DaeCharacter::JointMap _joints;
+
+  typedef pvector<PT(DaeCharacter)> Characters;
+  Characters _characters;
+
   void process_asset();
-  void preprocess(const FCDSceneNode* node = NULL);
-  void process_node(PT(EggGroupNode) parent, const FCDSceneNode* node, bool forced = false);
-  void process_instance(PT(EggGroup) parent, const FCDEntityInstance* instance);
-  void process_mesh(PT(EggGroup) parent, const FCDGeometryMesh* mesh, PT(DaeMaterials) materials);
-  void process_spline(PT(EggGroup) parent, const string group_name, FCDGeometrySpline* geometry_spline);
-  void process_spline(PT(EggGroup) parent, const FCDSpline* spline);
-  void process_controller(PT(EggGroup) parent, const FCDControllerInstance* instance);
-  //void process_table_joint(PT(EggTable) parent, FCDSceneNode* node);
-  void process_extra(PT(EggGroup) group, const FCDExtra* extra);
-  
+  void process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced = false);
+  void process_instance(EggGroup *parent, const FCDEntityInstance* instance);
+  void process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
+                    DaeMaterials *materials, DaeCharacter *character = NULL);
+  void process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geometry_spline);
+  void process_spline(EggGroup *parent, const FCDSpline* spline);
+  void process_controller(EggGroup *parent, const FCDControllerInstance* instance);
+  void process_extra(EggGroup *group, const FCDExtra* extra);
+
   static LMatrix4d convert_matrix(const FMMatrix44& matrix);
-  void apply_transform(const PT(EggGroup) to, const FCDTransform* from);
-  
+  void apply_transform(EggGroup *to, const FCDTransform* from);
+
   friend class DaeCharacter;
 };
 
