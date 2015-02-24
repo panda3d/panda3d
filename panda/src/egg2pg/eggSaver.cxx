@@ -347,7 +347,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
     CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
 
     LMatrix4 transformf;
-    character_joint->get_net_transform(transformf);
+    character_joint->get_transform(transformf);
     LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
     joint->add_matrix4(transformd);
