@@ -144,15 +144,19 @@ test_intersection(const CollisionEntry &entry) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionBox::
 xform(const LMatrix4 &mat) {
+  _min = _min * mat;
+  _max = _max * mat;
   _center = _center * mat;
-  for(int v = 0; v < 8; v++)
+  for(int v = 0; v < 8; v++) {
     _vertex[v] = _vertex[v] * mat;
-  for(int p = 0; p < 6 ; p++)
+  }
+  for(int p = 0; p < 6 ; p++) {
     _planes[p] = set_plane(p);
-  _x = _vertex[0].get_x()-_center.get_x(); 
-  _y = _vertex[0].get_y()-_center.get_y();
-  _z = _vertex[0].get_z()-_center.get_z();
-  _radius = sqrt( _x*_x + _y*_y + _z*_z );
+  }
+  _x = _vertex[0].get_x() - _center.get_x();
+  _y = _vertex[0].get_y() - _center.get_y();
+  _z = _vertex[0].get_z() - _center.get_z();
+  _radius = sqrt(_x * _x + _y * _y + _z * _z);
   setup_box();
   mark_viz_stale();
   mark_internal_bounds_stale();
