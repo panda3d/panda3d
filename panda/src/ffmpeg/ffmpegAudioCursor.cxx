@@ -148,7 +148,11 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _can_seek = true;
   _can_seek_fast = true;
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
+  _frame = av_frame_alloc();
+#else
   _frame = avcodec_alloc_frame();
+#endif
 
   _packet = new AVPacket;
   _buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE / 2;
@@ -194,7 +198,9 @@ FfmpegAudioCursor::
 void FfmpegAudioCursor::
 cleanup() {
   if (_frame) {
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
+    av_frame_free(&_frame);
+#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
     avcodec_free_frame(&_frame);
 #else
     av_free(&_frame);
