@@ -313,8 +313,7 @@ reload_buffer() {
 #ifdef HAVE_SWRESAMPLE
         if (_resample_ctx) {
           // Resample the data to signed 16-bit sample format.
-          uint8_t* out[SWR_CH_MAX] = {(uint8_t*) _buffer, NULL};
-          bufsize = swr_convert(_resample_ctx, out, _buffer_size / 2, (const uint8_t**)_frame->extended_data, _frame->nb_samples);
+          bufsize = swr_convert(_resample_ctx, (uint8_t **)&_buffer, _buffer_size / 2, (const uint8_t**)_frame->extended_data, _frame->nb_samples);
           bufsize *= _audio_channels * 2;
         } else
 #endif
