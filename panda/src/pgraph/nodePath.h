@@ -38,6 +38,7 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
+#include "shaderInput.h"
 
 class NodePathCollection;
 class FindApproxPath;
@@ -1007,9 +1008,6 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);
-
-// We have to put this down here, to work around a circular include.
-#include "shaderInput.h"
 
 #include "nodePath.I"
 
