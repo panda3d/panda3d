@@ -22,26 +22,33 @@
 //               Python buffer protocol.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
-void Extension<PointerToArray<Element> >::
+INLINE void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
 #if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(source)) {
     // User passed a buffer object.
     Py_buffer view;
     if (PyObject_GetBuffer(source, &view, PyBUF_CONTIG_RO) == -1) {
-      PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a contiguous buffer");
+      PyErr_SetString(PyExc_TypeError,
+                      "PointerToArray constructor requires a contiguous buffer");
       return;
     }
 
     if (view.itemsize != 1 && view.itemsize != sizeof(Element)) {
-      PyErr_SetString(PyExc_TypeError, "buffer.itemsize does not match PointerToArray element size");
+      PyErr_SetString(PyExc_TypeError,
+                      "buffer.itemsize does not match PointerToArray element size");
       return;
     }
 
-    int num_elements = view.len / sizeof(Element);
-    this->_this->insert(this->_this->begin(), num_elements, Element());
+    if (view.len % sizeof(Element) != 0) {
+      PyErr_Format(PyExc_ValueError,
+                   "byte buffer is not a multiple of %zu bytes",
+                   sizeof(Element));
+      return;
+    }
 
     if (view.len > 0) {
+      this->_this->resize(view.len / sizeof(Element));
       memcpy(this->_this->p(), view.buf, view.len);
     }
 
@@ -52,21 +59,22 @@ __init__(PyObject *self, PyObject *source) {
 
   if (!PySequence_Check(source)) {
     // If passed with a non-sequence, this isn't the right constructor.
-    PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a sequence or buffer object");
+    PyErr_SetString(PyExc_TypeError,
+                    "PointerToArray constructor requires a sequence or buffer object");
     return;
   }
 
   // If we were passed a Python string, then instead of storing it
   // character-at-a-time, just load the whole string as a data
-  // buffer.
+  // buffer.  Not sure if this case is still necessary - don't Python
+  // str/bytes objects export the buffer protocol, as above?
 #if PY_MAJOR_VERSION >= 3
   if (PyBytes_Check(source)) {
     int size = PyBytes_Size(source);
     if (size % sizeof(Element) != 0) {
-      ostringstream stream;
-      stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
-      string str = stream.str();
-      PyErr_SetString(PyExc_ValueError, str.c_str());
+      PyErr_Format(PyExc_ValueError,
+                   "bytes object is not a multiple of %zu bytes",
+                   sizeof(Element));
       return;
     }
 
@@ -85,10 +93,9 @@ __init__(PyObject *self, PyObject *source) {
   if (PyString_CheckExact(source)) {
     int size = PyString_Size(source);
     if (size % sizeof(Element) != 0) {
-      ostringstream stream;
-      stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
-      string str = stream.str();
-      PyErr_SetString(PyExc_ValueError, str.c_str());
+      PyErr_Format(PyExc_ValueError,
+                   "str object is not a multiple of %zu bytes",
+                   sizeof(Element));
       return;
     }
 
@@ -107,20 +114,29 @@ __init__(PyObject *self, PyObject *source) {
 
   // Now construct the internal list by copying the elements
   // one-at-a-time from Python.
+  PyObject *push_back = PyObject_GetAttrString(self, "push_back");
+  if (push_back == NULL) {
+    PyErr_BadArgument();
+    return;
+  }
+
+  // We need to initialize the this pointer before we can call push_back.
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = (void *)this->_this;
+
   int size = PySequence_Size(source);
   for (int i = 0; i < size; ++i) {
     PyObject *item = PySequence_GetItem(source, i);
     if (item == NULL) {
       return;
     }
-    PyObject *result = PyObject_CallMethod(self, (char *)"push_back", (char *)"O", item);
+    PyObject *result = PyObject_CallFunctionObjArgs(push_back, item, NULL);
     Py_DECREF(item);
     if (result == NULL) {
       // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
-      stream << "Element " << i << " in sequence passed to PointerToArray constructor could not be added";
-      string str = stream.str();
-      PyErr_SetString(PyExc_TypeError, str.c_str());
+      PyErr_Print();
+      PyErr_Format(PyExc_TypeError,
+                   "Element %d in sequence passed to PointerToArray "
+                   "constructor could not be added", i);
       return;
     }
     Py_DECREF(result);
@@ -161,7 +177,9 @@ __setitem__(size_t n, const Element &value) {
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
-  new (this->_this) ConstPointerToArray<Element>(get_type_handle(Element));
+  PointerToArray<Element> array;
+  invoke_extension(&array).__init__(self, source);
+  *(this->_this) = MOVE(array);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -240,7 +258,7 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 
   if (view->internal != NULL) {
     // Oh, right, let's not forget to unref this.
-    ((const PointerToArray<Element> *) view->internal)->unref();
+    unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = NULL;
   }
 }
@@ -314,7 +332,7 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 
   if (view->internal != NULL) {
     // Oh, right, let's not forget to unref this.
-    ((const PointerToArray<Element> *) view->internal)->unref();
+    unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = NULL;
   }
 }

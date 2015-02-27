@@ -39,6 +39,8 @@
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
 #include "shaderInput.h"
+#include "textureCollection.h"
+#include "textureStageCollection.h"
 
 class NodePathCollection;
 class FindApproxPath;

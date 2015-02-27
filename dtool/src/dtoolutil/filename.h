@@ -68,6 +68,11 @@ PUBLISHED:
   Filename(const Filename &dirname, const Filename &basename);
   INLINE ~Filename();
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE Filename(string &&filename) NOEXCEPT;
+  INLINE Filename(Filename &&from) NOEXCEPT;
+#endif
+
 #ifdef HAVE_PYTHON
   PyObject *__reduce__(PyObject *self) const;
 #endif
@@ -88,7 +93,7 @@ PUBLISHED:
                                    Type type = T_general);
   static Filename from_os_specific_w(const wstring &os_specific,
                                      Type type = T_general);
-  static Filename expand_from(const string &user_string, 
+  static Filename expand_from(const string &user_string,
                               Type type = T_general);
   static Filename temporary(const string &dirname, const string &prefix,
                             const string &suffix = string(),
@@ -104,6 +109,11 @@ PUBLISHED:
   INLINE Filename &operator = (const wstring &filename);
   INLINE Filename &operator = (const char *filename);
   INLINE Filename &operator = (const Filename &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE Filename &operator = (string &&filename) NOEXCEPT;
+  INLINE Filename &operator = (Filename &&from) NOEXCEPT;
+#endif
 
   // And retrieval is by any of the classic string operations.
   INLINE operator const string & () const;
