@@ -1865,6 +1865,10 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     node = new CollisionNode(egg_group->get_name());
 
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
+
+    // Transform all of the collision solids into local space.
+    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the
       // traversal.  In this case, we create a new PandaNode to be the
@@ -1925,8 +1929,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     pnode->set_pos(center);
     pnode->set_color(color);
     pnode->set_radius(radius);
+
+    pnode->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+
     node = pnode;
-    
+
   } else if (egg_group->get_switch_flag()) {
     if (egg_group->get_switch_fps() != 0.0) {
       // Create a sequence node.
@@ -2790,7 +2797,6 @@ find_first_polygon(EggGroup *egg_group) {
 bool EggLoader::
 make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags, 
             LPoint3 &center, PN_stdfloat &radius, LColor &color) {
-  bool success=false;
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -2822,15 +2828,12 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       d_center /= (double)num_vertices;
       //egg2pg_cat.debug() << "make_sphere d_center: " << d_center << "\n";
 
-      LMatrix4d mat = egg_group->get_vertex_to_node();
-      d_center = d_center * mat;
-
       // And the furthest vertex determines the radius.
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
         LPoint3d p3 = vtx->get_pos3();
-                LVector3d v = p3 * mat - d_center;
+                LVector3d v = p3 - d_center;
         radius2 = max(radius2, v.length_squared());
       }
 
@@ -2841,10 +2844,10 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       vi = vertices.begin();
       EggVertex *clr_vtx = (*vi);
       color = clr_vtx->get_color();
-      success = true;
+      return true;
     }
   }
-  return success;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2900,9 +2903,8 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
                  max(max_pd[2], pos[2]));
     }
 
-    LMatrix4d mat = egg_group->get_vertex_to_node();
-    min_p = LCAST(PN_stdfloat, min_pd * mat);
-    max_p = LCAST(PN_stdfloat, max_pd * mat);
+    min_p = LCAST(PN_stdfloat, min_pd);
+    max_p = LCAST(PN_stdfloat, max_pd);
     return (min_pd != max_pd);
   }
   return false;
@@ -3170,7 +3172,6 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
     // also determine the centroid).  We compute this in node space.
     size_t num_vertices = vertices.size();
     if (num_vertices != 0) {
-      LMatrix4d mat = egg_group->get_vertex_to_node();
       pvector<LPoint3d> vpos;
       vpos.reserve(num_vertices);
       
@@ -3178,7 +3179,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
       pset<EggVertex *>::const_iterator vi;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
-        LPoint3d pos = vtx->get_pos3() * mat;
+        const LPoint3d &pos = vtx->get_pos3();
         vpos.push_back(pos);
         center += pos;
       }
@@ -3420,20 +3421,18 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
       << "\n";
   }
 
-  LMatrix4d mat = egg_poly->get_vertex_to_node();
-
   pvector<LVertex> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
 
-    LVertexd vert = (*vi)->get_pos3() * mat;
+    LVertexd vert = (*vi)->get_pos3();
     vertices.push_back(LCAST(PN_stdfloat, vert));
 
     LVertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
-      vert = (*vi)->get_pos3() * mat;
+      vert = (*vi)->get_pos3();
       if (!vert.almost_equal(last_vert)) {
         vertices.push_back(LCAST(PN_stdfloat, vert));
       }
@@ -3461,7 +3460,6 @@ void EggLoader::
 create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
                           EggGroup *parent_group,
                           EggGroup::CollideFlags flags) {
-  LMatrix4d mat = egg_poly->get_vertex_to_node();
 
   PT(EggGroup) group = new EggGroup;
 
@@ -3489,13 +3487,13 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       EggPolygon::const_iterator vi;
       vi = poly->begin();
 
-      LVertexd vert = (*vi)->get_pos3() * mat;
+      LVertexd vert = (*vi)->get_pos3();
       vertices.push_back(LCAST(PN_stdfloat, vert));
 
       LVertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
-        vert = (*vi)->get_pos3() * mat;
+        vert = (*vi)->get_pos3();
         if (!vert.almost_equal(last_vert)) {
           vertices.push_back(LCAST(PN_stdfloat, vert));
         }
@@ -3513,11 +3511,10 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
         cnode->add_solid(cspoly);
-      }        
+      }
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::create_collision_floor_mesh

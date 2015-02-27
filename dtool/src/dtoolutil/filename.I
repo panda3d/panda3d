@@ -64,6 +64,39 @@ Filename(const Filename &copy) :
 {
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::Move Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename::
+Filename(string &&filename) NOEXCEPT {
+  _flags = 0;
+  (*this) = move(filename);
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::Move Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename::
+Filename(Filename &&from) NOEXCEPT :
+  _filename(move(from._filename)),
+  _dirname_end(from._dirname_end),
+  _basename_start(from._basename_start),
+  _basename_end(from._basename_end),
+  _extension_start(from._extension_start),
+  _hash_start(from._hash_start),
+  _hash_end(from._hash_end),
+  _flags(from._flags)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::text_filename named constructor
 //       Access: Published
@@ -216,6 +249,42 @@ operator = (const Filename &copy) {
   return *this;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::Move assignment operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename &Filename::
+operator = (string &&filename) NOEXCEPT {
+  _filename = move(filename);
+
+  locate_basename();
+  locate_extension();
+  locate_hash();
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::Move assignment operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename &Filename::
+operator = (Filename &&from) NOEXCEPT {
+  _filename = MOVE(from._filename);
+  _dirname_end = from._dirname_end;
+  _basename_start = from._basename_start;
+  _basename_end = from._basename_end;
+  _extension_start = from._extension_start;
+  _hash_start = from._hash_start;
+  _hash_end = from._hash_end;
+  _flags = from._flags;
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::string typecast operator

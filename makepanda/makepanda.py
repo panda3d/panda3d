@@ -4609,7 +4609,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'BISONPREFIX_dcyy']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
-  TargetAdd('dcParser.h', input='p3egg_parser.obj', opts=['DEPENDENCYONLY'])
+  TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])
   TargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
   TargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
   TargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')

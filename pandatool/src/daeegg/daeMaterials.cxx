@@ -35,7 +35,7 @@ TypeHandle DaeMaterials::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: DaeMaterials::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DaeMaterials::
 DaeMaterials(const FCDGeometryInstance* geometry_instance) {
@@ -58,7 +58,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
     return;
   }
   _materials[semantic] = new DaeMaterial();
-  
+
   // Load in the uvsets
   for (size_t vib = 0; vib < instance->GetVertexInputBindingCount(); ++vib) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
@@ -74,7 +74,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
 #endif
     _materials[semantic]->_uvsets.push_back(bvi);
   }
-  
+
   // Handle the material stuff
   daeegg_cat.spam() << "Trying to process material with semantic " << semantic << endl;
   PT_EggMaterial egg_material = new EggMaterial(semantic);
@@ -204,12 +204,13 @@ process_extra(const string semantic, const FCDExtra* extra) {
   for (size_t et = 0; et < etype->GetTechniqueCount(); ++et) {
     const FCDENode* enode = ((const FCDENode*)(etype->GetTechnique(et)))->FindChildNode("double_sided");
     if (enode != NULL) {
-      if (trim(enode->GetContent()) == "1") {
+      string content = trim(enode->GetContent());
+      if (content == "1" || content == "true") {
         _materials[semantic]->_double_sided = true;
-      } else if (trim(enode->GetContent()) == "0") {
+      } else if (content == "0" || content == "false") {
         _materials[semantic]->_double_sided = false;
       } else {
-        daeegg_cat.warning() << "Expected <double_sided> tag to be either 1 or 0, found '" << enode->GetContent() << "' instead" << endl;
+        daeegg_cat.warning() << "Expected <double_sided> tag to be either 1 or 0, found '" << content << "' instead" << endl;
       }
     }
   }
@@ -391,7 +392,7 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparen
   blend->_color = LColor::zero();
   blend->_operand_a = EggGroup::BO_unspecified;
   blend->_operand_b = EggGroup::BO_unspecified;
-  
+
   // First fill in the color value.
   if (mode == FCDEffectStandard::A_ONE) {// || mode == FCDEffectStandard::A_ZERO) {
     double value = transparent[3] * transparency;
@@ -404,7 +405,7 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparen
     blend->_enabled = false;
     return blend;
   }
-  
+
   // Now figure out the operands.
   if (mode == FCDEffectStandard::RGB_ZERO) {// || mode == FCDEffectStandard::A_ZERO) {
     blend->_operand_a = EggGroup::BO_one_minus_constant_color;
@@ -417,7 +418,7 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparen
     blend->_enabled = false;
     return blend;
   }
-  
+
   // See if we can optimize out the color.
   if (blend->_operand_a == EggGroup::BO_constant_color) {
     if (blend->_color == LColor::zero()) {
@@ -447,7 +448,7 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparen
       blend->_operand_b = EggGroup::BO_zero;
     }
   }
-  
+
   // See if we can entirely disable the blend.
   if (blend->_operand_a == EggGroup::BO_one && blend->_operand_b == EggGroup::BO_zero) {
     blend->_enabled = false;

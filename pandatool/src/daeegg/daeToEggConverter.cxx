@@ -56,9 +56,10 @@
 ////////////////////////////////////////////////////////////////////
 DAEToEggConverter::
 DAEToEggConverter() {
+  _unit_name = "meter";
+  _unit_meters = 1.0;
   _document = NULL;
   _table = NULL;
-  _frame_rate = -1;
   _error_handler = NULL;
   _invert_transparency = false;
 }
@@ -131,18 +132,15 @@ convert_file(const Filename &filename) {
   // Reset stuff
   clear_error();
   _joints.clear();
-  _vertex_pools.clear();
-  _skeletons.clear();
-  _frame_rate = -1;
   if (_error_handler == NULL) {
     _error_handler = new FUErrorSimpleHandler;
   }
-  
+
   // The default coordinate system is Y-up
   if (_egg_data->get_coordinate_system() == CS_default) {
     _egg_data->set_coordinate_system(CS_yup_right);
   }
-  
+
   // Read the file
   FCollada::Initialize();
   _document = FCollada::LoadDocument(filename.to_os_specific().c_str());
@@ -155,201 +153,375 @@ convert_file(const Filename &filename) {
   if (_document->GetAsset() != NULL) {
     FCDocumentTools::StandardizeUpAxisAndLength(_document);
   }
-  
-  _table = new EggTable();
-  _table->set_table_type(EggTable::TT_table);
-  // Process the stuff
+
+  // Process the scene
   process_asset();
-  preprocess();
+  PT(EggGroup) scene_group;
+  string model_name = _character_name;
+
   FCDSceneNode* visual_scene = _document->GetVisualSceneInstance();
   if (visual_scene != NULL) {
-    // First check for an <extra> tag
-    const FCDExtra* extra = visual_scene->GetExtra();
-    //FIXME: eek this looks horrid
-    if (extra != NULL) {
-      const FCDEType* etype = extra->GetDefaultType();
-      if (etype != NULL) {
-        const FCDENode* enode = (const FCDENode*) etype->FindTechnique("MAX3D");
-        if (enode != NULL) {
-          enode = enode->FindChildNode("frame_rate");
-          if (enode != NULL && !string_to_int(enode->GetContent(), _frame_rate)) {
-            daeegg_cat.warning() << "Invalid integer in <frame_rate> tag: '" << enode->GetContent() << "'" << endl;
-    } } } }
-    // Now loop through the children
+    if (model_name.empty()) {
+      // By lack of anything better...
+      model_name = FROM_FSTRING(visual_scene->GetName());
+    }
+    scene_group = new EggGroup(model_name);
+    _egg_data->add_child(scene_group);
+
     for (size_t ch = 0; ch < visual_scene->GetChildrenCount(); ++ch) {
-      process_node(DCAST(EggGroupNode, _egg_data), visual_scene->GetChild(ch));
+      process_node(scene_group, visual_scene->GetChild(ch));
+    }
+  } else {
+    daeegg_cat.warning()
+      << "No visual scene instance found in COLLADA document.\n";
+  }
+
+  // Now process the characters.  This depends on information from collected
+  // joints, which is why it's done in a second step.
+  if (get_animation_convert() != AC_none) {
+    Characters::iterator it;
+    DaeCharacter *character;
+    for (it = _characters.begin(); it != _characters.end(); ++it) {
+      character = *it;
+      if (get_animation_convert() != AC_chan) {
+        character->bind_joints(_joints);
+
+        const FCDGeometryMesh *mesh = character->_skin_mesh;
+
+        if (mesh != NULL) {
+          PT(DaeMaterials) materials = new DaeMaterials(character->_instance);
+          daeegg_cat.spam() << "Processing mesh for controller\n";
+          process_mesh(character->_node_group, mesh, materials, character);
+        }
+      }
+    }
+
+    // Put the joints in bind pose.
+    for (size_t ch = 0; ch < visual_scene->GetChildrenCount(); ++ch) {
+      character->adjust_joints(visual_scene->GetChild(ch), _joints, LMatrix4d::ident_mat());
+    }
+
+    if (scene_group != NULL) {
+      // Mark the scene as character.
+      if (get_animation_convert() == AC_chan) {
+        _egg_data->remove_child(scene_group);
+      } else {
+        scene_group->set_dart_type(EggGroup::DT_default);
+      }
+    }
+
+    if (get_animation_convert() != AC_model) {
+      _table = new EggTable();
+      _table->set_table_type(EggTable::TT_table);
+      _egg_data->add_child(_table);
+
+      PT(EggTable) bundle = new EggTable(model_name);
+      bundle->set_table_type(EggTable::TT_bundle);
+      _table->add_child(bundle);
+
+      PT(EggTable) skeleton = new EggTable("<skeleton>");
+      skeleton->set_table_type(EggTable::TT_table);
+      bundle->add_child(skeleton);
+
+      pset<float> keys;
+
+      Characters::iterator it;
+      DaeCharacter *character;
+      for (it = _characters.begin(); it != _characters.end(); ++it) {
+        DaeCharacter *character = *it;
+
+        // Collect key frame timings.
+        if (get_animation_convert() == AC_both ||
+            get_animation_convert() == AC_chan) {
+          character->collect_keys(keys);
+        }
+      }
+
+      if (_frame_inc != 0.0) {
+        // A frame increment was given, this means that we have to sample the
+        // animation.
+        float start, end;
+        if (_end_frame != _start_frame) {
+          start = _start_frame;
+          end = _end_frame;
+        } else {
+          // No range was given.  Infer the frame range from the keys.
+          start = *keys.begin();
+          end = *keys.rbegin();
+        }
+        keys.clear();
+
+        for (float t = start; t <= end; t += _frame_inc) {
+          keys.insert(t);
+        }
+      } else {
+        // No sampling parameters given; not necessarily a failure, since the
+        // animation may already be sampled.  We use the key frames as animation
+        // frames.
+        if (_end_frame != 0.0) {
+          // An end frame was given, chop off all keys after that.
+          float end = _end_frame;
+          pset<float>::iterator ki;
+          for (ki = keys.begin(); ki != keys.end(); ++ki) {
+            if (*ki > end && !IS_THRESHOLD_EQUAL(*ki, end, 0.001)) {
+              keys.erase(ki, keys.end());
+              break;
+            }
+          }
+        }
+        if (_start_frame != 0.0) {
+          // A start frame was given, chop off all keys before that.
+          float start = _start_frame;
+          pset<float>::iterator ki;
+          for (ki = keys.begin(); ki != keys.end(); ++ki) {
+            if (*ki > start && !IS_THRESHOLD_EQUAL(*ki, start, 0.001)) {
+              keys.erase(keys.begin(), ki);
+              break;
+            }
+          }
+        }
+
+        // Check that this does indeed look like a sampled animation; if not,
+        // issue an appropriate warning.
+        pset<float>::const_iterator ki = keys.begin();
+        if (ki != keys.end()) {
+          float last = *ki;
+          float diff = 0;
+
+          for (++ki; ki != keys.end(); ++ki) {
+            if (diff != 0 && !IS_THRESHOLD_EQUAL((*ki - last), diff, 0.001)) {
+              daeegg_cat.error()
+                << "This does not appear to be a sampled animation.\n"
+                << "Specify the -sf, -ef and -if options to indicate how the "
+                << "animations should be sampled.\n";
+              break;
+            }
+            diff = (*ki - last);
+            last = *ki;
+          }
+        }
+      }
+
+      // It doesn't really matter which character we grab for this as
+      // it'll iterate over the whole graph right now anyway.
+      for (size_t ch = 0; ch < visual_scene->GetChildrenCount(); ++ch) {
+        character->build_table(skeleton, visual_scene->GetChild(ch), keys);
+      }
     }
   }
-  SAFE_DELETE(visual_scene);
-  
-  _egg_data->add_child(_table);
-  
+
   // Clean up and return
+  SAFE_DELETE(visual_scene);
   SAFE_DELETE(_document);
   FCollada::Release();
   return true;
 }
 
-void DAEToEggConverter::process_asset() {
-  if (_document->GetAsset() == NULL) return;
+////////////////////////////////////////////////////////////////////
+//     Function: DAEToEggConverter::get_input_units
+//       Access: Public, Virtual
+//  Description: This may be called after convert_file() has been
+//               called and returned true, indicating a successful
+//               conversion.  It will return the distance units
+//               represented by the converted egg file, if known, or
+//               DU_invalid if not known.
+////////////////////////////////////////////////////////////////////
+DistanceUnit DAEToEggConverter::
+get_input_units() {
+  if (IS_NEARLY_EQUAL(_unit_meters, 0.001)) {
+    return DU_millimeters;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 0.01)) {
+    return DU_centimeters;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 1.0)) {
+    return DU_meters;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 1000.0)) {
+    return DU_kilometers;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 3.0 * 12.0 * 0.0254)) {
+    return DU_yards;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 12.0 * 0.0254)) {
+    return DU_feet;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 0.0254)) {
+    return DU_inches;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 1852.0)) {
+    return DU_nautical_miles;
+  }
+  if (IS_NEARLY_EQUAL(_unit_meters, 5280.0 * 12.0 * 0.0254)) {
+    return DU_statute_miles;
+  }
+
+  // Whatever.
+  return DU_invalid;
+}
+
+void DAEToEggConverter::
+process_asset() {
+  const FCDAsset *asset = _document->GetAsset();
+  if (_document->GetAsset() == NULL) {
+    return;
+  }
+
+  _unit_name = FROM_FSTRING(asset->GetUnitName());
+  _unit_meters = asset->GetUnitConversionFactor();
+
   // Read out the coordinate system
-  FMVector3 up_axis (_document->GetAsset()->GetUpAxis());
+  FMVector3 up_axis = asset->GetUpAxis();
+
   if (up_axis == FMVector3(0, 1, 0)) {
     _egg_data->set_coordinate_system(CS_yup_right);
+
   } else if (up_axis == FMVector3(0, 0, 1)) {
     _egg_data->set_coordinate_system(CS_zup_right);
+
   } else {
     _egg_data->set_coordinate_system(CS_invalid);
     daeegg_cat.warning() << "Unrecognized coordinate system!\n";
   }
 }
 
-// This function lists all the joints and referenced skeletons
-void DAEToEggConverter::preprocess(const FCDSceneNode* node) {
-  // If the node is NULL, take the visual scene instance.
-  if (node == NULL) {
-    assert(_document != NULL);
-    _skeletons.clear();
-    _joints.clear();
-    node = _document->GetVisualSceneInstance();
-  }
-  if (node == NULL) return;
-  if (node->IsJoint()) {
-    _joints[FROM_FSTRING(node->GetDaeId())] = NULL;
-  }
-  // Loop through the instances first.
-  for (size_t in = 0; in < node->GetInstanceCount(); ++in) {
-    if (node->GetInstance(in)->GetType() == FCDEntityInstance::CONTROLLER) {
-      // Loop through the skeleton roots now.
-#if FCOLLADA_VERSION < 0x00030005
-      FCDSceneNodeList roots = ((FCDControllerInstance*) node->GetInstance(in))->FindSkeletonNodes();
-#else
-      FCDSceneNodeList roots;
-      ((FCDControllerInstance*) node->GetInstance(in))->FindSkeletonNodes(roots);
-#endif
-      for (FCDSceneNodeList::iterator it = roots.begin(); it != roots.end(); ++it) {
-        daeegg_cat.spam() << "Found referenced skeleton root " << FROM_FSTRING((*it)->GetDaeId()) << endl;
-        _skeletons.push_back(FROM_FSTRING((*it)->GetDaeId()));
-      }
-    }
-  }
-  // Now loop through the children and recurse.
-  for (size_t ch = 0; ch < node->GetChildrenCount(); ++ch) {
-    preprocess(node->GetChild(ch));
-  }
-}
-
 // Process the node. If forced is true, it will even process it if its known to be a skeleton root.
-void DAEToEggConverter::process_node(PT(EggGroupNode) parent, const FCDSceneNode* node, bool forced) {
+void DAEToEggConverter::
+process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
   nassertv(node != NULL);
   string node_id = FROM_FSTRING(node->GetDaeId());
   daeegg_cat.spam() << "Processing node with ID '" << node_id << "'" << endl;
-  // Important! If it's known to be a skeleton root, ignore it for now, unless we're processing forced.
-  if (!forced && count(_skeletons.begin(), _skeletons.end(), node_id) > 0) {
-    daeegg_cat.spam() << "Ignoring skeleton root node with ID '" << node_id << "', we'll process it later" << endl;
-    return;
-  }
+
   // Create an egg group for this node
-  PT(EggGroup) node_group = new EggGroup(FROM_FSTRING(node->GetName()));
+  PT(EggGroup) node_group = new EggGroup(FROM_FSTRING(node->GetDaeId()));
   process_extra(node_group, node->GetExtra());
   parent->add_child(node_group);
+
   // Check if its a joint
   if (node->IsJoint()) {
+    string sid = FROM_FSTRING(node->GetSubId());
     node_group->set_group_type(EggGroup::GT_joint);
-    _joints[node_id] = node_group;
+
+    if (!_joints.insert(DaeCharacter::JointMap::value_type(sid,
+                        DaeCharacter::Joint(node_group, node))).second) {
+      daeegg_cat.error()
+        << "Joint with sid " << sid << " occurs more than once!\n";
+    }
   }
-  // Loop through the transforms and apply them
-  for (size_t tr = 0; tr < node->GetTransformCount(); ++tr) {
-    apply_transform(node_group, node->GetTransform(tr));
+
+  // Loop through the transforms and apply them (in reverse order)
+  for (size_t tr = node->GetTransformCount(); tr > 0; --tr) {
+    apply_transform(node_group, node->GetTransform(tr - 1));
   }
+  //node_group->set_transform3d(convert_matrix(node->ToMatrix()));
+
   // Loop through the instances and process them
   for (size_t in = 0; in < node->GetInstanceCount(); ++in) {
     process_instance(node_group, node->GetInstance(in));
   }
+
   // Loop through the children and recursively process them
   for (size_t ch = 0; ch < node->GetChildrenCount(); ++ch) {
     process_node(DCAST(EggGroupNode, node_group), node->GetChild(ch));
   }
+
   // Loop through any possible scene node instances and process those, too.
   for (size_t in = 0; in < node->GetInstanceCount(); ++in) {
-    if (node->GetInstance(in)->GetEntity() && node->GetInstance(in)->GetEntity()->GetType() == FCDEntity::SCENE_NODE) {
-      process_node(DCAST(EggGroupNode, node_group), (const FCDSceneNode*) node->GetInstance(in)->GetEntity());
+    const FCDEntity *entity = node->GetInstance(in)->GetEntity();
+    if (entity && entity->GetType() == FCDEntity::SCENE_NODE) {
+      process_node(node_group, (const FCDSceneNode*) entity);
     }
   }
 }
 
-void DAEToEggConverter::process_instance(PT(EggGroup) parent, const FCDEntityInstance* instance) {
+void DAEToEggConverter::
+process_instance(EggGroup *parent, const FCDEntityInstance* instance) {
   nassertv(instance != NULL);
   nassertv(instance->GetEntity() != NULL);
   // Check what kind of instance this is
   switch (instance->GetType()) {
-    case FCDEntityInstance::GEOMETRY: {
-      const FCDGeometry* geometry = (const FCDGeometry*) instance->GetEntity();
-      assert(geometry != NULL);
-      if (geometry->IsMesh()) {
-        // Now, handle the mesh.
-        process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
+  case FCDEntityInstance::GEOMETRY:
+    {
+      if (get_animation_convert() != AC_chan) {
+        const FCDGeometry* geometry = (const FCDGeometry*) instance->GetEntity();
+        assert(geometry != NULL);
+        if (geometry->IsMesh()) {
+          // Now, handle the mesh.
+          process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
+        }
+        if (geometry->IsSpline()) {
+          process_spline(parent, FROM_FSTRING(geometry->GetName()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
+        }
       }
-      if (geometry->IsSpline()) {
-        process_spline(parent, FROM_FSTRING(geometry->GetName()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
-      }
-      break; }
-    case FCDEntityInstance::CONTROLLER: {
-      // Add the dart tag and process the controller instance
-      parent->set_dart_type(EggGroup::DT_default);
-      process_controller(parent, (const FCDControllerInstance*) instance);
-      break; }
-    case FCDEntityInstance::MATERIAL:
-      // We don't process this directly, handled per-geometry instead.
-      break;
-    case FCDEntityInstance::SIMPLE: {
-      // Grab the entity and check it's type.
+    }
+    break;
+
+  case FCDEntityInstance::CONTROLLER:
+    // Add the dart tag and process the controller instance
+    //parent->set_dart_type(EggGroup::DT_default);
+    process_controller(parent, (const FCDControllerInstance*) instance);
+    break;
+
+  case FCDEntityInstance::MATERIAL:
+    // We don't process this directly, handled per-geometry instead.
+    break;
+
+  case FCDEntityInstance::SIMPLE:
+    {
+      // Grab the entity and check its type.
       const FCDEntity* entity = instance->GetEntity();
       if (entity->GetType() != FCDEntity::SCENE_NODE) {
         daeegg_cat.warning() << "Unsupported entity type found" << endl;
       }
-      break; }
-    default:
-      daeegg_cat.warning() << "Unsupported instance type found" << endl;
+    }
+    break;
+
+  default:
+    daeegg_cat.warning() << "Unsupported instance type found" << endl;
   }
 }
 
 // Processes the given mesh.
-void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh* mesh, PT(DaeMaterials) materials) {
+void DAEToEggConverter::
+process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
+             DaeMaterials *materials, DaeCharacter *character) {
+
   nassertv(mesh != NULL);
   daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
-  
+
   // Create the egg stuff to hold this mesh
   PT(EggGroup) mesh_group = new EggGroup(FROM_FSTRING(mesh->GetDaeId()));
   parent->add_child(mesh_group);
   PT(EggVertexPool) mesh_pool = new EggVertexPool(FROM_FSTRING(mesh->GetDaeId()));
   mesh_group->add_child(mesh_pool);
-  _vertex_pools[FROM_FSTRING(mesh->GetDaeId())] = mesh_pool;
-  
+
   // First retrieve the vertex source
   if (mesh->GetSourceCount() == 0) {
     daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no sources" << endl;
     return;
   }
-  const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);  
+  const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);
   if (vsource == NULL) {
     daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no source for POSITION data" << endl;
     return;
   }
-  
+
   // Loop through the polygon groups and add them
   daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
   if (mesh->GetPolygonsCount() == 0) return;
-  
+
   // This is an array of pointers, I know. But since they are refcounted, I don't have a better idea.
   PT(EggGroup) *primitive_holders = new PT(EggGroup) [mesh->GetPolygonsCount()];
   for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
     const FCDGeometryPolygons* polygons = mesh->GetPolygons(gr);
+    string material_semantic = FROM_FSTRING(polygons->GetMaterialSemantic());
+
     // Stores which group holds the primitives.
     PT(EggGroup) primitiveholder;
     // If we have materials, make a group for each material. Then, apply the material's per-group stuff.
     if (materials != NULL && (!polygons->GetMaterialSemantic().empty()) && mesh->GetPolygonsCount() > 1) {
-      primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." + FROM_FSTRING(polygons->GetMaterialSemantic()));
+      //primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." + material_semantic);
+      primitiveholder = new EggGroup;
       mesh_group->add_child(primitiveholder);
     } else {
       primitiveholder = mesh_group;
@@ -357,7 +529,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     primitive_holders[gr] = primitiveholder;
     // Apply the per-group data of the materials, if we have it.
     if (materials != NULL) {
-      materials->apply_to_group(FROM_FSTRING(polygons->GetMaterialSemantic()), primitiveholder, _invert_transparency);
+      materials->apply_to_group(material_semantic, primitiveholder, _invert_transparency);
     }
     // Find the position sources
     const FCDGeometryPolygonsInput* pinput = polygons->FindInput(FUDaeGeometryInput::POSITION);
@@ -389,26 +561,47 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     const uint32* tindices;
     if (tinput != NULL) tindices = tinput->GetIndices();
     // Get a name for potential coordinate sets
-    string tcsetname ("");
+    string tcsetname;
     if (materials != NULL && tcinput != NULL) {
-      daeegg_cat.debug() << "Assigning texcoord set " << tcinput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
-      tcsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXCOORD, tcinput->GetSet());
+      if (daeegg_cat.is_debug()) {
+        daeegg_cat.debug()
+          << "Assigning texcoord set " << tcinput->GetSet()
+          << " to semantic '" << material_semantic << "'\n";
+      }
+      tcsetname = materials->get_uvset_name(material_semantic,
+                    FUDaeGeometryInput::TEXCOORD, tcinput->GetSet());
     }
-    string tbsetname ("");
+    string tbsetname;
     if (materials != NULL && binput != NULL) {
-      daeegg_cat.debug() << "Assigning texbinormal set " << binput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
-      tbsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXBINORMAL, binput->GetSet());
+      if (daeegg_cat.is_debug()) {
+        daeegg_cat.debug()
+          << "Assigning texbinormal set " << binput->GetSet()
+          << " to semantic '" << material_semantic << "'\n";
+      }
+      tbsetname = materials->get_uvset_name(material_semantic,
+                    FUDaeGeometryInput::TEXBINORMAL, binput->GetSet());
     }
-    string ttsetname ("");
+    string ttsetname;
     if (materials != NULL && tinput != NULL) {
-      daeegg_cat.debug() << "Assigning textangent set " << tinput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
-      ttsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXTANGENT, tinput->GetSet());
+      if (daeegg_cat.is_debug()) {
+        daeegg_cat.debug()
+          << "Assigning textangent set " << tinput->GetSet()
+          << " to semantic '" << material_semantic << "'\n";
+        }
+      ttsetname = materials->get_uvset_name(material_semantic,
+                    FUDaeGeometryInput::TEXTANGENT, tinput->GetSet());
     }
     // Loop through the indices and add the vertices.
     for (size_t ix = 0; ix < pinput->GetIndexCount(); ++ix) {
       PT_EggVertex vertex = mesh_pool->make_new_vertex();
       const float* data = &vsource->GetData()[indices[ix]*3];
       vertex->set_pos(LPoint3d(data[0], data[1], data[2]));
+
+      if (character != NULL) {
+        // If this is skinned geometry, add the vertex influences.
+        character->influence_vertex(indices[ix], vertex);
+      }
+
       // Process the normal
       if (nsource != NULL && ninput != NULL) {
         assert(nsource->GetStride() == 3);
@@ -469,26 +662,26 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       PT(EggPrimitive) primitive = NULL;
       // Create a primitive that matches the fcollada type
       switch (polygons->GetPrimitiveType()) {
-        case FCDGeometryPolygons::LINES:
-          primitive = new EggLine();
-          break;
-        case FCDGeometryPolygons::POLYGONS:
-          primitive = new EggPolygon();
-          break;
-        case FCDGeometryPolygons::TRIANGLE_FANS:
-          primitive = new EggTriangleFan();
-          break;
-        case FCDGeometryPolygons::TRIANGLE_STRIPS:
-          primitive = new EggTriangleStrip();
-          break;
-        case FCDGeometryPolygons::POINTS:
-          primitive = new EggPoint();
-          break;
-        case FCDGeometryPolygons::LINE_STRIPS:
-          daeegg_cat.warning() << "Linestrips not yet supported!" << endl;
-          break;
-        default:
-          daeegg_cat.warning() << "Unsupported primitive type found!" << endl;
+      case FCDGeometryPolygons::LINES:
+        primitive = new EggLine();
+        break;
+      case FCDGeometryPolygons::POLYGONS:
+        primitive = new EggPolygon();
+        break;
+      case FCDGeometryPolygons::TRIANGLE_FANS:
+        primitive = new EggTriangleFan();
+        break;
+      case FCDGeometryPolygons::TRIANGLE_STRIPS:
+        primitive = new EggTriangleStrip();
+        break;
+      case FCDGeometryPolygons::POINTS:
+        primitive = new EggPoint();
+        break;
+      case FCDGeometryPolygons::LINE_STRIPS:
+        daeegg_cat.warning() << "Linestrips not yet supported!" << endl;
+        break;
+      default:
+        daeegg_cat.warning() << "Unsupported primitive type found!" << endl;
       }
       if (primitive != NULL) {
         primitive_holders[gr]->add_child(primitive);
@@ -506,7 +699,8 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
   delete[] primitive_holders;
 }
 
-void DAEToEggConverter::process_spline(PT(EggGroup) parent, const string group_name, FCDGeometrySpline* geometry_spline) {
+void DAEToEggConverter::
+process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geometry_spline) {
   assert(geometry_spline != NULL);
   PT(EggGroup) result = new EggGroup(group_name);
   parent->add_child(result);
@@ -521,7 +715,8 @@ void DAEToEggConverter::process_spline(PT(EggGroup) parent, const string group_n
   }
 }
 
-void DAEToEggConverter::process_spline(PT(EggGroup) parent, const FCDSpline* spline) {
+void DAEToEggConverter::
+process_spline(EggGroup *parent, const FCDSpline* spline) {
   assert(spline != NULL);
   nassertv(spline->GetSplineType() == FUDaeSplineType::NURBS);
   // Now load in the nurbs curve to the egg library
@@ -542,70 +737,26 @@ void DAEToEggConverter::process_spline(PT(EggGroup) parent, const FCDSpline* spl
   }
 }
 
-void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControllerInstance* instance) {
+void DAEToEggConverter::
+process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
   assert(instance != NULL);
-  const FCDController* controller = (const FCDController*) instance->GetEntity();
+  const FCDController* controller = (const FCDController *)instance->GetEntity();
   assert(controller != NULL);
-  PT(EggVertexPool) vertex_pool = NULL;
-  // Add the skin geometry
-  const FCDGeometry* geometry = controller->GetBaseGeometry();
-  if (geometry != NULL) {
-    if (geometry->IsMesh()) {
-      process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
+
+  if (get_animation_convert() == AC_none) {
+    // If we're exporting a static mesh, export the base geometry as-is.
+    const FCDGeometryMesh *mesh = controller->GetBaseGeometry()->GetMesh();
+    if (mesh != NULL) {
+      PT(DaeMaterials) materials = new DaeMaterials(instance);
       daeegg_cat.spam() << "Processing mesh for controller\n";
-      if (_vertex_pools.count(FROM_FSTRING(geometry->GetMesh()->GetDaeId()))) {
-        daeegg_cat.debug() << "Using vertex pool " << FROM_FSTRING(geometry->GetMesh()->GetDaeId()) << "\n";
-        vertex_pool = _vertex_pools[FROM_FSTRING(geometry->GetMesh()->GetDaeId())];
-      }
+      process_mesh(parent, mesh, materials);
     }
-    if (geometry->IsSpline()) {
-      process_spline(parent, FROM_FSTRING(geometry->GetName()), const_cast<FCDGeometrySpline*> (geometry->GetSpline()));
-    }
+  } else {
+    // Add a character for this to the table, the mesh is processed later
+    PT(DaeCharacter) character = new DaeCharacter(parent, instance);
+    _characters.push_back(character);
   }
-  // Add the joint hierarchy
-#if FCOLLADA_VERSION < 0x00030005
-  FCDSceneNodeList roots = (const_cast<FCDControllerInstance*> (instance))->FindSkeletonNodes();
-#else
-  FCDSceneNodeList roots;
-  (const_cast<FCDControllerInstance*> (instance))->FindSkeletonNodes(roots);
-#endif
-  for (FCDSceneNodeList::iterator it = roots.begin(); it != roots.end(); ++it) {
-    process_node(DCAST(EggGroupNode, parent), *it, true);
-  }
-  if (controller->IsSkin()) {
-    // Load in the vertex influences first
-    pmap<int32, pvector<pair<PT_EggVertex, PN_stdfloat> > > influences;
-    if (vertex_pool) {
-      for (size_t in = 0; in < controller->GetSkinController()->GetInfluenceCount(); ++in) {
-        assert(vertex_pool->has_vertex(in));
-        for (size_t pa = 0; pa < controller->GetSkinController()->GetVertexInfluence(in)->GetPairCount(); ++pa) {
-          const FCDJointWeightPair* jwpair = controller->GetSkinController()->GetVertexInfluence(in)->GetPair(pa);
-          influences[jwpair->jointIndex].push_back(pair<PT_EggVertex, PN_stdfloat> (vertex_pool->get_vertex(in), jwpair->weight));
-        }
-      }
-    }
-    // Loop through the joints in the vertex influences
-    for (pmap<int32, pvector<pair<PT_EggVertex, PN_stdfloat> > >::iterator it = influences.begin(); it != influences.end(); ++it) {
-      if (it->first == -1) {
-        daeegg_cat.warning() << "Ignoring vertex influence with negative joint index\n";
-        //FIXME: Why are there joints with index -1
-      } else {
-        const string joint_id = FROM_FSTRING(controller->GetSkinController()->GetJoint(it->first)->GetId());
-        //TODO: what if the joints have just not been defined yet?
-        if (_joints.count(joint_id) > 0) {
-          if (_joints[joint_id]) {
-            for (pvector<pair<PT_EggVertex, PN_stdfloat> >::iterator vi = it->second.begin(); vi != it->second.end(); ++vi) {
-              _joints[joint_id]->ref_vertex(vi->first, vi->second);
-            }
-          } else {
-            daeegg_cat.warning() << "Unprocessed joint being referenced: '" << joint_id << "'" << endl;
-          }
-        } else {
-          daeegg_cat.warning() << "Unknown joint being referenced: '" << joint_id << "'" << endl;
-        }
-      }
-    }
-  }
+
   if (controller->IsMorph()) {
     assert(controller != NULL);
     const FCDMorphController* morph_controller = controller->GetMorphController();
@@ -628,28 +779,25 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
       morph->add_child(target);
     }
   }
-  
-  // Get a <Bundle> for the character and add it to the table
-  PT(DaeCharacter) character = new DaeCharacter(parent->get_name(), instance);
-  _table->add_child(character->as_egg_bundle());
 }
 
-void DAEToEggConverter::process_extra(PT(EggGroup) group, const FCDExtra* extra) {
+void DAEToEggConverter::
+process_extra(EggGroup *group, const FCDExtra* extra) {
   if (extra == NULL) {
     return;
   }
   nassertv(group != NULL);
-  
+
   const FCDEType* etype = extra->GetDefaultType();
   if (etype == NULL) {
     return;
   }
-  
+
   const FCDENode* enode = (const FCDENode*) etype->FindTechnique("PANDA3D");
   if (enode == NULL) {
     return;
   }
-  
+
   FCDENodeList tags;
   enode->FindChildrenNodes("param", tags);
   for (FCDENodeList::iterator it = tags.begin(); it != tags.end(); ++it) {
@@ -660,18 +808,45 @@ void DAEToEggConverter::process_extra(PT(EggGroup) group, const FCDExtra* extra)
   }
 }
 
-LMatrix4d DAEToEggConverter::convert_matrix(const FMMatrix44& matrix) {
-  LMatrix4d result = LMatrix4d::zeros_mat();
-  for (char x = 0; x < 4; ++x) {
-    for (char y = 0; y < 4; ++y) {
-      result(x, y) = matrix[x][y];
-    }
-  }
-  return result;
+LMatrix4d DAEToEggConverter::
+convert_matrix(const FMMatrix44 &matrix) {
+  return LMatrix4d(
+    matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
+    matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
+    matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
+    matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
 }
 
-void DAEToEggConverter::apply_transform(const PT(EggGroup) to, const FCDTransform* from) {
+void DAEToEggConverter::
+apply_transform(EggGroup *to, const FCDTransform* from) {
   assert(from != NULL);
   assert(to != NULL);
-  to->set_transform3d(convert_matrix(from->ToMatrix()) * to->get_transform3d());
+  //to->set_transform3d(convert_matrix(from->ToMatrix()) * to->get_transform3d());
+  switch (from->GetType()) {
+  case FCDTransform::TRANSLATION:
+    {
+      const FCDTTranslation *trans = (const FCDTTranslation *)from;
+      to->add_translate3d(TO_VEC3(trans->GetTranslation()));
+    }
+    break;
+
+  case FCDTransform::ROTATION:
+    {
+      const FCDTRotation *rot = (const FCDTRotation *)from;
+      to->add_rotate3d(rot->GetAngle(), TO_VEC3(rot->GetAxis()));
+    }
+    break;
+
+  case FCDTransform::SCALE:
+    {
+      const FCDTScale *scale = (const FCDTScale *)from;
+      to->add_scale3d(TO_VEC3(scale->GetScale()));
+    }
+    break;
+
+  default:
+    // Either a matrix, or something we can't handle.
+    to->add_matrix4(convert_matrix(from->ToMatrix()));
+    break;
+  }
 }

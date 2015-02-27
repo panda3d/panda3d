@@ -296,7 +296,7 @@ bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LMatrix4::almost_equal(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
 #ifdef HAVE_EIGEN
-  return ((_m - other._m).cwiseAbs().maxCoeff() < NEARLY_ZERO(FLOATTYPE));
+  return ((_m - other._m).cwiseAbs().maxCoeff() < threshold);
 #else
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&

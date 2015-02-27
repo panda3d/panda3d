@@ -210,6 +210,8 @@ def PrettyTime(t):
     return "%d sec" % (seconds)
 
 def ProgressOutput(progress, msg, target = None):
+    sys.stdout.flush()
+    sys.stderr.flush()
     prefix = ""
     thisthread = threading.currentThread()
     if thisthread is MAINTHREAD:
@@ -235,6 +237,8 @@ def ProgressOutput(progress, msg, target = None):
         suffix = GetColor()
 
     print(''.join((prefix, msg, suffix)))
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 def exit(msg = ""):
     sys.stdout.flush()
@@ -498,7 +502,7 @@ def oscmd(cmd, ignoreError = False):
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
-    if sys.platform == "win32":
+    if sys.platform in ("win32", "cygwin"):
         exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:

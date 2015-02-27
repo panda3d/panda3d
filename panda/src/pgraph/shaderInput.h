@@ -19,7 +19,6 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
-#include "nodePath.h"
 #include "internalName.h"
 #include "paramValue.h"
 #include "pta_float.h"
@@ -53,7 +52,6 @@ PUBLISHED:
 
   static const ShaderInput *get_blank();
   INLINE ShaderInput(CPT_InternalName name, int priority=0);
-  INLINE ShaderInput(CPT_InternalName name, const NodePath &np, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
@@ -90,6 +88,8 @@ PUBLISHED:
   INLINE ShaderInput(CPT_InternalName name, const LVecBase3i &vec, int priority=0);
   INLINE ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority=0);
 
+  ShaderInput(CPT_InternalName name, const NodePath &np, int priority=0);
+
   enum ShaderInputType {
     M_invalid = 0,
     M_texture,
@@ -105,10 +105,11 @@ PUBLISHED:
   INLINE int get_value_type() const;
   INLINE int get_priority() const;
   INLINE Texture *get_texture() const;
-  INLINE const NodePath &get_nodepath() const;
   INLINE const LVecBase4 &get_vector() const;
   INLINE const Shader::ShaderPtrData &get_ptr() const;
   INLINE const SamplerState &get_sampler() const;
+
+  const NodePath &get_nodepath() const;
 
 public:
   INLINE ParamValueBase *get_param() const;
@@ -118,7 +119,6 @@ public:
 private:
   SamplerState _sampler;
   LVecBase4 _stored_vector;
-  NodePath _stored_nodepath;
   Shader::ShaderPtrData _stored_ptr;
   CPT_InternalName _name;
   PT(TypedWritableReferenceCount) _value;

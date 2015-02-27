@@ -58,9 +58,9 @@ PUBLISHED:
   PolylightNode(const string &name);
   INLINE void enable();
   INLINE void disable();
-  INLINE void set_pos(const LVecBase3 &position);
+  INLINE void set_pos(const LPoint3 &position);
   INLINE void set_pos(PN_stdfloat x,PN_stdfloat y, PN_stdfloat z);
-  INLINE LVecBase3 get_pos() const;
+  INLINE LPoint3 get_pos() const;
   INLINE void set_color(const LColor &color);
   INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b);
   INLINE LColor get_color() const;
@@ -100,11 +100,11 @@ PUBLISHED:
 public:
   LColor flicker() const;
   virtual PandaNode *make_copy() const;
+  virtual void xform(const LMatrix4 &mat);
 
-  
 private:
   bool _enabled;
-  LVecBase3 _position;
+  LPoint3 _position;
   LColor _color;
   PN_stdfloat _radius;
   Attenuation_Type _attenuation_type;

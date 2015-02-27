@@ -94,8 +94,13 @@ init_from(FfmpegVideo *source) {
                                 PIX_FMT_BGR24, SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
 #endif  // HAVE_SWSCALE
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
+  _frame = av_frame_alloc();
+  _frame_out = av_frame_alloc();
+#else
   _frame = avcodec_alloc_frame();
   _frame_out = avcodec_alloc_frame();
+#endif
 
   if ((_frame == 0)||(_frame_out == 0)) {
     cleanup();

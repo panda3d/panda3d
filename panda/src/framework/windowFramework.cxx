@@ -794,15 +794,28 @@ next_anim_control() {
   if (_anim_controls_enabled) {
     destroy_anim_controls();
 
+    if (_anim_controls.get_num_anims() == 0) {
+      set_anim_controls(false);
+      return;
+    }
+
+    // Stop the active animation.
+    pause_button();
     ++_anim_index;
+
     if (_anim_index >= _anim_controls.get_num_anims()) {
       set_anim_controls(false);
+      _anim_controls.loop_all(true);
     } else {
       create_anim_controls();
+      play_button();
     }
   } else {
     _anim_index = 0;
     set_anim_controls(true);
+    if (_anim_controls.get_num_anims() > 0) {
+      play_button();
+    }
   }
 }
 
@@ -1447,6 +1460,23 @@ create_anim_controls() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
   nassertv(control != (AnimControl *)NULL);
 
+  if (control->get_num_frames() <= 1) {
+    // Don't show the controls when the animation has only 0 or 1 frames.
+    ostringstream text;
+    text << _anim_controls.get_anim_name(_anim_index);
+    text << " (" << control->get_num_frames() << " frame"
+         << ((control->get_num_frames() == 1) ? "" : "s") << ")";
+
+    PT(TextNode) label = new TextNode("label");
+    label->set_align(TextNode::A_center);
+    label->set_text(text.str());
+    NodePath tnp = _anim_controls_group.attach_new_node(label);
+    tnp.set_pos(0.0f, 0.0f, 0.07f);
+    tnp.set_scale(0.1f);
+
+    return;
+  }
+
   PT(TextNode) label = new TextNode("anim_name");
   label->set_align(TextNode::A_left);
   label->set_text(_anim_controls.get_anim_name(_anim_index));
@@ -1521,13 +1551,17 @@ update_anim_controls() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
   nassertv(control != (AnimControl *)NULL);
 
-  if (_anim_slider->is_button_down()) {
-    control->pose((int)(_anim_slider->get_value() + 0.5));
-  } else {
-    _anim_slider->set_value((PN_stdfloat)control->get_frame());
+  if (_anim_slider != NULL) {
+    if (_anim_slider->is_button_down()) {
+      control->pose((int)(_anim_slider->get_value() + 0.5));
+    } else {
+      _anim_slider->set_value((PN_stdfloat)control->get_frame());
+    }
   }
 
-  _frame_number->set_text(format_string(control->get_frame()));
+  if (_frame_number != NULL) {
+    _frame_number->set_text(format_string(control->get_frame()));
+  }
 
   control->set_play_rate(_play_rate_slider->get_value());
 }

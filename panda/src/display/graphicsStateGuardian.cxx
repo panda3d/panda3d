@@ -1407,22 +1407,29 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
 
     if (attrib == IN_ambient) {
-#ifndef NDEBUG
       Light *light = np.node()->as_light();
       nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
-#endif
-      // Lights don't currently have an ambient color in Panda3D.
-      // We still have to support the attribute.
-      t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+        LColor c = light->get_color();
+        c.componentwise_mult(_light_color_scale);
+        t.set_row(3, c);
+      } else {
+        // Non-ambient lights don't currently have an ambient color in Panda3D.
+        t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      }
       return &t;
 
     } else if (attrib == IN_diffuse) {
       Light *light = np.node()->as_light();
       nassertr(light != (Light *)NULL, &LMatrix4::ones_mat());
-
-      LColor c = light->get_color();
-      c.componentwise_mult(_light_color_scale);
-      t.set_row(3, c);
+      if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+        // Ambient light has no diffuse color.
+        t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      } else {
+        LColor c = light->get_color();
+        c.componentwise_mult(_light_color_scale);
+        t.set_row(3, c);
+      }
       return &t;
 
     } else if (attrib == IN_specular) {
@@ -1432,7 +1439,11 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &t;
 
     } else if (attrib == IN_position) {
-      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+      if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+        // Ambient light has no position.
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+        return &t;
+      } else if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
         DirectionalLight *light;
         DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
 
@@ -1458,7 +1469,11 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
 
     } else if (attrib == IN_halfVector) {
-      if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
+      if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+        // Ambient light has no half-vector.
+        t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+        return &t;
+      } else if (np.node()->is_of_type(DirectionalLight::get_class_type())) {
         DirectionalLight *light;
         DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
 
@@ -1490,19 +1505,25 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       }
 
     } else if (attrib == IN_spotDirection) {
-      LightLensNode *light;
-      DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
-      Lens *lens = light->get_lens();
-      nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+      if (np.node()->is_of_type(AmbientLight::get_class_type())) {
+        // Ambient light has no spot direction.
+        t.set_row(3, LVector3(0.0f, 0.0f, 0.0f));
+        return &t;
+      } else {
+        LightLensNode *light;
+        DCAST_INTO_R(light, np.node(), &LMatrix4::ident_mat());
+        Lens *lens = light->get_lens();
+        nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
 
-      CPT(TransformState) transform =
-        get_scene()->get_cs_world_transform()->compose(
-          np.get_transform(_scene_setup->get_scene_root().get_parent()));
+        CPT(TransformState) transform =
+          get_scene()->get_cs_world_transform()->compose(
+            np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
-      const LMatrix4 &light_mat = transform->get_mat();
-      LVector3 dir = lens->get_view_vector() * light_mat;
-      t.set_row(3, dir);
-      return &t;
+        const LMatrix4 &light_mat = transform->get_mat();
+        LVector3 dir = lens->get_view_vector() * light_mat;
+        t.set_row(3, dir);
+        return &t;
+      }
 
     } else if (attrib == IN_spotCutoff) {
       if (np.node()->is_of_type(Spotlight::get_class_type())) {

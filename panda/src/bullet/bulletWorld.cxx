@@ -608,11 +608,12 @@ remove_vehicle(BulletVehicle *vehicle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_constraint
 //       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
+//  Description: Attaches a single constraint to a world. Collision
+//               checks between the linked objects will be disabled
+//               if the second parameter is set to TRUE.
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-attach_constraint(BulletConstraint *constraint) {
+attach_constraint(BulletConstraint *constraint, bool linked_collision) {
 
   nassertv(constraint);
 
@@ -622,7 +623,7 @@ attach_constraint(BulletConstraint *constraint) {
 
   if (found == _constraints.end()) {
     _constraints.push_back(constraint);
-    _world->addConstraint(constraint->ptr());
+    _world->addConstraint(constraint->ptr(), linked_collision);
   }
   else {
     bullet_cat.warning() << "constraint already attached" << endl;

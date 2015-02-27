@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "adaptiveLru.h"
+#include "simpleLru.h"
 #include "samplerState.h"
 #include "savedContext.h"
 

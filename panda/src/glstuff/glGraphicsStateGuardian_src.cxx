@@ -558,10 +558,13 @@ reset() {
   _glPrimitiveRestartIndex = NULL;
 
   if (gl_support_primitive_restart_index) {
-    if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
+    if ((is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) &&
+        _gl_renderer.substr(0, 7) != "Gallium") {
       // As long as we enable this, OpenGL will always use the highest possible index
       // for a numeric type as strip cut index, which coincides with our convention.
-      // This saves us a call to glPrimitiveRestartIndex.
+      // This saves us a call to glPrimitiveRestartIndex
+      // ... of course, though, the Gallium driver bugs out here.  See also:
+      // https://www.panda3d.org/forums/viewtopic.php?f=5&t=17512
       glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
       _supported_geom_rendering |= Geom::GR_strip_cut_index;
 
