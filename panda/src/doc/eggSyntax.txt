@@ -1476,6 +1476,10 @@ GROUPING ENTRIES
     its geometry is used to define the extent of the collision
     surface (unless the "descend" flag is given; see below).
 
+    It is now deprecated to use <Collide> without "descend"; it will
+    become the default soon.  You should always specify it for best
+    compatibility.
+
     Valid types so far are:
 
     Plane
@@ -1538,11 +1542,12 @@ GROUPING ENTRIES
 
     descend
 
-      Instead of creating only one collision object of the given type,
-      each group descended from this node that contains geometry will
+      Each group descended from this node that contains geometry will
       define a new collision object of the given type.  The event
       name, if any, will also be inherited from the top node and
-      shared among all the collision objects.
+      shared among all the collision objects.  This option will soon
+      be the default; it is suggested that it is always specified for
+      most compatibility.
 
     keep
  

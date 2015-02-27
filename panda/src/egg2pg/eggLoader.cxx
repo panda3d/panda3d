@@ -2970,6 +2970,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
         make_collision_solids(start_group, DCAST(EggGroup, *ci), cnode);
       }
     }
+  } else {
+    egg2pg_cat.warning()
+      << "Using <Collide> without 'descend' is deprecated.  'descend' "
+      << "will become the default in a future version of Panda3D.\n";
   }
 }
 
