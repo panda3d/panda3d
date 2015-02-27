@@ -1115,7 +1115,7 @@ is_unsigned_integer(CPPType *type) {
 //     Function: TypeManager::is_size
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is the "size_t"
-//               type.
+//               type, or a const size_t, or a typedef to either.
 ////////////////////////////////////////////////////////////////////
 bool TypeManager::
 is_size(CPPType *type) {
@@ -1124,8 +1124,38 @@ is_size(CPPType *type) {
     return is_size(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_typedef:
-    return is_integer(type->as_typedef_type()->_type) &&
-                      type->get_simple_name() == "size_t";
+    if (type->get_simple_name() == "size_t") {
+      return is_integer(type->as_typedef_type()->_type);
+    } else {
+      return is_size(type->as_typedef_type()->_type);
+    }
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_ssize
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is the "ssize_t"
+//               type, or a const ssize_t, or a typedef to either.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_ssize(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_ssize(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    if (type->get_simple_name() == "Py_ssize_t" ||
+        type->get_simple_name() == "ssize_t") {
+      return is_integer(type->as_typedef_type()->_type);
+    } else {
+      return is_ssize(type->as_typedef_type()->_type);
+    }
 
   default:
     break;

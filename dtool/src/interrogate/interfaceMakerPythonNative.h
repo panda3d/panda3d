@@ -112,10 +112,16 @@ private:
     WrapperType _wrapper_type;
     int _min_version;
     Function *_func;
+    string _wrapper_name;
     set<FunctionRemap*> _remaps;
   };
 
+  typedef std::map<string, SlottedFunctionDef> SlottedFunctions;
+
   static bool get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, SlottedFunctionDef &def);
+  static void write_function_slot(ostream &out, int indent_level,
+                                  const SlottedFunctions &slots,
+                                  const string &slot, const string &def = "0");
 
   void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
   void write_prototype_for(ostream &out, Function *func);
@@ -138,7 +144,7 @@ private:
                              bool coercion_allowed, bool report_errors,
                              ArgsType args_type, int return_flags,
                              bool check_exceptions = true,
-                             bool verify_const = false,
+                             bool verify_const = true,
                              const string &first_expr = string());
 
   void write_function_instance(ostream &out, FunctionRemap *remap,
@@ -150,11 +156,14 @@ private:
                                const string &first_pexpr = string());
 
   void error_return(ostream &out, int indent_level, int return_flags);
+  void error_raise_return(ostream &out, int indent_level, int return_flags,
+                          const string &exc_type, const string &message,
+                          const string &format_args = "");
   void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
                          std::string return_expr);
 
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
-                      MakeSeq *make_seq);
+                      const std::string &cClassName, MakeSeq *make_seq);
 
   void write_class_prototypes(ostream &out) ;
   void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
@@ -190,7 +199,8 @@ public:
   int NeedsAReprFunction(const InterrogateType &itype_class);
   bool NeedsARichCompareFunction(const InterrogateType &itype_class);
 
-  void output_quoted(ostream &out, int indent_level, const std::string &str);
+  void output_quoted(ostream &out, int indent_level, const std::string &str,
+                     bool first_line=true);
 
   // stash the forward declarations for this compile pass..
   std::set<CPPType *> _external_imports;

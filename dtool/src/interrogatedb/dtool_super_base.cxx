@@ -15,7 +15,7 @@
 #include "py_panda.h"
 
 #ifdef HAVE_PYTHON
-  
+
 class EmptyClass {
 };
 Define_Module_Class_Private(dtoolconfig, DTOOL_SUPER_BASE, EmptyClass, DTOOL_SUPER_BASE111);
@@ -30,7 +30,7 @@ PyMethodDef Dtool_Methods_DTOOL_SUPER_BASE[] = {
   { NULL, NULL }
 };
 
-static Py_hash_t DTool_HashKey_Methods_DTOOL_SUPER_BASE(PyObject *self) {
+static Py_hash_t Dtool_HashKey_DTOOL_SUPER_BASE(PyObject *self) {
   void *local_this = DTOOL_Call_GetPointerThis(self);
   if (local_this == NULL) {
     return -1;
@@ -45,15 +45,6 @@ EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module
     initdone = true;
     Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict = PyDict_New();
     PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict, "DtoolClassDict", Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict);
-
-    // __hash__
-    Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_hash = &DTool_HashKey_Methods_DTOOL_SUPER_BASE;
-#if PY_MAJOR_VERSION >= 3
-    // Python 3 removed the regular tp_compare function - there is only tp_richcompare.
-    Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_richcompare = &DTOOL_PyObject_RichCompare;
-#else
-    Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;
-#endif
 
     if (PyType_Ready(&Dtool_DTOOL_SUPER_BASE.As_PyTypeObject()) < 0) {
       PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPER_BASE)");
@@ -82,5 +73,67 @@ int Dtool_Init_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) 
   PyErr_SetString(PyExc_TypeError, "cannot init super base");
   return -1;
 }
+
+EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
+  {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "dtoolconfig.DTOOL_SUPER_BASE",
+    sizeof(Dtool_PyInstDef),
+    0,
+    &Dtool_FreeInstance_DTOOL_SUPER_BASE,
+    0,
+    0,
+    0,
+#if PY_MAJOR_VERSION >= 3
+    0,
+#else
+    &DTOOL_PyObject_Compare,
+#endif
+    0,
+    0,
+    0,
+    0,
+    &Dtool_HashKey_DTOOL_SUPER_BASE,
+    0,
+    0,
+    PyObject_GenericGetAttr,
+    PyObject_GenericSetAttr,
+    0,
+    (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES),
+    0,
+    0,
+    0,
+#if PY_MAJOR_VERSION >= 3
+    &DTOOL_PyObject_RichCompare,
+#else
+    0,
+#endif
+    0,
+    0,
+    0,
+    Dtool_Methods_DTOOL_SUPER_BASE,
+    standard_type_members,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    Dtool_Init_DTOOL_SUPER_BASE,
+    PyType_GenericAlloc,
+    Dtool_new_DTOOL_SUPER_BASE,
+    PyObject_Del,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  },
+  Dtool_UpcastInterface_DTOOL_SUPER_BASE,
+  Dtool_DowncastInterface_DTOOL_SUPER_BASE,
+  TypeHandle::none(),
+};
 
 #endif  // HAVE_PYTHON

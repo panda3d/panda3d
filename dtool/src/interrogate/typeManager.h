@@ -88,6 +88,7 @@ public:
   static bool is_integer(CPPType *type);
   static bool is_unsigned_integer(CPPType *type);
   static bool is_size(CPPType *type);
+  static bool is_ssize(CPPType *type);
   static bool is_short(CPPType *type);
   static bool is_unsigned_short(CPPType *type);
   static bool is_longlong(CPPType *type);

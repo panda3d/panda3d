@@ -115,7 +115,7 @@ inline PyObject* doPy_RETURN_FALSE()
 #define PyLongOrInt_FromLong PyLong_FromLong
 #define PyLongOrInt_FromUnsignedLong PyLong_FromUnsignedLong
 #define PyInt_Check PyLong_Check
-#define PyInt_AsLong PyLong_Aslong
+#define PyInt_AsLong PyLong_AsLong
 #define PyInt_AS_LONG PyLong_AS_LONG
 #else
 #define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
@@ -165,13 +165,13 @@ typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
 struct Dtool_PyInstDef {
   PyObject_HEAD
 
-  // Pointer to the underlying C++ object.
-  void *_ptr_to_object;
-
   // This is a pointer to the Dtool_PyTypedObject type.  It's tempting
   // not to store this and to instead use PY_TYPE(self) and upcast that,
   // but that breaks when someone inherits from our class in Python.
   struct Dtool_PyTypedObject *_My_Type;
+
+  // Pointer to the underlying C++ object.
+  void *_ptr_to_object;
 
   // This is always set to PY_PANDA_SIGNATURE, so that we can quickly
   // detect whether an object is a Panda object.
@@ -208,64 +208,10 @@ struct Dtool_PyTypedObject {
   inline PyObject &As_PyObject() { return (PyObject &)_PyType; };
 };
 
-////////////////////////////////////////////////////////////////////////
-// Macros from Hell..  May want to just add this to the code generator..
-////////////////////////////////////////////////////////////////////////
-#define Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME) \
-  EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =                  \
-    {                                                                   \
-      {                                                                 \
-        PyVarObject_HEAD_INIT(NULL, 0)                                  \
-        #MODULE_NAME "." #PUBLIC_NAME,       /*type name with module */ \
-        sizeof(Dtool_PyInstDef),                /* tp_basicsize */      \
-        0,                                      /* tp_itemsize */       \
-        &Dtool_FreeInstance_##CLASS_NAME,       /* tp_dealloc */        \
-        0,                                      /* tp_print */          \
-        0,                                      /* tp_getattr */        \
-        0,                                      /* tp_setattr */        \
-        0,                                      /* tp_compare */        \
-        0,                                      /* tp_repr */           \
-        &Dtool_PyNumberMethods_##CLASS_NAME,    /* tp_as_number */      \
-        &Dtool_PySequenceMethods_##CLASS_NAME,  /* tp_as_sequence */    \
-        &Dtool_PyMappingMethods_##CLASS_NAME,   /* tp_as_mapping */     \
-        0,                                      /* tp_hash */           \
-        0,                                      /* tp_call */           \
-        0,                                      /* tp_str */            \
-        PyObject_GenericGetAttr,                /* tp_getattro */       \
-        PyObject_GenericSetAttr,                /* tp_setattro */       \
-        &Dtool_PyBufferProcs_##CLASS_NAME,      /* tp_as_buffer */      \
-        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */ \
-        0,                                      /* tp_doc */            \
-        0,                                      /* tp_traverse */       \
-        0,                                      /* tp_clear */          \
-        0,                                      /* tp_richcompare */    \
-        0,                                      /* tp_weaklistoffset */ \
-        0,                                      /* tp_iter */           \
-        0,                                      /* tp_iternext */       \
-        Dtool_Methods_##CLASS_NAME,             /* tp_methods */        \
-        standard_type_members,                  /* tp_members */        \
-        0,                                      /* tp_getset */         \
-        0,                                      /* tp_base */           \
-        0,                                      /* tp_dict */           \
-        0,                                      /* tp_descr_get */      \
-        0,                                      /* tp_descr_set */      \
-        0,                                      /* tp_dictoffset */     \
-        Dtool_Init_##CLASS_NAME,                /* tp_init */           \
-        PyType_GenericAlloc,                    /* tp_alloc */          \
-        Dtool_new_##CLASS_NAME,                 /* tp_new */            \
-        PyObject_Del,                           /* tp_free */           \
-      },                                                                \
-      Dtool_UpcastInterface_##CLASS_NAME,                               \
-      Dtool_DowncastInterface_##CLASS_NAME,                             \
-      TypeHandle::none(),                                               \
-    };
-
-#define Define_Dtool_Class(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)        \
-  static PyNumberMethods Dtool_PyNumberMethods_##CLASS_NAME = {0};      \
-  static PySequenceMethods Dtool_PySequenceMethods_##CLASS_NAME = {0};  \
-  static PyMappingMethods Dtool_PyMappingMethods_##CLASS_NAME = {0};    \
-  static PyBufferProcs Dtool_PyBufferProcs_##CLASS_NAME = {0};          \
-  Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)
+// This is now simply a forward declaration.  The actual definition is created
+// by the code generator.
+#define Define_Dtool_Class(MODULE_NAME, CLASS_NAME, PUBLIC_NAME) \
+  extern Dtool_PyTypedObject Dtool_##CLASS_NAME;
 
 ////////////////////////////////////////////////////////////////////////
 //  More Macro(s) to Implement class functions.. Usually used if C++ needs type information
@@ -323,6 +269,12 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
       unref_delete((CNAME *)((Dtool_PyInstDef *)self)->_ptr_to_object);\
     }\
   }\
+  Py_TYPE(self)->tp_free(self);\
+}
+
+#define Define_Dtool_Simple_FreeInstance(CLASS_NAME, CNAME)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
+  ((Dtool_InstDef_##CLASS_NAME *)self)->_value.~##CLASS_NAME();\
   Py_TYPE(self)->tp_free(self);\
 }
 
@@ -385,7 +337,27 @@ template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&
 EXPCL_DTOOLCONFIG bool Dtool_CheckErrorOccurred();
 #endif
 
-EXPCL_DTOOLCONFIG void Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
+EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_AssertionError();
+EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_TypeError(const char *message);
+EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
+
+EXPCL_DTOOLCONFIG PyObject *_Dtool_Raise_BadArgumentsError();
+#ifdef NDEBUG
+// Define it to a function that just prints a generic message.
+#define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError()
+#else
+// Expand this to a TypeError listing all of the overloads.
+#define Dtool_Raise_BadArgumentsError(x) Dtool_Raise_TypeError("Arguments must match:\n" x)
+#endif
+
+EXPCL_DTOOLCONFIG PyObject *_Dtool_Return_None();
+EXPCL_DTOOLCONFIG PyObject *Dtool_Return_Bool(bool value);
+
+#ifdef NDEBUG
+#define Dtool_Return_None() (_PyErr_OCCURRED() != NULL ? NULL : (Py_INCREF(Py_None), Py_None))
+#else
+#define Dtool_Return_None() _Dtool_Return_None()
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
@@ -436,7 +408,6 @@ template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(T *obj, bool memo
 
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;\
-extern struct        PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
@@ -469,7 +440,6 @@ Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
 Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
 Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
-
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..

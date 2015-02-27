@@ -99,11 +99,6 @@ RenameSet methodRenameDictionary[] = {
   { "__deepcopy__"  , "__deepcopy__",           0 },
   { "print"         , "Cprint",                 0 },
   { "CInterval.set_t", "_priv__cSetT",          0 },
-  { "__bool__"      , "__bool__",               0 },
-  { "__bytes__"     , "__bytes__",              0 },
-  { "__iter__"      , "__iter__",               0 },
-  { "__getbuffer__" , "__getbuffer__",          0 },
-  { "__releasebuffer__", "__releasebuffer__",   0 },
   { NULL, NULL, -1 }
 };
 
@@ -309,7 +304,8 @@ std::string methodNameFromCppName(FunctionRemap *remap, const std::string &class
 //               important details.
 ////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
-get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, SlottedFunctionDef &def) {
+get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
+                         SlottedFunctionDef &def) {
   if (obj == NULL) {
     // Only methods may be slotted.
     return false;
@@ -324,167 +320,159 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, Slot
   bool is_unary_op = func->_ifunc.is_unary_op();
 
   if (method_name == "operator +") {
-    def._answer_location = "tp_as_number->nb_add";
+    def._answer_location = "nb_add";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator -" && is_unary_op) {
-    def._answer_location = "tp_as_number->nb_negative";
+    def._answer_location = "nb_negative";
     def._wrapper_type = WT_no_params;
     return true;
   }
 
   if (method_name == "operator -") {
-    def._answer_location = "tp_as_number->nb_subtract";
+    def._answer_location = "nb_subtract";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator *") {
-    def._answer_location = "tp_as_number->nb_multiply";
+    def._answer_location = "nb_multiply";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator /") {
-    def._answer_location = "tp_as_number->nb_divide";
+    // Note: nb_divide does not exist in Python 3.  We will probably need some
+    // smart mechanism for dispatching to either floor_divide or true_divide.
+    def._answer_location = "nb_divide";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator %") {
-    def._answer_location = "tp_as_number->nb_remainder";
+    def._answer_location = "nb_remainder";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator <<") {
-    def._answer_location = "tp_as_number->nb_lshift";
+    def._answer_location = "nb_lshift";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator >>") {
-    def._answer_location = "tp_as_number->nb_rshift";
+    def._answer_location = "nb_rshift";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator ^") {
-    def._answer_location = "tp_as_number->nb_xor";
+    def._answer_location = "nb_xor";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator ~" && is_unary_op) {
-    def._answer_location = "tp_as_number->nb_invert";
+    def._answer_location = "nb_invert";
     def._wrapper_type = WT_no_params;
     return true;
   }
 
   if (method_name == "operator &") {
-    def._answer_location = "tp_as_number->nb_and";
+    def._answer_location = "nb_and";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "operator |") {
-    def._answer_location = "tp_as_number->nb_or";
+    def._answer_location = "nb_or";
     def._wrapper_type = WT_binary_operator;
     return true;
   }
 
   if (method_name == "__pow__") {
-    def._answer_location = "tp_as_number->nb_power";
+    def._answer_location = "nb_power";
     def._wrapper_type = WT_ternary_operator;
     return true;
   }
 
   if (method_name == "operator +=") {
-    def._answer_location = "tp_as_number->nb_inplace_add";
+    def._answer_location = "nb_inplace_add";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator -=") {
-    def._answer_location = "tp_as_number->nb_inplace_subtract";
+    def._answer_location = "nb_inplace_subtract";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator *=") {
-    def._answer_location = "tp_as_number->nb_inplace_multiply";
+    def._answer_location = "nb_inplace_multiply";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator /=") {
-    def._answer_location = "tp_as_number->nb_inplace_divide";
+    def._answer_location = "nb_inplace_divide";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator %=") {
-    def._answer_location = ".tp_as_number->nb_inplace_remainder";
+    def._answer_location = "nb_inplace_remainder";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator <<=") {
-    def._answer_location = "tp_as_number->nb_inplace_lshift";
+    def._answer_location = "nb_inplace_lshift";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator >>=") {
-    def._answer_location = "tp_as_number->nb_inplace_rshift";
+    def._answer_location = "nb_inplace_rshift";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator &=") {
-    def._answer_location = "tp_as_number->nb_inplace_and";
+    def._answer_location = "nb_inplace_and";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator ^=") {
-    def._answer_location = "tp_as_number->nb_inplace_xor";
+    def._answer_location = "nb_inplace_xor";
     def._wrapper_type = WT_inplace_binary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "__ipow__") {
-    def._answer_location = "tp_as_number->nb_inplace_power";
+    def._answer_location = "nb_inplace_power";
     def._wrapper_type = WT_inplace_ternary_operator;
-    def._min_version = 0x02000000;
     return true;
   }
 
   if (obj->_protocol_types & Object::PT_sequence) {
     if (remap->_flags & FunctionRemap::F_getitem_int) {
-      def._answer_location = "tp_as_sequence->sq_item";
+      def._answer_location = "sq_item";
       def._wrapper_type = WT_sequence_getitem;
       return true;
     }
     if (remap->_flags & FunctionRemap::F_setitem_int ||
         remap->_flags & FunctionRemap::F_delitem_int) {
-      def._answer_location = "tp_as_sequence->sq_ass_item";
+      def._answer_location = "sq_ass_item";
       def._wrapper_type = WT_sequence_setitem;
       return true;
     }
     if (remap->_flags & FunctionRemap::F_size) {
-      def._answer_location = "tp_as_sequence->sq_length";
+      def._answer_location = "sq_length";
       def._wrapper_type = WT_sequence_size;
       return true;
     }
@@ -492,13 +480,13 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, Slot
 
   if (obj->_protocol_types & Object::PT_mapping) {
     if (remap->_flags & FunctionRemap::F_getitem) {
-      def._answer_location = "tp_as_mapping->mp_subscript";
+      def._answer_location = "mp_subscript";
       def._wrapper_type = WT_one_param;
       return true;
     }
     if (remap->_flags & FunctionRemap::F_setitem ||
         remap->_flags & FunctionRemap::F_delitem) {
-      def._answer_location = "tp_as_mapping->mp_ass_subscript";
+      def._answer_location = "mp_ass_subscript";
       def._wrapper_type = WT_mapping_setitem;
       return true;
     }
@@ -552,31 +540,23 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, Slot
     return true;
   }
 
-  if (method_name == "__nonzero__") {
-    // Python 2 style.
-    def._answer_location = "tp_as_number->nb_nonzero";
-    def._wrapper_type = WT_inquiry;
-    return true;
-  }
-
-  if (method_name == "__bool__") {
-    // Python 3 style.
-    def._answer_location = "tp_as_number->nb_nonzero";
+  if (method_name == "__nonzero__" || method_name == "__bool__") {
+    // Python 2 named it nb_nonzero, Python 3 nb_bool.  We refer to it just
+    // as nb_bool.
+    def._answer_location = "nb_bool";
     def._wrapper_type = WT_inquiry;
     return true;
   }
 
   if (method_name == "__getbuffer__") {
-    def._answer_location = "tp_as_buffer->bf_getbuffer";
+    def._answer_location = "bf_getbuffer";
     def._wrapper_type = WT_getbuffer;
-    def._min_version = 0x02060000;
     return true;
   }
 
   if (method_name == "__releasebuffer__") {
-    def._answer_location = "tp_as_buffer->bf_releasebuffer";
+    def._answer_location = "bf_releasebuffer";
     def._wrapper_type = WT_releasebuffer;
-    def._min_version = 0x02060000;
     return true;
   }
 
@@ -585,25 +565,63 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, Slot
     if (TypeManager::is_bool(remap->_return_type->get_orig_type())) {
       // If it's a bool type, then we wrap it with the __nonzero__
       // slot method.
-      def._answer_location = "tp_as_number->nb_nonzero";
+      def._answer_location = "nb_bool";
       def._wrapper_type = WT_inquiry;
       return true;
 
     } else if (TypeManager::is_integer(remap->_return_type->get_orig_type())) {
       // An integer type.
-      def._answer_location = "tp_as_number->nb_int";
+      def._answer_location = "nb_int";
       def._wrapper_type = WT_no_params;
       return true;
 
     } else if (TypeManager::is_float(remap->_return_type->get_orig_type())) {
       // A floating-point (or double) type.
-      def._answer_location = "tp_as_number->nb_float";
+      def._answer_location = "nb_float";
       def._wrapper_type = WT_no_params;
       return true;
     }
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::write_function_slot
+//       Access: Private, Static
+//  Description: Determines whether the slot occurs in the map of
+//               slotted functions, and if so, writes out a pointer
+//               to its wrapper.  If not, writes out def (usually 0).
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+write_function_slot(ostream &out, int indent_level, const SlottedFunctions &slots,
+                    const string &slot, const string &default_) {
+
+  SlottedFunctions::const_iterator rfi = slots.find(slot);
+  if (rfi == slots.end()) {
+    indent(out, indent_level) << default_ << ",";
+    if (default_ == "0") {
+      out << " // " << slot;
+    }
+    out << "\n";
+    return;
+  }
+
+  const SlottedFunctionDef &def = rfi->second;
+  Function *func = def._func;
+
+  // Add an #ifdef if there is a specific version requirement on this function.
+  if (def._min_version > 0) {
+    out << "#if PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
+  }
+
+  indent(out, indent_level) << "&" << def._wrapper_name << ",\n";
+
+  if (def._min_version > 0) {
+    out << "#else\n";
+    indent(out, indent_level) << default_ << ",\n";
+    out << "#endif\n";
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -657,13 +675,26 @@ write_python_instance(ostream &out, int indent_level, const std::string &return_
   out << boolalpha;
 
   if (IsPandaTypedObject(ctype->as_struct_type())) {
-    std::string typestr = "(" + return_expr + ")->as_typed_object()->get_type_index()";
+    // We can't let DTool_CreatePyInstanceTyped do the NULL check since we
+    // will be grabbing the type index (which would obviously crash when called
+    // on a NULL pointer), so we do it here.
     indent(out, indent_level)
-      << "return "
-      << "DTool_CreatePyInstanceTyped((void *)" << return_expr << ", "
-      << CLASS_PREFIX << make_safe_name(class_name) << ", "
-      << owns_memory << ", " << is_const << ", " << typestr << ");\n";
+      << "if (" << return_expr << " == NULL) {\n";
+    indent(out, indent_level)
+      << "  Py_INCREF(Py_None);\n";
+    indent(out, indent_level)
+      << "  return Py_None;\n";
+    indent(out, indent_level)
+      << "} else {\n";
+    indent(out, indent_level)
+      << "  return DTool_CreatePyInstanceTyped((void *)" << return_expr
+      << ", " << CLASS_PREFIX << make_safe_name(class_name) << ", "
+      << owns_memory << ", " << is_const << ", "
+      << return_expr << "->as_typed_object()->get_type_index());\n";
+    indent(out, indent_level)
+      << "}\n";
   } else {
+    // DTool_CreatePyInstance will do the NULL check.
     indent(out, indent_level)
       << "return "
       << "DTool_CreatePyInstance((void *)" << return_expr << ", "
@@ -787,6 +818,8 @@ write_prototypes_class_external(ostream &out, Object *obj) {
   out << "//*** prototypes for external.. " << class_name << "\n";
   out << "//********************************************************************\n";
 
+  // This typedef is necessary for class templates since we can't pass
+  // a comma to a macro function.
   out << "typedef  " << c_class_name << "  " << class_name << "_localtype;\n";
   out << "Define_Module_Class_Forward(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
 }
@@ -873,9 +906,13 @@ write_functions(ostream &out) {
   inside_python_native = true;
 }
 
-////////////////////////////////////////////////////////////
-//  Function : write_class_details
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::write_class_details
+//       Access: Private
+//  Description: Writes out all of the wrapper methods necessary to
+//               export the given object.  This is called by
+//               write_functions.
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_class_details(ostream &out, Object *obj) {
   Functions::iterator fi;
@@ -889,6 +926,7 @@ write_class_details(ostream &out, Object *obj) {
   out << "//*** Functions for .. " << cClassName << "\n" ;
   out << "//********************************************************************\n";
 
+  // First write out all the wrapper functions for the methods.
   for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
     Function *func = (*fi);
     if (func) {
@@ -897,6 +935,7 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
+  // Now write out generated getters and setters for the properties.
   Properties::const_iterator pit;
   for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
     Property *property = (*pit);
@@ -918,12 +957,14 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
+  // Write the constructors.
   if (obj->_constructors.size() == 0) {
+    // There is no constructor - write one that simply outputs an error.
     out << "int Dtool_Init_" + ClassName + "(PyObject *, PyObject *, PyObject *) {\n"
         << "#ifdef NDEBUG\n"
-        << "  PyErr_SetString(PyExc_TypeError, \"cannot init constant class\");\n"
+        << "  Dtool_Raise_TypeError(\"cannot init constant class\");\n"
         << "#else\n"
-        << "  PyErr_SetString(PyExc_TypeError, \"cannot init constant class (" << cClassName << ")\");\n"
+        << "  Dtool_Raise_TypeError(\"cannot init constant class " << cClassName << "\");\n"
         << "#endif\n"
         << "  return -1;\n"
         << "}\n\n";
@@ -949,11 +990,13 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
+  // Write make seqs: generated methods that return a sequence of items.
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    write_make_seq(out, obj, ClassName, *msi);
+    write_make_seq(out, obj, ClassName, cClassName, *msi);
   }
 
+  // Determine which external imports we will need.
   std::map<string, CastDetails> details;
   std::map<string, CastDetails>::iterator di;
   builder.get_type(TypeManager::unwrap(cpptype), false);
@@ -966,8 +1009,8 @@ write_class_details(ostream &out, Object *obj) {
     //out << "IMPORT_THIS struct Dtool_PyTypedObject Dtool_" << make_safe_name(di->second._to_class_name) << ";\n";
   }
 
-  { // the Cast Converter
-
+  // Write support methods to cast from and to pointers of this type.
+  {
     out << "inline void *Dtool_UpcastInterface_" << ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type) {\n";
     out << "  Dtool_PyTypedObject *SelfType = ((Dtool_PyInstDef *)self)->_My_Type;\n";
     out << "  if (SelfType != &Dtool_" << ClassName << ") {\n";
@@ -1026,22 +1069,25 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
 
   CPPType *type = obj->_itype._cpptype;
 
+  // This typedef is necessary for class templates since we can't pass
+  // a comma to a macro function.
   out << "typedef " << c_class_name << " " << class_name << "_localtype;\n";
   if (obj->_itype.has_destructor() ||
       obj->_itype.destructor_is_inherited()) {
 
     if (TypeManager::is_reference_count(type)) {
-      out << "Define_Module_ClassRef(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
+      out << "Define_Module_ClassRef";
     } else {
-      out << "Define_Module_Class(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
+      out << "Define_Module_Class";
     }
   } else {
     if (TypeManager::is_reference_count(type)) {
-      out << "Define_Module_ClassRef_Private(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
+      out << "Define_Module_ClassRef_Private";
     } else {
-      out << "Define_Module_Class_Private(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
+      out << "Define_Module_Class_Private";
     }
   }
+  out << "(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
 
   out << "EXPORT_THIS void Dtool_PyModuleClassInit_" << class_name << "(PyObject *module);\n";
 
@@ -1108,7 +1154,7 @@ write_sub_module(ostream &out, Object *obj) {
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
   std::string export_class_name2 = classNameFromCppName(obj->_itype.get_name(), true);
 
-  out << "  Py_INCREF(&Dtool_" << class_name << ".As_PyTypeObject());\n";
+//  out << "  Py_INCREF(&Dtool_" << class_name << ".As_PyTypeObject());\n";
   out << "  PyModule_AddObject(module, \"" << export_class_name << "\", (PyObject *)&Dtool_" << class_name << ".As_PyTypeObject());\n";
   if (export_class_name != export_class_name2) {
     out << "  PyModule_AddObject(module, \"" << export_class_name2 << "\", (PyObject *)&Dtool_" << class_name << ".As_PyTypeObject());\n";
@@ -1344,9 +1390,9 @@ write_module_class(ostream &out, Object *obj) {
   out << "//********************************************************************\n";
   out << "//*** Py Init Code For .. " << ClassName << " | " << export_class_name << "\n" ;
   out << "//********************************************************************\n";
-  out << "PyMethodDef Dtool_Methods_" << ClassName << "[] = {\n";
+  out << "static PyMethodDef Dtool_Methods_" << ClassName << "[] = {\n";
 
-  std::map<string, SlottedFunctionDef> slotted_functions;
+  SlottedFunctions slots;
   // function Table
   bool got_copy = false;
   bool got_deepcopy = false;
@@ -1398,11 +1444,16 @@ write_module_class(ostream &out, Object *obj) {
 
       if (get_slotted_function_def(obj, func, remap, slotted_def)) {
         const string &key = slotted_def._answer_location;
-        if (slotted_functions.count(key)) {
-          slotted_functions[key]._remaps.insert(remap);
+        if (slotted_def._wrapper_type == WT_none) {
+          slotted_def._wrapper_name = func->_name;
         } else {
-          slotted_functions[key] = slotted_def;
-          slotted_functions[key]._remaps.insert(remap);
+          slotted_def._wrapper_name = func->_name + "_" + key;
+        }
+        if (slots.count(key)) {
+          slots[key]._remaps.insert(remap);
+        } else {
+          slots[key] = slotted_def;
+          slots[key]._remaps.insert(remap);
         }
       } else {
         has_nonslotted = true;
@@ -1502,8 +1553,8 @@ write_module_class(ostream &out, Object *obj) {
   {
     Function *getitem_func;
 
-    std::map<string, SlottedFunctionDef>::iterator rfi; //          slotted_functions;
-    for (rfi = slotted_functions.begin(); rfi != slotted_functions.end(); rfi++) {
+    SlottedFunctions::iterator rfi;
+    for (rfi = slots.begin(); rfi != slots.end(); rfi++) {
       const SlottedFunctionDef &def = rfi->second;
       Function *func = def._func;
 
@@ -1516,7 +1567,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self) {\n";
+          out << "static PyObject *" << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return NULL;\n";
@@ -1524,11 +1575,10 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
           write_function_forset(out, def._remaps, 0, 0, expected_params, 2, true, true,
-                                AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
+                                AT_no_args, RF_pyobject | RF_err_null, false);
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
-          out << "    PyErr_SetString(PyExc_TypeError,\n";
-          out << "      \"Arguments must match:\\n\"\n";
+          out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
           out << "  }\n";
@@ -1552,7 +1602,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *arg) {\n";
+          out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
           if (rfi->second._wrapper_type != WT_one_param) {
             // WT_binary_operator means we must return NotImplemented, instead
@@ -1578,8 +1628,7 @@ write_module_class(ostream &out, Object *obj) {
             out << "  return Py_NotImplemented;\n";
           } else {
             out << "  if (!_PyErr_OCCURRED()) {\n";
-            out << "    PyErr_SetString(PyExc_TypeError,\n";
-            out << "      \"Arguments must match:\\n\"\n";
+            out << "    return Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 6, expected_params);
             out << ");\n";
             out << "  }\n";
@@ -1596,7 +1645,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1628,13 +1677,12 @@ write_module_class(ostream &out, Object *obj) {
             write_function_forset(out, setattr_remaps, 2, 2, expected_params, 4,
                                   true, true, AT_varargs, RF_int | RF_decref_args, true);
 
+            out << "    Py_DECREF(args);\n";
             out << "    if (!_PyErr_OCCURRED()) {\n";
-            out << "      PyErr_SetString(PyExc_TypeError,\n";
-            out << "        \"Arguments must match:\\n\"\n";
+            out << "      Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 8, expected_params);
             out << ");\n";
             out << "    }\n";
-            out << "    Py_DECREF(args);\n";
           } else {
             out << "    PyErr_Format(PyExc_TypeError,\n";
             out << "      \"can't set attributes of built-in/extension type '%s'\",\n";
@@ -1650,8 +1698,7 @@ write_module_class(ostream &out, Object *obj) {
                                   true, true, AT_single_arg, RF_int, true);
 
             out << "    if (!_PyErr_OCCURRED()) {\n";
-            out << "      PyErr_SetString(PyExc_TypeError,\n";
-            out << "        \"Arguments must match:\\n\"\n";
+            out << "      Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 8, expected_params);
             out << ");\n";
             out << "    }\n";
@@ -1677,7 +1724,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *arg) {\n";
+          out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg) {\n";
           out << "  PyObject *res = PyObject_GenericGetAttr(self, arg);\n";
           out << "  if (res != NULL) {\n";
           out << "    return res;\n";
@@ -1710,7 +1757,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static PyObject *" << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, Py_ssize_t index) {\n";
+          out << "static PyObject *" << def._wrapper_name << "(PyObject *self, Py_ssize_t index) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return NULL;\n";
@@ -1730,8 +1777,7 @@ write_module_class(ostream &out, Object *obj) {
                                 AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
-          out << "    PyErr_SetString(PyExc_TypeError,\n";
-          out << "      \"Arguments must match:\\n\"\n";
+          out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
           out << "  }\n";
@@ -1749,7 +1795,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, Py_ssize_t index, PyObject *arg) {\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, Py_ssize_t index, PyObject *arg) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1787,8 +1833,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
-          out << "    PyErr_SetString(PyExc_TypeError,\n";
-          out << "      \"Arguments must match:\\n\"\n";
+          out << "    Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
           out << "  }\n";
@@ -1804,7 +1849,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static Py_ssize_t " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self) {\n";
+          out << "static Py_ssize_t " << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1823,7 +1868,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1858,8 +1903,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
-          out << "    PyErr_SetString(PyExc_TypeError,\n";
-          out << "      \"Arguments must match:\\n\"\n";
+          out << "    Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
           out << "  }\n";
@@ -1875,7 +1919,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self) {\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1901,7 +1945,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, Py_buffer *buffer, int flags) {\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, Py_buffer *buffer, int flags) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return -1;\n";
@@ -1946,8 +1990,7 @@ write_module_class(ostream &out, Object *obj) {
             out << "  if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
             out << "    return " << remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst) << ";\n";
             out << "  } else {\n";
-            out << "    PyErr_SetString(PyExc_TypeError,\n";
-            out << "                    \"Cannot call " << ClassName << ".__getbuffer__() on a const object.\");\n";
+            out << "    Dtool_Raise_TypeError(\"Cannot call " << ClassName << ".__getbuffer__() on a const object.\");\n";
             out << "    return -1;\n";
             out << "  }\n";
           } else if (remap_const != NULL) {
@@ -1969,7 +2012,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static void " << func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, Py_buffer *buffer) {\n";
+          out << "static void " << def._wrapper_name << "(PyObject *self, Py_buffer *buffer) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
           out << "    return;\n";
@@ -2051,7 +2094,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
           out << "//////////////////\n";
-          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
+          out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
           out << "  if (local_this == NULL) {\n";
@@ -2091,8 +2134,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           out << "  if (!_PyErr_OCCURRED()) {\n";
-          out << "    PyErr_SetString(PyExc_TypeError,\n";
-          out << "      \"Arguments must match:\\n\"\n";
+          out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
           out << "  }\n";
@@ -2103,7 +2145,7 @@ write_module_class(ostream &out, Object *obj) {
 
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
-        string fname = "static PyObject *" + func->_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
+        string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
         string expected_params;
         write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
         break;
@@ -2307,7 +2349,7 @@ write_module_class(ostream &out, Object *obj) {
   if (obj->_properties.size() > 0) {
     // Write out the array of properties, telling Python which getter and setter
     // to call when they are assigned or queried in Python code.
-    out << "PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
+    out << "static PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
 
     Properties::const_iterator pit;
     for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
@@ -2354,37 +2396,308 @@ write_module_class(ostream &out, Object *obj) {
     out << "};\n\n";
   }
 
+  bool has_parent_class = (obj->_itype.number_of_derivations() != 0);
+
+  // Output the type slot tables.
+  out << "static PyNumberMethods Dtool_NumberMethods_" << ClassName << " = {\n";
+  write_function_slot(out, 2, slots, "nb_add");
+  write_function_slot(out, 2, slots, "nb_subtract");
+  write_function_slot(out, 2, slots, "nb_multiply");
+  out << "#if PY_MAJOR_VERSION < 3\n";
+  // Note: nb_divide does not exist in Python 3.  We will probably need some
+  // smart mechanism for dispatching to either floor_divide or true_divide.
+  write_function_slot(out, 2, slots, "nb_divide");
+  out << "#endif\n";
+  write_function_slot(out, 2, slots, "nb_remainder");
+  write_function_slot(out, 2, slots, "nb_divmod");
+  write_function_slot(out, 2, slots, "nb_power");
+  write_function_slot(out, 2, slots, "nb_negative");
+  write_function_slot(out, 2, slots, "nb_positive");
+  write_function_slot(out, 2, slots, "nb_absolute");
+  write_function_slot(out, 2, slots, "nb_bool");
+  write_function_slot(out, 2, slots, "nb_invert");
+  write_function_slot(out, 2, slots, "nb_lshift");
+  write_function_slot(out, 2, slots, "nb_rshift");
+  write_function_slot(out, 2, slots, "nb_and");
+  write_function_slot(out, 2, slots, "nb_xor");
+  write_function_slot(out, 2, slots, "nb_or");
+  write_function_slot(out, 2, slots, "nb_coerce");
+  write_function_slot(out, 2, slots, "nb_int");
+  out << "  0, // nb_long\n"; // removed in Python 3
+  write_function_slot(out, 2, slots, "nb_float");
+  out << "#if PY_MAJOR_VERSION < 3\n";
+  write_function_slot(out, 2, slots, "nb_oct");
+  write_function_slot(out, 2, slots, "nb_hex");
+  out << "#endif\n";
+
+  write_function_slot(out, 2, slots, "nb_inplace_add");
+  write_function_slot(out, 2, slots, "nb_inplace_subtract");
+  write_function_slot(out, 2, slots, "nb_inplace_multiply");
+  out << "#if PY_MAJOR_VERSION < 3\n";
+  write_function_slot(out, 2, slots, "nb_inplace_divide");
+  out << "#endif\n";
+  write_function_slot(out, 2, slots, "nb_inplace_remainder");
+  write_function_slot(out, 2, slots, "nb_inplace_power");
+  write_function_slot(out, 2, slots, "nb_inplace_lshift");
+  write_function_slot(out, 2, slots, "nb_inplace_rshift");
+  write_function_slot(out, 2, slots, "nb_inplace_and");
+  write_function_slot(out, 2, slots, "nb_inplace_xor");
+  write_function_slot(out, 2, slots, "nb_inplace_or");
+
+  write_function_slot(out, 2, slots, "nb_floor_divide");
+  write_function_slot(out, 2, slots, "nb_true_divide");
+  write_function_slot(out, 2, slots, "nb_inplace_floor_divide");
+  write_function_slot(out, 2, slots, "nb_inplace_true_divide");
+
+  out << "#if PY_VERSION_HEX >= 0x02050000\n";
+  write_function_slot(out, 2, slots, "nb_index");
+  out << "#endif\n";
+  out << "};\n\n";
+
+  // NB: it's tempting not to write this table when a class doesn't have them.
+  // But then Python won't inherit them from base classes either!  So we always
+  // write this table for now even if it will be full of 0's, unless this type
+  // has no base classes at all.
+  if (has_parent_class || (obj->_protocol_types & Object::PT_sequence) != 0) {
+    out << "static PySequenceMethods Dtool_SequenceMethods_" << ClassName << " = {\n";
+    write_function_slot(out, 2, slots, "sq_length");
+    write_function_slot(out, 2, slots, "sq_concat");
+    write_function_slot(out, 2, slots, "sq_repeat");
+    write_function_slot(out, 2, slots, "sq_item");
+    out << "  0, // sq_slice\n"; // removed in Python 3
+    write_function_slot(out, 2, slots, "sq_ass_item");
+    out << "  0, // sq_ass_slice\n"; // removed in Python 3
+    write_function_slot(out, 2, slots, "sq_contains");
+
+    write_function_slot(out, 2, slots, "sq_inplace_concat");
+    write_function_slot(out, 2, slots, "sq_inplace_repeat");
+    out << "};\n\n";
+  }
+
+  // Same note applies as for the SequenceMethods.
+  if (has_parent_class || (obj->_protocol_types & Object::PT_mapping) != 0) {
+    out << "static PyMappingMethods Dtool_MappingMethods_" << ClassName << " = {\n";
+    write_function_slot(out, 2, slots, "mp_length");
+    write_function_slot(out, 2, slots, "mp_subscript");
+    write_function_slot(out, 2, slots, "mp_ass_subscript");
+    out << "};\n\n";
+  }
+
+  // Same note applies as above.
+  if (has_parent_class || has_local_getbuffer) {
+    out << "static PyBufferProcs Dtool_BufferProcs_" << ClassName << " = {\n";
+    out << "#if PY_MAJOR_VERSION < 3\n";
+    write_function_slot(out, 2, slots, "bf_getreadbuffer");
+    write_function_slot(out, 2, slots, "bf_getwritebuffer");
+    write_function_slot(out, 2, slots, "bf_getsegcount");
+    write_function_slot(out, 2, slots, "bf_getcharbuffer");
+    out << "#endif\n";
+    out << "#if PY_MAJOR_VERSION >= 0x02060000\n";
+    write_function_slot(out, 2, slots, "bf_getbuffer");
+    write_function_slot(out, 2, slots, "bf_releasebuffer");
+    out << "#endif\n";
+    out << "};\n\n";
+  }
+
+  // Output the actual PyTypeObject definition.
+  out << "EXPORT_THIS Dtool_PyTypedObject Dtool_" << ClassName << " = {\n";
+  out << "  {\n";
+  out << "    PyVarObject_HEAD_INIT(NULL, 0)\n";
+  // const char *tp_name;
+  out << "    \"" << _def->module_name << "." << export_class_name << "\",\n";
+  // Py_ssize_t tp_basicsize;
+  out << "    sizeof(Dtool_PyInstDef),\n";
+  // Py_ssize_t tp_itemsize;
+  out << "    0, // tp_itemsize\n";
+
+  // destructor tp_dealloc;
+  out << "    &Dtool_FreeInstance_" << ClassName << ",\n";
+  // printfunc tp_print;
+  write_function_slot(out, 4, slots, "tp_print");
+  // getattrfunc tp_getattr;
+  write_function_slot(out, 4, slots, "tp_getattr");
+  // setattrfunc tp_setattr;
+  write_function_slot(out, 4, slots, "tp_setattr");
+
+  // cmpfunc tp_compare;  (reserved in Python 3)
+  if (has_local_hash) {
+    out << "#if PY_MAJOR_VERSION >= 3\n";
+    out << "    0,\n";
+    out << "#else\n";
+    out << "    &DTOOL_PyObject_Compare,\n";
+    out << "#endif\n";
+  } else {
+    out << "    0, // tp_compare\n";
+  }
+
+  // reprfunc tp_repr;
+  if (has_local_repr) {
+    out << "    &Dtool_Repr_" << ClassName << ",\n";
+  } else {
+    write_function_slot(out, 4, slots, "tp_repr");
+  }
+
+  // PyNumberMethods *tp_as_number;
+  out << "    &Dtool_NumberMethods_" << ClassName << ",\n";
+  // PySequenceMethods *tp_as_sequence;
+  if (has_parent_class || (obj->_protocol_types & Object::PT_sequence) != 0) {
+    out << "    &Dtool_SequenceMethods_" << ClassName << ",\n";
+  } else {
+    out << "    0, // tp_as_sequence\n";
+  }
+  // PyMappingMethods *tp_as_mapping;
+  if (has_parent_class || (obj->_protocol_types & Object::PT_mapping) != 0) {
+    out << "    &Dtool_MappingMethods_" << ClassName << ",\n";
+  } else {
+    out << "    0, // tp_as_mapping\n";
+  }
+
+  // hashfunc tp_hash;
+  if (has_local_hash) {
+    out << "    &Dtool_HashKey_" << ClassName << ",\n";
+  } else {
+    write_function_slot(out, 4, slots, "tp_hash");
+  }
+
+  // ternaryfunc tp_call;
+  write_function_slot(out, 4, slots, "tp_call");
+
+  // reprfunc tp_str;
+  if (has_local_str) {
+    out << "    &Dtool_Str_" << ClassName << ",\n";
+  } else if (has_local_repr) {
+    out << "    &Dtool_Repr_" << ClassName << ",\n";
+  } else {
+    write_function_slot(out, 4, slots, "tp_str");
+  }
+
+  // getattrofunc tp_getattro;
+  write_function_slot(out, 4, slots, "tp_getattro",
+                      "PyObject_GenericGetAttr");
+  // setattrofunc tp_setattro;
+  write_function_slot(out, 4, slots, "tp_setattro",
+                      "PyObject_GenericSetAttr");
+
+  // PyBufferProcs *tp_as_buffer;
+  if (has_parent_class || has_local_getbuffer) {
+    out << "    &Dtool_BufferProcs_" << ClassName << ",\n";
+  } else {
+    out << "    0, // tp_as_buffer\n";
+  }
+
+  // long tp_flags;
+  if (has_local_getbuffer) {
+    out << "#if PY_VERSION_HEX >= 0x02060000\n";
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES | Py_TPFLAGS_HAVE_NEWBUFFER,\n";
+    out << "#else\n";
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES,\n";
+    out << "#endif\n";
+  } else {
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES,\n";
+  }
+
+  // const char *tp_doc;
+  if (obj->_itype.has_comment()) {
+    out << "#ifdef NDEBUG\n";
+    out << "    0,\n";
+    out << "#else\n";
+    output_quoted(out, 4, obj->_itype.get_comment());
+    out << ",\n";
+    out << "#endif\n";
+  } else {
+    out << "    0, // tp_doc\n";
+  }
+
+  // traverseproc tp_traverse;
+  write_function_slot(out, 4, slots, "tp_traverse");
+
+  // inquiry tp_clear;
+  write_function_slot(out, 4, slots, "tp_clear");
+
+  // richcmpfunc tp_richcompare;
+  if (has_local_richcompare) {
+    out << "    &Dtool_RichCompare_" << ClassName << ",\n";
+  } else if (has_local_hash) {
+    out << "#if PY_MAJOR_VERSION >= 3\n";
+    out << "    &DTOOL_PyObject_RichCompare,\n";
+    out << "#else\n";
+    out << "    0,\n";
+    out << "#endif\n";
+  } else {
+    write_function_slot(out, 4, slots, "tp_richcompare");
+  }
+
+  // Py_ssize_t tp_weaklistoffset;
+  out << "    0, // tp_weaklistoffset\n";
+
+  // getiterfunc tp_iter;
+  write_function_slot(out, 4, slots, "tp_iter");
+  // iternextfunc tp_iternext;
+  write_function_slot(out, 4, slots, "tp_iternext");
+
+  // struct PyMethodDef *tp_methods;
+  out << "    Dtool_Methods_" << ClassName << ",\n";
+  // struct PyMemberDef *tp_members;
+  out << "    standard_type_members,\n";
+
+  // struct PyGetSetDef *tp_getset;
+  if (num_getset > 0) {
+    out << "    Dtool_Properties_" << ClassName << ",\n";
+  } else {
+    out << "    0, // tp_getset\n";
+  }
+
+  // struct _typeobject *tp_base;
+  out << "    0, // tp_base\n";
+  // PyObject *tp_dict;
+  out << "    0, // tp_dict\n";
+  // descrgetfunc tp_descr_get;
+  write_function_slot(out, 4, slots, "tp_descr_get");
+  // descrsetfunc tp_descr_set;
+  write_function_slot(out, 4, slots, "tp_descr_set");
+  // Py_ssize_t tp_dictoffset;
+  out << "    0, // tp_dictoffset\n";
+  // initproc tp_init;
+  if (obj->_constructors.size() > 0) {
+    out << "    Dtool_Init_" << ClassName << ",\n";
+  } else {
+    out << "    0,\n";
+  }
+  // allocfunc tp_alloc;
+  out << "    PyType_GenericAlloc,\n";
+  // newfunc tp_new;
+  out << "    Dtool_new_" << ClassName << ",\n";
+  // freefunc tp_free;
+  out << "    PyObject_Del,\n";
+  // inquiry tp_is_gc;
+  out << "    0, // tp_is_gc\n";
+  // PyObject *tp_bases;
+  out << "    0, // tp_bases\n";
+  // PyObject *tp_mro;
+  out << "    0, // tp_mro\n";
+  // PyObject *tp_cache;
+  out << "    0, // tp_cache\n";
+  // PyObject *tp_subclasses;
+  out << "    0, // tp_subclasses\n";
+  // PyObject *tp_weaklist;
+  out << "    0, // tp_weaklist\n";
+  // destructor tp_del;
+  out << "    0, // tp_del\n";
+  // unsigned int tp_version_tag
+  out << "#if PY_VERSION_HEX >= 0x02060000\n";
+  out << "    0, // tp_version_tag\n";
+  out << "#endif\n";
+  out << "  },\n";
+  out << "  Dtool_UpcastInterface_" << ClassName << ",\n";
+  out << "  Dtool_DowncastInterface_" << ClassName << ",\n";
+  out << "  TypeHandle::none(),\n";
+  out << "};\n\n";
+
   out << "void Dtool_PyModuleClassInit_" << ClassName << "(PyObject *module) {\n";
   out << "  (void) module; // Unused\n";
   out << "  static bool initdone = false;\n";
   out << "  if (!initdone) {\n";
   out << "    initdone = true;\n";
-  //        out << "        memset(Dtool_" << ClassName << ".As_PyTypeObject().tp_as_number,0,sizeof(PyNumberMethods));\n";
-  //        out << "        memset(Dtool_" << ClassName << ".As_PyTypeObject().tp_as_mapping,0,sizeof(PyMappingMethods));\n";
-  //        out << "        static Dtool_PyTypedObject  *InheritsFrom[] = {";
-
-  // add doc string
-  if (obj->_itype.has_comment()) {
-    out << "#ifndef NDEBUG\n";
-    out << "    // Class documentation string\n";
-    out << "    Dtool_" << ClassName
-        << ".As_PyTypeObject().tp_doc =\n";
-    output_quoted(out, 6, obj->_itype.get_comment());
-    out << ";\n"
-        << "#endif\n";
-  }
-
-  // Add flags.
-  if (obj->_protocol_types & Object::PT_iter) {
-    out << "#if PY_VERSION_HEX < 0x03000000\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_ITER;\n";
-    out << "#endif";
-  }
-  if (has_local_getbuffer) {
-    out << "#if PY_VERSION_HEX >= 0x02060000 && PY_VERSION_HEX < 0x03000000\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_NEWBUFFER;\n";
-    out << "#endif";
-  }
 
   // Add bases.
   if (bases.size() > 0) {
@@ -2401,76 +2714,6 @@ write_module_class(ostream &out, Object *obj) {
   // get dictionary
   out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
   out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"DtoolClassDict\", Dtool_" << ClassName << ".As_PyTypeObject().tp_dict);\n";
-
-  // Now assign the slotted function definitions.
-  map<string, SlottedFunctionDef>::const_iterator rfi;
-  int prev_min_version = 0;
-
-  for (rfi = slotted_functions.begin(); rfi != slotted_functions.end(); rfi++) {
-    const SlottedFunctionDef &def = rfi->second;
-    Function *func = def._func;
-
-    // Add an #ifdef if there is a specific version requirement on this function.
-    if (def._min_version != prev_min_version) {
-      if (prev_min_version > 0) {
-        out << "#endif\n";
-      }
-      prev_min_version = def._min_version;
-      if (def._min_version > 0) {
-        out << "#if PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
-      }
-    }
-
-    out << "    // " << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
-
-    if (def._wrapper_type == WT_none) {
-      // Bound directly, without wrapper.
-      out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << def._answer_location << " = &" << func->_name << ";\n";
-    } else {
-      // Assign to the wrapper method that was generated earlier.
-      out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << def._answer_location << " = &" << func->_name << methodNameFromCppName(func, export_class_name, false) << ";\n";
-    }
-  }
-  if (prev_min_version > 0) {
-    out << "#endif\n";
-  }
-
-  // compare and hash work together in PY inherit behavior hmm grrr
-  // __hash__
-  if (has_local_hash) {
-    out << "    // __hash__\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_hash = &Dtool_HashKey_" << ClassName << ";\n";
-    out << "#if PY_MAJOR_VERSION >= 3\n";
-    if (!has_local_richcompare) {
-      out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &DTOOL_PyObject_RichCompare;\n";
-    }
-    out << "#else\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_compare = &DTOOL_PyObject_Compare;\n";
-    out << "#endif\n";
-  }
-
-  if (has_local_richcompare) {
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &Dtool_RichCompare_" << ClassName << ";\n";
-  }
-
-  if (has_local_repr) {
-    out << "    // __repr__\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_repr = &Dtool_Repr_" << ClassName << ";\n";
-  }
-
-  if (has_local_str) {
-    out << "    // __str__\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_str = &Dtool_Str_" << ClassName << ";\n";
-
-  } else if (has_local_repr) {
-    out << "    // __str__ Repr Proxy\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_str = &Dtool_Repr_" << ClassName << ";\n";
-  }
-
-  if (num_getset > 0) {
-    // GetSet descriptor slots.
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_getset = Dtool_Properties_" << ClassName << ";\n";
-  }
 
   int num_nested = obj->_itype.number_of_nested_types();
   for (int ni = 0; ni < num_nested; ni++) {
@@ -2538,8 +2781,7 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   out << "    if (PyType_Ready(&Dtool_" << ClassName << ".As_PyTypeObject()) < 0) {\n";
-  out << "      PyErr_SetString(PyExc_TypeError, \"PyType_Ready(" << ClassName << ")\");\n";
-  out << "      printf(\"Error in PyType_Ready(" << ClassName << ")\");\n";
+  out << "      Dtool_Raise_TypeError(\"PyType_Ready(" << ClassName << ")\");\n";
   out << "      return;\n";
   out << "    }\n";
 
@@ -2912,70 +3154,73 @@ write_function_for_name(ostream &out, Object *obj,
       int max_args = mii->first;
       int min_args = min(max_required_args, max_args);
 
-      for (int i = min_args; i < max_args; ++i) {
+      for (int i = min_args; i <= max_args; ++i) {
         indent(out, 2) << "case " << i << ":\n";
         num_args.insert(i + add_self);
       }
-      indent(out, 2) << "case " << max_args << ": {\n";
+      indent(out, 4) << "{\n";
       num_args.insert(max_args + add_self);
 
       if (min_args == 1 && max_args == 1 && args_type == AT_varargs) {
         // Might as well, since we already checked the number of args.
-        indent(out, 2) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+        indent(out, 6) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
 
-        write_function_forset(out, mii->second, min_args, max_args, expected_params, 4,
+        write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                       coercion_allowed, true, AT_single_arg, return_flags, true, !all_nonconst);
       } else {
-        write_function_forset(out, mii->second, min_args, max_args, expected_params, 4,
+        write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                       coercion_allowed, true, args_type, return_flags, true, !all_nonconst);
       }
 
+      indent(out, 4) << "}\n";
       indent(out, 4) << "break;\n";
-      indent(out, 2) << "}\n";
     }
 
-    // Show an error saying how many arguments we actually take.  So much
-    // logic for such a silly matter.  Sheesh.
+    // In NDEBUG case, fall through to the error at end of function.
+    out << "#ifndef NDEBUG\n";
+
     indent(out, 2) << "default:\n";
 
-    out << "#ifdef NDEBUG\n"
-        << "    PyErr_SetString(PyExc_TypeError, \"wrong number of arguments given\");\n"
-        << "#else\n"
-        << "    PyErr_Format(PyExc_TypeError, \""
-        << methodNameFromCppName(remap, "", false)
-        << "() takes ";
+    // Format an error saying how many arguments we actually take.  So much
+    // logic for such a silly matter.  Sheesh.
+    ostringstream msg;
+    msg << methodNameFromCppName(remap, "", false) << "() takes ";
 
     set<int>::iterator si = num_args.begin();
-    out << *si;
+    msg << *si;
     if (num_args.size() == 2) {
-      out << " or " << *(++si);
+      msg << " or " << *(++si);
     } else if (num_args.size() > 2) {
       ++si;
       while (si != num_args.end()) {
         int num = *si;
         if ((++si) == num_args.end()) {
-          out << " or " << num;
+          msg << " or " << num;
         } else {
-          out << ", " << num;
+          msg << ", " << num;
         }
       }
     }
+    msg << " arguments (%d given)";
 
-    out << " arguments (%d given)\", parameter_count + " << add_self << ");\n";
+    string count_var = "parameter_count";
+    if (add_self) {
+      count_var += " + 1";
+    }
+
+    error_raise_return(out, 4, return_flags, "TypeError",
+                       msg.str(), count_var);
     out << "#endif\n";
-
-    error_return(out, 4, return_flags);
     indent(out, 2) << "}\n";
 
-    out << "  if (!_PyErr_OCCURRED()) { // Let error pass on\n"
-        << "#ifdef NDEBUG\n"
-        << "    PyErr_SetString(PyExc_TypeError, \"arguments do not match function signature\");\n"
-        << "#else\n"
-        << "    PyErr_SetString(PyExc_TypeError,\n"
-        << "      \"Arguments must match one of:\\n\"\n";
+    out << "  if (!_PyErr_OCCURRED()) {\n"
+        << "    ";
+    if ((return_flags & ~RF_pyobject) == RF_err_null) {
+      out << "return ";
+    }
+    out << "Dtool_Raise_BadArgumentsError(\n";
     output_quoted(out, 6, expected_params);
     out << ");\n"
-        << "#endif\n"
         << "  }\n";
 
     error_return(out, 2, return_flags);
@@ -3009,16 +3254,31 @@ write_function_for_name(ostream &out, Object *obj,
         break;
       }
 
-      out << "#ifdef NDEBUG\n"
-          << "    PyErr_SetString(PyExc_TypeError, \"function takes no arguments\");\n"
-          << "#else\n"
-          << "    PyErr_Format(PyExc_TypeError,\n"
-          << "                 \"" << methodNameFromCppName(remap, "", false)
-          << "() takes no arguments (%d given)\",\n"
-          << "                 parameter_count);\n"
-          << "#endif\n";
+      out << "#ifdef NDEBUG\n";
+      error_raise_return(out, 4, return_flags, "TypeError", "function takes no arguments");
+      out << "#else\n";
+      error_raise_return(out, 4, return_flags, "TypeError",
+        methodNameFromCppName(remap, "", false) + "() takes no arguments (%d given)",
+        "parameter_count");
+      out << "#endif\n";
+      out << "  }\n";
 
-      error_return(out, 4, return_flags);
+    } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
+      // Check this to be sure, as we handle the case of only 1 keyword arg
+      // in write_function_forset (not using ParseTupleAndKeywords).
+      out << "    int parameter_count = PyTuple_Size(args);\n"
+             "    if (kwds != NULL) {\n"
+             "      parameter_count += PyDict_Size(kwds);\n"
+             "    }\n"
+             "  if (parameter_count != 1) {\n"
+             "#ifdef NDEBUG\n";
+      error_raise_return(out, 4, return_flags, "TypeError",
+                         "function takes exactly 1 argument");
+      out << "#else\n";
+      error_raise_return(out, 4, return_flags, "TypeError",
+        methodNameFromCppName(remap, "", false) + "() takes exactly 1 argument (%d given)",
+        "parameter_count");
+      out << "#endif\n";
       out << "  }\n";
     }
 
@@ -3031,15 +3291,15 @@ write_function_for_name(ostream &out, Object *obj,
     // and won't be necessary to write this out.
     if (args_type != AT_no_args) {
       out << "  if (!_PyErr_OCCURRED()) {\n"
-          << "#ifdef NDEBUG\n"
-          << "    PyErr_SetString(PyExc_TypeError, \"arguments do not match function signature\");\n"
-          << "#else\n"
-          << "    PyErr_SetString(PyExc_TypeError,\n"
-          << "      \"Arguments must match:\\n\"\n";
+          << "    ";
+      if ((return_flags & ~RF_pyobject) == RF_err_null) {
+        out << "return ";
+      }
+      out << "Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n"
-          << "#endif\n"
           << "  }\n";
+
       error_return(out, 2, return_flags);
     }
   }
@@ -3070,13 +3330,6 @@ write_function_for_name(ostream &out, Object *obj,
 //               is a regular pointer, and an additional boolean
 //               indicates whether the caller is supposed to call
 //               "delete" on the coerced pointer or not.
-//
-//               In the future, I'd like to add a third variant to
-//               that list: classes that have a default constructor
-//               and a move or copy assignment operator.  This
-//               should allow creating classes like TypeHandle,
-//               LVecBase3 or Parameter on the stack instead of
-//               using an ugly "new" and "delete" pair.
 //
 //               In all cases, the coerce constructor returns a bool
 //               indicating whether the conversion was possible.
@@ -3125,7 +3378,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
         }
 
         // Coerce constructor should take at least one argument.
-        nassertd(max_num_args > 0);
+        nassertd(max_num_args > 0) continue;
         min_num_args = max(min_num_args, 1);
 
         max_required_args = max(max_num_args, max_required_args);
@@ -3163,7 +3416,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
         }
 
         // Coerce constructor should take at least one argument.
-        nassertd(max_num_args > 0);
+        nassertd(max_num_args > 0) continue;
         min_num_args = max(min_num_args, 1);
 
         max_required_args = max(max_num_args, max_required_args);
@@ -3181,10 +3434,10 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName = obj->_itype.get_true_name();
 
-  // The coercion works slightly different for reference counted types, since
-  // we can handle those a bit more nicely by taking advantage of the refcount
-  // instead of having to use a boolean to indicate that it should be managed.
   if (TypeManager::is_reference_count(obj->_itype._cpptype)) {
+    // The coercion works slightly different for reference counted types, since
+    // we can handle those a bit more nicely by taking advantage of the refcount
+    // instead of having to use a boolean to indicate that it should be managed.
     if (is_const) {
       out << "bool Dtool_Coerce_" << ClassName << "(PyObject *args, CPT(" << cClassName << ") &coerced) {\n";
     } else {
@@ -3285,7 +3538,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
       }
       indent(out, 6) << "case " << max_args << ": {\n";
 
-      write_function_forset(out, mii->second, mii->first, mii->first, expected_params, 8, false, false,
+      write_function_forset(out, mii->second, min_args, max_args, expected_params, 8, false, false,
                             AT_varargs, RF_coerced | RF_err_false, true, false);
 
       indent(out, 8) << "break;\n";
@@ -3315,7 +3568,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
       indent(out, 4) << "if (size >= " << min_args << " && size <= " << max_args << ") {\n";
     }
 
-    write_function_forset(out, mii->second, mii->first, mii->first, expected_params, 6, false, false,
+    write_function_forset(out, mii->second, min_args, max_args, expected_params, 6, false, false,
                           AT_varargs, RF_coerced | RF_err_false, true, false);
     indent(out, 4) << "}\n";
   }
@@ -3575,11 +3828,62 @@ bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   return false;
 }
 
-///////////////////////////////////////////////////////////
-//  Function  : write_function_forset
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::write_function_forset
+//       Access: Private
+//  Description: Writes out a set of function wrappers that handle
+//               all instances of a particular function with the
+//               same number of parameters.
+//               (Actually, in some cases relating to default
+//               argument handling, this may be called with remaps
+//               taking a range of parameters.)
 //
-//  A set is defined as all remaps that have the same number of paramaters..
-///////////////////////////////////////////////////////////
+//               min_num_args and max_num_args are the range of
+//               parameter counts to respect for these functions.
+//               This is important for default argument handling.
+//
+//               expected_params is a reference to a string that
+//               will be filled in with a list of overloads that
+//               this function takes, for displaying in the doc
+//               string and error messages.
+//
+//               If coercion_allowed is true, it will attempt
+//               to convert arguments to the appropriate parameter
+//               type using the appropriate Dtool_Coerce function.
+//               This means it may write some remaps twice: once
+//               without coercion, and then it may go back and
+//               write it a second time to try parameter coercion.
+//
+//               If report_errors is true, it will print an error
+//               and exit when one has occurred, instead of falling
+//               back to the next overload.  This is automatically
+//               disabled when more than one function is passed.
+//
+//               args_type indicates whether this function takes
+//               no args, a single PyObject* arg, an args tuple,
+//               or an args tuple and kwargs dictionary.
+//
+//               return_flags indicates which value should be
+//               returned from the wrapper function and what should
+//               be returned on error.
+//
+//               If check_exceptions is false, it will not check
+//               if the function raised an exception, except if
+//               it took PyObject* arguments.  This should NEVER
+//               be false for C++ functions that call Python code,
+//               since that would block a meaningful exception
+//               like SystemExit or KeyboardInterrupt.
+//
+//               If verify_const is set, it will write out a check
+//               to make sure that non-const functions aren't called
+//               for a const "this".  This is usually only false when
+//               write_function_for_name has already done this check
+//               (which it does when *all* remaps are non-const).
+//
+//               If first_pexpr is not empty, it represents the
+//               preconverted value of the first parameter.  This
+//               is a special-case hack for one of the slot functions.
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_function_forset(ostream &out,
                       const std::set<FunctionRemap *> &remapsin,
@@ -3621,6 +3925,48 @@ write_function_forset(ostream &out,
     }
   }
 
+  string first_param_name;
+  bool same_first_param = false;
+
+  // If there's only one arg and all remaps have the same parameter name, we
+  // extract it from the dictionary, so we don't have to call ParseTupleAndKeywords.
+  if (first_pexpr.empty() && min_num_args == 1 && max_num_args == 1 &&
+      args_type == AT_keyword_args) {
+    sii = remapsin.begin();
+    remap = (*sii);
+    first_param_name = remap->_parameters[(int)remap->_has_this]._name;
+    same_first_param = true;
+
+    for (++sii; sii != remapsin.end(); ++sii) {
+      remap = (*sii);
+      if (remap->_parameters[(int)remap->_has_this]._name != first_param_name) {
+        same_first_param = false;
+        break;
+      }
+    }
+  }
+
+  if (same_first_param) {
+    // Yes, they all have the same argument name (or there is only one remap).
+    // Extract it from the dict so we don't have to call ParseTupleAndKeywords.
+    indent(out, indent_level) << "PyObject *arg = NULL;\n";
+    indent(out, indent_level) << "if (PyTuple_GET_SIZE(args) == 1) {\n";
+    indent(out, indent_level) << "  arg = PyTuple_GET_ITEM(args, 0);\n";
+    indent(out, indent_level) << "} else if (kwds != NULL) {\n";
+    indent(out, indent_level) << "  arg = PyDict_GetItemString(kwds, \"" << first_param_name << "\");\n";
+    indent(out, indent_level) << "}\n";
+    if (report_errors) {
+      indent(out, indent_level) << "if (arg == (PyObject *)NULL) {\n";
+      error_raise_return(out, indent_level + 2, return_flags, "TypeError",
+        "Required argument '" + first_param_name + "' (pos 1) not found");
+      indent(out, indent_level) << "}\n";
+    } else {
+      indent(out, indent_level) << "if (arg != (PyObject *)NULL) {\n";
+      indent_level += 2;
+    }
+    args_type = AT_single_arg;
+  }
+
   if (remapsin.size() > 1) {
     // There are multiple different overloads for this number of
     // parameters.  Sort them all into order from most-specific to
@@ -3641,8 +3987,8 @@ write_function_forset(ostream &out,
 
       for (sii = remaps.begin(); sii != remaps.end(); ++sii) {
         remap = (*sii);
-        if (remap->_parameters.size() > remap->_first_true_parameter) {
-          ParameterRemap *param = remap->_parameters[remap->_first_true_parameter]._remap;
+        if (remap->_parameters.size() > (int)remap->_has_this) {
+          ParameterRemap *param = remap->_parameters[(int)remap->_has_this]._remap;
           string param_name = param->get_orig_type()->get_local_name(&parser);
 
           if (param_name != "CPT_InternalName" &&
@@ -3658,14 +4004,19 @@ write_function_forset(ostream &out,
         }
       }
       if (first_internalname) {
-        // Awesome.
+        // Yeah, all remaps have a first InternalName parameter, so process
+        // that and remove it from the args tuple.
         if (args_type == AT_single_arg) {
           // Bit of a weird case, but whatever.
           indent(out, indent_level) << "PyObject *name_obj = arg;\n";
           args_type = AT_no_args;
+        } else if (min_num_args == 2 && max_num_args == 2) {
+          indent(out, indent_level) << "PyObject *name_obj = PyTuple_GET_ITEM(args, 0);\n";
+          indent(out, indent_level) << "PyObject *arg = PyTuple_GET_ITEM(args, 1);\n";
+          args_type = AT_single_arg;
         } else {
           indent(out, indent_level) << "PyObject *name_obj = PyTuple_GET_ITEM(args, 0);\n";
-          indent(out, indent_level) << "args = PyTuple_GetSlice(args, 1, Py_SIZE(args));\n";
+          indent(out, indent_level) << "args = PyTuple_GetSlice(args, 1, PyTuple_GET_SIZE(args));\n";
           return_flags |= RF_decref_args;
         }
         indent(out, indent_level) << "PT(InternalName) name;\n";
@@ -3685,6 +4036,7 @@ write_function_forset(ostream &out,
           // This is the last remap, and it happens to be the only one
           // with coercion possible.  So we might as well just break off
           // now, and let this case be handled by the coercion loop, below.
+          // BUG: this remap doesn't get listed in expected_params.
           break;
         }
       }
@@ -3730,7 +4082,7 @@ write_function_forset(ostream &out,
             << "{\n";
         }
 
-        indent(out, indent_level) << "// -2 ";
+        indent(out, indent_level) << "  // -2 ";
         remap->write_orig_prototype(out, 0, false, (max_num_args - min_num_args));
         out << "\n";
 
@@ -3748,12 +4100,15 @@ write_function_forset(ostream &out,
       indent_level -= 2;
       if (report_errors) {
         indent(out, indent_level) << "} else {\n";
+
         string class_name = remap->_cpptype->get_simple_name();
-        indent(out, indent_level + 2)
-          << "PyErr_SetString(PyExc_TypeError, "
-          << "\"" << classNameFromCppName(class_name, false)
-          << "." << methodNameFromCppName(remap, class_name, false)
-          << " first argument must be str or InternalName\");\n";
+        ostringstream msg;
+        msg << classNameFromCppName(class_name, false) << "."
+            << methodNameFromCppName(remap, class_name, false)
+            << "() first argument must be str or InternalName";
+
+        error_raise_return(out, indent_level + 2, return_flags,
+                           "TypeError", msg.str());
       }
       indent(out, indent_level) << "}\n";
     }
@@ -3775,40 +4130,47 @@ write_function_forset(ostream &out,
                             check_exceptions, first_pexpr);
   }
 
+  // Close the brace we opened earlier.
+  if (same_first_param && !report_errors) {
+    indent_level -= 2;
+    indent(out, indent_level) << "}\n";
+  }
+
+  // If we did a const check earlier, and we were asked to report errors,
+  // write out an else case raising an exception.
   if (all_nonconst) {
     if (report_errors) {
       indent(out, indent_level - 2)
         << "} else {\n";
 
-      out << "#ifdef NDEBUG\n";
-      indent(out, indent_level)
-        << "PyErr_SetString(PyExc_TypeError, \"non-const function called on const object\");\n";
-      out << "#else\n";
-
-      indent(out, indent_level)
-        << "PyErr_SetString(PyExc_TypeError,\n";
       string class_name = remap->_cpptype->get_simple_name();
-      indent(out, indent_level)
-        << "                \"Cannot call "
-        << classNameFromCppName(class_name, false)
-        << "." << methodNameFromCppName(remap, class_name, false)
-        << "() on a const object.\");\n"
-        << "#endif\n";
+      ostringstream msg;
+      msg << "Cannot call "
+          << classNameFromCppName(class_name, false)
+          << "." << methodNameFromCppName(remap, class_name, false)
+          << "() on a const object.";
 
-      error_return(out, indent_level, return_flags);
+      out << "#ifdef NDEBUG\n";
+      error_raise_return(out, indent_level, return_flags, "TypeError",
+                         "non-const method called on const object");
+      out << "#else\n";
+      error_raise_return(out, indent_level, return_flags, "TypeError", msg.str());
+      out << "#endif\n";
     }
     indent_level -= 2;
-    indent(out, indent_level) << "}\n\n";
-  } else {
-    out << "\n";
+    indent(out, indent_level) << "}\n";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::write_function_instance
 //       Access: Private
-//  Description: Writes out the particular function that handles a
-//               single instance of an overloaded function.
+//  Description: Writes out the code to handle a a single instance
+//               of an overloaded function.  This will convert all
+//               of the arguments from PyObject* to the appropriate
+//               C++ type, call the C++ function, possibly check
+//               for errors, and construct a Python wrapper for the
+//               return value.
 //
 //               return_flags indicates which value should be
 //               returned from the wrapper function and what should
@@ -3826,7 +4188,9 @@ write_function_forset(ostream &out,
 //               If check_exceptions is false, it will not check
 //               if the function raised an exception, except if
 //               it took PyObject* arguments.  This should NEVER
-//               be done for C++ functions that call Python code.
+//               be false for C++ functions that call Python code,
+//               since that would block a meaningful exception
+//               like SystemExit or KeyboardInterrupt.
 //
 //               If first_pexpr is not empty, it represents the
 //               preconverted value of the first parameter.  This
@@ -3841,14 +4205,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                         bool check_exceptions,
                         const string &first_pexpr) {
   string format_specifiers;
-  std::string keyword_list;
+  string keyword_list;
   string parameter_list;
   string container;
+  string type_check;
   vector_string pexprs;
   LineStream extra_convert;
   ostringstream extra_param_check;
   LineStream extra_cleanup;
   int min_version = 0;
+
+  // This will be set if the function itself is suspected of possibly
+  // raising a TypeError.
+  bool may_raise_typeerror = false;
+
+  // This will be set to true if one of the things we're about to do
+  // *might* raise a TypeError that we may have to clear.
+  bool clear_error = false;
 
   bool is_constructor = (remap->_type == FunctionRemap::T_constructor);
 
@@ -3878,18 +4251,42 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
   bool only_pyobjects = true;
 
-  int pn;
-  for (pn = 0; pn < num_params; ++pn) {
-    if (pn > 0) {
-      expected_params += ", ";
-    }
+  int pn = 0;
 
-    if (((remap->_has_this && pn == 1) ||
-        (!remap->_has_this && pn == 0)) && !first_pexpr.empty()) {
-      // The first argument was already converted.
+  if (remap->_has_this) {
+    // The first parameter is the 'this' parameter.
+    string expected_class_name = classNameFromCppName(remap->_cpptype->get_simple_name(), false);
+    if (remap->_const_method) {
+      expected_params += expected_class_name + " self";
+      string class_name = remap->_cpptype->get_local_name(&parser);
+      container = "(const " + class_name + "*)local_this";
+    } else {
+      expected_params += "const " + expected_class_name + " self";
+      container = "local_this";
+    }
+    pexprs.push_back(container);
+    ++pn;
+  }
+
+  if (!first_pexpr.empty()) {
+    if (pn >= num_params) {
+      // first_pexpr was passed even though the function takes no arguments.
+      nassert_raise("pn < num_params");
+    } else {
+      // The first actual argument was already converted.
+      if (pn > 0) {
+        expected_params += ", ";
+      }
       expected_params += first_pexpr;
       pexprs.push_back(first_pexpr);
-      continue;
+      ++pn;
+    }
+  }
+
+  // Now convert (the rest of the) actual arguments, one by one.
+  for (; pn < num_params; ++pn) {
+    if (pn > 0) {
+      expected_params += ", ";
     }
 
     bool is_optional = false;
@@ -3941,15 +4338,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     string reported_name = remap->_parameters[pn]._name;
+    keyword_list += "\"" + reported_name + "\", ";
 
-    if (!remap->_has_this || pn != 0) {
-      keyword_list += "\"" + reported_name + "\", ";
-    } else {
-      // Should be more a familiar for a Python dev than "this"...
-      reported_name = "self";
-    }
-
-    if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) {
+    if (param->new_type_is_atomic_string()) {
 
       if (TypeManager::is_char_pointer(orig_type)) {
         indent(out, indent_level) << "char ";
@@ -4134,8 +4525,40 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       pexpr_string = param_name + "_chars[0]";
       expected_params += "unicode char";
       only_pyobjects = false;
+      clear_error = true;
+
+    } else if (TypeManager::is_ssize(type)) {
+      indent(out, indent_level) << "Py_ssize_t " << param_name << default_expr << ";\n";
+      format_specifiers += "n";
+      parameter_list += ", &" + param_name;
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_size(type)) {
+      // It certainly isn't the exact same thing as size_t, but Py_ssize_t
+      // should at least be the same size.  The problem with mapping this
+      // to unsigned int is that that doesn't work well on 64-bit systems,
+      // on which size_t is a 64-bit integer.
+      indent(out, indent_level) << "Py_ssize_t " << param_name << default_expr << ";\n";
+      format_specifiers += "n";
+      parameter_list += ", &" + param_name;
+      expected_params += "int";
+      only_pyobjects = false;
+
+      extra_convert
+        << "#ifndef NDEBUG\n"
+        << "if (" << param_name << " < 0) {\n";
+
+      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                         "can't convert negative value %zd to size_t",
+                         param_name);
+      extra_convert
+        << "}\n"
+        << "#endif\n";
 
     } else if (TypeManager::is_longlong(type)) {
+      // It's not trivial to do overflow checking for a long long, so we
+      // simply don't do it.
       if (TypeManager::is_unsigned_longlong(type)) {
         indent(out, indent_level) << "unsigned PY_LONG_LONG " << param_name << default_expr << ";\n";
         format_specifiers += "K";
@@ -4147,29 +4570,124 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       expected_params += "long";
       only_pyobjects = false;
 
-    } else if (TypeManager::is_size(type)) {
-      // It certainly isn't the exact same thing, but Py_ssize_t comes
-      // fairly close, and they should be the same size.  Thte problem with
-      // mapping this to unsigned int is that that doesn't work well for
-      // 64-bit systems, on which this data type is a 64-bit integer.
-      indent(out, indent_level) << "Py_ssize_t " << param_name << default_expr << ";\n";
-      format_specifiers += "n";
-      parameter_list += ", &" + param_name;
+    } else if (TypeManager::is_unsigned_short(type)) {
+      if (args_type == AT_single_arg) {
+        // This is defined to PyLong_Check for Python 3 by py_panda.h.
+        type_check = "PyInt_Check(arg)";
+        extra_convert
+          << "long " << param_name << " = PyInt_AS_LONG(arg);\n";
+
+        pexpr_string = "(" + type->get_local_name(&parser) + ")" + param_name;
+      } else {
+        indent(out, indent_level) << "long " << param_name << default_expr << ";\n";
+        format_specifiers += "l";
+        parameter_list += ", &" + param_name;
+      }
+
+      // The "H" format code, unlike "h", does not do overflow checking, so
+      // we have to do it ourselves (except in release builds).
+      extra_convert
+        << "#ifndef NDEBUG\n"
+        << "if (" << param_name << " < 0 || " << param_name << " > USHRT_MAX) {\n";
+
+      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                         "value %ld out of range for unsigned short integer",
+                         param_name);
+      extra_convert
+        << "}\n"
+        << "#endif\n";
+
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_short(type)) {
+      if (args_type == AT_single_arg) {
+        // This is defined to PyLong_Check for Python 3 by py_panda.h.
+        type_check = "PyInt_Check(arg)";
+
+        // Perform overflow checking in debug builds.
+        extra_convert
+          << "long arg_val = PyInt_AS_LONG(arg);\n"
+          << "#ifndef NDEBUG\n"
+          << "if (arg_val < SHRT_MIN || arg_val > SHRT_MAX) {\n";
+
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %ld out of range for signed short integer",
+                           "arg_val");
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+
+        pexpr_string = "(" + type->get_local_name(&parser) + ")arg_val";
+
+      } else {
+        indent(out, indent_level) << "short " << param_name << default_expr << ";\n";
+        format_specifiers += "h";
+        parameter_list += ", &" + param_name;
+      }
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_unsigned_integer(type)) {
+      if (args_type == AT_single_arg) {
+        // Windows has 32-bit longs, and Python 2 stores a C long for PyInt
+        // internally, so a PyInt wouldn't cover the whole range; that's why
+        // we have to accept PyLong as well here.
+        type_check = "PyLongOrInt_Check(arg)";
+        extra_convert
+          << "unsigned long " << param_name << " = PyLong_AsUnsignedLong(arg);\n";
+        pexpr_string = "(" + type->get_local_name(&parser) + ")" + param_name;
+      } else {
+        indent(out, indent_level) << "unsigned long " << param_name << default_expr << ";\n";
+        format_specifiers += "k";
+        parameter_list += ", &" + param_name;
+      }
+
+      // The "I" format code, unlike "i", does not do overflow checking, so
+      // we have to do it ourselves (in debug builds).  Note that Python 2
+      // stores longs internally, for ints, so we don't do it for Python 2 on
+      // Windows, where longs are the same size as ints.
+      // BUG: does not catch negative values on Windows when going through
+      // the PyArg_ParseTuple case.
+      extra_convert
+        << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
+        << "if (" << param_name << " > UINT_MAX) {\n";
+
+      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                         "value %lu out of range for unsigned integer",
+                         param_name);
+      extra_convert
+        << "}\n"
+        << "#endif\n";
+
       expected_params += "int";
       only_pyobjects = false;
 
     } else if (TypeManager::is_integer(type)) {
       if (args_type == AT_single_arg) {
-        pexpr_string = "(" + type->get_local_name(&parser) + ")PyInt_AS_LONG(arg)";
-        extra_param_check << " && PyInt_Check(arg)";
+        // This is defined to PyLong_Check for Python 3 by py_panda.h.
+        type_check = "PyInt_Check(arg)";
+
+        // Perform overflow checking in debug builds.  Note that Python 2
+        // stores longs internally, for ints, so we don't do it on Windows,
+        // where longs are the same size as ints.
+        extra_convert
+          << "long arg_val = PyInt_AS_LONG(arg);\n"
+          << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
+          << "if (arg_val < INT_MIN || arg_val > INT_MAX) {\n";
+
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %ld out of range for signed integer",
+                           "arg_val");
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+
+        pexpr_string = "(" + type->get_local_name(&parser) + ")arg_val";
+
       } else {
-        if (TypeManager::is_unsigned_integer(type)) {
-          indent(out, indent_level) << "unsigned int " << param_name << default_expr << ";\n";
-          format_specifiers += "I";
-        } else {
-          indent(out, indent_level) << "int " << param_name << default_expr << ";\n";
-          format_specifiers += "i";
-        }
+        indent(out, indent_level) << "int " << param_name << default_expr << ";\n";
+        format_specifiers += "i";
         parameter_list += ", &" + param_name;
       }
       expected_params += "int";
@@ -4178,7 +4696,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     } else if (TypeManager::is_double(type)) {
       if (args_type == AT_single_arg) {
         pexpr_string = "PyFloat_AsDouble(arg)";
-        extra_param_check << " && PyNumber_Check(arg)";
+        type_check = "PyNumber_Check(arg)";
       } else {
         indent(out, indent_level) << "double " << param_name << default_expr << ";\n";
         format_specifiers += "d";
@@ -4189,8 +4707,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
     } else if (TypeManager::is_float(type)) {
       if (args_type == AT_single_arg) {
-        pexpr_string = "(float) PyFloat_AsDouble(arg)";
-        extra_param_check << " && PyNumber_Check(arg)";
+        pexpr_string = "(" + type->get_local_name(&parser) + ")PyFloat_AsDouble(arg)";
+        type_check = "PyNumber_Check(arg)";
       } else {
         indent(out, indent_level) << "float " << param_name << default_expr << ";\n";
         format_specifiers += "f";
@@ -4221,14 +4739,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
       // It's reasonable to assume that a function taking a PyTypeObject
       // might also throw a TypeError if the type is incorrect.
-      check_exceptions = true;
+      may_raise_typeerror = true;
 
     } else if (TypeManager::is_pointer_to_PyStringObject(type)) {
       if (args_type == AT_single_arg) {
         // This is a single-arg function, so there's no need
         // to convert anything.
         param_name = "arg";
-        extra_param_check << " && PyString_Check(arg)";
+        type_check = "PyString_Check(arg)";
         pexpr_string = "(PyStringObject *)" + param_name;
       } else {
         indent(out, indent_level) << "PyStringObject *" << param_name << default_expr << ";\n";
@@ -4243,7 +4761,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         // This is a single-arg function, so there's no need
         // to convert anything.
         param_name = "arg";
-        extra_param_check << " && PyUnicode_Check(arg)";
+        type_check = "PyUnicode_Check(arg)";
         pexpr_string = "(PyUnicodeObject *)" + param_name;
       } else {
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << default_expr << ";\n";
@@ -4264,11 +4782,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         parameter_list += ", &" + param_name;
       }
       pexpr_string = param_name;
-      expected_params += "any";
+      expected_params += "object";
 
       // It's reasonable to assume that a function taking a PyObject
       // might also throw a TypeError if the type is incorrect.
-      check_exceptions = true;
+      may_raise_typeerror = true;
 
     } else if (TypeManager::is_pointer_to_Py_buffer(type)) {
       min_version = 0x02060000; // Only support this remap in version 2.6+.
@@ -4288,7 +4806,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       pexpr_string = "&" + param_name + "_view";
       extra_cleanup << "PyBuffer_Release(&" << param_name << "_view);\n";
       expected_params += "buffer";
-      check_exceptions = true;
+      may_raise_typeerror = true;
+      clear_error = true;
 
     } else if (TypeManager::is_pointer_to_simple(type)) {
       if (args_type == AT_single_arg) {
@@ -4407,6 +4926,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
       extra_cleanup << "PyBuffer_Release(&" << param_name << "_view);\n";
       expected_params += "buffer";
+      clear_error = true;
 
     } else if (TypeManager::is_pointer(type)) {
       CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(type));
@@ -4420,143 +4940,151 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       string expected_class_name = classNameFromCppName(obj_type->get_simple_name(), false);
       expected_params += expected_class_name;
 
-      if (!param->is_this()) {
-        if (args_type == AT_single_arg) {
-          param_name = "arg";
-        } else {
-          indent(out, indent_level) << "PyObject *" << param_name;
-          if (is_optional) {
-            out << " = NULL";
-          }
-          out << ";\n";
-          format_specifiers += "O";
-          parameter_list += ", &" + param_name;
+      if (args_type == AT_single_arg) {
+        param_name = "arg";
+      } else {
+        indent(out, indent_level) << "PyObject *" << param_name;
+        if (is_optional) {
+          out << " = NULL";
         }
+        out << ";\n";
+        format_specifiers += "O";
+        parameter_list += ", &" + param_name;
+      }
 
-        string class_name = obj_type->get_local_name(&parser);
+      string class_name = obj_type->get_local_name(&parser);
 
-        // need to a forward scope for this class..
-        if (!isExportThisRun(obj_type)) {
-          _external_imports.insert(obj_type);
+      // need to a forward scope for this class..
+      if (!isExportThisRun(obj_type)) {
+        _external_imports.insert(obj_type);
+      }
+
+      string this_class_name;
+      string method_prefix;
+      if (remap->_cpptype) {
+        this_class_name = remap->_cpptype->get_simple_name();
+        method_prefix = classNameFromCppName(this_class_name, false) + string(".");
+      }
+
+      if (coercion_possible) {
+        if (has_coerce_constructor(obj_type->as_struct_type()) == 0) {
+          // Doesn't actually have a coerce constructor.
+          coercion_possible = false;
         }
+      }
 
-        string this_class_name;
-        string method_prefix;
-        if (remap->_cpptype) {
-          this_class_name = remap->_cpptype->get_simple_name();
-          method_prefix = classNameFromCppName(this_class_name, false) + string(".");
-        }
+      if (coercion_possible) {
+        // Call the coercion function directly, which will try to
+        // extract the pointer directly before trying coercion.
+        string coerce_call;
 
-        if (coercion_possible) {
-          if (has_coerce_constructor(obj_type->as_struct_type()) == 0) {
-            // Doesn't actually have a coerce constructor.
-            coercion_possible = false;
+        if (TypeManager::is_reference_count(obj_type)) {
+          // We use a PointerTo to handle the management here.  It's cleaner
+          // that way.
+          if (TypeManager::is_const_pointer_to_anything(type)) {
+            extra_convert << 'C';
           }
-        }
+          extra_convert
+            << "PT(" << class_name << ") " << param_name << "_this"
+            << default_expr << ";\n";
 
-        if (coercion_possible) {
-          // Call the coercion function directly, which will try to
-          // extract the pointer directly before trying coercion.
-          string coerce_call;
+          coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
+            "(" + param_name + ", " + param_name + "_this)";
 
-          if (TypeManager::is_reference_count(obj_type)) {
-            // We use a PointerTo to handle the management here.  It's cleaner
-            // that way.
-            if (TypeManager::is_const_pointer_to_anything(type)) {
-              extra_convert << 'C';
-            }
-            extra_convert
-              << "PT(" << class_name << ") " << param_name << "_this"
-              << default_expr << ";\n";
+          // Use move constructor when available for functions that take
+          // an actual PointerTo.  This eliminates an unref()/ref() pair.
+          pexpr_string = "MOVE(" + param_name + "_this)";
 
-            coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this)";
-
-            // Use move constructor when available for functions that take
-            // an actual PointerTo.  This eliminates an unref()/ref() pair.
-            pexpr_string = "MOVE(" + param_name + "_this)";
-
-          } else  {
-            // This is a bit less elegant: we use a bool to store whether
-            // we're supposed to clean up the reference afterward.
-            type->output_instance(extra_convert, param_name + "_this", &parser);
-            extra_convert
-              << default_expr << ";\n"
-              << "bool " << param_name << "_manage = false;\n";
-
-            coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
-              "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
-
-            extra_cleanup
-              << "if (" << param_name << "_manage) {\n"
-              << "  delete " << param_name << "_this;\n"
-              << "}\n";
-
-            pexpr_string = param_name + "_this";
-          }
-
-          if (report_errors) {
-            // We were asked to report any errors.  Let's do it.
-            if (is_optional) {
-              extra_convert << "if (" << param_name << " != NULL && !" << coerce_call << ") {\n";
-            } else {
-              extra_convert << "if (!" << coerce_call << ") {\n";
-            }
-            // Display error like: Class.func() argument 0 must be A, not B
-            extra_convert
-              << "  Dtool_Raise_ArgTypeError(" << param_name << ", "
-              << pn << ", \"" << method_prefix
-              << methodNameFromCppName(remap, this_class_name, false)
-              << "\", \"" << expected_class_name << "\");\n";
-            error_return(extra_convert, 2, return_flags);
-            extra_convert << "}\n";
-
-          } else if (is_optional) {
-            extra_param_check << " && (" << param_name << " == NULL || " << coerce_call << ")";
-
-          } else {
-            extra_param_check << " && " << coerce_call;
-          }
-
-        } else {
+        } else  {
+          // This is a bit less elegant: we use a bool to store whether
+          // we're supposed to clean up the reference afterward.
           type->output_instance(extra_convert, param_name + "_this", &parser);
-          if (is_optional) {
-            extra_convert
-              << default_expr << ";\n"
-              << "if (" << param_name << " != (PyObject *)NULL) {\n"
-              << "  " << param_name << "_this";
-          }
-          if (const_ok && !report_errors) {
-            // This function does the same thing in this case and is
-            // slightly simpler.  But maybe we should just reorganize these
-            // functions entirely?
-            extra_convert << ";\n";
-            if (is_optional) {
-              extra_convert << "  ";
-            }
-            extra_convert
-              << "DTOOL_Call_ExtractThisPointerForType(" << param_name
-              << ", &Dtool_" << make_safe_name(class_name)
-              << ", (void **)&" << param_name << "_this);\n";
-          } else {
-            extra_convert << boolalpha
-              << " = (" << class_name << " *)"
-              << "DTOOL_Call_GetPointerThisClass(" << param_name
-              << ", &Dtool_" << make_safe_name(class_name)
-              << ", " << pn << ", \""
-              << method_prefix << methodNameFromCppName(remap, this_class_name, false)
-              << "\", " << const_ok << ", " << report_errors << ");\n";
-          }
+          extra_convert
+            << default_expr << ";\n"
+            << "bool " << param_name << "_manage = false;\n";
 
-          if (is_optional) {
-            extra_convert << "}\n";
-            extra_param_check << " && (" << param_name << " == NULL || " << param_name << "_this != NULL)";
-          } else {
-            extra_param_check << " && " << param_name << "_this != NULL";
-          }
+          coerce_call = "Dtool_Coerce_" + make_safe_name(class_name) +
+            "(" + param_name + ", " + param_name + "_this, " + param_name + "_manage)";
+
+          extra_cleanup
+            << "if (" << param_name << "_manage) {\n"
+            << "  delete " << param_name << "_this;\n"
+            << "}\n";
 
           pexpr_string = param_name + "_this";
         }
+
+        if (report_errors) {
+          // We were asked to report any errors.  Let's do it.
+          if (is_optional) {
+            extra_convert << "if (" << param_name << " != NULL && !" << coerce_call << ") {\n";
+          } else {
+            extra_convert << "if (!" << coerce_call << ") {\n";
+          }
+
+          // Display error like: Class.func() argument 0 must be A, not B
+          if ((return_flags & ~RF_pyobject) == RF_err_null) {
+            // Dtool_Raise_ArgTypeError returns NULL already
+            extra_convert << "  return ";
+          } else {
+            extra_convert << "  ";
+          }
+          extra_convert
+            << "Dtool_Raise_ArgTypeError(" << param_name << ", "
+            << pn << ", \"" << method_prefix
+            << methodNameFromCppName(remap, this_class_name, false)
+            << "\", \"" << expected_class_name << "\");\n";
+
+          if ((return_flags & ~RF_pyobject) != RF_err_null) {
+            error_return(extra_convert, 2, return_flags);
+          }
+          extra_convert << "}\n";
+
+        } else if (is_optional) {
+          extra_param_check << " && (" << param_name << " == NULL || " << coerce_call << ")";
+
+        } else {
+          extra_param_check << " && " << coerce_call;
+        }
+
+      } else {
+        type->output_instance(extra_convert, param_name + "_this", &parser);
+        if (is_optional) {
+          extra_convert
+            << default_expr << ";\n"
+            << "if (" << param_name << " != (PyObject *)NULL) {\n"
+            << "  " << param_name << "_this";
+        }
+        if (const_ok && !report_errors) {
+          // This function does the same thing in this case and is slightly
+          // simpler.  But maybe we should just reorganize these functions
+          // entirely?
+          extra_convert << ";\n";
+          if (is_optional) {
+            extra_convert << "  ";
+          }
+          extra_convert
+            << "DTOOL_Call_ExtractThisPointerForType(" << param_name
+            << ", &Dtool_" << make_safe_name(class_name)
+            << ", (void **)&" << param_name << "_this);\n";
+        } else {
+          extra_convert << boolalpha
+            << " = (" << class_name << " *)"
+            << "DTOOL_Call_GetPointerThisClass(" << param_name
+            << ", &Dtool_" << make_safe_name(class_name)
+            << ", " << pn << ", \""
+            << method_prefix << methodNameFromCppName(remap, this_class_name, false)
+            << "\", " << const_ok << ", " << report_errors << ");\n";
+        }
+
+        if (is_optional) {
+          extra_convert << "}\n";
+          extra_param_check << " && (" << param_name << " == NULL || " << param_name << "_this != NULL)";
+        } else {
+          extra_param_check << " && " << param_name << "_this != NULL";
+        }
+
+        pexpr_string = param_name + "_this";
       }
 
     } else {
@@ -4574,15 +5102,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     if (!reported_name.empty()) {
       expected_params += " " + reported_name;
     }
-
-    if (remap->_has_this && pn == 0) {
-      container = "local_this";
-      if (remap->_const_method) {
-        string class_name = remap->_cpptype->get_local_name(&parser);
-        container = "(const " + class_name + "*)local_this";
-      }
-    }
-
     pexprs.push_back(pexpr_string);
   }
   expected_params += ")\n";
@@ -4594,11 +5113,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   // Track how many curly braces we've opened.
   short open_scopes = 0;
 
-  // This will be set to true if one of the things we're about to do
-  // *might* raise a TypeError that we may have to clear.
-  bool clear_error = false;
+  if (!type_check.empty() && args_type == AT_single_arg) {
+    indent(out, indent_level)
+      << "if (" << type_check << ") {\n";
 
-  if (!format_specifiers.empty()) {
+    ++open_scopes;
+    indent_level += 2;
+
+  } else if (!format_specifiers.empty()) {
     string method_name = methodNameFromCppName(remap, "", false);
 
     switch (args_type) {
@@ -4670,7 +5192,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       << "if (" << extra_param_check_str.substr(4) << ") {\n";
 
     ++open_scopes;
-    clear_error = true;
     indent_level += 2;
   }
 
@@ -4725,6 +5246,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     indent(out, indent_level) << "in_interpreter = 0;\n";
   }
 
+  // If the function returns a pointer that we may need to manage, we store
+  // it in a temporary return_value variable and set this to true.
+  bool manage_return = false;
+
   if (remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
     // return expression.
@@ -4733,8 +5258,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     indent(out, indent_level);
     type->output_instance(out, "return_value", &parser);
     out << " = " << return_expr << ";\n";
+    manage_return = remap->_return_value_needs_management;
+    return_expr = "return_value";
 
   } else {
+    // The general case; an ordinary constructor or function.
     return_expr = remap->call_function(out, indent_level, true, container, pexprs);
 
     if (return_flags & RF_self) {
@@ -4743,10 +5271,12 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     if (!return_expr.empty()) {
+      manage_return = remap->_return_value_needs_management;
       CPPType *type = remap->_return_type->get_temporary_type();
       indent(out, indent_level);
       type->output_instance(out, "return_value", &parser);
       out << " = " << return_expr << ";\n";
+      return_expr = "return_value";
     }
   }
 
@@ -4770,12 +5300,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
   }
 
-  if (!return_expr.empty()) {
+  if (manage_return) {
+    // If a constructor returns NULL, that means allocation failed.
     if (remap->_return_type->return_value_needs_management()) {
-      // If a constructor returns NULL, that means allocation failed.
       indent(out, indent_level) << "if (return_value == NULL) {\n";
-      indent(out, indent_level) << "  PyErr_NoMemory();\n";
-      error_return(out, indent_level + 2, return_flags);
+      if ((return_flags & ~RF_pyobject) == RF_err_null) {
+        // PyErr_NoMemory returns NULL, so allow tail call elimination.
+        indent(out, indent_level) << "  return PyErr_NoMemory();\n";
+      } else {
+        indent(out, indent_level) << "  PyErr_NoMemory();\n";
+        error_return(out, indent_level + 2, return_flags);
+      }
       indent(out, indent_level) << "}\n";
     }
 
@@ -4783,92 +5318,143 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     return_expr = remap->_return_type->temporary_to_return(return_expr);
   }
 
+  // How could we raise a TypeError if we don't take any args?
+  if (args_type == AT_no_args || max_num_args == 0) {
+    may_raise_typeerror = false;
+  }
+
+  // If a function takes a PyObject* argument, it would be a good idea to
+  // always check for exceptions.
+  if (may_raise_typeerror) {
+    check_exceptions = true;
+  }
+
+  // Generated getters and setters don't raise exceptions or asserts
+  // since they don't contain any code.
+  if (remap->_type == FunctionRemap::T_getter ||
+      remap->_type == FunctionRemap::T_setter) {
+    check_exceptions = false;
+  }
+
   // The most common case of the below logic is consolidated in a single
   // function, as another way to reduce code bloat.  Sigh.
-  if (remap->_type != FunctionRemap::T_getter &&
-      remap->_type != FunctionRemap::T_setter &&
-      check_exceptions && report_errors &&
+  if (check_exceptions && (!may_raise_typeerror || report_errors) &&
       watch_asserts && (return_flags & RF_coerced) == 0) {
 
-    indent(out, indent_level)
-      << "if (Dtool_CheckErrorOccurred()) {\n";
-
-    if (!return_expr.empty()) {
-      delete_return_value(out, indent_level + 2, remap, return_expr);
+    if (return_flags & RF_decref_args) {
+      indent(out, indent_level) << "Py_DECREF(args);\n";
+      return_flags &= ~RF_decref_args;
     }
-    error_return(out, indent_level + 2, return_flags);
 
-    indent(out, indent_level) << "}\n";
+    // An even specialer special case for functions with void return or
+    // bool return.  We have our own functions that do all this in a
+    // single function call, so it should reduce the amount of code output
+    // while not being any slower.
+    bool return_null = (return_flags & RF_pyobject) != 0 &&
+                       (return_flags & RF_err_null) != 0;
+    if (return_null && return_expr.empty()) {
+      indent(out, indent_level)
+        << "return Dtool_Return_None();\n";
+
+      // Reset the return value bit so that the code below doesn't generate
+      // the return statement a second time.
+      return_flags &= ~RF_pyobject;
+
+    } else if (return_null && TypeManager::is_bool(remap->_return_type->get_new_type())) {
+      indent(out, indent_level)
+        << "return Dtool_Return_Bool(" << return_expr << ");\n";
+      return_flags &= ~RF_pyobject;
+
+    } else {
+      indent(out, indent_level)
+        << "if (Dtool_CheckErrorOccurred()) {\n";
+
+      if (manage_return) {
+        delete_return_value(out, indent_level + 2, remap, return_expr);
+      }
+      error_return(out, indent_level + 2, return_flags);
+
+      indent(out, indent_level) << "}\n";
+    }
 
   } else {
-    // Generated getters and setters don't raise exceptions or asserts
-    // since they don't contain any code.
-    if (remap->_type != FunctionRemap::T_getter &&
-        remap->_type != FunctionRemap::T_setter) {
-      // If a method raises TypeError, continue.
-      if (check_exceptions) {
+    if (check_exceptions) {
+      // Check if a Python exception has occurred.  We only do this when
+      // check_exception is set.  If report_errors is set, this method
+      // must terminate on error.
+      if (!may_raise_typeerror || report_errors) {
         indent(out, indent_level)
           << "if (_PyErr_OCCURRED()) {\n";
-        if (!return_expr.empty()) {
-          delete_return_value(out, indent_level + 2, remap, return_expr);
-        }
-
-        if (report_errors) {
-          error_return(out, indent_level + 2, return_flags);
-
-        } else if (args_type == AT_no_args) {
-          // We're not passing in any args.  How could we get a TypeError
-          // when we don't pass any args?  Just error with any error.
-          error_return(out, indent_level + 2, return_flags);
-
-        } else {
-          indent(out, indent_level)
-            << "  if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
-          indent(out, indent_level)
-            << "    // TypeError raised; continue to next overload type.\n";
-          indent(out, indent_level)
-            << "  } else {\n";
-          error_return(out, indent_level + 4, return_flags);
-          indent(out, indent_level)
-            << "  }\n";
-        }
+      } else {
+        // If a method is some extension method that takes a PyObject*,
+        // and it raised a TypeError, continue.
+        // The documentation tells us not to compare the result of
+        // PyErr_Occurred against a specific exception type.  However, in our
+        // case, this seems okay because we know that the TypeError we want
+        // to catch here is going to be generated by a PyErr_SetString call,
+        // not by user code.
         indent(out, indent_level)
-          << "} else {\n";
-
-        ++open_scopes;
-        indent_level += 2;
+          << "PyObject *exception = _PyErr_OCCURRED();\n";
+        indent(out, indent_level)
+          << "if (exception == PyExc_TypeError) {\n";
+        indent(out, indent_level)
+          << "  // TypeError raised; continue to next overload type.\n";
+        indent(out, indent_level)
+          << "} else if (exception != (PyObject *)NULL) {\n";
       }
 
-      // Outputs code to check to see if an assertion has failed while
-      // the C++ code was executing, and report this failure back to Python.
-      // Don't do this for coercion constructors since they are called by
-      // other wrapper functions which already check this on their own.
-      if (watch_asserts && (return_flags & RF_coerced) == 0) {
-        out << "#ifndef NDEBUG\n";
-        indent(out, indent_level)
-          << "Notify *notify = Notify::ptr();\n";
-        indent(out, indent_level)
-          << "if (notify->has_assert_failed()) {\n";
+      if (manage_return) {
+        delete_return_value(out, indent_level + 2, remap, return_expr);
+      }
+
+      error_return(out, indent_level + 2, return_flags);
+
+      indent(out, indent_level)
+        << "} else {\n";
+
+      ++open_scopes;
+      indent_level += 2;
+    }
+
+    if (return_flags & RF_decref_args) {
+      indent(out, indent_level) << "Py_DECREF(args);\n";
+      return_flags &= ~RF_decref_args;
+    }
+
+    // Outputs code to check to see if an assertion has failed while
+    // the C++ code was executing, and report this failure back to Python.
+    // Don't do this for coercion constructors since they are called by
+    // other wrapper functions which already check this on their own.
+    if (watch_asserts && (return_flags & RF_coerced) == 0) {
+      out << "#ifndef NDEBUG\n";
+      indent(out, indent_level)
+        << "Notify *notify = Notify::ptr();\n";
+      indent(out, indent_level)
+        << "if (notify->has_assert_failed()) {\n";
+
+      if (manage_return) {
+        // Output code to delete any temporary object we may have allocated.
+        delete_return_value(out, indent_level + 2, remap, return_expr);
+      }
+
+      if (return_flags & RF_err_null) {
+        // This function returns NULL, so we can pass it on.
         indent(out, indent_level + 2)
-          << "PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());\n";
+          << "return Dtool_Raise_AssertionError();\n";
+      } else {
         indent(out, indent_level + 2)
-          << "notify->clear_assert_failed();\n";
-        if (!return_expr.empty()) {
-          delete_return_value(out, indent_level + 2, remap, return_expr);
-        }
+          << "Dtool_Raise_AssertionError();\n";
         error_return(out, indent_level + 2, return_flags);
-
-        indent(out, indent_level)
-          << "}\n";
-        out << "#endif\n";
       }
+
+      indent(out, indent_level)
+        << "}\n";
+      out << "#endif\n";
     }
   }
 
-  if (return_flags & RF_decref_args) {
-    indent(out, indent_level) << "Py_DECREF(args);\n";
-  }
-
+  // Okay, we're past all the error conditions and special cases.  Now
+  // return the return type in the way that was requested.
   if (return_flags & RF_int) {
     CPPType *orig_type = remap->_return_type->get_orig_type();
     if (is_constructor) {
@@ -4876,7 +5462,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)), false);
       const InterrogateType &itype = idb->get_type(type_index);
       indent(out, indent_level)
-        << "return DTool_PyInit_Finalize(self, " << return_expr << ", &" << CLASS_PREFIX  << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
+        << "return DTool_PyInit_Finalize(self, " << return_expr << ", &" << CLASS_PREFIX << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
     } else if (TypeManager::is_integer(orig_type)) {
       indent(out, indent_level) << "return " << return_expr << ";\n";
@@ -4908,16 +5494,20 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   } else if (return_flags & RF_coerced) {
     // We were asked to assign the result to a "coerced" reference.
     CPPType *return_type = remap->_cpptype;
+    CPPType *orig_type = remap->_return_type->get_orig_type();
 
-    // Special case for make function: cast to the right type.
-    if (!is_constructor && (remap->_flags & FunctionRemap::F_coerce_constructor) != 0) {
+    // Special case for static make function that returns a pointer:
+    // cast the pointer to the right pointer type.
+    if (!is_constructor && (remap->_flags & FunctionRemap::F_coerce_constructor) != 0 &&
+        (TypeManager::is_pointer(orig_type) || TypeManager::is_pointer_to_base(orig_type))) {
+
       CPPType *new_type = remap->_return_type->get_new_type();
 
       if (TypeManager::is_const_pointer_to_anything(new_type)) {
         return_type = CPPType::new_type(new CPPConstType(return_type));
       }
 
-      if (IsPandaTypedObject(remap->_cpptype->as_struct_type())) {
+      if (IsPandaTypedObject(return_type->as_struct_type())) {
         return_expr = "DCAST("
           + return_type->get_local_name(&parser)
           + ", " + return_expr + ")";
@@ -4929,8 +5519,12 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       }
     }
 
-    if (TypeManager::is_reference_count(return_type)) {
+    if (return_expr == "coerced") {
+      // We already did this earlier...
+
+    } else if (TypeManager::is_reference_count(remap->_cpptype)) {
       indent(out, indent_level) << "coerced = MOVE(" << return_expr << ");\n";
+
     } else {
       indent(out, indent_level) << "coerced = " << return_expr << ";\n";
       indent(out, indent_level) << "manage = true;\n";
@@ -4988,6 +5582,61 @@ error_return(ostream &out, int indent_level, int return_flags) {
   } else if (return_flags & RF_err_false) {
     indent(out, indent_level) << "return false;\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::error_raise_return
+//       Access: Private
+//  Description: Similar to error_return, except raises an exception
+//               before returning.  If format_args are not the empty
+//               string, uses PyErr_Format instead of PyErr_SetString.
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+error_raise_return(ostream &out, int indent_level, int return_flags,
+                   const string &exc_type, const string &message,
+                   const string &format_args) {
+
+  if (return_flags & RF_decref_args) {
+    indent(out, indent_level) << "Py_DECREF(args);\n";
+    return_flags &= ~RF_decref_args;
+  }
+
+  if (format_args.empty()) {
+    if (exc_type == "TypeError") {
+      if ((return_flags & RF_err_null) != 0) {
+        // This is probably an over-optimization, but why the heck not.
+        indent(out, indent_level) << "return Dtool_Raise_TypeError(";
+        output_quoted(out, indent_level + 29, message, false);
+        out << ");\n";
+        return;
+      } else {
+        indent(out, indent_level) << "Dtool_Raise_TypeError(";
+        output_quoted(out, indent_level + 22, message, false);
+        out << ");\n";
+      }
+    } else {
+      indent(out, indent_level) << "PyErr_SetString(PyExc_" << exc_type << ",\n";
+      output_quoted(out, indent_level + 16, message);
+      out << ");\n";
+    }
+
+  } else if ((return_flags & RF_err_null) != 0) {
+    // PyErr_Format always returns NULL.  Passing it on directly allows
+    // the compiler to make a tiny optimization, so why not.
+    indent(out, indent_level) << "return PyErr_Format(PyExc_" << exc_type << ",\n";
+    output_quoted(out, indent_level + 20, message);
+    out << ",\n";
+    indent(out, indent_level + 20) << format_args << ");\n";
+    return;
+
+  } else {
+    indent(out, indent_level) << "PyErr_Format(PyExc_" << exc_type << ",\n";
+    output_quoted(out, indent_level + 13, message);
+    out << ",\n";
+    indent(out, indent_level + 13) << format_args << ");\n";
+  }
+
+  error_return(out, indent_level, return_flags);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5173,20 +5822,18 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
     bool is_const = TypeManager::is_const_pointer_to_anything(type);
     bool owns_memory = remap->_return_value_needs_management;
 
-    indent(out, indent_level) << "if (" << return_expr << " == NULL) {\n";
-    indent(out, indent_level) << "  Py_INCREF(Py_None);\n";
-    indent(out, indent_level) << "  return Py_None;\n";
-    indent(out, indent_level) << "} else {\n";
+    // Note, we don't check for NULL here any more.  This is now done by the
+    // appropriate CreateInstance(Typed) function.
 
     if (manage_reference_counts && TypeManager::is_pointer_to_base(orig_type)) {
       // Use a trick to transfer the reference count to avoid a pair of
       // unnecessary ref() and unref() calls.  Ideally we'd use move
       // semantics, but py_panda.cxx cannot make use of PointerTo.
-      indent(out, indent_level) << "  // Transfer ownership of return_value.\n";
-      indent(out, indent_level + 2);
+      indent(out, indent_level) << "// Transfer ownership of return_value.\n";
+      indent(out, indent_level);
       type->output_instance(out, "return_ptr", &parser);
       out << " = " << return_expr << ";\n";
-      indent(out, indent_level) << "  return_value.cheat() = NULL;\n";
+      indent(out, indent_level) << "return_value.cheat() = NULL;\n";
       return_expr = "return_ptr";
     }
 
@@ -5201,7 +5848,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
           _external_imports.insert(itype._cpptype);
         }
 
-        write_python_instance(out, indent_level + 2, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+        write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
 
       } else {
         TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
@@ -5211,7 +5858,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
           _external_imports.insert(itype._cpptype);
         }
 
-        write_python_instance(out, indent_level + 2, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+        write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
       }
     } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
@@ -5221,14 +5868,12 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
         _external_imports.insert(itype._cpptype);
       }
 
-      write_python_instance(out, indent_level + 2, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+      write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
 
     } else {
-      indent(out, indent_level) << "  Should Never Reach This InterfaceMakerPythonNative::pack_python_value";
+      indent(out, indent_level) << "Should Never Reach This InterfaceMakerPythonNative::pack_python_value";
           //<< "return PyLongOrInt_FromLong((int) " << return_expr << ");\n";
     }
-
-    indent(out, indent_level) << "}\n";
 
   } else {
     // Return None.
@@ -5245,17 +5890,48 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
-               MakeSeq *make_seq) {
+               const std::string &cClassName, MakeSeq *make_seq) {
   out << "/******************************************************************\n" << " * Python make_seq wrapper\n";
   out << " *******************************************************************/\n";
 
   out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
-  string num_name = methodNameFromCppName(make_seq->_num_name, ClassName, false);
   string element_name = methodNameFromCppName(make_seq->_element_name, ClassName, false);
 
-  out << "  return make_list_for_item(self, \"" << num_name
-      << "\", \"" << element_name << "\");\n";
-  out << "}\n";
+  // This used to be a list.  But it should really be a tuple, I think,
+  // because it probably makes more sense for it to be immutable (as
+  // changes to it won't be visible on the C++ side anyway).
+
+  out << "  " << cClassName  << " *local_this = NULL;\n"
+      << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+      << "    return NULL;\n"
+      << "  }\n"
+      << "\n"
+      << "  PyObject *getter = PyObject_GetAttrString(self, \"" << element_name << "\");\n"
+      << "  if (getter == (PyObject *)NULL) {\n"
+      << "    return NULL;\n"
+      << "  }\n"
+      << "\n"
+      << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
+      << "  PyObject *tuple = PyTuple_New(count);\n"
+      << "\n"
+      << "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
+      << "#if PY_MAJOR_VERSION >= 3\n"
+      << "    PyObject *index = PyLong_FromSsize_t(i);\n"
+      << "#else\n"
+      << "    PyObject *index = PyInt_FromSsize_t(i);\n"
+      << "#endif\n"
+      << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, index, NULL);\n"
+      << "    PyTuple_SET_ITEM(tuple, i, value);\n"
+      << "    Py_DECREF(index);\n"
+      << "  }\n"
+      << "\n"
+      << "  if (Dtool_CheckErrorOccurred()) {\n"
+      << "    Py_DECREF(tuple);\n"
+      << "    return NULL;\n"
+      << "  }\n"
+      << "  return tuple;\n"
+      << "}\n"
+      << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6041,11 +6717,12 @@ NeedsARichCompareFunction(const InterrogateType &itype_class) {
 //               string, following the trailing quotation mark.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
-output_quoted(ostream &out, int indent_level, const std::string &str) {
-  indent(out, indent_level)
+output_quoted(ostream &out, int indent_level, const std::string &str,
+              bool first_line) {
+  indent(out, (first_line ? indent_level : 0))
     << '"';
   std::string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
+  for (si = str.begin(); si != str.end();) {
     switch (*si) {
     case '"':
     case '\\':
@@ -6053,10 +6730,14 @@ output_quoted(ostream &out, int indent_level, const std::string &str) {
       break;
 
     case '\n':
-      out << "\\n\"\n";
+      out << "\\n\"";
+      if (++si == str.end()) {
+        return;
+      }
+      out << "\n";
       indent(out, indent_level)
         << '"';
-      break;
+      continue;
 
     default:
       if (!isprint(*si)) {
@@ -6066,6 +6747,7 @@ output_quoted(ostream &out, int indent_level, const std::string &str) {
         out << *si;
       }
     }
+    ++si;
   }
   out << '"';
 }

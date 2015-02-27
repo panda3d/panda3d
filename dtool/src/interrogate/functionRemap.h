@@ -61,6 +61,8 @@ public:
 
   FunctionWrapperIndex make_wrapper_entry(FunctionIndex function_index);
 
+  string get_call_str(const string &container, const vector_string &pexprs) const;
+
   class Parameter {
   public:
     bool _has_name;
@@ -131,8 +133,8 @@ public:
   CPPFunctionType *_ftype;
 
   bool _is_valid;
+
 private:
-  string get_call_str(const string &container, const vector_string &pexprs) const;
   string get_parameter_expr(int n, const vector_string &pexprs) const;
   bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };

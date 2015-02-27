@@ -70,13 +70,13 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
 //               wrong type, raises an AttributeError.
 ////////////////////////////////////////////////////////////////////
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
-  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
-    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
-    return true;
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+    Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
+    return false;
   }
 
-  PyErr_SetString(PyExc_AttributeError, "C++ object is not yet constructed, or already destructed.");
-  return false;
+  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,9 +93,9 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
-  if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
-    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
-    return true;
+  if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
+    Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
+    return false;
   }
 
   if (((Dtool_PyInstDef *)self)->_is_const) {
@@ -106,6 +106,7 @@ bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject 
     return false;
   }
 
+  *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, &classdef);
   return true;
 }
 
@@ -145,7 +146,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
   //}
   if (self == NULL) {
     if (report_errors) {
-      PyErr_SetString(PyExc_TypeError, "self is NULL");
+      return Dtool_Raise_TypeError("self is NULL");
     }
     return NULL;
   }
@@ -159,18 +160,16 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
       }
 
       if (report_errors) {
-        PyErr_Format(PyExc_TypeError,
-                     "%s() argument %d may not be const",
-                     function_name.c_str(), param);
+        return PyErr_Format(PyExc_TypeError,
+                            "%s() argument %d may not be const",
+                            function_name.c_str(), param);
       }
-
       return NULL;
     }
   }
 
   if (report_errors) {
-    Dtool_Raise_ArgTypeError(self, param, function_name.c_str(), classdef->_PyType.tp_name);
-    return NULL;
+    return Dtool_Raise_ArgTypeError(self, param, function_name.c_str(), classdef->_PyType.tp_name);
   }
 
   return NULL;
@@ -183,7 +182,6 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
       return pyself->_ptr_to_object;
     }
   }
-
   return NULL;
 }
 
@@ -206,10 +204,8 @@ bool Dtool_CheckErrorOccurred() {
   if (_PyErr_OCCURRED()) {
     return true;
   }
-  Notify *notify = Notify::ptr();
-  if (notify->has_assert_failed()) {
-    PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());
-    notify->clear_assert_failed();
+  if (Notify::ptr()->has_assert_failed()) {
+    Dtool_Raise_AssertionError();
     return true;
   }
   return false;
@@ -217,16 +213,121 @@ bool Dtool_CheckErrorOccurred() {
 #endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Raise_AssertionError
+//  Description: Raises an AssertionError containing the last thrown
+//               assert message, and clears the assertion flag.
+//               Returns NULL.
+////////////////////////////////////////////////////////////////////
+PyObject *Dtool_Raise_AssertionError() {
+  Notify *notify = Notify::ptr();
+#if PY_MAJOR_VERSION >= 3
+  PyObject *message = PyUnicode_FromString(notify->get_assert_error_message().c_str());
+#else
+  PyObject *message = PyString_FromString(notify->get_assert_error_message().c_str());
+#endif
+  Py_INCREF(PyExc_AssertionError);
+  PyErr_Restore(PyExc_AssertionError, message, (PyObject *)NULL);
+  notify->clear_assert_failed();
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Raise_TypeError
+//  Description: Raises a TypeError with the given message, and
+//               returns NULL.
+////////////////////////////////////////////////////////////////////
+PyObject *Dtool_Raise_TypeError(const char *message) {
+  // PyErr_Restore is what PyErr_SetString would have ended up calling
+  // eventually anyway, so we might as well just get to the point.
+  Py_INCREF(PyExc_TypeError);
+#if PY_MAJOR_VERSION >= 3
+  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), (PyObject *)NULL);
+#else
+  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), (PyObject *)NULL);
+#endif
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Dtool_Raise_ArgTypeError
 //  Description: Raises a TypeError of the form:
 //               function_name() argument n must be type, not type
 //               for a given object passed to a function.
+//
+//               Always returns NULL so that it can be conveniently
+//               used as a return expression for wrapper functions
+//               that return a PyObject pointer.
 ////////////////////////////////////////////////////////////////////
-void Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name) {
-  PyErr_Format(PyExc_TypeError,
-               "%s() argument %d must be %s, not %s",
-               function_name, param, type_name,
-               Py_TYPE(obj)->tp_name);
+PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name) {
+#if PY_MAJOR_VERSION >= 3
+  PyObject *message = PyUnicode_FromFormat(
+#else
+  PyObject *message = PyString_FromFormat(
+#endif
+    "%s() argument %d must be %s, not %s",
+    function_name, param, type_name,
+    Py_TYPE(obj)->tp_name);
+
+  Py_INCREF(PyExc_TypeError);
+  PyErr_Restore(PyExc_TypeError, message, (PyObject *)NULL);
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Raise_BadArgumentsError
+//  Description: Raises a TypeError of the form:
+//               Arguments must match:
+//               <list of overloads>
+//
+//               However, in release builds, this instead is defined
+//               to a function that just prints out a generic
+//               message, to help reduce the amount of strings in
+//               the compiled library.
+//
+//               Always returns NULL so that it can be conveniently
+//               used as a return expression for wrapper functions
+//               that return a PyObject pointer.
+////////////////////////////////////////////////////////////////////
+PyObject *_Dtool_Raise_BadArgumentsError() {
+  return Dtool_Raise_TypeError("arguments do not match any function overload");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Return_None
+//  Description: Convenience method that checks for exceptions, and
+//               if one occurred, returns NULL, otherwise Py_None.
+////////////////////////////////////////////////////////////////////
+PyObject *_Dtool_Return_None() {
+  if (_PyErr_OCCURRED()) {
+    return NULL;
+  }
+#ifndef NDEBUG
+  if (Notify::ptr()->has_assert_failed()) {
+    return Dtool_Raise_AssertionError();
+  }
+#endif
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Dtool_Return_Bool
+//  Description: Convenience method that checks for exceptions, and
+//               if one occurred, returns NULL, otherwise the given
+//               boolean value as a PyObject *.
+////////////////////////////////////////////////////////////////////
+PyObject *Dtool_Return_Bool(bool value) {
+  if (_PyErr_OCCURRED()) {
+    return NULL;
+  }
+#ifndef NDEBUG
+  if (Notify::ptr()->has_assert_failed()) {
+    return Dtool_Raise_AssertionError();
+  }
+#endif
+  PyObject *result = (value ? Py_True : Py_False);
+  Py_INCREF(result);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -236,11 +337,11 @@ void Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_nam
 //
 ////////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int type_index) {
-  if (local_this_in == NULL) {
-    // Let's not be stupid..
-    PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
-    return NULL;
-  }
+  // We can't do the NULL check here like in DTool_CreatePyInstance, since
+  // the caller will have to get the type index to pass to this function
+  // to begin with.  That code probably would have crashed by now if it was
+  // really NULL for whatever reason.
+  nassertr(local_this_in != NULL, NULL);
 
   /////////////////////////////////////////////////////
   // IF the class is possibly a run time typed object
@@ -293,8 +394,10 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
 ////////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
   if (local_this == NULL) {
-    PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
-    return NULL;
+    // This is actually a very common case, so let's allow this, but return
+    // Py_None consistently.  This eliminates code in the wrappers.
+    Py_INCREF(Py_None);
+    return Py_None;
   }
 
   Dtool_PyTypedObject *classdef = &in_classdef;
@@ -417,11 +520,10 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 
   if (module == NULL) {
 #if PY_MAJOR_VERSION >= 3
-    PyErr_SetString(PyExc_TypeError, "PyModule_Create returned NULL");
+    return Dtool_Raise_TypeError("PyModule_Create returned NULL");
 #else
-    PyErr_SetString(PyExc_TypeError, "Py_InitModule returned NULL");
+    return Dtool_Raise_TypeError("Py_InitModule returned NULL");
 #endif
-    return NULL;
   }
 
   // the constant inits... enums, classes ...
@@ -430,7 +532,6 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);
-
   return module;
 }
 
@@ -461,10 +562,10 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
         return Py_None;
       }
 
-      PyErr_Format(PyExc_TypeError, "types %s and %s do not match",
-                   Py_TYPE(from)->tp_name, Py_TYPE(to)->tp_name);
+      return PyErr_Format(PyExc_TypeError, "types %s and %s do not match",
+                          Py_TYPE(from)->tp_name, Py_TYPE(to)->tp_name);
     } else {
-      PyErr_SetString(PyExc_TypeError, "One of these does not appear to be DTOOL Instance ??");
+      return Dtool_Raise_TypeError("One of these does not appear to be DTOOL Instance ??");
     }
   }
   return (PyObject *) NULL;
@@ -479,16 +580,17 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *key;
   if (PyArg_ParseTuple(args, "OSO", &self, &key, &subject)) {
     PyObject *dict = ((PyTypeObject *)self)->tp_dict;
-    if (dict == NULL && !PyDict_Check(dict)) {
-      PyErr_SetString(PyExc_TypeError, "No dictionary On Object");
+    if (dict == NULL || !PyDict_Check(dict)) {
+      return Dtool_Raise_TypeError("No dictionary On Object");
     } else {
-      PyDict_SetItem(dict,key,subject);
+      PyDict_SetItem(dict, key, subject);
     }
   }
   if (PyErr_Occurred()) {
     return (PyObject *)NULL;
   }
-  return Py_BuildValue("");
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -653,7 +755,7 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
       Py_DECREF(list);
       return NULL;
     }
-    PyList_SetItem(list, i, element);
+    PyList_SET_ITEM(list, i, element);
   }
   return list;
 }

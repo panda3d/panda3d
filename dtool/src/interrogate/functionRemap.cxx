@@ -226,7 +226,8 @@ call_function(ostream &out, int indent_level, bool convert_result,
       return_expr = get_call_str(container, pexprs);
 
     } else {
-      if (_return_type->return_value_should_be_simple()) {
+      //if (_return_type->return_value_should_be_simple()) {
+      if (false) {
         // We have to assign the result to a temporary first; this makes
         // it a bit easier on poor old VC++.
         InterfaceMaker::indent(out, indent_level);
@@ -361,7 +362,7 @@ make_wrapper_entry(FunctionIndex function_index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FunctionRemap::get_call_str
-//       Access: Private
+//       Access: Public
 //  Description: Returns a string suitable for calling the wrapped
 //               function.  If pexprs is nonempty, it represents
 //               the list of expressions that will evaluate to each
@@ -417,7 +418,12 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       } else if (_has_this && !container.empty()) {
         // If we have a "this" parameter, the calling convention is also
         // a bit different.
-        call << "(" << container << ")->" << _cppfunc->get_local_name();
+        if (container == "local_this") {
+          // This isn't important, it just looks a bit prettier.
+          call << container << "->" << _cppfunc->get_local_name();
+        } else {
+          call << "(" << container << ")->" << _cppfunc->get_local_name();
+        }
 
       } else {
         call << _cppfunc->get_local_name(&parser);
