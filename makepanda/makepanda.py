@@ -949,7 +949,7 @@ def CompileCxx(obj,src,opts):
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
             cmd += "/Fo" + obj + " /nologo /c"
-            if (GetTargetArch() != 'x64' and PkgSkip("SSE2") == 0):
+            if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1160,7 +1160,7 @@ def CompileCxx(obj,src,opts):
                 if optlevel >= 4 or GetTarget() == "android":
                     cmd += " -fno-rtti"
 
-        if PkgSkip("SSE2") == 0 and not arch.startswith("arm"):
+        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm"):
             cmd += " -msse2"
 
         if optlevel >= 3:
@@ -1705,7 +1705,7 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = sys.executable + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
@@ -1729,7 +1729,7 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = sys.executable + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
@@ -1757,7 +1757,7 @@ def FreezePy(target, inputs, opts):
 def Package(target, inputs, opts):
     assert len(inputs) == 1
     # Invoke the ppackage script.
-    command = sys.executable + " "
+    command = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if GetOptimizeOption(opts) >= 4:
         command += "-OO "
 
@@ -3192,6 +3192,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
   TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
   TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
+  TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
   OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
   IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
@@ -3621,6 +3622,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3pnmimagetypes_composite2.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
   TargetAdd('libpanda.dll', input='p3text_composite1.obj')
   TargetAdd('libpanda.dll', input='p3text_composite2.obj')
   TargetAdd('libpanda.dll', input='p3tform_composite1.obj')
