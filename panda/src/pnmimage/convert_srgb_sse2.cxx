@@ -95,7 +95,7 @@ encode_sRGB_uchar_sse2(float val) {
   // Running only a single component through this function is still
   // way faster than the equivalent non-SSE2 version.
   return (unsigned char)
-    _mm_extract_epi32(_encode_sRGB_sse2_mul255(_mm_set1_ps(val)), 0);
+    _mm_extract_epi16(_encode_sRGB_sse2_mul255(_mm_set1_ps(val)), 0);
 }
 
 void
@@ -107,9 +107,9 @@ encode_sRGB_uchar_sse2(const LColorf &color, xel &into) {
 #endif
 
   __m128i vals = _encode_sRGB_sse2_mul255(vec);
-  into.r = _mm_extract_epi32(vals, 0);
-  into.g = _mm_extract_epi32(vals, 1);
-  into.b = _mm_extract_epi32(vals, 2);
+  into.r = _mm_extract_epi16(vals, 0);
+  into.g = _mm_extract_epi16(vals, 2);
+  into.b = _mm_extract_epi16(vals, 4);
 }
 
 void
@@ -121,10 +121,10 @@ encode_sRGB_uchar_sse2(const LColorf &color, xel &into, xelval &into_alpha) {
 #endif
 
   __m128i vals = _encode_sRGB_sse2_mul255(vec);
-  into.r = _mm_extract_epi32(vals, 0);
-  into.g = _mm_extract_epi32(vals, 1);
-  into.b = _mm_extract_epi32(vals, 2);
-  into_alpha = _mm_extract_epi32(vals, 3);
+  into.r = _mm_extract_epi16(vals, 0);
+  into.g = _mm_extract_epi16(vals, 2);
+  into.b = _mm_extract_epi16(vals, 4);
+  into_alpha = _mm_extract_epi16(vals, 6);
 }
 
 #else
