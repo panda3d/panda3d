@@ -27,6 +27,7 @@
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
+    callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
     collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \
@@ -139,6 +140,7 @@
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
+    callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
     collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \

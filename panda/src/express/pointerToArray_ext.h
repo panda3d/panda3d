@@ -66,6 +66,26 @@ public:
 #endif
 };
 
+#ifdef _MSC_VER
+// Ugh... MSVC needs this because they still don't have a decent linker.
+#include "PTA_uchar.h"
+#include "PTA_ushort.h"
+#include "PTA_float.h"
+#include "PTA_double.h"
+#include "PTA_int.h"
+
+template class EXPORT_THIS Extension<PTA_uchar>;
+template class EXPORT_THIS Extension<PTA_ushort>;
+template class EXPORT_THIS Extension<PTA_float>;
+template class EXPORT_THIS Extension<PTA_double>;
+template class EXPORT_THIS Extension<PTA_int>;
+template class EXPORT_THIS Extension<CPTA_uchar>;
+template class EXPORT_THIS Extension<CPTA_ushort>;
+template class EXPORT_THIS Extension<CPTA_float>;
+template class EXPORT_THIS Extension<CPTA_double>;
+template class EXPORT_THIS Extension<CPTA_int>;
+#endif
+
 // This macro is used to map a data type to a format code
 // as used in the Python 'struct' and 'array' modules.
 #define get_format_code(type) _get_format_code((const type *)0)

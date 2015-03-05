@@ -21,6 +21,7 @@
 #include "occluderNode.cxx"
 #include "pandaNode.cxx"
 #include "pandaNodeChain.cxx"
+#include "paramNodePath.cxx"
 #include "planeNode.cxx"
 #include "polylightEffect.cxx"
 #include "polylightNode.cxx"

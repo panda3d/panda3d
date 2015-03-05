@@ -949,7 +949,7 @@ def CompileCxx(obj,src,opts):
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
             cmd += "/Fo" + obj + " /nologo /c"
-            if (GetTargetArch() != 'x64' and PkgSkip("SSE2") == 0):
+            if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1160,7 +1160,7 @@ def CompileCxx(obj,src,opts):
                 if optlevel >= 4 or GetTarget() == "android":
                     cmd += " -fno-rtti"
 
-        if PkgSkip("SSE2") == 0 and not arch.startswith("arm"):
+        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm"):
             cmd += " -msse2"
 
         if optlevel >= 3:
@@ -1705,7 +1705,7 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = sys.executable + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
@@ -1729,7 +1729,7 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = sys.executable + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
@@ -1757,7 +1757,7 @@ def FreezePy(target, inputs, opts):
 def Package(target, inputs, opts):
     assert len(inputs) == 1
     # Invoke the ppackage script.
-    command = sys.executable + " "
+    command = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
     if GetOptimizeOption(opts) >= 4:
         command += "-OO "
 
@@ -3192,6 +3192,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
   TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
   TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
+  TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
   OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
   IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
@@ -3621,6 +3622,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3pnmimagetypes_composite2.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
   TargetAdd('libpanda.dll', input='p3text_composite1.obj')
   TargetAdd('libpanda.dll', input='p3text_composite2.obj')
   TargetAdd('libpanda.dll', input='p3tform_composite1.obj')
@@ -4609,7 +4611,7 @@ if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'BISONPREFIX_dcyy']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
-  TargetAdd('dcParser.h', input='p3egg_parser.obj', opts=['DEPENDENCYONLY'])
+  TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])
   TargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
   TargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
   TargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
@@ -6171,7 +6173,7 @@ except:
 #
 ##########################################################################################
 
-def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
+def MakeInstallerNSIS(file, title, installdir):
     if (os.path.isfile(file)):
         os.remove(file)
     elif (os.path.isdir(file)):
@@ -6199,7 +6201,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
 
-    print("Building "+fullname+" installer. This can take up to an hour.")
+    print("Building "+title+" installer. This can take up to an hour.")
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if (os.path.exists("nsis-output.exe")):
@@ -6210,19 +6212,13 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
 
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
-        'NAME'        : fullname,
-        'SMDIRECTORY' : smdirectory,
+        'TITLE'       : title,
         'INSTALLDIR'  : installdir,
         'OUTFILE'     : os.path.join(psource, 'nsis-output.exe'),
         'LICENSE'     : os.path.join(panda, 'LICENSE'),
-        'LANGUAGE'    : "English",
-        'RUNTEXT'     : "Visit the Panda Manual",
-        'IBITMAP'     : "panda-install.bmp",
-        'UBITMAP'     : "panda-install.bmp",
-        'PANDA'       : panda,
+        'BUILT'       : panda,
+        'SOURCE'      : psource,
         'PYVER'       : SDK["PYTHONVERSION"][6:9],
-        'PANDACONF'   : os.path.join(panda, 'etc'),
-        'PSOURCE'     : psource,
         'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
         'REGVIEW'     : regview,
     }
@@ -6236,7 +6232,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         for item in nsis_defs.items():
             cmd += ' -D%s="%s"' % item
 
-    cmd += ' "%s"' % (os.path.join(psource, 'direct', 'src', 'directscripts', 'packpanda.nsi'))
+    cmd += ' "%s"' % (os.path.join(psource, 'makepanda', 'installer.nsi'))
     oscmd(cmd)
     os.rename("nsis-output.exe", file)
 
@@ -6761,14 +6757,14 @@ try:
             if (GetOptimize() <= 2): dbg = "-dbg"
             if GetTargetArch() == 'x64':
                 if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
                 else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
             else:
                 if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
                 else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):

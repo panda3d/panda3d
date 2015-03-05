@@ -18,6 +18,7 @@
 #include "virtualFileSystem.h"
 #include "loader.h"
 #include "shader.h"
+#include "string_utils.h"
 
 ShaderPool *ShaderPool::_global_ptr = (ShaderPool *)NULL;
 

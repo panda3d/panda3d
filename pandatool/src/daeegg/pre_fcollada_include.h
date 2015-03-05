@@ -22,6 +22,13 @@
   #error You must include pre_fcollada_include.h before including FCollada.h!
 #endif
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <winsock2.h>
+#endif
+
 // FCollada expects LINUX to be defined on linux
 #ifdef IS_LINUX
   #ifndef LINUX

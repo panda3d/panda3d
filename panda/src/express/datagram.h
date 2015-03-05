@@ -48,6 +48,11 @@ PUBLISHED:
   INLINE Datagram(const Datagram &copy);
   INLINE void operator = (const Datagram &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE Datagram(Datagram &&from) NOEXCEPT;
+  INLINE void operator = (Datagram &&from) NOEXCEPT;
+#endif
+
   virtual ~Datagram();
 
   virtual void clear();

@@ -60,6 +60,7 @@
 #include "nodePath.h"
 #include "nodePathComponent.h"
 #include "pandaNode.h"
+#include "paramNodePath.h"
 #include "planeNode.h"
 #include "polylightEffect.h"
 #include "polylightNode.h"
@@ -436,6 +437,7 @@ init_libpgraph() {
   NodePathComponent::init_type();
   PandaNode::init_type();
   PandaNodePipelineReader::init_type();
+  ParamNodePath::init_type();
   PlaneNode::init_type();
   PolylightNode::init_type();
   PolylightEffect::init_type();

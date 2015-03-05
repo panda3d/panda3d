@@ -1,5 +1,5 @@
 // Filename: eglGraphicsPixmap.cxx
-// Created by:  pro-rsoft (13Jun09)
+// Created by:  rdb (13Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -29,7 +29,7 @@ TypeHandle eglGraphicsPixmap::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 eglGraphicsPixmap::
-eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe, 
+eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -105,7 +105,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
@@ -195,7 +195,7 @@ open_buffer() {
       _gsg = eglgsg;
     }
   }
-  
+
   if (eglgsg->_fbconfig == None) {
     // If we didn't use an fbconfig to create the GSG, we can't create
     // a PBuffer.
@@ -221,8 +221,8 @@ open_buffer() {
     }
   }
 
-  _x_pixmap = XCreatePixmap(_display, _drawable, 
-                            _x_size, _y_size, visual_info->depth);
+  _x_pixmap = XCreatePixmap(_display, _drawable,
+                            _size.get_x(), _size.get_y(), visual_info->depth);
   if (_x_pixmap == None) {
     egldisplay_cat.error()
       << "Failed to create X pixmap.\n";
@@ -253,7 +253,7 @@ open_buffer() {
     return false;
   }
   _fb_properties = eglgsg->get_fb_properties();
-  
+
   _is_valid = true;
   return true;
 }

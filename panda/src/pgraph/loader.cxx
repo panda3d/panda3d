@@ -343,11 +343,11 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
         return result;
       }
     }
-  }
 
-  if (loader_cat.is_debug()) {
-    loader_cat.debug()
-      << "Model " << pathname << " not found in cache.\n";
+    if (loader_cat.is_debug()) {
+      loader_cat.debug()
+        << "Model " << pathname << " not found in cache.\n";
+    }
   }
 
   bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;

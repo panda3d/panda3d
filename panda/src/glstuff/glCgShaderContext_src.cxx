@@ -41,7 +41,6 @@ CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _cg_program = 0;
-  _glsl_profile = false;
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
@@ -63,10 +62,6 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     release_resources();
 
   } else {
-    if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
-      _glsl_profile = true;
-    }
-
     cgGLLoadProgram(_cg_program);
     CGerror error = cgGetError();
     if (error != CG_NO_ERROR) {
@@ -412,7 +407,7 @@ disable_shader_vertex_arrays() {
     CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
     if (p == 0) continue;
 
-    if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+    if (cgGetParameterBaseResource(p) == CG_ATTR0) {
       int index = cgGetParameterResourceIndex(p);
       if (index >= 8) {
         _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
@@ -501,11 +496,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           num_values = GL_BGRA;
         }
 
-        // This is truly the most preposterous hack.  When using the GLSL
-        // profiles, cgGLSetParameterPointer relies on the the driver mapping
-        // standard attributes to fixed indices (and breaking the spec doing
-        // so), which only the NVIDIA drivers do.  Unbelievable.
-        if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+        // cgGLSetParameterPointer is just stupidly bugged on every level.
+        // Sigh.  This seems to work on both NVIDIA and AMD cards now.
+        if (cgGetParameterBaseResource(p) == CG_ATTR0) {
           int index = cgGetParameterResourceIndex(p);
           switch (index) {
           case 0:  // gl_Vertex

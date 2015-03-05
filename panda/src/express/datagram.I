@@ -82,6 +82,33 @@ operator = (const Datagram &copy) {
   _stdfloat_double = copy._stdfloat_double;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Datagram::
+Datagram(Datagram &&from) NOEXCEPT :
+  _data(move(from._data)),
+  _stdfloat_double(from._stdfloat_double)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::Move Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+operator = (Datagram &&from) NOEXCEPT {
+  _data = move(from._data);
+  _stdfloat_double = from._stdfloat_double;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Datagram::add_bool
 //       Access: Public

@@ -26,6 +26,7 @@ DAEToEgg::
 DAEToEgg():
   SomethingToEgg("COLLADA", ".dae")
 {
+  add_animation_options();
   add_units_options();
   add_normals_options();
   add_transform_options();
@@ -42,6 +43,7 @@ DAEToEgg():
     ("This program converts .dae files (COLLADA Digital Asset Exchange) to .egg.");
 
   _coordinate_system = CS_yup_right;
+  _animation_convert = AC_both;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +53,12 @@ DAEToEgg():
 ////////////////////////////////////////////////////////////////////
 void DAEToEgg::
 run() {
+  if (_animation_convert != AC_both && _animation_convert != AC_none &&
+      _animation_convert != AC_chan && _animation_convert != AC_model) {
+    cerr << "Unsupported animation convert option.\n";
+    exit(1);
+  }
+
   nout << "Reading " << _input_filename << "\n";
 
   _data->set_coordinate_system(_coordinate_system);
