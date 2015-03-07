@@ -412,6 +412,20 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             s->_mat_spec.push_back(bind);
             continue;
           }
+          if (noprefix == "Color") {
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._piece = Shader::SMP_row3;
+            bind._func = Shader::SMF_first;
+            bind._part[0] = Shader::SMO_attr_color;
+            bind._arg[0] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_color;
+            bind._part[1] = Shader::SMO_identity;
+            bind._arg[1] = NULL;
+            bind._dep[1] = Shader::SSD_NONE;
+            s->_mat_spec.push_back(bind);
+            continue;
+          }
           if (noprefix == "ClipPlane") {
             for (int i = 0; i < param_size; ++i) {
               Shader::ShaderMatSpec bind;
@@ -821,10 +835,12 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                        param_type == GL_INT_VEC2 ||
                        param_type == GL_INT_VEC3 ||
                        param_type == GL_INT_VEC4 ||
-                       param_type == GL_UNSIGNED_INT ||
+#ifndef OPENGLES
                        param_type == GL_UNSIGNED_INT_VEC2 ||
                        param_type == GL_UNSIGNED_INT_VEC3 ||
-                       param_type == GL_UNSIGNED_INT_VEC4);
+                       param_type == GL_UNSIGNED_INT_VEC4 ||
+#endif
+                       param_type == GL_UNSIGNED_INT );
 
       if (noprefix.empty()) {
         // Arbitrarily named attribute.
@@ -863,12 +879,16 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       // Get the number of bind points.
       switch (param_type) {
       case GL_FLOAT_MAT3:
+#ifndef OPENGLES
       case GL_DOUBLE_MAT3:
+#endif
         bind._elements = 3 * param_size;
         break;
 
       case GL_FLOAT_MAT4:
+#ifndef OPENGLES
       case GL_DOUBLE_MAT4:
+#endif
         bind._elements = 4 * param_size;
         break;
 

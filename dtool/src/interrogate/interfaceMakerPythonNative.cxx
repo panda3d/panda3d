@@ -3204,7 +3204,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       }
       extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
       extra_param_check += " && " + param_name + "_long != NULL";
-      pexpr_string = "PyLong_AsUnsignedLongLong(" + param_name + "_long)";
+      pexpr_string = "(" + type->get_local_name(&parser) + ")" +
+                     "PyLong_AsUnsignedLongLong(" + param_name + "_long)";
       extra_cleanup += "Py_XDECREF(" + param_name + "_long);";
       expected_params += "unsigned long long";
       ++num_params;
@@ -3219,7 +3220,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       }
       extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
       extra_param_check += " && " + param_name + "_long != NULL";
-      pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
+      pexpr_string = "(" + type->get_local_name(&parser) + ")" +
+                     "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += "Py_XDECREF(" + param_name + "_long);";
       expected_params += "long long";
       ++num_params;
@@ -3234,7 +3236,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       }
       extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
       extra_param_check += " && " + param_name + "_long != NULL";
-      pexpr_string = "PyLong_AsUnsignedLong(" + param_name + "_long)";
+      pexpr_string = "(" + type->get_local_name(&parser) + ")" +
+                     "PyLong_AsUnsignedLong(" + param_name + "_long)";
       extra_cleanup += "Py_XDECREF(" + param_name + "_long);";
       expected_params += "unsigned int";
       ++num_params;

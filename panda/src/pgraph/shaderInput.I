@@ -125,23 +125,6 @@ ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
-  _name(MOVE(name)),
-  _type(M_nodepath),
-  _priority(priority),
-  _stored_nodepath(np),
-  _bind_layer(0),
-  _bind_level(0),
-  _access(A_read)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderInput::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority) :
   _name(MOVE(name)),
   _type(M_numeric),
@@ -676,16 +659,6 @@ get_priority() const {
 INLINE Texture *ShaderInput::
 get_texture() const {
   return DCAST(Texture, _value);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderInput::get_nodepath
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const NodePath &ShaderInput::
-get_nodepath() const {
-  return _stored_nodepath;
 }
 
 ////////////////////////////////////////////////////////////////////

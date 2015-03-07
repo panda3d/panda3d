@@ -57,11 +57,11 @@ template<class Element>
 INLINE ReferenceCountedVector<Element>::
 ~ReferenceCountedVector() {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE TYPENAME ReferenceCountedVector<Element>::size_type ReferenceCountedVector<Element>::
@@ -72,7 +72,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE TYPENAME ReferenceCountedVector<Element>::iterator ReferenceCountedVector<Element>::
@@ -83,7 +83,7 @@ insert(iterator position, const Element &x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
@@ -94,7 +94,7 @@ insert(iterator position, size_type n, const Element &x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
@@ -105,7 +105,7 @@ erase(iterator position) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
@@ -116,7 +116,7 @@ erase(iterator first, iterator last) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::pop_back
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
@@ -127,7 +127,7 @@ pop_back() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
@@ -138,7 +138,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArrayBase::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArrayBase<Element>::
@@ -150,7 +150,7 @@ PointerToArrayBase(ReferenceCountedVector<Element> *ptr) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArrayBase::Copy Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArrayBase<Element>::
@@ -159,10 +159,24 @@ PointerToArrayBase(const PointerToArrayBase<Element> &copy) :
 {
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArrayBase::Move Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PointerToArrayBase<Element>::
+PointerToArrayBase(PointerToArrayBase<Element> &&from) NOEXCEPT :
+  PointerToBase<ReferenceCountedVector<Element> >(move(from))
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArrayBase::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArrayBase<Element>::

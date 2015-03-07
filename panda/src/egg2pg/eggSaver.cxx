@@ -22,6 +22,7 @@
 #include "transformState.h"
 #include "colorScaleAttrib.h"
 #include "colorAttrib.h"
+#include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
@@ -347,7 +348,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
     CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
 
     LMatrix4 transformf;
-    character_joint->get_net_transform(transformf);
+    character_joint->get_transform(transformf);
     LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
     joint->add_matrix4(transformd);
@@ -577,6 +578,13 @@ convert_primitive(const GeomVertexData *vertex_data,
     }
   }
 
+  // Check for a material.
+  EggMaterial *egg_mat = (EggMaterial *)NULL;
+  const MaterialAttrib *ma = DCAST(MaterialAttrib, net_state->get_attrib(MaterialAttrib::get_class_type()));
+  if (ma != (const MaterialAttrib *)NULL) {
+    egg_mat = get_egg_material(ma->get_material());
+  }
+
   // Check for a texture.
   EggTexture *egg_tex = (EggTexture *)NULL;
   const TextureAttrib *ta = DCAST(TextureAttrib, net_state->get_attrib(TextureAttrib::get_class_type()));
@@ -703,11 +711,15 @@ convert_primitive(const GeomVertexData *vertex_data,
     // Huh, an unknown geometry type.
     return;
   }
-  
+
   for (int i = 0; i < num_primitives; ++i) {
     PT(EggPrimitive) egg_prim = (*make_func)();
 
     egg_parent->add_child(egg_prim);
+
+    if (egg_mat != (EggMaterial *)NULL) {
+      egg_prim->set_material(egg_mat);
+    }
     if (egg_tex != (EggTexture *)NULL) {
       egg_prim->set_texture(egg_tex);
     }
@@ -945,6 +957,41 @@ apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
   string value = node->get_tag(tag);
   egg_group->set_tag(tag, value);
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggSaver::get_egg_material
+//       Access: Private
+//  Description: Returns an EggMaterial pointer that corresponds to
+//               the indicated Material.
+////////////////////////////////////////////////////////////////////
+EggMaterial *EggSaver::
+get_egg_material(Material *mat) {
+  if (mat != (Material *)NULL) {
+    EggMaterial temp(mat->get_name());
+    if (mat->has_ambient()) {
+      temp.set_amb(mat->get_ambient());
+    }
+
+    if (mat->has_diffuse()) {
+      temp.set_diff(mat->get_diffuse());
+    }
+
+    if (mat->has_specular()) {
+      temp.set_spec(mat->get_specular());
+    }
+
+    if (mat->has_emission()) {
+      temp.set_emit(mat->get_emission());
+    }
+
+    temp.set_shininess(mat->get_shininess());
+    temp.set_local(mat->get_local());
+
+    return _materials.create_unique_material(temp, ~EggMaterial::E_mref_name);
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

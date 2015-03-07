@@ -1674,7 +1674,7 @@ resolve_multisamples() {
                               GL_NEAREST);
   }
   // Now handle the other color buffers.
-#ifndef OPENGLES_1
+#ifndef OPENGLES
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
     glReadBuffer(next);

@@ -721,13 +721,15 @@ get_user_bounds(int pipeline_stage, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 mark_bounds_stale(int pipeline_stage, Thread *current_thread) const {
-  // It's important that we don't hold the lock during the call to
-  // force_bounds_stale().
+  // We check whether it is already marked stale.  If so, we don't have
+  // to make the call to force_bounds_stale().
   bool is_stale_bounds;
   {
     CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-    is_stale_bounds = (cdata->_last_bounds_update != cdata->_next_update);
+    is_stale_bounds = (cdata->_last_update != cdata->_next_update);
   }
+  // It's important that we don't hold the lock during the call to
+  // force_bounds_stale().
   if (!is_stale_bounds) {
     ((PandaNode *)this)->force_bounds_stale(pipeline_stage, current_thread);
   }
@@ -1833,7 +1835,7 @@ get_off_clip_planes() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(BoundingVolume) PandaNodePipelineReader::
 get_bounds() const {
-  nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_external_bounds);
+  nassertr(_cdata->_last_bounds_update == _cdata->_next_update, _cdata->_external_bounds);
   return _cdata->_external_bounds;
 }
 
@@ -1852,7 +1854,7 @@ get_bounds() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 get_nested_vertices() const {
-  nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_nested_vertices);
+  nassertr(_cdata->_last_bounds_update == _cdata->_next_update, _cdata->_nested_vertices);
   return _cdata->_nested_vertices;
 }
 

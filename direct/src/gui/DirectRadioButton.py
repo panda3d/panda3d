@@ -43,7 +43,7 @@ class DirectRadioButton(DirectButton):
             ('boxGeom', None, None),
             ('boxGeomColor', None, None),
             ('boxGeomScale', 1.0, None),
-            ('boxImage', loader.loadModel('models/gui/radio_button_gui'), None),
+            ('boxImage', None, None),
             ('boxImageScale', 1.0, None),
             ('boxImageColor', VBase4(1, 1, 1, 1), None),
             ('boxRelief', None, None),
@@ -69,9 +69,11 @@ class DirectRadioButton(DirectButton):
         # Call option initialization functions
         self.initialiseoptions(DirectRadioButton)
         # After initialization with X giving it the correct size, put back space
-        if self['boxGeom'] ==  None:
+        if self['boxGeom'] is None:
+            if not 'boxRelief' in kw and self['boxImage'] is None:
+                self.indicator['relief'] = DGG.SUNKEN
             self.indicator['text'] = (' ', '*')
-            self.indicator['text_pos'] = (0, -.5)
+            self.indicator['text_pos'] = (0, -.25)
         else:
             self.indicator['text'] = (' ', ' ')
 

@@ -151,6 +151,10 @@ public:
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
 public:
   // Duplicating the interface of vector.  The following member
   // functions are all const, because they do not reassign the
@@ -231,6 +235,12 @@ public:
   operator = (ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerToArray<Element> &
+  operator = (PointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
   INLINE void clear();
 
 private:
@@ -305,6 +315,11 @@ PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
   // Duplicating the interface of vector.
 
   INLINE iterator begin() const;
@@ -355,6 +370,14 @@ PUBLISHED:
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &
   operator = (const ConstPointerToArray<Element> &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerToArray<Element> &
+  operator = (PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE ConstPointerToArray<Element> &
+  operator = (ConstPointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
   INLINE void clear();
 
 private:

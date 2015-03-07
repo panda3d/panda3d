@@ -77,6 +77,21 @@ PointerToArray(const PointerToArray<Element> &copy) :
 {
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PointerToArray<Element>::
+PointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
+  PointerToArrayBase<Element>(move(from)),
+  _type_handle(from._type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::begin
 //       Access: Public
@@ -682,6 +697,21 @@ operator = (const PointerToArray<Element> &copy) {
   return *this;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::Assignment operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PointerToArray<Element> &PointerToArray<Element>::
+operator = (PointerToArray<Element> &&from) NOEXCEPT {
+  _type_handle = from._type_handle;
+  ((PointerToArray<Element> *)this)->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::clear
 //       Access: Public
@@ -735,6 +765,36 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
   _type_handle(copy._type_handle)
 {
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT :
+  PointerToArrayBase<Element>(move(from)),
+  _type_handle(from._type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Move Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT :
+  PointerToArrayBase<Element>(move(from)),
+  _type_handle(from._type_handle)
+{
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::begin
@@ -1140,6 +1200,36 @@ operator = (const ConstPointerToArray<Element> &copy) {
   ((ConstPointerToArray<Element> *)this)->reassign(copy);
   return *this;
 }
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Assignment operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
+operator = (PointerToArray<Element> &&from) NOEXCEPT {
+  _type_handle = from._type_handle;
+  ((ConstPointerToArray<Element> *)this)->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
+
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Assignment operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
+operator = (ConstPointerToArray<Element> &&from) NOEXCEPT {
+  _type_handle = from._type_handle;
+  ((ConstPointerToArray<Element> *)this)->reassign(move(from));
+  return *this;
+}
+#endif  // USE_MOVE_SEMANTICS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::clear

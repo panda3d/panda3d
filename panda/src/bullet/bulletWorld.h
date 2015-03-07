@@ -70,6 +70,8 @@ PUBLISHED:
 
   // Attach/Remove
   void attach(TypedObject *object);
+  void attach_constraint(BulletConstraint *constraint, bool linked_collision=false);
+
   void remove(TypedObject *object);
 
   // Ghost object
@@ -172,7 +174,6 @@ PUBLISHED: // Deprecated methods, will become private soon
   void attach_character(BulletBaseCharacterControllerNode *node);
   void remove_character(BulletBaseCharacterControllerNode *node);
 
-  void attach_constraint(BulletConstraint *constraint);
   void remove_constraint(BulletConstraint *constraint);
 
 public:
