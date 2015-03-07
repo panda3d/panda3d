@@ -13,6 +13,7 @@ set(P3PNMIMAGE_HEADERS
 
 set(P3PNMIMAGE_SOURCES
   config_pnmimage.cxx
+  convert_srgb.cxx
   pfmFile.cxx
   pnm-image-filter.cxx
   pnmbitio.cxx
@@ -29,8 +30,10 @@ set(P3PNMIMAGE_IGATEEXT
   pfmFile_ext.h
 )
 
+set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES COMPILE_FLAGS -msse2)
+
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
-add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
+add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} convert_srgb_sse2.cxx)
 target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL EXTENSIONS ${P3PNMIMAGE_IGATEEXT})
 

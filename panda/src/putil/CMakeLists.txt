@@ -111,10 +111,11 @@ set(P3PUTIL_SOURCES
 )
 
 set(P3PUTIL_IGATEEXT
-  typedWritable_ext.cxx
-  typedWritable_ext.h
+  callbackObject_ext.h
   pythonCallbackObject.cxx
   pythonCallbackObject.h
+  typedWritable_ext.cxx
+  typedWritable_ext.h
 )
 
 composite_sources(p3putil P3PUTIL_SOURCES)

@@ -64,6 +64,7 @@ set(P3PGRAPH_HEADERS
   pandaNode.I pandaNode.h
   pandaNodeChain.I pandaNodeChain.h
   planeNode.I planeNode.h
+  paramNodePath.I paramNodePath.h
   polylightEffect.I polylightEffect.h
   polylightNode.I polylightNode.h
   portalNode.I portalNode.h
@@ -161,6 +162,7 @@ set(P3PGRAPH_SOURCES
   pandaNode.cxx
   pandaNodeChain.cxx
   planeNode.cxx
+  paramNodePath.cxx
   polylightEffect.cxx
   polylightNode.cxx
   portalNode.cxx

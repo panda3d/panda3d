@@ -16,6 +16,7 @@
 #define CALLBACKOBJECT_EXT_H
 
 #include "dtoolbase.h"
+#include "pointerTo.h"
 
 #ifdef HAVE_PYTHON
 
