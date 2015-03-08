@@ -294,7 +294,7 @@ class FilterManager(DirectObject):
 
         winprops = WindowProperties()
         winprops.setSize(xsize, ysize)
-        props = FrameBufferProperties(self.win.getFbProperties())
+        props = FrameBufferProperties(FrameBufferProperties.getDefault())
         props.setBackBuffers(0)
         props.setRgbColor(1)
         props.setDepthBits(depthbits)
