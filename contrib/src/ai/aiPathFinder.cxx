@@ -36,7 +36,7 @@ void PathFinder::find_path(Node *src_node, Node *dest_node) {
 
   // Add a dummy node as the first element of the open list with score = -1.
   // Inorder to implement a binary heap the index of the elements should never be 0.
-  Node *_dummy_node = new Node(-1, -1, LVecBase3f(0.0, 0.0, 0.0), 0, 0, 0);
+  Node *_dummy_node = new Node(-1, -1, LVecBase3(0.0, 0.0, 0.0), 0, 0, 0);
   _dummy_node->_status = _dummy_node->open;
   _dummy_node->_score = -1;
   _open_list.push_back(_dummy_node);
@@ -379,7 +379,7 @@ void PathFinder::remove_from_clist(int r, int c) {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-Node* find_in_mesh(NavMesh nav_mesh, LVecBase3f pos, int grid_size) {
+Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size) {
   int size = grid_size;
   float x = pos[0];
   float y = pos[1];

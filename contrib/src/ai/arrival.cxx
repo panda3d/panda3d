@@ -36,8 +36,8 @@ Arrival::~Arrival() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Arrival::do_arrival() {
-  LVecBase3f direction_to_target;
+LVecBase3 Arrival::do_arrival() {
+  LVecBase3 direction_to_target;
   double distance;
 
   if(_arrival_type) {
@@ -52,22 +52,22 @@ LVecBase3f Arrival::do_arrival() {
   _arrival_direction.normalize();
 
   if(int(distance) == 0) {
-    _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
-    _ai_char->_steering->_arrival_force = LVecBase3f(0.0, 0.0, 0.0);
+    _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
+    _ai_char->_steering->_arrival_force = LVecBase3(0.0, 0.0, 0.0);
 
     if(_ai_char->_steering->_seek_obj != NULL) {
       _ai_char->_steering->turn_off("arrival");
       _ai_char->_steering->turn_on("arrival_activate");
     }
     _arrival_done = true;
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
   else {
     _arrival_done = false;
   }
 
   double u = _ai_char->get_velocity().length();
-  LVecBase3f desired_force = ((u * u) / (2 * distance)) * _ai_char->get_mass();
+  LVecBase3 desired_force = ((u * u) / (2 * distance)) * _ai_char->get_mass();
 
   if(_ai_char->_steering->_seek_obj != NULL) {
     return(desired_force);
@@ -85,7 +85,7 @@ LVecBase3f Arrival::do_arrival() {
   }
 
   cout<<"Arrival works only with seek and pursue"<<endl;
-  return(LVecBase3f(0.0, 0.0, 0.0));
+  return(LVecBase3(0.0, 0.0, 0.0));
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ LVecBase3f Arrival::do_arrival() {
 /////////////////////////////////////////////////////////////////////////////////
 
 void Arrival::arrival_activate() {
-  LVecBase3f dirn;
+  LVecBase3 dirn;
   if(_arrival_type) {
     dirn = (_ai_char->_ai_char_np.get_pos(_ai_char->_window_render) - _ai_char->get_ai_behaviors()->_pursue_obj->_pursue_target.get_pos(_ai_char->_window_render));
   }

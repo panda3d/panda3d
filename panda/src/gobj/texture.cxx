@@ -4397,7 +4397,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
   switch (cdata->_component_type) {
   case T_unsigned_byte:
     {
-      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 255;
       switch (cdata->_num_components) {
       case 2:
@@ -4418,7 +4418,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
 
   case T_unsigned_short:
     {
-      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 65535;
       switch (cdata->_num_components) {
       case 2:

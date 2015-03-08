@@ -1069,13 +1069,21 @@ issue_parameters(int altered) {
       case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
       case Shader::SMP_upper3x3:
         {
+#ifndef STDFLOAT_DOUBLE
           LMatrix3f upper3 = val->get_upper_3();
+#else
+          LMatrix3f upper3 = valf.get_upper_3();
+#endif
           _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
           continue;
         }
       case Shader::SMP_transpose3x3:
         {
+#ifndef STDFLOAT_DOUBLE
           LMatrix3f upper3 = val->get_upper_3();
+#else
+          LMatrix3f upper3 = valf.get_upper_3();
+#endif
           _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
           continue;
         }

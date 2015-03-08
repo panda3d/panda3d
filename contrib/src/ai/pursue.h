@@ -28,12 +28,12 @@ public:
 
   NodePath _pursue_target;
   float _pursue_weight;
-  LVecBase3f _pursue_direction;
+  LVecBase3 _pursue_direction;
   bool _pursue_done;
 
   Pursue(AICharacter *ai_ch, NodePath target_object, float pursue_wt);
   ~Pursue();
-  LVecBase3f do_pursue();
+  LVecBase3 do_pursue();
 };
 
 #endif

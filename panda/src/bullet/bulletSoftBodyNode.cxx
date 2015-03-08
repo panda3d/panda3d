@@ -1018,7 +1018,7 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, 
 
   for (int i=0; i<pos.size(); ++i) {
     int index = 0;
-    PN_stdfloat x, y, z;
+    float x, y, z;
 
     sscanf(node, "%d %f %f %f", &index, &x, &y, &z);
     node += next_line(node);
