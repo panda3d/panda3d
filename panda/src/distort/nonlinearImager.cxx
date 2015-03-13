@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NonlinearImager::
 NonlinearImager() {
@@ -38,7 +38,7 @@ NonlinearImager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NonlinearImager::
 ~NonlinearImager() {
@@ -54,7 +54,7 @@ NonlinearImager::
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::add_screen
 //       Access: Published
-//               This version of this method is deprecated and will
+//  Description: This version of this method is deprecated and will
 //               soon be removed.  Use the version that takes two
 //               parameters instead.
 ////////////////////////////////////////////////////////////////////

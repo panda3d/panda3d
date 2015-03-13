@@ -62,6 +62,7 @@ PUBLISHED:
   // INLINE void get_buffer(unsigned char** buf, int* buf_len) const;
   // INLINE void set_buffer(unsigned char* buf);
   // INLINE void update();
+
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   void write_faces(ostream &out) const;
 
@@ -90,6 +91,7 @@ public:
                             const int* indices, int index_count, \
                             const int* normals);
   */
+
   INLINE void preprocess();
 
   INLINE dTriMeshDataID get_id() const;

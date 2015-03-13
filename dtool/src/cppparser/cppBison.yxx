@@ -1651,7 +1651,7 @@ type_decl:
 }
         | anonymous_enum
 {
-  $$ = CPPType::new_type($1);
+  $$ = new CPPTypeDeclaration(CPPType::new_type($1));
 }
         | named_enum
 {

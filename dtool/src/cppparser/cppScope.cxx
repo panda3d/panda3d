@@ -200,6 +200,7 @@ define_extension_type(CPPExtensionType *type) {
 
   case CPPExtensionType::T_union:
     _unions[name] = type;
+    break;
 
   case CPPExtensionType::T_enum:
     _enums[name] = type;
