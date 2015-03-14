@@ -41,7 +41,6 @@ CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _cg_program = 0;
-  _glsl_profile = false;
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
@@ -63,10 +62,6 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     release_resources();
 
   } else {
-    if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
-      _glsl_profile = true;
-    }
-
     cgGLLoadProgram(_cg_program);
     CGerror error = cgGetError();
     if (error != CG_NO_ERROR) {
@@ -351,14 +346,7 @@ issue_parameters(int altered) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
       const LMatrix4 *val = _glgsg->fetch_specified_value(_shader->_mat_spec[i], altered);
       if (!val) continue;
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
-#else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
-#endif
+      const PN_stdfloat *data = val->get_data();
 
       CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
       switch (_shader->_mat_spec[i]._piece) {
@@ -377,13 +365,13 @@ issue_parameters(int altered) {
       case Shader::SMP_row3x3: GLfv(cgGLSetParameter3)(p, data+12); continue;
       case Shader::SMP_upper3x3:
         {
-          LMatrix3f upper3 = val->get_upper_3();
+          LMatrix3 upper3 = val->get_upper_3();
           GLfc(cgGLSetMatrixParameter)(p, upper3.get_data());
           continue;
         }
       case Shader::SMP_transpose3x3:
         {
-          LMatrix3f upper3 = val->get_upper_3();
+          LMatrix3 upper3 = val->get_upper_3();
           GLfr(cgGLSetMatrixParameter)(p, upper3.get_data());
           continue;
         }
@@ -412,7 +400,7 @@ disable_shader_vertex_arrays() {
     CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
     if (p == 0) continue;
 
-    if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+    if (cgGetParameterBaseResource(p) == CG_ATTR0) {
       int index = cgGetParameterResourceIndex(p);
       if (index >= 8) {
         _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
@@ -501,11 +489,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           num_values = GL_BGRA;
         }
 
-        // This is truly the most preposterous hack.  When using the GLSL
-        // profiles, cgGLSetParameterPointer relies on the the driver mapping
-        // standard attributes to fixed indices (and breaking the spec doing
-        // so), which only the NVIDIA drivers do.  Unbelievable.
-        if (_glsl_profile && cgGetParameterBaseResource(p) == CG_ATTR0) {
+        // cgGLSetParameterPointer is just stupidly bugged on every level.
+        // Sigh.  This seems to work on both NVIDIA and AMD cards now.
+        if (cgGetParameterBaseResource(p) == CG_ATTR0) {
           int index = cgGetParameterResourceIndex(p);
           switch (index) {
           case 0:  // gl_Vertex

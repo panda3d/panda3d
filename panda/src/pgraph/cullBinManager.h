@@ -99,7 +99,7 @@ private:
   class EXPCL_PANDA_PGRAPH BinDefinition {
   public:
 #ifndef NDEBUG
-    LColorf _flash_color;
+    LColor _flash_color;
     bool _flash_active;
 #endif
     bool _in_use;

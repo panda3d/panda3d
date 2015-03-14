@@ -153,46 +153,32 @@ make_output(const string &name,
     return new wglGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  
+
   // Second thing to try: a GLGraphicsBuffer
-  
+
   if (retry == 1) {
-    if ((!gl_support_fbo)||
-        (host==0)||
-        ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)) {
+    if (!gl_support_fbo || host == NULL ||
+        (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
-    int _fbo_multisample = 0;
-    if (!ConfigVariableBool("framebuffer-object-multisample", false, PRC_DESC("Enabled Multisample."))) {
-        _fbo_multisample = 16;
-    }
-    if ((flags & BF_fb_props_optional)==0) {
+    if ((flags & BF_fb_props_optional) == 0) {
       if (fb_prop.get_indexed_color() ||
-          (fb_prop.get_back_buffers() > 0)||
-          (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > _fbo_multisample)) {
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
         return NULL;
       }
     }
-    if ((wglgsg != 0) &&
-        (wglgsg->is_valid()) &&
-        (!wglgsg->needs_reset()) &&
-	!wglgsg->_supports_framebuffer_object) {
-      return NULL;
-    }
-
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
-    if ((wglgsg != 0) &&
-        (wglgsg->is_valid()) &&
-        (!wglgsg->needs_reset()) &&
-        (wglgsg->_supports_framebuffer_object) &&
-        (wglgsg->_glDrawBuffers != 0)&&
-        (fb_prop.is_basic())) {
-      precertify = true;
+    if (wglgsg != NULL && wglgsg->is_valid() && !wglgsg->needs_reset()) {
+      if (!wglgsg->_supports_framebuffer_object ||
+          wglgsg->_glDrawBuffers == NULL) {
+        return NULL;
+      } else {
+        // Early success - if we are sure that this buffer WILL
+        // meet specs, we can precertify it.
+        precertify = true;
+      }
     }
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);

@@ -23,8 +23,8 @@ AICharacter::AICharacter(string model_name, NodePath model_np, double mass, doub
   _max_force = max_force;
   _movt_force = movt_force;
 
-  _velocity = LVecBase3f(0.0, 0.0, 0.0);
-  _steering_force = LVecBase3f(0.0, 0.0, 0.0);
+  _velocity = LVecBase3(0.0, 0.0, 0.0);
+  _steering_force = LVecBase3(0.0, 0.0, 0.0);
 
   _steering = new AIBehaviors();
   _steering->_ai_char = this;
@@ -43,48 +43,43 @@ AICharacter::~AICharacter() {
 //                This also makes the character  look at the direction of the force.
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
-void AICharacter::update() {
-
-  if(!_steering->is_off(_steering->_none)) {
-
-    LVecBase3f old_pos = _ai_char_np.get_pos();
-
-    LVecBase3f steering_force = _steering->calculate_prioritized();
-
-    LVecBase3f acceleration = steering_force / _mass;
+void AICharacter::
+update() {
+  if (!_steering->is_off(_steering->_none)) {
+    LVecBase3 old_pos = _ai_char_np.get_pos();
+    LVecBase3 steering_force = _steering->calculate_prioritized();
+    LVecBase3 acceleration = steering_force / _mass;
 
     _velocity = acceleration;
 
-    LVecBase3f direction = _steering->_steering_force;
+    LVecBase3 direction = _steering->_steering_force;
     direction.normalize();
 
     _ai_char_np.set_pos(old_pos + _velocity) ;
 
-    if(steering_force.length() > 0) {
+    if (steering_force.length() > 0) {
       _ai_char_np.look_at(old_pos + (direction * 5));
       _ai_char_np.set_h(_ai_char_np.get_h() + 180);
       _ai_char_np.set_p(-_ai_char_np.get_p());
       _ai_char_np.set_r(-_ai_char_np.get_r());
     }
-  }
-  else {
-    _steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_seek_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_flee_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_pursue_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_evade_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_arrival_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_flock_force = LVecBase3f(0.0, 0.0, 0.0);
-    _steering->_wander_force = LVecBase3f(0.0, 0.0, 0.0);
+  } else {
+    _steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_seek_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_flee_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_pursue_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_evade_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_arrival_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_flock_force = LVecBase3(0.0, 0.0, 0.0);
+    _steering->_wander_force = LVecBase3(0.0, 0.0, 0.0);
   }
 }
 
-LVecBase3f AICharacter::get_velocity() {
+LVecBase3 AICharacter::get_velocity() {
   return _velocity;
 }
 
-void AICharacter::set_velocity(LVecBase3f velocity) {
+void AICharacter::set_velocity(LVecBase3 velocity) {
   _velocity = velocity;
 }
 

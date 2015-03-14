@@ -1,0 +1,39 @@
+<CoordinateSystem> { Y-Up }
+
+<Comment> {
+  "maya2egg plane.mb plane.egg"
+}
+<Group> groundPlane_transform {
+}
+<Group> pPlane1 {
+  <VertexPool> pPlaneShape1.verts {
+    <Vertex> 1 {
+      -0.5 -0.5 0
+      <Normal> { 0 0 -1 }
+      <UV> { 0 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -0.5 0.5 0
+      <Normal> { 0 0 -1 }
+      <UV> { 0 1 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      0.5 -0.5 0
+      <Normal> { 0 0 -1 }
+      <UV> { 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      0.5 0.5 0
+      <Normal> { 0 0 -1 }
+      <UV> { 1 1 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <Normal> { 0 0 -1 }
+    <VertexRef>{ 3 4 2 1 <Ref> { pPlaneShape1.verts } }
+  }
+}

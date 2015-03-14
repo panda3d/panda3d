@@ -42,23 +42,23 @@ Evade::~Evade() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Evade::do_evade() {
+LVecBase3 Evade::do_evade() {
   assert(_evade_target && "evade target not assigned");
 
   _evade_direction = _ai_char->_ai_char_np.get_pos(_ai_char->_window_render) - _evade_target.get_pos(_ai_char->_window_render);
   double distance = _evade_direction.length();
 
   _evade_direction.normalize();
-  LVecBase3f desired_force = _evade_direction * _ai_char->_movt_force;
+  LVecBase3 desired_force = _evade_direction * _ai_char->_movt_force;
 
   if(distance > (_evade_distance + _evade_relax_distance)) {
     if((_ai_char->_steering->_behaviors_flags | _ai_char->_steering->_evade) == _ai_char->_steering->_evade) {
-      _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
+      _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
     }
     _ai_char->_steering->turn_off("evade");
     _ai_char->_steering->turn_on("evade_activate");
     _evade_done = true;
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
   else {
       _evade_done = false;

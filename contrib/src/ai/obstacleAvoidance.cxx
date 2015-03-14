@@ -35,15 +35,15 @@ bool ObstacleAvoidance::obstacle_detection() {
   // Calculate the volume of the AICharacter with respect to render
   PT(BoundingVolume) np_bounds = _ai_char->get_node_path().get_bounds();
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
-  LVecBase3f avoidance(0.0, 0.0, 0.0);
+  LVecBase3 avoidance(0.0, 0.0, 0.0);
   double distance = 0x7fff ;
   double expanded_radius;
-  LVecBase3f to_obstacle;
-  LVecBase3f prev_avoidance;
+  LVecBase3 to_obstacle;
+  LVecBase3 prev_avoidance;
   for(unsigned int i = 0; i < _ai_char->_world->_obstacles.size(); ++i) {
     PT(BoundingVolume) bounds = _ai_char->_world->_obstacles[i].get_bounds();
     CPT(BoundingSphere) bsphere = bounds->as_bounding_sphere();
-    LVecBase3f near_obstacle = _ai_char->_world->_obstacles[i].get_pos() - _ai_char->get_node_path().get_pos();
+    LVecBase3 near_obstacle = _ai_char->_world->_obstacles[i].get_pos() - _ai_char->get_node_path().get_pos();
     // Check if it's the nearest obstacle, If so initialize as the nearest obstacle
     if((near_obstacle.length() < distance) && (_ai_char->_world->_obstacles[i].get_pos() != _ai_char->get_node_path().get_pos())) {
       _nearest_obstacle = _ai_char->_world->_obstacles[i];
@@ -51,13 +51,13 @@ bool ObstacleAvoidance::obstacle_detection() {
       expanded_radius = bsphere->get_radius() + np_sphere->get_radius();
     }
   }
-     LVecBase3f feeler = _feeler * _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3f::forward());
+     LVecBase3 feeler = _feeler * _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
      feeler.normalize();
      feeler *= (expanded_radius + np_sphere->get_radius()) ;
      to_obstacle = _nearest_obstacle.get_pos() - _ai_char->get_node_path().get_pos();
-     LVector3f line_vector = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3f::forward());
-     LVecBase3f project = (to_obstacle.dot(line_vector) * line_vector) / line_vector.length_squared();
-     LVecBase3f perp = project - to_obstacle;
+     LVector3 line_vector = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
+     LVecBase3 project = (to_obstacle.dot(line_vector) * line_vector) / line_vector.length_squared();
+     LVecBase3 perp = project - to_obstacle;
      // If the nearest obstacle will collide with our AICharacter then send obstacle detection as true
      if((_nearest_obstacle) && (perp.length() < expanded_radius - np_sphere->get_radius()) && (project.length() < feeler.length())) {
        return true;
@@ -90,27 +90,27 @@ void ObstacleAvoidance::obstacle_avoidance_activate() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f ObstacleAvoidance::do_obstacle_avoidance() {
-  LVecBase3f offset = _ai_char->get_node_path().get_pos() - _nearest_obstacle.get_pos();
+LVecBase3 ObstacleAvoidance::do_obstacle_avoidance() {
+  LVecBase3 offset = _ai_char->get_node_path().get_pos() - _nearest_obstacle.get_pos();
   PT(BoundingVolume) bounds =_nearest_obstacle.get_bounds();
   CPT(BoundingSphere) bsphere = bounds->as_bounding_sphere();
   PT(BoundingVolume) np_bounds = _ai_char->get_node_path().get_bounds();
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
   double distance_needed = offset.length() - bsphere->get_radius() - np_sphere->get_radius();
   if((obstacle_detection())) {
-    LVecBase3f direction = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3f::forward());
+    LVecBase3 direction = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
     direction.normalize();
     float forward_component = offset.dot(direction);
-    LVecBase3f projection = forward_component * direction;
-    LVecBase3f perpendicular_component = offset - projection;
+    LVecBase3 projection = forward_component * direction;
+    LVecBase3 perpendicular_component = offset - projection;
     double p = perpendicular_component.length();
     perpendicular_component.normalize();
-    LVecBase3f   avoidance = perpendicular_component;
+    LVecBase3   avoidance = perpendicular_component;
     // The more closer the obstacle, the more force it generates
     avoidance = (avoidance * _ai_char->get_max_force() * _ai_char->_movt_force) / (p + 0.01);
     return avoidance;
   }
   _ai_char->_steering->turn_on("obstacle_avoidance_activate");
   _ai_char->_steering->turn_off("obstacle_avoidance");
-  return LVecBase3f(0, 0, 0);
+  return LVecBase3(0, 0, 0);
 }

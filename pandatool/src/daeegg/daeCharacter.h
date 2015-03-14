@@ -45,7 +45,7 @@ public:
       _bind_pose(LMatrix4d::ident_mat()) {}
 
     LMatrix4d _bind_pose;
-    const PT(EggGroup) _group;
+    PT(EggGroup) _group;
     const FCDSceneNode *_scene_node;
     DaeCharacter *_character;
   };

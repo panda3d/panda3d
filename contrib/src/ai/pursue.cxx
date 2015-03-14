@@ -37,17 +37,17 @@ Pursue::~Pursue() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Pursue::do_pursue() {
+LVecBase3 Pursue::do_pursue() {
   assert(_pursue_target && "pursue target not assigned");
 
-  LVecBase3f present_pos = _ai_char->_ai_char_np.get_pos(_ai_char->_window_render);
+  LVecBase3 present_pos = _ai_char->_ai_char_np.get_pos(_ai_char->_window_render);
   double target_distance = (_pursue_target.get_pos(_ai_char->_window_render) - present_pos).length();
 
   if(int(target_distance) == 0) {
     _pursue_done = true;
-    _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
-    _ai_char->_steering->_pursue_force = LVecBase3f(0.0, 0.0, 0.0);
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
+    _ai_char->_steering->_pursue_force = LVecBase3(0.0, 0.0, 0.0);
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
   else {
     _pursue_done = false;
@@ -56,6 +56,6 @@ LVecBase3f Pursue::do_pursue() {
   _pursue_direction = _pursue_target.get_pos(_ai_char->_window_render) - present_pos;
   _pursue_direction.normalize();
 
-  LVecBase3f desired_force = _pursue_direction * _ai_char->_movt_force;
+  LVecBase3 desired_force = _pursue_direction * _ai_char->_movt_force;
   return(desired_force);
 }

@@ -228,7 +228,7 @@ convert_file(const Filename &filename) {
       Characters::iterator it;
       DaeCharacter *character;
       for (it = _characters.begin(); it != _characters.end(); ++it) {
-        DaeCharacter *character = *it;
+        character = *it;
 
         // Collect key frame timings.
         if (get_animation_convert() == AC_both ||

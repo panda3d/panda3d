@@ -39,8 +39,8 @@ class EXPCL_PANDAAI AICharacter {
  public:
   double _mass;
   double _max_force;
-  LVecBase3f _velocity;
-  LVecBase3f _steering_force;
+  LVecBase3 _velocity;
+  LVecBase3 _steering_force;
   string _name;
   double _movt_force;
   unsigned int _ai_char_flock_id;
@@ -51,7 +51,7 @@ class EXPCL_PANDAAI AICharacter {
   bool _pf_guide;
 
   void update();
-  void set_velocity(LVecBase3f vel);
+  void set_velocity(LVecBase3 vel);
   void set_char_render(NodePath render);
   NodePath get_char_render();
 
@@ -59,7 +59,7 @@ PUBLISHED:
     double get_mass();
     void set_mass(double m);
 
-    LVecBase3f get_velocity();
+    LVecBase3 get_velocity();
 
     double get_max_force();
     void set_max_force(double max_force);

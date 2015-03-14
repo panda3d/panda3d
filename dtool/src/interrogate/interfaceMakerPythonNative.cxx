@@ -4625,8 +4625,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         format_specifiers += "h";
         parameter_list += ", &" + param_name;
       }
-      expected_params += "int";
-      only_pyobjects = false;
+
+      extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
+      extra_param_check += " && " + param_name + "_long != NULL";
+      pexpr_string = "(" + type->get_local_name(&parser) + ")" +
+                     "PyLong_AsLongLong(" + param_name + "_long)";
+      extra_cleanup += "Py_XDECREF(" + param_name + "_long);";
+      expected_params += "long long";
+      ++num_params;
 
     } else if (TypeManager::is_unsigned_integer(type)) {
       if (args_type == AT_single_arg) {

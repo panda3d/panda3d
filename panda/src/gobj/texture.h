@@ -752,6 +752,9 @@ private:
   static void filter_2d_unsigned_byte_srgb(unsigned char *&p,
                                            const unsigned char *&q,
                                            size_t pixel_size, size_t row_size);
+  static void filter_2d_unsigned_byte_srgb_sse2(unsigned char *&p,
+                                                const unsigned char *&q,
+                                                size_t pixel_size, size_t row_size);
   static void filter_2d_unsigned_short(unsigned char *&p,
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size);
@@ -766,6 +769,10 @@ private:
                                            const unsigned char *&q,
                                            size_t pixel_size, size_t row_size,
                                            size_t page_size);
+  static void filter_3d_unsigned_byte_srgb_sse2(unsigned char *&p,
+                                                const unsigned char *&q,
+                                                size_t pixel_size, size_t row_size,
+                                                size_t page_size);
   static void filter_3d_unsigned_short(unsigned char *&p,
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,

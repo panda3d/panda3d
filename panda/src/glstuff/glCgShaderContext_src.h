@@ -52,7 +52,6 @@ public:
 
 private:
   CGprogram _cg_program;
-  bool _glsl_profile;
 
   pvector<CGparameter> _cg_parameter_map;
 

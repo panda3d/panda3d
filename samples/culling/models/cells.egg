@@ -1,0 +1,586 @@
+<CoordinateSystem> { Y-Up }
+
+<Group> cell1 {
+  <VertexPool> cell1-ORG {
+    <Vertex> 0 {
+      -4 0 -4
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      11.5789 0 -11.5789
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -11.5789 0 -11.5789
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -4 0 4
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      4 0 -4
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      11.5789 0 11.5789
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 6 {
+      4 0 4
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 7 {
+      -11.5789 0 11.5789
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 2 3 0 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 5 1 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 6 7 5 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 1 0 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 7 3 2 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 6 5 4 <Ref> { cell1-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 7 6 <Ref> { cell1-ORG } }
+  }
+}
+<Group> cell2 {
+  <VertexPool> cell2-ORG {
+    <Vertex> 0 {
+      -4 0 -0.838305
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      4 0 0.527741
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      4 0 -0.838305
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -4 0 0.527741
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell2-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 1 0 <Ref> { cell2-ORG } }
+  }
+}
+<Group> cell3 {
+  <VertexPool> cell3-ORG {
+    <Vertex> 0 {
+      -1.02178 0 -0.838305
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      0.243417 0 -1.36315
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -1.02178 0 -1.36315
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -3.36172 0 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      2.99397 0 -1.36315
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      2.99397 0 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 6 {
+      -3.36172 0 -1.36315
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 7 {
+      0.243417 0 -0.838305
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell3-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 1 3 2 <Ref> { cell3-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 5 1 <Ref> { cell3-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 6 2 3 <Ref> { cell3-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 7 1 0 <Ref> { cell3-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 3 1 <Ref> { cell3-ORG } }
+  }
+}
+<Group> cell4 {
+  <VertexPool> cell4-ORG {
+    <Vertex> 0 {
+      2.99397 0 0.527741
+      <Normal> { 0 0.854764 -0.519017 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      2.04443 1.03879 2.23852
+      <Normal> { 0.158619 0.946967 -0.279453 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      2.99397 1.03879 2.23852
+      <Normal> { 0 0.983872 -0.178875 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      2.04443 1.03879 3.18072
+      <Normal> { 0.309844 0.950787 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      2.99397 1.03879 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      0.519489 2.15079 2.23852
+      <Normal> { 0.320561 0.934229 0.156384 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 6 {
+      0.519489 2.15079 3.18072
+      <Normal> { 0.205355 0.978688 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 7 {
+      -0.423812 2.15079 2.23852
+      <Normal> { 0 0.95348 0.301457 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 8 {
+      -0.423812 2.15079 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 9 {
+      0.519489 3.3704 0.502572
+      <Normal> { 0 0.916633 0.399729 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 10 {
+      -0.423812 3.3704 0.502572
+      <Normal> { 0 0.979823 0.199865 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 11 {
+      0.519489 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 12 {
+      -0.423812 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 13 {
+      2.04443 0 0.527741
+      <Normal> { 0 0.854764 -0.519017 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 2 3 4 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 5 6 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 6 7 8 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 7 9 10 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 10 11 12 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 13 1 0 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 1 3 2 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 1 5 3 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 7 6 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 9 7 <Ref> { cell4-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 9 11 10 <Ref> { cell4-ORG } }
+  }
+}
+<Group> cell5 {
+  <VertexPool> cell5-ORG {
+    <Vertex> 0 {
+      2.99397 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 1 {
+      -3.36172 3.3704 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -3.36172 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 3 {
+      2.99397 3.3704 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell5-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 1 0 <Ref> { cell5-ORG } }
+  }
+}
+<Group> cell6 {
+  <VertexPool> cell6-ORG {
+    <Vertex> 0 {
+      2.99397 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      0.997627 3.3704 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      2.99397 3.3704 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      0.997627 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell6-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 1 0 <Ref> { cell6-ORG } }
+  }
+}
+<Group> cell7 {
+  <VertexPool> cell7-ORG {
+    <Vertex> 0 {
+      -3.36172 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      -0.900963 3.3704 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -0.900963 3.3704 0.115602
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -2.30748 3.3704 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      -2.30748 3.3704 2.05045
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      -3.36172 3.3704 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell7-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 0 3 4 <Ref> { cell7-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 1 0 <Ref> { cell7-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 3 0 <Ref> { cell7-ORG } }
+  }
+}
+<Group> cell8 {
+  <VertexPool> cell8-ORG {
+    <Vertex> 0 {
+      -2.30748 3.3704 2.23852
+      <Normal> { -0.430354 0.90266 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      1.82483 5.34053 3.18072
+      <Normal> { -0.430354 0.90266 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      1.82483 5.34053 2.23852
+      <Normal> { -0.430354 0.90266 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -2.30748 3.3704 3.18072
+      <Normal> { -0.430354 0.90266 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell8-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 3 1 0 <Ref> { cell8-ORG } }
+  }
+}
+<Group> cell9 {
+  <VertexPool> cell9-ORG {
+    <Vertex> 0 {
+      1.82483 5.34053 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 1 {
+      2.99397 5.34053 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      1.82483 5.34053 -2.49425
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -0.485624 5.34053 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      -0.485624 5.34053 -2.49425
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 5 {
+      2.99397 5.34053 3.18072
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell9-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 2 3 4 <Ref> { cell9-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 1 0 <Ref> { cell9-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 1 3 2 <Ref> { cell9-ORG } }
+  }
+}
+<Group> cell10 {
+  <VertexPool> cell10-ORG {
+    <Vertex> 0 {
+      -3.36172 5.34053 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      -0.485624 5.34053 -2.49425
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -0.485624 5.34053 -3.42013
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      -2.36149 5.34053 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      -2.36149 5.34053 -2.49425
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      -3.36172 5.34053 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell10-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 0 3 4 <Ref> { cell10-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 1 0 <Ref> { cell10-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 3 0 <Ref> { cell10-ORG } }
+  }
+}
+<Group> cell11 {
+  <VertexPool> cell11-ORG {
+    <Vertex> 0 {
+      -2.36149 5.34053 1.0558
+      <Normal> { 0 1 0 }
+      <RGBA> { 0.999 0.999 0.999 1 }
+    }
+    <Vertex> 1 {
+      -1.90136 5.34053 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 2 {
+      -1.90136 5.34053 1.0558
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 3 {
+      1.31869 5.34053 0.350091
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 4 {
+      1.31869 5.34053 -2.1928
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 5 {
+      -1.90136 5.34053 -2.16895
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 6 {
+      1.31869 5.34053 -0.718624
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 7 {
+      1.82483 5.34053 0.350091
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 8 {
+      -2.36149 5.34053 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 9 {
+      1.31869 5.34053 2.04979
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+    <Vertex> 10 {
+      1.82483 5.34053 -0.718624
+      <Normal> { 0 1 0 }
+      <RGBA> { 1 1 1 1 }
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 1 3 2 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 4 5 6 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 6 2 3 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 7 6 3 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 8 1 0 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 9 3 1 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 5 2 6 <Ref> { cell11-ORG } }
+  }
+  <Polygon> {
+    <VertexRef> { 10 6 7 <Ref> { cell11-ORG } }
+  }
+}

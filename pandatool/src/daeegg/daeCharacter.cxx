@@ -320,7 +320,7 @@ build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
   }
 
   // Quantize the FPS, otherwise Panda complains about FPS mismatches.
-  float fps = round(((keys.size() - 1) / timing_total) * 100) * 0.01f;
+  float fps = cfloor(((keys.size() - 1) / timing_total) * 100 + 0.5f) * 0.01f;
   xform->set_fps(fps);
 
   // Loop through the children joints

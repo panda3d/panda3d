@@ -23,7 +23,7 @@
 typedef vector<Node *> NodeArray;
 typedef vector<NodeArray> NavMesh;
 
-Node* find_in_mesh(NavMesh nav_mesh, LVecBase3f pos, int grid_size);
+Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //

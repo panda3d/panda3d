@@ -67,7 +67,7 @@ private:
   };
 
   int _property[FBP_COUNT];
-  bool _specified[FBP_COUNT];
+  int _specified;
 
   int _flags;
   int _flags_specified;

@@ -27,7 +27,7 @@ Seek::Seek(AICharacter *ai_ch, NodePath target_object, float seek_wt) {
   _seek_done = false;
 }
 
-Seek::Seek(AICharacter *ai_ch, LVecBase3f pos, float seek_wt) {
+Seek::Seek(AICharacter *ai_ch, LVecBase3 pos, float seek_wt) {
       _ai_char = ai_ch;
 
   _seek_position = pos;
@@ -51,16 +51,16 @@ Seek::~Seek() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Seek::do_seek() {
+LVecBase3 Seek::do_seek() {
   double target_distance = (_seek_position - _ai_char->_ai_char_np.get_pos(_ai_char->_window_render)).length();
 
     if(int(target_distance) == 0) {
         _seek_done = true;
-    _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
+    _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
     _ai_char->_steering->turn_off("seek");
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
 
-  LVecBase3f desired_force = _seek_direction * _ai_char->_movt_force;
+  LVecBase3 desired_force = _seek_direction * _ai_char->_movt_force;
   return(desired_force);
 }
