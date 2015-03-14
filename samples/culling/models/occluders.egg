@@ -1,0 +1,562 @@
+<CoordinateSystem> { Y-Up }
+
+<Group> occluder1 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder1-ORG {
+    <Vertex> 0 {
+      4 7.57015 4
+    }
+    <Vertex> 1 {
+      4 7.57015 -4
+    }
+    <Vertex> 2 {
+      -4 7.57015 -4
+    }
+    <Vertex> 3 {
+      -4 7.57015 4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder1-ORG } }
+  }
+}
+<Group> occluder4 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder4-ORG {
+    <Vertex> 0 {
+      4 2.96946e-016 -0.84965
+    }
+    <Vertex> 1 {
+      4 7.57015 -0.84965
+    }
+    <Vertex> 2 {
+      4 7.57015 -4
+    }
+    <Vertex> 3 {
+      4 0 -4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder4-ORG } }
+  }
+}
+<Group> occluder2 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder2-ORG {
+    <Vertex> 0 {
+      4 0 -4
+    }
+    <Vertex> 1 {
+      4 7.57015 -4
+    }
+    <Vertex> 2 {
+      -4 7.57015 -4
+    }
+    <Vertex> 3 {
+      -4 0 -4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder2-ORG } }
+  }
+}
+<Group> occluder3 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder3-ORG {
+    <Vertex> 0 {
+      4 0 4
+    }
+    <Vertex> 1 {
+      4 7.57015 4
+    }
+    <Vertex> 2 {
+      -4 7.57015 4
+    }
+    <Vertex> 3 {
+      -4 0 4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder3-ORG } }
+  }
+}
+<Group> occluder5 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder5-ORG {
+    <Vertex> 0 {
+      4 0 4
+    }
+    <Vertex> 1 {
+      4 7.57015 4
+    }
+    <Vertex> 2 {
+      4 7.57015 0.551412
+    }
+    <Vertex> 3 {
+      4 -2.78684e-016 0.551412
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder5-ORG } }
+  }
+}
+<Group> occluder6 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder6-ORG {
+    <Vertex> 0 {
+      4 1.49418 4
+    }
+    <Vertex> 1 {
+      4 7.57015 4
+    }
+    <Vertex> 2 {
+      4 7.57015 -4
+    }
+    <Vertex> 3 {
+      4 1.49418 -4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder6-ORG } }
+  }
+}
+<Group> occluder7 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder7-ORG {
+    <Vertex> 0 {
+      -3.99576 2.96946e-016 -0.84965
+    }
+    <Vertex> 1 {
+      -3.99576 7.57015 -0.84965
+    }
+    <Vertex> 2 {
+      -3.99576 7.57015 -4
+    }
+    <Vertex> 3 {
+      -3.99576 0 -4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder7-ORG } }
+  }
+}
+<Group> occluder8 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder8-ORG {
+    <Vertex> 0 {
+      -3.99576 0 4
+    }
+    <Vertex> 1 {
+      -3.99576 7.57015 4
+    }
+    <Vertex> 2 {
+      -3.99576 7.57015 0.551412
+    }
+    <Vertex> 3 {
+      -3.99576 -2.78684e-016 0.551412
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder8-ORG } }
+  }
+}
+<Group> occluder9 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder9-ORG {
+    <Vertex> 0 {
+      -3.99576 1.49418 4
+    }
+    <Vertex> 1 {
+      -3.99576 7.57015 4
+    }
+    <Vertex> 2 {
+      -3.99576 7.57015 -4
+    }
+    <Vertex> 3 {
+      -3.99576 1.49418 -4
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder9-ORG } }
+  }
+}
+<Group> occluder10 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder10-ORG {
+    <Vertex> 0 {
+      -4 1.49418 -1.13843
+    }
+    <Vertex> 1 {
+      -4 3.24289 -1.13843
+    }
+    <Vertex> 2 {
+      4 3.24289 -1.13843
+    }
+    <Vertex> 3 {
+      4 1.49418 -1.13843
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder10-ORG } }
+  }
+}
+<Group> occluder11 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder11-ORG {
+    <Vertex> 0 {
+      -4 0 -1.13843
+    }
+    <Vertex> 1 {
+      -4 3.24289 -1.13843
+    }
+    <Vertex> 2 {
+      -1.01962 3.24289 -1.13843
+    }
+    <Vertex> 3 {
+      -1.01962 -2.78684e-016 -1.13843
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder11-ORG } }
+  }
+}
+<Group> occluder12 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder12-ORG {
+    <Vertex> 0 {
+      0.242712 2.96946e-016 -1.13843
+    }
+    <Vertex> 1 {
+      0.242712 3.24289 -1.13843
+    }
+    <Vertex> 2 {
+      4 3.24289 -1.13843
+    }
+    <Vertex> 3 {
+      4 0 -1.13843
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder12-ORG } }
+  }
+}
+<Group> occluder13 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder13-ORG {
+    <Vertex> 0 {
+      -4 3.19567 0.643347
+    }
+    <Vertex> 1 {
+      -4 3.19567 -3.99828
+    }
+    <Vertex> 2 {
+      4 3.19567 -3.99828
+    }
+    <Vertex> 3 {
+      4 3.19567 0.643347
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder13-ORG } }
+  }
+}
+<Group> occluder14 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder14-ORG {
+    <Vertex> 0 {
+      -4 3.19567 4.00073
+    }
+    <Vertex> 1 {
+      -4 3.19567 -3.99828
+    }
+    <Vertex> 2 {
+      -0.508583 3.19567 -3.99828
+    }
+    <Vertex> 3 {
+      -0.508583 3.19567 4.00073
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder14-ORG } }
+  }
+}
+<Group> occluder15 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder15-ORG {
+    <Vertex> 0 {
+      1.25869 3.19567 3.98826
+    }
+    <Vertex> 1 {
+      1.25869 3.19567 -3.99828
+    }
+    <Vertex> 2 {
+      4 3.19567 -3.99828
+    }
+    <Vertex> 3 {
+      4 3.19567 3.98826
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder15-ORG } }
+  }
+}
+<Group> occluder16 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder16-ORG {
+    <Vertex> 0 {
+      -4 5.26173 2.21946
+    }
+    <Vertex> 1 {
+      -4 5.26173 -3.99828
+    }
+    <Vertex> 2 {
+      4 5.26173 -3.99828
+    }
+    <Vertex> 3 {
+      4 5.26173 2.21946
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder16-ORG } }
+  }
+}
+<Group> occluder17 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder17-ORG {
+    <Vertex> 0 {
+      1.78343 5.26173 3.98826
+    }
+    <Vertex> 1 {
+      1.78343 5.26173 -3.99828
+    }
+    <Vertex> 2 {
+      4 5.26173 -3.99828
+    }
+    <Vertex> 3 {
+      4 5.26173 3.98826
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder17-ORG } }
+  }
+}
+<Group> occluder18 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder18-ORG {
+    <Vertex> 0 {
+      -3.99383 5.23279 2.0951
+    }
+    <Vertex> 1 {
+      1.8032 5.23279 2.0951
+    }
+    <Vertex> 2 {
+      1.8032 7.56072 2.0951
+    }
+    <Vertex> 3 {
+      -3.99383 7.56072 2.0951
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder18-ORG } }
+  }
+}
+<Group> occluder19 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder19-ORG {
+    <Vertex> 0 {
+      -3.93576 0.0379318 0.6175
+    }
+    <Vertex> 1 {
+      1.94837 0.0379318 0.6175
+    }
+    <Vertex> 2 {
+      1.94837 3.21608 0.6175
+    }
+    <Vertex> 3 {
+      -3.93576 3.21608 0.6175
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder19-ORG } }
+  }
+}
+<Group> occluder20 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder20-ORG {
+    <Vertex> 0 {
+      11.5843 -0.215275 11.5843
+    }
+    <Vertex> 1 {
+      11.5843 -0.215275 -11.5843
+    }
+    <Vertex> 2 {
+      -11.5843 -0.215275 -11.5843
+    }
+    <Vertex> 3 {
+      -11.5843 -0.215275 11.5843
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder20-ORG } }
+  }
+}
+<Group> occluder21 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder21-ORG {
+    <Vertex> 0 {
+      -3.93576 1.56418 0.5914
+    }
+    <Vertex> 1 {
+      3.94341 1.56418 0.5914
+    }
+    <Vertex> 2 {
+      3.94341 3.26834 0.5914
+    }
+    <Vertex> 3 {
+      -3.93576 3.26834 0.5914
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder21-ORG } }
+  }
+}
+<Group> occluder22 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder22-ORG {
+    <Vertex> 0 {
+      -0.694875 1.49418 2.11153
+    }
+    <Vertex> 1 {
+      -0.694875 5.26968 2.11153
+    }
+    <Vertex> 2 {
+      -0.694875 5.26968 0.21275
+    }
+    <Vertex> 3 {
+      -0.694875 1.49418 0.21275
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder22-ORG } }
+  }
+}
+<Group> occluder23 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder23-ORG {
+    <Vertex> 0 {
+      0.756062 1.49418 2.11153
+    }
+    <Vertex> 1 {
+      0.756062 5.26968 2.11153
+    }
+    <Vertex> 2 {
+      0.756062 5.26968 0.21275
+    }
+    <Vertex> 3 {
+      0.756062 1.49418 0.21275
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder23-ORG } }
+  }
+}
+<Group> occluder24 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder24-ORG {
+    <Vertex> 0 {
+      1.60244 5.2309 2.14179
+    }
+    <Vertex> 1 {
+      1.60244 7.52263 2.14179
+    }
+    <Vertex> 2 {
+      1.60244 7.52263 0.394334
+    }
+    <Vertex> 3 {
+      1.60244 5.2309 0.394334
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder24-ORG } }
+  }
+}
+<Group> occluder25 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder25-ORG {
+    <Vertex> 0 {
+      1.60244 5.2309 -0.763555
+    }
+    <Vertex> 1 {
+      1.60244 7.52263 -0.763555
+    }
+    <Vertex> 2 {
+      1.60244 7.52263 -2.42694
+    }
+    <Vertex> 3 {
+      1.60244 5.2309 -2.42694
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder25-ORG } }
+  }
+}
+<Group> occluder26 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder26-ORG {
+    <Vertex> 0 {
+      1.78944 5.2309 -2.34074
+    }
+    <Vertex> 1 {
+      1.78944 7.52263 -2.34074
+    }
+    <Vertex> 2 {
+      -2.28798 7.52263 -2.34074
+    }
+    <Vertex> 3 {
+      -2.28798 5.2309 -2.34074
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder26-ORG } }
+  }
+}
+<Group> occluder27 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder27-ORG {
+    <Vertex> 0 {
+      -2.15855 5.2309 1.03841
+    }
+    <Vertex> 1 {
+      -2.15855 7.52263 1.03841
+    }
+    <Vertex> 2 {
+      -2.15855 7.52263 -2.44292
+    }
+    <Vertex> 3 {
+      -2.15855 5.2309 -2.44292
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder27-ORG } }
+  }
+}
+<Group> occluder28 {
+  <Scalar> occluder { 1 }
+  <VertexPool> occluder28-ORG {
+    <Vertex> 0 {
+      -3.98717 1.54945 3.90197
+    }
+    <Vertex> 1 {
+      -3.98717 1.54945 -1.30625
+    }
+    <Vertex> 2 {
+      1.28595 1.54945 -1.30625
+    }
+    <Vertex> 3 {
+      1.28595 1.54945 3.90197
+    }
+  }
+  <Polygon> {
+    <VertexRef> { 0 1 2 3 <Ref> { occluder28-ORG } }
+  }
+}

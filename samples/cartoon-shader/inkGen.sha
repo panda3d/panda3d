@@ -1,0 +1,35 @@
+//Cg
+//
+//Cg profile arbvp1 arbfp1
+
+void vshader(float4 vtx_position : POSITION,
+             float4 vtx_texcoord0 : TEXCOORD0,
+             out float4 l_position : POSITION,
+             out float4 l_texcoord0 : TEXCOORD0,
+             uniform float4x4 mat_modelproj)
+{
+  l_position=mul(mat_modelproj, vtx_position);
+  l_texcoord0 = vtx_texcoord0;
+}
+
+void fshader(float4 l_texcoord0 : TEXCOORD0,
+             uniform sampler2D tex_0 : TEXUNIT0,
+             uniform float4 k_cutoff : C6,
+             uniform float4 k_separation : C7,
+             out float4 o_color : COLOR)
+{
+  float4 texcoord0 = l_texcoord0 + k_separation.xyzw;
+  float4 color0=tex2D(tex_0, float2(texcoord0.x, texcoord0.y));
+  float4 texcoord1 = l_texcoord0 - k_separation.xyzw;
+  float4 color1=tex2D(tex_0, float2(texcoord1.x, texcoord1.y));
+  float4 texcoord2 = l_texcoord0 + k_separation.wzyx;
+  float4 color2=tex2D(tex_0, float2(texcoord2.x, texcoord2.y));
+  float4 texcoord3 = l_texcoord0 - k_separation.wzyx;
+  float4 color3=tex2D(tex_0, float2(texcoord3.x, texcoord3.y));
+  float4 mx = max(color0,max(color1,max(color2,color3)));
+  float4 mn = min(color0,min(color1,min(color2,color3)));
+  float4 trigger = saturate(((mx-mn) * 3) - k_cutoff.x);
+  float thresh = dot(float3(trigger.x, trigger.y, trigger.z),float3(1,1,1));
+  float4 output_color = float4 (0, 0, 0, thresh);
+  o_color = output_color;
+}

@@ -1,0 +1,35 @@
+//Cg
+//
+//Cg profile arbvp1 arbfp1
+
+void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord0 : TEXCOORD0,
+             float4 vtx_normal : NORMAL,
+             float4 vtx_color : COLOR,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord0 : TEXCOORD0,
+             out float4 l_color : COLOR,   
+             out float3 l_normal : TEXCOORD1,
+             uniform float4x4 mat_modelproj,
+             uniform float4x4 itp_modelview)
+{
+  l_position=mul(mat_modelproj, vtx_position);
+  l_texcoord0 = vtx_texcoord0;
+  l_color = vtx_color;
+  l_normal = (float3)mul(itp_modelview, vtx_normal);
+}
+
+void fshader(float2 l_texcoord0: TEXCOORD0,
+             float4 l_color: COLOR,
+             float3 l_normal: TEXCOORD1,
+             uniform sampler2D tex_0 : TEXUNIT0,
+             out float4 o_color: COLOR0,
+             out float4 o_normal: COLOR1)
+{
+  l_normal = normalize(l_normal);
+  o_color = l_color * tex2D(tex_0, l_texcoord0);
+  o_normal.rgb = (l_normal * 0.5) + float3(0.5, 0.5, 0.5);
+  o_normal.a = o_color.a;
+}
+
+
