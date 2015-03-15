@@ -1596,10 +1596,10 @@ pull_spot(const LPoint4f &delta, float xc, float yc,
       float xd = ((float)xi - xc) / xr;
       float yd = ((float)yi - yc) / yr;
       float r2 = xd * xd + yd * yd;
-      if (r2 >= 1.0) {
+      if (r2 >= 1.0f) {
         continue;
       }
-      PN_float32 t = (PN_float32)pow(1.0 - sqrt(r2), exponent);
+      PN_float32 t = (PN_float32)cpow(1.0f - csqrt(r2), exponent);
 
       PN_float32 *f = &_table[(yi * _x_size + xi) * _num_channels];
       for (int ci = 0; ci < _num_channels; ++ci) {
@@ -1611,7 +1611,7 @@ pull_spot(const LPoint4f &delta, float xc, float yc,
 
   return count;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_tight_bounds
 //       Access: Published
@@ -1633,7 +1633,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
       if (!has_point(xi, yi)) {
         continue;
       }
-   
+
       const LPoint3f &point = get_point(xi, yi);
       if (!found_any) {
         min_point = point;

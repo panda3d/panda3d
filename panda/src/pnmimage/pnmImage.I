@@ -115,6 +115,9 @@ to_val(float input_value) const {
   case XE_scRGB:
   case XE_scRGB_alpha:
     return min(max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
+
+  default:
+    return 0;
   }
 }
 
@@ -156,6 +159,9 @@ from_val(xelval input_value) const {
   case XE_scRGB:
   case XE_scRGB_alpha:
     return (input_value - 4096) * (1.f / 8192.f);
+
+  default:
+    return 0.0f;
   }
 }
 
@@ -607,6 +613,9 @@ get_xel(int x, int y) const {
     return LRGBColorf((int)col.r - 4096,
                       (int)col.g - 4096,
                       (int)col.b - 4096) * (1.f / 8192.f);
+
+  default:
+    return LRGBColorf(0);
   }
 }
 
@@ -752,6 +761,9 @@ get_xel_a(int x, int y) const {
       color.componentwise_mult(scale);
       return color;
     }
+
+  default:
+    return LColorf(0);
   }
 }
 
