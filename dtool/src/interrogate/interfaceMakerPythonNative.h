@@ -80,6 +80,7 @@ private:
     WT_ternary_operator,
     WT_inplace_binary_operator,
     WT_inplace_ternary_operator,
+    WT_traverse,
   };
 
   // This enum is passed to the wrapper generation functions to indicate

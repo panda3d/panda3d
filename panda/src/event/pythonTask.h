@@ -20,6 +20,8 @@
 #include "asyncTask.h"
 
 #ifdef HAVE_PYTHON
+#include "py_panda.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PythonTask
 // Description : This class exists to allow association of a Python
@@ -46,6 +48,9 @@ PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
   PyObject *__getattr__(PyObject *attr) const;
+
+  int __traverse__(visitproc visit, void *arg);
+  int __clear__();
 
   INLINE void set_delay(PyObject *delay);
   INLINE PyObject *get_delay() const;

@@ -560,6 +560,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__traverse__") {
+    def._answer_location = "tp_traverse";
+    def._wrapper_type = WT_traverse;
+    return true;
+  }
+
+  if (method_name == "__clear__") {
+    def._answer_location = "tp_clear";
+    def._wrapper_type = WT_inquiry;
+    return true;
+  }
+
   if (remap->_type == FunctionRemap::T_typecast_method) {
     // A typecast operator.  Check for a supported low-level typecast type.
     if (TypeManager::is_bool(remap->_return_type->get_orig_type())) {
@@ -671,7 +683,9 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
 //
 ///////////////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
-write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const std::string &class_name, CPPType *ctype, bool is_const) {
+write_python_instance(ostream &out, int indent_level, const string &return_expr,
+                      bool owns_memory, const string &class_name,
+                      CPPType *ctype, bool is_const) {
   out << boolalpha;
 
   if (IsPandaTypedObject(ctype->as_struct_type())) {
@@ -2143,6 +2157,37 @@ write_module_class(ostream &out, Object *obj) {
         }
         break;
 
+      case WT_traverse:
+        // int __traverse__(PyObject *self, visitproc visit, void *arg)
+        // This is a low-level function.  Overloads are not supported.
+        {
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "//////////////////\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, visitproc visit, void *arg) {\n";
+          out << "  " << cClassName << " *local_this = NULL;\n";
+          out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
+          out << "  if (local_this == NULL) {\n";
+          out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
+          out << "    return -1;\n";
+          out << "  }\n\n";
+
+          // Find the remap.  There should be only one.
+          FunctionRemap *remap = func->_remaps.front();
+
+          vector_string params(1);
+          if (remap->_flags & FunctionRemap::F_explicit_self) {
+            params.push_back("self");
+          }
+          params.push_back("visit");
+          params.push_back("arg");
+
+          out << "  return " << remap->call_function(out, 2, false, "local_this", params) << ";\n";
+          out << "}\n\n";
+        }
+        break;
+
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
@@ -2585,15 +2630,20 @@ write_module_class(ostream &out, Object *obj) {
     out << "    0, // tp_as_buffer\n";
   }
 
+  string gcflag;
+  if (obj->_protocol_types & Object::PT_python_gc) {
+    gcflag = " | Py_TPFLAGS_HAVE_GC";
+  }
+
   // long tp_flags;
   if (has_local_getbuffer) {
     out << "#if PY_VERSION_HEX >= 0x02060000\n";
-    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES | Py_TPFLAGS_HAVE_NEWBUFFER,\n";
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES | Py_TPFLAGS_HAVE_NEWBUFFER" << gcflag << ",\n";
     out << "#else\n";
-    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES,\n";
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES" << gcflag << ",\n";
     out << "#endif\n";
   } else {
-    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES,\n";
+    out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES" << gcflag << ",\n";
   }
 
   // const char *tp_doc;
@@ -2668,7 +2718,11 @@ write_module_class(ostream &out, Object *obj) {
   // newfunc tp_new;
   out << "    Dtool_new_" << ClassName << ",\n";
   // freefunc tp_free;
-  out << "    PyObject_Del,\n";
+  if (obj->_protocol_types & Object::PT_python_gc) {
+    out << "    PyObject_GC_Del,\n";
+  } else {
+    out << "    PyObject_Del,\n";
+  }
   // inquiry tp_is_gc;
   out << "    0, // tp_is_gc\n";
   // PyObject *tp_bases;
@@ -4625,14 +4679,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         format_specifiers += "h";
         parameter_list += ", &" + param_name;
       }
-
-      extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
-      extra_param_check += " && " + param_name + "_long != NULL";
-      pexpr_string = "(" + type->get_local_name(&parser) + ")" +
-                     "PyLong_AsLongLong(" + param_name + "_long)";
-      extra_cleanup += "Py_XDECREF(" + param_name + "_long);";
-      expected_params += "long long";
-      ++num_params;
+      expected_params += "int";
+      only_pyobjects = false;
 
     } else if (TypeManager::is_unsigned_integer(type)) {
       if (args_type == AT_single_arg) {

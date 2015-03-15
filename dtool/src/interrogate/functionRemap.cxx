@@ -17,6 +17,7 @@
 #include "interrogate.h"
 #include "parameterRemap.h"
 #include "parameterRemapThis.h"
+#include "parameterRemapUnchanged.h"
 #include "interfaceMaker.h"
 #include "interrogateBuilder.h"
 
@@ -447,6 +448,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 
     for (pn = _first_true_parameter;
          pn < num_parameters; ++pn) {
+      nassertd(pn < _parameters.size()) break;
       call << separator;
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
       separator = ", ";
@@ -590,10 +592,16 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     if (param._remap == (ParameterRemap *)NULL) {
       // If we can't handle one of the parameter types, we can't call
       // the function.
-      //nout << "Can't handle parameter " << i << " of method " << *_cppfunc << "\n";
-      return false;
+      if (fname == "__traverse__") {
+        // Hack to record this even though we can't wrap visitproc.
+        param._remap = new ParameterRemapUnchanged(type);
+      } else {
+        //nout << "Can't handle parameter " << i << " of method " << *_cppfunc << "\n";
+        return false;
+      }
+    } else {
+      param._remap->set_default_value(params[i]->_initializer);
     }
-    param._remap->set_default_value(params[i]->_initializer);
 
     if (!param._remap->is_valid()) {
       nout << "Invalid remap for parameter " << i << " of method " << *_cppfunc << "\n";

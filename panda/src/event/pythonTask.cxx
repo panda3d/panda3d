@@ -54,14 +54,8 @@ PythonTask(PyObject *function, const string &name) :
   __dict__ = PyDict_New();
 
 #ifndef SIMPLE_THREADS
-  // Ensure that the Python threading system is initialized and ready
-  // to go.
+  // Ensure that the Python threading system is initialized and ready to go.
 #ifdef WITH_THREAD  // This symbol defined within Python.h
-
-#if PY_VERSION_HEX >= 0x03020000
-  Py_Initialize();
-#endif
-
   PyEval_InitThreads();
 #endif
 #endif
@@ -356,6 +350,38 @@ __getattr__(PyObject *attr) const {
   // PyDict_GetItem returns a borrowed reference.
   Py_INCREF(item);
   return item;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::__traverse__
+//       Access: Published
+//  Description: Called by Python to implement cycle detection.
+////////////////////////////////////////////////////////////////////
+int PythonTask::
+__traverse__(visitproc visit, void *arg) {
+  Py_VISIT(_function);
+  Py_VISIT(_args);
+  Py_VISIT(_upon_death);
+  Py_VISIT(_owner);
+  Py_VISIT(__dict__);
+  Py_VISIT(_generator);
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::__clear__
+//       Access: Published
+//  Description: Called by Python to implement cycle breaking.
+////////////////////////////////////////////////////////////////////
+int PythonTask::
+__clear__() {
+  Py_CLEAR(_function);
+  Py_CLEAR(_args);
+  Py_CLEAR(_upon_death);
+  Py_CLEAR(_owner);
+  Py_CLEAR(__dict__);
+  Py_CLEAR(_generator);
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

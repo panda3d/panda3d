@@ -141,6 +141,12 @@ check_protocols() {
   for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
     Function *func = (*fi);
     flags |= func->_flags;
+
+    if (func->_ifunc.get_name() == "__traverse__") {
+      // If we have a method named __traverse__, we implement Python's
+      // cyclic garbage collection protocol.
+      _protocol_types |= PT_python_gc;
+    }
   }
 
   if ((flags & (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) ==
