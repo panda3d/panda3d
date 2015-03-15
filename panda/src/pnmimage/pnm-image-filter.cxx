@@ -65,18 +65,18 @@
 // use shorts, and not very much to use chars.
 
 // To use double-precision floating point, 8 bytes: (strictly for the neurotic)
+/*
 typedef double WorkType;
 typedef double StoreType;
 static const WorkType source_max = 1.0;
 static const WorkType filter_max = 1.0;
-
-/*
-// To use single-precision floating point, 4 bytes:
-typedef double WorkType;
-typedef float StoreType;
-static const WorkType source_max = 1.0;
-static const WorkType filter_max = 1.0;
 */
+
+// To use single-precision floating point, 4 bytes:
+typedef float WorkType;
+typedef float StoreType;
+static const WorkType source_max = 1.0f;
+static const WorkType filter_max = 1.0f;
 
 /*
 // To use 16-bit integer arithmetic, 2 bytes:
@@ -94,8 +94,6 @@ static const WorkType source_max = 255;
 static const WorkType filter_max = 255;
 */
 
-
-
 // filter_row() filters a single row by convolving with a one-dimensional
 // kernel filter.  The kernel is defined by an array of weights in filter[],
 // where the ith element of filter corresponds to abs(d * scale), if scale>1.0,
@@ -109,17 +107,17 @@ static const WorkType filter_max = 255;
 static void
 filter_row(StoreType dest[], int dest_len,
            const StoreType source[], int source_len,
-           double scale,                    //  == dest_len / source_len
+           float scale,                    //  == dest_len / source_len
            const WorkType filter[],
-           double filter_width) {
+           float filter_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
   // fractional granularity.  Hence, we scale our filter index by
   // scale.  If we are compressing (scale < 1.0), we don't need to
   // fiddle with the filter index, so we leave it at one.
 
-  double iscale;
-  if (scale < 1.0) {
-    iscale = 1.0;
+  float iscale;
+  if (scale < 1.0f) {
+    iscale = 1.0f;
     filter_width /= scale;
   } else {
     iscale = scale;
@@ -127,7 +125,7 @@ filter_row(StoreType dest[], int dest_len,
 
   for (int dest_x = 0; dest_x < dest_len; dest_x++) {
     // The additional offset of 0.5 keeps the pixel centered.
-    double center = (dest_x + 0.5) / scale - 0.5;
+    float center = (dest_x + 0.5f) / scale - 0.5f;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
@@ -148,13 +146,13 @@ filter_row(StoreType dest[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x) + 0.5);
+      index = (int)(iscale * (center - source_x) + 0.5f);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center) + 0.5);
+      index = (int)(iscale * (source_x - center) + 0.5f);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
@@ -173,15 +171,15 @@ filter_row(StoreType dest[], int dest_len,
 static void
 filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
                   const StoreType source[], const StoreType source_weight[], int source_len,
-                  double scale,                    //  == dest_len / source_len
+                  float scale,                    //  == dest_len / source_len
                   const WorkType filter[],
-                  double filter_width) {
+                  float filter_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
   // fractional granularity.  Hence, we scale our filter index by
   // scale.  If we are compressing (scale < 1.0), we don't need to
   // fiddle with the filter index, so we leave it at one.
 
-  double iscale;
+  float iscale;
   if (scale < 1.0) {
     iscale = 1.0;
     filter_width /= scale;
@@ -191,7 +189,7 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
 
   for (int dest_x = 0; dest_x < dest_len; dest_x++) {
     // The additional offset of 0.5 keeps the pixel centered.
-    double center = (dest_x + 0.5) / scale - 0.5;
+    float center = (dest_x + 0.5f) / scale - 0.5f;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
@@ -212,13 +210,13 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x) + 0.5);
+      index = (int)(iscale * (center - source_x) + 0.5f);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center) + 0.5);
+      index = (int)(iscale * (source_x - center) + 0.5f);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
@@ -244,13 +242,13 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
 // 0..filter_max; the array must have enough elements to include all indices
 // corresponding to values in the range -filter_width to filter_width.
 
-typedef void FilterFunction(double scale, double width,
-                            WorkType *&filter, double &filter_width);
+typedef void FilterFunction(float scale, float width,
+                            WorkType *&filter, float &filter_width);
 
 static void
-box_filter_impl(double scale, double width,
-                WorkType *&filter, double &filter_width) {
-  double fscale;
+box_filter_impl(float scale, float width,
+                WorkType *&filter, float &filter_width) {
+  float fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of
     // the filter function to prevent dropping below the Nyquist rate.
@@ -274,9 +272,9 @@ box_filter_impl(double scale, double width,
 }
 
 static void
-gaussian_filter_impl(double scale, double width,
-                     WorkType *&filter, double &filter_width) {
-  double fscale;
+gaussian_filter_impl(float scale, float width,
+                     WorkType *&filter, float &filter_width) {
+  float fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of
     // the filter function to prevent dropping below the Nyquist rate.
@@ -290,7 +288,7 @@ gaussian_filter_impl(double scale, double width,
     fscale = scale;
   }
 
-  double sigma = width/2;
+  float sigma = width/2;
   filter_width = 3.0 * sigma;
   int actual_width = (int)cceil((filter_width + 1) * fscale);
 
@@ -301,10 +299,10 @@ gaussian_filter_impl(double scale, double width,
   // so we can ignore the y^2.)
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
-  double div = 2 * sigma * sigma;
+  float div = 2 * sigma * sigma;
 
   for (int i = 0; i < actual_width; i++) {
-    double x = i / fscale;
+    float x = i / fscale;
     filter[i] = (WorkType)(filter_max * exp(-x*x / div));
     // The highest value of the exp function in this range is always 1.0,
     // at index value 0.  Thus, we scale the whole range by filter_max,
@@ -485,7 +483,7 @@ gaussian_filter_impl(double scale, double width,
 // another.  Both images can be the same with no ill effects.
 static void
 filter_image(PNMImage &dest, const PNMImage &source,
-             double width, FilterFunction *make_filter) {
+             float width, FilterFunction *make_filter) {
 
   // We want to scale by the smallest destination axis first, for a
   // slight performance gain.
@@ -523,8 +521,6 @@ filter_image(PNMImage &dest, const PNMImage &source,
   }
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::box_filter_from
 //       Access: Public
@@ -535,7 +531,7 @@ filter_image(PNMImage &dest, const PNMImage &source,
 //               appropriate filter to perform the stretching.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-box_filter_from(double width, const PNMImage &copy) {
+box_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
@@ -549,7 +545,7 @@ box_filter_from(double width, const PNMImage &copy) {
 //               appropriate filter to perform the stretching.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-gaussian_filter_from(double width, const PNMImage &copy) {
+gaussian_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
 }
 
@@ -624,7 +620,7 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 // another.  Both images can be the same with no ill effects.
 static void
 filter_image(PfmFile &dest, const PfmFile &source,
-             double width, FilterFunction *make_filter) {
+             float width, FilterFunction *make_filter) {
   int num_channels = min(dest.get_num_channels(), source.get_num_channels());
 
   if (source.has_no_data_value()) {
@@ -654,8 +650,6 @@ filter_image(PfmFile &dest, const PfmFile &source,
   }
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::box_filter_from
 //       Access: Public
@@ -666,7 +660,7 @@ filter_image(PfmFile &dest, const PfmFile &source,
 //               appropriate filter to perform the stretching.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_from(double width, const PfmFile &copy) {
+box_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
@@ -680,99 +674,86 @@ box_filter_from(double width, const PfmFile &copy) {
 //               appropriate filter to perform the stretching.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-gaussian_filter_from(double width, const PfmFile &copy) {
+gaussian_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
 }
-
 
 //
 // The following functions are support for quick_box_filter().
 //
 
-INLINE void
-box_filter_xel(const PNMImage &image,
-               int x, int y, double x_contrib, double y_contrib,
-               double &red, double &grn, double &blu, double &alpha,
-               double &pixel_count) {
-  double contrib = x_contrib * y_contrib;
-  red += image.get_red_val(x, y) * contrib;
-  grn += image.get_green_val(x, y) * contrib;
-  blu += image.get_blue_val(x, y) * contrib;
-  if (image.has_alpha()) {
-    alpha += image.get_alpha_val(x, y) * contrib;
-  }
+static INLINE void
+box_filter_xel(const PNMImage &img,
+               int x, int y, float x_contrib, float y_contrib,
+               LColorf &color, float &pixel_count) {
 
+  float contrib = x_contrib * y_contrib;
+  color += img.get_xel_a(x, y) * contrib;
   pixel_count += contrib;
 }
 
-
-INLINE void
+static INLINE void
 box_filter_line(const PNMImage &image,
-                double x0, int y, double x1, double y_contrib,
-                double &red, double &grn, double &blu, double &alpha,
-                double &pixel_count) {
+                float x0, int y, float x1, float y_contrib,
+                LColorf &color, float &pixel_count) {
   int x = (int)x0;
   // Get the first (partial) xel
-  box_filter_xel(image, x, y, (double)(x+1)-x0, y_contrib,
-                 red, grn, blu, alpha, pixel_count);
+  box_filter_xel(image, x, y, (float)(x+1)-x0, y_contrib,
+                 color, pixel_count);
 
   int x_last = (int)x1;
   if (x < x_last) {
     x++;
     while (x < x_last) {
       // Get each consecutive (complete) xel
-      box_filter_xel(image, x, y, 1.0, y_contrib,
-                     red, grn, blu, alpha, pixel_count);
+      box_filter_xel(image, x, y, 1.0f, y_contrib,
+                     color, pixel_count);
       x++;
     }
 
     // Get the final (partial) xel
-    double x_contrib = x1 - (double)x_last;
-    if (x_contrib > 0.0001) {
+    float x_contrib = x1 - (float)x_last;
+    if (x_contrib > 0.0001f) {
       box_filter_xel(image, x, y, x_contrib, y_contrib,
-                     red, grn, blu, alpha, pixel_count);
+                     color, pixel_count);
     }
   }
 }
 
-static void
+static LColorf
 box_filter_region(const PNMImage &image,
-                  double x0, double y0, double x1, double y1,
-                  xel &result, xelval &alpha_result) {
-  double red = 0.0, grn = 0.0, blu = 0.0, alpha = 0.0;
-  double pixel_count = 0.0;
+                  float x0, float y0, float x1, float y1) {
+  LColorf color = LColorf::zero();
+  float pixel_count = 0.0f;
 
-  assert(y0 >=0 && y1 >=0);
+  assert(y0 >= 0 && y1 >= 0);
 
   int y = (int)y0;
   // Get the first (partial) row
-  box_filter_line(image, x0, y, x1, (double)(y+1)-y0,
-                  red, grn, blu, alpha, pixel_count);
+  box_filter_line(image, x0, y, x1, (float)(y+1)-y0,
+                  color, pixel_count);
 
   int y_last = (int)y1;
   if (y < y_last) {
     y++;
     while (y < y_last) {
       // Get each consecutive (complete) row
-      box_filter_line(image, x0, y, x1, 1.0,
-                      red, grn, blu, alpha, pixel_count);
+      box_filter_line(image, x0, y, x1, 1.0f,
+                      color, pixel_count);
       y++;
     }
 
     // Get the final (partial) row
-    double y_contrib = y1 - (double)y_last;
-    if (y_contrib > 0.0001) {
+    float y_contrib = y1 - (float)y_last;
+    if (y_contrib > 0.0001f) {
       box_filter_line(image, x0, y, x1, y_contrib,
-                      red, grn, blu, alpha, pixel_count);
+                      color, pixel_count);
     }
   }
 
-  PPM_ASSIGN(result,
-             (xelval)(red / pixel_count + 0.5),
-             (xelval)(grn / pixel_count + 0.5),
-             (xelval)(blu / pixel_count + 0.5));
-
-  alpha_result = (xelval)(alpha / pixel_count + 0.5);
+  //cerr << pixel_count << "\n";
+  color /= pixel_count;
+  return color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -798,11 +779,13 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
   int to_xoff = xborder / 2;
   int to_yoff = yborder / 2;
 
-  double from_x0, from_x1, from_y0, from_y1;
+  float from_x0, from_x1, from_y0, from_y1;
   int to_x, to_y;
 
-  double x_scale = (double)from_xs / (double)to_xs;
-  double y_scale = (double)from_ys / (double)to_ys;
+  float x_scale = (float)from_xs / (float)to_xs;
+  float y_scale = (float)from_ys / (float)to_ys;
+
+  LColorf color;
 
   from_y0 = max(0, -to_yoff) * y_scale;
   for (to_y = max(0, -to_yoff);
@@ -818,14 +801,10 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
-      xelval alpha_result;
-      box_filter_region(from,
-                        from_x0, from_y0, from_x1, from_y1,
-                        (*this)[to_yoff + to_y][to_xoff + to_x],
-                        alpha_result);
-      if (has_alpha()) {
-        set_alpha_val(to_xoff+to_x, to_yoff+to_y, alpha_result);
-      }
+      color = box_filter_region(from,
+                                from_x0, from_y0, from_x1, from_y1);
+
+      set_xel_a(to_xoff + to_x, to_yoff + to_y, color);
 
       from_x0 = from_x1;
     }

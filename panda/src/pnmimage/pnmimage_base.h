@@ -113,9 +113,9 @@ EXPCL_PANDA_PNMIMAGE int pm_writelittlelong(ostream *out, long l);
 
 // These ratios are used to compute the brightness of a colored pixel; they
 // define the relative contributions of each of the components.
-static const double lumin_red = 0.299;
-static const double lumin_grn = 0.587;
-static const double lumin_blu = 0.114;
+static const float lumin_red = 0.299f;
+static const float lumin_grn = 0.587f;
+static const float lumin_blu = 0.114f;
 
 
 #endif

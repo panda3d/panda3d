@@ -40,6 +40,8 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "samplerState.h"
+#include "pnmImage.h"
+#include "colorSpace.h"
 
 class PNMImage;
 class PfmFile;

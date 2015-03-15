@@ -19,7 +19,7 @@
 
 static void
 FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
-              double width, FilterFunction *make_filter, int channel) {
+              float width, FilterFunction *make_filter, int channel) {
   if (!dest.is_valid() || !source.is_valid()) {
     return;
   }
@@ -38,15 +38,15 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   }
 
   // First, scale the image in the A direction.
-  double scale;
+  float scale;
   StoreType *temp_source, *temp_dest;
 
-  scale = (double)dest.ASIZE() / (double)source.ASIZE();
+  scale = (float)dest.ASIZE() / (float)source.ASIZE();
   temp_source = (StoreType *)PANDA_MALLOC_ARRAY(source.ASIZE() * sizeof(StoreType));
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType));
 
   WorkType *filter;
-  double filter_width;
+  float filter_width;
 
   make_filter(scale, width, filter, filter_width);
 
@@ -70,7 +70,7 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   PANDA_FREE_ARRAY(filter);
 
   // Now, scale the image in the B direction.
-  scale = (double)dest.BSIZE() / (double)source.BSIZE();
+  scale = (float)dest.BSIZE() / (float)source.BSIZE();
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
   make_filter(scale, width, filter, filter_width);
@@ -82,7 +82,7 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                filter, filter_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
-      dest.SETVAL(a, b, channel, (double)temp_dest[b]/(double)source_max);
+      dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)source_max);
     }
   }
 

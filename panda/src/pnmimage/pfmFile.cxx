@@ -346,7 +346,7 @@ load(const PNMImage &pnmimage) {
       for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
         for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
           PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
-          LRGBColord xel = pnmimage.get_xel(xi, yi);
+          LRGBColorf xel = pnmimage.get_xel(xi, yi);
           point[0] = xel[0];
           point[1] = xel[1];
           point[2] = xel[2];
@@ -360,11 +360,11 @@ load(const PNMImage &pnmimage) {
       for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
         for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
           PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
-          LRGBColord xel = pnmimage.get_xel(xi, yi);
+          LColorf xel = pnmimage.get_xel_a(xi, yi);
           point[0] = xel[0];
           point[1] = xel[1];
           point[2] = xel[2];
-          point[3] = pnmimage.get_alpha(xi, yi);
+          point[3] = xel[3];
         }
       }
     }
@@ -431,8 +431,7 @@ store(PNMImage &pnmimage) const {
       for (int yi = 0; yi < get_y_size(); ++yi) {
         for (int xi = 0; xi < get_x_size(); ++xi) {
           const LPoint4f &point = get_point4(xi, yi);
-          pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
-          pnmimage.set_alpha(xi, yi, point[3]);
+          pnmimage.set_xel_a(xi, yi, point[0], point[1], point[2], point[3]);
         }
       }
     }
@@ -1584,8 +1583,8 @@ clear_to_texcoords(int x_size, int y_size) {
 //               the number of points affected.
 ////////////////////////////////////////////////////////////////////
 int PfmFile::
-pull_spot(const LPoint4f &delta, double xc, double yc, 
-          double xr, double yr, double exponent) {
+pull_spot(const LPoint4f &delta, float xc, float yc,
+          float xr, float yr, float exponent) {
   int minx = max((int)cceil(xc - xr), 0);
   int maxx = min((int)cfloor(xc + xr), _x_size - 1);
   int miny = max((int)cceil(yc - yr), 0);
@@ -1594,9 +1593,9 @@ pull_spot(const LPoint4f &delta, double xc, double yc,
   int count = 0;
   for (int yi = miny; yi <= maxy; ++yi) {
     for (int xi = minx; xi <= maxx; ++xi) {
-      double xd = ((double)xi - xc) / xr;
-      double yd = ((double)yi - yc) / yr;
-      double r2 = xd * xd + yd * yd;
+      float xd = ((float)xi - xc) / xr;
+      float yd = ((float)yi - yc) / yr;
+      float r2 = xd * xd + yd * yd;
       if (r2 >= 1.0) {
         continue;
       }
@@ -1955,7 +1954,7 @@ copy_sub_image(const PfmFile &copy, int xto, int yto,
 void PfmFile::
 add_sub_image(const PfmFile &copy, int xto, int yto,
               int xfrom, int yfrom, int x_size, int y_size,
-              double pixel_scale) {
+              float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
@@ -2022,7 +2021,7 @@ add_sub_image(const PfmFile &copy, int xto, int yto,
 void PfmFile::
 mult_sub_image(const PfmFile &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size,
-               double pixel_scale) {
+               float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
@@ -2076,7 +2075,7 @@ mult_sub_image(const PfmFile &copy, int xto, int yto,
       }
     }
     break;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2084,13 +2083,13 @@ mult_sub_image(const PfmFile &copy, int xto, int yto,
 //       Access: Published
 //  Description: Behaves like copy_sub_image(), except the copy pixels
 //               are divided into the pixels of the destination, after
-//               scaling by the specified pixel_scale. 
+//               scaling by the specified pixel_scale.
 //               dest(x, y) = dest(x, y) / (copy(x, y) * pixel_scale).
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 divide_sub_image(const PfmFile &copy, int xto, int yto,
                  int xfrom, int yfrom, int x_size, int y_size,
-                 double pixel_scale) {
+                 float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
@@ -2156,7 +2155,7 @@ divide_sub_image(const PfmFile &copy, int xto, int yto,
       }
     }
     break;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2166,7 +2165,7 @@ divide_sub_image(const PfmFile &copy, int xto, int yto,
 //               a constant floating-point multiplier value.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-operator *= (double multiplier) {
+operator *= (float multiplier) {
   nassertv(is_valid());
 
   switch (_num_channels) {

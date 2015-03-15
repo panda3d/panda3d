@@ -19,7 +19,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMBrush::
-PNMBrush(double xc, double yc) : _xc(xc), _yc(yc) {
+PNMBrush(float xc, float yc) : _xc(xc), _yc(yc) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ PNMBrush(double xc, double yc) : _xc(xc), _yc(yc) {
 //               (1.0, 1.0); for a centered three-pixel brush, this
 //               will be (1.5, 1.5); and so on.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMBrush::
+INLINE float PNMBrush::
 get_xc() const {
   return _xc;
 }
@@ -45,7 +45,7 @@ get_xc() const {
 //               (1.0, 1.0); for a centered three-pixel brush, this
 //               will be (1.5, 1.5); and so on.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMBrush::
+INLINE float PNMBrush::
 get_yc() const {
   return _yc;
 }

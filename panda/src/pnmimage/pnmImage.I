@@ -32,11 +32,11 @@ PNMImage() {
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
-         PNMFileType *type) {
+         PNMFileType *type, ColorSpace color_space) {
   _array = NULL;
   _alpha = NULL;
 
-  clear(x_size, y_size, num_channels, maxval, type);
+  clear(x_size, y_size, num_channels, maxval, type, color_space);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,6 @@ INLINE PNMImage::
   clear();
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clamp_val
 //       Access: Published
@@ -89,23 +88,86 @@ clamp_val(int input_value) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::to_val
 //       Access: Published
-//  Description: A handy function to scale values from [0..1] to
-//               [0..get_maxval()].
+//  Description: A handy function to scale non-alpha values from
+//               [0..1] to [0..get_maxval()].  Do not use this for
+//               alpha values, see to_alpha_val.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
-to_val(double input_value) const {
+to_val(float input_value) const {
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    return clamp_val((int)(input_value * get_maxval() + 0.5f));
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    return clamp_val((int)
+      (encode_sRGB_float(input_value) * get_maxval() + 0.5f));
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+    return encode_sRGB_uchar(input_value);
+
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    return encode_sRGB_uchar_sse2(input_value);
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    return min(max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::to_alpha_val
+//       Access: Published
+//  Description: A handy function to scale alpha values from [0..1]
+//               to [0..get_maxval()].
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImage::
+to_alpha_val(float input_value) const {
   return clamp_val((int)(input_value * get_maxval() + 0.5));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::from_val
 //       Access: Published
-//  Description: A handy function to scale values from
+//  Description: A handy function to scale non-alpha values from
+//               [0..get_maxval()] to [0..1].  Do not use this for
+//               alpha values, see from_alpha_val.
+////////////////////////////////////////////////////////////////////
+INLINE float PNMImage::
+from_val(xelval input_value) const {
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    return (float)input_value * _inv_maxval;
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    return decode_sRGB_float((float)input_value * _inv_maxval);
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    return decode_sRGB_float((unsigned char)input_value);
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    return (input_value - 4096) * (1.f / 8192.f);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::from_alpha_val
+//       Access: Published
+//  Description: A handy function to scale alpha values from
 //               [0..get_maxval()] to [0..1].
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
-from_val(xelval input_value) const {
-  return (double)input_value / (double)get_maxval();
+INLINE float PNMImage::
+from_alpha_val(xelval input_value) const {
+  return (float)input_value * _inv_maxval;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +177,7 @@ from_val(xelval input_value) const {
 //               the given color.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-fill(double red, double green, double blue) {
+fill(float red, float green, float blue) {
   fill_val(to_val(red), to_val(green), to_val(blue));
 }
 
@@ -126,7 +188,7 @@ fill(double red, double green, double blue) {
 //               the given grayscale level.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-fill(double gray) {
+fill(float gray) {
   fill(gray, gray, gray);
 }
 
@@ -147,8 +209,8 @@ fill_val(xelval gray) {
 //  Description: Sets the entire alpha channel to the given level.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-alpha_fill(double alpha) {
-  alpha_fill_val(to_val(alpha));
+alpha_fill(float alpha) {
+  alpha_fill_val(to_alpha_val(alpha));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,6 +278,17 @@ get_read_x_size() const {
 INLINE int PNMImage::
 get_read_y_size() const {
   return _has_read_size ? _read_y_size : get_y_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_color_space
+//       Access: Published
+//  Description: Returns the color space in which the image is
+//               encoded.
+////////////////////////////////////////////////////////////////////
+INLINE ColorSpace PNMImage::
+get_color_space() const {
+  return _color_space;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +379,10 @@ get_xel_val(int x, int y) const {
 //     Function: PNMImage::set_xel_val
 //       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
-//               component is in the range 0..maxval.
+//               component is in the range 0..maxval, encoded in
+//               the configured color space.  See set_xel if you
+//               instead have a linearized and normalized
+//               floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, const xel &value) {
@@ -318,7 +394,10 @@ set_xel_val(int x, int y, const xel &value) {
 //     Function: PNMImage::set_xel_val
 //       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
-//               component is in the range 0..maxval.
+//               component is in the range 0..maxval, encoded in
+//               the configured color space.  See set_xel if you
+//               instead have a linearized and normalized
+//               floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, xelval r, xelval g, xelval b) {
@@ -331,7 +410,10 @@ set_xel_val(int x, int y, xelval r, xelval g, xelval b) {
 //       Access: Published
 //  Description: Changes all three color components at the indicated
 //               pixel to the same value.  The value is in the range
-//               0..maxval.
+//               component is in the range 0..maxval, encoded in
+//               the configured color space.  See set_xel if you
+//               instead have a linearized and normalized
+//               floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_xel_val(int x, int y, xelval gray) {
@@ -343,7 +425,8 @@ set_xel_val(int x, int y, xelval gray) {
 //     Function: PNMImage::get_red_val
 //       Access: Published
 //  Description: Returns the red component color at the indicated
-//               pixel.  The value returned is in the range 0..maxval.
+//               pixel.  The value returned is in the range 0..maxval
+//               and encoded in the configured color space.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_red_val(int x, int y) const {
@@ -354,7 +437,8 @@ get_red_val(int x, int y) const {
 //     Function: PNMImage::get_green_val
 //       Access: Published
 //  Description: Returns the green component color at the indicated
-//               pixel.  The value returned is in the range 0..maxval.
+//               pixel.  The value returned is in the range 0..maxval
+//               and encoded in the configured color space.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_green_val(int x, int y) const {
@@ -365,7 +449,8 @@ get_green_val(int x, int y) const {
 //     Function: PNMImage::get_blue_val
 //       Access: Published
 //  Description: Returns the blue component color at the indicated
-//               pixel.  The value returned is in the range 0..maxval.
+//               pixel.  The value returned is in the range 0..maxval
+//               and encoded in the configured color space.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_blue_val(int x, int y) const {
@@ -379,8 +464,9 @@ get_blue_val(int x, int y) const {
 //               pixel.  This only has a meaningful value for
 //               grayscale images; for other image types, this returns
 //               the value of the blue channel only.  However, also
-//               see the get_bright() function.  The value returned is
-//               in the range 0..maxval.
+//               see the get_bright() function.
+//               The value returned is in the range 0..maxval and
+//               encoded in the configured color space.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_gray_val(int x, int y) const {
@@ -393,7 +479,7 @@ get_gray_val(int x, int y) const {
 //  Description: Returns the alpha component color at the indicated
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value returned is in the
-//               range 0..maxval.
+//               range 0..maxval and always linear.
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImage::
 get_alpha_val(int x, int y) const {
@@ -406,7 +492,9 @@ get_alpha_val(int x, int y) const {
 //       Access: Published
 //  Description: Sets the red component color only at the indicated
 //               pixel.  The value given should be in the range
-//               0..maxval.
+//               0..maxval, encoded in the configured color space.
+//               See set_red if you instead have a linearized and
+//               normalized floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_red_val(int x, int y, xelval r) {
@@ -419,7 +507,9 @@ set_red_val(int x, int y, xelval r) {
 //       Access: Published
 //  Description: Sets the green component color only at the indicated
 //               pixel.  The value given should be in the range
-//               0..maxval.
+//               0..maxval, encoded in the configured color space.
+//               See set_green if you instead have a linearized and
+//               normalized floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_green_val(int x, int y, xelval g) {
@@ -432,7 +522,9 @@ set_green_val(int x, int y, xelval g) {
 //       Access: Published
 //  Description: Sets the blue component color only at the indicated
 //               pixel.  The value given should be in the range
-//               0..maxval.
+//               0..maxval, encoded in the configured color space.
+//               See set_blue if you instead have a linearized and
+//               normalized floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_blue_val(int x, int y, xelval b) {
@@ -450,7 +542,9 @@ set_blue_val(int x, int y, xelval b) {
 //               which can set all the component colors to the same
 //               grayscale level, and hence works correctly both for
 //               grayscale and color images.  The value given should
-//               be in the range 0..maxval.
+//               be in the range 0..maxval, encoded in the configured
+//               color space.  See set_gray if you instead have a
+//               linearized normalized floating-point value.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_gray_val(int x, int y, xelval gray) {
@@ -465,6 +559,9 @@ set_gray_val(int x, int y, xelval gray) {
 //               pixel.  It is an error to call this unless
 //               has_alpha() is true.  The value given should be in
 //               the range 0..maxval.
+//
+//               This value is always linearly encoded, even if the
+//               image is set to the sRGB color space.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 set_alpha_val(int x, int y, xelval a) {
@@ -476,67 +573,185 @@ set_alpha_val(int x, int y, xelval a) {
 //     Function: PNMImage::get_xel
 //       Access: Published
 //  Description: Returns the RGB color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE LRGBColord PNMImage::
+INLINE LRGBColorf PNMImage::
 get_xel(int x, int y) const {
-  return LRGBColord(from_val(get_red_val(x, y)),
-                   from_val(get_green_val(x, y)),
-                   from_val(get_blue_val(x, y)));
+  nassertr(x >= 0 && x < _x_size && y >= 0 && y < _y_size, LRGBColorf::zero());
+
+  const xel &col = row(y)[x];
+
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    return LRGBColorf(col.r, col.g, col.b) * _inv_maxval;
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    return LRGBColorf(
+      decode_sRGB_float(col.r * _inv_maxval),
+      decode_sRGB_float(col.g * _inv_maxval),
+      decode_sRGB_float(col.b * _inv_maxval));
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    return LRGBColorf(
+      decode_sRGB_float((unsigned char)col.r),
+      decode_sRGB_float((unsigned char)col.g),
+      decode_sRGB_float((unsigned char)col.b));
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    return LRGBColorf((int)col.r - 4096,
+                      (int)col.g - 4096,
+                      (int)col.b - 4096) * (1.f / 8192.f);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
 //       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_xel(int x, int y, const LRGBColord &value) {
-  set_xel_val(x, y, to_val(value[0]), to_val(value[1]), to_val(value[2]));
+set_xel(int x, int y, const LRGBColorf &value) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
+
+  xel &col = row(y)[x];
+
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    {
+      LRGBColorf scaled = value * get_maxval() + 0.5f;
+      col.r = clamp_val((int)scaled[0]);
+      col.g = clamp_val((int)scaled[1]);
+      col.b = clamp_val((int)scaled[2]);
+    }
+    break;
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    col.r = clamp_val((int)
+      (encode_sRGB_float(value[0]) * get_maxval() + 0.5f));
+    col.g = clamp_val((int)
+      (encode_sRGB_float(value[1]) * get_maxval() + 0.5f));
+    col.b = clamp_val((int)
+      (encode_sRGB_float(value[2]) * get_maxval() + 0.5f));
+    break;
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+    encode_sRGB_uchar(LColorf(value, 0.0f), col);
+    break;
+
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    encode_sRGB_uchar_sse2(LColorf(value, 0.0f), col);
+    break;
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    {
+      LRGBColorf scaled = value * 8192.f + 4096.5f;
+      col.r = min(max(0, (int)scaled[0]), 65535);
+      col.g = min(max(0, (int)scaled[1]), 65535);
+      col.b = min(max(0, (int)scaled[2]), 65535);
+    }
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
 //       Access: Published
 //  Description: Changes the RGB color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_xel(int x, int y, double r, double g, double b) {
-  set_xel_val(x, y, to_val(r), to_val(g), to_val(b));
+set_xel(int x, int y, float r, float g, float b) {
+  set_xel(x, y, LRGBColorf(r, g, b));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_xel
 //       Access: Published
 //  Description: Changes all three color components at the indicated
-//               pixel to the same value.  The value is a double in
-//               the range 0..1.
+//               pixel to the same value.  The value is a linearized
+//               float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_xel(int x, int y, double gray) {
-  set_xel_val(x, y, to_val(gray), to_val(gray), to_val(gray));
+set_xel(int x, int y, float gray) {
+  xelval val = to_val(gray);
+  set_xel_val(x, y, val);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_xel_a
 //       Access: Published
 //  Description: Returns the RGBA color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE LColord PNMImage::
+INLINE LColorf PNMImage::
 get_xel_a(int x, int y) const {
-  if (has_alpha()) {
-    return LColord(from_val(get_red_val(x, y)),
-                  from_val(get_green_val(x, y)),
-                  from_val(get_blue_val(x, y)),
-                  from_val(get_alpha_val(x, y)));
-  } else {
-    return LColord(from_val(get_red_val(x, y)),
-                  from_val(get_green_val(x, y)),
-                  from_val(get_blue_val(x, y)),
-                  0.0);
+  const xel &col = row(y)[x];
+
+  switch (_xel_encoding) {
+  case XE_generic:
+    return LColorf(col.r, col.g, col.b, 0.0f) * _inv_maxval;
+
+  case XE_generic_alpha:
+    return LColorf(col.r, col.g, col.b, alpha_row(y)[x]) * _inv_maxval;
+
+  case XE_generic_sRGB:
+    return LColorf(
+      decode_sRGB_float(col.r * _inv_maxval),
+      decode_sRGB_float(col.g * _inv_maxval),
+      decode_sRGB_float(col.b * _inv_maxval),
+      0.0f);
+
+  case XE_generic_sRGB_alpha:
+    return LColorf(
+      decode_sRGB_float(col.r * _inv_maxval),
+      decode_sRGB_float(col.g * _inv_maxval),
+      decode_sRGB_float(col.b * _inv_maxval),
+      alpha_row(y)[x] * _inv_maxval);
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_sse2:
+    return LColorf(
+      decode_sRGB_float((unsigned char)col.r),
+      decode_sRGB_float((unsigned char)col.g),
+      decode_sRGB_float((unsigned char)col.b),
+      0.0f);
+
+  case XE_uchar_sRGB_alpha:
+  case XE_uchar_sRGB_alpha_sse2:
+    return LColorf(
+      decode_sRGB_float((unsigned char)col.r),
+      decode_sRGB_float((unsigned char)col.g),
+      decode_sRGB_float((unsigned char)col.b),
+      alpha_row(y)[x] * (1.f / 255.f));
+
+  case XE_scRGB:
+    return LColorf((int)col.r - 4096,
+                   (int)col.g - 4096,
+                   (int)col.b - 4096,
+                   0) * (1.f / 8192.f);
+
+  case XE_scRGB_alpha:
+    {
+      static const LColorf scale(1.f / 8192.f, 1.f / 8192.f, 1.f / 8192.f, 1.f / 65535.f);
+      LColorf color((int)col.r - 4096,
+                    (int)col.g - 4096,
+                    (int)col.b - 4096,
+                    alpha_row(y)[x]);
+      color.componentwise_mult(scale);
+      return color;
+    }
   }
 }
 
@@ -544,13 +759,87 @@ get_xel_a(int x, int y) const {
 //     Function: PNMImage::set_xel_a
 //       Access: Published
 //  Description: Changes the RGBA color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_xel_a(int x, int y, const LColord &value) {
-  set_xel_val(x, y, to_val(value[0]), to_val(value[1]), to_val(value[2]));
-  if (has_alpha()) {
-    set_alpha_val(x, y, to_val(value[3]));
+set_xel_a(int x, int y, const LColorf &value) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
+
+  xel &col = row(y)[x];
+
+  switch (_xel_encoding) {
+  case XE_generic:
+    {
+      LColorf scaled = value * get_maxval() + 0.5f;
+      col.r = clamp_val((int)scaled[0]);
+      col.g = clamp_val((int)scaled[1]);
+      col.b = clamp_val((int)scaled[2]);
+    }
+    break;
+
+  case XE_generic_alpha:
+    {
+      LColorf scaled = value * get_maxval() + 0.5f;
+      col.r = clamp_val((int)scaled[0]);
+      col.g = clamp_val((int)scaled[1]);
+      col.b = clamp_val((int)scaled[2]);
+      alpha_row(y)[x] = clamp_val((int)scaled[3]);
+    }
+    break;
+
+  case XE_generic_sRGB:
+    col.r = clamp_val((int)
+      (encode_sRGB_float(value[0]) * get_maxval() + 0.5f));
+    col.g = clamp_val((int)
+      (encode_sRGB_float(value[1]) * get_maxval() + 0.5f));
+    col.b = clamp_val((int)
+      (encode_sRGB_float(value[2]) * get_maxval() + 0.5f));
+    break;
+
+  case XE_generic_sRGB_alpha:
+    col.r = clamp_val((int)
+      (encode_sRGB_float(value[0]) * get_maxval() + 0.5f));
+    col.g = clamp_val((int)
+      (encode_sRGB_float(value[1]) * get_maxval() + 0.5f));
+    col.b = clamp_val((int)
+      (encode_sRGB_float(value[2]) * get_maxval() + 0.5f));
+    alpha_row(y)[x] = clamp_val((int)(value[3] * get_maxval() + 0.5f));
+    break;
+
+  case XE_uchar_sRGB:
+    encode_sRGB_uchar(value, col);
+    break;
+
+  case XE_uchar_sRGB_alpha:
+    encode_sRGB_uchar(value, col, alpha_row(y)[x]);
+    break;
+
+  case XE_uchar_sRGB_sse2:
+    encode_sRGB_uchar_sse2(value, col);
+    break;
+
+  case XE_uchar_sRGB_alpha_sse2:
+    encode_sRGB_uchar_sse2(value, col, alpha_row(y)[x]);
+    break;
+
+  case XE_scRGB:
+    {
+      LColorf scaled = value * 8192.0f + 4096.5f;
+      col.r = min(max(0, (int)scaled[0]), 65535);
+      col.g = min(max(0, (int)scaled[1]), 65535);
+      col.b = min(max(0, (int)scaled[2]), 65535);
+    }
+    break;
+
+  case XE_scRGB_alpha:
+    {
+      LColorf scaled = value * 8192.0f + 4096.5f;
+      col.r = min(max(0, (int)scaled[0]), 65535);
+      col.g = min(max(0, (int)scaled[1]), 65535);
+      col.b = min(max(0, (int)scaled[2]), 65535);
+      alpha_row(y)[x] = min(max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
+    }
+    break;
   }
 }
 
@@ -558,24 +847,21 @@ set_xel_a(int x, int y, const LColord &value) {
 //     Function: PNMImage::set_xel_a
 //       Access: Published
 //  Description: Changes the RGBA color at the indicated pixel.  Each
-//               component is a double in the range 0..1.
+//               component is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_xel_a(int x, int y, double r, double g, double b, double a) {
-  set_xel_val(x, y, to_val(r), to_val(g), to_val(b));
-  if (has_alpha()) {
-    set_alpha_val(x, y, to_val(a));
-  }
+set_xel_a(int x, int y, float r, float g, float b, float a) {
+  set_xel_a(x, y, LColorf(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_red
 //       Access: Published
 //  Description: Returns the red component color at the indicated
-//               pixel.  The value returned is a double in the range
-//               0..1.
+//               pixel.  The value returned is a linearized float
+//               in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_red(int x, int y) const {
   return from_val(get_red_val(x, y));
 }
@@ -584,10 +870,10 @@ get_red(int x, int y) const {
 //     Function: PNMImage::get_green
 //       Access: Published
 //  Description: Returns the green component color at the indicated
-//               pixel.  The value returned is a double in the range
-//               0..1.
+//               pixel.  The value returned is a linearized float
+//               in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_green(int x, int y) const {
   return from_val(get_green_val(x, y));
 }
@@ -596,10 +882,10 @@ get_green(int x, int y) const {
 //     Function: PNMImage::get_blue
 //       Access: Published
 //  Description: Returns the blue component color at the indicated
-//               pixel.  The value returned is a double in the range
-//               0..1.
+//               pixel.  The value returned is a linearized float
+//               in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_blue(int x, int y) const {
   return from_val(get_blue_val(x, y));
 }
@@ -611,10 +897,10 @@ get_blue(int x, int y) const {
 //               pixel.  This only has a meaningful value for
 //               grayscale images; for other image types, this returns
 //               the value of the blue channel only.  However, also
-//               see the get_bright() function.  The value returned is
-//               a double in the range 0..1.
+//               see the get_bright() function.  The value returned
+//               is a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_gray(int x, int y) const {
   return from_val(get_gray_val(x, y));
 }
@@ -624,23 +910,23 @@ get_gray(int x, int y) const {
 //       Access: Published
 //  Description: Returns the alpha component color at the indicated
 //               pixel.  It is an error to call this unless
-//               has_alpha() is true.  The value returned is a double
+//               has_alpha() is true.  The value returned is a float
 //               in the range 0..1.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_alpha(int x, int y) const {
-  return from_val(get_alpha_val(x, y));
+  return from_alpha_val(get_alpha_val(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_red
 //       Access: Published
 //  Description: Sets the red component color only at the indicated
-//               pixel.  The value given should be a double in the
-//               range 0..1.
+//               pixel.  The value given should be a linearized
+//               float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_red(int x, int y, double r) {
+set_red(int x, int y, float r) {
   set_red_val(x, y, to_val(r));
 }
 
@@ -648,24 +934,24 @@ set_red(int x, int y, double r) {
 //     Function: PNMImage::set_green
 //       Access: Published
 //  Description: Sets the green component color only at the indicated
-//               pixel.  The value given should be a double in the
-//               range 0..1.
+//               pixel.  The value given should be a linearized
+//               float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_green(int x, int y, double r) {
-  set_green_val(x, y, to_val(r));
+set_green(int x, int y, float g) {
+  set_green_val(x, y, to_val(g));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_blue
 //       Access: Published
 //  Description: Sets the blue component color only at the indicated
-//               pixel.  The value given should be a double in the
-//               range 0..1.
+//               pixel.  The value given should be a linearized
+//               float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_blue(int x, int y, double r) {
-  set_blue_val(x, y, to_val(r));
+set_blue(int x, int y, float b) {
+  set_blue_val(x, y, to_val(b));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -678,11 +964,11 @@ set_blue(int x, int y, double r) {
 //               can set all the component colors to the same
 //               grayscale level, and hence works correctly both for
 //               grayscale and color images.  The value given should
-//               be a double in the range 0..1.
+//               be a linearized float in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_gray(int x, int y, double r) {
-  set_gray_val(x, y, to_val(r));
+set_gray(int x, int y, float gray) {
+  set_gray_val(x, y, to_val(gray));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -694,51 +980,19 @@ set_gray(int x, int y, double r) {
 //               the range 0..1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-set_alpha(int x, int y, double r) {
-  set_alpha_val(x, y, to_val(r));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_channel
-//       Access: Published
-//  Description: Returns the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               accessing the component values directly by named
-//               methods.  The value returned is a double in the range
-//               0..1.
-////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
-get_channel(int x, int y, int channel) const {
-  return from_val(get_channel_val(x, y, channel));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_channel_val
-//       Access: Published
-//  Description: Sets the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               setting the component values directly by named
-//               methods.  The value given should be a double in the
-//               range 0..1.
-////////////////////////////////////////////////////////////////////
-INLINE void PNMImage::
-set_channel(int x, int y, int channel, double value) {
-  set_channel_val(x, y, channel, to_val(value));
+set_alpha(int x, int y, float a) {
+  set_alpha_val(x, y, to_alpha_val(a));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_bright
 //       Access: Published
 //  Description: Returns the linear brightness of the given xel, as a
-//               double in the range 0..1.  This flavor of
+//               linearized float in the range 0..1.  This flavor of
 //               get_bright() returns the correct grayscale brightness
 //               level for both full-color and grayscale images.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
+INLINE float PNMImage::
 get_bright(int x, int y) const {
   return get_bright(x, y, _default_rc, _default_gc, _default_bc);
 }
@@ -751,11 +1005,9 @@ get_bright(int x, int y) const {
 //               for the RGB color at the indicated pixel, based on
 //               the supplied weights for each component.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
-get_bright(int x, int y, double rc, double gc, double bc) const {
-  return from_val((int)(rc * get_red_val(x, y) +
-                        gc * get_green_val(x, y) +
-                        bc * get_blue_val(x, y)));
+INLINE float PNMImage::
+get_bright(int x, int y, float rc, float gc, float bc) const {
+  return get_xel(x, y).dot(LVecBase3f(rc, gc, bc));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -766,12 +1018,9 @@ get_bright(int x, int y, double rc, double gc, double bc) const {
 //               value for the RGBA color at the indicated pixel,
 //               based on the supplied weights for each component.
 ////////////////////////////////////////////////////////////////////
-INLINE double PNMImage::
-get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
-  return from_val((int)(rc * get_red_val(x, y) +
-                        gc * get_green_val(x, y) +
-                        bc * get_blue_val(x, y) +
-                        ac * get_alpha_val(x, y)));
+INLINE float PNMImage::
+get_bright(int x, int y, float rc, float gc, float bc, float ac) const {
+  return get_xel_a(x, y).dot(LVecBase4f(rc, gc, bc, ac));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -784,7 +1033,7 @@ get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
 //               alpha of 0.0 is fully transparent and does nothing.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-blend(int x, int y, const LRGBColord &val, double alpha) {
+blend(int x, int y, const LRGBColorf &val, float alpha) {
   blend(x, y, val[0], val[1], val[2], alpha);
 }
 
@@ -818,7 +1067,7 @@ operator [] (int y) const {
 //               the effect is that of a blur operation.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-box_filter(double radius) {
+box_filter(float radius) {
   box_filter_from(radius, *this);
 }
 
@@ -830,7 +1079,7 @@ box_filter(double radius) {
 //               the effect is that of a blur operation.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-gaussian_filter(double radius) {
+gaussian_filter(float radius) {
   gaussian_filter_from(radius, *this);
 }
 
@@ -843,7 +1092,7 @@ gaussian_filter(double radius) {
 //               channels.  Does not affect the alpha channel.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-gamma_correct(double from_gamma, double to_gamma) {
+gamma_correct(float from_gamma, float to_gamma) {
   apply_exponent(from_gamma / to_gamma);
 }
 
@@ -856,7 +1105,7 @@ gamma_correct(double from_gamma, double to_gamma) {
 //               channel.  Does not affect the RGB channels.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-gamma_correct_alpha(double from_gamma, double to_gamma) {
+gamma_correct_alpha(float from_gamma, float to_gamma) {
   apply_exponent(1.0, from_gamma / to_gamma);
 }
 
@@ -868,7 +1117,7 @@ gamma_correct_alpha(double from_gamma, double to_gamma) {
 //               exponent, such that L' = L ^ exponent.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-apply_exponent(double gray_exponent) {
+apply_exponent(float gray_exponent) {
   apply_exponent(gray_exponent, gray_exponent, gray_exponent, 1.0);
 }
 
@@ -880,7 +1129,7 @@ apply_exponent(double gray_exponent) {
 //               exponent, such that L' = L ^ exponent.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-apply_exponent(double gray_exponent, double alpha_exponent) {
+apply_exponent(float gray_exponent, float alpha_exponent) {
   apply_exponent(gray_exponent, gray_exponent, gray_exponent, alpha_exponent);
 }
 
@@ -895,7 +1144,7 @@ apply_exponent(double gray_exponent, double alpha_exponent) {
 //               green_exponent are unused.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-apply_exponent(double red_exponent, double green_exponent, double blue_exponent) {
+apply_exponent(float red_exponent, float green_exponent, float blue_exponent) {
   apply_exponent(red_exponent, green_exponent, blue_exponent, 1.0);
 }
 
@@ -1080,16 +1329,16 @@ setup_sub_image(const PNMImage &copy, int &xto, int &yto,
 //               from the center.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
-compute_spot_pixel(LColord &c, double d2,
-                   double min_radius, double max_radius,
-                   const LColord &fg, const LColord &bg) {
-  double d = sqrt(d2);
+compute_spot_pixel(LColorf &c, float d2,
+                   float min_radius, float max_radius,
+                   const LColorf &fg, const LColorf &bg) {
+  float d = sqrt(d2);
   if (d > max_radius) {
     c = bg;
   } else if (d > min_radius) {
     d = (d - min_radius) / (max_radius - min_radius);
-    double d2 = d * d;
-    double t = (3.0 * d2) - (2.0 * d * d2);
+    float d2 = d * d;
+    float t = (3.0 * d2) - (2.0 * d * d2);
     c = fg + t * (bg - fg);
   } else {
     c = fg;
@@ -1118,7 +1367,7 @@ operator + (const PNMImage &other) const {
 //               is added to each pixel in the provided image.
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage PNMImage::
-operator + (const LColord &other) const {
+operator + (const LColorf &other) const {
   PNMImage target (*this);
   target += other;
   return target;
@@ -1146,7 +1395,7 @@ operator - (const PNMImage &other) const {
 //               is subtracted from each pixel in the provided image.
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage PNMImage::
-operator - (const LColord &other) const {
+operator - (const LColorf &other) const {
   PNMImage target (*this);
   target -= other;
   return target;
@@ -1176,7 +1425,7 @@ operator * (const PNMImage &other) const {
 //               a constant floating-point multiplier value.
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage PNMImage::
-operator * (double multiplier) const {
+operator * (float multiplier) const {
   PNMImage target (*this);
   target *= multiplier;
   return target;
@@ -1189,7 +1438,7 @@ operator * (double multiplier) const {
 //               is multiplied to each pixel in the provided image.
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage PNMImage::
-operator * (const LColord &other) const {
+operator * (const LColorf &other) const {
   PNMImage target (*this);
   target *= other;
   return target;

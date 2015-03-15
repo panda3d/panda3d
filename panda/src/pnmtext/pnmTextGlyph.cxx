@@ -54,8 +54,6 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
     // If we have no image, do nothing.
     return;
   }
-  LRGBColord fg_rgb(fg[0], fg[1], fg[2]);
-  double fg_alpha = fg[3];
 
   int left = xp + _left;
   int top = yp - _top;
@@ -72,18 +70,11 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
     for (int x = cleft; x < cright; x++) {
       double gval = get_value(x - left, y - top);
       if (gval == 1.0) {
-        dest_image.set_xel(x, y, fg_rgb);
-        if (dest_image.has_alpha()) {
-          dest_image.set_alpha(x, y, fg_alpha);
-        }
+        dest_image.set_xel_a(x, y, fg);
 
       } else if (gval > 0.0) {
-        LRGBColord bg_rgb = dest_image.get_xel(x, y);
-        dest_image.set_xel(x, y, fg_rgb * gval + bg_rgb * (1.0 - gval));
-        if (dest_image.has_alpha()) {
-          double bg_alpha = dest_image.get_alpha(x, y);
-          dest_image.set_alpha(x, y, fg_alpha * gval + bg_alpha * (1.0 - gval));
-        }
+        LColorf bg = dest_image.get_xel_a(x, y);
+        dest_image.set_xel_a(x, y, fg * gval + bg * (1.0 - gval));
       }
     }
   }
@@ -97,16 +88,12 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
 //               called earlier.
 ////////////////////////////////////////////////////////////////////
 void PNMTextGlyph::
-place(PNMImage &dest_image, int xp, int yp, const LColor &fg, 
+place(PNMImage &dest_image, int xp, int yp, const LColor &fg,
       const LColor &interior) {
   if (!_image.is_valid()) {
     // If we have no image, do nothing.
     return;
   }
-  LRGBColord fg_rgb(fg[0], fg[1], fg[2]);
-  double fg_alpha = fg[3];
-  LRGBColord interior_rgb(interior[0], interior[1], interior[2]);
-  double interior_alpha = interior[3];
 
   int left = xp + _left;
   int top = yp - _top;
@@ -123,38 +110,22 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg,
     for (int x = cleft; x < cright; x++) {
       double gval = get_value(x - left, y - top);
       if (gval == 1.0) {
-        dest_image.set_xel(x, y, fg_rgb);
-        if (dest_image.has_alpha()) {
-          dest_image.set_alpha(x, y, fg_alpha);
-        }
+        dest_image.set_xel_a(x, y, fg);
 
       } else if (gval > 0.0) {
         bool is_interior = get_interior_flag(x - left, y - top);
-        LRGBColord bg_rgb;
+        LColorf bg;
         if (is_interior) {
-          bg_rgb = interior_rgb;
+          bg = interior;
         } else {
-          bg_rgb = dest_image.get_xel(x, y);
+          bg = dest_image.get_xel_a(x, y);
         }
 
-        dest_image.set_xel(x, y, fg_rgb * gval + bg_rgb * (1.0 - gval));
-        if (dest_image.has_alpha()) {
-          double bg_alpha;
-
-          if (is_interior) {
-            bg_alpha = interior_alpha;
-          } else {
-            bg_alpha = dest_image.get_alpha(x, y);
-          }
-          dest_image.set_alpha(x, y, fg_alpha * gval + bg_alpha * (1.0 - gval));
-        }
+        dest_image.set_xel_a(x, y, fg * gval + bg * (1.0 - gval));
       } else { // gval == 0.0
         bool is_interior = get_interior_flag(x - left, y - top);
         if (is_interior) {
-          dest_image.set_xel(x, y, interior_rgb);
-          if (dest_image.has_alpha()) {
-            dest_image.set_alpha(x, y, interior_alpha);
-          }
+          dest_image.set_xel_a(x, y, interior);
         }
       }
     }

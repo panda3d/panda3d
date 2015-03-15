@@ -20,10 +20,10 @@
 // A PNMTransparentBrush doesn't draw or fill anything.
 class EXPCL_PANDA_PNMIMAGE PNMTransparentBrush : public PNMBrush {
 public:
-  PNMTransparentBrush() : 
+  PNMTransparentBrush() :
     PNMBrush(0.0, 0.0) { }
 
-  virtual void draw(PNMImage &, int, int, double) {
+  virtual void draw(PNMImage &, int, int, float) {
   }
 
   virtual void fill(PNMImage &, int, int, int, int, int) {
@@ -33,26 +33,22 @@ public:
 // A PNMPixelBrush is a family of brushes that draw one pixel at a time.
 class EXPCL_PANDA_PNMIMAGE PNMPixelBrush : public PNMBrush {
 protected:
-  PNMPixelBrush(const LColord &color) : 
-    PNMBrush(0.5, 0.5), _rgb(color[0], color[1], color[2]), _a(color[3]) { }
+  PNMPixelBrush(const LColorf &color) :
+    PNMBrush(0.5, 0.5), _color(color) { }
 
-  LRGBColord _rgb;
-  double _a;
+  LColorf _color;
 };
 
 // Arbitrarily sets the pixel to a particular color, with no antialiasing.
 class EXPCL_PANDA_PNMIMAGE PNMSetPixelBrush : public PNMPixelBrush {
 public:
-  PNMSetPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
+  PNMSetPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
-    if (x >= 0 && x < image.get_x_size() && 
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
+    if (x >= 0 && x < image.get_x_size() &&
         y >= 0 && y < image.get_y_size() &&
         pixel_scale >= 0.5) {
-      image.set_xel(x, y, _rgb);
-      if (image.has_alpha()) {
-        image.set_alpha(x, y, _a);
-      }
+      image.set_xel_a(x, y, _color);
     }
   }
 
@@ -62,12 +58,7 @@ public:
       xfrom = max(xfrom, 0);
       xto = min(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        image.set_xel(x, y, _rgb);
-      }
-      if (image.has_alpha()) {
-        for (int x = xfrom; x <= xto; ++x) {
-          image.set_alpha(x, y, _a);
-        }
+        image.set_xel_a(x, y, _color);
       }
     }
   }
@@ -76,12 +67,12 @@ public:
 // Blends the pixel in to the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMBlendPixelBrush : public PNMPixelBrush {
 public:
-  PNMBlendPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
+  PNMBlendPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
     if (x >= 0 && x < image.get_x_size() && 
         y >= 0 && y < image.get_y_size()) {
-      image.blend(x, y, _rgb, _a * pixel_scale);
+      image.blend(x, y, _color[0], _color[1], _color[2], _color[3] * pixel_scale);
     }
   }
 
@@ -91,7 +82,7 @@ public:
       xfrom = max(xfrom, 0);
       xto = min(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        image.blend(x, y, _rgb, _a);
+        image.blend(x, y, _color[0], _color[1], _color[2], _color[3]);
       }
     }
   }
@@ -100,22 +91,14 @@ public:
 // Darkens the pixel in the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMDarkenPixelBrush : public PNMPixelBrush {
 public:
-  PNMDarkenPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
+  PNMDarkenPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
-    if (x >= 0 && x < image.get_x_size() && 
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
+    if (x >= 0 && x < image.get_x_size() &&
         y >= 0 && y < image.get_y_size()) {
-      LRGBColord rgb = image.get_xel(x, y);
-      LRGBColord p;
-      p.set(min(1.0 - (1.0 - _rgb[0]) * pixel_scale, rgb[0]), 
-            min(1.0 - (1.0 - _rgb[1]) * pixel_scale, rgb[1]), 
-            min(1.0 - (1.0 - _rgb[2]) * pixel_scale, rgb[2]));
-      image.set_xel(x, y, p);
 
-      if (image.has_alpha()) {
-        double a = image.get_alpha(x, y);
-        image.set_alpha(x, y, min(1.0 - (1.0 - _a) * pixel_scale, a));
-      }
+      LColorf p = (_color - 1.0f) * pixel_scale + 1.0f;
+      image.set_xel_a(x, y, p.fmin(image.get_xel_a(x, y)));
     }
   }
 
@@ -125,18 +108,7 @@ public:
       xfrom = max(xfrom, 0);
       xto = min(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        LRGBColord rgb = image.get_xel(x, y);
-        LRGBColord p;
-        p.set(min(_rgb[0], rgb[0]), 
-              min(_rgb[1], rgb[1]), 
-              min(_rgb[2], rgb[2]));
-        image.set_xel(x, y, p);
-      }
-      if (image.has_alpha()) {
-        for (int x = xfrom; x <= xto; ++x) {
-          double a = image.get_alpha(x, y);
-          image.set_alpha(x, y, min(_a, a));
-        }
+        image.set_xel_a(x, y, _color.fmin(image.get_xel_a(x, y)));
       }
     }
   }
@@ -145,22 +117,13 @@ public:
 // Lightens the pixel in the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMLightenPixelBrush : public PNMPixelBrush {
 public:
-  PNMLightenPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
+  PNMLightenPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
-    if (x >= 0 && x < image.get_x_size() && 
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
+    if (x >= 0 && x < image.get_x_size() &&
         y >= 0 && y < image.get_y_size()) {
-      LRGBColord rgb = image.get_xel(x, y);
-      LRGBColord p;
-      p.set(max(_rgb[0] * pixel_scale, rgb[0]), 
-            max(_rgb[1] * pixel_scale, rgb[1]), 
-            max(_rgb[2] * pixel_scale, rgb[2]));
-      image.set_xel(x, y, p);
-
-      if (image.has_alpha()) {
-        double a = image.get_alpha(x, y);
-        image.set_alpha(x, y, max(_a * pixel_scale, a));
-      }
+      image.set_xel_a(x, y,
+        image.get_xel_a(x, y).fmax(_color * pixel_scale));
     }
   }
 
@@ -170,18 +133,8 @@ public:
       xfrom = max(xfrom, 0);
       xto = max(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        LRGBColord rgb = image.get_xel(x, y);
-        LRGBColord p;
-        p.set(max(_rgb[0], rgb[0]), 
-              max(_rgb[1], rgb[1]), 
-              max(_rgb[2], rgb[2]));
-        image.set_xel(x, y, p);
-      }
-      if (image.has_alpha()) {
-        for (int x = xfrom; x <= xto; ++x) {
-          double a = image.get_alpha(x, y);
-          image.set_alpha(x, y, max(_a, a));
-        }
+        image.set_xel_a(x, y,
+          image.get_xel_a(x, y).fmax(_color));
       }
     }
   }
@@ -190,9 +143,9 @@ public:
 // A PNMImageBrush is a family of brushes that draw an image at a time.
 class EXPCL_PANDA_PNMIMAGE PNMImageBrush : public PNMBrush {
 protected:
-  PNMImageBrush(const PNMImage &image, double xc, double yc) : 
+  PNMImageBrush(const PNMImage &image, float xc, float yc) :
     PNMBrush(xc, yc),
-    _image(image) 
+    _image(image)
   {
   }
 
@@ -226,16 +179,16 @@ protected:
 // Sets the pixels from the rectangular image, with no antialiasing.
 class EXPCL_PANDA_PNMIMAGE PNMSetImageBrush : public PNMImageBrush {
 public:
-  PNMSetImageBrush(const PNMImage &image, double xc, double yc) : 
+  PNMSetImageBrush(const PNMImage &image, float xc, float yc) :
     PNMImageBrush(image, xc, yc) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
     if (pixel_scale >= 0.5) {
       image.copy_sub_image(_image, x, y);
     }
   }
 
-  virtual void do_scanline(PNMImage &image, int xto, int yto, 
+  virtual void do_scanline(PNMImage &image, int xto, int yto,
                            int xfrom, int yfrom, int x_size, int y_size) {
     image.copy_sub_image(_image, xto, yto, xfrom, yfrom, x_size, y_size);
   }
@@ -244,14 +197,14 @@ public:
 // Blends the pixels in using alpha.
 class EXPCL_PANDA_PNMIMAGE PNMBlendImageBrush : public PNMImageBrush {
 public:
-  PNMBlendImageBrush(const PNMImage &image, double xc, double yc) : 
+  PNMBlendImageBrush(const PNMImage &image, float xc, float yc) :
     PNMImageBrush(image, xc, yc) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
     image.blend_sub_image(_image, x, y, 0, 0, -1, -1, pixel_scale);
   }
 
-  virtual void do_scanline(PNMImage &image, int xto, int yto, 
+  virtual void do_scanline(PNMImage &image, int xto, int yto,
                            int xfrom, int yfrom, int x_size, int y_size) {
     image.blend_sub_image(_image, xto, yto, xfrom, yfrom, x_size, y_size);
   }
@@ -260,14 +213,14 @@ public:
 // Darkens the pixels
 class EXPCL_PANDA_PNMIMAGE PNMDarkenImageBrush : public PNMImageBrush {
 public:
-  PNMDarkenImageBrush(const PNMImage &image, double xc, double yc) : 
+  PNMDarkenImageBrush(const PNMImage &image, float xc, float yc) :
     PNMImageBrush(image, xc, yc) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
     image.darken_sub_image(_image, x, y, 0, 0, -1, -1, pixel_scale);
   }
 
-  virtual void do_scanline(PNMImage &image, int xto, int yto, 
+  virtual void do_scanline(PNMImage &image, int xto, int yto,
                            int xfrom, int yfrom, int x_size, int y_size) {
     image.darken_sub_image(_image, xto, yto, xfrom, yfrom, x_size, y_size);
   }
@@ -276,14 +229,14 @@ public:
 // Lightens the pixels
 class EXPCL_PANDA_PNMIMAGE PNMLightenImageBrush : public PNMImageBrush {
 public:
-  PNMLightenImageBrush(const PNMImage &image, double xc, double yc) : 
+  PNMLightenImageBrush(const PNMImage &image, float xc, float yc) :
     PNMImageBrush(image, xc, yc) { }
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
     image.lighten_sub_image(_image, x, y, 0, 0, -1, -1, pixel_scale);
   }
 
-  virtual void do_scanline(PNMImage &image, int xto, int yto, 
+  virtual void do_scanline(PNMImage &image, int xto, int yto,
                            int xfrom, int yfrom, int x_size, int y_size) {
     image.lighten_sub_image(_image, xto, yto, xfrom, yfrom, x_size, y_size);
   }
@@ -292,7 +245,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMBrush::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMBrush::
 ~PNMBrush() {
@@ -309,7 +262,7 @@ PT(PNMBrush) PNMBrush::
 make_transparent() {
   return new PNMTransparentBrush();
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMBrush::make_pixel
 //       Access: Published, Static
@@ -318,7 +271,7 @@ make_transparent() {
 //               in an interior.
 ////////////////////////////////////////////////////////////////////
 PT(PNMBrush) PNMBrush::
-make_pixel(const LColord &color, PNMBrush::BrushEffect effect) {
+make_pixel(const LColorf &color, PNMBrush::BrushEffect effect) {
   switch (effect) {
   case BE_set:
     return new PNMSetPixelBrush(color);
@@ -346,9 +299,9 @@ make_pixel(const LColord &color, PNMBrush::BrushEffect effect) {
 //               spot is fuzzy; otherwise, it is hard-edged.
 ////////////////////////////////////////////////////////////////////
 PT(PNMBrush) PNMBrush::
-make_spot(const LColord &color, double radius, bool fuzzy,
+make_spot(const LColorf &color, float radius, bool fuzzy,
           BrushEffect effect) {
-  LColord bg;
+  LColorf bg;
 
   switch (effect) {
   case BE_set:
@@ -356,7 +309,7 @@ make_spot(const LColord &color, double radius, bool fuzzy,
     break;
 
   case BE_blend:
-    bg.set(color[0], color[1], color[2], 0.0);
+    bg.set(color[0], color[1], color[2], 0.0f);
     break;
 
   case BE_darken:
@@ -372,19 +325,19 @@ make_spot(const LColord &color, double radius, bool fuzzy,
       << "**Invalid BrushEffect (" << (int)effect << ")**\n";
   }
 
-  int size = (int)cceil(radius * 2.0);
-  double half_size = (double)size * 0.5;
+  int size = (int)cceil(radius * 2.0f);
+  float half_size = (float)size * 0.5f;
   PNMImage spot(size, size, 4);
-  double r = half_size / radius;
+  float r = half_size / radius;
 
   if (fuzzy) {
-    spot.render_spot(color, bg, 0.0, r);
+    spot.render_spot(color, bg, 0.0f, r);
   } else {
     spot.render_spot(color, bg, r, r);
   }
   return make_image(spot, half_size, half_size, effect);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMBrush::make_image
 //       Access: Published, Static
@@ -397,7 +350,7 @@ make_spot(const LColord &color, double radius, bool fuzzy,
 //               call.
 ////////////////////////////////////////////////////////////////////
 PT(PNMBrush) PNMBrush::
-make_image(const PNMImage &image, double xc, double yc,
+make_image(const PNMImage &image, float xc, float yc,
            PNMBrush::BrushEffect effect) {
   switch (effect) {
   case BE_set:

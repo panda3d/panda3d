@@ -93,8 +93,8 @@ operator = (const PaletteImage::ClearedRegion &copy) {
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::ClearedRegion::
 clear(PNMImage &image) {
-  LRGBColord rgb(pal->_background[0], pal->_background[1], pal->_background[2]);
-  double alpha = pal->_background[3];
+  LRGBColorf rgb(pal->_background[0], pal->_background[1], pal->_background[2]);
+  float alpha = pal->_background[3];
 
   for (int y = _y; y < _y + _y_size; y++) {
     for (int x = _x; x < _x + _x_size; x++) {
