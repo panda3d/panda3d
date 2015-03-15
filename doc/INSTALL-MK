@@ -20,33 +20,35 @@ the next section.
 Alternately, it is possible to download the source in pieces. There
 are three pieces:
 
-    1. Source code from Sourceforge.
+    1. Source code from Github.
     2. Third-party tools (not strictly necessary for Unix)
-    3. Sample programs.
 
-You will need all three to use makepanda.  You can download all three
-pieces from the panda website.  Look for the files labeled "Panda3D
-source, piecewise, X of 3".  You can also obtain the first piece
-directly from the sourceforge CVS server:
+You will need both to use makepanda.  You can find the
+pieces on the panda website.  Look for the files labeled "Panda3D
+source".  You can also obtain the first piece
+directly from the github:
 
-    CVSROOT=:pserver:anonymous@panda3d.cvs.sourceforge.net:/cvsroot/panda3d
-
-Make sure you have all three pieces.  If you do, then your panda
+Over https:
+   https://github.com/panda3d/panda3d.git
+Over SSH:
+   git@github.com:panda3d/panda3d.git
+   
+Make sure you have both pieces.  If you do, then your panda
 directory will contain the following subdirectories:
 
-    direct	- piece 1, source code from sourceforge
-    dmodels	- piece 1, source code from sourceforge
-    doc         - piece 1, source code from sourceforge
-    dtool	- piece 1, source code from sourceforge
-    Makefile	- piece 1, source code from sourceforge
-    makepanda	- piece 1, source code from sourceforge
-    models	- piece 1, source code from sourceforge
-    panda	- piece 1, source code from sourceforge
-    pandatool	- piece 1, source code from sourceforge
-    ppremake	- piece 1, source code from sourceforge
-    contrib     - piece 1, source code from sourceforge
+    direct	- piece 1, source code from github
+    dmodels	- piece 1, source code from github
+    doc         - piece 1, source code from github
+    dtool	- piece 1, source code from github
+    makepanda	- piece 1, source code from github
+    models	- piece 1, source code from github
+    panda	- piece 1, source code from github
+    pandatool	- piece 1, source code from github
+    ppremake	- piece 1, source code from github
+    contrib     - piece 1, source code from github
+    samples	- piece 1, sample programs
     thirdparty  - piece 2, third party tools
-    samples	- piece 3, sample programs
+
 
 If you have all of these, you're ready to go.  If not, then you
 must have missed a piece.
@@ -119,14 +121,49 @@ it will show you the available command-line options:
 
   --help            (print the help message you're reading now)
   --verbose         (print out more information)
+  --runtime         (build a runtime build instead of an SDK build)
   --installer       (build an installer)
   --optimize X      (optimization level can be 1,2,3,4)
-  --version         (set the panda version number)
-  --lzma            (use lzma compression when building installer)
+  --version X       (set the panda version number)
+  --lzma            (use lzma compression when building Windows installer)
+  --distributor X   (short string identifying the distributor of the build)
+  --outputdir X     (use the specified directory instead of 'built')
+  --host URL        (set the host url (runtime build only))
   --threads N       (use the multithreaded build system. see manual)
   --osxtarget N     (the OSX version number to build for (OSX only))
+  --universal       (build universal binaries (OSX only))
   --override "O=V"  (override dtool_config/prc option value)
+  --static          (builds libraries for static linking)
+  --target X        (experimental cross-compilation (android only))
+  --arch X          (target architecture for cross-compilation)
 
+  --use-python      --no-python    (enable/disable use of PYTHON)
+  --use-direct      --no-direct    (enable/disable use of DIRECT)
+  --use-gl          --no-gl        (enable/disable use of GL)
+  --use-gles        --no-gles      (enable/disable use of GLES)
+  --use-gles2       --no-gles2     (enable/disable use of GLES2)
+  --use-dx9         --no-dx9       (enable/disable use of DX9)
+  --use-tinydisplay   --no-tinydisplay (enable/disable use of TINYDISPLAY)
+  --use-nvidiacg    --no-nvidiacg  (enable/disable use of NVIDIACG)
+  --use-egl         --no-egl       (enable/disable use of EGL)
+  --use-eigen       --no-eigen     (enable/disable use of EIGEN)
+  --use-openal      --no-openal    (enable/disable use of OPENAL)
+  --use-fmodex      --no-fmodex    (enable/disable use of FMODEX)
+  --use-vorbis      --no-vorbis    (enable/disable use of VORBIS)
+  --use-ffmpeg      --no-ffmpeg    (enable/disable use of FFMPEG)
+  --use-swscale     --no-swscale   (enable/disable use of SWSCALE)
+  --use-swresample   --no-swresample (enable/disable use of SWRESAMPLE)
+  --use-ode         --no-ode       (enable/disable use of ODE)
+  --use-physx       --no-physx     (enable/disable use of PHYSX)
+  --use-bullet      --no-bullet    (enable/disable use of BULLET)
+  --use-pandaphysics   --no-pandaphysics (enable/disable use of PANDAPHYSICS)
+  --use-speedtree   --no-speedtree (enable/disable use of SPEEDTREE)
+  --use-zlib        --no-zlib      (enable/disable use of ZLIB)
+  --use-png         --no-png       (enable/disable use of PNG)
+  --use-jpeg        --no-jpeg      (enable/disable use of JPEG)
+  --use-tiff        --no-tiff      (enable/disable use of TIFF)
+  --use-squish      --no-squish    (enable/disable use of SQUISH)
+  --use-freetype    --no-freetype  (enable/disable use of FREETYPE)
   --use-maya6       --no-maya6     (enable/disable use of MAYA6)
   --use-maya65      --no-maya65    (enable/disable use of MAYA65)
   --use-maya7       --no-maya7     (enable/disable use of MAYA7)
@@ -135,41 +172,63 @@ it will show you the available command-line options:
   --use-maya2008    --no-maya2008  (enable/disable use of MAYA2008)
   --use-maya2009    --no-maya2009  (enable/disable use of MAYA2009)
   --use-maya2010    --no-maya2010  (enable/disable use of MAYA2010)
+  --use-maya2011    --no-maya2011  (enable/disable use of MAYA2011)
+  --use-maya2012    --no-maya2012  (enable/disable use of MAYA2012)
+  --use-maya2013    --no-maya2013  (enable/disable use of MAYA2013)
+  --use-maya20135   --no-maya20135 (enable/disable use of MAYA20135)
+  --use-maya2014    --no-maya2014  (enable/disable use of MAYA2014)
+  --use-maya2015    --no-maya2015  (enable/disable use of MAYA2015)
   --use-max6        --no-max6      (enable/disable use of MAX6)
   --use-max7        --no-max7      (enable/disable use of MAX7)
   --use-max8        --no-max8      (enable/disable use of MAX8)
   --use-max9        --no-max9      (enable/disable use of MAX9)
   --use-max2009     --no-max2009   (enable/disable use of MAX2009)
   --use-max2010     --no-max2010   (enable/disable use of MAX2010)
-  --use-dx9         --no-dx9       (enable/disable use of DX9)
-  --use-python      --no-python    (enable/disable use of PYTHON)
-  --use-zlib        --no-zlib      (enable/disable use of ZLIB)
-  --use-png         --no-png       (enable/disable use of PNG)
-  --use-jpeg        --no-jpeg      (enable/disable use of JPEG)
-  --use-tiff        --no-tiff      (enable/disable use of TIFF)
+  --use-max2011     --no-max2011   (enable/disable use of MAX2011)
+  --use-max2012     --no-max2012   (enable/disable use of MAX2012)
+  --use-max2013     --no-max2013   (enable/disable use of MAX2013)
+  --use-max2014     --no-max2014   (enable/disable use of MAX2014)
+  --use-fcollada    --no-fcollada  (enable/disable use of FCOLLADA)
   --use-vrpn        --no-vrpn      (enable/disable use of VRPN)
-  --use-tinyxml     --no-tinyxml   (enable/disable use of TINYXML)
-  --use-fmodex      --no-fmodex    (enable/disable use of FMODEX)
-  --use-openal      --no-openal    (enable/disable use of OPENAL)
-  --use-nvidiacg    --no-nvidiacg  (enable/disable use of NVIDIACG)
   --use-openssl     --no-openssl   (enable/disable use of OPENSSL)
-  --use-freetype    --no-freetype  (enable/disable use of FREETYPE)
-  --use-wx          --no-wx        (enable/disable use of WX)
   --use-fftw        --no-fftw      (enable/disable use of FFTW)
   --use-artoolkit   --no-artoolkit (enable/disable use of ARTOOLKIT)
-  --use-squish      --no-squish    (enable/disable use of SQUISH)
-  --use-ode         --no-ode       (enable/disable use of ODE)
-  --use-directcam   --no-directcam (enable/disable use of DIRECTCAM)
-  --use-npapi       --no-npapi     (enable/disable use of NPAPI)
   --use-opencv      --no-opencv    (enable/disable use of OPENCV)
-  --use-ffmpeg      --no-ffmpeg    (enable/disable use of FFMPEG)
-  --use-swscale     --no-swscale   (enable/disable use of SWSCALE)
-  --use-fcollada    --no-fcollada  (enable/disable use of FCOLLADA)
+  --use-directcam   --no-directcam (enable/disable use of DIRECTCAM)
+  --use-vision      --no-vision    (enable/disable use of VISION)
   --use-gtk2        --no-gtk2      (enable/disable use of GTK2)
+  --use-npapi       --no-npapi     (enable/disable use of NPAPI)
+  --use-mfc         --no-mfc       (enable/disable use of MFC)
+  --use-wx          --no-wx        (enable/disable use of WX)
+  --use-fltk        --no-fltk      (enable/disable use of FLTK)
+  --use-rocket      --no-rocket    (enable/disable use of ROCKET)
+  --use-awesomium   --no-awesomium (enable/disable use of AWESOMIUM)
+  --use-carbon      --no-carbon    (enable/disable use of CARBON)
+  --use-cocoa       --no-cocoa     (enable/disable use of COCOA)
+  --use-x11         --no-x11       (enable/disable use of X11)
+  --use-xf86dga     --no-xf86dga   (enable/disable use of XF86DGA)
+  --use-xrandr      --no-xrandr    (enable/disable use of XRANDR)
+  --use-xcursor     --no-xcursor   (enable/disable use of XCURSOR)
   --use-pandatool   --no-pandatool (enable/disable use of PANDATOOL)
+  --use-pview       --no-pview     (enable/disable use of PVIEW)
+  --use-deploytools   --no-deploytools (enable/disable use of DEPLOYTOOLS)
+  --use-skel        --no-skel      (enable/disable use of SKEL)
+  --use-pandafx     --no-pandafx   (enable/disable use of PANDAFX)
+  --use-pandaparticlesystem   --no-pandaparticlesystem (enable/disable use of PA
+NDAPARTICLESYSTEM)
+  --use-contrib     --no-contrib   (enable/disable use of CONTRIB)
+  --use-sse2        --no-sse2      (enable/disable use of SSE2)
+  --use-neon        --no-neon      (enable/disable use of NEON)
+  --use-touchinput   --no-touchinput (enable/disable use of TOUCHINPUT)
 
   --nothing         (disable every third-party lib)
   --everything      (enable every third-party lib)
+  --directx-sdk=X   (specify version of DX9 SDK to use: jun2010, aug2009, mar200
+9, aug2006)
+  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver20
+03r2)
+  --use-icl         (experimental setting to use an intel compiler instead of MS
+VC on Windows)
 
 Makepanda shows you all the available options, not all of which may be
 relevant to your operating system.  For example, makepanda can build a
@@ -247,11 +306,11 @@ It is all too easy to accidentally invoke 'makepanda' with the wrong
 options, thereby triggering an hour-long recompilation.  To avoid this
 situation, we recommend that you write a short script containing the
 options you intend to use regularly.  For example, I regularly compile
-panda without helix.  I have a very short Windows BAT file called
+panda without eigen.  I have a very short Windows BAT file called
 "mkp.bat" that looks like this:
 
 	@echo off
-	makepanda --everything --no-helix
+	makepanda --everything --no-eigen
 
 This helps me avoid accidentally typing makepanda with the wrong
 options.
