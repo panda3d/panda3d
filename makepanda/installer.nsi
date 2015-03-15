@@ -136,7 +136,7 @@ SectionGroup "Panda3D Libraries"
         File "${BUILT}\LICENSE"
         File /r /x CVS "${BUILT}\ReleaseNotes"
         SetOutPath $INSTDIR\bin
-        File /r /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
+        File /r /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
         File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${BUILT}\etc\*"
@@ -220,6 +220,18 @@ SectionGroup "Panda3D Libraries"
 
         SetOutPath "$INSTDIR\bin"
         File "${BUILT}\bin\libpandaode.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_PHYSX
+    Section "PhysX support" SecPhysX
+        SectionIn 1
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libpandaphysx.dll"
+        File /nonfatal /r "${BUILT}\bin\PhysX*.dll"
+        File /nonfatal /r "${BUILT}\bin\NxCharacter*.dll"
+        File /nonfatal /r "${BUILT}\bin\cudart*.dll"
     SectionEnd
     !endif
 
@@ -315,26 +327,26 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\Pmw
         File /r /x CVS "${BUILT}\Pmw\*"
 
-        ; Check for a user installation of Python.
-        ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-        StrCmp $0 "$INSTDIR\python" CheckSystemWidePython 0
-        StrCmp $0 "" CheckSystemWidePython 0
-        IfFileExists "$0\ppython.exe" CheckSystemWidePython 0
-        IfFileExists "$0\python.exe" AskExternalPth 0
+        !ifdef REGVIEW
+        SetRegView ${REGVIEW}
+        !endif
 
         ; Check for a system-wide Python installation.
-        CheckSystemWidePython:
+        ; We could check for a user installation of Python as well, but there
+        ; is no distinction between 64-bit and 32-bit regviews in HKCU, so we
+        ; can't guess whether it might be a compatible version.
         ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" SkipExternalPth 0
         StrCmp $0 "" SkipExternalPth 0
         IfFileExists "$0\ppython.exe" SkipExternalPth 0
-        IfFileExists "$0\python.exe" AskExternalPth SkipExternalPth
+        IfFileExists "$0\python.exe" 0 SkipExternalPth
 
-        AskExternalPth:
+        ; We're pretty sure this Python build is of the right architecture.
         MessageBox MB_YESNO|MB_ICONQUESTION \
-            "Your system already has a ${REGVIEW}-bit copy of Python ${PYVER} installed in:$\r$\n$0$\r$\nWould you like to configure it to be able to use the Panda3D libraries?$\r$\nIf you choose no, you will only be able to use Panda3D's own copy of Python." \
-            IDNO SkipExternalPth
+            "Your system already has a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\nWould you like to configure it to be able to use the Panda3D libraries?$\r$\nIf you choose no, you will only be able to use Panda3D's own copy of Python." \
+            IDYES WriteExternalPth IDNO SkipExternalPth
 
+        WriteExternalPth:
         FileOpen $1 "$0\Lib\site-packages\panda.pth" w
         FileWrite $1 "$INSTDIR$\r$\n"
         FileWrite $1 "$INSTDIR\bin$\r$\n"
@@ -384,7 +396,7 @@ SectionGroup "Python support"
 
         AskRegPath:
         MessageBox MB_YESNO|MB_ICONQUESTION \
-            "Your system already has a ${REGVIEW}-bit copy of Python ${PYVER} installed in:$\r$\n$0$\r$\n$\r$\nPanda3D installs its own copy of Python ${PYVER}, which will install alongside your existing copy.  Would you like to make Panda's copy the default Python for your user account?" \
+            "You already have a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\n$\r$\nPanda3D installs its own copy of Python ${PYVER}, which will install alongside your existing copy.  Would you like to make Panda's copy the default Python for your user account?" \
             IDNO SkipRegPath
 
         RegPath:
@@ -408,6 +420,10 @@ Function ConfirmPythonSelection
     IntOp $R1 $R1 & ${SF_SELECTED}
     StrCmp $R1 ${SF_SELECTED} 0 SkipCheck
 
+    !ifdef REGVIEW
+    SetRegView ${REGVIEW}
+    !endif
+
     ; Check for a user installation of Python.
     ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
     StrCmp $0 "$INSTDIR\python" CheckSystemWidePython 0
@@ -427,7 +443,7 @@ Function ConfirmPythonSelection
     ; of a different Panda3D build.)  Ask the user if he's sure about this.
     AskConfirmation:
     MessageBox MB_YESNO|MB_ICONQUESTION \
-        "You do not appear to have a ${REGVIEW}-bit version of Python ${PYVER} installed that is compatible with Panda3D.  Are you sure you don't want Panda to install a compatible copy of Python?$\r$\n$\r$\nIf you choose Yes, you will not be able to do Python development with Panda3D until you install a ${REGVIEW}-bit version of Python ${PYVER} and manually configure it to be able to use Panda3D." \
+        "You do not appear to have a ${REGVIEW}-bit version of Python ${PYVER} installed.  Are you sure you don't want Panda to install a compatible copy of Python?$\r$\n$\r$\nIf you choose Yes, you will not be able to do Python development with Panda3D until you install a ${REGVIEW}-bit version of Python ${PYVER} and manually configure it to be able to use Panda3D." \
         IDYES SkipCheck
 
     ; User clicked no, so re-enable the select box and abort.

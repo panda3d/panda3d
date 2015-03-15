@@ -152,7 +152,7 @@ def usage(problem):
     print("")
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
-    print("  --directx-sdk=X   (specify version of DX9 SDK to use: jun2010, aug2009, mar2009, aug2006)")
+    print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
     print("  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
@@ -509,7 +509,7 @@ if (COMPILER == "MSVC"):
 
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
-            if (vnum=="9" and "GENERIC_DXERR_LIBRARY" in SDK):
+            if int(vnum) >= 9 and "GENERIC_DXERR_LIBRARY" in SDK:
                 LibName(pkg, 'dxerr.lib')
             else:
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))

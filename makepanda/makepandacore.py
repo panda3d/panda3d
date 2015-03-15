@@ -2065,7 +2065,7 @@ def SdkLocateAndroid():
 ########################################################################
 
 def SdkAutoDisableDirectX():
-    for ver in ["DX9", "DIRECTCAM"]:
+    for ver in DXVERSIONS + ["DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (ver not in SDK):
                 if (GetHost() == "windows"):
