@@ -97,7 +97,7 @@ OpenALAudioManager() {
   _is_valid = true;
 
   //Init 3D attributes
-  _distance_factor = 3.28;
+  _distance_factor = 1;
   _drop_off_factor = 1;
 
   _position[0] = 0;
@@ -664,11 +664,10 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::audio_3d_set_distance_factor
 //       Access: Public
-//  Description: Set units per foot
+//  Description: Set value in units per meter
 //               WARNING: OpenAL has no distance factor but we use this as a scale
 //                        on the min/max distances of sounds to preserve FMOD compatibility.
 //                        Also, adjusts the speed of sound to compensate for unit difference.
-//                        OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
@@ -680,7 +679,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
   alGetError(); // clear errors
 
   if (_distance_factor>0) {
-    alSpeedOfSound(1126.3*_distance_factor);
+    alSpeedOfSound(343.3*_distance_factor);
     al_audio_errcheck("alSpeedOfSound()");
     // resets the doppler factor to the correct setting in case it was set to 0.0 by a distance_factor<=0.0
     alDopplerFactor(_doppler_factor);
@@ -701,7 +700,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::audio_3d_get_distance_factor
 //       Access: Public
-//  Description: Sets units per foot
+//  Description: Get value in units per meter
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_distance_factor() const {
