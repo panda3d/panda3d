@@ -369,8 +369,9 @@ void MeshDrawer::stream(const LVector3 &start, const LVector3 &stop, const LVect
   LVector3 relative_pos = stop;
   LVector3 vec = stop - start;
   PN_stdfloat distance = vec.length();
+  vec.normalize();
   for(int i = 0; i < number; i++) {
-    relative_pos = stop + vec * ((i-offset)*(distance/PN_stdfloat(number)));
+    relative_pos = start + vec * ((i+offset)*(distance/PN_stdfloat(number)));
     billboard(relative_pos,frame,size,_color);
   }
 }
