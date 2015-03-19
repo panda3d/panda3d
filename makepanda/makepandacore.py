@@ -10,6 +10,7 @@
 ########################################################################
 
 import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
+import subprocess
 from distutils import sysconfig
 
 if sys.version_info >= (3, 0):
@@ -39,6 +40,7 @@ HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
 SYS_LIB_DIRS = []
+SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
@@ -1551,7 +1553,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 LibName(target_pkg, "-l" + libname)
             else:
                 # Try searching in the package's LibDirectories.
-                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg or ppkg == "ALWAYS"]
                 if LibraryExists(libname, lpath):
                     LibName(target_pkg, "-l" + libname)
                 else:
@@ -1559,27 +1561,26 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     if VERBOSE:
                         print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
+        # Determine which include directories to look in.
+        incdirs = list(SYS_INC_DIRS)
+        for ppkg, pdir in INCDIRECTORIES:
+            if pkg == ppkg or ppkg == "ALWAYS":
+                incdirs.append(pdir)
+
+        # The incs list contains both subdirectories to explicitly add to
+        # the include path and header files to check the existence of.
         for i in incs:
             incdir = None
-            sysroot_usr = SDK.get("SYSROOT", "") + "/usr"
-            if (len(glob.glob(sysroot_usr + "/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/include/" + i))[-1]
-            elif (len(glob.glob(sysroot_usr + "/local/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/local/include/" + i))[-1]
-            elif (os.path.isdir(sysroot_usr + "/PCBSD") and len(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i))[-1]
-            else:
-                # Try searching in the package's IncDirectories.
-                for ppkg, pdir in INCDIRECTORIES:
-                    if pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0:
-                        incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
-
-                if incdir is None and i.endswith(".h"):
-                    have_pkg = False
-                    if VERBOSE:
-                        print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+            for dir in incdirs:
+                if len(glob.glob(os.path.join(dir, i))) > 0:
+                    incdir = sorted(glob.glob(os.path.join(dir, i)))[-1]
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
+            if incdir is None and i.endswith(".h"):
+                have_pkg = False
+                if VERBOSE:
+                    print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+
             if incdir is not None and os.path.isdir(incdir):
                 IncDirectory(target_pkg, incdir)
 
@@ -2232,10 +2233,10 @@ def SetupBuildEnvironment(compiler):
 
     if compiler == "GCC":
         # Invoke gcc to determine the system library directories.
-        global SYS_LIB_DIRS
+        global SYS_LIB_DIRS, SYS_INC_DIRS
 
         if sys.platform == "darwin":
-            # We need to add this one explicitly.
+            # We need to add this one explicitly for some reason.
             SYS_LIB_DIRS.append(SDK["MACOSX"] + "/usr/lib")
 
         if not SDK.get("MACOSX"):
@@ -2244,15 +2245,16 @@ def SetupBuildEnvironment(compiler):
             if os.path.isdir(local_lib):
                 SYS_LIB_DIRS.append(local_lib)
 
-        cmd = GetCXX() + " -print-search-dirs"
+        sysroot_flag = ""
 
         if SDK.get("MACOSX"):
             # The default compiler in Leopard does not respect --sysroot correctly.
-            cmd += " -isysroot " + SDK["MACOSX"]
+            sysroot_flag = " -isysroot " + SDK["MACOSX"]
         if SDK.get("SYSROOT"):
-            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+            sysroot_flag = ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Extract the dirs from the line that starts with 'libraries: ='.
+        cmd = GetCXX() + " -print-search-dirs" + sysroot_flag
         handle = os.popen(cmd)
         for line in handle:
             if not line.startswith('libraries: ='):
@@ -2266,8 +2268,48 @@ def SetupBuildEnvironment(compiler):
             print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
-        elif GetVerbose():
-            print("System library search path: %s" % ':'.join(SYS_LIB_DIRS))
+        # Now extract the preprocessor's include directories.
+        cmd = GetCXX() + sysroot_flag + " -x c++ -v -E /dev/null"
+        null = open(os.devnull, 'w')
+        handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
+        scanning = False
+        for line in handle.communicate()[1].splitlines():
+            # Start looking at a line that says:  #include "..." search starts here
+            if not scanning:
+                if line.startswith('#include'):
+                    scanning = True
+                continue
+
+            if not line.startswith(' /'):
+                continue
+
+            line = line.strip()
+            if os.path.isdir(line):
+                SYS_INC_DIRS.append(line)
+            elif GetVerbose():
+                print("Ignoring non-existent include directory %s" % (line))
+
+        if handle.returncode != 0 or not SYS_INC_DIRS:
+            print("%sWARNING:%s %s failed or did not produce the expected result" % (GetColor("red"), GetColor(), cmd))
+            sysroot = SDK.get("SYSROOT", "")
+            # Add some sensible directories as a fallback.
+            SYS_INC_DIRS = [
+                sysroot + "/usr/include",
+                sysroot + "/usr/local/include"
+            ]
+            pcbsd_inc = sysroot + "/usr/PCBSD/local/include"
+            if os.path.isdir(pcbsd_inc):
+                SYS_INC_DIRS.append(pcbsd_inc)
+
+        # Print out the search paths
+        if GetVerbose():
+            print("System library search path:")
+            for dir in SYS_LIB_DIRS:
+                print("  " + dir)
+
+            print("System include search path:")
+            for dir in SYS_INC_DIRS:
+                print("  " + dir)
 
     # In the case of Android, we have to put the toolchain on the PATH in order to use it.
     if GetTarget() == 'android':

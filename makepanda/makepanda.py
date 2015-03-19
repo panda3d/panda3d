@@ -712,7 +712,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("OPENCV",    "opencv",    ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
-        SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
+        SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
