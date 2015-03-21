@@ -90,12 +90,6 @@ clear(int x_size, int y_size, int num_channels,
   _type = type;
   _has_read_size = false;
 
-  if (maxval == 0) {
-    _inv_maxval = 0.0f;
-  } else {
-    _inv_maxval = 1.0f / (float)maxval;
-  }
-
   if (has_alpha()) {
     allocate_alpha();
     memset(_alpha, 0, sizeof(xelval) * _y_size * _x_size);
@@ -589,7 +583,6 @@ set_color_space(ColorSpace color_space) {
         }
       }
       _maxval = 65535;
-      _inv_maxval = 1.f / 65535.f;
       break;
 
     default:
@@ -781,12 +774,6 @@ set_maxval(xelval maxval) {
       }
     }
     _maxval = maxval;
-    if (maxval == 0) {
-      _inv_maxval = 0.0f;
-    } else {
-      _inv_maxval = 1.0f / (float)maxval;
-    }
-
     setup_encoding();
   }
 }
@@ -2136,9 +2123,16 @@ setup_rc() {
 //               the image has an alpha channel, so that to_val and
 //               from_val will work correctly (and possibly more
 //               efficiently).
+//               Should be called after any call to set_maxval.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 setup_encoding() {
+  if (_maxval == 0) {
+    _inv_maxval = 0.0f;
+  } else {
+    _inv_maxval = 1.0f / (float)_maxval;
+  }
+
   if (has_alpha()) {
     switch (_color_space) {
     case CS_linear:
