@@ -2173,16 +2173,16 @@ set_failed() {
       NPObject *window_object = NULL;
       if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                             &window_object) == NPERR_NO_ERROR) {
-        NPString npexpr = { expression.c_str(), expression.length() };
+        NPString npexpr = { expression.c_str(), (uint32_t)expression.length() };
         NPVariant result;
-        if (browser->evaluate(_npp_instance, window_object, 
+        if (browser->evaluate(_npp_instance, window_object,
                               &npexpr, &result)) {
           nout << "Eval " << expression << "\n";
           browser->releasevariantvalue(&result);
         } else {
           nout << "Unable to eval " << expression << "\n";
         }
-        
+
         browser->releaseobject(window_object);
       }
     }

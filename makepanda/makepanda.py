@@ -439,6 +439,10 @@ if (RTDIST and DISTRIBUTOR == "cmu"):
 elif RTDIST and not HOST_URL:
     exit("You must specify a host URL when building the rtdist!")
 
+if RUNTIME and not HOST_URL:
+    # Set this to a nice default.
+    HOST_URL = "https://runtime.panda3d.org/"
+
 ########################################################################
 ##
 ## Choose a Compiler.
