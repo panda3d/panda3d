@@ -91,7 +91,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK2",                                              # GTK2 is used for PStats on Unix
-  "NPAPI", "MFC", "WX", "FLTK",                        # Used for web plug-in only
+  "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
   "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
@@ -366,10 +366,10 @@ if (RUNTIME):
         if pkg in ["GTK2"]:
             # Optional package(s) for runtime.
             pass
-        elif pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+        elif pkg in ["OPENSSL", "ZLIB", "JPEG", "PNG"]:
             # Required packages for runtime.
             if (PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
+                exit("Runtime must be compiled with OpenSSL, ZLib, JPEG and PNG support!")
         else:
             # Unused packages for runtime.
             PkgDisable(pkg)
@@ -745,17 +745,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("WX",    tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
 
-    if (RUNTIME):
-        if (GetHost() == 'darwin'):
-            SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
-            if not os.path.isdir(GetThirdpartyDir() + "npapi"):
-                IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
-
-        elif (GetHost() == "freebsd"):
-            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
-        else:
-            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
-
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
@@ -784,12 +773,12 @@ if (COMPILER=="GCC"):
 
     if (RUNTIME):
         # For the runtime, all packages are required
-        for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+        for pkg in ["OPENSSL", "ZLIB", "JPEG", "PNG"]:
             skips = []
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 skips.append(pkg)
             if skips:
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support (missing %s)" % (', '.join(skips)))
+                exit("Runtime must be compiled with OpenSSL, ZLib, JPEG and PNG support (missing %s)" % (', '.join(skips)))
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -4844,7 +4833,7 @@ if (RTDIST or RUNTIME):
 # DIRECTORY: direct/src/plugin_npapi/
 #
 
-if (RUNTIME and PkgSkip("NPAPI")==0):
+if RUNTIME:
   OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME', 'GTK2']
   if GetTarget() == 'windows':
     nppanda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
@@ -4858,7 +4847,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   elif GetTarget() == 'darwin':
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
 
-  OPTS += ['NPAPI', 'GTK2']
+  OPTS += ['GTK2']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
 
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
@@ -4874,7 +4863,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
     TargetAdd('nppanda3d.plugin', input='plugin_find_root_dir_assist.obj')
   TargetAdd('nppanda3d.plugin', input='libp3tinyxml.ilb')
-  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'OPENSSL', 'WINGDI', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
+  TargetAdd('nppanda3d.plugin', opts=['OPENSSL', 'WINGDI', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
