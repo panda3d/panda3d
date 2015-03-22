@@ -740,7 +740,7 @@ get_request() {
         // to shutdown.
         _main_object->set_pyobj(NULL);
         _main_object->set_string_property("status", "stopped");
-        
+
         string message = "onpythonstop";
         string expression = _fparams.lookup_token(message);
         nout << "notify: " << message << " " << expression << "\n";
@@ -782,9 +782,12 @@ get_request() {
         }
       }
       break;
+
+    default:
+      break;
     }
   }
-  
+
   return request;
 }
 
@@ -934,6 +937,9 @@ finish_request(P3D_request *request, bool handled) {
       free((char *)request->_request._forget_package._package_version);
       request->_request._forget_package._package_version = NULL;
     }
+    break;
+
+  default:
     break;
   }
 

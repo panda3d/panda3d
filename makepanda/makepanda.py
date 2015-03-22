@@ -4785,11 +4785,13 @@ if (RTDIST or RUNTIME):
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
+    TargetAdd('p3dpython.exe', input='core.pyd')
     TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'WINUSER'])
 
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3dpython.dll', input='core.pyd')
     TargetAdd('libp3dpython.dll', input='libp3tinyxml.ilb')
     TargetAdd('libp3dpython.dll', opts=['PYTHON', 'WINUSER'])
 
@@ -4801,6 +4803,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dpython_composite1.obj')
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dPythonMain.obj')
       TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
+      TargetAdd('p3dpythonw.exe', input='core.pyd')
       TargetAdd('p3dpythonw.exe', input='libp3tinyxml.ilb')
       TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'WINUSER'])
 

@@ -1060,7 +1060,6 @@ update_image(X11ImageData &image) {
   _needs_new_composite = true;
 
   // Go read the image.
-  string data;
   if (!read_image_data(image, image._data, image._filename)) {
     return;
   }

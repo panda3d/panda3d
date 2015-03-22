@@ -557,7 +557,7 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
 
   case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
     strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, unknown_auth_cert_text, _friendly_name.c_str());
+    snprintf(text, tlen, unknown_auth_cert_text);
     break;
 
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
