@@ -24,6 +24,8 @@
 #include "checksumHashGenerator.h"
 #include "lvecBase2.h"
 #include "lvecBase3.h"
+#include "lpoint3.h"
+#include "lvector3.h"
 
 #include "cmath.h"
 #include "nearly_zero.h"

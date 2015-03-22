@@ -14,17 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::Row::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LMatrix3)::Row>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 3);
-  _this->_row[i] = v;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::__reduce__
 //       Access: Published
 //  Description: This special Python method is implement to provide

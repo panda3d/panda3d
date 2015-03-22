@@ -200,6 +200,7 @@ CPPPreprocessor() {
 
   _warning_count = 0;
   _error_count = 0;
+  _error_abort = true;
 #ifdef CPP_VERBOSE_LEX
   _token_index = 0;
 #endif
@@ -404,8 +405,7 @@ get_next_token0() {
 
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
-    if (decl != NULL &&
-        (decl->as_typedef() != NULL || decl->as_type() != NULL)) {
+    if (decl != NULL && decl->as_type() != NULL) {
       token_type = TYPENAME_IDENTIFIER;
     }
 
@@ -432,10 +432,14 @@ warning(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Warning in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
   }
   _warning_count++;
@@ -452,7 +456,7 @@ error(const string &message, int line, int col, CPPFile file) {
     // Don't report or log errors in the nested state.  These will be
     // reported when the nesting level collapses.
     return;
-  };
+  }
 
   if (_verbose >= 1) {
     if (line == 0) {
@@ -462,11 +466,20 @@ error(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Error in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
+
+    if (_error_abort) {
+      cerr << "Aborting.\n";
+      abort();
+    }
   }
   _error_count++;
 }
@@ -603,7 +616,7 @@ init_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
-  if (_verbose >= 2) {
+  if (_verbose >= 3) {
     indent(cerr, _files.size() * 2)
       << "Reading " << file << "\n";
   }
@@ -2009,7 +2022,8 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
-  if (name == "wchar_t") return KW_WCHAR_T;
+  if (name == "char16_t") return KW_CHAR16_T;
+  if (name == "char32_t") return KW_CHAR32_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
   if (name == "delete") return KW_DELETE;
@@ -2061,6 +2075,7 @@ check_keyword(const string &name) {
   if (name == "virtual") return KW_VIRTUAL;
   if (name == "void") return KW_VOID;
   if (name == "volatile") return KW_VOLATILE;
+  if (name == "wchar_t") return KW_WCHAR_T;
   if (name == "while") return KW_WHILE;
 
   // These are alternative ways to refer to built-in operators.
@@ -2286,7 +2301,6 @@ unget(int c) {
   assert(_unget == '\0');
   _unget = c;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::nested_parse_template_instantiation

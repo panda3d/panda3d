@@ -2463,13 +2463,16 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
             for fixer in lib2to3_fixers:
                 lib2to3_args += ['-f', fixer]
 
+    exclude_files = set(VCS_FILES)
+    exclude_files.add('panda3d.py')
+
     refactor = []
     for entry in os.listdir(srcdir):
         srcpth = os.path.join(srcdir, entry)
         dstpth = os.path.join(dstdir, entry)
-        if (os.path.isfile(srcpth)):
+        if os.path.isfile(srcpth):
             base, ext = os.path.splitext(entry)
-            if entry not in VCS_FILES and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
+            if entry not in exclude_files and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 

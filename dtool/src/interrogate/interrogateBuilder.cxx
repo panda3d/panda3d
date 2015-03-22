@@ -40,7 +40,7 @@
 #include "cppExtensionType.h"
 #include "cppStructType.h"
 #include "cppExpression.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppEnumType.h"
 #include "cppCommentBlock.h"
@@ -286,7 +286,8 @@ build() {
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
-      CPPTypedef *tdef = (*di)->as_typedef();
+      CPPTypedefType *tdef = (*di)->as_typedef_type();
+
       if (tdef->_type->get_subtype() == CPPDeclaration::ST_struct) {
         // A typedef counts as a declaration.  This lets us pick up
         // most template instantiations.
@@ -295,13 +296,16 @@ build() {
         scan_struct_type(struct_type);
       }
 
+      scan_typedef_type(tdef);
+
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
       CPPType *type = (*di)->as_type_declaration()->_type;
+
       type->_vis = (*di)->_vis;
 
-      if (type->get_subtype() == CPPDeclaration::ST_struct)
-      {
-        CPPStructType *struct_type =type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
+      if (type->get_subtype() == CPPDeclaration::ST_struct) {
+        CPPStructType *struct_type =
+          type->as_type()->resolve_type(&parser, &parser)->as_struct_type();
         scan_struct_type(struct_type);
 
       } else if (type->get_subtype() == CPPDeclaration::ST_enum) {
@@ -329,7 +333,8 @@ build() {
 //  Description: Generates all the code necessary to the indicated
 //               output stream.
 ////////////////////////////////////////////////////////////////////
-void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
+void InterrogateBuilder::
+write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   typedef vector<InterfaceMaker *> InterfaceMakers;
   InterfaceMakers makers;
 
@@ -394,9 +399,10 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
     }
     declaration_bodies << "#include \"py_panda.h\"\n";
     declaration_bodies << "#include \"extension.h\"\n";
+    declaration_bodies << "#include \"dcast.h\"\n";
   }
   declaration_bodies << "\n";
-  
+
   IncludeFiles::const_iterator ifi;
   for (ifi = _include_files.begin();
        ifi != _include_files.end();
@@ -413,7 +419,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
   }
   declaration_bodies << "\n";
 
-
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->write_includes(declaration_bodies);
   }
@@ -427,8 +432,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
 
   declaration_bodies << "\n";
 
-
-
   // And now the prototypes.
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->write_prototypes(declaration_bodies,out_include);
@@ -438,21 +441,19 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
 //  if(out_include != NULL)
 //    (*out_include) << declaration_bodies.str();
 //  else
-    out_code << declaration_bodies.str();
+  out_code << declaration_bodies.str();
 
-  
   // Followed by the function bodies.
   out_code << function_bodies.str() << "\n";
 
-    for (mi = makers.begin(); mi != makers.end(); ++mi) {
-      (*mi)->write_module_support(out_code,out_include,def);
-    }
-
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->write_module_support(out_code, out_include, def);
+  }
 
   if (output_module_specific) {
     // Output whatever stuff we should output if this were a module.
     for (mi = makers.begin(); mi != makers.end(); ++mi) {
-      (*mi)->write_module(out_code,out_include, def);
+      (*mi)->write_module(out_code, out_include, def);
     }
   }
 
@@ -461,7 +462,7 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->get_function_remaps(remaps);
   }
-  
+
   // Make sure all of the function wrappers appear first in the set of
   // indices, and that they occupy consecutive index numbers, so we
   // can build a simple array of function pointers by index.
@@ -504,7 +505,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
     out_code << "};\n\n";
   }
 
-
   if (save_unique_names) {
     // Write out the table of unique names, in no particular order.
     out_code << "static InterrogateUniqueNameDef _in_unique_names["
@@ -517,9 +517,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
     }
     out_code << "};\n\n";
   }
-
-//if(1==2)
-{
 
   if (!no_database) {
     // Now build the module definition structure to add ourselves to
@@ -544,7 +541,7 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
           << "  0,  /* num_unique_names */\n";
     }
 
-    if (output_function_pointers) { 
+    if (output_function_pointers) {
       out_code << "  _in_fptrs,\n"
           << "  " << num_wrappers << ",  /* num_fptrs */\n";
     } else {
@@ -564,7 +561,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
         << "  interrogate_request_module(&_in_module_def);\n"
         << "}\n\n";
   }
-}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -887,6 +883,15 @@ in_ignoreinvolved(CPPType *type) const {
       return false;
     }
 
+  case CPPDeclaration::ST_typedef:
+    {
+      if (in_ignoreinvolved(type->get_simple_name())) {
+        return true;
+      }
+      CPPTypedefType *tdef = type->as_typedef_type();
+      return in_ignoreinvolved(tdef->_type);
+    }
+
   default:
     return in_ignoreinvolved(type->get_simple_name());
   }
@@ -1145,7 +1150,7 @@ scan_function(CPPInstance *function) {
   }
 
   get_function(function, "",
-               (CPPStructType *)NULL, scope, 
+               (CPPStructType *)NULL, scope,
                InterrogateFunction::F_global);
 }
 
@@ -1181,8 +1186,7 @@ scan_struct_type(CPPStructType *type) {
 
   // Check if any of the members are exported.  If none of them are,
   // and the type itself is not marked for export, then never mind.
-  if (type->_vis > min_vis) 
-  {
+  if (type->_vis > min_vis) {
     CPPScope *scope = type->_scope;
 
     bool any_exported = false;
@@ -1192,6 +1196,7 @@ scan_struct_type(CPPStructType *type) {
          ++di) {
       if ((*di)->_vis <= min_vis) {
         any_exported = true;
+        break;
       }
     }
 
@@ -1236,6 +1241,93 @@ scan_enum_type(CPPEnumType *type) {
   if (type->_vis > min_vis) {
     // The type is not marked to be exported.
     return;
+  }
+
+  get_type(type, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::scan_typedef_type
+//       Access: Private
+//  Description: Adds the indicated typedef type to the database, if
+//               warranted.
+////////////////////////////////////////////////////////////////////
+void InterrogateBuilder::
+scan_typedef_type(CPPTypedefType *type) {
+  if (type == (CPPTypedefType *)NULL) {
+    return;
+  }
+
+  // A typedef cannot be a template declaration.
+  assert(!type->is_template());
+
+  if (type->_file.is_c_file()) {
+    // This type declaration appears in a .C file.  We can only export
+    // types defined in a .h file.
+    return;
+  }
+
+  if (type->_file._source != CPPFile::S_local ||
+      in_ignorefile(type->_file._filename_as_referenced)) {
+    // The type is defined in some other package or in an
+    // ignorable file.
+    return;
+  }
+
+  // Do we require explicitly placing BEGIN_PUBLISH/END_PUBLISH
+  // blocks around typedefs for them to be exported?  My thinking is
+  // that we shoudn't, for now, since we don't require it for structs
+  // either (we only require it to have published methods).
+  //if (type->_vis > min_vis) {
+  //  // The wrapped type is not marked to be exported.
+  //  return;
+  //}
+
+  // Find out what this typedef points to.
+  CPPType *wrapped_type = type->_type;
+  bool forced = in_forcetype(wrapped_type->get_local_name(&parser));
+
+  while (wrapped_type->get_subtype() == CPPDeclaration::ST_typedef) {
+    wrapped_type = wrapped_type->as_typedef_type()->_type;
+    forced = forced || in_forcetype(wrapped_type->get_local_name(&parser));
+  }
+
+  CPPStructType *struct_type = wrapped_type->as_struct_type();
+  if (struct_type == (CPPStructType *)NULL) {
+    // We only export typedefs to structs, for now.
+    return;
+  }
+
+  // Always export typedefs pointing to forced types.
+  if (!forced) {
+    if (wrapped_type->_file._source != CPPFile::S_local ||
+        in_ignorefile(wrapped_type->_file._filename_as_referenced)) {
+      // The wrapped type is defined in some other package or
+      // in an ignorable file.
+      return;
+    }
+
+    // Check if any of the wrapped type's members are published.
+    // If none of them are, and the wrapped type itself is not
+    // marked for export, then never mind.
+    if (struct_type->_vis > min_vis) {
+      CPPScope *scope = struct_type->_scope;
+
+      bool any_exported = false;
+      CPPScope::Declarations::const_iterator di;
+      for (di = scope->_declarations.begin();
+           di != scope->_declarations.end() && !any_exported;
+           ++di) {
+        if ((*di)->_vis <= min_vis) {
+          any_exported = true;
+          break;
+        }
+      }
+
+      if (!any_exported) {
+        return;
+      }
+    }
   }
 
   get_type(type, true);
@@ -1683,6 +1775,11 @@ get_function(CPPInstance *function, string description,
     return 0;
   }
 
+  TypeIndex class_index = 0;
+  if (struct_type != (CPPStructType *)NULL) {
+    class_index = get_type(struct_type, false);
+  }
+
   string function_name = TypeManager::get_function_name(function);
   string function_signature = TypeManager::get_function_signature(function);
 
@@ -1698,18 +1795,17 @@ get_function(CPPInstance *function, string description,
     _functions_by_name.find(function_name);
   if (tni != _functions_by_name.end()) {
     FunctionIndex index = (*tni).second;
+
     // It's already here, so update the flags.
     InterrogateFunction &ifunction =
       InterrogateDatabase::get_ptr()->update_function(index);
 
-    // Not 100% sure why, but there's a case where this happens,
-    // in a case where a typedef shadowed an actual type. ~rdb
     nassertr(&ifunction != NULL, 0);
 
     ifunction._flags |= flags;
 
     // Also, make sure this particular signature is defined.
-    pair<InterrogateFunction::Instances::iterator, bool> result = 
+    pair<InterrogateFunction::Instances::iterator, bool> result =
       ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
 
     InterrogateFunction::Instances::iterator ii = result.first;
@@ -1764,7 +1860,7 @@ get_function(CPPInstance *function, string description,
   if (struct_type != (CPPStructType *)NULL) {
     // The function is a method.
     ifunction->_flags |= InterrogateFunction::F_method;
-    ifunction->_class = get_type(struct_type, false);
+    ifunction->_class = class_index;
   }
 
   if (ftype->_flags & CPPFunctionType::F_unary_op) {
@@ -1974,7 +2070,7 @@ get_type(CPPType *type, bool global) {
   if (true_name.empty()) {
     // Whoops, it's an anonymous type.  That's okay, because we'll
     // usually only encounter them once anyway, so let's go ahead and
-    // define it without checking in _types_by_name.
+    // define it without checking _types_by_name first.
 
   } else {
     TypesByName::const_iterator tni = _types_by_name.find(true_name);
@@ -2044,29 +2140,39 @@ get_type(CPPType *type, bool global) {
     }
   }
 
-  CPPExtensionType *ext_type = type->as_extension_type();
-  if (ext_type != (CPPExtensionType *)NULL) {
-    // If it's an extension type of some kind, it might be scoped.
+  CPPScope *scope = NULL;
+  // If it's an extension type or typedef, it might be scoped.
+  if (CPPTypedefType *td_type = type->as_typedef_type()) {
+    scope = td_type->_ident->get_scope(&parser, &parser);
+
+  } else if (CPPExtensionType *ext_type = type->as_extension_type()) {
     if (ext_type->_ident != (CPPIdentifier *)NULL) {
-      CPPScope *scope = ext_type->_ident->get_scope(&parser, &parser);
-      while (scope->as_template_scope() != (CPPTemplateScope *)NULL)
-      {
-        assert(scope->get_parent_scope() != scope);
-        scope = scope->get_parent_scope();
-        assert(scope != (CPPScope *)NULL);
-      }
-      itype._cppscope = scope;
+      scope = ext_type->_ident->get_scope(&parser, &parser);
 
-      if (scope != &parser) {
-        // We're scoped!
-        itype._scoped_name =
-          descope(scope->get_local_name(&parser) + "::" + itype._name);
-        CPPStructType *struct_type = scope->get_struct_type();
+    } else if (CPPEnumType *enum_type = ext_type->as_enum_type()) {
+      // Special case for anonymous enums.
+      scope = enum_type->_parent_scope;
+    }
 
-        if (struct_type != (CPPStructType *)NULL) {
-          itype._flags |= InterrogateType::F_nested;
-          itype._outer_class = get_type(struct_type, false);
-        }
+  }
+
+  if (scope != (CPPScope *)NULL) {
+    while (scope->as_template_scope() != (CPPTemplateScope *)NULL) {
+      assert(scope->get_parent_scope() != scope);
+      scope = scope->get_parent_scope();
+      assert(scope != (CPPScope *)NULL);
+    }
+    itype._cppscope = scope;
+
+    if (scope != &parser) {
+      // We're scoped!
+      itype._scoped_name =
+        descope(scope->get_local_name(&parser) + "::" + itype._name);
+      CPPStructType *struct_type = scope->get_struct_type();
+
+      if (struct_type != (CPPStructType *)NULL) {
+        itype._flags |= InterrogateType::F_nested;
+        itype._outer_class = get_type(struct_type, false);
       }
     }
   }
@@ -2092,8 +2198,15 @@ get_type(CPPType *type, bool global) {
     } else if (type->as_extension_type() != (CPPExtensionType *)NULL) {
       define_extension_type(itype, type->as_extension_type());
 
+    } else if (type->as_typedef_type() != (CPPTypedefType *)NULL) {
+      define_typedef_type(itype, type->as_typedef_type());
+
+    } else if (type->as_array_type() != (CPPArrayType *)NULL) {
+      define_array_type(itype, type->as_array_type());
+
     } else {
-      //      nout << "Attempt to define invalid type " << true_name << "\n";
+      nout << "Attempt to define invalid type " << *type
+           << " (subtype " << type->get_subtype() << ")\n";
 
       // Remove the type from the database.
       InterrogateDatabase::get_ptr()->remove_type(index);
@@ -2129,6 +2242,16 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     itype._atomic_token = AT_int;
     break;
 
+  case CPPSimpleType::T_char16_t:
+    itype._flags |= InterrogateType::F_unsigned;
+    itype._atomic_token = AT_int;
+    break;
+
+  case CPPSimpleType::T_char32_t:
+    itype._flags |= InterrogateType::F_unsigned;
+    itype._atomic_token = AT_int;
+    break;
+
   case CPPSimpleType::T_int:
     if ((cpptype->_flags & CPPSimpleType::F_longlong) != 0) {
       itype._atomic_token = AT_longlong;
@@ -2150,7 +2273,8 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     break;
 
   default:
-    nout << "Invalid CPPSimpleType: " << (int)cpptype->_type << "\n";
+    nout << "Type \"" << *cpptype << "\" has invalid CPPSimpleType: "
+         << (int)cpptype->_type << "\n";
     itype._atomic_token = AT_not_atomic;
   }
 
@@ -2204,7 +2328,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                    TypeIndex type_index, bool forced) {
   if (cpptype->get_simple_name().empty()) {
     // If the type has no name, forget it.  We don't export anonymous
-    // types.
+    // structs.
     return;
   }
 
@@ -2265,23 +2389,25 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   // A struct type should always be global.
   itype._flags |= InterrogateType::F_global;
-  
+
   CPPScope *scope = cpptype->_scope;
-  
+
   CPPStructType::Derivation::const_iterator bi;
   for (bi = cpptype->_derivation.begin();
        bi != cpptype->_derivation.end();
        ++bi) {
-    const CPPStructType::Base &base = (*bi);
-    if (base._vis <= V_public) 
-    {
 
+    const CPPStructType::Base &base = (*bi);
+    if (base._vis <= V_public) {
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
       TypeIndex base_index = get_type(base_type, true);
 
-      
       if (base_index == 0) {
-        nout << *cpptype << " reports a derivation from an invalid type.\n";
+        if (base_type != NULL) {
+          nout << *cpptype << " reports a derivation from invalid type " << *base_type << ".\n";
+        } else {
+          nout << *cpptype << " reports a derivation from an invalid type.\n";
+        }
 
       } else {
         InterrogateType::Derivation d;
@@ -2289,7 +2415,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         d._base = base_index;
         d._upcast = 0;
         d._downcast = 0;
-        
+
         // Do we need to synthesize upcast and downcast functions?
         bool generate_casts = false;
 
@@ -2297,12 +2423,12 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         if (base._is_virtual) {
           // We do in the presence of virtual inheritance.
           generate_casts = true;
-          
+
         } else if (bi != cpptype->_derivation.begin()) {
           // Or if we're not talking about the leftmost fork of multiple
           // inheritance.
           generate_casts = true;
-          
+
         } else if (cpptype->_derivation.size() != 1 &&
                    left_inheritance_requires_upcast) {
           // Or even if we are the leftmost fork of multiple
@@ -2318,13 +2444,11 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           // pointer, while the parent class won't).
           generate_casts = true;
         }
-        
-        if (generate_casts) {
-        
 
+        if (generate_casts) {
           d._upcast = get_cast_function(base_type, cpptype, "upcast");
           d._flags |= InterrogateType::DF_upcast;
-          
+
           if (base._is_virtual) {
             // If this is a virtual inheritance, we can't write a
             // downcast.
@@ -2371,8 +2495,9 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           CPPExtensionType *nested_type = type->as_extension_type();
           assert(nested_type != (CPPExtensionType *)NULL);
 
-          // Only try to export named types.
-          if (nested_type->_ident != (CPPIdentifier *)NULL) {
+          // For now, we don't allow anonymous structs.
+          if (nested_type->_ident != (CPPIdentifier *)NULL ||
+              nested_type->as_enum_type() != (CPPEnumType *)NULL) {
             TypeIndex nested_index = get_type(nested_type, false);
             itype._nested_types.push_back(nested_index);
           }
@@ -2382,9 +2507,29 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       CPPType *type = (*di)->as_enum_type();
 
       // An anonymous enum type.
-      if ((*di)->_vis <= min_vis) {
+      if (type->_vis <= min_vis) {
         TypeIndex nested_index = get_type(type, false);
         itype._nested_types.push_back(nested_index);
+      }
+
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
+      CPPTypedefType *type = (*di)->as_typedef_type();
+
+      // A nested typedef.  Unwrap it to find out what it's pointing to.
+      CPPType *wrapped_type = type->_type;
+
+      while (wrapped_type->get_subtype() == CPPDeclaration::ST_typedef) {
+        wrapped_type = wrapped_type->as_typedef_type()->_type;
+      }
+
+      CPPStructType *struct_type = wrapped_type->as_struct_type();
+      if (struct_type != (CPPStructType *)NULL) {
+        // We only export typedefs to structs, for now.
+
+        if (type->_vis <= min_vis) {
+          TypeIndex nested_index = get_type(type, false);
+          itype._nested_types.push_back(nested_index);
+        }
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
@@ -2483,7 +2628,7 @@ update_function_comment(CPPInstance *function, CPPScope *scope) {
     ifunction._comment += comment;
 
     // Also update the particular wrapper comment.
-    InterrogateFunction::Instances::iterator ii = 
+    InterrogateFunction::Instances::iterator ii =
       ifunction._instances->find(function_signature);
     if (ii != ifunction._instances->end()) {
       if ((*ii).second->_leading_comment == NULL ||
@@ -2505,8 +2650,7 @@ void InterrogateBuilder::
 define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
               CPPStructType *struct_type, CPPScope *scope) {
   CPPFunctionGroup::Instances::const_iterator fi;
-  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) 
-  {
+  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
     CPPInstance *function = (*fi);
     define_method(function, itype, struct_type, scope);
   }
@@ -2642,7 +2786,7 @@ void InterrogateBuilder::
 define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
   itype._flags |= InterrogateType::F_enum;
 
-  CPPScope *scope = &parser;
+  CPPScope *scope = cpptype->_parent_scope;
   if (cpptype->_ident != (CPPIdentifier *)NULL) {
     scope = cpptype->_ident->get_scope(&parser, &parser);
   }
@@ -2683,13 +2827,45 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
 
     if (element->_initializer != (CPPExpression *)NULL) {
       CPPExpression::Result result = element->_initializer->evaluate();
-      next_value = result.as_integer();
+
+      if (result._type == CPPExpression::RT_error) {
+        nout << "enum value ";
+        element->output(nout, 0, &parser, true);
+        nout << " has invalid definition!\n";
+        return;
+      } else {
+        next_value = result.as_integer();
+      }
     }
     evalue._value = next_value;
     itype._enum_values.push_back(evalue);
 
     next_value++;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::define_typedef_type
+//       Access: Private
+//  Description: Builds up a definition for the indicated typedef.
+////////////////////////////////////////////////////////////////////
+void InterrogateBuilder::
+define_typedef_type(InterrogateType &itype, CPPTypedefType *cpptype) {
+  itype._flags |= InterrogateType::F_typedef;
+  itype._wrapped_type = get_type(cpptype->_type, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::define_array_type
+//       Access: Private
+//  Description: Builds up a definition for the indicated wrapped type.
+////////////////////////////////////////////////////////////////////
+void InterrogateBuilder::
+define_array_type(InterrogateType &itype, CPPArrayType *cpptype) {
+  itype._flags |= InterrogateType::F_array;
+  itype._wrapped_type = get_type(cpptype->_element_type, false);
+
+  itype._array_size = cpptype->_bounds->evaluate().as_integer();
 }
 
 ////////////////////////////////////////////////////////////////////

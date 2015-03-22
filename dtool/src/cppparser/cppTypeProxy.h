@@ -19,7 +19,6 @@
 
 #include "cppType.h"
 
-
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPTypeProxy
 // Description : This is a special kind of type that is a placeholder
@@ -66,6 +65,7 @@ public:
   virtual CPPStructType *as_struct_type();
   virtual CPPEnumType *as_enum_type();
   virtual CPPTBDType *as_tbd_type();
+  virtual CPPTypedefType *as_typedef_type();
   virtual CPPTypeProxy *as_type_proxy();
 
   CPPType *_actual_type;

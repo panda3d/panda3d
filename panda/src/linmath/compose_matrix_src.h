@@ -30,7 +30,7 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
                CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH void
-compose_matrix(FLOATNAME(LMatrix4) &mat, 
+compose_matrix(FLOATNAME(LMatrix4) &mat,
                const FLOATTYPE components[num_matrix_components],
                CoordinateSystem cs = CS_default);
 
@@ -50,7 +50,8 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
                  CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH bool
-decompose_matrix(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[num_matrix_components],
+decompose_matrix(const FLOATNAME(LMatrix4) &mat,
+                 FLOATTYPE components[num_matrix_components],
                  CoordinateSystem CS = CS_default);
 
 
@@ -106,7 +107,8 @@ compose_matrix_old_hpr(FLOATNAME(LMatrix4) &mat,
                        CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH void
-compose_matrix_old_hpr(FLOATNAME(LMatrix4) &mat, const FLOATTYPE components[num_matrix_components],
+compose_matrix_old_hpr(FLOATNAME(LMatrix4) &mat,
+                       const FLOATTYPE components[num_matrix_components],
                        CoordinateSystem cs = CS_default);
 
 EXPCL_PANDA_LINMATH bool
@@ -125,7 +127,8 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix4) &mat,
                          CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH bool
-decompose_matrix_old_hpr(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[num_matrix_components],
+decompose_matrix_old_hpr(const FLOATNAME(LMatrix4) &mat,
+                         FLOATTYPE components[num_matrix_components],
                          CoordinateSystem CS = CS_default);
 
 
@@ -145,7 +148,8 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix4) &mat,
                        CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH void
-compose_matrix_new_hpr(FLOATNAME(LMatrix4) &mat, const FLOATTYPE components[num_matrix_components],
+compose_matrix_new_hpr(FLOATNAME(LMatrix4) &mat,
+                       const FLOATTYPE components[num_matrix_components],
                        CoordinateSystem cs = CS_default);
 
 EXPCL_PANDA_LINMATH bool
@@ -164,7 +168,8 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat,
                          CoordinateSystem cs = CS_default);
 
 INLINE_LINMATH bool
-decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[num_matrix_components],
+decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat,
+                         FLOATTYPE components[num_matrix_components],
                          CoordinateSystem CS = CS_default);
 
 

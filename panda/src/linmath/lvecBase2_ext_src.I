@@ -29,17 +29,6 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase2)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 2);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::python_repr
 //       Access: Published
 //  Description:

@@ -64,13 +64,6 @@
 
 class TypedObject;
 
-#ifdef HAVE_PYTHON
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : TypeHandle
 // Description : TypeHandle is the identifier used to differentiate
@@ -104,9 +97,7 @@ PUBLISHED:
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);
 
-#ifdef HAVE_PYTHON
-  static PyObject *make(PyObject *classobj);
-#endif  // HAVE_PYTHON
+  EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;

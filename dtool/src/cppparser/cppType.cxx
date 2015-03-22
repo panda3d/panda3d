@@ -14,7 +14,7 @@
 
 
 #include "cppType.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include <algorithm>
 
 CPPType::Types CPPType::_types;

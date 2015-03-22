@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Default Constructor
 //       Access: Public
@@ -381,7 +382,7 @@ begin() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::iterator FLOATNAME(LVecBase3)::
 end() {
-  return begin() + get_num_components();
+  return begin() + num_components;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -403,7 +404,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::const_iterator FLOATNAME(LVecBase3)::
 end() const {
-  return begin() + get_num_components();
+  return begin() + num_components;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -933,9 +934,13 @@ componentwise_mult(const FLOATNAME(LVecBase3) &other) {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 fmax(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmax()", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  return FLOATNAME(LVecBase3)(_v.cwiseMax(other._v));
+#else
   return FLOATNAME(LVecBase3)(_v(0) > other._v(0) ? _v(0) : other._v(0),
                               _v(1) > other._v(1) ? _v(1) : other._v(1),
                               _v(2) > other._v(2) ? _v(2) : other._v(2));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -946,9 +951,13 @@ fmax(const FLOATNAME(LVecBase3) &other) const {
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 fmin(const FLOATNAME(LVecBase3) &other) const {
   TAU_PROFILE("LVecBase3::fmin()", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  return FLOATNAME(LVecBase3)(_v.cwiseMin(other._v));
+#else
   return FLOATNAME(LVecBase3)(_v(0) < other._v(0) ? _v(0) : other._v(0),
                               _v(1) < other._v(1) ? _v(1) : other._v(1),
                               _v(2) < other._v(2) ? _v(2) : other._v(2));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,13 +19,13 @@
 #include "pnotify.h"
 #include "config_express.h"
 
-#if !defined(USE_MEMORY_NOWRAPPERS)
+#if !defined(USE_MEMORY_NOWRAPPERS) && !defined(CPPPARSER)
 // Define functions that hook zlib into panda's memory allocation system.
 static void *
 do_zlib_alloc(voidpf opaque, uInt items, uInt size) {
   return PANDA_MALLOC_ARRAY(items * size);
 }
-static void 
+static void
 do_zlib_free(voidpf opaque, voidpf address) {
   PANDA_FREE_ARRAY(address);
 }

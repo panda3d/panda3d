@@ -79,6 +79,7 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_AsUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_FromLong(...);
   EXPCL_PYSTUB int PyLong_FromLongLong(...);
+  EXPCL_PYSTUB int PyLong_FromSize_t(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLong(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_Type(...);
@@ -122,6 +123,7 @@ extern "C" {
   EXPCL_PYSTUB int PySequence_Tuple(...);
   EXPCL_PYSTUB int PyString_AsString(...);
   EXPCL_PYSTUB int PyString_AsStringAndSize(...);
+  EXPCL_PYSTUB int PyString_FromFormat(...);
   EXPCL_PYSTUB int PyString_FromString(...);
   EXPCL_PYSTUB int PyString_FromStringAndSize(...);
   EXPCL_PYSTUB int PyString_InternFromString(...);
@@ -153,6 +155,8 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_AsUTF8(...);
   EXPCL_PYSTUB int PyUnicode_AsUTF8AndSize(...);
   EXPCL_PYSTUB int PyUnicode_AsWideChar(...);
+  EXPCL_PYSTUB int PyUnicode_AsWideCharString(...);
+  EXPCL_PYSTUB int PyUnicode_FromFormat(...);
   EXPCL_PYSTUB int PyUnicode_FromString(...);
   EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicode_FromWideChar(...);
@@ -192,6 +196,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_SystemExit;
   EXPCL_PYSTUB extern void *PyExc_TypeError;
   EXPCL_PYSTUB extern void *PyExc_ValueError;
+  EXPCL_PYSTUB extern void *_PyThreadState_Current;
   EXPCL_PYSTUB extern void *_Py_FalseStruct;
   EXPCL_PYSTUB extern void *_Py_NoneStruct;
   EXPCL_PYSTUB extern void *_Py_NotImplementedStruct;
@@ -264,6 +269,7 @@ int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
 int PyLong_FromLong(...) { return 0; }
 int PyLong_FromLongLong(...) { return 0; }
+int PyLong_FromSize_t(...) { return 0; }
 int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
@@ -307,6 +313,7 @@ int PySequence_Size(...) { return 0; }
 int PySequence_Tuple(...) { return 0; }
 int PyString_AsString(...) { return 0; }
 int PyString_AsStringAndSize(...) { return 0; }
+int PyString_FromFormat(...) { return 0; }
 int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
 int PyString_InternFromString(...) { return 0; }
@@ -338,6 +345,8 @@ int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_AsUTF8(...) { return 0; }
 int PyUnicode_AsUTF8AndSize(...) { return 0; }
 int PyUnicode_AsWideChar(...) { return 0; }
+int PyUnicode_AsWideCharString(...) { return 0; }
+int PyUnicode_FromFormat(...) { return 0; }
 int PyUnicode_FromString(...) { return 0; }
 int PyUnicode_FromStringAndSize(...) { return 0; }
 int PyUnicode_FromWideChar(...) { return 0; }
@@ -382,6 +391,7 @@ void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_SystemExit = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
+void *_PyThreadState_Current = (void *)NULL;
 void *_Py_FalseStruct = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
 void *_Py_NotImplementedStruct = (void *)NULL;

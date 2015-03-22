@@ -21,7 +21,7 @@
 #include "cppClassTemplateParameter.h"
 #include "cppTemplateParameterList.h"
 #include "cppInstanceIdentifier.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppVisibility.h"
 #include "cppIdentifier.h"
@@ -241,7 +241,8 @@ pop_struct() {
 %token KW_BOOL
 %token KW_CATCH
 %token KW_CHAR
-%token KW_WCHAR_T
+%token KW_CHAR16_T
+%token KW_CHAR32_T
 %token KW_CLASS
 %token KW_CONST
 %token KW_DELETE
@@ -294,6 +295,7 @@ pop_struct() {
 %token KW_VIRTUAL
 %token KW_VOID
 %token KW_VOLATILE
+%token KW_WCHAR_T
 %token KW_WHILE
 
 /* These special tokens are used to set the starting state of the
@@ -325,8 +327,7 @@ pop_struct() {
 %type <u.type> full_type
 %type <u.struct_type> anonymous_struct
 %type <u.struct_type> named_struct
-%type <u.enum_type> anonymous_enum
-%type <u.enum_type> named_enum
+%type <u.enum_type> enum
 %type <u.extension_enum> enum_keyword
 %type <u.extension_enum> struct_keyword
 %type <u.simple_type> simple_type
@@ -334,6 +335,7 @@ pop_struct() {
 %type <u.simple_type> simple_float_type
 %type <u.simple_type> simple_void_type
 %type <u.type> class_derivation_name
+%type <u.type> enum_element_type
 /*%type <u.type> typedefname*/
 %type <u.identifier> name
 %type <str> string
@@ -353,7 +355,7 @@ pop_struct() {
 
 /* Precedence rules. */
 
-%left IDENTIFIER TYPENAME_IDENTIFIER TYPEDEFNAME KW_ENUM ELLIPSIS KW_OPERATOR KW_TYPENAME KW_INT KW_SHORT KW_UNSIGNED KW_SIGNED KW_LONG KW_FLOAT KW_DOUBLE KW_CHAR KW_WCHAR_T KW_BOOL
+%left IDENTIFIER TYPENAME_IDENTIFIER TYPEDEFNAME KW_ENUM ELLIPSIS KW_OPERATOR KW_TYPENAME KW_INT KW_SHORT KW_UNSIGNED KW_SIGNED KW_LONG KW_FLOAT KW_DOUBLE KW_CHAR KW_WCHAR_T KW_CHAR16_T KW_CHAR32_T KW_BOOL
 
 %left '{' ',' ';'
 
@@ -717,7 +719,8 @@ typedef_declaration:
     if (inst != (CPPInstance *)NULL) {
       inst->_storage_class |= (current_storage_class | $1);
       current_scope->add_declaration(inst, global_scope, current_lexer, @2);
-      current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, @2);
+      CPPTypedefType *typedef_type = new CPPTypedefType(inst->_type, inst->_ident, current_scope);
+      current_scope->add_declaration(typedef_type, global_scope, current_lexer, @2);
     }
   }
 }
@@ -726,19 +729,15 @@ typedef_declaration:
 typedef_instance_identifiers:
         instance_identifier maybe_initialize_or_function_body
 {
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, @1);
+  CPPType *target_type = current_type;
+  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
+  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
 }
         | instance_identifier maybe_initialize ',' typedef_instance_identifiers
 {
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, @1);
+  CPPType *target_type = current_type;
+  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
+  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
 }
         ;
 
@@ -746,20 +745,16 @@ typedef_const_instance_identifiers:
         instance_identifier maybe_initialize_or_function_body
 {
   $1->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, @1);
+  CPPType *target_type = current_type;
+  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
+  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
 }
         | instance_identifier maybe_initialize ',' typedef_const_instance_identifiers
 {
   $1->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, $1,
-                                      current_storage_class,
-                                      @1.file);
-  inst->set_initializer($2);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, @1);
+  CPPType *target_type = current_type;
+  CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
+  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
 }
         ;
 
@@ -1585,11 +1580,7 @@ type:
 {
   $$ = CPPType::new_type($1);
 }
-        | anonymous_enum
-{
-  $$ = CPPType::new_type($1);
-}
-        | named_enum
+        | enum
 {
   $$ = CPPType::new_type($1);
 }
@@ -1609,7 +1600,7 @@ type:
     $$ = et;
   }
 }
-        | enum_keyword name
+        | enum_keyword name ':' enum_element_type
 {
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
@@ -1649,11 +1640,7 @@ type_decl:
 {
   $$ = new CPPTypeDeclaration(CPPType::new_type($1));
 }
-        | anonymous_enum
-{
-  $$ = new CPPTypeDeclaration(CPPType::new_type($1));
-}
-        | named_enum
+        | enum
 {
   $$ = new CPPTypeDeclaration(CPPType::new_type($1));
 }
@@ -1673,7 +1660,7 @@ type_decl:
     $$ = et;
   }
 }
-        | enum_keyword name
+        | enum_keyword name ':' enum_element_type
 {
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
@@ -1858,27 +1845,41 @@ base_specification:
 }
         ;
 
-anonymous_enum:
-        enum_keyword '{'
-{
-  current_enum = new CPPEnumType(NULL, current_scope, @1.file);
-}
-        enum_body '}'
+enum:
+        enum_decl '{' enum_body '}'
 {
   $$ = current_enum;
   current_enum = NULL;
 }
         ;
 
-named_enum:
-        enum_keyword name '{'
+enum_decl:
+        enum_keyword name ':' enum_element_type
+{
+  current_enum = new CPPEnumType($2, $4, current_scope, @1.file);
+}
+        | enum_keyword name
 {
   current_enum = new CPPEnumType($2, current_scope, @1.file);
 }
-        enum_body '}'
+        | enum_keyword ':' enum_element_type
 {
-  $$ = current_enum;
-  current_enum = NULL;
+  current_enum = new CPPEnumType(NULL, $3, current_scope, @1.file);
+}
+        | enum_keyword
+{
+  current_enum = new CPPEnumType(NULL, current_scope, @1.file);
+}
+        ;
+
+enum_element_type:
+        simple_int_type
+{
+  $$ = CPPType::new_type($1);
+}
+        | TYPENAME_IDENTIFIER
+{
+  $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
 }
         ;
 
@@ -1994,6 +1995,14 @@ simple_int_type:
         | KW_WCHAR_T
 {
   $$ = new CPPSimpleType(CPPSimpleType::T_wchar_t);
+}
+        | KW_CHAR16_T
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_char16_t);
+}
+        | KW_CHAR32_T
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_char32_t);
 }
         | KW_SHORT
 {
@@ -2132,7 +2141,8 @@ element:
         | SCOPE | PLUSPLUS | MINUSMINUS
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
-        | KW_BOOL | KW_CATCH | KW_CHAR | KW_WCHAR_T | KW_CLASS | KW_CONST
+        | KW_BOOL | KW_CATCH | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T
+        | KW_WCHAR_T | KW_CLASS | KW_CONST
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
         | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO
@@ -2368,6 +2378,18 @@ const_expr:
 {
   CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_wchar_t));
+  $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
+}
+        | KW_CHAR16_T '(' optional_const_expr_comma ')'
+{
+  CPPType *type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char16_t));
+  $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
+}
+        | KW_CHAR32_T '(' optional_const_expr_comma ')'
+{
+  CPPType *type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char32_t));
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | KW_BOOL '(' optional_const_expr_comma ')'

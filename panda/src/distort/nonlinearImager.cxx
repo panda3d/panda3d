@@ -183,7 +183,7 @@ get_num_screens() const {
 ////////////////////////////////////////////////////////////////////
 NodePath NonlinearImager::
 get_screen(int index) const {
-  nassertr(index >= 0 && index < (int)_screens.size(), (ProjectionScreen *)NULL);
+  nassertr(index >= 0 && index < (int)_screens.size(), NodePath());
   return _screens[index]._screen;
 }
 
@@ -215,7 +215,7 @@ get_buffer(int index) const {
 void NonlinearImager::
 set_texture_size(int index, int width, int height) {
   nassertv(index >= 0 && index < (int)_screens.size());
-  
+
   Screen &screen = _screens[index];
 
   screen._tex_width = width;

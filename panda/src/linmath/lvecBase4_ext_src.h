@@ -25,23 +25,10 @@ public:
   INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
   INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const;
   INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
   INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
 
   INLINE_LINMATH FLOATNAME(LVecBase4) __pow__(FLOATTYPE exponent) const;
   INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent);
-};
-
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<UnalignedLVecBase4>
-// Description : This class defines the extension methods for
-//               UnalignedLVecBase4, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
-template<>
-class Extension<FLOATNAME(UnalignedLVecBase4)> : public ExtensionBase<FLOATNAME(UnalignedLVecBase4)> {
-public:
-  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
 };
 
 #include "lvecBase4_ext_src.I"

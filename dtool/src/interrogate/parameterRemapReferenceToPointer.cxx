@@ -42,7 +42,16 @@ ParameterRemapReferenceToPointer(CPPType *orig_type) :
 ////////////////////////////////////////////////////////////////////
 void ParameterRemapReferenceToPointer::
 pass_parameter(ostream &out, const string &variable_name) {
-  out << "*" << variable_name;
+  if (variable_name.size() > 1 && variable_name[0] == '&') {
+    // Prevent generating something like *&param
+    // Also, if this is really some local type, we can presumably just
+    // move it?  This is only relevant if this parameter is an rvalue
+    // reference, but CPPParser can't know that, and it might have an overload
+    // that takes an rvalue reference.  It shouldn't hurt either way.
+    out << "MOVE(" << variable_name.substr(1) << ")";
+  } else {
+    out << "*" << variable_name;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

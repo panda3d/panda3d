@@ -60,7 +60,11 @@ public:
   INLINE bool is_wrapped() const;
   INLINE bool is_pointer() const;
   INLINE bool is_const() const;
+  INLINE bool is_typedef() const;
   INLINE TypeIndex get_wrapped_type() const;
+
+  INLINE bool is_array() const;
+  INLINE int get_array_size() const;
 
   INLINE bool is_enum() const;
   INLINE int number_of_enum_values() const;
@@ -132,6 +136,8 @@ private:
     F_nested               = 0x040000,
     F_enum                 = 0x080000,
     F_unpublished          = 0x100000,
+    F_typedef              = 0x200000,
+    F_array                = 0x400000,
   };
 
 public:
@@ -143,6 +149,7 @@ public:
   TypeIndex _outer_class;
   AtomicToken _atomic_token;
   TypeIndex _wrapped_type;
+  int _array_size;
 
   typedef vector<FunctionIndex> Functions;
   Functions _constructors;

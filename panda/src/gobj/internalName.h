@@ -191,8 +191,8 @@ INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 //               by the compiler when passed to such a function.
 ////////////////////////////////////////////////////////////////////
 #ifdef CPPPARSER
-// This construct confuses interrogate, so we give it a typedef.
-typedef const InternalName *CPT_InternalName;
+// The construct below confuses interrogate, so we give it a typedef.
+typedef ConstPointerTo<InternalName> CPT_InternalName;
 #else
 class CPT_InternalName : public ConstPointerTo<InternalName> {
 public:
