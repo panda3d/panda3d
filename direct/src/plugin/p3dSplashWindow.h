@@ -78,10 +78,6 @@ protected:
 
   bool read_image_data(ImageData &image, string &data,
                        const string &image_filename);
-  bool read_image_data_jpeg(ImageData &image, string &data,
-                            FILE *fp, const string &image_filename);
-  bool read_image_data_png(ImageData &image, string &data,
-                           FILE *fp, const string &image_filename);
   void get_bar_placement(int &bar_x, int &bar_y,
                          int &bar_width, int &bar_height);
   void set_button_range(const ImageData &image);

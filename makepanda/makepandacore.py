@@ -1534,8 +1534,9 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (have_all_pkgs):
                 return
 
-    if (pkgconfig != None and (libs == None or len(libs) == 0)):
-        if (pkg in PkgListGet()):
+    if pkgconfig is not None and not libs and not incs:
+        # pkg-config is all we can do, abort if it wasn't found.
+        if pkg in PkgListGet():
             print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
             PkgDisable(pkg)
         else:

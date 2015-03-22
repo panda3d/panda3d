@@ -366,10 +366,10 @@ if (RUNTIME):
         if pkg in ["GTK2"]:
             # Optional package(s) for runtime.
             pass
-        elif pkg in ["OPENSSL", "ZLIB", "JPEG", "PNG"]:
+        elif pkg in ["OPENSSL", "ZLIB"]:
             # Required packages for runtime.
             if (PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, ZLib, JPEG and PNG support!")
+                exit("Runtime must be compiled with OpenSSL and ZLib support!")
         else:
             # Unused packages for runtime.
             PkgDisable(pkg)
@@ -382,9 +382,6 @@ if (INSTALLER and RTDIST):
 
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME) and GetTarget() == 'windows':
     exit("Cannot build installer on Windows without python")
-
-if (RTDIST) and (PkgSkip("JPEG")):
-    exit("Cannot build rtdist without jpeg")
 
 if (RTDIST) and (PkgSkip("WX") and PkgSkip("FLTK")):
     exit("Cannot build rtdist without wx or fltk")
@@ -720,6 +717,8 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
+        SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+        SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
@@ -729,9 +728,7 @@ if (COMPILER=="GCC"):
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
-    SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
 
@@ -773,12 +770,12 @@ if (COMPILER=="GCC"):
 
     if (RUNTIME):
         # For the runtime, all packages are required
-        for pkg in ["OPENSSL", "ZLIB", "JPEG", "PNG"]:
+        for pkg in ["OPENSSL", "ZLIB"]:
             skips = []
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 skips.append(pkg)
             if skips:
-                exit("Runtime must be compiled with OpenSSL, ZLib, JPEG and PNG support (missing %s)" % (', '.join(skips)))
+                exit("Runtime must be compiled with OpenSSL and ZLib support (missing %s)" % (', '.join(skips)))
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -4747,7 +4744,7 @@ if (RTDIST or RUNTIME):
   OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
 
-  OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
+  OPTS += ['ZLIB', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
   TargetAdd('plugin_wstring_encode.obj', opts=OPTS, input='wstring_encode.cxx')
@@ -4776,7 +4773,7 @@ if (RTDIST or RUNTIME):
       TargetAdd(fname, input='libp3tinyxml.ilb')
       if GetTarget() == 'darwin':
         TargetAdd(fname, input='libp3subprocbuffer.ilb')
-      TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+      TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
     TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
@@ -4960,7 +4957,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
+  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'ZLIB']
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
@@ -5007,7 +5004,7 @@ if (RTDIST):
     TargetAdd('p3dembed.exe', input='libp3subprocbuffer.ilb')
   TargetAdd('p3dembed.exe', input='libp3tinyxml.ilb')
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11'])
 
   if GetTarget() == 'windows':
     OPTS.append("P3DEMBEDW")
@@ -5033,7 +5030,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_common.obj')
     TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
-    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
+    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
