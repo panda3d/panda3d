@@ -14,16 +14,15 @@ Still need to implement:
 
 """
 
-from pandac.PandaModules import Point3, Vec3, Vec4
-from pandac.PandaModules import NodePath, PandaNode
-from pandac.PandaModules import RenderState, Texture, Shader
-from pandac.PandaModules import CardMaker
-from pandac.PandaModules import TextureStage
-from pandac.PandaModules import GraphicsPipe, GraphicsOutput
-from pandac.PandaModules import WindowProperties, FrameBufferProperties
-from pandac.PandaModules import Camera, DisplayRegion
-from pandac.PandaModules import OrthographicLens
-from pandac.PandaModules import AuxBitplaneAttrib
+from panda3d.core import NodePath, PandaNode
+from panda3d.core import RenderState, Texture, Shader
+from panda3d.core import CardMaker
+from panda3d.core import TextureStage
+from panda3d.core import GraphicsPipe, GraphicsOutput
+from panda3d.core import WindowProperties, FrameBufferProperties
+from panda3d.core import Camera, DisplayRegion
+from panda3d.core import OrthographicLens
+from panda3d.core import AuxBitplaneAttrib
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.DirectObject import DirectObject
 
@@ -111,16 +110,16 @@ class FilterManager(DirectObject):
 
         winx = self.forcex
         winy = self.forcey
-        if (winx == 0): winx = self.win.getXSize()
-        if (winy == 0): winy = self.win.getYSize()
+        if winx == 0: winx = self.win.getXSize()
+        if winy == 0: winy = self.win.getYSize()
 
-        if (div != 1):
-            winx = ((winx+align-1) / align) * align
-            winy = ((winy+align-1) / align) * align
-            winx = winx / div
-            winy = winy / div
+        if div != 1:
+            winx = ((winx+align-1) // align) * align
+            winy = ((winy+align-1) // align) * align
+            winx = winx // div
+            winy = winy // div
 
-        if (mul != 1):
+        if mul != 1:
             winx = winx * mul
             winy = winy * mul
 
@@ -198,7 +197,7 @@ class FilterManager(DirectObject):
         quad.setDepthTest(0)
         quad.setDepthWrite(0)
         quad.setTexture(colortex)
-        quad.setColor(Vec4(1,0.5,0.5,1))
+        quad.setColor(1, 0.5, 0.5, 1)
 
         cs = NodePath("dummy")
         cs.setState(self.camstate)
@@ -221,7 +220,7 @@ class FilterManager(DirectObject):
         self.setStackedClears(buffer, self.rclears, self.wclears)
         if (auxtex0):
             buffer.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
-            buffer.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5, 0.5, 1.0, 0.0))
+            buffer.setClearValue(GraphicsOutput.RTPAuxRgba0, (0.5, 0.5, 1.0, 0.0))
         if (auxtex1):
             buffer.setClearActive(GraphicsOutput.RTPAuxRgba1, 1)
         self.region.disableClears()
@@ -262,7 +261,7 @@ class FilterManager(DirectObject):
         quad = NodePath(cm.generate())
         quad.setDepthTest(0)
         quad.setDepthWrite(0)
-        quad.setColor(Vec4(1,0.5,0.5,1))
+        quad.setColor(1, 0.5, 0.5, 1)
 
         quadcamnode = Camera("filter-quad-cam")
         lens = OrthographicLens()

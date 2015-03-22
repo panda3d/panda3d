@@ -112,7 +112,6 @@ private:
     string _answer_location;
     WrapperType _wrapper_type;
     int _min_version;
-    Function *_func;
     string _wrapper_name;
     set<FunctionRemap*> _remaps;
   };

@@ -117,7 +117,7 @@ class World(DirectObject):
         # When the mouse is clicked, if the simulation is running pause all the
         # planets and sun, otherwise resume it
         if self.simRunning:
-            print "Pausing Simulation"
+            print("Pausing Simulation")
             # changing the text to reflect the change from "RUNNING" to
             # "PAUSED"
             self.mouse1EventText.setText(
@@ -146,7 +146,7 @@ class World(DirectObject):
                                   self.orbit_period_mars, self.mkeyEventText)
         else:
             #"The simulation is paused, so resume it
-            print "Resuming Simulation"
+            print("Resuming Simulation")
             self.mouse1EventText.setText(
                 "Mouse Button 1: Toggle entire Solar System [RUNNING]")
             # the not operator does the reverse of the previous code
@@ -179,10 +179,10 @@ class World(DirectObject):
     # Text is the OnscreenText object that needs to be updated
     def togglePlanet(self, planet, day, orbit=None, text=None):
         if day.isPlaying():
-            print "Pausing " + planet
+            print("Pausing " + planet)
             state = " [PAUSED]"
         else:
-            print "Resuming " + planet
+            print("Resuming " + planet)
             state = " [RUNNING]"
 
         # Update the onscreen text if it is given as an argument

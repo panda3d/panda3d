@@ -743,7 +743,8 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _args_type = InterfaceMaker::AT_varargs;
   }
 
-  if (_type == T_normal) {
+  switch (_type) {
+  case T_normal:
     if (fname == "operator []" || fname == "__getitem__") {
       _flags |= F_getitem;
       if (_has_this && _parameters.size() == 2) {
@@ -824,6 +825,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_coerce_constructor;
       }
 
+    } else if (fname == "operator /") {
+      if (_has_this && _parameters.size() == 2 &&
+          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single float argument.
+        _flags |= F_divide_float;
+      }
+
     } else if (fname == "operator ()" || fname == "__call__") {
       // Call operators always take keyword arguments.
       _args_type = InterfaceMaker::AT_keyword_args;
@@ -840,8 +848,19 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _args_type = InterfaceMaker::AT_keyword_args;
       }
     }
+    break;
 
-  } else if (_type == T_item_assignment_operator) {
+  case T_assignment_method:
+    if (fname == "operator /=") {
+      if (_has_this && _parameters.size() == 2 &&
+          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single float argument.
+        _flags |= F_divide_float;
+      }
+    }
+    break;
+
+  case T_item_assignment_operator:
     // The concept of "item assignment operator" doesn't really exist in C++,
     // but it does in scripting languages, and this allows us to wrap cases
     // where the C++ getitem returns an assignable reference.
@@ -853,8 +872,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
     }
     _args_type = InterfaceMaker::AT_varargs;
+    break;
 
-  } else if (_type == T_constructor) {
+  case T_constructor:
     if (!_has_this && _parameters.size() == 1 &&
         TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
         TypeManager::unwrap(_return_type->get_orig_type())) {
@@ -870,6 +890,10 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     // Constructors always take varargs and keyword args.
     _args_type = InterfaceMaker::AT_keyword_args;
+    break;
+
+  default:
+    break;
   }
 
   return true;

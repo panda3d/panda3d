@@ -2275,6 +2275,8 @@ def SetupBuildEnvironment(compiler):
         handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
         scanning = False
         for line in handle.communicate()[1].splitlines():
+            line = line.decode('utf-8', 'replace')
+
             # Start looking at a line that says:  #include "..." search starts here
             if not scanning:
                 if line.startswith('#include'):

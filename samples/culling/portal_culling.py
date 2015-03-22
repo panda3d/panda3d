@@ -108,7 +108,7 @@ class Game(ShowBase):
 
         # Randomly spawn some models to test the portals
         self.models = []
-        for dummy in xrange(0, 500):
+        for dummy in range(0, 500):
             pos = LPoint3((random.random() - 0.5) * 6,
                          (random.random() - 0.5) * 6,
                          random.random() * 7)

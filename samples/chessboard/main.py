@@ -39,12 +39,12 @@ def PointAtZ(z, point, vec):
 
 # A handy little function for getting the proper position for a given square1
 def SquarePos(i):
-    return LPoint3((i % 8) - 3.5, int(i / 8) - 3.5, 0)
+    return LPoint3((i % 8) - 3.5, int(i // 8) - 3.5, 0)
 
 # Helper function for determining wheter a square should be white or black
 # The modulo operations (%) generate the every-other pattern of a chess-board
 def SquareColor(i):
-    if (i + ((i / 8) % 2)) % 2:
+    if (i + ((i // 8) % 2)) % 2:
         return BLACK
     else:
         return WHITE

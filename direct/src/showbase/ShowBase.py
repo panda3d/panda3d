@@ -11,8 +11,8 @@ from panda3d.core import *
 from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
 
 # This needs to be available early for DirectGUI imports
-import __builtin__
-__builtin__.config = get_config_showbase()
+import __builtin__ as builtins
+builtins.config = get_config_showbase()
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from MessengerGlobal import messenger
@@ -44,17 +44,17 @@ if __debug__:
 import OnScreenDebug
 import AppRunnerGlobal
 
-__builtin__.FADE_SORT_INDEX = 1000
-__builtin__.NO_FADE_SORT_INDEX = 2000
+builtins.FADE_SORT_INDEX = 1000
+builtins.NO_FADE_SORT_INDEX = 2000
 
 def legacyRun():
-    __builtin__.base.notify.warning("run() is deprecated, use base.run() instead")
-    __builtin__.base.run()
+    builtins.base.notify.warning("run() is deprecated, use base.run() instead")
+    builtins.base.run()
 
 @atexit.register
 def exitfunc():
-    if getattr(__builtin__, 'base', None) is not None:
-        __builtin__.base.destroy()
+    if getattr(builtins, 'base', None) is not None:
+        builtins.base.destroy()
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
@@ -65,7 +65,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def __init__(self, fStartDirect = True, windowType = None):
         self.__dev__ = config.GetBool('want-dev', __debug__)
-        __builtin__.__dev__ = self.__dev__
+        builtins.__dev__ = self.__dev__
 
         logStackDump = (config.GetBool('log-stack-dump', False) or
                         config.GetBool('client-log-stack-dump', False))
@@ -327,8 +327,8 @@ class ShowBase(DirectObject.DirectObject):
             # assigned to a single CPU
             autoAffinity = self.config.GetBool('auto-single-cpu-affinity', 0)
             affinity = None
-            if autoAffinity and ('clientIndex' in __builtin__.__dict__):
-                affinity = abs(int(__builtin__.clientIndex))
+            if autoAffinity and ('clientIndex' in builtins.__dict__):
+                affinity = abs(int(builtins.clientIndex))
             else:
                 affinity = self.config.GetInt('client-cpu-affinity', -1)
             if (affinity in (None, -1)) and autoAffinity:
@@ -338,44 +338,44 @@ class ShowBase(DirectObject.DirectObject):
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
         # Make sure we're not making more than one ShowBase.
-        if 'base' in __builtin__.__dict__:
+        if 'base' in builtins.__dict__:
             raise StandardError, "Attempt to spawn multiple ShowBase instances!"
 
         # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
         # built-in variables by ShowBase.  Use a Global module if necessary.
-        __builtin__.base = self
-        __builtin__.render2d = self.render2d
-        __builtin__.aspect2d = self.aspect2d
-        __builtin__.pixel2d = self.pixel2d
-        __builtin__.render = self.render
-        __builtin__.hidden = self.hidden
-        __builtin__.camera = self.camera
-        __builtin__.loader = self.loader
-        __builtin__.taskMgr = self.taskMgr
-        __builtin__.jobMgr = self.jobMgr
-        __builtin__.eventMgr = self.eventMgr
-        __builtin__.messenger = self.messenger
-        __builtin__.bboard = self.bboard
+        builtins.base = self
+        builtins.render2d = self.render2d
+        builtins.aspect2d = self.aspect2d
+        builtins.pixel2d = self.pixel2d
+        builtins.render = self.render
+        builtins.hidden = self.hidden
+        builtins.camera = self.camera
+        builtins.loader = self.loader
+        builtins.taskMgr = self.taskMgr
+        builtins.jobMgr = self.jobMgr
+        builtins.eventMgr = self.eventMgr
+        builtins.messenger = self.messenger
+        builtins.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
-        #__builtin__.config = self.config
-        __builtin__.run = legacyRun
-        __builtin__.ostream = Notify.out()
-        __builtin__.directNotify = directNotify
-        __builtin__.giveNotify = giveNotify
-        __builtin__.globalClock = globalClock
-        __builtin__.vfs = vfs
-        __builtin__.cpMgr = ConfigPageManager.getGlobalPtr()
-        __builtin__.cvMgr = ConfigVariableManager.getGlobalPtr()
-        __builtin__.pandaSystem = PandaSystem.getGlobalPtr()
-        __builtin__.wantUberdog = base.config.GetBool('want-uberdog', 1)
+        #builtins.config = self.config
+        builtins.run = legacyRun
+        builtins.ostream = Notify.out()
+        builtins.directNotify = directNotify
+        builtins.giveNotify = giveNotify
+        builtins.globalClock = globalClock
+        builtins.vfs = vfs
+        builtins.cpMgr = ConfigPageManager.getGlobalPtr()
+        builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
+        builtins.pandaSystem = PandaSystem.getGlobalPtr()
+        builtins.wantUberdog = base.config.GetBool('want-uberdog', 1)
         if __debug__:
-            __builtin__.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
-        __builtin__.onScreenDebug = OnScreenDebug.OnScreenDebug()
+            builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
+        builtins.onScreenDebug = OnScreenDebug.OnScreenDebug()
 
         if self.wantRender2dp:
-            __builtin__.render2dp = self.render2dp
-            __builtin__.aspect2dp = self.aspect2dp
-            __builtin__.pixel2dp = self.pixel2dp
+            builtins.render2dp = self.render2dp
+            builtins.aspect2dp = self.aspect2dp
+            builtins.pixel2dp = self.pixel2dp
 
         if __dev__:
             ShowBase.notify.debug('__dev__ == %s' % __dev__)
@@ -497,10 +497,10 @@ class ShowBase(DirectObject.DirectObject):
             cb()
 
         # Remove the built-in base reference
-        if getattr(__builtin__, 'base', None) is self:
-            del __builtin__.base
-            del __builtin__.loader
-            del __builtin__.taskMgr
+        if getattr(builtins, 'base', None) is self:
+            del builtins.base
+            del builtins.loader
+            del builtins.taskMgr
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
@@ -1308,7 +1308,7 @@ class ShowBase(DirectObject.DirectObject):
             # camera.
             self.camera = self.render.attachNewNode(ModelNode('camera'))
             self.camera.node().setPreserveTransform(ModelNode.PTLocal)
-            __builtin__.camera = self.camera
+            builtins.camera = self.camera
 
             self.mouse2cam.node().setNode(self.camera.node())
 
@@ -2814,7 +2814,7 @@ class ShowBase(DirectObject.DirectObject):
             # wx is now the main loop, not us any more.
             self.run = self.wxRun
             self.taskMgr.run = self.wxRun
-            __builtin__.run = self.wxRun
+            builtins.run = self.wxRun
             if self.appRunner:
                 self.appRunner.run = self.wxRun
 
@@ -2876,7 +2876,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Create a new Tk root.
         self.tkRoot = Pmw.initialise()
-        __builtin__.tkroot = self.tkRoot
+        builtins.tkroot = self.tkRoot
 
         init_app_for_gui()
 
@@ -2893,7 +2893,7 @@ class ShowBase(DirectObject.DirectObject):
             # wx is now the main loop, not us any more.
             self.run = self.tkRun
             self.taskMgr.run = self.tkRun
-            __builtin__.run = self.tkRun
+            builtins.run = self.tkRun
             if self.appRunner:
                 self.appRunner.run = self.tkRun
 
@@ -2938,7 +2938,7 @@ class ShowBase(DirectObject.DirectObject):
             from direct.directtools import DirectSession
             base.direct.enable()
         else:
-            __builtin__.direct = self.direct = None
+            builtins.direct = self.direct = None
 
     def getRepository(self):
         return None

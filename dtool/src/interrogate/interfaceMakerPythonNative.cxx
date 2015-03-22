@@ -311,7 +311,6 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return false;
   }
 
-  def._func = func;
   def._answer_location = string();
   def._wrapper_type = WT_none;
   def._min_version = 0;
@@ -344,8 +343,6 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   }
 
   if (method_name == "operator /") {
-    // Note: nb_divide does not exist in Python 3.  We will probably need some
-    // smart mechanism for dispatching to either floor_divide or true_divide.
     def._answer_location = "nb_divide";
     def._wrapper_type = WT_binary_operator;
     return true;
@@ -620,7 +617,6 @@ write_function_slot(ostream &out, int indent_level, const SlottedFunctions &slot
   }
 
   const SlottedFunctionDef &def = rfi->second;
-  Function *func = def._func;
 
   // Add an #ifdef if there is a specific version requirement on this function.
   if (def._min_version > 0) {
@@ -1469,6 +1465,29 @@ write_module_class(ostream &out, Object *obj) {
           slots[key] = slotted_def;
           slots[key]._remaps.insert(remap);
         }
+
+        // Python 3 doesn't support nb_divide.  It has nb_true_divide and also
+        // nb_floor_divide, but they have different semantics than in C++.  Ugh.
+        // Make special slots to store the nb_divide members that take a float.
+        // We'll use this to build up nb_true_divide, so that we can still properly
+        // divide float vector types.
+        if (remap->_flags & FunctionRemap::F_divide_float) {
+          string true_key;
+          if (key == "nb_inplace_divide") {
+            true_key = "nb_inplace_true_divide";
+          } else {
+            true_key = "nb_true_divide";
+          }
+          if (slots.count(true_key) == 0) {
+            SlottedFunctionDef def;
+            def._answer_location = true_key;
+            def._wrapper_type = slotted_def._wrapper_type;
+            def._min_version = 0x03000000;
+            def._wrapper_name = func->_name + "_" + true_key;
+            slots[true_key] = def;
+          }
+          slots[true_key]._remaps.insert(remap);
+        }
       } else {
         has_nonslotted = true;
       }
@@ -1565,12 +1584,21 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   {
-    Function *getitem_func;
-
     SlottedFunctions::iterator rfi;
     for (rfi = slots.begin(); rfi != slots.end(); rfi++) {
       const SlottedFunctionDef &def = rfi->second;
-      Function *func = def._func;
+
+      // This is just for reporting.  There might be remaps from multiple
+      // functions with different names mapped to the same slot.
+      string fname;
+      if (def._remaps.size() > 0) {
+        const FunctionRemap *first_remap = *def._remaps.begin();
+        fname = first_remap->_cppfunc->get_simple_name();
+      }
+
+      if (def._min_version > 0) {
+        out << "#if PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
+      }
 
       switch (rfi->second._wrapper_type) {
       case WT_no_params:
@@ -1578,8 +1606,8 @@ write_module_class(ostream &out, Object *obj) {
         // PyObject *func(PyObject *self)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static PyObject *" << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1613,8 +1641,8 @@ write_module_class(ostream &out, Object *obj) {
             return_flags |= RF_pyobject;
           }
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
@@ -1656,8 +1684,8 @@ write_module_class(ostream &out, Object *obj) {
         // int func(PyObject *self, PyObject *one, PyObject *two = NULL)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1735,8 +1763,8 @@ write_module_class(ostream &out, Object *obj) {
         // If one wants to override this completely, one should define __getattribute__ instead.
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg) {\n";
           out << "  PyObject *res = PyObject_GenericGetAttr(self, arg);\n";
@@ -1768,8 +1796,8 @@ write_module_class(ostream &out, Object *obj) {
         // PyObject *func(PyObject *self, Py_ssize_t index)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static PyObject *" << def._wrapper_name << "(PyObject *self, Py_ssize_t index) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1797,8 +1825,6 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n";
           out << "  return NULL;\n";
           out << "}\n\n";
-
-          getitem_func = func;
         }
         break;
 
@@ -1806,8 +1832,8 @@ write_module_class(ostream &out, Object *obj) {
         // int_t func(PyObject *self, Py_ssize_t index, PyObject *value)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, Py_ssize_t index, PyObject *arg) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1860,8 +1886,8 @@ write_module_class(ostream &out, Object *obj) {
         // Py_ssize_t func(PyObject *self)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static Py_ssize_t " << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1870,7 +1896,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           // This is a cheap cheat around all of the overhead of calling the wrapper function.
-          out << "  return (Py_ssize_t) local_this->" << func->_ifunc.get_name() << "();\n";
+          out << "  return (Py_ssize_t) local_this->" << fname << "();\n";
           out << "}\n\n";
         }
         break;
@@ -1879,8 +1905,8 @@ write_module_class(ostream &out, Object *obj) {
         // int func(PyObject *self, PyObject *one, PyObject *two)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1930,8 +1956,8 @@ write_module_class(ostream &out, Object *obj) {
         // int func(PyObject *self)
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self) {\n";
           out << "  " << cClassName  << " *local_this = NULL;\n";
@@ -1956,8 +1982,8 @@ write_module_class(ostream &out, Object *obj) {
           has_local_getbuffer = true;
 
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, Py_buffer *buffer, int flags) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
@@ -2023,8 +2049,8 @@ write_module_class(ostream &out, Object *obj) {
         // Same story as __getbuffer__ above.
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static void " << def._wrapper_name << "(PyObject *self, Py_buffer *buffer) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
@@ -2105,8 +2131,8 @@ write_module_class(ostream &out, Object *obj) {
             return_flags |= RF_pyobject;
           }
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static PyObject *" << def._wrapper_name << "(PyObject *self, PyObject *arg, PyObject *arg2) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
@@ -2162,8 +2188,8 @@ write_module_class(ostream &out, Object *obj) {
         // This is a low-level function.  Overloads are not supported.
         {
           out << "//////////////////\n";
-          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
-          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
           out << "//////////////////\n";
           out << "static int " << def._wrapper_name << "(PyObject *self, visitproc visit, void *arg) {\n";
           out << "  " << cClassName << " *local_this = NULL;\n";
@@ -2174,7 +2200,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           // Find the remap.  There should be only one.
-          FunctionRemap *remap = func->_remaps.front();
+          FunctionRemap *remap = *def._remaps.begin();
 
           vector_string params(1);
           if (remap->_flags & FunctionRemap::F_explicit_self) {
@@ -2191,9 +2217,16 @@ write_module_class(ostream &out, Object *obj) {
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
+
+        vector<FunctionRemap *> remaps;
+        remaps.insert(remaps.end(), def._remaps.begin(), def._remaps.end());
         string expected_params;
-        write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
+        write_function_for_name(out, obj, remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
         break;
+      }
+
+      if (def._min_version > 0) {
+        out << "#endif  // PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
       }
     }
 
@@ -2352,7 +2385,13 @@ write_module_class(ostream &out, Object *obj) {
     if (compare_to_func != NULL) {
       out << "#if PY_MAJOR_VERSION >= 3\n";
       out << "  // All is not lost; we still have the compare_to function to fall back onto.\n";
-      out << "  PyObject *result = " << compare_to_func->_name << "(self, arg);\n";
+      if (compare_to_func->_args_type == AT_single_arg) {
+        out << "  PyObject *result = " << compare_to_func->_name << "(self, arg);\n";
+      } else {
+        out << "  PyObject *args = PyTuple_Pack(1, arg);\n";
+        out << "  PyObject *result = " << compare_to_func->_name << "(self, args);\n";
+        out << "  Py_DECREF(args);\n";
+      }
       out << "  if (result != NULL) {\n";
       out << "    if (PyLong_Check(result)) {;\n";
       out << "      long cmpval = PyLong_AS_LONG(result);\n";
@@ -2466,7 +2505,9 @@ write_module_class(ostream &out, Object *obj) {
   write_function_slot(out, 2, slots, "nb_and");
   write_function_slot(out, 2, slots, "nb_xor");
   write_function_slot(out, 2, slots, "nb_or");
+  out << "#if PY_MAJOR_VERSION < 3\n";
   write_function_slot(out, 2, slots, "nb_coerce");
+  out << "#endif\n";
   write_function_slot(out, 2, slots, "nb_int");
   out << "  0, // nb_long\n"; // removed in Python 3
   write_function_slot(out, 2, slots, "nb_float");
@@ -2637,7 +2678,7 @@ write_module_class(ostream &out, Object *obj) {
 
   // long tp_flags;
   if (has_local_getbuffer) {
-    out << "#if PY_VERSION_HEX >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000 && PY_VERSION_HEX < 0x03000000\n";
     out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES | Py_TPFLAGS_HAVE_NEWBUFFER" << gcflag << ",\n";
     out << "#else\n";
     out << "    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES" << gcflag << ",\n";
@@ -2991,7 +3032,9 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
 
     SlottedFunctionDef slotted_def;
     if (!get_slotted_function_def(obj, func, remap, slotted_def)) {
+      // It has a non-slotted remap, so we should write it.
       has_remaps = true;
+      break;
     }
   }
 
@@ -4567,7 +4610,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       only_pyobjects = false;
 
     } else if (TypeManager::is_wchar(type)) {
+      indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+      indent(out, indent_level) << "#else\n";
       indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+      indent(out, indent_level) << "#endif\n";
       format_specifiers += "U";
       parameter_list += ", &" + param_name;
 

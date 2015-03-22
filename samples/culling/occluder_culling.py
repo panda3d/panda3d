@@ -102,7 +102,7 @@ class Game(ShowBase):
         self.models = []
         box_model = self.loader.loadModel('box')
 
-        for dummy in xrange(0, 500):
+        for dummy in range(0, 500):
             pos = LPoint3((random.random() - 0.5) * 9,
                          (random.random() - 0.5) * 9,
                          random.random() * 8)

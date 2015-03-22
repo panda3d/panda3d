@@ -180,9 +180,9 @@ class AsteroidsDemo(ShowBase):
             # ... 20) and chooses a value from it. Since the player starts at 0
             # and this list doesn't contain anything from -4 to 4, it won't be
             # close to the player.
-            asteroid.setX(choice(range(-SCREEN_X, -5) + range(5, SCREEN_X)))
-            # Same thing for Y, but from -15 to 15
-            asteroid.setZ(choice(range(-SCREEN_Y, -5) + range(5, SCREEN_Y)))
+            asteroid.setX(choice(tuple(range(-SCREEN_X, -5)) + tuple(range(5, SCREEN_X))))
+            # Same thing for Y
+            asteroid.setZ(choice(tuple(range(-SCREEN_Y, -5)) + tuple(range(5, SCREEN_Y))))
 
             # Heading is a random angle in radians
             heading = random() * 2 * pi

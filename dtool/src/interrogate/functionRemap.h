@@ -98,6 +98,7 @@ public:
     F_releasebuffer      = 0x1000,
     F_compare_to         = 0x2000,
     F_coerce_constructor = 0x4000,
+    F_divide_float       = 0x8000,
   };
 
   typedef vector<Parameter> Parameters;
