@@ -495,17 +495,21 @@ declaration:
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
-  }
 
-  CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @1);
-  }
+  } else {
+    CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
+    CPPFunctionGroup *setter_func = NULL;
 
-  CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
-                                                           setter->as_function_group(),
-                                                           current_scope, @1.file);
-  current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+    if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @1);
+    } else {
+      setter_func = setter->as_function_group();
+    }
+
+    CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(),
+                                                         setter_func, current_scope, @1.file);
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
 }
          | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
 {
@@ -1662,6 +1666,24 @@ type_decl:
 }
         | enum_keyword name ':' enum_element_type
 {
+  CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
+  if (type != NULL) {
+    $$ = type;
+  } else {
+    CPPExtensionType *et =
+      CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
+      ->as_extension_type();
+    CPPScope *scope = $2->get_scope(current_scope, global_scope);
+    if (scope != NULL) {
+      scope->define_extension_type(et);
+    }
+    $$ = et;
+  }
+}
+        | enum_keyword name
+{
+  yywarning(string("C++ does not permit forward declaration of untyped enum ") + $2->get_fully_scoped_name(), @1);
+
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
     $$ = type;

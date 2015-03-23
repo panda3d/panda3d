@@ -46,9 +46,6 @@ PUBLISHED:
   static int size() { return 3; }
   gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }
   gray &operator [](int i) { nassertr(i >= 0 && i < 3, r); return *(&r + i); }
-#ifdef HAVE_PYTHON
-  void __setitem__(int i, gray v) { operator[](i) = v; }
-#endif
   pixel operator + (const pixel &other) const
     { return pixel(r + other.r, g + other.g, b + other.b); }
   pixel operator - (const pixel &other) const

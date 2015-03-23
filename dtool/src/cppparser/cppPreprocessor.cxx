@@ -200,7 +200,7 @@ CPPPreprocessor() {
 
   _warning_count = 0;
   _error_count = 0;
-  _error_abort = true;
+  _error_abort = false;
 #ifdef CPP_VERBOSE_LEX
   _token_index = 0;
 #endif
