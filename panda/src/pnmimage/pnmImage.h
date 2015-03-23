@@ -144,7 +144,8 @@ PUBLISHED:
   // in the normalized range [0..1].  These return values in the
   // image's stored color space.
 
-  INLINE const xel &get_xel_val(int x, int y) const;
+  INLINE xel &get_xel_val(int x, int y);
+  INLINE xel get_xel_val(int x, int y) const;
   INLINE void set_xel_val(int x, int y, const xel &value);
   INLINE void set_xel_val(int x, int y, xelval r, xelval g, xelval b);
   INLINE void set_xel_val(int x, int y, xelval gray);
@@ -202,13 +203,6 @@ PUBLISHED:
 
   INLINE void blend(int x, int y, const LRGBColorf &val, float alpha);
   void blend(int x, int y, float r, float g, float b, float alpha);
-
-  // If you're used to the NetPBM library and like working with a 2-d
-  // array of xels, and using the PNM macros to access their components,
-  // you may treat the PNMImage as such directly.
-
-  INLINE xel *operator [] (int y);
-  INLINE const xel *operator [] (int y) const;
 
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
@@ -281,6 +275,49 @@ PUBLISHED:
 
   void do_fill_distance(int xi, int yi, int d);
 
+PUBLISHED:
+  // Provides an accessor for reading or writing the contents of one row
+  // of the image in-place.
+  class EXPCL_PANDA_PNMIMAGE Row {
+  PUBLISHED:
+    INLINE size_t size() const;
+    INLINE LColorf operator[](int x) const;
+#ifdef HAVE_PYTHON
+    INLINE void __setitem__(int x, const LColorf &v);
+#endif
+    INLINE xel &get_xel_val(int x);
+    INLINE void set_xel_val(int x, const xel &v);
+    INLINE xelval get_alpha_val(int x) const;
+    INLINE void set_alpha_val(int x, xelval v);
+
+  public:
+    INLINE Row(PNMImage &image, int y);
+
+  private:
+    PNMImage &_image;
+    int _y;
+  };
+
+  // Provides an accessor for reading the contents of one row of the
+  // image in-place.
+  class EXPCL_PANDA_PNMIMAGE CRow {
+  PUBLISHED:
+    INLINE size_t size() const;
+    INLINE LColorf operator[](int x) const;
+    INLINE xel get_xel_val(int x) const;
+    INLINE xelval get_alpha_val(int x) const;
+
+  public:
+    INLINE CRow(const PNMImage &image, int y);
+
+  private:
+    const PNMImage &_image;
+    int _y;
+  };
+
+  INLINE Row operator [] (int y);
+  INLINE CRow operator [] (int y) const;
+
 public:
   // Know what you are doing if you access the underlying data arrays
   // directly.
@@ -331,6 +368,8 @@ PUBLISHED:
   void operator *= (const LColorf &other);
 
 private:
+  friend class Row;
+
   xel *_array;
   xelval *_alpha;
   float _default_rc, _default_gc, _default_bc;

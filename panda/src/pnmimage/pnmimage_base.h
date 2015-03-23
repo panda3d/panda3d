@@ -59,6 +59,12 @@ PUBLISHED:
   void operator *= (const double mult)
     { r *= mult; g *= mult; b *= mult; }
 
+#ifdef HAVE_PYTHON
+  void output(ostream &out) {
+    out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
+  }
+#endif
+
   gray r, g, b;
 };
 

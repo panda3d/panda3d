@@ -375,7 +375,19 @@ make_rgb() {
 //  Description: Returns the RGB color at the indicated pixel.  Each
 //               component is in the range 0..maxval.
 ////////////////////////////////////////////////////////////////////
-INLINE const xel &PNMImage::
+INLINE xel &PNMImage::
+get_xel_val(int x, int y) {
+  nassertr(x >= 0 && x < _x_size && y >= 0 && y < _y_size, _array[0]);
+  return row(y)[x];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_xel_val
+//       Access: Published
+//  Description: Returns the RGB color at the indicated pixel.  Each
+//               component is in the range 0..maxval.
+////////////////////////////////////////////////////////////////////
+INLINE xel PNMImage::
 get_xel_val(int x, int y) const {
   nassertr(x >= 0 && x < _x_size && y >= 0 && y < _y_size, _array[0]);
   return row(y)[x];
@@ -1050,28 +1062,6 @@ blend(int x, int y, const LRGBColorf &val, float alpha) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::Array Operator
-//       Access: Published
-//  Description: Allows the PNMImage to appear to be a 2-d array of
-//               xels.
-////////////////////////////////////////////////////////////////////
-INLINE xel *PNMImage::
-operator [] (int y) {
-  return row(y);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::Array Operator
-//       Access: Published
-//  Description: Allows the PNMImage to appear to be a 2-d array of
-//               xels.
-////////////////////////////////////////////////////////////////////
-INLINE const xel *PNMImage::
-operator [] (int y) const {
-  return row(y);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::box_filter
 //       Access: Published
 //  Description: This flavor of box_filter() will apply the filter
@@ -1160,6 +1150,157 @@ apply_exponent(float red_exponent, float green_exponent, float blue_exponent) {
   apply_exponent(red_exponent, green_exponent, blue_exponent, 1.0);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row Constructor
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage::Row::
+Row(PNMImage &image, int y) : _image(image), _y(y) {
+  nassertv(y >= 0 && y < _image._y_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::size
+//       Access: Published
+//  Description: Get the number of pixels in the row.
+////////////////////////////////////////////////////////////////////
+INLINE size_t PNMImage::Row::
+size() const {
+  return _image.get_x_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Fetch the RGB value at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE LColorf PNMImage::Row::
+operator[](int x) const {
+  return _image.get_xel_a(x, _y);
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Set the pixel at the given column in the row.  If
+//               the image has no alpha channel, the alpha component
+//               is ignored.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::Row::
+__setitem__(int x, const LColorf &v) {
+  _image.set_xel_a(x, _y, v);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Fetch the pixel at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE xel &PNMImage::Row::
+get_xel_val(int x) {
+  return _image.get_xel_val(x, _y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Set the pixel at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::Row::
+set_xel_val(int x, const xel &v) {
+  _image.set_xel_val(x, _y, v);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Fetch the alpha value at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImage::Row::
+get_alpha_val(int x) const {
+  return _image.get_alpha_val(x, _y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Row::Array Operator
+//       Access: Published
+//  Description: Set the alpha value at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::Row::
+set_alpha_val(int x, xelval v) {
+  _image.set_alpha_val(x, _y, v);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::CRow Constructor
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage::CRow::
+CRow(const PNMImage &image, int y) : _image(image), _y(y) {
+  nassertv(y >= 0 && y < _image._y_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::CRow::size
+//       Access: Published
+//  Description: Get the number of pixels in the row.
+////////////////////////////////////////////////////////////////////
+INLINE size_t PNMImage::CRow::
+size() const {
+  return _image.get_x_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::CRow::Array Operator
+//       Access: Published
+//  Description: Fetch the RGB value at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE LColorf PNMImage::CRow::
+operator[](int x) const {
+  return _image.get_xel_a(x, _y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::CRow::Array Operator
+//       Access: Published
+//  Description: Fetch the pixel at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE xel PNMImage::CRow::
+get_xel_val(int x) const {
+  return _image.get_xel_val(x, _y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::CRow::Array Operator
+//       Access: Published
+//  Description: Fetch the alpha value at the given column in the row.
+////////////////////////////////////////////////////////////////////
+INLINE xelval PNMImage::CRow::
+get_alpha_val(int x) const {
+  return _image.get_alpha_val(x, _y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Array Operator
+//       Access: Published
+//  Description: Allows the PNMImage to appear to be a 2-d array of
+//               xels.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage::Row PNMImage::
+operator [] (int y) {
+  return Row(*this, y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::Array Operator
+//       Access: Published
+//  Description: Allows the PNMImage to appear to be a 2-d array of
+//               xels.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage::CRow PNMImage::
+operator [] (int y) const {
+  return CRow(*this, y);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_array
