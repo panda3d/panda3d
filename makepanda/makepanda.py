@@ -364,7 +364,7 @@ if not IsCustomOutputDir():
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg in ["GTK2"]:
+        if pkg in ["GTK2", "MFC"]:
             # Optional package(s) for runtime.
             pass
         elif pkg in ["OPENSSL", "ZLIB"]:
@@ -769,8 +769,8 @@ if (COMPILER=="GCC"):
         elif not PkgSkip("X11"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
-    if (RUNTIME):
-        # For the runtime, all packages are required
+    if RUNTIME:
+        # For the runtime, these packages are required
         for pkg in ["OPENSSL", "ZLIB"]:
             skips = []
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
