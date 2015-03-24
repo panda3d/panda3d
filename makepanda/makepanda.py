@@ -317,24 +317,25 @@ if (GetHost() == "darwin" and OSXTARGET != None):
 ##
 ########################################################################
 
-if (VERSION is None):
-    if (RUNTIME):
-        VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
-        COREAPI_VERSION = VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
-        PLUGIN_VERSION = VERSION
+PLUGIN_VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
+COREAPI_VERSION = PLUGIN_VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
+
+if VERSION is None:
+    if RUNTIME:
+        VERSION = PLUGIN_VERSION
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
-        PLUGIN_VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
 
-if (COREAPI_VERSION is None):
-    COREAPI_VERSION = VERSION
+print("Version: %s" % VERSION)
+if RUNTIME or RTDIST:
+    print("Core API Version: %s" % COREAPI_VERSION)
 
-if (DEBVERSION is None):
+if DEBVERSION is None:
     DEBVERSION = VERSION
 
 MAJOR_VERSION = VERSION[:3]
 
-if (P3DSUFFIX is None):
+if P3DSUFFIX is None:
     P3DSUFFIX = MAJOR_VERSION
 
 outputdir_suffix = ""
