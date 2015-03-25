@@ -14,17 +14,6 @@
 
 #include "convert_srgb.h"
 
-#ifdef __GNUC__
-#include <cpuid.h>
-#endif
-
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
-#include <windows.h>
-#endif
-
 // Lookup tables for converting from unsigned char formats.
 ALIGN_64BYTE const
 unsigned char to_srgb8_table[256] = { 0x00, 0x0d, 0x16, 0x1c, 0x22, 0x26, 0x2a,
@@ -119,8 +108,19 @@ has_sse2_sRGB_encode() {
   return true;
 }
 
-#else
+#elif defined(__i386__) || defined(_M_IX86)
 // SSE2 support not guaranteed.  Use a runtime detection mechanism.
+
+#ifdef __GNUC__
+#include <cpuid.h>
+#endif
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#endif
 
 bool
 has_sse2_sRGB_encode() {
@@ -160,6 +160,14 @@ has_sse2_sRGB_encode() {
   }
 
   return has_support;
+}
+
+#else
+// Other architectures don't support SSE2 at all.
+
+bool
+has_sse2_sRGB_encode() {
+  return false;
 }
 
 #endif  // __SSE2__

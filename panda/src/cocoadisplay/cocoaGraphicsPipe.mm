@@ -343,7 +343,7 @@ make_output(const string &name,
       if (!cocoagsg->_supports_framebuffer_object ||
           cocoagsg->_glDrawBuffers == NULL) {
         return NULL;
-      } else {
+      } else if (fb_prop.is_basic()) {
         // Early success - if we are sure that this buffer WILL
         // meet specs, we can precertify it.
         precertify = true;

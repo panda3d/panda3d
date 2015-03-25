@@ -139,8 +139,8 @@ def usage(problem):
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --host URL        (set the host url (runtime build only))")
     print("  --threads N       (use the multithreaded build system. see manual)")
-    print("  --osxtarget N     (the OSX version number to build for (OSX only))")
-    print("  --universal       (build universal binaries (OSX only))")
+    print("  --osxtarget N     (the OS X version number to build for (OS X only))")
+    print("  --universal       (build universal binaries (OS X only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -261,6 +261,13 @@ def parseopts(args):
             OSXTARGET = "10.%d" % (int(OSXTARGET[-1]))
         except:
             usage("Invalid setting for OSXTARGET")
+
+    if UNIVERSAL:
+        if not OSXTARGET:
+            exit("--universal requires --osxtarget")
+        if target_arch:
+            exit("--universal is incompatible with --arch")
+
     try:
         SetOptimize(int(optimize))
         assert GetOptimize() in [1, 2, 3, 4]
@@ -670,7 +677,7 @@ if (COMPILER=="GCC"):
     elif (RTDIST or RUNTIME):
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    elif (not UNIVERSAL and GetTargetArch() == 'x86_64'):
+    elif (UNIVERSAL or GetTargetArch() == 'x86_64'):
         # 64-bits OS X doesn't have Carbon.
         PkgDisable("CARBON")
 
@@ -1084,10 +1091,15 @@ def CompileCxx(obj,src,opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
+
             if UNIVERSAL:
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts):
-                    cmd += " -arch ppc"
+                if OSXTARGET:
+                    osxver = int(OSXTARGET[-1])
+                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
+                        cmd += " -arch ppc"
+                    if int(OSXTARGET[-1]) >= 5:
+                        cmd += " -arch x86_64"
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
@@ -1539,10 +1551,15 @@ def CompileLink(dll, obj, opts):
             if OSXTARGET != None:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
+
             if UNIVERSAL:
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts):
-                    cmd += " -arch ppc"
+                if OSXTARGET:
+                    osxver = int(OSXTARGET[-1])
+                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
+                        cmd += " -arch ppc"
+                    if int(OSXTARGET[-1]) >= 5:
+                        cmd += " -arch x86_64"
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
@@ -6621,10 +6638,15 @@ def MakeInstallerOSX():
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
 
+        if OSXTARGET:
+            target = '--target %s' % (OSXTARGET)
+        else:
+            target = ''
+
         if os.path.exists("/Developer/usr/bin/packagemaker"):
-            cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
-            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:
