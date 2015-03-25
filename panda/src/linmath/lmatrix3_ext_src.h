@@ -23,7 +23,7 @@ template<>
 class Extension<FLOATNAME(LMatrix3)> : public ExtensionBase<FLOATNAME(LMatrix3)> {
 public:
   INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+  INLINE_LINMATH string __repr__() const;
 };
 
 #include "lmatrix3_ext_src.I"

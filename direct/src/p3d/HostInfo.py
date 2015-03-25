@@ -646,7 +646,7 @@ class HostInfo:
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
-            hostDir = self.rootDir.cStr() + '/hosts'
+            hostDir = str(self.rootDir) + '/hosts'
             for component in hostDirBasename.split('/'):
                 if component:
                     if component[0] == '.':

@@ -569,6 +569,24 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__repr__") {
+    def._answer_location = "tp_repr";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
+
+  if (method_name == "__str__") {
+    def._answer_location = "tp_str";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
+
+  if (method_name == "__cmp__" || (remap->_flags & FunctionRemap::F_compare_to) != 0) {
+    def._answer_location = "tp_compare";
+    def._wrapper_type = WT_compare;
+    return true;
+  }
+
   if (remap->_type == FunctionRemap::T_typecast_method) {
     // A typecast operator.  Check for a supported low-level typecast type.
     if (TypeManager::is_bool(remap->_return_type->get_orig_type())) {
@@ -587,6 +605,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     } else if (TypeManager::is_float(remap->_return_type->get_orig_type())) {
       // A floating-point (or double) type.
       def._answer_location = "nb_float";
+      def._wrapper_type = WT_no_params;
+      return true;
+
+    } else if (remap->_return_type->new_type_is_atomic_string()) {
+      // A string type.
+      def._answer_location = "tp_str";
       def._wrapper_type = WT_no_params;
       return true;
     }
@@ -2214,6 +2238,33 @@ write_module_class(ostream &out, Object *obj) {
         }
         break;
 
+      case WT_compare:
+        // int func(PyObject *self, Py_ssize_t index)
+        {
+          out << "//////////////////\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
+          out << "//////////////////\n";
+          out << "static int " << def._wrapper_name << "(PyObject *self, PyObject *arg) {\n";
+          out << "  " << cClassName  << " *local_this = NULL;\n";
+          out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+          out << "    return -1;\n";
+          out << "  }\n\n";
+
+          string expected_params;
+          write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
+                                AT_single_arg, RF_compare, false, true);
+
+          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "    Dtool_Raise_BadArgumentsError(\n";
+          output_quoted(out, 6, expected_params);
+          out << ");\n";
+          out << "  }\n";
+          out << "  return -1;\n";
+          out << "}\n\n";
+        }
+        break;
+
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
@@ -2261,7 +2312,10 @@ write_module_class(ostream &out, Object *obj) {
       }
     }
 
-    int need_repr = NeedsAReprFunction(obj->_itype);
+    int need_repr = 0;
+    if (slots.count("tp_repr") == 0) {
+      need_repr = NeedsAReprFunction(obj->_itype);
+    }
     if (need_repr > 0) {
       out << "//////////////////\n";
       out << "//  A __repr__ function\n";
@@ -2292,7 +2346,10 @@ write_module_class(ostream &out, Object *obj) {
       has_local_repr = true;
     }
 
-    int need_str = NeedsAStrFunction(obj->_itype);
+    int need_str = 0;
+    if (slots.count("tp_str") == 0) {
+      need_str = NeedsAStrFunction(obj->_itype);
+    }
     if (need_str > 0) {
       out << "//////////////////\n";
       out << "//  A __str__ function\n";
@@ -2332,7 +2389,6 @@ write_module_class(ostream &out, Object *obj) {
     out << "  }\n\n";
 
     out << "  switch (op) {\n";
-    Function *compare_to_func = NULL;
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
       std::set<FunctionRemap*> remaps;
       Function *func = (*fi);
@@ -2349,76 +2405,65 @@ write_module_class(ostream &out, Object *obj) {
       }
       const string &fname = func->_ifunc.get_name();
       if (fname == "operator <") {
-        out << "  case Py_LT: {\n";
+        out << "  case Py_LT:\n";
       } else if (fname == "operator <=") {
-        out << "  case Py_LE: {\n";
+        out << "  case Py_LE:\n";
       } else if (fname == "operator ==") {
-        out << "  case Py_EQ: {\n";
+        out << "  case Py_EQ:\n";
       } else if (fname == "operator !=") {
-        out << "  case Py_NE: {\n";
+        out << "  case Py_NE:\n";
       } else if (fname == "operator >") {
-        out << "  case Py_GT: {\n";
+        out << "  case Py_GT:\n";
       } else if (fname == "operator >=") {
-        out << "  case Py_GE: {\n";
-      } else if (fname == "compare_to") {
-        compare_to_func = func;
-        continue;
+        out << "  case Py_GE:\n";
       } else {
         continue;
       }
+      out << "    {\n";
 
       string expected_params;
-      write_function_forset(out, remaps, 1, 1, expected_params, 4, true, false,
+      write_function_forset(out, remaps, 1, 1, expected_params, 6, true, false,
                             AT_single_arg, RF_pyobject | RF_err_null, false);
 
-      out << "    break;\n";
-      out << "  }\n";
+      out << "      break;\n";
+      out << "    }\n";
       has_local_richcompare = true;
     }
 
     out << "  }\n\n";
 
     out << "  if (_PyErr_OCCURRED()) {\n";
-    out << "    return (PyObject *)NULL;\n";
+    out << "    PyErr_Clear();\n";
     out << "  }\n\n";
 
-    if (compare_to_func != NULL) {
+    if (slots.count("tp_compare")) {
+      // A lot of Panda code depends on comparisons being done via the
+      // compare_to function, which is mapped to the tp_compare slot, which
+      // Python 3 no longer has.  So, we'll write code to fall back to that if
+      // no matching comparison operator was found.
       out << "#if PY_MAJOR_VERSION >= 3\n";
       out << "  // All is not lost; we still have the compare_to function to fall back onto.\n";
-      if (compare_to_func->_args_type == AT_single_arg) {
-        out << "  PyObject *result = " << compare_to_func->_name << "(self, arg);\n";
-      } else {
-        out << "  PyObject *args = PyTuple_Pack(1, arg);\n";
-        out << "  PyObject *result = " << compare_to_func->_name << "(self, args);\n";
-        out << "  Py_DECREF(args);\n";
-      }
-      out << "  if (result != NULL) {\n";
-      out << "    if (PyLong_Check(result)) {;\n";
-      out << "      long cmpval = PyLong_AS_LONG(result);\n";
-      out << "      switch (op) {\n";
-      out << "      case Py_LT:\n";
-      out << "        return PyBool_FromLong(cmpval < 0);\n";
-      out << "      case Py_LE:\n";
-      out << "        return PyBool_FromLong(cmpval <= 0);\n";
-      out << "      case Py_EQ:\n";
-      out << "        return PyBool_FromLong(cmpval == 0);\n";
-      out << "      case Py_NE:\n";
-      out << "        return PyBool_FromLong(cmpval != 0);\n";
-      out << "      case Py_GT:\n";
-      out << "        return PyBool_FromLong(cmpval > 0);\n";
-      out << "      case Py_GE:\n";
-      out << "        return PyBool_FromLong(cmpval >= 0);\n";
-      out << "      }\n";
-      out << "    }\n";
-      out << "    Py_DECREF(result);\n";
-      out << "  }\n\n";
-
-      out << "  if (_PyErr_OCCURRED()) {\n";
+      out << "  int cmpval = " << slots["tp_compare"]._wrapper_name << "(self, arg);\n";
+      out << "  if (cmpval == -1 && _PyErr_OCCURRED()) {\n";
       out << "    if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
       out << "      PyErr_Clear();\n";
       out << "    } else {\n";
       out << "      return (PyObject *)NULL;\n";
       out << "    }\n";
+      out << "  }\n";
+      out << "  switch (op) {\n";
+      out << "  case Py_LT:\n";
+      out << "    return PyBool_FromLong(cmpval < 0);\n";
+      out << "  case Py_LE:\n";
+      out << "    return PyBool_FromLong(cmpval <= 0);\n";
+      out << "  case Py_EQ:\n";
+      out << "    return PyBool_FromLong(cmpval == 0);\n";
+      out << "  case Py_NE:\n";
+      out << "    return PyBool_FromLong(cmpval != 0);\n";
+      out << "  case Py_GT:\n";
+      out << "    return PyBool_FromLong(cmpval > 0);\n";
+      out << "  case Py_GE:\n";
+      out << "    return PyBool_FromLong(cmpval >= 0);\n";
       out << "  }\n";
       out << "#endif\n\n";
     }
@@ -2606,15 +2651,17 @@ write_module_class(ostream &out, Object *obj) {
   write_function_slot(out, 4, slots, "tp_setattr");
 
   // cmpfunc tp_compare;  (reserved in Python 3)
-  if (has_local_hash) {
-    out << "#if PY_MAJOR_VERSION >= 3\n";
-    out << "    0,\n";
-    out << "#else\n";
-    out << "    &DTOOL_PyObject_Compare,\n";
-    out << "#endif\n";
+  out << "#if PY_MAJOR_VERSION >= 3\n";
+  out << "    0, // tp_reserved\n";
+  out << "#else\n";
+  if (slots.count("tp_compare") != 0) {
+    write_function_slot(out, 4, slots, "tp_compare");
   } else {
-    out << "    0, // tp_compare\n";
+    // We can/should still define a comparison in Python 2 that is more
+    // meaningful that comparing id(x) with id(y).
+    out << "    &DTOOL_PyObject_ComparePointers,\n";
   }
+  out << "#endif\n";
 
   // reprfunc tp_repr;
   if (has_local_repr) {
@@ -2806,11 +2853,40 @@ write_module_class(ostream &out, Object *obj) {
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
   }
 
-  // get dictionary
-  out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
-  out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"DtoolClassDict\", Dtool_" << ClassName << ".As_PyTypeObject().tp_dict);\n";
-
   int num_nested = obj->_itype.number_of_nested_types();
+  int num_dict_items = 1;
+
+  // Go through once to estimate the number of elements the dict will hold.
+  for (int ni = 0; ni < num_nested; ni++) {
+    TypeIndex nested_index = obj->_itype.get_nested_type(ni);
+    if (_objects.count(nested_index) == 0) {
+      continue;
+    }
+    Object *nested_obj = _objects[nested_index];
+    assert(nested_obj != (Object *)NULL);
+
+    if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
+      num_dict_items += 2;
+
+    } else if (nested_obj->_itype.is_typedef()) {
+      ++num_dict_items;
+
+    } else if (nested_obj->_itype.is_enum()) {
+      CPPEnumType *enum_type = nested_obj->_itype._cpptype->as_enum_type();
+      num_dict_items += 2 * enum_type->_elements.size();
+    }
+  }
+
+  // Build type dictionary.  The size is just an estimation.
+  if (num_dict_items > 5) {
+    out << "    PyObject *dict = _PyDict_NewPresized(" << num_dict_items << ");\n";
+  } else {
+    out << "    PyObject *dict = PyDict_New();\n";
+  }
+  out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = dict;\n";
+  out << "    PyDict_SetItemString(dict, \"DtoolClassDict\", dict);\n";
+
+  // Now go through the nested types again to actually add the dict items.
   for (int ni = 0; ni < num_nested; ni++) {
     TypeIndex nested_index = obj->_itype.get_nested_type(ni);
     if (_objects.count(nested_index) == 0) {
@@ -2828,9 +2904,9 @@ write_module_class(ostream &out, Object *obj) {
       out << "    Dtool_PyModuleClassInit_" << ClassName1 << "(NULL);\n";
       string name1 = classNameFromCppName(ClassName2, false);
       string name2 = classNameFromCppName(ClassName2, true);
-      out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"" << name1 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+      out << "    PyDict_SetItemString(dict, \"" << name1 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
       if (name1 != name2) {
-        out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"" << name2 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+        out << "    PyDict_SetItemString(dict, \"" << name2 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
       }
 
     } else if (nested_obj->_itype.is_typedef()) {
@@ -2849,7 +2925,7 @@ write_module_class(ostream &out, Object *obj) {
       string ClassName2 = make_safe_name(interrogate_type_name(wrapped));
 
       string name1 = classNameFromCppName(ClassName2, false);
-      out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"" << name1 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+      out << "    PyDict_SetItemString(dict, \"" << name1 << "\", (PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
       // No need to support mangled names for nested typedefs; we only added support recently.
 
     } else if (nested_obj->_itype.is_enum()) {
@@ -2867,9 +2943,9 @@ write_module_class(ostream &out, Object *obj) {
           name2 = name1;
         }
         string enum_value = obj->_itype.get_scoped_name() + "::" + (*ei)->get_simple_name();
-        out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"" << name1 << "\", PyLongOrInt_FromLong(" << enum_value << "));\n";
+        out << "    PyDict_SetItemString(dict, \"" << name1 << "\", PyLongOrInt_FromLong(" << enum_value << "));\n";
         if (name1 != name2) {
-          out << "    PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict, \"" << name2 << "\", PyLongOrInt_FromLong(" << enum_value << "));\n";
+          out << "    PyDict_SetItemString(dict, \"" << name2 << "\", PyLongOrInt_FromLong(" << enum_value << "));\n";
         }
       }
     }
@@ -5566,7 +5642,13 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         << "return DTool_PyInit_Finalize(self, " << return_expr << ", &" << CLASS_PREFIX << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
     } else if (TypeManager::is_integer(orig_type)) {
-      indent(out, indent_level) << "return " << return_expr << ";\n";
+      if (return_flags & RF_compare) {
+        // Make sure it returns -1, 0, or 1, or Python complains with:
+        // RuntimeWarning: tp_compare didn't return -1, 0 or 1
+        indent(out, indent_level) << "return (int)(" << return_expr << " > 0) - (int)(" << return_expr << " < 0);\n";
+      } else {
+        indent(out, indent_level) << "return " << return_expr << ";\n";
+      }
 
     } else if (TypeManager::is_void(orig_type)) {
       indent(out, indent_level) << "return 0;\n";
@@ -6613,6 +6695,10 @@ HasAGetClassTypeFunction(const InterrogateType &itype_class) {
 //               Returns 1 if the class defines write(ostream).
 //
 //               Returns 2 if the class defines write(ostream, int).
+//
+//               Note that if you want specific behavior for Python
+//               str(), you should just define a __str__ function,
+//               which maps directly to the appropriate type slot.
 ////////////////////////////////////////////////////////////////////
 int InterfaceMakerPythonNative::
 NeedsAStrFunction(const InterrogateType &itype_class) {
@@ -6682,6 +6768,10 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
 //
 //               Returns 3 if the class defines an extension
 //               function for python_repr(ostream, string).
+//
+//               Note that defining python_repr is deprecated in
+//               favor of defining a __repr__ that returns a string,
+//               which maps directly to the appropriate type slot.
 ////////////////////////////////////////////////////////////////////
 int InterfaceMakerPythonNative::
 NeedsAReprFunction(const InterrogateType &itype_class) {

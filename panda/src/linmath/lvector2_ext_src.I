@@ -23,15 +23,17 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector2::python_repr
+//     Function: LVector2::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVector2)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LVector2)>::
+__repr__() const {
+  ostringstream out;
+  out << "LVector2" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -637,6 +637,30 @@ inline long  DTool_HashKey(PyObject * inst)
    XXX of error.
 */
 
+int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2) {
+  // try this compare
+  void *v1_this = DTOOL_Call_GetPointerThis(v1);
+  void *v2_this = DTOOL_Call_GetPointerThis(v2);
+  if (v1_this != NULL && v2_this != NULL) { // both are our types...
+    if (v1_this < v2_this) {
+      return -1;
+    }
+    if (v1_this > v2_this) {
+      return 1;
+    }
+    return 0;
+  }
+
+  // ok self compare...
+  if (v1 < v2) {
+    return -1;
+  }
+  if (v1 > v2) {
+    return 1;
+  }
+  return 0;
+}
+
 int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
   // First try compareTo function..
   PyObject * func = PyObject_GetAttrString(v1, "compare_to");
@@ -685,27 +709,7 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
     }
   }
 
-  // try this compare
-  void *v1_this = DTOOL_Call_GetPointerThis(v1);
-  void *v2_this = DTOOL_Call_GetPointerThis(v2);
-  if (v1_this != NULL && v2_this != NULL) { // both are our types...
-    if (v1_this < v2_this) {
-      return -1;
-    }
-    if (v1_this > v2_this) {
-      return 1;
-    }
-    return 0;
-  }
-
-  // ok self compare...
-  if (v1 < v2) {
-    return -1;
-  }
-  if (v1 > v2) {
-    return 1;
-  }
-  return 0;
+  return DTOOL_PyObject_ComparePointers(v1, v2);
 }
 
 PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {

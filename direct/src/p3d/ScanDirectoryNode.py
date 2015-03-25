@@ -58,7 +58,7 @@ class ScanDirectoryNode:
             # Now update the usage.xml file with the newly-determined
             # disk space.
             xusage.SetAttribute('disk_space', str(self.getTotalSize()))
-            tfile = Filename.temporary(pathname.cStr(), '.xml')
+            tfile = Filename.temporary(str(pathname), '.xml')
             if doc.SaveFile(tfile.toOsSpecific()):
                 tfile.renameTo(usageFilename)
 

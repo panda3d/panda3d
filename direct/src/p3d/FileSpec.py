@@ -25,7 +25,7 @@ class FileSpec:
         if pathname is None:
             pathname = Filename(packageDir, filename)
 
-        self.filename = filename.cStr()
+        self.filename = str(filename)
         self.basename = filename.getBasename()
 
         if st is None:

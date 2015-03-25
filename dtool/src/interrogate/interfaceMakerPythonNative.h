@@ -81,13 +81,17 @@ private:
     WT_inplace_binary_operator,
     WT_inplace_ternary_operator,
     WT_traverse,
+    WT_compare,
   };
 
   // This enum is passed to the wrapper generation functions to indicate
   // what sort of values the wrapper function is expected to return.
   enum ReturnFlags {
     // -1 on failure, 0 on success.
-    RF_int  = 0x100,
+    RF_int = 0x100,
+
+    // Like RF_int, but special case that it returns -1, 0, or 1.
+    RF_compare = RF_int | 0x200,
 
     // Returns the actual return value as PyObject*.
     RF_pyobject = 0x010,
@@ -104,7 +108,7 @@ private:
     RF_err_false = 0x008,
 
     // Decref temporary args object before returning.
-    RF_decref_args = 0x200,
+    RF_decref_args = 0x1000,
   };
 
   class SlottedFunctionDef {

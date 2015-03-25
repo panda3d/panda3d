@@ -37,6 +37,38 @@ __reduce__(PyObject *self) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Extension<Filename>::__repr__
+//       Access: Published
+//  Description: Returns a string representation of the filename that
+//               communicates both its type and value.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<Filename>::
+__repr__() const {
+#if PY_MAJOR_VERSION >= 3
+  // Python 3 case: return a unicode object.
+  wstring filename = _this->get_fullpath_w();
+  PyObject *str = PyUnicode_FromWideChar(filename.data(), (Py_ssize_t)filename.size());
+
+#if PY_VERSION_HEX >= 0x03040000
+  PyObject *result = PyUnicode_FromFormat("Filename(%R)", str);
+#else
+  static PyObject *format = PyUnicode_FromString("Filename(%r)");
+  PyObject *result = PyUnicode_Format(format, str);
+#endif
+
+#else
+  // Python 2 case: return a regular string.
+  string filename = _this->get_fullpath();
+  PyObject *str = PyString_FromStringAndSize(filename.data(), (Py_ssize_t)filename.size());
+  static PyObject *format = PyString_FromString("Filename(%r)");
+  PyObject *result = PyString_Format(format, str);
+#endif
+
+  Py_DECREF(str);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Extension<Filename>::scan_directory
 //       Access: Published
 //  Description: This variant on scan_directory returns a Python list

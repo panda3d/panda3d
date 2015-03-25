@@ -834,7 +834,7 @@ is_string(CPPType *type) {
     break;
   }
 
-  return is_basic_string_wchar(type);
+  return is_basic_string_char(type);
 }
 
 ////////////////////////////////////////////////////////////////////

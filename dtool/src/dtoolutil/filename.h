@@ -122,6 +122,8 @@ PUBLISHED:
   INLINE size_t length() const;
   INLINE char operator [] (int n) const;
 
+  EXTENSION(PyObject *__repr__() const);
+
   INLINE string substr(size_t begin, size_t end = string::npos) const;
   INLINE void operator += (const string &other);
   INLINE Filename operator + (const string &other) const;

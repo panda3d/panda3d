@@ -163,7 +163,7 @@ PUBLISHED:
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);

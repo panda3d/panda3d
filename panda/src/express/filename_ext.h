@@ -33,6 +33,7 @@ template<>
 class Extension<Filename> : public ExtensionBase<Filename> {
 public:
   PyObject *__reduce__(PyObject *self) const;
+  PyObject *__repr__() const;
   PyObject *scan_directory() const;
 };
 

@@ -29,16 +29,18 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::python_repr
+//     Function: LVecBase3::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase3)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LVecBase3)>::
+__repr__() const {
+  ostringstream out;
+  out << "LVecBase3" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ", "
       << MAYBE_ZERO(_this->_v(2)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////

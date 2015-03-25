@@ -1174,7 +1174,7 @@ class Freezer:
                 source = open(sourceFilename.toOsSpecific(), 'r').read()
                 if source and source[-1] != '\n':
                     source = source + '\n'
-                code = compile(source, sourceFilename.cStr(), 'exec')
+                code = compile(source, str(sourceFilename), 'exec')
 
         self.__addPyc(multifile, filename, code, compressionLevel)
 
