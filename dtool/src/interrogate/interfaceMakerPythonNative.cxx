@@ -4244,6 +4244,10 @@ write_function_forset(ostream &out,
       for (sii = remaps.begin(); sii != remaps.end(); sii ++) {
         remap = (*sii);
         if (!is_remap_coercion_possible(remap)) {
+          indent(out, indent_level)
+            << "// No coercion possible: ";
+          remap->write_orig_prototype(out, 0, false, (max_num_args - min_num_args));
+          out << "\n";
           continue;
         }
 
@@ -5143,14 +5147,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         method_prefix = classNameFromCppName(this_class_name, false) + string(".");
       }
 
-      if (coercion_possible) {
-        if (has_coerce_constructor(obj_type->as_struct_type()) == 0) {
-          // Doesn't actually have a coerce constructor.
-          coercion_possible = false;
-        }
-      }
-
-      if (coercion_possible) {
+      if (coercion_possible &&
+          has_coerce_constructor(obj_type->as_struct_type())) {
         // Call the coercion function directly, which will try to
         // extract the pointer directly before trying coercion.
         string coerce_call;
@@ -6527,7 +6525,6 @@ is_remap_coercion_possible(FunctionRemap *remap) {
         // It has a coercion constructor, so go for it.
         return true;
       }
-      break;
     }
     ++pn;
   }
