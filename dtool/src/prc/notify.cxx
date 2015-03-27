@@ -403,7 +403,7 @@ assert_failure(const char *expression, int line,
 
   // This is redefined here, shadowing the defining in config_prc.h,
   // so we can guarantee it has already been constructed.
-  ConfigVariableBool assert_abort("assert-abort", false);
+  ALIGN_16BYTE ConfigVariableBool assert_abort("assert-abort", false);
   if (assert_abort) {
 #ifdef WIN32
     // How to trigger an exception in VC++ that offers to take us into

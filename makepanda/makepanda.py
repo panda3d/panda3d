@@ -290,7 +290,7 @@ def parseopts(args):
         winver = sys.getwindowsversion()
         if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
             is_win7 = True
-    if not is_win7:
+    if RUNTIME or not is_win7:
         PkgDisable("TOUCHINPUT")
 
 parseopts(sys.argv[1:])
@@ -598,14 +598,17 @@ if (COMPILER == "MSVC"):
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex64_vc.lib")
         else:
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("FLTK")==0 and RTDIST):
+        LibName("FLTK", GetThirdpartyDir() + "fltk/lib/fltk.lib")
+        if not PkgSkip("FLTK"):
+            # If we have fltk, we don't need wx
+            PkgDisable("WX")
     if (PkgSkip("WX")==0 and RTDIST):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
         DefSymbol("WX",     "__WXMSW__", "")
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
-    if (PkgSkip("FLTK")==0 and RTDIST):
-        LibName("FLTK",     GetThirdpartyDir() + "fltk/lib/fltk.lib")
     if (PkgSkip("VORBIS")==0):
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbis_static.lib")
@@ -689,13 +692,12 @@ if (COMPILER=="GCC"):
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
           LibDirectory("FREETYPE", "/usr/X11/lib")
 
-    if (os.path.isdir("/usr/PCBSD")):
-        IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
-        LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
-
     if (GetHost() == "freebsd"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
+        if (os.path.isdir("/usr/PCBSD")):
+            IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
+            LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -889,22 +891,37 @@ def printStatus(header,warnings):
         tkeep = ""
         tomit = ""
         for x in PkgListGet():
-            if (PkgSkip(x)==0): tkeep = tkeep + x + " "
-            else:                  tomit = tomit + x + " "
-        if RTDIST:  print("Makepanda: Runtime distribution build")
-        elif RUNTIME: print("Makepanda: Runtime build")
-        else:        print("Makepanda: Regular build")
-        print("Makepanda: Compiler:",COMPILER)
-        print("Makepanda: Optimize:",GetOptimize())
-        print("Makepanda: Keep Pkg:",tkeep)
-        print("Makepanda: Omit Pkg:",tomit)
-        if (GENMAN): print("Makepanda: Generate API reference manual")
-        else       : print("Makepanda: Don't generate API reference manual")
-        if (GetHost() == "windows" and not RTDIST):
-            if INSTALLER:  print("Makepanda: Build installer, using",COMPRESSOR)
-            else        :  print("Makepanda: Don't build installer")
-        print("Makepanda: Version ID: "+VERSION)
-        for x in warnings: print("Makepanda: "+x)
+            if PkgSkip(x):
+                tomit = tomit + x + " "
+            else:
+                tkeep = tkeep + x + " "
+
+        if RTDIST:
+            print("Makepanda: Runtime distribution build")
+        elif RUNTIME:
+            print("Makepanda: Runtime build")
+        else:
+            print("Makepanda: Regular build")
+
+        print("Makepanda: Compiler: %s" % (COMPILER))
+        print("Makepanda: Optimize: %d" % (GetOptimize()))
+        print("Makepanda: Keep Pkg: %s" % (tkeep))
+        print("Makepanda: Omit Pkg: %s" % (tomit))
+
+        if GENMAN:
+            print("Makepanda: Generate API reference manual")
+        else:
+            print("Makepanda: Don't generate API reference manual")
+
+        if GetHost() == "windows" and not RTDIST:
+            if INSTALLER:
+                print("Makepanda: Build installer, using %s" % (COMPRESSOR))
+            else:
+                print("Makepanda: Don't build installer")
+
+        print("Makepanda: Version ID: %s" % (VERSION))
+        for x in warnings:
+            print("Makepanda: %s" % (x))
         print("-------------------------------------------------------------------")
         print("")
         sys.stdout.flush()
@@ -946,6 +963,8 @@ def CompileCxx(obj,src,opts):
             # Enable Windows 7 interfaces if we need Touchinput.
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
+            else:
+                cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
@@ -996,6 +1015,8 @@ def CompileCxx(obj,src,opts):
             # Enable Windows 7 interfaces if we need Touchinput.
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
+            else:
+                cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1360,6 +1381,8 @@ def CompileLib(lib, obj, opts):
         if not BOOUSEINTELCOMPILER:
             #Use MSVC Linker
             cmd = 'link /lib /nologo'
+            if GetOptimizeOption(opts) == 4:
+                cmd += " /LTCG"
             if HasTargetArch():
                 cmd += " /MACHINE:" + GetTargetArch().upper()
             cmd += ' /OUT:' + BracketNameWithQuotes(lib)
@@ -3556,10 +3579,9 @@ if (not RUNTIME):
 
 DefSymbol("TINYXML", "TIXML_USE_STL", "")
 
-if (RUNTIME or RTDIST):
-  OPTS=['DIR:panda/src/dxml', 'TINYXML']
-  TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
-  TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
+OPTS=['DIR:panda/src/dxml', 'TINYXML']
+TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
+TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
 
 if (not RUNTIME):
   OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA', 'TINYXML']
@@ -3741,6 +3763,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
+  TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=OPTS)
 

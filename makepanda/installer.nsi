@@ -224,7 +224,7 @@ SectionGroup "Panda3D Libraries"
     !endif
 
     !ifdef HAVE_PHYSX
-    Section "PhysX support" SecPhysX
+    Section "NVIDIA PhysX" SecPhysX
         SectionIn 1
 
         SetOutPath "$INSTDIR\bin"

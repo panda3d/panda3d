@@ -2865,7 +2865,12 @@ define_array_type(InterrogateType &itype, CPPArrayType *cpptype) {
   itype._flags |= InterrogateType::F_array;
   itype._wrapped_type = get_type(cpptype->_element_type, false);
 
-  itype._array_size = cpptype->_bounds->evaluate().as_integer();
+  if (cpptype->_bounds == NULL) {
+    // This indicates an unsized array.
+    itype._array_size = -1;
+  } else {
+    itype._array_size = cpptype->_bounds->evaluate().as_integer();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
