@@ -441,6 +441,8 @@ if (RTDIST and DISTRIBUTOR == "cmu"):
         exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
     elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
         exit("The CMU 1.8 runtime distribution must be built against Python 2.7!")
+    elif (RTDIST_VERSION == "cmu_1.9" and SDK["PYTHONVERSION"] != "python2.7"):
+        exit("The CMU 1.9 runtime distribution must be built against Python 2.7!")
 
 elif RTDIST and not HOST_URL:
     exit("You must specify a host URL when building the rtdist!")
@@ -675,13 +677,13 @@ if (COMPILER == "MSVC"):
 
 if (COMPILER=="GCC"):
     PkgDisable("AWESOMIUM")
-    if (GetTarget() != "darwin"):
+    if GetTarget() != "darwin":
         PkgDisable("CARBON")
         PkgDisable("COCOA")
-    elif (RTDIST or RUNTIME):
+    elif RUNTIME:
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    elif (UNIVERSAL or GetTargetArch() == 'x86_64'):
+    if UNIVERSAL or GetTargetArch() == 'x86_64':
         # 64-bits OS X doesn't have Carbon.
         PkgDisable("CARBON")
 
@@ -730,6 +732,9 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
+        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
+            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
             OPENCV_VER_23 = True
@@ -746,15 +751,16 @@ if (COMPILER=="GCC"):
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
+        if not PkgSkip("PYTHON"):
+            if GetHost() == "darwin" and GetTarget() == "darwin" and not RTDIST:
+                # Use the system Python framework in the standard Mac SDK.
+                LibName("PYTHON", "-framework Python")
+            else:
+                SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
-
-    if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
-        # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
-        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
-    elif("PYTHONVERSION" in SDK and not RUNTIME):
-        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
 
     if (RTDIST):
         SmartPkgEnable("WX", tool = "wx-config")
@@ -762,10 +768,10 @@ if (COMPILER=="GCC"):
 
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
-        if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
-            SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        if (not RUNTIME):
-            SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
+        if not PkgSkip("NVIDIACG") and not RUNTIME:
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+        if not RUNTIME:
+            SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
             SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
@@ -1110,6 +1116,8 @@ def CompileCxx(obj,src,opts):
         else:                    cmd = GetCXX()+' -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
+        for (opt, dir) in FRAMEWORKDIRECTORIES:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
@@ -1612,6 +1620,9 @@ def CompileLink(dll, obj, opts):
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' -L' + BracketNameWithQuotes(dir)
+        for (opt, dir) in FRAMEWORKDIRECTORIES:
+            if (opt=="ALWAYS") or (opt in opts):
+                cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' ' + BracketNameWithQuotes(name)
@@ -1717,7 +1728,10 @@ def CompileRes(target, src, opts):
 def CompileRsrc(target, src, opts):
     """Compiles a Mac OS .r file into an .rsrc file."""
     ipath = GetListOption(opts, "DIR:")
-    cmd = "/Developer/Tools/Rez -useDF"
+    if os.path.isfile("/usr/bin/Rez"):
+        cmd = "Rez -useDF"
+    else:
+        cmd = "/Developer/Tools/Rez -useDF"
     cmd += " -o " + BracketNameWithQuotes(target)
     for x in ipath:
         cmd += " -i " + x

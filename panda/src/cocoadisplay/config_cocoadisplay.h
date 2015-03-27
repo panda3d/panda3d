@@ -21,8 +21,6 @@
 
 NotifyCategoryDecl(cocoadisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-extern ConfigVariableBool gl_support_fbo;
-  
 extern EXPCL_PANDAGL void init_libcocoadisplay();
 
 #endif

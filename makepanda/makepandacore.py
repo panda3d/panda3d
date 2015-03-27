@@ -1473,8 +1473,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
     if (os.path.isdir(pkg_dir)):
+        if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
+            FrameworkDirectory(target_pkg, pkg_dir)
+            LibName(target_pkg, "-framework " + framework)
+            return
+
         if os.path.isdir(os.path.join(pkg_dir, "include")):
             IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+
         if os.path.isdir(os.path.join(pkg_dir, "lib")):
             LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
 
@@ -1800,15 +1806,14 @@ def SdkLocateMax():
                         if (os.path.isdir(top + "\\" + subdir)!=0):
                             SDK[version+"CS"] = top + subdir
 
-def SdkLocatePython(force_use_sys_executable = False):
+def SdkLocatePython(prefer_thirdparty_python=False):
     if PkgSkip("PYTHON"):
+        # We're not compiling with Python support.  We still need to set this
+        # in case we want to run any scripts that use Python, though.
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
         return
 
-    if CrossCompiling():
-        force_use_sys_executable = False
-
-    if (GetTarget() == 'windows' and not force_use_sys_executable):
+    if GetTarget() == 'windows':
         SDK["PYTHON"] = GetThirdpartyBase() + "/win-python"
         if (GetOptimize() <= 2):
             SDK["PYTHON"] += "-dbg"
@@ -1840,7 +1845,7 @@ def SdkLocatePython(force_use_sys_executable = False):
 
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
-    elif CrossCompiling():
+    elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
         SDK["PYTHON"] = tp_python + "/include"
 
@@ -1859,11 +1864,12 @@ def SdkLocatePython(force_use_sys_executable = False):
 
         py_lib = os.path.basename(py_libs[0])
         SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+        SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
 
-    elif (GetTarget() == 'windows'):
-        SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-        SDK["PYTHONEXEC"] = sys.executable
+    #elif GetTarget() == 'windows':
+    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
+    #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+    #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
         SDK["PYTHON"] = sysconfig.get_python_inc()
@@ -1871,6 +1877,7 @@ def SdkLocatePython(force_use_sys_executable = False):
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
+        # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
         host_version = "python" + sysconfig.get_python_version()
         if SDK["PYTHONVERSION"] != host_version:
@@ -2186,6 +2193,7 @@ def SetupVisualStudioEnviron():
 
 INCDIRECTORIES = []
 LIBDIRECTORIES = []
+FRAMEWORKDIRECTORIES = []
 LIBNAMES = []
 DEFSYMBOLS = []
 
@@ -2194,6 +2202,9 @@ def IncDirectory(opt, dir):
 
 def LibDirectory(opt, dir):
     LIBDIRECTORIES.append((opt, dir))
+
+def FrameworkDirectory(opt, dir):
+    FRAMEWORKDIRECTORIES.append((opt, dir))
 
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
@@ -2263,7 +2274,13 @@ def SetupBuildEnvironment(compiler):
                 continue
 
             line = line[12:].strip()
-            SYS_LIB_DIRS += line.split(':')
+            for libdir in line.split(':'):
+                libdir = os.path.normpath(libdir)
+                if os.path.isdir(libdir):
+                    if libdir not in SYS_LIB_DIRS:
+                        SYS_LIB_DIRS.append(libdir)
+                elif GetVerbose():
+                    print("Ignoring non-existent library directory %s" % (libdir))
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
@@ -2288,8 +2305,10 @@ def SetupBuildEnvironment(compiler):
                 continue
 
             line = line.strip()
-            if os.path.isdir(line):
-                SYS_INC_DIRS.append(line)
+            if line.endswith(" (framework directory)"):
+                pass
+            elif os.path.isdir(line):
+                SYS_INC_DIRS.append(os.path.normpath(line))
             elif GetVerbose():
                 print("Ignoring non-existent include directory %s" % (line))
 

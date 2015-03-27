@@ -27,12 +27,6 @@ ConfigureFn(config_cocoadisplay) {
   init_libcocoadisplay();
 }
 
-ConfigVariableBool gl_support_fbo
-  ("gl-support-fbo", true,
-   PRC_DESC("Configure this false if your GL's implementation of "
-            "EXT_framebuffer_object is broken.  The system might still be "
-            "able to create buffers using pbuffers or the like."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcocoadisplay
 //  Description: Initializes the library.  This must be called at

@@ -1882,8 +1882,10 @@ send_window() {
     assert(!_use_xembed);
     parent_window._window_handle_type = _window_handle_type;
     if (_window_handle_type == P3D_WHT_osx_port) {
+#if !__LP64__
       NP_Port *port = (NP_Port *)_window.window;
       parent_window._handle._osx_port._port = port->port;
+#endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
       if (context != NULL) {
@@ -1929,8 +1931,10 @@ send_window() {
 #elif defined(__APPLE__)
     parent_window._window_handle_type = _window_handle_type;
     if (_window_handle_type == P3D_WHT_osx_port) {
+#if !__LP64__
       NP_Port *port = (NP_Port *)_window.window;
       parent_window._handle._osx_port._port = port->port;
+#endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
       if (context != NULL) {

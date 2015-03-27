@@ -52,7 +52,7 @@ enum {
 
 #ifdef _WIN32
 typedef P3DWinSplashWindow SplashWindowType;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && !__LP64__
 typedef P3DOsxSplashWindow SplashWindowType;
 #elif defined(HAVE_X11)
 typedef P3DX11SplashWindow SplashWindowType;
@@ -3455,7 +3455,9 @@ paint_window() {
 #ifdef __APPLE__
   const P3D_window_handle &handle = _wparams.get_parent_window();
   if (handle._window_handle_type == P3D_WHT_osx_port) {
+#if !__LP64__
     paint_window_osx_port();
+#endif
 
   } else if (handle._window_handle_type == P3D_WHT_osx_cgcontext) {
     const P3D_window_handle &handle = _wparams.get_parent_window();
@@ -3467,7 +3469,7 @@ paint_window() {
 #endif  // __APPLE__
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_framebuffer_osx_port
 //       Access: Private
@@ -3590,7 +3592,7 @@ get_framebuffer_osx_cgcontext() {
 }
 #endif  // __APPLE__
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::paint_window_osx_port
 //       Access: Private
@@ -3680,7 +3682,7 @@ bool P3DInstance::
 handle_event_osx_event_record(const P3D_event_data &event) {
   bool retval = false;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
   assert(event._event_type == P3D_ET_osx_event_record);
   EventRecord *er = event._event._osx_event_record._event;
 
@@ -3895,7 +3897,7 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers) {
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
   if (modifiers & cmdKey) {
     swb_flags |= SubprocessWindowBuffer::EF_meta_held;
   }

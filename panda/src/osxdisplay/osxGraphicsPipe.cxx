@@ -429,9 +429,9 @@ make_output(const string &name,
         return NULL;
       }
     }
-    if (posixgsg != NULL && posixgsg->is_valid() && !posixgsg->needs_reset()) {
-      if (!posixgsg->_supports_framebuffer_object ||
-          posixgsg->_glDrawBuffers == NULL) {
+    if (osxgsg != NULL && osxgsg->is_valid() && !osxgsg->needs_reset()) {
+      if (!osxgsg->_supports_framebuffer_object ||
+          osxgsg->_glDrawBuffers == NULL) {
         return NULL;
       } else if (fb_prop.is_basic()) {
         // Early success - if we are sure that this buffer WILL

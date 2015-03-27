@@ -63,7 +63,7 @@ open_p3d_file(FSRef *ref) {
 
 static pascal OSErr
 open_documents_handler(const AppleEvent *theAppleEvent, AppleEvent *reply, 
-                       long handlerRefcon) {
+                       SRefCon handlerRefcon) {
   AEDescList docList;
   FSRef theFSRef;
   long index;
