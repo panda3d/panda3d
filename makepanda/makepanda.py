@@ -73,6 +73,7 @@ global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
 BOOUSEINTELCOMPILER = False
+OPENCV_VER_23 = False
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -721,7 +722,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        SmartPkgEnable("OPENCV",    "opencv",    ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
@@ -729,6 +729,14 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+
+        cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
+        if cv_lib == "opencv_core":
+            OPENCV_VER_23 = True
+            SmartPkgEnable("OPENCV", "opencv",   ("opencv_core"), ("opencv2/core/core.hpp"))
+        else:
+            SmartPkgEnable("OPENCV", "opencv",   ("cv", "highgui", "cvaux", "ml", "cxcore"),
+                           ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
@@ -1099,7 +1107,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -ftemplate-depth-50 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
@@ -2160,6 +2168,9 @@ def WriteConfigSettings():
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
 
+    if not PkgSkip("OPENCV"):
+        dtool_config["OPENCV_VER_23"] = '1' if OPENCV_VER_23 else 'UNDEF'
+
     dtool_config["HAVE_NET"] = '1'
 
     if (PkgSkip("NVIDIACG")==0):
@@ -2633,6 +2644,9 @@ MakeDirectory(GetOutputDir()+'/include/parser-inc/glew')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Eigen')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket/Core')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/core')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/highgui')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
@@ -2645,6 +2659,8 @@ CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/Dense')
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/StdVector')
 CopyFile(GetOutputDir()+'/include/parser-inc/Rocket/Core/','dtool/src/parser-inc/RenderInterface.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/core/','dtool/src/parser-inc/core.hpp')
+CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/highgui/','dtool/src/parser-inc/highgui.hpp')
 DeleteVCS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
