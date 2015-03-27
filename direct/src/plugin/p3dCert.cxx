@@ -16,10 +16,10 @@
 #include "wstring_encode.h"
 #include "mkdir_complete.h"
 
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Return_Button.H>
-#include <Fl/Fl_Text_Display.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Text_Display.H>
 
 #include <cassert>
 #include <sys/types.h>

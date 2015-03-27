@@ -15,8 +15,8 @@
 #ifndef P3DCERT_H
 #define P3DCERT_H
 
-#include <Fl/Fl.H>
-#include <Fl/Fl_Window.H>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 #define OPENSSL_NO_KRB5
 #include "openssl/x509.h"
