@@ -30,14 +30,6 @@ PyMethodDef Dtool_Methods_DTOOL_SUPER_BASE[] = {
   { NULL, NULL }
 };
 
-static Py_hash_t Dtool_HashKey_DTOOL_SUPER_BASE(PyObject *self) {
-  void *local_this = DTOOL_Call_GetPointerThis(self);
-  if (local_this == NULL) {
-    return -1;
-  }
-  return (Py_hash_t) local_this;
-};
-
 EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   static bool initdone = false;
   if (!initdone) {
@@ -87,13 +79,13 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
 #if PY_MAJOR_VERSION >= 3
     0,
 #else
-    &DTOOL_PyObject_Compare,
+    &DTOOL_PyObject_ComparePointers,
 #endif
     0,
     0,
     0,
     0,
-    &Dtool_HashKey_DTOOL_SUPER_BASE,
+    &DTOOL_PyObject_HashPointer,
     0,
     0,
     PyObject_GenericGetAttr,

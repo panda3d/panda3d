@@ -21,10 +21,17 @@
 #include "interrogateDatabase.h"
 #include "interrogateType.h"
 #include "interrogateFunction.h"
+#include "cppArrayType.h"
+#include "cppConstType.h"
+#include "cppEnumType.h"
 #include "cppFunctionType.h"
+#include "cppFunctionGroup.h"
 #include "cppPointerType.h"
 #include "cppTypeDeclaration.h"
+#include "cppTypedefType.h"
+#include "cppSimpleType.h"
 #include "cppStructType.h"
+#include "cppExpression.h"
 #include "vector"
 #include "cppParameterList.h"
 #include "algorithm"
@@ -314,6 +321,7 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   def._answer_location = string();
   def._wrapper_type = WT_none;
   def._min_version = 0;
+  def._keep_method = false;
 
   string method_name = func->_ifunc.get_name();
   bool is_unary_op = func->_ifunc.is_unary_op();
@@ -584,6 +592,14 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   if (method_name == "__cmp__" || (remap->_flags & FunctionRemap::F_compare_to) != 0) {
     def._answer_location = "tp_compare";
     def._wrapper_type = WT_compare;
+    def._keep_method = (method_name != "__cmp__");
+    return true;
+  }
+
+  if (method_name == "__hash__" || (remap->_flags & FunctionRemap::F_hash) != 0) {
+    def._answer_location = "tp_hash";
+    def._wrapper_type = WT_hash;
+    def._keep_method = (method_name != "__hash__");
     return true;
   }
 
@@ -1390,7 +1406,6 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 /////////////////////////////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_module_class(ostream &out, Object *obj) {
-  bool has_local_hash = false;
   bool has_local_repr = false;
   bool has_local_str = false;
   bool has_local_richcompare = false;
@@ -1488,6 +1503,9 @@ write_module_class(ostream &out, Object *obj) {
         } else {
           slots[key] = slotted_def;
           slots[key]._remaps.insert(remap);
+        }
+        if (slotted_def._keep_method) {
+          has_nonslotted = true;
         }
 
         // Python 3 doesn't support nb_divide.  It has nb_true_divide and also
@@ -2265,6 +2283,26 @@ write_module_class(ostream &out, Object *obj) {
         }
         break;
 
+      case WT_hash:
+        // Py_hash_t func(PyObject *self)
+        {
+          out << "//////////////////\n";
+          out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
+          out << "//////////////////\n";
+          out << "static Py_hash_t " << def._wrapper_name << "(PyObject *self) {\n";
+          out << "  " << cClassName  << " *local_this = NULL;\n";
+          out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+          out << "    return -1;\n";
+          out << "  }\n\n";
+
+          FunctionRemap *remap = *def._remaps.begin();
+          vector_string params;
+          out << "  return (Py_hash_t) " << remap->call_function(out, 4, false, "local_this", params) << ";\n";
+          out << "}\n\n";
+        }
+        break;
+
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
@@ -2278,37 +2316,6 @@ write_module_class(ostream &out, Object *obj) {
 
       if (def._min_version > 0) {
         out << "#endif  // PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
-      }
-    }
-
-    string get_key = HasAGetKeyFunction(obj->_itype);
-    if (!get_key.empty()) {
-      out << "//////////////////\n";
-      out << "//  A LocalHash(getKey) Function for this type\n";
-      out << "//     " << ClassName << "\n";
-      out << "//////////////////\n";
-      out << "static Py_hash_t Dtool_HashKey_" << ClassName << "(PyObject *self) {\n";
-      out << "  " << cClassName << " *local_this = NULL;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
-      out << "    return -1;\n";
-      out << "  }\n\n";
-      out << "  return local_this->" << get_key << "();\n";
-      out << "}\n\n";
-      has_local_hash = true;
-    } else {
-      if (bases.size() == 0) {
-        out << "//////////////////\n";
-        out << "//  A LocalHash(This Pointer) Function for this type\n";
-        out << "//     " << ClassName << "\n";
-        out << "//////////////////\n";
-        out << "static Py_hash_t Dtool_HashKey_" << ClassName << "(PyObject *self) {\n";
-        out << "  " << cClassName << " *local_this = NULL;\n";
-        out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
-        out << "    return -1;\n";
-        out << "  }\n\n";
-        out << "  return (Py_hash_t) local_this;\n";
-        out << "}\n\n";
-        has_local_hash = true;
       }
     }
 
@@ -2525,6 +2532,12 @@ write_module_class(ostream &out, Object *obj) {
     out << "};\n\n";
   }
 
+  // These fields are inherited together.  We should either write all of them
+  // or none of them so that they are inherited from DTOOL_SUPER_BASE.
+  bool has_hash_compare = (slots.count("tp_hash") != 0 ||
+                           slots.count("tp_compare") != 0 ||
+                           has_local_richcompare);
+
   bool has_parent_class = (obj->_itype.number_of_derivations() != 0);
 
   // Output the type slot tables.
@@ -2654,12 +2667,11 @@ write_module_class(ostream &out, Object *obj) {
   out << "#if PY_MAJOR_VERSION >= 3\n";
   out << "    0, // tp_reserved\n";
   out << "#else\n";
-  if (slots.count("tp_compare") != 0) {
-    write_function_slot(out, 4, slots, "tp_compare");
+  if (has_hash_compare) {
+    write_function_slot(out, 4, slots, "tp_compare",
+                        "&DTOOL_PyObject_ComparePointers");
   } else {
-    // We can/should still define a comparison in Python 2 that is more
-    // meaningful that comparing id(x) with id(y).
-    out << "    &DTOOL_PyObject_ComparePointers,\n";
+    out << "    0, // tp_compare\n";
   }
   out << "#endif\n";
 
@@ -2686,10 +2698,10 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // hashfunc tp_hash;
-  if (has_local_hash) {
-    out << "    &Dtool_HashKey_" << ClassName << ",\n";
+  if (has_hash_compare) {
+    write_function_slot(out, 4, slots, "tp_hash", "&DTOOL_PyObject_HashPointer");
   } else {
-    write_function_slot(out, 4, slots, "tp_hash");
+    out << "    0, // tp_hash\n";
   }
 
   // ternaryfunc tp_call;
@@ -2755,14 +2767,15 @@ write_module_class(ostream &out, Object *obj) {
   // richcmpfunc tp_richcompare;
   if (has_local_richcompare) {
     out << "    &Dtool_RichCompare_" << ClassName << ",\n";
-  } else if (has_local_hash) {
+  } else if (has_hash_compare) {
+    // All hashable types need to be comparable.
     out << "#if PY_MAJOR_VERSION >= 3\n";
     out << "    &DTOOL_PyObject_RichCompare,\n";
     out << "#else\n";
-    out << "    0,\n";
+    out << "    0, // tp_richcompare\n";
     out << "#endif\n";
   } else {
-    write_function_slot(out, 4, slots, "tp_richcompare");
+    out << "    0, // tp_richcompare\n";
   }
 
   // Py_ssize_t tp_weaklistoffset;
@@ -3107,7 +3120,7 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
     }
 
     SlottedFunctionDef slotted_def;
-    if (!get_slotted_function_def(obj, func, remap, slotted_def)) {
+    if (!get_slotted_function_def(obj, func, remap, slotted_def) || slotted_def._keep_method) {
       // It has a non-slotted remap, so we should write it.
       has_remaps = true;
       break;
@@ -4652,6 +4665,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         }
         expected_params += "str";
       }
+      // Remember to clear the TypeError that any of the above methods raise.
+      clear_error = true;
       only_pyobjects = false;
 
     } else if (TypeManager::is_bool(type)) {
@@ -6406,8 +6421,9 @@ is_remap_legal(FunctionRemap *remap) {
   }
 
   // We don't currently support returning pointers, but we accept
-  // them as function parameters.
-  if (TypeManager::is_pointer_to_simple(remap->_return_type->get_orig_type())) {
+  // them as function parameters.  But const char * is an exception.
+  if (!remap->_return_type->new_type_is_atomic_string() &&
+      TypeManager::is_pointer_to_simple(remap->_return_type->get_orig_type())) {
     return false;
   }
 
@@ -6602,47 +6618,6 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
     }
   }
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-//  Function : HasAGetKeyFunction
-//
-// does the class have a supportable get_key() or get_hash() to return
-// a usable Python hash?  Returns the name of the method, or empty
-// string if there is no suitable method.
-//////////////////////////////////////////////////////////////////////////////////////////
-string InterfaceMakerPythonNative::
-HasAGetKeyFunction(const InterrogateType &itype_class) {
-  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-
-  int num_methods = itype_class.number_of_methods();
-  int mi;
-  for (mi = 0; mi < num_methods; mi++) {
-    FunctionIndex func_index = itype_class.get_method(mi);
-    const InterrogateFunction &ifunc = idb->get_function(func_index);
-    if (ifunc.get_name() == "get_key" || ifunc.get_name() == "get_hash") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
-        InterrogateFunction::Instances::const_iterator ii;
-        for (ii = ifunc._instances->begin();
-             ii != ifunc._instances->end();
-             ++ii) {
-          CPPInstance *cppinst = (*ii).second;
-          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-
-          if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL &&
-                cppfunc->_return_type != NULL &&
-                TypeManager::is_integer(cppfunc->_return_type)) {
-              if (cppfunc->_parameters->_parameters.size() == 0) {
-                return ifunc.get_name();
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return string();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

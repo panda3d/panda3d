@@ -94,11 +94,10 @@ public:
     F_copy_constructor   = 0x0100,
     F_explicit_self      = 0x0200,
     F_iter               = 0x0400,
-    F_getbuffer          = 0x0800,
-    F_releasebuffer      = 0x1000,
-    F_compare_to         = 0x2000,
-    F_coerce_constructor = 0x4000,
-    F_divide_float       = 0x8000,
+    F_compare_to         = 0x0800,
+    F_coerce_constructor = 0x1000,
+    F_divide_float       = 0x2000,
+    F_hash               = 0x4000,
   };
 
   typedef vector<Parameter> Parameters;
