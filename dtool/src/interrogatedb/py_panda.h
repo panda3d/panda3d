@@ -489,40 +489,8 @@ EXPCL_DTOOLCONFIG PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *
 EXPCL_DTOOLCONFIG PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
 
 ///////////////////////////////////////////////////////////////////////////////////
-/*
-EXPCL_DTOOLCONFIG long  DTool_HashKey(PyObject * inst)
-{
-    long   outcome = (long)inst;
-    PyObject * func = PyObject_GetAttrString(inst, "__hash__");
-    if (func == NULL)
-    {
-        if(DtoolCanThisBeAPandaInstance(inst))
-            if(((Dtool_PyInstDef *)inst)->_ptr_to_object != NULL)
-                outcome =  (long)((Dtool_PyInstDef *)inst)->_ptr_to_object;
-    }
-    else
-    {
-        PyObject *res = PyEval_CallObject(func, (PyObject *)NULL);
-        Py_DECREF(func);
-        if (res == NULL)
-            return -1;
-        if (PyInt_Check(res))
-        {
-            outcome = PyInt_AsLong(res);
-            if (outcome == -1)
-                outcome = -2;
-        }
-        else
-        {
-            PyErr_SetString(PyExc_TypeError,
-                "__hash__() should return an int");
-            outcome = -1;
-        }
-        Py_DECREF(res);
-    }
-    return outcome;
-}
-*/
+
+EXPCL_DTOOLCONFIG Py_hash_t DTOOL_PyObject_HashPointer(PyObject *obj);
 
 /* Compare v to w.  Return
    -1 if v <  w or exception (PyErr_Occurred() true in latter case).
