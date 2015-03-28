@@ -23,6 +23,7 @@
 
 #include "interrogateDatabase.h"
 #include "cppInstance.h"
+#include "cppConstType.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
 #include "cppReferenceType.h"
