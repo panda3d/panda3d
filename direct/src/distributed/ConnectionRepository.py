@@ -494,7 +494,7 @@ class ConnectionRepository(
         elif self.connectMethod == self.CM_NET or (not hasattr(self,"connectNative")):
             # Try each of the servers in turn.
             for url in serverList:
-                self.notify.info("Connecting to %s via NET interface." % (url.cStr()))
+                self.notify.info("Connecting to %s via NET interface." % (url))
                 if self.tryConnectNet(url):
                     self.startReaderPollTask()
                     if successCallback:
@@ -506,7 +506,7 @@ class ConnectionRepository(
                 failureCallback(0, '', *failureArgs)
         elif self.connectMethod == self.CM_NATIVE:
             for url in serverList:
-                self.notify.info("Connecting to %s via Native interface." % (url.cStr()))
+                self.notify.info("Connecting to %s via Native interface." % (url))
                 if self.connectNative(url):
                     self.startReaderPollTask()
                     if successCallback:
@@ -539,7 +539,7 @@ class ConnectionRepository(
         if ch.isConnectionReady():
             self.setConnectionHttp(ch)
             self._serverAddress = serverList[serverIndex-1]
-            self.notify.info("Successfully connected to %s." % (self._serverAddress.cStr()))
+            self.notify.info("Successfully connected to %s." % (self._serverAddress))
 
             ## if self.recorder:
             ##     # If we have a recorder, we wrap the connect inside a
@@ -565,7 +565,7 @@ class ConnectionRepository(
             # No connection yet, but keep trying.
 
             url = serverList[serverIndex]
-            self.notify.info("Connecting to %s via HTTP interface." % (url.cStr()))
+            self.notify.info("Connecting to %s via HTTP interface." % (url))
             ch.preserveStatus()
 
             ch.beginConnectTo(DocumentSpec(url))

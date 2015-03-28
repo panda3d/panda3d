@@ -227,17 +227,40 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   png_uint_32 height;
   int bit_depth;
   int color_type;
+  int srgb_intent;
+  double gamma;
 
   png_get_IHDR(_png, _info, &width, &height,
                &bit_depth, &color_type, NULL, NULL, NULL);
 
+  // Look for an sRGB chunk.
+  if (png_get_sRGB(_png, _info, &srgb_intent) == PNG_INFO_sRGB) {
+    _color_space = CS_sRGB;
+
+  } else if (png_get_gAMA(_png, _info, &gamma) == PNG_INFO_gAMA) {
+    // File specifies a gamma.
+    if (gamma >= 0.99 && gamma <= 1.01) {
+      _color_space = CS_linear;
+
+    } else if (gamma >= 0.44999 && gamma <= 0.455001) {
+      // It's probably close enough to sRGB.
+      _color_space = CS_sRGB;
+
+    } else {
+      pnmimage_png_cat.warning()
+        << "Unsupported image gamma " << gamma << ", "
+        << "please re-export image as sRGB or linear.\n";
+    }
+  }
+
   pnmimage_png_cat.debug()
     << "width = " << width << " height = " << height << " bit_depth = "
-    << bit_depth << " color_type = " << color_type << "\n";
+    << bit_depth << " color_type = " << color_type
+    << " color_space = " << _color_space << "\n";
 
   _x_size = width;
   _y_size = height;
-  _maxval = ( 1 << bit_depth ) - 1;
+  _maxval = (1 << bit_depth) - 1;
 
   if (bit_depth < 8) {
     png_set_packing(_png);
@@ -342,7 +365,7 @@ read_data(xel *array, xelval *alpha_data) {
       << "Allocating " << num_rows << " rows of " << row_byte_length
       << " bytes each.\n";
   }
-    
+
   // We need to read a full copy of the image in first, in libpng's
   // 2-d array format, mainly because we keep array and alpha data
   // separately, and there doesn't appear to be good support to get
@@ -384,7 +407,7 @@ read_data(xel *array, xelval *alpha_data) {
           alpha = (source[0] << 8) | source[1];
           source += 2;
         }
-        
+
       } else {
         if (get_color) {
           red = *source;
@@ -402,7 +425,7 @@ read_data(xel *array, xelval *alpha_data) {
           source++;
         }
       }
-      
+
       PPM_ASSIGN(array[pi], red, green, blue);
       if (get_alpha) {
         alpha_data[pi] = alpha;
@@ -593,9 +616,9 @@ write_data(xel *array, xelval *alpha_data) {
       if (compute_palette(palette, array, alpha_data, png_max_palette)) {
         pnmimage_png_cat.debug()
           << palette.size() << " colors found.\n";
-        
+
         int palette_bit_depth = make_png_bit_depth(pm_maxvaltobits(palette.size() - 1));
-        
+
         int total_bits = png_bit_depth;
         if (!is_grayscale()) {
           total_bits *= 3;
@@ -603,7 +626,7 @@ write_data(xel *array, xelval *alpha_data) {
         if (has_alpha()) {
           total_bits += png_bit_depth;
         }
-        
+
         if (palette_bit_depth < total_bits ||
             _maxval != (1 << true_bit_depth) - 1) {
           pnmimage_png_cat.debug()
@@ -616,7 +639,7 @@ write_data(xel *array, xelval *alpha_data) {
           // Re-sort the palette to put the semitransparent pixels at the
           // beginning.
           sort(palette.begin(), palette.end(), LowAlphaCompare());
-        
+
           double palette_scale = 255.0 / _maxval;
 
           int num_alpha = 0;
@@ -628,7 +651,7 @@ write_data(xel *array, xelval *alpha_data) {
             if (palette[i]._alpha != _maxval) {
               num_alpha = i + 1;
             }
-          
+
             // Also build a reverse-lookup from color to palette index in
             // the "histogram" structure.
             palette_lookup[palette[i]] = i;
@@ -664,7 +687,8 @@ write_data(xel *array, xelval *alpha_data) {
   pnmimage_png_cat.debug()
     << "width = " << _x_size << " height = " << _y_size
     << " maxval = " << _maxval << " bit_depth = "
-    << png_bit_depth << " color_type = " << color_type << "\n";
+    << png_bit_depth << " color_type = " << color_type
+    << " color_space = " << _color_space << "\n";
 
   png_set_IHDR(_png, _info, _x_size, _y_size, png_bit_depth,
                color_type, PNG_INTERLACE_NONE,
@@ -673,6 +697,21 @@ write_data(xel *array, xelval *alpha_data) {
   // Set the true bit depth of the image data.
   if (png_bit_depth != true_bit_depth || color_type == PNG_COLOR_TYPE_PALETTE) {
     png_set_sBIT(_png, _info, &sig_bit);
+  }
+
+  // Set the color space, if we know it.
+  switch (_color_space) {
+  case CS_linear:
+    png_set_gAMA(_png, _info, 1.0);
+    // Not sure if we should set cHRM to anything.
+    break;
+
+  case CS_sRGB:
+    png_set_sRGB_gAMA_and_cHRM(_png, _info, PNG_sRGB_INTENT_RELATIVE);
+    break;
+
+  default:
+    break;
   }
 
   png_write_info(_png, _info);

@@ -308,30 +308,6 @@ Filename(const Filename &dirname, const Filename &basename) {
   }
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
-PyObject *Filename::
-__reduce__(PyObject *self) const {
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
-
-  PyObject *result = Py_BuildValue("(O(s))", this_class, c_str());
-  Py_DECREF(this_class);
-  return result;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::from_os_specific
 //       Access: Published, Static
@@ -2005,48 +1981,12 @@ scan_directory(vector_string &contents) const {
   globfree(&globbuf);
 
   return true;
-  
+
 #else
   // Don't know how to scan directories!
   return false;
 #endif
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::scan_directory
-//       Access: Published
-//  Description: This variant on scan_directory returns a Python list
-//               of strings on success, or None on failure.
-////////////////////////////////////////////////////////////////////
-PyObject *Filename::
-scan_directory() const {
-  vector_string contents;
-  if (!scan_directory(contents)) {
-    PyObject *result = Py_None;
-    Py_INCREF(result);
-    return result;
-  }
-
-  PyObject *result = PyList_New(contents.size());
-  for (size_t i = 0; i < contents.size(); ++i) {
-    const string &filename = contents[i];
-#if PY_MAJOR_VERSION >= 3
-    // This function expects UTF-8.
-    PyObject *str = PyUnicode_FromStringAndSize(filename.data(), filename.size());
-#else
-    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
-#endif
-#ifdef Py_LIMITED_API
-    PyList_SetItem(result, i, str);
-#else
-    PyList_SET_ITEM(result, i, str);
-#endif
-  }
-
-  return result;
-}
-#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read

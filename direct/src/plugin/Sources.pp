@@ -18,8 +18,7 @@
 // /MD.  This links the plugin with the static C runtime library,
 // instead of the dynamic runtime library, which is much better for
 // distributing the plugin with the XPI and CAB interfaces.  This
-// requires that special /MT versions of OpenSSL, libjpeg, libpng,
-// and zlib are available.
+// requires that special /MT versions of OpenSSL and zlib are available.
 
 #define _MT $[if $[P3D_PLUGIN_MT],_mt]
 
@@ -114,8 +113,8 @@
 // p3d_plugin.dll, the main entry point to the Core API.
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES openssl$[_MT] zlib$[_MT] jpeg$[_MT] png$[_MT] x11
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
+  #define USE_PACKAGES openssl$[_MT] zlib$[_MT] x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
   #define BUILDING_DLL BUILDING_P3D_PLUGIN
@@ -141,8 +140,8 @@
 // libp3d_plugin_static.lib, the Core API as a static library (for p3dembed).
 //
 
-  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_JPEG],$[HAVE_PNG]]
-  #define USE_PACKAGES openssl zlib jpeg png x11
+  #define BUILD_TARGET $[and $[HAVE_P3D_PLUGIN],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
+  #define USE_PACKAGES openssl zlib x11
   #define TARGET p3d_plugin_static
   #define BUILDING_DLL BUILDING_P3D_PLUGIN
 

@@ -40,7 +40,7 @@ class PNMImage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PNMIMAGE PNMBrush : public ReferenceCount {
 protected:
-  INLINE PNMBrush(double xc, double yc);
+  INLINE PNMBrush(float xc, float yc);
 
 PUBLISHED:
   virtual ~PNMBrush();
@@ -53,22 +53,22 @@ PUBLISHED:
   };
 
   static PT(PNMBrush) make_transparent();
-  static PT(PNMBrush) make_pixel(const LColord &color, BrushEffect effect = BE_blend);
-  static PT(PNMBrush) make_spot(const LColord &color, double radius, bool fuzzy,
+  static PT(PNMBrush) make_pixel(const LColorf &color, BrushEffect effect = BE_blend);
+  static PT(PNMBrush) make_spot(const LColorf &color, float radius, bool fuzzy,
                                 BrushEffect effect = BE_blend);
-  static PT(PNMBrush) make_image(const PNMImage &image, double xc, double yc,
+  static PT(PNMBrush) make_image(const PNMImage &image, float xc, float yc,
                                  BrushEffect effect = BE_blend);
 
 public:
-  INLINE double get_xc() const;
-  INLINE double get_yc() const;
+  INLINE float get_xc() const;
+  INLINE float get_yc() const;
 
-  virtual void draw(PNMImage &image, int x, int y, double pixel_scale)=0;
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale)=0;
   virtual void fill(PNMImage &image, int xfrom, int xto, int y,
                     int xo, int yo)=0;
 
 protected:
-  double _xc, _yc;
+  float _xc, _yc;
 };
 
 #include "pnmBrush.I"

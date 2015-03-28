@@ -175,7 +175,7 @@ class AppRunner(DirectObject):
         # the current working directory, for convenience; but when we
         # move to multiple-instance sessions, it may have to be
         # different for each instance.
-        self.multifileRoot = ExecutionEnvironment.getCwd().cStr()
+        self.multifileRoot = str(ExecutionEnvironment.getCwd())
 
         # The "main" object will be exposed to the DOM as a property
         # of the plugin object; that is, document.pluginobject.main in
@@ -554,7 +554,7 @@ class AppRunner(DirectObject):
         # Write the file to a temporary filename, then atomically move
         # it to its actual filename, to avoid race conditions when
         # updating this file.
-        tfile = Filename.temporary(self.rootDir.cStr(), '.xml')
+        tfile = Filename.temporary(str(self.rootDir), '.xml')
         if doc.SaveFile(tfile.toOsSpecific()):
             tfile.renameTo(filename)
 

@@ -4,67 +4,67 @@ noinclude plane_src.h
 
 forcetype PointerToBase<ReferenceCountedVector<UnalignedLMatrix4f> >
 forcetype PointerToArrayBase<UnalignedLMatrix4f>
-forcetype PTA_LMatrix4f
-forcetype CPTA_LMatrix4f
+forcetype PointerToArray<UnalignedLMatrix4f>
+forcetype ConstPointerToArray<UnalignedLMatrix4f>
 
 forcetype PointerToBase<ReferenceCountedVector<LMatrix3f> >
 forcetype PointerToArrayBase<LMatrix3f>
-forcetype PTA_LMatrix3f
-forcetype CPTA_LMatrix3f
+forcetype PointerToArray<LMatrix3f>
+forcetype ConstPointerToArray<LMatrix3f>
 
 forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase4f> >
 forcetype PointerToArrayBase<UnalignedLVecBase4f>
-forcetype PTA_LVecBase4f
-forcetype CPTA_LVecBase4f
+forcetype PointerToArray<UnalignedLVecBase4f>
+forcetype ConstPointerToArray<UnalignedLVecBase4f>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase3f> >
 forcetype PointerToArrayBase<LVecBase3f>
-forcetype PTA_LVecBase3f
-forcetype CPTA_LVecBase3f
+forcetype PointerToArray<LVecBase3f>
+forcetype ConstPointerToArray<LVecBase3f>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase2f> >
 forcetype PointerToArrayBase<LVecBase2f>
-forcetype PTA_LVecBase2f
-forcetype CPTA_LVecBase2f
+forcetype PointerToArray<LVecBase2f>
+forcetype ConstPointerToArray<LVecBase2f>
 
 forcetype PointerToBase<ReferenceCountedVector<UnalignedLMatrix4d> >
 forcetype PointerToArrayBase<UnalignedLMatrix4d>
-forcetype PTA_LMatrix4d
-forcetype CPTA_LMatrix4d
+forcetype PointerToArray<UnalignedLMatrix4d>
+forcetype ConstPointerToArray<UnalignedLMatrix4d>
 
 forcetype PointerToBase<ReferenceCountedVector<LMatrix3d> >
 forcetype PointerToArrayBase<LMatrix3d>
-forcetype PTA_LMatrix3d
-forcetype CPTA_LMatrix3d
+forcetype PointerToArray<LMatrix3d>
+forcetype ConstPointerToArray<LMatrix3d>
 
 forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase4d> >
 forcetype PointerToArrayBase<UnalignedLVecBase4d>
-forcetype PTA_LVecBase4d
-forcetype CPTA_LVecBase4d
+forcetype PointerToArray<UnalignedLVecBase4d>
+forcetype ConstPointerToArray<UnalignedLVecBase4d>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase3d> >
 forcetype PointerToArrayBase<LVecBase3d>
-forcetype PTA_LVecBase3d
-forcetype CPTA_LVecBase3d
+forcetype PointerToArray<LVecBase3d>
+forcetype ConstPointerToArray<LVecBase3d>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase2d> >
 forcetype PointerToArrayBase<LVecBase2d>
-forcetype PTA_LVecBase2d
-forcetype CPTA_LVecBase2d
+forcetype PointerToArray<LVecBase2d>
+forcetype ConstPointerToArray<LVecBase2d>
 
 forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase4i> >
 forcetype PointerToArrayBase<UnalignedLVecBase4i>
-forcetype PTA_LVecBase4i
-forcetype CPTA_LVecBase4i
+forcetype PointerToArray<UnalignedLVecBase4i>
+forcetype ConstPointerToArray<UnalignedLVecBase4i>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase3i> >
 forcetype PointerToArrayBase<LVecBase3i>
-forcetype PTA_LVecBase3i
-forcetype CPTA_LVecBase3i
+forcetype PointerToArray<LVecBase3i>
+forcetype ConstPointerToArray<LVecBase3i>
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase2i> >
 forcetype PointerToArrayBase<LVecBase2i>
-forcetype PTA_LVecBase2i
-forcetype CPTA_LVecBase2i
+forcetype PointerToArray<LVecBase2i>
+forcetype ConstPointerToArray<LVecBase2i>
 
 forceinclude "pointerToArray_ext.h"

@@ -60,7 +60,7 @@ extern char **environ;
 #include <sys/sysctl.h>
 #endif
 
-#if defined(IS_LINUX) || defined(IS_OSX) || defined(IS_FREEBSD)
+#if defined(IS_LINUX) || defined(IS_FREEBSD)
 // For link_map and dlinfo.
 #include <link.h>
 #include <dlfcn.h>

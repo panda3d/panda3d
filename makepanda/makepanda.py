@@ -73,6 +73,7 @@ global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
 BOOUSEINTELCOMPILER = False
+OPENCV_VER_23 = False
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -91,7 +92,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK2",                                              # GTK2 is used for PStats on Unix
-  "NPAPI", "MFC", "WX", "FLTK",                        # Used for web plug-in only
+  "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET", "AWESOMIUM",                               # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
   "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
@@ -139,8 +140,8 @@ def usage(problem):
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --host URL        (set the host url (runtime build only))")
     print("  --threads N       (use the multithreaded build system. see manual)")
-    print("  --osxtarget N     (the OSX version number to build for (OSX only))")
-    print("  --universal       (build universal binaries (OSX only))")
+    print("  --osxtarget N     (the OS X version number to build for (OS X only))")
+    print("  --universal       (build universal binaries (OS X only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -152,7 +153,7 @@ def usage(problem):
     print("")
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
-    print("  --directx-sdk=X   (specify version of DX9 SDK to use: jun2010, aug2009, mar2009, aug2006)")
+    print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
     print("  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
@@ -261,6 +262,13 @@ def parseopts(args):
             OSXTARGET = "10.%d" % (int(OSXTARGET[-1]))
         except:
             usage("Invalid setting for OSXTARGET")
+
+    if UNIVERSAL:
+        if not OSXTARGET:
+            exit("--universal requires --osxtarget")
+        if target_arch:
+            exit("--universal is incompatible with --arch")
+
     try:
         SetOptimize(int(optimize))
         assert GetOptimize() in [1, 2, 3, 4]
@@ -283,7 +291,7 @@ def parseopts(args):
         winver = sys.getwindowsversion()
         if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
             is_win7 = True
-    if not is_win7:
+    if RUNTIME or not is_win7:
         PkgDisable("TOUCHINPUT")
 
 parseopts(sys.argv[1:])
@@ -317,24 +325,25 @@ if (GetHost() == "darwin" and OSXTARGET != None):
 ##
 ########################################################################
 
-if (VERSION is None):
-    if (RUNTIME):
-        VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
-        COREAPI_VERSION = VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
-        PLUGIN_VERSION = VERSION
+PLUGIN_VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
+COREAPI_VERSION = PLUGIN_VERSION + "." + ParseCoreapiVersion("dtool/PandaVersion.pp")
+
+if VERSION is None:
+    if RUNTIME:
+        VERSION = PLUGIN_VERSION
     else:
         VERSION = ParsePandaVersion("dtool/PandaVersion.pp")
-        PLUGIN_VERSION = ParsePluginVersion("dtool/PandaVersion.pp")
 
-if (COREAPI_VERSION is None):
-    COREAPI_VERSION = VERSION
+print("Version: %s" % VERSION)
+if RUNTIME or RTDIST:
+    print("Core API Version: %s" % COREAPI_VERSION)
 
-if (DEBVERSION is None):
+if DEBVERSION is None:
     DEBVERSION = VERSION
 
 MAJOR_VERSION = VERSION[:3]
 
-if (P3DSUFFIX is None):
+if P3DSUFFIX is None:
     P3DSUFFIX = MAJOR_VERSION
 
 outputdir_suffix = ""
@@ -363,13 +372,13 @@ if not IsCustomOutputDir():
 
 if (RUNTIME):
     for pkg in PkgListGet():
-        if pkg in ["GTK2"]:
+        if pkg in ["GTK2", "MFC"]:
             # Optional package(s) for runtime.
             pass
-        elif pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+        elif pkg in ["OPENSSL", "ZLIB"]:
             # Required packages for runtime.
             if (PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
+                exit("Runtime must be compiled with OpenSSL and ZLib support!")
         else:
             # Unused packages for runtime.
             PkgDisable(pkg)
@@ -382,9 +391,6 @@ if (INSTALLER and RTDIST):
 
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME) and GetTarget() == 'windows':
     exit("Cannot build installer on Windows without python")
-
-if (RTDIST) and (PkgSkip("JPEG")):
-    exit("Cannot build rtdist without jpeg")
 
 if (RTDIST) and (PkgSkip("WX") and PkgSkip("FLTK")):
     exit("Cannot build rtdist without wx or fltk")
@@ -435,9 +441,15 @@ if (RTDIST and DISTRIBUTOR == "cmu"):
         exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
     elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
         exit("The CMU 1.8 runtime distribution must be built against Python 2.7!")
+    elif (RTDIST_VERSION == "cmu_1.9" and SDK["PYTHONVERSION"] != "python2.7"):
+        exit("The CMU 1.9 runtime distribution must be built against Python 2.7!")
 
 elif RTDIST and not HOST_URL:
     exit("You must specify a host URL when building the rtdist!")
+
+if RUNTIME and not HOST_URL:
+    # Set this to a nice default.
+    HOST_URL = "https://runtime.panda3d.org/"
 
 ########################################################################
 ##
@@ -509,7 +521,7 @@ if (COMPILER == "MSVC"):
 
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
-            if (vnum=="9" and "GENERIC_DXERR_LIBRARY" in SDK):
+            if int(vnum) >= 9 and "GENERIC_DXERR_LIBRARY" in SDK:
                 LibName(pkg, 'dxerr.lib')
             else:
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
@@ -589,14 +601,17 @@ if (COMPILER == "MSVC"):
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex64_vc.lib")
         else:
             LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("FLTK")==0 and RTDIST):
+        LibName("FLTK", GetThirdpartyDir() + "fltk/lib/fltk.lib")
+        if not PkgSkip("FLTK"):
+            # If we have fltk, we don't need wx
+            PkgDisable("WX")
     if (PkgSkip("WX")==0 and RTDIST):
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxbase28u.lib")
         LibName("WX",       GetThirdpartyDir() + "wx/lib/wxmsw28u_core.lib")
         DefSymbol("WX",     "__WXMSW__", "")
         DefSymbol("WX",     "_UNICODE", "")
         DefSymbol("WX",     "UNICODE", "")
-    if (PkgSkip("FLTK")==0 and RTDIST):
-        LibName("FLTK",     GetThirdpartyDir() + "fltk/lib/fltk.lib")
     if (PkgSkip("VORBIS")==0):
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libogg_static.lib")
         LibName("VORBIS",   GetThirdpartyDir() + "vorbis/lib/libvorbis_static.lib")
@@ -662,13 +677,13 @@ if (COMPILER == "MSVC"):
 
 if (COMPILER=="GCC"):
     PkgDisable("AWESOMIUM")
-    if (GetTarget() != "darwin"):
+    if GetTarget() != "darwin":
         PkgDisable("CARBON")
         PkgDisable("COCOA")
-    elif (RTDIST or RUNTIME):
+    elif RUNTIME:
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    elif (not UNIVERSAL and GetTargetArch() == 'x86_64'):
+    if UNIVERSAL or GetTargetArch() == 'x86_64':
         # 64-bits OS X doesn't have Carbon.
         PkgDisable("CARBON")
 
@@ -680,13 +695,12 @@ if (COMPILER=="GCC"):
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
           LibDirectory("FREETYPE", "/usr/X11/lib")
 
-    if (os.path.isdir("/usr/PCBSD")):
-        IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
-        LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
-
     if (GetHost() == "freebsd"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
+        if (os.path.isdir("/usr/PCBSD")):
+            IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
+            LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -710,12 +724,24 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        SmartPkgEnable("OPENCV",    "opencv",    ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
-        SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
+        SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
+        SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+        SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+
+        if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
+            LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+
+        cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
+        if cv_lib == "opencv_core":
+            OPENCV_VER_23 = True
+            SmartPkgEnable("OPENCV", "opencv",   ("opencv_core"), ("opencv2/core/core.hpp"))
+        else:
+            SmartPkgEnable("OPENCV", "opencv",   ("cv", "highgui", "cvaux", "ml", "cxcore"),
+                           ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
@@ -725,39 +751,27 @@ if (COMPILER=="GCC"):
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
-    SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+        if not PkgSkip("PYTHON"):
+            if GetHost() == "darwin" and GetTarget() == "darwin" and not RTDIST:
+                # Use the system Python framework in the standard Mac SDK.
+                LibName("PYTHON", "-framework Python")
+            else:
+                SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
+
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
 
-    if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
-        # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
-        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
-    elif("PYTHONVERSION" in SDK and not RUNTIME):
-        SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
-
     if (RTDIST):
-        SmartPkgEnable("WX",    tool = "wx-config")
-        SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
-
-    if (RUNTIME):
-        if (GetHost() == 'darwin'):
-            SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
-            if not os.path.isdir(GetThirdpartyDir() + "npapi"):
-                IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
-
-        elif (GetHost() == "freebsd"):
-            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
-        else:
-            SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
+        SmartPkgEnable("WX", tool = "wx-config")
+        SmartPkgEnable("FLTK", "", ("fltk"), ("FL/Fl.H"), tool = "fltk-config")
 
     if GetTarget() != 'darwin':
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
-        if (PkgSkip("NVIDIACG")==0 and not RUNTIME):
-            SmartPkgEnable("CGGL",  "",      ("CgGL"), "Cg/cgGL.h")
-        if (not RUNTIME):
-            SmartPkgEnable("X11",   "x11", "X11", ("X11", "X11/Xlib.h"))
+        if not PkgSkip("NVIDIACG") and not RUNTIME:
+            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
+        if not RUNTIME:
+            SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h"))
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
             SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
@@ -778,14 +792,14 @@ if (COMPILER=="GCC"):
         elif not PkgSkip("X11"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
-    if (RUNTIME):
-        # For the runtime, all packages are required
-        for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+    if RUNTIME:
+        # For the runtime, these packages are required
+        for pkg in ["OPENSSL", "ZLIB"]:
             skips = []
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
                 skips.append(pkg)
             if skips:
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support (missing %s)" % (', '.join(skips)))
+                exit("Runtime must be compiled with OpenSSL and ZLib support (missing %s)" % (', '.join(skips)))
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -891,22 +905,37 @@ def printStatus(header,warnings):
         tkeep = ""
         tomit = ""
         for x in PkgListGet():
-            if (PkgSkip(x)==0): tkeep = tkeep + x + " "
-            else:                  tomit = tomit + x + " "
-        if RTDIST:  print("Makepanda: Runtime distribution build")
-        elif RUNTIME: print("Makepanda: Runtime build")
-        else:        print("Makepanda: Regular build")
-        print("Makepanda: Compiler:",COMPILER)
-        print("Makepanda: Optimize:",GetOptimize())
-        print("Makepanda: Keep Pkg:",tkeep)
-        print("Makepanda: Omit Pkg:",tomit)
-        if (GENMAN): print("Makepanda: Generate API reference manual")
-        else       : print("Makepanda: Don't generate API reference manual")
-        if (GetHost() == "windows" and not RTDIST):
-            if INSTALLER:  print("Makepanda: Build installer, using",COMPRESSOR)
-            else        :  print("Makepanda: Don't build installer")
-        print("Makepanda: Version ID: "+VERSION)
-        for x in warnings: print("Makepanda: "+x)
+            if PkgSkip(x):
+                tomit = tomit + x + " "
+            else:
+                tkeep = tkeep + x + " "
+
+        if RTDIST:
+            print("Makepanda: Runtime distribution build")
+        elif RUNTIME:
+            print("Makepanda: Runtime build")
+        else:
+            print("Makepanda: Regular build")
+
+        print("Makepanda: Compiler: %s" % (COMPILER))
+        print("Makepanda: Optimize: %d" % (GetOptimize()))
+        print("Makepanda: Keep Pkg: %s" % (tkeep))
+        print("Makepanda: Omit Pkg: %s" % (tomit))
+
+        if GENMAN:
+            print("Makepanda: Generate API reference manual")
+        else:
+            print("Makepanda: Don't generate API reference manual")
+
+        if GetHost() == "windows" and not RTDIST:
+            if INSTALLER:
+                print("Makepanda: Build installer, using %s" % (COMPRESSOR))
+            else:
+                print("Makepanda: Don't build installer")
+
+        print("Makepanda: Version ID: %s" % (VERSION))
+        for x in warnings:
+            print("Makepanda: %s" % (x))
         print("-------------------------------------------------------------------")
         print("")
         sys.stdout.flush()
@@ -948,6 +977,8 @@ def CompileCxx(obj,src,opts):
             # Enable Windows 7 interfaces if we need Touchinput.
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
+            else:
+                cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
                 cmd += " /arch:SSE2"
@@ -998,6 +1029,8 @@ def CompileCxx(obj,src,opts):
             # Enable Windows 7 interfaces if we need Touchinput.
             if PkgSkip("TOUCHINPUT") == 0:
                 cmd += "/DWINVER=0x601 "
+            else:
+                cmd += "/DWINVER=0x501 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1080,9 +1113,11 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -ftemplate-depth-50 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
+        for (opt, dir) in FRAMEWORKDIRECTORIES:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
@@ -1093,10 +1128,15 @@ def CompileCxx(obj,src,opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
+
             if UNIVERSAL:
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts):
-                    cmd += " -arch ppc"
+                if OSXTARGET:
+                    osxver = int(OSXTARGET[-1])
+                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
+                        cmd += " -arch ppc"
+                    if int(OSXTARGET[-1]) >= 5:
+                        cmd += " -arch x86_64"
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
@@ -1272,7 +1312,7 @@ def CompileIgate(woutd,wsrc,opts):
 
     cmd += ' -srcdir %s -I%s -Dvolatile -Dmutable' % (srcdir, srcdir)
     if (COMPILER=="MSVC"):
-        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
         if GetTargetArch() == 'x64':
             cmd += ' -DWIN64_VC -DWIN64 -D_WIN64'
         # NOTE: this 1600 value is the version number for VC2010.
@@ -1357,6 +1397,8 @@ def CompileLib(lib, obj, opts):
         if not BOOUSEINTELCOMPILER:
             #Use MSVC Linker
             cmd = 'link /lib /nologo'
+            if GetOptimizeOption(opts) == 4:
+                cmd += " /LTCG"
             if HasTargetArch():
                 cmd += " /MACHINE:" + GetTargetArch().upper()
             cmd += ' /OUT:' + BracketNameWithQuotes(lib)
@@ -1548,10 +1590,15 @@ def CompileLink(dll, obj, opts):
             if OSXTARGET != None:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
+
             if UNIVERSAL:
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts):
-                    cmd += " -arch ppc"
+                if OSXTARGET:
+                    osxver = int(OSXTARGET[-1])
+                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
+                        cmd += " -arch ppc"
+                    if int(OSXTARGET[-1]) >= 5:
+                        cmd += " -arch x86_64"
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
@@ -1573,6 +1620,9 @@ def CompileLink(dll, obj, opts):
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' -L' + BracketNameWithQuotes(dir)
+        for (opt, dir) in FRAMEWORKDIRECTORIES:
+            if (opt=="ALWAYS") or (opt in opts):
+                cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' ' + BracketNameWithQuotes(name)
@@ -1678,7 +1728,10 @@ def CompileRes(target, src, opts):
 def CompileRsrc(target, src, opts):
     """Compiles a Mac OS .r file into an .rsrc file."""
     ipath = GetListOption(opts, "DIR:")
-    cmd = "/Developer/Tools/Rez -useDF"
+    if os.path.isfile("/usr/bin/Rez"):
+        cmd = "Rez -useDF"
+    else:
+        cmd = "/Developer/Tools/Rez -useDF"
     cmd += " -o " + BracketNameWithQuotes(target)
     for x in ipath:
         cmd += " -i " + x
@@ -2128,6 +2181,9 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = '1'
             else:
                 dtool_config["HAVE_"+x] = 'UNDEF'
+
+    if not PkgSkip("OPENCV"):
+        dtool_config["OPENCV_VER_23"] = '1' if OPENCV_VER_23 else 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
 
@@ -2602,6 +2658,9 @@ MakeDirectory(GetOutputDir()+'/include/parser-inc/glew')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Eigen')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket/Core')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/core')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/highgui')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
@@ -2614,6 +2673,8 @@ CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/Dense')
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/StdVector')
 CopyFile(GetOutputDir()+'/include/parser-inc/Rocket/Core/','dtool/src/parser-inc/RenderInterface.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/core/','dtool/src/parser-inc/core.hpp')
+CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/highgui/','dtool/src/parser-inc/highgui.hpp')
 DeleteVCS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
@@ -3548,10 +3609,9 @@ if (not RUNTIME):
 
 DefSymbol("TINYXML", "TIXML_USE_STL", "")
 
-if (RUNTIME or RTDIST):
-  OPTS=['DIR:panda/src/dxml', 'TINYXML']
-  TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
-  TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
+OPTS=['DIR:panda/src/dxml', 'TINYXML']
+TargetAdd('tinyxml_composite1.obj', opts=OPTS, input='tinyxml_composite1.cxx')
+TargetAdd('libp3tinyxml.ilb', input='tinyxml_composite1.obj')
 
 if (not RUNTIME):
   OPTS=['DIR:panda/src/dxml', 'BUILDING:PANDA', 'TINYXML']
@@ -3733,6 +3793,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
+  TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=OPTS)
 
@@ -4754,7 +4815,7 @@ if (RTDIST or RUNTIME):
   OPTS=['DIR:direct/src/plugin', 'BUILDING:P3D_PLUGIN', 'RUNTIME', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
 
-  OPTS += ['ZLIB', 'JPEG', 'PNG', 'MSIMG']
+  OPTS += ['ZLIB', 'MSIMG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
   TargetAdd('plugin_wstring_encode.obj', opts=OPTS, input='wstring_encode.cxx')
@@ -4783,7 +4844,7 @@ if (RTDIST or RUNTIME):
       TargetAdd(fname, input='libp3tinyxml.ilb')
       if GetTarget() == 'darwin':
         TargetAdd(fname, input='libp3subprocbuffer.ilb')
-      TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'JPEG', 'PNG', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
+      TargetAdd(fname, opts=['OPENSSL', 'ZLIB', 'X11', 'ADVAPI', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL', 'WINOLE', 'MSIMG'])
     TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
@@ -4840,7 +4901,7 @@ if (RTDIST or RUNTIME):
 # DIRECTORY: direct/src/plugin_npapi/
 #
 
-if (RUNTIME and PkgSkip("NPAPI")==0):
+if RUNTIME:
   OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME', 'GTK2']
   if GetTarget() == 'windows':
     nppanda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
@@ -4854,7 +4915,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
   elif GetTarget() == 'darwin':
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
 
-  OPTS += ['NPAPI', 'GTK2']
+  OPTS += ['GTK2']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
 
   TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
@@ -4870,7 +4931,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
     TargetAdd('nppanda3d.plugin', input='plugin_find_root_dir_assist.obj')
   TargetAdd('nppanda3d.plugin', input='libp3tinyxml.ilb')
-  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'OPENSSL', 'WINGDI', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
+  TargetAdd('nppanda3d.plugin', opts=['OPENSSL', 'WINGDI', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
@@ -4964,7 +5025,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
-  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'JPEG', 'PNG', 'ZLIB']
+  OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'ZLIB']
   # This is arguably a big fat ugly hack, but doing it otherwise would complicate the build process considerably.
   DefSymbol("P3DEMBED", "LINK_ALL_STATIC", "")
   TargetAdd('plugin_standalone_panda3dBase.obj', opts=OPTS, input='panda3dBase.cxx')
@@ -5011,7 +5072,7 @@ if (RTDIST):
     TargetAdd('p3dembed.exe', input='libp3subprocbuffer.ilb')
   TargetAdd('p3dembed.exe', input='libp3tinyxml.ilb')
   TargetAdd('p3dembed.exe', input='libp3d_plugin_static.ilb')
-  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11', 'PNG'])
+  TargetAdd('p3dembed.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'CARBON', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'X11'])
 
   if GetTarget() == 'windows':
     OPTS.append("P3DEMBEDW")
@@ -5037,7 +5098,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_common.obj')
     TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
-    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'JPEG', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL', 'PNG'])
+    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
@@ -5538,7 +5599,7 @@ for VER in MAYAVERSIONS:
 for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+    OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
     TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
     TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3maxegg_composite1.cxx')
@@ -5555,7 +5616,7 @@ for VER in MAXVERSIONS:
 for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+    OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
     TargetAdd('maxImportRes.res', opts=OPTS, input='maxImportRes.rc')
     TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
@@ -6630,10 +6691,15 @@ def MakeInstallerOSX():
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
 
+        if OSXTARGET:
+            target = '--target %s' % (OSXTARGET)
+        else:
+            target = ''
+
         if os.path.exists("/Developer/usr/bin/packagemaker"):
-            cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
-            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:

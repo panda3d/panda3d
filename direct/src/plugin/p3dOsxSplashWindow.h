@@ -17,7 +17,7 @@
 
 #include "p3d_plugin_common.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 
 #include "p3dSplashWindow.h"
 

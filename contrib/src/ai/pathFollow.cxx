@@ -20,7 +20,7 @@ PathFollow::~PathFollow() {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void PathFollow::add_to_path(LVecBase3f pos) {
+void PathFollow::add_to_path(LVecBase3 pos) {
     _path.push_back(pos);
 }
 
@@ -119,7 +119,7 @@ void PathFollow::do_follow() {
 
 bool PathFollow::check_if_possible() {
   Node* src = find_in_mesh(_ai_char->_steering->_path_find_obj->_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _ai_char->_steering->_path_find_obj->_grid_size);
-  LVecBase3f _prev_position = _ai_char->_steering->_path_find_obj->_path_find_target.get_pos(_ai_char->_window_render);
+  LVecBase3 _prev_position = _ai_char->_steering->_path_find_obj->_path_find_target.get_pos(_ai_char->_window_render);
   Node* dst = find_in_mesh(_ai_char->_steering->_path_find_obj->_nav_mesh, _prev_position, _ai_char->_steering->_path_find_obj->_grid_size);
 
   if(src && dst) {

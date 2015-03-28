@@ -46,9 +46,6 @@ PUBLISHED:
   static int size() { return 3; }
   gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }
   gray &operator [](int i) { nassertr(i >= 0 && i < 3, r); return *(&r + i); }
-#ifdef HAVE_PYTHON
-  void __setitem__(int i, gray v) { operator[](i) = v; }
-#endif
   pixel operator + (const pixel &other) const
     { return pixel(r + other.r, g + other.g, b + other.b); }
   pixel operator - (const pixel &other) const
@@ -61,6 +58,12 @@ PUBLISHED:
     { r -= other.r; g -= other.g; b -= other.b; }
   void operator *= (const double mult)
     { r *= mult; g *= mult; b *= mult; }
+
+#ifdef HAVE_PYTHON
+  void output(ostream &out) {
+    out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
+  }
+#endif
 
   gray r, g, b;
 };
@@ -113,9 +116,9 @@ EXPCL_PANDA_PNMIMAGE int pm_writelittlelong(ostream *out, long l);
 
 // These ratios are used to compute the brightness of a colored pixel; they
 // define the relative contributions of each of the components.
-static const double lumin_red = 0.299;
-static const double lumin_grn = 0.587;
-static const double lumin_blu = 0.114;
+static const float lumin_red = 0.299f;
+static const float lumin_grn = 0.587f;
+static const float lumin_blu = 0.114f;
 
 
 #endif

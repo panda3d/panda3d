@@ -1,7 +1,7 @@
 
 #include "meshNode.h"
 
-Node::Node(int grid_x, int grid_y, LVecBase3f pos, float w, float l, float h) {
+Node::Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h) {
   for(int i = 0; i < 8; ++i) {
     _neighbours[i] = NULL;
   }

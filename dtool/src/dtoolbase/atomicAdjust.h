@@ -18,7 +18,15 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#if defined(THREAD_DUMMY_IMPL)||defined(THREAD_SIMPLE_IMPL)
+#if defined(CPPPARSER)
+
+struct AtomicAdjust {
+  typedef long Integer;
+  typedef void *UnalignedPointer;
+  typedef UnalignedPointer Pointer;
+};
+
+#elif defined(THREAD_DUMMY_IMPL) || defined(THREAD_SIMPLE_IMPL)
 
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;

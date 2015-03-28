@@ -60,9 +60,12 @@ clear() {
   _y_size = 0;
   _num_channels = 0;
   _maxval = 255;
+  _inv_maxval = 1.0 / 255.0;
+  _color_space = CS_linear;
   _comment.clear();
   _type = (PNMFileType *)NULL;
   _has_read_size = false;
+  _xel_encoding = XE_generic;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,14 +76,16 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 clear(int x_size, int y_size, int num_channels,
-      xelval maxval, PNMFileType *type) {
+      xelval maxval, PNMFileType *type, ColorSpace color_space) {
   clear();
   nassertv(num_channels >= 1 && num_channels <= 4);
+  nassertv(color_space != CS_unspecified);
 
   _x_size = x_size;
   _y_size = y_size;
   _num_channels = num_channels;
   _maxval = maxval;
+  _color_space = color_space;
   _comment.clear();
   _type = type;
   _has_read_size = false;
@@ -93,6 +98,7 @@ clear(int x_size, int y_size, int num_channels,
   allocate_array();
   memset(_array, 0, sizeof(xel) * _y_size * _x_size);
 
+  setup_encoding();
   setup_rc();
 }
 
@@ -138,14 +144,13 @@ copy_channel(const PNMImage &copy, int src_channel, int dest_channel) {
   // Do the actual copying
   for (int x = 0; x < _x_size; x++) {
     for (int y = 0; y < _y_size; y++) {
-      LVecBase4d t = get_xel_a(x, y);
-      LVecBase4d o = copy.get_xel_a(x, y);
-      t.set_cell(dest_channel,o.get_cell(src_channel));
+      LColorf t = get_xel_a(x, y);
+      LColorf o = copy.get_xel_a(x, y);
+      t.set_cell(dest_channel, o.get_cell(src_channel));
       set_xel_a(x, y, t);
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_header_from
@@ -165,6 +170,7 @@ copy_header_from(const PNMImageHeader &header) {
   }
 
   allocate_array();
+  setup_encoding();
   setup_rc();
 }
 
@@ -178,6 +184,7 @@ void PNMImage::
 take_from(PNMImage &orig) {
   clear();
   PNMImageHeader::operator = (orig);
+  setup_encoding();
   setup_rc();
 
   if (has_alpha()) {
@@ -329,13 +336,14 @@ read(PNMReader *reader) {
     return false;
   }
 
+  setup_encoding();
   setup_rc();
 
   if (has_read_size && (_x_size != read_x_size || _y_size != read_y_size)) {
     // The Reader didn't comply with our size request.  Do the sizing
     // explicitly, then.
     PNMImage new_image(read_x_size, read_y_size, get_num_channels(),
-                       get_maxval(), get_type());
+                       get_maxval(), get_type(), get_color_space());
     new_image.quick_filter_from(*this);
     take_from(new_image);
   }
@@ -441,8 +449,6 @@ write(PNMWriter *writer) const {
   return (result == _y_size);
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_color_type
 //       Access: Published
@@ -461,7 +467,7 @@ set_color_type(PNMImage::ColorType color_type) {
   }
 
   if (!is_grayscale() && is_grayscale(color_type)) {
-    // convert to grayscale from color
+    // Convert to grayscale from color
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
         set_gray(x, y, get_bright(x, y));
@@ -469,29 +475,125 @@ set_color_type(PNMImage::ColorType color_type) {
     }
 
   } else if (is_grayscale() && !is_grayscale(color_type)) {
-    // convert to color from grayscale
+    // Convert to color from grayscale
     for (int y = 0; y < get_y_size(); y++) {
-      for (int x = 0; x<get_x_size(); x++) {
+      for (int x = 0; x < get_x_size(); x++) {
         set_xel_val(x, y, get_gray_val(x, y));
       }
     }
   }
 
   if (has_alpha() && !has_alpha(color_type)) {
-    // discard the alpha channel
-    if (_alpha!=NULL) {
+    // Discard the alpha channel
+    if (_alpha != NULL) {
       PANDA_FREE_ARRAY(_alpha);
       _alpha = NULL;
     }
 
   } else if (!has_alpha() && has_alpha(color_type)) {
-    // create a new alpha channel
+    // Create a new alpha channel
     allocate_alpha();
     memset(_alpha, 0, sizeof(xelval) * (_x_size * _y_size));
   }
 
   _num_channels = (int)color_type;
+  setup_encoding();
   setup_rc();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_color_space
+//       Access: Published
+//  Description: Converts the colors in the image to the indicated
+//               color space.  This may be a lossy operation, in
+//               particular when going from sRGB to linear.
+//               The alpha channel remains untouched.
+//
+//               Note that, because functions like get_xel() and
+//               set_xel() work on linearized floating-point values,
+//               this conversion won't affect those values (aside
+//               from some minor discrepancies due to storage
+//               precision).  It does affect the values used by
+//               get_xel_val() and set_xel_val(), though, since
+//               those operate on encoded colors.
+//
+//               Some color spaces, particularly scRGB, may enforce
+//               the use of a particular maxval setting.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+set_color_space(ColorSpace color_space) {
+  nassertv(color_space != CS_unspecified);
+
+  if (color_space == _color_space) {
+    return;
+  }
+
+  if (_array != NULL) {
+    size_t array_size = _x_size * _y_size;
+
+    // Note: only convert RGB, since alpha channel is always linear.
+    switch (color_space) {
+    case CS_linear:
+      if (_maxval == 255 && _color_space == CS_sRGB) {
+        for (size_t i = 0; i < array_size; ++i) {
+          xel &col = _array[i];
+          col.r = decode_sRGB_uchar((unsigned char) col.r);
+          col.g = decode_sRGB_uchar((unsigned char) col.g);
+          col.b = decode_sRGB_uchar((unsigned char) col.b);
+        }
+      } else {
+        for (int x = 0; x < _x_size; ++x) {
+          for (int y = 0; y < _y_size; ++y) {
+            LRGBColorf scaled = get_xel(x, y) * _maxval + 0.5f;
+            xel &col = row(y)[x];
+            col.r = clamp_val((int)scaled[0]);
+            col.g = clamp_val((int)scaled[1]);
+            col.b = clamp_val((int)scaled[2]);
+          }
+        }
+      }
+      break;
+
+    case CS_sRGB:
+      if (_maxval == 255 && _color_space == CS_linear) {
+        for (size_t i = 0; i < array_size; ++i) {
+          xel &col = _array[i];
+          col.r = encode_sRGB_uchar((unsigned char) col.r);
+          col.g = encode_sRGB_uchar((unsigned char) col.g);
+          col.b = encode_sRGB_uchar((unsigned char) col.b);
+        }
+      } else {
+        for (int x = 0; x < _x_size; ++x) {
+          for (int y = 0; y < _y_size; ++y) {
+            xel &col = row(y)[x];
+            encode_sRGB_uchar(get_xel_a(x, y), col);
+          }
+        }
+      }
+      break;
+
+    case CS_scRGB:
+      for (int x = 0; x < _x_size; ++x) {
+        for (int y = 0; y < _y_size; ++y) {
+          LRGBColorf scaled = get_xel(x, y) * 8192.f + 4096.5f;
+          xel &col = row(y)[x];
+          col.r = min(max(0, (int)scaled[0]), 65535);
+          col.g = min(max(0, (int)scaled[1]), 65535);
+          col.b = min(max(0, (int)scaled[2]), 65535);
+        }
+      }
+      _maxval = 65535;
+      break;
+
+    default:
+      nassertv(false);
+      break;
+    }
+
+    // Initialize the new encoding settings.
+    _color_space = color_space;
+    setup_encoding();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,18 +606,19 @@ set_color_type(PNMImage::ColorType color_type) {
 //               grayscale.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-make_grayscale(double rc, double gc, double bc) {
+make_grayscale(float rc, float gc, float bc) {
   if (is_grayscale()) {
     return;
   }
 
   for (int y = 0; y < get_y_size(); y++) {
     for (int x = 0; x < get_x_size(); x++) {
-      set_gray(x, y, min(get_bright(x, y, rc, gc, bc), 1.0));
+      set_gray(x, y, min(get_bright(x, y, rc, gc, bc), 1.0f));
     }
   }
 
   _num_channels = has_alpha() ? 2 : 1;
+  setup_encoding();
   setup_rc();
 }
 
@@ -644,7 +747,7 @@ set_maxval(xelval maxval) {
   nassertv(maxval > 0);
 
   if (maxval != _maxval) {
-    double ratio = (double)maxval / (double)_maxval;
+    float ratio = (float)maxval / (float)_maxval;
 
     if (is_grayscale()) {
       for (int y = 0; y < get_y_size(); y++) {
@@ -671,6 +774,7 @@ set_maxval(xelval maxval) {
       }
     }
     _maxval = maxval;
+    setup_encoding();
   }
 }
 
@@ -749,6 +853,80 @@ set_channel_val(int x, int y, int channel, xelval value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_channel
+//       Access: Published
+//  Description: Returns the nth component color at the indicated
+//               pixel.  The channel index should be in the range
+//               0..(get_num_channels()-1).  The channels are ordered B,
+//               G, R, A.  This is slightly less optimal than
+//               accessing the component values directly by named
+//               methods.  The value returned is a float in the range
+//               0..1.
+////////////////////////////////////////////////////////////////////
+float PNMImage::
+get_channel(int x, int y, int channel) const {
+  switch (channel) {
+  case 0:
+    return get_blue(x, y);
+
+  case 1:
+    return (_num_channels == 2) ? get_alpha(x, y) : get_green(x, y);
+
+  case 2:
+    return get_red(x, y);
+
+  case 3:
+    return get_alpha(x, y);
+
+  default:
+    pnmimage_cat.error()
+      << "Invalid request for channel " << channel << " in "
+      << get_num_channels() << "-channel image.\n";
+    nassertr(false, 0);
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_channel
+//       Access: Published
+//  Description: Sets the nth component color at the indicated
+//               pixel.  The channel index should be in the range
+//               0..(get_num_channels()-1).  The channels are ordered B,
+//               G, R, A.  This is slightly less optimal than
+//               setting the component values directly by named
+//               methods.  The value given should be a float in the
+//               range 0..1.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+set_channel(int x, int y, int channel, float value) {
+  switch (channel) {
+  case 0:
+    set_blue(x, y, value);
+    break;
+
+  case 1:
+    if (_num_channels == 2) {
+      set_alpha(x, y, value);
+    } else {
+      set_green(x, y, value);
+    }
+    break;
+
+  case 2:
+    set_red(x, y, value);
+    break;
+
+  case 3:
+    set_alpha(x, y, value);
+    break;
+
+  default:
+    nassertv(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::get_pixel
 //       Access: Published
 //  Description: Returns the (r, g, b, a) pixel value at the indicated
@@ -796,7 +974,7 @@ set_pixel(int x, int y, const PixelSpec &pixel) {
 //               alpha of 0.0 is fully transparent and does nothing.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-blend(int x, int y, double r, double g, double b, double alpha) {
+blend(int x, int y, float r, float g, float b, float alpha) {
   if (alpha >= 1.0) {
     // Completely replace the previous color.
     if (has_alpha()) {
@@ -804,22 +982,22 @@ blend(int x, int y, double r, double g, double b, double alpha) {
     }
     set_xel(x, y, r, g, b);
 
-  } else if (alpha > 0.0) {
+  } else if (alpha > 0.0f) {
     // Blend with the previous color.
-    double prev_alpha = has_alpha() ? get_alpha(x, y) : 1.0;
+    float prev_alpha = has_alpha() ? get_alpha(x, y) : 1.0f;
 
-    if (prev_alpha == 0.0) {
+    if (prev_alpha == 0.0f) {
       // Nothing there previously; replace with this new color.
       set_alpha(x, y, alpha);
       set_xel(x, y, r, g, b);
 
     } else {
       // Blend the color with the previous color.
-      LRGBColord prev_rgb = get_xel(x, y);
-      r = r + (1.0 - alpha) * (get_red(x, y) - r);
-      g = g + (1.0 - alpha) * (get_green(x, y) - g);
-      b = b + (1.0 - alpha) * (get_blue(x, y) - b);
-      alpha = prev_alpha + alpha * (1.0 - prev_alpha);
+      LRGBColorf prev_rgb = get_xel(x, y);
+      r = r + (1.0f - alpha) * (get_red(x, y) - r);
+      g = g + (1.0f - alpha) * (get_green(x, y) - g);
+      b = b + (1.0f - alpha) * (get_blue(x, y) - b);
+      alpha = prev_alpha + alpha * (1.0f - prev_alpha);
 
       if (has_alpha()) {
         set_alpha(x, y, alpha);
@@ -887,7 +1065,8 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
 
-  if (get_maxval() == copy.get_maxval()) {
+  if (get_maxval() == copy.get_maxval() &&
+      get_color_space() == copy.get_color_space()) {
     // The simple case: no pixel value rescaling is required.
     int x, y;
     for (y = ymin; y < ymax; y++) {
@@ -941,7 +1120,7 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
 void PNMImage::
 blend_sub_image(const PNMImage &copy, int xto, int yto,
                 int xfrom, int yfrom, int x_size, int y_size,
-                double pixel_scale) {
+                float pixel_scale) {
   if (!copy.has_alpha() && pixel_scale == 1.0) {
     copy_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size);
     return;
@@ -981,7 +1160,7 @@ blend_sub_image(const PNMImage &copy, int xto, int yto,
 void PNMImage::
 add_sub_image(const PNMImage &copy, int xto, int yto,
               int xfrom, int yfrom, int x_size, int y_size,
-              double pixel_scale) {
+              float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
@@ -997,9 +1176,9 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
 
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
-      LRGBColord rgb1 = get_xel(x, y);
-      LRGBColord rgb2 = copy.get_xel(x, y);
-      set_xel(x, y, 
+      LRGBColorf rgb1 = get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x, y);
+      set_xel(x, y,
               rgb1[0] + rgb2[0] * pixel_scale,
               rgb1[1] + rgb2[1] * pixel_scale,
               rgb1[2] + rgb2[2] * pixel_scale);
@@ -1019,7 +1198,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
 void PNMImage::
 mult_sub_image(const PNMImage &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size,
-               double pixel_scale) {
+               float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
@@ -1035,9 +1214,9 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
 
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
-      LRGBColord rgb1 = get_xel(x, y);
-      LRGBColord rgb2 = copy.get_xel(x, y);
-      set_xel(x, y, 
+      LRGBColorf rgb1 = get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x, y);
+      set_xel(x, y,
               rgb1[0] * rgb2[0] * pixel_scale,
               rgb1[1] * rgb2[1] * pixel_scale,
               rgb1[2] * rgb2[2] * pixel_scale);
@@ -1062,12 +1241,13 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
 void PNMImage::
 darken_sub_image(const PNMImage &copy, int xto, int yto,
                  int xfrom, int yfrom, int x_size, int y_size,
-                 double pixel_scale) {
+                 float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
 
-  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0) {
+  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0f &&
+      get_color_space() == CS_linear && copy.get_color_space() == CS_linear) {
     // The simple case: no pixel value rescaling is required.
     int x, y;
     for (y = ymin; y < ymax; y++) {
@@ -1095,12 +1275,12 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
     int x, y;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        LRGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
-        LRGBColord o = get_xel(x, y);
-        LRGBColord p;
-        p.set(min(1.0 - ((1.0 - c[0]) * pixel_scale), o[0]),
-              min(1.0 - ((1.0 - c[1]) * pixel_scale), o[1]),
-              min(1.0 - ((1.0 - c[2]) * pixel_scale), o[2]));
+        LRGBColorf c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        LRGBColorf o = get_xel(x, y);
+        LRGBColorf p;
+        p.set(min(1.0f - ((1.0f - c[0]) * pixel_scale), o[0]),
+              min(1.0f - ((1.0f - c[1]) * pixel_scale), o[1]),
+              min(1.0f - ((1.0f - c[2]) * pixel_scale), o[2]));
         set_xel(x, y, p);
       }
     }
@@ -1108,9 +1288,9 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          double c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
-          double o = get_alpha(x, y);
-          set_alpha(x, y, min(1.0 - ((1.0 - c) * pixel_scale), o));
+          float c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
+          float o = get_alpha(x, y);
+          set_alpha(x, y, min(1.0f - ((1.0f - c) * pixel_scale), o));
         }
       }
     }
@@ -1132,12 +1312,13 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
 void PNMImage::
 lighten_sub_image(const PNMImage &copy, int xto, int yto,
                   int xfrom, int yfrom, int x_size, int y_size,
-                  double pixel_scale) {
+                  float pixel_scale) {
   int xmin, ymin, xmax, ymax;
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
 
-  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0) {
+  if (get_maxval() == copy.get_maxval() && pixel_scale == 1.0f &&
+      get_color_space() == CS_linear && copy.get_color_space() == CS_linear) {
     // The simple case: no pixel value rescaling is required.
     int x, y;
     for (y = ymin; y < ymax; y++) {
@@ -1165,9 +1346,9 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
     int x, y;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        LRGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
-        LRGBColord o = get_xel(x, y);
-        LRGBColord p;
+        LRGBColorf c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        LRGBColorf o = get_xel(x, y);
+        LRGBColorf p;
         p.set(max(c[0] * pixel_scale, o[0]),
               max(c[1] * pixel_scale, o[1]),
               max(c[2] * pixel_scale, o[2]));
@@ -1178,8 +1359,8 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
-          double c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
-          double o = get_alpha(x, y);
+          float c = copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom);
+          float o = get_alpha(x, y);
           set_alpha(x, y, max(c * pixel_scale, o));
         }
       }
@@ -1210,15 +1391,16 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
 //               both be 1x1 images instead of the source image size.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-threshold(const PNMImage &select_image, int channel, double threshold,
+threshold(const PNMImage &select_image, int channel, float threshold,
           const PNMImage &lt, const PNMImage &ge) {
   nassertv(get_x_size() <= select_image.get_x_size() && get_y_size() <= select_image.get_y_size());
   nassertv(channel >= 0 && channel < select_image.get_num_channels());
 
-  xelval threshold_val = (xelval)(select_image.get_maxval() * threshold + 0.5);
+  xelval threshold_val = select_image.to_val(threshold);
 
-  if (lt.get_x_size() == 1 && lt.get_y_size() == 1 && 
+  if (lt.get_x_size() == 1 && lt.get_y_size() == 1 &&
       ge.get_x_size() == 1 && ge.get_y_size() == 1) {
+    // FIXME: what if select_image has different color space?
     // 1x1 source images.
     xel lt_val = lt.get_xel_val(0, 0);
     xelval lt_alpha = 0;
@@ -1226,10 +1408,10 @@ threshold(const PNMImage &select_image, int channel, double threshold,
       lt_alpha = lt.get_alpha_val(0, 0);
     }
     if (lt.get_maxval() != get_maxval()) {
-      double scale = (double)get_maxval() / (double)lt.get_maxval();
-      PPM_ASSIGN(lt_val, 
-                 (xelval)(PPM_GETR(lt_val) * scale + 0.5), 
-                 (xelval)(PPM_GETG(lt_val) * scale + 0.5), 
+      float scale = (float)get_maxval() / (float)lt.get_maxval();
+      PPM_ASSIGN(lt_val,
+                 (xelval)(PPM_GETR(lt_val) * scale + 0.5),
+                 (xelval)(PPM_GETG(lt_val) * scale + 0.5),
                  (xelval)(PPM_GETB(lt_val) * scale + 0.5));
       lt_alpha = (xelval)(lt_alpha * scale + 0.5);
     }
@@ -1240,16 +1422,16 @@ threshold(const PNMImage &select_image, int channel, double threshold,
       ge_alpha = ge.get_alpha_val(0, 0);
     }
     if (ge.get_maxval() != get_maxval()) {
-      double scale = (double)get_maxval() / (double)ge.get_maxval();
-      PPM_ASSIGN(ge_val, 
-                 (xelval)(PPM_GETR(ge_val) * scale + 0.5), 
-                 (xelval)(PPM_GETG(ge_val) * scale + 0.5), 
+      float scale = (float)get_maxval() / (float)ge.get_maxval();
+      PPM_ASSIGN(ge_val,
+                 (xelval)(PPM_GETR(ge_val) * scale + 0.5),
+                 (xelval)(PPM_GETG(ge_val) * scale + 0.5),
                  (xelval)(PPM_GETB(ge_val) * scale + 0.5));
       ge_alpha = (xelval)(ge_alpha * scale + 0.5);
     }
 
     int x, y;
-    
+
     if (channel == 3) {
       // Further special case: the alpha channel.
       if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
@@ -1265,7 +1447,7 @@ threshold(const PNMImage &select_image, int channel, double threshold,
             }
           }
         }
-        
+
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
@@ -1293,7 +1475,7 @@ threshold(const PNMImage &select_image, int channel, double threshold,
             }
           }
         }
-        
+
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
@@ -1307,13 +1489,15 @@ threshold(const PNMImage &select_image, int channel, double threshold,
         }
       }
     }
-    
+
   } else {
     // Same-sized source images.
     nassertv(get_x_size() <= lt.get_x_size() && get_y_size() <= lt.get_y_size());
     nassertv(get_x_size() <= ge.get_x_size() && get_y_size() <= ge.get_y_size());
 
-    if (get_maxval() == lt.get_maxval() && get_maxval() == ge.get_maxval()) {
+    if (get_maxval() == lt.get_maxval() && get_maxval() == ge.get_maxval() &&
+        get_color_space() == lt.get_color_space() &&
+        get_color_space() == ge.get_color_space()) {
       // Simple case: the maxvals are all equal.  Copy by integer value.
       int x, y;
 
@@ -1430,12 +1614,12 @@ threshold(const PNMImage &select_image, int channel, double threshold,
 //               process.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-fill_distance_inside(const PNMImage &mask, double threshold, int radius, bool shrink_from_border) {
+fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
   dist.fill_val(radius);
 
-  xelval threshold_val = (xelval)(mask.get_maxval() * threshold + 0.5);
+  xelval threshold_val = mask.to_val(threshold);
 
   for (int yi = 0; yi < mask.get_y_size(); ++yi) {
     for (int xi = 0; xi < mask.get_x_size(); ++xi) {
@@ -1480,12 +1664,12 @@ fill_distance_inside(const PNMImage &mask, double threshold, int radius, bool sh
 //               process.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-fill_distance_outside(const PNMImage &mask, double threshold, int radius) {
+fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
   dist.fill_val(radius);
 
-  xelval threshold_val = (xelval)(mask.get_maxval() * threshold + 0.5);
+  xelval threshold_val = mask.to_val(threshold);
 
   for (int yi = 0; yi < mask.get_y_size(); ++yi) {
     for (int xi = 0; xi < mask.get_x_size(); ++xi) {
@@ -1508,14 +1692,14 @@ fill_distance_outside(const PNMImage &mask, double threshold, int radius) {
 //               Does not affect the alpha channel, if any.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-rescale(double min_val, double max_val) {
-  double scale = max_val - min_val;
+rescale(float min_val, float max_val) {
+  float scale = max_val - min_val;
 
   if (_num_channels <= 2) {
     // Grayscale.
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
-        double val = get_gray(x, y);
+        float val = get_gray(x, y);
         set_gray(x, y, (val - min_val) / scale);
       }
     }
@@ -1523,7 +1707,7 @@ rescale(double min_val, double max_val) {
     // RGB(A).
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
-        LRGBColord xel = get_xel(x, y);
+        LRGBColorf xel = get_xel(x, y);
         set_xel(x, y, 
                 (xel[0] - min_val) / scale,
                 (xel[1] - min_val) / scale,
@@ -1548,7 +1732,8 @@ copy_channel(const PNMImage &copy, int xto, int yto, int cto,
   setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
                   xmin, ymin, xmax, ymax);
 
-  if (get_maxval() == copy.get_maxval()) {
+  if (get_maxval() == copy.get_maxval() &&
+      get_color_space() == copy.get_color_space()) {
     // The simple case: no pixel value rescaling is required.
     int x, y;
     for (y = ymin; y < ymax; y++) {
@@ -1601,14 +1786,14 @@ copy_channel(const PNMImage &copy, int xto, int yto, int cto,
 //               between fg and bg colors.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-render_spot(const LColord &fg, const LColord &bg,
-            double min_radius, double max_radius) {
+render_spot(const LColorf &fg, const LColorf &bg,
+            float min_radius, float max_radius) {
   if (_x_size == 0 || _y_size == 0) {
     return;
   }
 
-  double x_scale = 2.0 / _x_size;
-  double y_scale = 2.0 / _y_size;
+  float x_scale = 2.0 / _x_size;
+  float y_scale = 2.0 / _y_size;
 
   // If the width is even, x_center1 == x_center0.  If the width is
   // odd, x_center1 == x_center0 + 1.
@@ -1617,19 +1802,19 @@ render_spot(const LColord &fg, const LColord &bg,
   int x_center1 = (_x_size + 1) / 2;
   int y_center1 = (_y_size + 1) / 2;
 
-  double min_r2 = min_radius * min_radius;
-  double max_r2 = max_radius * max_radius;
+  float min_r2 = min_radius * min_radius;
+  float max_r2 = max_radius * max_radius;
 
   for (int yi = 0; yi < y_center1; ++yi) {
-    double y = yi * y_scale;
-    double y2_inner = y * y;
-    double y2_outer = (y + y_scale) * (y + y_scale);
+    float y = yi * y_scale;
+    float y2_inner = y * y;
+    float y2_outer = (y + y_scale) * (y + y_scale);
     for (int xi = 0; xi < x_center1; ++xi) {
-      double x = xi * x_scale;
-      double d2_inner = (x * x + y2_inner);
-      double d2_outer = ((x + x_scale) * (x + x_scale) + y2_outer);
-      double d2_a = ((x + x_scale) * (x + x_scale) + y2_inner);
-      double d2_b = (x * x + y2_outer);
+      float x = xi * x_scale;
+      float d2_inner = (x * x + y2_inner);
+      float d2_outer = ((x + x_scale) * (x + x_scale) + y2_outer);
+      float d2_a = ((x + x_scale) * (x + x_scale) + y2_inner);
+      float d2_b = (x * x + y2_outer);
 
       if ((d2_inner <= min_r2) &&
           (d2_outer <= min_r2) &&
@@ -1653,14 +1838,14 @@ render_spot(const LColord &fg, const LColord &bg,
 
       } else {
         // This pixel is in a feathered area or along the antialiased edge.
-        LColord c_outer, c_inner, c_a, c_b;
+        LColorf c_outer, c_inner, c_a, c_b;
         compute_spot_pixel(c_outer, d2_outer, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_inner, d2_inner, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_a, d2_a, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_b, d2_b, min_radius, max_radius, fg, bg);
 
         // Now average all four pixels for the antialiased result.
-        LColord c;
+        LColorf c;
         c = (c_outer + c_inner + c_a + c_b) * 0.25;
 
         set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, c);
@@ -1684,10 +1869,11 @@ render_spot(const LColord &fg, const LColord &bg,
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 expand_border(int left, int right, int bottom, int top,
-              const LColord &color) {
+              const LColorf &color) {
   PNMImage new_image(get_x_size() + left + right,
                      get_y_size() + bottom + top,
-                     get_num_channels(), get_maxval(), get_type());
+                     get_num_channels(), get_maxval(),
+                     get_type(), get_color_space());
   new_image.fill(color[0], color[1], color[2]);
   if (has_alpha()) {
     new_image.alpha_fill(color[3]);
@@ -1762,9 +1948,9 @@ make_histogram(PNMImage::Histogram &histogram) {
 //               See also the PerlinNoise2 class in mathutil.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-perlin_noise_fill(double sx, double sy, int table_size, unsigned long seed) {
-  double x, y;
-  double noise;
+perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed) {
+  float x, y;
+  float noise;
   PerlinNoise2 perlin (sx * _x_size, sy * _y_size, table_size, seed);
   for (x = 0; x < _x_size; ++x) {
     for (y = 0; y < _y_size; ++y) {
@@ -1782,11 +1968,11 @@ perlin_noise_fill(double sx, double sy, int table_size, unsigned long seed) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 perlin_noise_fill(StackedPerlinNoise2 &perlin) {
-  double x, y;
-  double noise;
+  float x, y;
+  float noise;
   for (x = 0; x < _x_size; ++x) {
     for (y = 0; y < _y_size; ++y) {
-      noise = perlin.noise(x / (double) _x_size, y / (double) _y_size);
+      noise = perlin.noise(x / (float) _x_size, y / (float) _y_size);
       set_xel(x, y, 0.5 * (noise + 1.0));
     }
   }
@@ -1823,17 +2009,17 @@ remix_channels(const LMatrix4 &conv) {
 //               green_exponent are unused.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-apply_exponent(double red_exponent, double green_exponent, double blue_exponent, 
-               double alpha_exponent) {
+apply_exponent(float red_exponent, float green_exponent, float blue_exponent,
+               float alpha_exponent) {
   int num_channels = _num_channels;
-  if (has_alpha() && alpha_exponent == 1.0) {
+  if (has_alpha() && alpha_exponent == 1.0f) {
     // If the alpha_exponent is 1, don't bother to apply it.
     --num_channels;
   }
 
   int x, y;
 
-  if (red_exponent == 1.0 && green_exponent == 1.0 && blue_exponent == 1.0) {
+  if (red_exponent == 1.0f && green_exponent == 1.0f && blue_exponent == 1.0f) {
     // If the RGB components are all 1, apply only to the alpha channel.
     switch (num_channels) {
     case 1:
@@ -1844,7 +2030,7 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent,
     case 4:
       for (y = 0; y < _y_size; ++y) {
         for (x = 0; x < _x_size; ++x) {
-          double alpha = get_alpha(x, y);
+          float alpha = get_alpha(x, y);
           alpha = cpow(alpha, blue_exponent);
           set_alpha(x, y, alpha);
         }
@@ -1859,7 +2045,7 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent,
     case 1:
       for (y = 0; y < _y_size; ++y) {
         for (x = 0; x < _x_size; ++x) {
-          double gray = get_gray(x, y);
+          float gray = get_gray(x, y);
           gray = cpow(gray, blue_exponent);
           set_gray(x, y, gray);
         }
@@ -1869,11 +2055,11 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent,
     case 2:
       for (y = 0; y < _y_size; ++y) {
         for (x = 0; x < _x_size; ++x) {
-          double gray = get_gray(x, y);
+          float gray = get_gray(x, y);
           gray = cpow(gray, blue_exponent);
           set_gray(x, y, gray);
 
-          double alpha = get_alpha(x, y);
+          float alpha = get_alpha(x, y);
           alpha = cpow(alpha, blue_exponent);
           set_alpha(x, y, alpha);
         }
@@ -1883,7 +2069,7 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent,
     case 3:
       for (y = 0; y < _y_size; ++y) {
         for (x = 0; x < _x_size; ++x) {
-          LRGBColord color = get_xel(x, y);
+          LRGBColorf color = get_xel(x, y);
           color[0] = cpow(color[0], red_exponent);
           color[1] = cpow(color[1], green_exponent);
           color[2] = cpow(color[2], blue_exponent);
@@ -1895,7 +2081,7 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent,
     case 4:
       for (y = 0; y < _y_size; ++y) {
         for (x = 0; x < _x_size; ++x) {
-          LColord color = get_xel_a(x, y);
+          LColorf color = get_xel_a(x, y);
           color[0] = cpow(color[0], red_exponent);
           color[1] = cpow(color[1], green_exponent);
           color[2] = cpow(color[2], blue_exponent);
@@ -1930,6 +2116,81 @@ setup_rc() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::setup_encoding
+//       Access: Private
+//  Description: Sets the _xel_encoding value apppropriately
+//               according to the color space, maxval and whether
+//               the image has an alpha channel, so that to_val and
+//               from_val will work correctly (and possibly more
+//               efficiently).
+//               Should be called after any call to set_maxval.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+setup_encoding() {
+  if (_maxval == 0) {
+    _inv_maxval = 0.0f;
+  } else {
+    _inv_maxval = 1.0f / (float)_maxval;
+  }
+
+  if (has_alpha()) {
+    switch (_color_space) {
+    case CS_linear:
+      _xel_encoding = XE_generic_alpha;
+      break;
+
+    case CS_sRGB:
+      if (get_maxval() == 255) {
+        if (has_sse2_sRGB_encode()) {
+          _xel_encoding = XE_uchar_sRGB_alpha_sse2;
+        } else {
+          _xel_encoding = XE_uchar_sRGB_alpha;
+        }
+      } else {
+        _xel_encoding = XE_generic_sRGB_alpha;
+      }
+      break;
+
+    case CS_scRGB:
+      _xel_encoding = XE_scRGB_alpha;
+      nassertv(get_maxval() == 65535);
+      break;
+
+    default:
+      nassertv(false);
+      break;
+    }
+  } else {
+    switch (_color_space) {
+    case CS_linear:
+      _xel_encoding = XE_generic;
+      break;
+
+    case CS_sRGB:
+      if (get_maxval() == 255) {
+        if (has_sse2_sRGB_encode()) {
+          _xel_encoding = XE_uchar_sRGB_sse2;
+        } else {
+          _xel_encoding = XE_uchar_sRGB;
+        }
+      } else {
+        _xel_encoding = XE_generic_sRGB;
+      }
+      break;
+
+    case CS_scRGB:
+      _xel_encoding = XE_scRGB;
+      nassertv(get_maxval() == 65535);
+      break;
+
+    default:
+      nassertv(false);
+      break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::do_fill_distance
 //       Access: Private
 //  Description: Recursively fills in the minimum distance measured
@@ -1937,7 +2198,7 @@ setup_rc() {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 do_fill_distance(int xi, int yi, int d) {
-  if (xi < 0 || xi >= get_x_size() || 
+  if (xi < 0 || xi >= get_x_size() ||
       yi < 0 || yi >= get_y_size()) {
     return;
   }
@@ -1958,21 +2219,22 @@ do_fill_distance(int xi, int yi, int d) {
 //  Description: Returns the average color of all of the pixels
 //               in the image.
 ////////////////////////////////////////////////////////////////////
-LRGBColord PNMImage::
+LRGBColorf PNMImage::
 get_average_xel() const {
-  LRGBColord color (LRGBColord::zero());
+  LRGBColorf color (LRGBColorf::zero());
   if (_x_size == 0 || _y_size == 0) {
     return color;
   }
 
+  float factor = 1.0f / (float)(_x_size * _y_size);
+
   int x, y;
   for (x = 0; x < _x_size; ++x) {
     for (y = 0; y < _y_size; ++y) {
-      color += get_xel(x, y);
+      color += get_xel(x, y) * factor;
     }
   }
 
-  color *= 1.0 / (_x_size * _y_size);
   return color;
 }
 
@@ -1982,21 +2244,22 @@ get_average_xel() const {
 //  Description: Returns the average color of all of the pixels
 //               in the image, including the alpha channel.
 ////////////////////////////////////////////////////////////////////
-LColord PNMImage::
+LColorf PNMImage::
 get_average_xel_a() const {
-  LColord color (LColord::zero());
+  LColorf color (LColorf::zero());
   if (_x_size == 0 || _y_size == 0) {
     return color;
   }
 
+  float factor = 1.0f / (float)(_x_size * _y_size);
+
   int x, y;
   for (x = 0; x < _x_size; ++x) {
     for (y = 0; y < _y_size; ++y) {
-      color += get_xel_a(x, y);
+      color += get_xel_a(x, y) * factor;
     }
   }
 
-  color *= 1.0 / (_x_size * _y_size);
   return color;
 }
 
@@ -2006,29 +2269,30 @@ get_average_xel_a() const {
 //  Description: Returns the average grayscale component of all of
 //               the pixels in the image.
 ////////////////////////////////////////////////////////////////////
-double PNMImage::
+float PNMImage::
 get_average_gray() const {
-  double color = 0.0;
+  float gray = 0.0;
   if (_x_size == 0 || _y_size == 0) {
-    return color;
+    return gray;
   }
 
   int x, y;
   for (x = 0; x < _x_size; ++x) {
     for (y = 0; y < _y_size; ++y) {
-      color += get_gray(x, y);
+      gray += get_gray(x, y);
     }
   }
 
-  color *= 1.0 / (_x_size * _y_size);
-  return color;
+  gray /= (float)(_x_size * _y_size);
+  return gray;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator ~
 //       Access: Published
-//  Description: Returns a new PNMImage that is the
-//               complement of the current PNMImage.
+//  Description: Returns a new PNMImage that is the complement of
+//               this PNMImage.  This operation is not color-space
+//               correct.
 ////////////////////////////////////////////////////////////////////
 PNMImage PNMImage::
 operator ~ () const {
@@ -2065,26 +2329,36 @@ operator ~ () const {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator += (const PNMImage &other) {
+  nassertv(is_valid() && other.is_valid());
   nassertv(_x_size == other._x_size && _y_size == other._y_size);
-  nassertv(_maxval == other._maxval && _maxval == other._maxval);
-  size_t array_size = _x_size * _y_size;
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + other._array[i].r);
-      _array[i].g = clamp_val(_array[i].g + other._array[i].g);
-      _array[i].b = clamp_val(_array[i].b + other._array[i].b);
-      _alpha[i] = clamp_val(_alpha[i] + other._alpha[i]);
+  if (get_maxval() == other.get_maxval() &&
+      get_color_space() == CS_linear &&
+      other.get_color_space() == CS_linear) {
+    size_t array_size = _x_size * _y_size;
+
+    // Simple case: add vals directly.
+    if (_alpha != NULL && other._alpha != NULL) {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r + (int)other._array[i].r);
+        _array[i].g = clamp_val((int)_array[i].g + (int)other._array[i].g);
+        _array[i].b = clamp_val((int)_array[i].b + (int)other._array[i].b);
+        _alpha[i] = clamp_val((int)_alpha[i] + (int)other._alpha[i]);
+      }
+    } else {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r + (int)other._array[i].r);
+        _array[i].g = clamp_val((int)_array[i].g + (int)other._array[i].g);
+        _array[i].b = clamp_val((int)_array[i].b + (int)other._array[i].b);
+      }
     }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + other._array[i].r);
-      _array[i].g = clamp_val(_array[i].g + other._array[i].g);
-      _array[i].b = clamp_val(_array[i].b + other._array[i].b);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] + other._alpha[i]);
+  } else {
+    // Not a linear color space: convert back and forth.
+    int x, y;
+    for (x = 0; x < _x_size; ++x) {
+      for (y = 0; y < _y_size; ++y) {
+        set_xel_a(x, y, get_xel_a(x, y) + other.get_xel_a(x, y));
+      }
     }
   }
 }
@@ -2095,30 +2369,40 @@ operator += (const PNMImage &other) {
 //  Description: Adds the provided color to each pixel in this image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator += (const LColord &other) {
-  size_t array_size = _x_size * _y_size;
-  // Note: don't use to_val here because it clamps values below 0
-  int add_r = (int)(other.get_x() * get_maxval() + 0.5);
-  int add_g = (int)(other.get_y() * get_maxval() + 0.5);
-  int add_b = (int)(other.get_z() * get_maxval() + 0.5);
-  int add_a = (int)(other.get_w() * get_maxval() + 0.5);
+operator += (const LColorf &other) {
+  nassertv(is_valid());
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + add_r);
-      _array[i].g = clamp_val(_array[i].g + add_g);
-      _array[i].b = clamp_val(_array[i].b + add_b);
-      _alpha[i] = clamp_val(_alpha[i] + add_a);
+  if (get_color_space() == CS_linear) {
+    size_t array_size = _x_size * _y_size;
+
+    // Note: don't use to_val here because it clamps values below 0
+    int add_r = (int)(other.get_x() * get_maxval() + 0.5);
+    int add_g = (int)(other.get_y() * get_maxval() + 0.5);
+    int add_b = (int)(other.get_z() * get_maxval() + 0.5);
+    int add_a = (int)(other.get_w() * get_maxval() + 0.5);
+
+    if (_alpha != NULL) {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r + add_r);
+        _array[i].g = clamp_val((int)_array[i].g + add_g);
+        _array[i].b = clamp_val((int)_array[i].b + add_b);
+        _alpha[i] = clamp_val((int)_alpha[i] + add_a);
+      }
+
+    } else {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r + add_r);
+        _array[i].g = clamp_val((int)_array[i].g + add_g);
+        _array[i].b = clamp_val((int)_array[i].b + add_b);
+      }
     }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r + add_r);
-      _array[i].g = clamp_val(_array[i].g + add_g);
-      _array[i].b = clamp_val(_array[i].b + add_b);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] + add_a);
+  } else {
+    // Not a linear color space: convert back and forth.
+    int x, y;
+    for (x = 0; x < _x_size; ++x) {
+      for (y = 0; y < _y_size; ++y) {
+        set_xel_a(x, y, get_xel_a(x, y) + other);
+      }
     }
   }
 }
@@ -2132,26 +2416,36 @@ operator += (const LColord &other) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator -= (const PNMImage &other) {
+  nassertv(is_valid() && other.is_valid());
   nassertv(_x_size == other._x_size && _y_size == other._y_size);
-  nassertv(_maxval == other._maxval && _maxval == other._maxval);
-  size_t array_size = _x_size * _y_size;
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r - other._array[i].r);
-      _array[i].g = clamp_val(_array[i].g - other._array[i].g);
-      _array[i].b = clamp_val(_array[i].b - other._array[i].b);
-      _alpha[i] = clamp_val(_alpha[i] - other._alpha[i]);
+  if (get_maxval() == other.get_maxval() &&
+      get_color_space() == CS_linear &&
+      other.get_color_space() == CS_linear) {
+    size_t array_size = _x_size * _y_size;
+
+    // Simple case: subtract vals directly.
+    if (_alpha != NULL && other._alpha != NULL) {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r - (int)other._array[i].r);
+        _array[i].g = clamp_val((int)_array[i].g - (int)other._array[i].g);
+        _array[i].b = clamp_val((int)_array[i].b - (int)other._array[i].b);
+        _alpha[i] = clamp_val((int)_alpha[i] - (int)other._alpha[i]);
+      }
+    } else {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)_array[i].r - (int)other._array[i].r);
+        _array[i].g = clamp_val((int)_array[i].g - (int)other._array[i].g);
+        _array[i].b = clamp_val((int)_array[i].b - (int)other._array[i].b);
+      }
     }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r - other._array[i].r);
-      _array[i].g = clamp_val(_array[i].g - other._array[i].g);
-      _array[i].b = clamp_val(_array[i].b - other._array[i].b);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] - other._alpha[i]);
+  } else {
+    // Not a linear color space: convert back and forth.
+    int x, y;
+    for (x = 0; x < _x_size; ++x) {
+      for (y = 0; y < _y_size; ++y) {
+        set_xel_a(x, y, get_xel_a(x, y) - other.get_xel_a(x, y));
+      }
     }
   }
 }
@@ -2163,8 +2457,8 @@ operator -= (const PNMImage &other) {
 //               image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator -= (const LColord &other) {
-  (*this) += (-other);
+operator -= (const LColorf &other) {
+  (*this) += -other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2178,25 +2472,13 @@ operator -= (const LColord &other) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator *= (const PNMImage &other) {
+  nassertv(is_valid() && other.is_valid());
   nassertv(_x_size == other._x_size && _y_size == other._y_size);
-  size_t array_size = _x_size * _y_size;
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = to_val(from_val(_array[i].r) * other.from_val(other._array[i].r));
-      _array[i].g = to_val(from_val(_array[i].g) * other.from_val(other._array[i].g));
-      _array[i].b = to_val(from_val(_array[i].b) * other.from_val(other._array[i].b));
-      _alpha[i] = to_val(from_val(_alpha[i]) * other.from_val(other._alpha[i]));
-    }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = to_val(from_val(_array[i].r) * other.from_val(other._array[i].r));
-      _array[i].g = to_val(from_val(_array[i].g) * other.from_val(other._array[i].g));
-      _array[i].b = to_val(from_val(_array[i].b) * other.from_val(other._array[i].b));
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = to_val(from_val(_alpha[i]) * other.from_val(other._alpha[i]));
+  int x, y;
+  for (x = 0; x < _x_size; ++x) {
+    for (y = 0; y < _y_size; ++y) {
+      set_xel_a(x, y, get_xel_a(x, y) - other.get_xel_a(x, y));
     }
   }
 }
@@ -2205,28 +2487,38 @@ operator *= (const PNMImage &other) {
 //     Function: PNMImage::operator *=
 //       Access: Published
 //  Description: Multiplies every pixel value in the image by
-//               a constant floating-point multiplier value.
+//               a constant floating-point multiplier value.  This
+//               affects all channels.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator *= (double multiplier) {
-  size_t array_size = _x_size * _y_size;
+operator *= (float multiplier) {
+  nassertv(is_valid());
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r * multiplier);
-      _array[i].g = clamp_val(_array[i].g * multiplier);
-      _array[i].b = clamp_val(_array[i].b * multiplier);
-      _alpha[i] = clamp_val(_alpha[i] * multiplier);
+  if (get_color_space() == CS_linear) {
+    size_t array_size = _x_size * _y_size;
+
+    if (_alpha != NULL) {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)(_array[i].r * multiplier + 0.5f));
+        _array[i].g = clamp_val((int)(_array[i].g * multiplier + 0.5f));
+        _array[i].b = clamp_val((int)(_array[i].b * multiplier + 0.5f));
+        _alpha[i] = clamp_val((int)(_alpha[i] * multiplier + 0.5f));
+      }
+
+    } else {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)(_array[i].r * multiplier + 0.5f));
+        _array[i].g = clamp_val((int)(_array[i].g * multiplier + 0.5f));
+        _array[i].b = clamp_val((int)(_array[i].b * multiplier + 0.5f));
+      }
     }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r * multiplier);
-      _array[i].g = clamp_val(_array[i].g * multiplier);
-      _array[i].b = clamp_val(_array[i].b * multiplier);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] * multiplier);
+  } else {
+    // Not a linear color space: convert back and forth.
+    int x, y;
+    for (x = 0; x < _x_size; ++x) {
+      for (y = 0; y < _y_size; ++y) {
+        set_xel_a(x, y, get_xel_a(x, y) * multiplier);
+      }
     }
   }
 }
@@ -2234,30 +2526,40 @@ operator *= (double multiplier) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator *=
 //       Access: Published
-//  Description: Multiples the provided color to each pixel in this
-//               image.
+//  Description: Multiplies the provided color to each pixel in this
+//               image.  This is a component-wise multiplication.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator *= (const LColord &other) {
-  size_t array_size = _x_size * _y_size;
+operator *= (const LColorf &other) {
+  nassertv(is_valid());
 
-  if (_array != NULL && _alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r * other[0]);
-      _array[i].g = clamp_val(_array[i].g * other[1]);
-      _array[i].b = clamp_val(_array[i].b * other[2]);
-      _alpha[i] = clamp_val(_alpha[i] * other[3]);
+  if (get_color_space() == CS_linear) {
+    size_t array_size = _x_size * _y_size;
+
+    if (_alpha != NULL) {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)(_array[i].r * other[0] + 0.5f));
+        _array[i].g = clamp_val((int)(_array[i].g * other[1] + 0.5f));
+        _array[i].b = clamp_val((int)(_array[i].b * other[2] + 0.5f));
+        _alpha[i] = clamp_val((int)(_alpha[i] * other[3] + 0.5f));
+      }
+
+    } else {
+      for (size_t i = 0; i < array_size; ++i) {
+        _array[i].r = clamp_val((int)(_array[i].r * other[0] + 0.5f));
+        _array[i].g = clamp_val((int)(_array[i].g * other[1] + 0.5f));
+        _array[i].b = clamp_val((int)(_array[i].b * other[2] + 0.5f));
+      }
     }
-  } else if (_array != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _array[i].r = clamp_val(_array[i].r * other[0]);
-      _array[i].g = clamp_val(_array[i].g * other[1]);
-      _array[i].b = clamp_val(_array[i].b * other[2]);
-    }
-  } else if (_alpha != NULL) {
-    for (size_t i = 0; i < array_size; ++i) {
-      _alpha[i] = clamp_val(_alpha[i] * other[3]);
+  } else {
+    // Not a linear color space: convert back and forth.
+    int x, y;
+    for (x = 0; x < _x_size; ++x) {
+      for (y = 0; y < _y_size; ++y) {
+        LColorf color = get_xel_a(x, y);
+        color.componentwise_mult(other);
+        set_xel_a(x, y, color);
+      }
     }
   }
 }
-

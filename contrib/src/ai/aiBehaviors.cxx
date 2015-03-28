@@ -18,7 +18,7 @@
 static const float _PI = 3.14;
 
 AIBehaviors::AIBehaviors() {
-  _steering_force = LVecBase3f(0.0, 0.0, 0.0);
+  _steering_force = LVecBase3(0.0, 0.0, 0.0);
   _behaviors_flags = _behaviors_flags & _none;
   _previous_conflict = false;
   _conflict = false;
@@ -67,7 +67,7 @@ bool AIBehaviors::is_conflict() {
       }
 
       if(is_on(_flee)) {
-        LVecBase3f dirn = _flee_force;
+        LVecBase3 dirn = _flee_force;
         dirn.normalize();
         _flee_force = _steering_force.length() * dirn * _flee_obj->_flee_weight;
       }
@@ -77,7 +77,7 @@ bool AIBehaviors::is_conflict() {
       }
 
       if(is_on(_evade)) {
-        LVecBase3f dirn = _evade_force;
+        LVecBase3 dirn = _evade_force;
         dirn.normalize();
         _evade_force = _steering_force.length() * dirn * _evade_obj->_evade_weight;
       }
@@ -111,9 +111,9 @@ bool AIBehaviors::is_conflict() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AIBehaviors::accumulate_force(string force_type, LVecBase3f force) {
+void AIBehaviors::accumulate_force(string force_type, LVecBase3 force) {
 
-  LVecBase3f old_force;
+  LVecBase3 old_force;
 
   if(force_type == "seek") {
     old_force = _seek_force;
@@ -169,8 +169,8 @@ void AIBehaviors::accumulate_force(string force_type, LVecBase3f force) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f AIBehaviors::calculate_prioritized() {
-  LVecBase3f force;
+LVecBase3 AIBehaviors::calculate_prioritized() {
+  LVecBase3 force;
 
   if(is_on(_seek)) {
     if(_conflict) {
@@ -299,13 +299,13 @@ LVecBase3f AIBehaviors::calculate_prioritized() {
 
   if(is_on(_arrival)) {
     if(_seek_obj != NULL) {
-      LVecBase3f dirn = _steering_force;
+      LVecBase3 dirn = _steering_force;
       dirn.normalize();
       _steering_force = ((_steering_force.length() - _arrival_force.length()) * dirn);
     }
 
     if(_pursue_obj != NULL) {
-      LVecBase3f dirn = _steering_force;
+      LVecBase3 dirn = _steering_force;
       dirn.normalize();
       _steering_force = ((_steering_force.length() - _arrival_force.length()) * _arrival_obj->_arrival_direction);
     }
@@ -639,7 +639,7 @@ void AIBehaviors::resume_ai(string ai_type) {
 // Function : seek
 // Description : This function activates seek and makes an object of the Seek class.
 //                This is the function we want the user to call for seek to be done.
-//                This function is overloaded to accept a NodePath or an LVecBase3f.
+//                This function is overloaded to accept a NodePath or an LVecBase3.
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -648,7 +648,7 @@ void AIBehaviors::seek(NodePath target_object, float seek_wt) {
   turn_on("seek");
 }
 
-void AIBehaviors::seek(LVecBase3f pos, float seek_wt) {
+void AIBehaviors::seek(LVecBase3 pos, float seek_wt) {
   _seek_obj = new Seek(_ai_char, pos, seek_wt);
   turn_on("seek");
 }
@@ -657,7 +657,7 @@ void AIBehaviors::seek(LVecBase3f pos, float seek_wt) {
 //
 // Function : flee
 // Description : This function activates flee_activate and creates an object of the Flee class.
-//                This function is overloaded to accept a NodePath or an LVecBase3f.
+//                This function is overloaded to accept a NodePath or an LVecBase3.
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -668,7 +668,7 @@ void AIBehaviors::flee(NodePath target_object, double panic_distance, double rel
   turn_on("flee_activate");
 }
 
-void AIBehaviors::flee(LVecBase3f pos, double panic_distance, double relax_distance, float flee_wt) {
+void AIBehaviors::flee(LVecBase3 pos, double panic_distance, double relax_distance, float flee_wt) {
   _flee_obj = new Flee(_ai_char, pos, panic_distance, relax_distance, flee_wt);
   _flee_list.insert(_flee_list.end(), *_flee_obj);
 
@@ -769,38 +769,38 @@ void AIBehaviors::flock_activate() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f AIBehaviors::do_flock() {
+LVecBase3 AIBehaviors::do_flock() {
 
   //! Initialize variables required to compute the flocking force on the ai char.
   unsigned int neighbor_count = 0;
-  LVecBase3f separation_force = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f alignment_force = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f cohesion_force = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f avg_neighbor_heading = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f total_neighbor_heading = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f avg_center_of_mass = LVecBase3f(0.0, 0.0, 0.0);
-  LVecBase3f total_center_of_mass = LVecBase3f(0.0, 0.0, 0.0);
+  LVecBase3 separation_force = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 alignment_force = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 cohesion_force = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 avg_neighbor_heading = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 total_neighbor_heading = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 avg_center_of_mass = LVecBase3(0.0, 0.0, 0.0);
+  LVecBase3 total_center_of_mass = LVecBase3(0.0, 0.0, 0.0);
 
   //! Loop through all the other AI units in the flock to check if they are neigbours.
   for(unsigned int i = 0; i < _flock_group->_ai_char_list.size(); i++) {
     if(_flock_group->_ai_char_list[i]->_name != _ai_char->_name) {
 
       //! Using visibilty cone to detect neighbors.
-      LVecBase3f dist_vect = _flock_group->_ai_char_list[i]->_ai_char_np.get_pos() - _ai_char->_ai_char_np.get_pos();
-      LVecBase3f ai_char_heading = _ai_char->get_velocity();
+      LVecBase3 dist_vect = _flock_group->_ai_char_list[i]->_ai_char_np.get_pos() - _ai_char->_ai_char_np.get_pos();
+      LVecBase3 ai_char_heading = _ai_char->get_velocity();
       ai_char_heading.normalize();
 
       //! Check if the current unit is a neighbor.
       if(dist_vect.dot(ai_char_heading) > ((dist_vect.length()) * (ai_char_heading.length()) * cos(_flock_group->_flock_vcone_angle * (_PI / 180)))
         && (dist_vect.length() < _flock_group->_flock_vcone_radius)) {
           //! Separation force calculation.
-          LVecBase3f ai_char_to_units = _ai_char->_ai_char_np.get_pos() - _flock_group->_ai_char_list[i]->_ai_char_np.get_pos();
+          LVecBase3 ai_char_to_units = _ai_char->_ai_char_np.get_pos() - _flock_group->_ai_char_list[i]->_ai_char_np.get_pos();
           float to_units_dist = ai_char_to_units.length();
           ai_char_to_units.normalize();
           separation_force += (ai_char_to_units / to_units_dist);
 
           //! Calculating the total heading and center of mass of all the neighbors.
-          LVecBase3f neighbor_heading = _flock_group->_ai_char_list[i]->get_velocity();
+          LVecBase3 neighbor_heading = _flock_group->_ai_char_list[i]->get_velocity();
           neighbor_heading.normalize();
           total_neighbor_heading += neighbor_heading;
           total_center_of_mass += _flock_group->_ai_char_list[i]->_ai_char_np.get_pos();
@@ -814,7 +814,7 @@ LVecBase3f AIBehaviors::do_flock() {
   if(neighbor_count > 0) {
     //! Alignment force calculation
     avg_neighbor_heading = total_neighbor_heading / neighbor_count;
-    LVector3f ai_char_heading = _ai_char->get_velocity();
+    LVector3 ai_char_heading = _ai_char->get_velocity();
     ai_char_heading.normalize();
     avg_neighbor_heading -= ai_char_heading;
     avg_neighbor_heading.normalize();
@@ -822,7 +822,7 @@ LVecBase3f AIBehaviors::do_flock() {
 
     //! Cohesion force calculation
     avg_center_of_mass = total_center_of_mass / neighbor_count;
-    LVecBase3f cohesion_dir = avg_center_of_mass - _ai_char->_ai_char_np.get_pos();
+    LVecBase3 cohesion_dir = avg_center_of_mass - _ai_char->_ai_char_np.get_pos();
     cohesion_dir.normalize();
     cohesion_force = cohesion_dir * _ai_char->_movt_force;
   }
@@ -830,7 +830,7 @@ LVecBase3f AIBehaviors::do_flock() {
     _flock_done = true;
     turn_off("flock");
     turn_on("flock_activate");
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
 
   //! Calculate the resultant force on the ai character by taking into account the separation, alignment and cohesion
@@ -885,7 +885,7 @@ void AIBehaviors::path_follow(float follow_wt) {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void AIBehaviors::add_to_path(LVecBase3f pos) {
+void AIBehaviors::add_to_path(LVecBase3 pos) {
   _path_follow_obj->add_to_path(pos);
 }
 
@@ -923,7 +923,7 @@ void AIBehaviors::init_path_find(const char* navmesh_filename) {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void AIBehaviors::path_find_to(LVecBase3f pos, string type) {
+void AIBehaviors::path_find_to(LVecBase3 pos, string type) {
   _path_find_obj->path_find(pos, type);
 }
 
@@ -1330,56 +1330,56 @@ switch(char_to_int(ai_type)) {
               if (is_on(_seek)) {
                 _behaviors_flags ^= _seek;
               }
-              _seek_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _seek_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 2: {
               if (is_on(_flee)) {
                 _behaviors_flags ^= _flee;
               }
-              _flee_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _flee_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 3: {
               if(is_on(_pursue)) {
                 _behaviors_flags ^= _pursue;
               }
-              _pursue_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _pursue_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 4: {
               if(is_on(_evade)) {
                 _behaviors_flags ^= _evade;
               }
-              _evade_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _evade_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 5: {
               if (is_on(_arrival)) {
                   _behaviors_flags ^= _arrival;
                 }
-                _arrival_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+                _arrival_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 6: {
               if(is_on(_flock)) {
                 _behaviors_flags ^= _flock;
               }
-              _flock_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _flock_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 7: {
               if(is_on(_wander)) {
                 _behaviors_flags ^= _wander;
               }
-              _wander_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _wander_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 8: {
               if(is_on(_obstacle_avoidance)) {
                 _behaviors_flags ^= _obstacle_avoidance;
               }
-              _obstacle_avoidance_force = LVecBase3f(0.0f, 0.0f, 0.0f);
+              _obstacle_avoidance_force = LVecBase3(0.0f, 0.0f, 0.0f);
               break;
             }
     case 9:{

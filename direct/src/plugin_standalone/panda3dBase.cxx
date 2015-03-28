@@ -147,7 +147,7 @@ run_main_loop() {
     }
   }
 
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && !__LP64__
   // OSX really prefers to own the main loop, so we install a timer to
   // call out to our instances and getters, rather than polling within
   // the event loop as we do in the Windows case, above.
@@ -699,7 +699,7 @@ report_download_complete(P3D_instance *instance) {
   }
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3DBase::st_timer_callback
 //       Access: Protected, Static
@@ -712,7 +712,7 @@ st_timer_callback(EventLoopTimerRef timer, void *user_data) {
 }
 #endif  // __APPLE__
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3DBase::timer_callback
 //       Access: Protected

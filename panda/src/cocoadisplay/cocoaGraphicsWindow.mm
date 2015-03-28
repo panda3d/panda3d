@@ -1592,7 +1592,8 @@ handle_key_event(NSEvent *event) {
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       str = [str lowercaseString];
-      button = KeyboardButton::ascii_key([str cStringUsingEncoding: NSASCIIStringEncoding]);
+      const char *c_str = [str cStringUsingEncoding: NSASCIIStringEncoding];
+      button = KeyboardButton::ascii_key(c_str[0]);
     }
   }
 

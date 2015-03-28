@@ -95,6 +95,8 @@ public:
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
   INLINE operator T *() const;
 
+  INLINE T *&cheat();
+
 PUBLISHED:
   // When downcasting to a derived class from a PointerTo<BaseClass>,
   // C++ would normally require you to cast twice: once to an actual
@@ -159,6 +161,8 @@ public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
   INLINE operator const T *() const;
+
+  INLINE const T *&cheat();
 
 PUBLISHED:
   INLINE const To *p() const;

@@ -113,43 +113,11 @@ match_files(vector_string &results, const Filename &cwd) const {
     pattern = source.substr(0, slash);
     suffix = source.substr(slash + 1);
   }
-  
+
   GlobPattern glob(pattern);
   glob.set_case_sensitive(_case_sensitive);
   return glob.r_match_files(prefix, suffix, results, cwd);
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: GlobPattern::match_files
-//       Access: Published
-//  Description: This variant on match_files returns a Python list
-//               of strings.
-////////////////////////////////////////////////////////////////////
-PyObject *GlobPattern::
-match_files(const Filename &cwd) const {
-  vector_string contents;
-  match_files(contents, cwd);
-
-  PyObject *result = PyList_New(contents.size());
-  for (size_t i = 0; i < contents.size(); ++i) {
-    const string &filename = contents[i];
-#if PY_MAJOR_VERSION >= 3
-    // This function expects UTF-8.
-    PyObject *str = PyUnicode_FromStringAndSize(filename.data(), filename.size());
-#else
-    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
-#endif
-#ifdef Py_LIMITED_API
-    PyList_SetItem(result, i, str);
-#else
-    PyList_SET_ITEM(result, i, str);
-#endif
-  }
-
-  return result;
-}
-#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::r_match_files
@@ -195,21 +163,21 @@ r_match_files(const Filename &prefix, const string &suffix,
     return next_glob.r_match_files(Filename(prefix, _pattern),
                                    next_suffix, results, cwd);
 
-  } 
+  }
 
   // If there *are* special glob characters, we must attempt to
   // match the pattern against the files in this directory.
-  
+
   vector_string dir_files;
   if (!parent_dir.scan_directory(dir_files)) {
     // Not a directory, or unable to read directory; stop here.
     return 0;
   }
-  
+
   // Now go through each file in the directory looking for one that
   // matches the pattern.
   int num_matched = 0;
-  
+
   vector_string::const_iterator fi;
   for (fi = dir_files.begin(); fi != dir_files.end(); ++fi) {
     const string &local_file = (*fi);
@@ -218,7 +186,7 @@ r_match_files(const Filename &prefix, const string &suffix,
         // We have a match; continue.
         if (suffix.empty()) {
           results.push_back(Filename(prefix, local_file));
-          num_matched++; 
+          num_matched++;
         } else {
           num_matched += next_glob.r_match_files(Filename(prefix, local_file),
                                                  next_suffix, results, cwd);
@@ -226,7 +194,7 @@ r_match_files(const Filename &prefix, const string &suffix,
       }
     }
   }
-  
+
   return num_matched;
 }
 

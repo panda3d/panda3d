@@ -63,7 +63,7 @@ private:
 
   // Hold the scissor settings and whether or not to enable scissoring.
   bool _enable_scissor;
-  LVecBase4f _scissor;
+  LVecBase4 _scissor;
 
   // These are temporarily filled in by render().
   CullTraverser *_trav;

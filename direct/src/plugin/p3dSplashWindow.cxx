@@ -15,30 +15,11 @@
 #include "p3dSplashWindow.h"
 #include "wstring_encode.h"
 
-// Stuff to use libpng.
-#include <png.h>
-
-// Stuff to use libjpeg.
-extern "C" {
-#include <jpeglib.h>
-#include <jerror.h>
-}
-
-#include <setjmp.h>
-
-struct my_error_mgr {
-  struct jpeg_error_mgr pub;
-  jmp_buf setjmp_buffer;
-};
-
-typedef struct my_error_mgr *my_error_ptr;
-
-METHODDEF(void) my_error_exit (j_common_ptr cinfo) {
-  // cinfo->err really points to a my_error_mgr struct, so coerce pointer
-  my_error_ptr myerr = (my_error_ptr) cinfo->err;
-  // Return control to the setjmp point
-  longjmp(myerr->setjmp_buffer, 1);
-}
+// We use the public domain stb_image library for loading images.
+// Define the stb_image implementation.  We only use it in this unit.
+#define STB_IMAGE_STATIC
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 // The number of pixels to move the block per byte downloaded, when we
 // don't know the actual file size we're downloading.
@@ -52,7 +33,7 @@ const double P3DSplashWindow::_unknown_progress_rate = 1.0 / 4096;
 //               them both into this class for reference.
 ////////////////////////////////////////////////////////////////////
 P3DSplashWindow::
-P3DSplashWindow(P3DInstance *inst, bool make_visible) : 
+P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _inst(inst),
   _fparams(inst->get_fparams()),
   _wparams(inst->get_wparams())
@@ -82,7 +63,7 @@ P3DSplashWindow(P3DInstance *inst, bool make_visible) :
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DSplashWindow::
 ~P3DSplashWindow() {
@@ -259,191 +240,25 @@ read_image_data(ImageData &image, string &data,
     return false;
   }
 
-  // We only support JPEG or PNG images.
-  FILE *fp = NULL;
-#ifdef _WIN32
-  wstring image_filename_w;
-  if (string_to_wstring(image_filename_w, image_filename)) {
-    fp = _wfopen(image_filename_w.c_str(), L"rb");
-  }
-#else // _WIN32
-  fp = fopen(image_filename.c_str(), "rb");
-#endif  // _WIN32
+  nout << "Reading splash file image: " << image_filename << "\n";
 
-  if (fp == NULL) {
-    nout << "Couldn't open splash file image: " << image_filename << "\n";
-    return false;
-  }
+  unsigned char *imgdata = stbi_load(image_filename.c_str(), &image._width,
+                                     &image._height, &image._num_channels, 0);
 
-  // Check the magic number to determine which image type we have.
-  static const size_t magic_number_len = 2;
-  char magic_number[magic_number_len];
-  if (fread(magic_number, 1, magic_number_len, fp) != magic_number_len) {
-    nout << "Empty file: " << image_filename << "\n";
-    return false;
-  }
-  // Rewind to re-read the magic number below.
-  fseek(fp, 0, SEEK_SET);
-
-  bool result = false;
-  if ((char)magic_number[0] == (char)0xff &&
-      (char)magic_number[1] == (char)0xd8) {
-    // It's a jpeg image.
-    result = read_image_data_jpeg(image, data, fp, image_filename);
-
-  } else if (png_sig_cmp((png_bytep)magic_number, 0, magic_number_len) == 0) {
-    // It's a PNG image.
-    result = read_image_data_png(image, data, fp, image_filename);
-
-  } else {
-    nout << "Neither a JPEG nor a PNG image: " << image_filename << "\n";
-    result = false;
-  }
-
-  fclose(fp);
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::read_image_data_jpeg
-//       Access: Protected
-//  Description: Reads the image filename and sets image parameters
-//               width, height, num_channels, and data.  Returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DSplashWindow::
-read_image_data_jpeg(ImageData &image, string &data,
-                     FILE *fp, const string &image_filename) {
-  // We set up the normal JPEG error routines, then override error_exit.
-  struct jpeg_decompress_struct cinfo;
-
-  struct my_error_mgr jerr;
-  cinfo.err = jpeg_std_error(&jerr.pub);
-  jerr.pub.error_exit = my_error_exit;
-
-  JSAMPLE *buffer = NULL;
-  
-  // Establish the setjmp return context for my_error_exit to use
-  if (setjmp(jerr.setjmp_buffer)) {
-    // If we get here, the JPEG code has signaled an error.
-    nout << "JPEG error decoding " << image_filename << "\n";
-
-    // We need to clean up the JPEG object, close the input file, and return.
-    jpeg_destroy_decompress(&cinfo);
-
-    if (buffer != NULL) {
-      delete[] buffer;
+  if (imgdata == NULL) {
+    nout << "Couldn't read splash file image: " << image_filename << "\n";
+    const char *reason = stbi_failure_reason();
+    if (reason != NULL) {
+      nout << "stbi_failure_reason: " << reason << "\n";
     }
     return false;
   }
 
-  /* Now we can initialize the JPEG decompression object. */
-  jpeg_create_decompress(&cinfo);
-  jpeg_stdio_src(&cinfo, fp);
+  size_t data_size = image._width * image._height * image._num_channels;
+  data.resize(data_size);
+  memcpy(&data[0], imgdata, data_size);
 
-  jpeg_read_header(&cinfo, true);
-
-  cinfo.scale_num = 1;
-  cinfo.scale_denom = 1;
-
-  jpeg_start_decompress(&cinfo);
-
-  image._width = cinfo.output_width;
-  image._height = cinfo.output_height;
-  image._num_channels = cinfo.output_components;
-
-  int row_stride = image._width * image._num_channels;
-
-  size_t buffer_size = image._height * row_stride;
-  buffer = new JSAMPLE[buffer_size];
-  JSAMPLE *buffer_end = buffer + buffer_size;
-
-  JSAMPLE *rowptr = buffer;
-  while (cinfo.output_scanline < cinfo.output_height) {
-    assert(rowptr + row_stride <= buffer_end);
-    jpeg_read_scanlines(&cinfo, &rowptr, 1);
-    rowptr += row_stride;
-  }
-
-  jpeg_finish_decompress(&cinfo);
-
-  data.append((const char *)buffer, buffer_size);
-  delete[] buffer;
-
-  return true;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::read_image_data_png
-//       Access: Protected
-//  Description: Reads the image filename and sets image parameters
-//               width, height, num_channels, and data.  Returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DSplashWindow::
-read_image_data_png(ImageData &image, string &data,
-                    FILE *fp, const string &image_filename) {
-  png_structp png;
-  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (png == NULL) {
-    return false;
-  }
-
-  png_infop info;
-  info = png_create_info_struct(png);
-  if (info == NULL) {
-    png_destroy_read_struct(&png, NULL, NULL);
-    return false;
-  }
-
-  jmp_buf jmpbuf;
-  if (setjmp(jmpbuf)) {
-    // This is the ANSI C way to handle exceptions.  If setjmp(),
-    // above, returns true, it means that libpng detected an exception
-    // while executing the code that reads the header info, below.
-    png_destroy_read_struct(&png, &info, NULL);
-    return false;
-  }
-
-  png_init_io(png, fp);
-  int transforms = PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND | PNG_TRANSFORM_SHIFT;
-  //  transforms |= PNG_TRANSFORM_STRIP_ALPHA;
-  png_read_png(png, info, transforms, NULL);
-
-  png_uint_32 width;
-  png_uint_32 height;
-  int bit_depth;
-  int color_type;
-
-  png_get_IHDR(png, info, &width, &height,
-               &bit_depth, &color_type, NULL, NULL, NULL);
-
-  image._width = width;
-  image._height = height;
-
-  switch (color_type) {
-  case PNG_COLOR_TYPE_RGB:
-    image._num_channels = 3;
-    break;
-
-  case PNG_COLOR_TYPE_RGB_ALPHA:
-    image._num_channels = 4;
-    break;
-
-  default:
-    nout << "Unsupported color type: " << color_type << "\n";
-    png_destroy_read_struct(&png, &info, NULL);
-    return false;
-  }
-
-  int row_stride = image._width * image._num_channels;
-  png_bytep *row_pointers = png_get_rows(png, info);
-  for (int yi = 0; yi < image._height; ++yi) {
-    data.append((const char *)row_pointers[yi], row_stride);
-  }
-
-  png_destroy_read_struct(&png, &info, NULL);
+  stbi_image_free(imgdata);
   return true;
 }
 
@@ -479,7 +294,7 @@ set_button_range(const ImageData &image) {
   // But it can't be larger than the window itself.
   _button_width = min(_button_width, _win_width);
   _button_height = min(_button_height, _win_height);
-      
+
   // Compute the top-left corner of the button image in window
   // coordinates.
   _button_x = (_win_width - _button_width) / 2;

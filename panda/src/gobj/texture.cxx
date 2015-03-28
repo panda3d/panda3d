@@ -1893,7 +1893,8 @@ consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_t
     if (pnmimage.is_valid()) {
       // The image is already loaded.  Rescale on the spot.
       PNMImage new_image(new_x_size, new_y_size, pnmimage.get_num_channels(),
-                         pnmimage.get_maxval());
+                         pnmimage.get_maxval(), pnmimage.get_type(),
+                         pnmimage.get_color_space());
       new_image.quick_filter_from(pnmimage);
       pnmimage.take_from(new_image);
     } else {
@@ -2928,7 +2929,8 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       pfm.clear(x_size, y_size, image.get_num_channels());
     } else {
       image = PNMImage(x_size, y_size, image.get_num_channels(),
-                       image.get_maxval(), image.get_type());
+                       image.get_maxval(), image.get_type(),
+                       image.get_color_space());
       image.fill(0.2, 0.3, 1.0);
       if (image.has_alpha()) {
         image.alpha_fill(1.0);
@@ -2988,7 +2990,8 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       int x_size = image.get_x_size();
       int y_size = image.get_y_size();
       alpha_image = PNMImage(x_size, y_size, alpha_image.get_num_channels(),
-                             alpha_image.get_maxval(), alpha_image.get_type());
+                             alpha_image.get_maxval(), alpha_image.get_type(),
+                             alpha_image.get_color_space());
       alpha_image.fill(1.0);
       if (alpha_image.has_alpha()) {
         alpha_image.alpha_fill(1.0);
@@ -3047,7 +3050,8 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
 
       PNMImage scaled(image.get_x_size(), image.get_y_size(),
                       alpha_image.get_num_channels(),
-                      alpha_image.get_maxval(), alpha_image.get_type());
+                      alpha_image.get_maxval(), alpha_image.get_type(),
+                      alpha_image.get_color_space());
       scaled.quick_filter_from(alpha_image);
       Thread::consider_yield();
       alpha_image = scaled;
@@ -3063,21 +3067,14 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
   if (!alpha_fullpath.empty()) {
     // Make the original image a 4-component image by taking the
     // grayscale value from the second image.
-
     image.add_alpha();
 
     if (alpha_file_channel == 4 ||
         (alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
-
-      if (!alpha_image.has_alpha()) {
-        gobj_cat.error()
-          << alpha_fullpath.get_basename() << " has no channel " << alpha_file_channel << ".\n";
-      } else {
-        // Use the alpha channel.
-        for (int x = 0; x < image.get_x_size(); x++) {
-          for (int y = 0; y < image.get_y_size(); y++) {
-            image.set_alpha(x, y, alpha_image.get_alpha(x, y));
-          }
+      // Use the alpha channel.
+      for (int x = 0; x < image.get_x_size(); x++) {
+        for (int y = 0; y < image.get_y_size(); y++) {
+          image.set_alpha(x, y, alpha_image.get_alpha(x, y));
         }
       }
       cdata->_alpha_file_channel = alpha_image.get_num_channels();
@@ -3119,7 +3116,8 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
         pad_x_size = new_x_size - image.get_x_size();
         pad_y_size = new_y_size - image.get_y_size();
         PNMImage new_image(new_x_size, new_y_size, image.get_num_channels(),
-                           image.get_maxval());
+                           image.get_maxval(), image.get_type(),
+                           image.get_color_space());
         new_image.copy_sub_image(image, 0, new_y_size - image.get_y_size());
         image.take_from(new_image);
       }
@@ -3189,7 +3187,8 @@ do_load_one(CData *cdata, const PNMImage &pnmimage, const string &name, int z, i
       << y_size << "\n";
 
     PNMImage scaled(x_size, y_size, pnmimage.get_num_channels(),
-                    pnmimage.get_maxval(), pnmimage.get_type());
+                    pnmimage.get_maxval(), pnmimage.get_type(),
+                    pnmimage.get_color_space());
     scaled.quick_filter_from(pnmimage);
     Thread::consider_yield();
 
@@ -3580,7 +3579,6 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
         format = F_luminance;
       }
     }
-
   }
 
   do_setup_texture(cdata, texture_type, header.width, header.height, header.depth,
@@ -4397,7 +4395,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
   switch (cdata->_component_type) {
   case T_unsigned_byte:
     {
-      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 255;
       switch (cdata->_num_components) {
       case 2:
@@ -4418,7 +4416,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
 
   case T_unsigned_short:
     {
-      LColorf scaled = cdata->_clear_color.fmin(LColorf(1)).fmax(LColorf::zero());
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 65535;
       switch (cdata->_num_components) {
       case 2:
@@ -4912,7 +4910,8 @@ do_rescale_texture(CData *cdata) {
       << "Resizing " << get_name() << " to " << new_x_size << " x "
       << new_y_size << "\n";
     PNMImage new_image(new_x_size, new_y_size, orig_image.get_num_channels(),
-                       orig_image.get_maxval());
+                       orig_image.get_maxval(), orig_image.get_type(),
+                       orig_image.get_color_space());
     new_image.quick_filter_from(orig_image);
 
     do_clear_ram_image(cdata);
@@ -4943,7 +4942,8 @@ do_rescale_texture(CData *cdata) {
         return false;
       }
       PNMImage new_image(new_x_size, new_y_size, orig_image.get_num_channels(),
-                         orig_image.get_maxval());
+                         orig_image.get_maxval(), orig_image.get_type(),
+                         orig_image.get_color_space());
       new_image.copy_sub_image(orig_image, 0, new_y_size - orig_image.get_y_size());
 
       do_clear_ram_image(cdata);
@@ -5021,8 +5021,9 @@ do_clear(CData *cdata) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_setup_texture(CData *cdata, Texture::TextureType texture_type, int x_size, int y_size,
-                 int z_size, Texture::ComponentType component_type,
+do_setup_texture(CData *cdata, Texture::TextureType texture_type,
+                 int x_size, int y_size, int z_size,
+                 Texture::ComponentType component_type,
                  Texture::Format format) {
   switch (texture_type) {
   case TT_1d_texture:

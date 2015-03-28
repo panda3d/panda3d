@@ -27,7 +27,6 @@
 #include "handleStream.h"
 #include "p3dCInstance.h"
 #include "pandaFileStreamBuf.h"
-#include "pythonTask.h"
 #include "pmap.h"
 #include "pdeque.h"
 #include "pmutex.h"
@@ -172,8 +171,6 @@ private:
   PyObject *_concrete_struct_class;
   PyObject *_browser_object_class;
   PyObject *_taskMgr;
-
-  PT(PythonTask) _check_comm_task;
 
   // This map keeps track of the PyObject pointers we have delivered
   // to the parent process.  We have to hold the reference count on

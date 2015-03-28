@@ -24,14 +24,14 @@ class EXPCL_PANDAAI Wander {
   public:
     AICharacter *_ai_char;
     double _wander_radius;
-    LVecBase3f _wander_target;
+    LVecBase3 _wander_target;
     float _wander_weight;
     int _flag;
-    LVecBase3f _init_pos;
+    LVecBase3 _init_pos;
     double _area_of_effect;
 
     Wander(AICharacter *ai_ch, double wander_radius, int flag, double aoe, float wander_weight);
-    LVecBase3f do_wander();
+    LVecBase3 do_wander();
     ~Wander();
 };
 

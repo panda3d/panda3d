@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2) project(const FLOATNAME(LVecBase2) &onto) const;
 #endif
 
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

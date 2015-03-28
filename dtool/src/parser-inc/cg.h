@@ -20,11 +20,12 @@
 #ifndef CG_H
 #define CG_H
 
-typedef int CGcontext;
-typedef int CGprogram;
-typedef int CGparameter;
-typedef int CGprofile;
-typedef int CGerror;
+typedef struct _CGcontext *CGcontext;
+typedef struct _CGcontext *CGcontext;
+typedef struct _CGprogram *CGprogram;
+typedef struct _CGparameter *CGparameter;
+
+typedef enum {} CGprofile;
+typedef enum {} CGerror;
 
 #endif
-

@@ -24,6 +24,7 @@
 #include "pnotify.h"
 #include "pmap.h"
 #include "pvector.h"
+#include "colorSpace.h"
 
 class PNMFileType;
 class PNMReader;
@@ -67,6 +68,7 @@ PUBLISHED:
   INLINE bool has_alpha() const;
 
   INLINE xelval get_maxval() const;
+  INLINE ColorSpace get_color_space() const;
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -134,7 +136,7 @@ PUBLISHED:
 
     INLINE xelval operator [](int n) const;
     INLINE static int size();
-    
+
     void output(ostream &out) const;
 
   public:
@@ -175,7 +177,7 @@ PUBLISHED:
   private:
     PixelCount _pixels;
     HistMap _hist_map;
-  };    
+  };
 
 protected:
   bool compute_histogram(HistMap &hist, xel *array, xelval *alpha,
@@ -187,6 +189,7 @@ protected:
   int _x_size, _y_size;
   int _num_channels;
   xelval _maxval;
+  ColorSpace _color_space;
   string _comment;
   PNMFileType *_type;
 };

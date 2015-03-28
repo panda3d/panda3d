@@ -324,34 +324,31 @@ make_output(const string &name,
   }
 
   // Second thing to try: a GLGraphicsBuffer
+
   if (retry == 1) {
-    if ((host==0)||
-  //        (!gl_support_fbo)||
-        ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)) {
+    if (!gl_support_fbo || host == NULL ||
+        (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
-    if ((flags & BF_fb_props_optional)==0) {
-      if ((fb_prop.get_indexed_color() > 0)||
-          (fb_prop.get_back_buffers() > 0)||
-          (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > 0)) {
+    if ((flags & BF_fb_props_optional) == 0) {
+      if (fb_prop.get_indexed_color() ||
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
         return NULL;
       }
     }
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
-    if ((cocoagsg != 0) &&
-        (cocoagsg->is_valid()) &&
-        (!cocoagsg->needs_reset()) &&
-        (cocoagsg->_supports_framebuffer_object) &&
-        (cocoagsg->_glDrawBuffers != 0) &&
-        (fb_prop.is_basic())) {
-      precertify = true;
+    if (cocoagsg != NULL && cocoagsg->is_valid() && !cocoagsg->needs_reset()) {
+      if (!cocoagsg->_supports_framebuffer_object ||
+          cocoagsg->_glDrawBuffers == NULL) {
+        return NULL;
+      } else if (fb_prop.is_basic()) {
+        // Early success - if we are sure that this buffer WILL
+        // meet specs, we can precertify it.
+        precertify = true;
+      }
     }
-
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }

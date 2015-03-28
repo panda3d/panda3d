@@ -94,7 +94,7 @@ pointer_and_keyboard(GraphicsWindow *host, const string &name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
-GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) 
+GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy)
 {
     *this = copy;
 }
@@ -105,7 +105,7 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-operator = (const GraphicsWindowInputDevice &copy) 
+operator = (const GraphicsWindowInputDevice &copy)
 {
   LightMutexHolder holder(_lock);
   LightMutexHolder holder1(copy._lock);
@@ -165,7 +165,7 @@ get_button_event() {
 //     Function: GraphicsWindowInputDevice::has_pointer_event
 //       Access: Public
 //  Description: Returns true if this device has a pending pointer
-//               event (a mouse movement), or false otherwise.  If 
+//               event (a mouse movement), or false otherwise.  If
 //               this returns true, the particular event may be
 //               extracted via get_pointer_event().
 ////////////////////////////////////////////////////////////////////
@@ -234,7 +234,7 @@ disable_pointer_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_pointer
-//       Access: Public
+//       Access: Published
 //  Description: Records that a mouse movement has taken place.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
@@ -264,7 +264,7 @@ set_pointer(bool inwin, double x, double y, double time) {
   } else {
     _mouse_data = _true_mouse_data;
   }
-  
+
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
     if (_pointer_events == 0) {
@@ -279,7 +279,7 @@ set_pointer(bool inwin, double x, double y, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::button_down
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated button has been depressed.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
@@ -291,7 +291,7 @@ button_down(ButtonHandle button, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::button_resume_down
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated button was depressed
 //               earlier, and we only just detected the event after
 //               the fact.  This is mainly useful for tracking the
@@ -300,14 +300,13 @@ button_down(ButtonHandle button, double time) {
 void GraphicsWindowInputDevice::
 button_resume_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
-  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time)
-);
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time));
   _buttons_held.insert(button);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::button_up
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated button has been released.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
@@ -319,7 +318,7 @@ button_up(ButtonHandle button, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::keystroke
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated keystroke has been
 //               generated.
 ////////////////////////////////////////////////////////////////////
@@ -331,24 +330,24 @@ keystroke(int keycode, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::candidate
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated candidate string has been
 //               highlighted.  This is used to implement IME support
 //               for typing in international languages, especially
 //               Chinese/Japanese/Korean.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-candidate(const wstring &candidate_string, size_t highlight_start, 
+candidate(const wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
   LightMutexHolder holder(_lock);
-  _button_events.push_back(ButtonEvent(candidate_string, 
+  _button_events.push_back(ButtonEvent(candidate_string,
                                        highlight_start, highlight_end,
                                        cursor_pos));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::focus_lost
-//       Access: Public
+//       Access: Published
 //  Description: This should be called when the window focus is lost,
 //               so that we may miss upcoming button events
 //               (especially "up" events) for the next period of time.
@@ -369,7 +368,7 @@ focus_lost(double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::raw_button_down
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated button has been depressed.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
@@ -380,7 +379,7 @@ raw_button_down(ButtonHandle button, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::raw_button_up
-//       Access: Public
+//       Access: Published
 //  Description: Records that the indicated button has been released.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::

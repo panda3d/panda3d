@@ -31,16 +31,16 @@
 template<class BMType>
 class DoubleBitMask {
 public:
-  typedef BMType BitMaskType;
   typedef TYPENAME BMType::WordType WordType;
-#ifndef CPPPARSER  // interrogate has a problem with these lines.
+
+PUBLISHED:
+  typedef BMType BitMaskType;
+
   enum {
     half_bits = BitMaskType::num_bits,
     num_bits = BitMaskType::num_bits * 2,
   };
-#endif  // CPPPARSER
 
-PUBLISHED:
   INLINE DoubleBitMask();
   INLINE DoubleBitMask(const DoubleBitMask<BMType> &copy);
   INLINE DoubleBitMask<BMType> &operator = (const DoubleBitMask<BMType> &copy);
@@ -53,10 +53,10 @@ PUBLISHED:
 
   INLINE ~DoubleBitMask();
 
-  INLINE static bool has_max_num_bits();
-  INLINE static int get_max_num_bits();
+  CONSTEXPR static bool has_max_num_bits();
+  CONSTEXPR static int get_max_num_bits();
 
-  INLINE static int get_num_bits();
+  CONSTEXPR static int get_num_bits();
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);

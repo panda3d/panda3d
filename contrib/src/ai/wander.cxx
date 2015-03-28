@@ -57,23 +57,23 @@ Wander::Wander(AICharacter *ai_ch, double wander_radius,int flag, double aoe, fl
   // default is XY axes
   switch(_flag) {
     case 0: {
-              _wander_target = LVecBase3f(_wander_radius * cos(theta), _wander_radius * sin(theta),0);
+              _wander_target = LVecBase3(_wander_radius * cos(theta), _wander_radius * sin(theta),0);
               break;
             }
     case 1: {
-              _wander_target = LVecBase3f(0, _wander_radius * cos(theta), _wander_radius * sin(theta));
+              _wander_target = LVecBase3(0, _wander_radius * cos(theta), _wander_radius * sin(theta));
               break;
             }
     case 2: {
-              _wander_target = LVecBase3f(_wander_radius * cos(theta), 0,  _wander_radius * sin(theta));
+              _wander_target = LVecBase3(_wander_radius * cos(theta), 0,  _wander_radius * sin(theta));
               break;
             }
     case 3: {
-              _wander_target = LVecBase3f(_wander_radius * sin(theta) * cos(si), _wander_radius * sin(theta) * sin(si), _wander_radius * cos(theta));
+              _wander_target = LVecBase3(_wander_radius * sin(theta) * cos(si), _wander_radius * sin(theta) * sin(si), _wander_radius * cos(theta));
               break;
             }
     default: {
-              _wander_target = LVecBase3f(_wander_radius * cos(theta), _wander_radius * sin(theta),0);
+              _wander_target = LVecBase3(_wander_radius * cos(theta), _wander_radius * sin(theta),0);
               break;
              }
   }
@@ -91,52 +91,52 @@ Wander::~Wander() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Wander::do_wander() {
-  LVecBase3f present_pos = _ai_char->get_node_path().get_pos(_ai_char->get_char_render());
+LVecBase3 Wander::do_wander() {
+  LVecBase3 present_pos = _ai_char->get_node_path().get_pos(_ai_char->get_char_render());
   // Create the random slices to enable random movement of wander for x,y,z respectively
   double time_slice_1 = random_clamped() * 1.5;
   double time_slice_2 = random_clamped() * 1.5;
   double time_slice_3 = random_clamped() * 1.5;
   switch(_flag) {
   case 0: {
-            _wander_target += LVecBase3f(time_slice_1, time_slice_2, 0);
+            _wander_target += LVecBase3(time_slice_1, time_slice_2, 0);
             break;
           }
   case 1: {
-            _wander_target += LVecBase3f(0, time_slice_1, time_slice_2);
+            _wander_target += LVecBase3(0, time_slice_1, time_slice_2);
             break;
           }
   case 2: {
-            _wander_target += LVecBase3f(time_slice_1, 0, time_slice_2);
+            _wander_target += LVecBase3(time_slice_1, 0, time_slice_2);
             break;
           }
   case 3: {
-            _wander_target += LVecBase3f(time_slice_1, time_slice_2, time_slice_3);
+            _wander_target += LVecBase3(time_slice_1, time_slice_2, time_slice_3);
             break;
           }
 
   default: {
-            _wander_target = LVecBase3f(time_slice_1, time_slice_2, 0);
+            _wander_target = LVecBase3(time_slice_1, time_slice_2, 0);
            }
   }
   _wander_target.normalize();
   _wander_target *= _wander_radius;
-  LVecBase3f target = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3f::forward());
+  LVecBase3 target = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
   target.normalize();
   // Project wander target onto global space
   target = _wander_target + target;
-  LVecBase3f desired_target = present_pos + target;
-  LVecBase3f desired_force = desired_target - _ai_char->get_node_path().get_pos() ;
+  LVecBase3 desired_target = present_pos + target;
+  LVecBase3 desired_force = desired_target - _ai_char->get_node_path().get_pos() ;
   desired_force.normalize();
   desired_force *= _ai_char->_movt_force;
   double distance = (present_pos - _init_pos).length();
   if(_area_of_effect > 0 && distance > _area_of_effect) {
-    LVecBase3f direction = present_pos - _init_pos;
+    LVecBase3 direction = present_pos - _init_pos;
     direction.normalize();
     desired_force =  - direction * _ai_char->_movt_force;
-    LVecBase3f dirn = _ai_char->_steering->_steering_force;
+    LVecBase3 dirn = _ai_char->_steering->_steering_force;
     dirn.normalize();
-    _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
+    _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
   }
   return desired_force;
 }

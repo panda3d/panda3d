@@ -33,13 +33,13 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE Material(const string &name = "");
+  INLINE explicit Material(const string &name = "");
   INLINE Material(const Material &copy);
   void operator = (const Material &copy);
   INLINE ~Material();
 
   INLINE static Material *get_default();
-  
+
   INLINE bool has_ambient() const;
   INLINE const LColor &get_ambient() const;
   void set_ambient(const LColor &color);
@@ -88,7 +88,7 @@ private:
   PN_stdfloat _shininess;
 
   static PT(Material) _default;
-  
+
   enum Flags {
     F_ambient     = 0x001,
     F_diffuse     = 0x002,

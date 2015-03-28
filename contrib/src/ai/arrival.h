@@ -27,9 +27,9 @@ public:
   AICharacter *_ai_char;
 
   NodePath _arrival_target;
-  LVecBase3f _arrival_target_pos;
+  LVecBase3 _arrival_target_pos;
   double _arrival_distance;
-  LVecBase3f _arrival_direction;
+  LVecBase3 _arrival_direction;
   bool _arrival_done;
 
   // This flag specifies if the arrival behavior is being used with seek or pursue behavior.
@@ -39,7 +39,7 @@ public:
 
   Arrival(AICharacter *ai_ch, double distance = 10.0);
   ~Arrival();
-  LVecBase3f do_arrival();
+  LVecBase3 do_arrival();
   void arrival_activate();
 };
 

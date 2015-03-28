@@ -89,7 +89,7 @@ operator = (const ReferenceCount &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ReferenceCount::
 ~ReferenceCount() {
@@ -182,7 +182,7 @@ ref() const {
   nassertv(test_ref_count_integrity());
 #endif
 
-  AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
+  AtomicAdjust::inc(_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,9 +221,8 @@ unref() const {
   // directly?  Are you sure you can't use PointerTo's?
   nassertr(_ref_count > 0, 0);
 #endif
-  return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
+  return AtomicAdjust::dec(_ref_count);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::test_ref_count_integrity
@@ -360,7 +359,7 @@ unref_delete(RefCountType *ptr) {
   if (!ptr->unref()) {
     // If the reference count has gone to zero, delete the object.
     delete ptr;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

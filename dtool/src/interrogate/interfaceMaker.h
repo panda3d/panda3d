@@ -155,6 +155,7 @@ public:
       PT_make_copy        = 0x0004,
       PT_copy_constructor = 0x0008,
       PT_iter             = 0x0010,
+      PT_python_gc        = 0x0020,
     };
     int _protocol_types;
   };

@@ -16,7 +16,7 @@
 #include "cppManifest.h"
 #include "cppStructType.h"
 #include "cppFunctionGroup.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppExpressionParser.h"
 #include "cppExpression.h"
 #include "cppType.h"
@@ -166,7 +166,7 @@ show_data_members(const string &str) {
 }
 
 void
-show_typedefs(const string &str) {
+show_nested_types(const string &str) {
   CPPType *type = parser.parse_type(str);
   if (type == NULL) {
     cerr << "Invalid type: " << str << "\n";
@@ -182,12 +182,12 @@ show_typedefs(const string &str) {
   CPPScope *scope = stype->get_scope();
   assert(scope != (CPPScope *)NULL);
 
-  cerr << "Typedefs in " << *stype << ":\n";
+  cerr << "Nested types in " << *stype << ":\n";
 
-  CPPScope::Typedefs::const_iterator ti;
-  for (ti = scope->_typedefs.begin(); ti != scope->_typedefs.end(); ++ti) {
-    CPPTypedef *td = (*ti).second;
-    cerr << "  " << *td << "\n";
+  CPPScope::Types::const_iterator ti;
+  for (ti = scope->_types.begin(); ti != scope->_types.end(); ++ti) {
+    CPPType *tp = (*ti).second;
+    cerr << "  " << *tp << "\n";
   }
 }
 
@@ -286,8 +286,8 @@ main(int argc, char **argv) {
             show_methods(remainder);
           } else if (first_word == "members") {
             show_data_members(remainder);
-          } else if (first_word == "typedefs") {
-            show_typedefs(remainder);
+          } else if (first_word == "types") {
+            show_nested_types(remainder);
           } else {
             show_type_or_expression(str);
           }

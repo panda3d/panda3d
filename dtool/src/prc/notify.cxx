@@ -183,54 +183,6 @@ get_assert_handler() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Notify::has_assert_failed
-//       Access: Public
-//  Description: Returns true if an assertion test has failed (and not
-//               been ignored) since the last call to
-//               clear_assert_failed().
-//
-//               When an assertion test fails, the assert handler
-//               may decide either to abort, return, or ignore the
-//               assertion.  Naturally, if it decides to abort, this
-//               flag is irrelevant.  If it chooses to ignore the
-//               assertion, the flag is not set.  However, if the
-//               assert handler chooses to return out of the
-//               function (the normal case), it will also set this
-//               flag to indicate that an assertion failure has
-//               occurred.
-//
-//               This will also be the behavior in the absence of a
-//               user-defined assert handler.
-////////////////////////////////////////////////////////////////////
-bool Notify::
-has_assert_failed() const {
-  return _assert_failed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Notify::get_assert_error_message
-//       Access: Public
-//  Description: Returns the error message that corresponds to the
-//               assertion that most recently failed.
-////////////////////////////////////////////////////////////////////
-const string &Notify::
-get_assert_error_message() const {
-  return _assert_error_message;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Notify::clear_assert_failed
-//       Access: Public
-//  Description: Resets the assert_failed flag that is set whenever an
-//               assertion test fails.  See has_assert_failed().
-////////////////////////////////////////////////////////////////////
-void Notify::
-clear_assert_failed() {
-  _assert_failed = false;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: Notify::get_top_category
 //       Access: Public
 //  Description: Returns the topmost Category in the hierarchy.  This
@@ -269,7 +221,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  pair<Categories::iterator, bool> result = 
+  pair<Categories::iterator, bool> result =
     _categories.insert(Categories::value_type(fullname, (NotifyCategory *)NULL));
 
   bool inserted = result.second;
@@ -451,14 +403,14 @@ assert_failure(const char *expression, int line,
 
   // This is redefined here, shadowing the defining in config_prc.h,
   // so we can guarantee it has already been constructed.
-  ConfigVariableBool assert_abort("assert-abort", false);
+  ALIGN_16BYTE ConfigVariableBool assert_abort("assert-abort", false);
   if (assert_abort) {
 #ifdef WIN32
     // How to trigger an exception in VC++ that offers to take us into
     // the debugger?  abort() doesn't do it.  We used to be able to
     // assert(false), but in VC++ 7 that just throws an exception, and
     // an uncaught exception just exits, without offering to open the
-    // debugger.  
+    // debugger.
 
     // DebugBreak() seems to be provided for this purpose, but it
     // doesn't seem to work properly either, since we don't seem to
@@ -567,7 +519,7 @@ config_initialized() {
           dup2(logfile_fd, STDOUT_FILENO);
           dup2(logfile_fd, STDERR_FILENO);
           close(logfile_fd);
-          
+
           set_ostream_ptr(&cerr, false);
         }
 #else

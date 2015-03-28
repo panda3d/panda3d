@@ -194,7 +194,7 @@ make_spot(int pixel_width, PN_stdfloat full_radius, LColor &fg, LColor &bg) {
     ++num_channels;
   }
   PNMImage image(pixel_width, pixel_width, num_channels);
-  image.render_spot(LCAST(double, fg), LCAST(double, bg), full_radius, 1.0);
+  image.render_spot(LCAST(float, fg), LCAST(float, bg), full_radius, 1.0);
 
   PT(Texture) tex = new Texture("spot");
   tex->load(image);

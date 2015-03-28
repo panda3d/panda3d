@@ -47,7 +47,7 @@ public:
     int _grid_x, _grid_y;
 
     // Position of the node in 3D space.
-    LVecBase3f _position;
+    LVecBase3 _position;
 
     // Dimensions of each face / cell on the mesh.
     // Height is given in case of expansion to a 3d mesh. Currently not used.
@@ -58,7 +58,7 @@ public:
     // Note: The data in this member is discarded when mesh data is written into navmesh.csv file.
     Node *_next;
 
-    Node(int grid_x, int grid_y, LVecBase3f pos, float w, float l, float h);
+    Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h);
     ~Node();
 
     bool contains(float x, float y);

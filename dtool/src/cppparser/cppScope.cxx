@@ -16,7 +16,7 @@
 #include "cppScope.h"
 #include "cppDeclaration.h"
 #include "cppNamespace.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppExtensionType.h"
 #include "cppInstance.h"
@@ -136,7 +136,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 
   _declarations.push_back(decl);
 
-  handle_declaration(decl, global_scope);
+  handle_declaration(decl, global_scope, preprocessor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,9 +185,12 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-define_extension_type(CPPExtensionType *type) {
+define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   assert(type != NULL);
-  string name = type->get_simple_name();
+  string name = type->get_local_name(this);
+  if (name.empty()) {
+    return;
+  }
 
   switch (type->_type) {
   case CPPExtensionType::T_class:
@@ -200,34 +203,59 @@ define_extension_type(CPPExtensionType *type) {
 
   case CPPExtensionType::T_union:
     _unions[name] = type;
+    break;
 
   case CPPExtensionType::T_enum:
     _enums[name] = type;
+    break;
   }
 
   // Create an implicit typedef for the extension.
-  CPPIdentifier *ident = new CPPIdentifier(name);
-  CPPTypedef *td = new CPPTypedef(new CPPInstance(type, ident), false);
-  pair<Typedefs::iterator, bool> result =
-    _typedefs.insert(Typedefs::value_type(name, td));
+  //CPPTypedefType *td = new CPPTypedefType(type, name);
+  pair<Types::iterator, bool> result =
+    _types.insert(Types::value_type(name, type));
 
   if (!result.second) {
     // There's already a typedef for this extension.  This one
-    // overrides if it has template parameters and the other one
-    // doesn't.
-    CPPType *other_type = (*result.first).second->_type;
-    if (type->is_template() && !other_type->is_template()) {
-      (*result.first).second = td;
+    // overrides it only if the other is a forward declaration.
+    CPPType *other_type = (*result.first).second;
 
-      // Or if the other one is a forward reference.
-    } else if (other_type->get_subtype() == CPPDeclaration::ST_extension) {
-      (*result.first).second = td;
+    if (other_type->get_subtype() == CPPDeclaration::ST_extension) {
+      CPPExtensionType *other_ext = other_type->as_extension_type();
+
+      if (other_ext->_type != type->_type) {
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          errstr << other_ext->_type << " " << type->get_fully_scoped_name()
+                 << " was previously declared as " << other_ext->_type << "\n";
+          error_sink->error(errstr.str());
+        }
+      }
+      (*result.first).second = type;
+
+    } else {
+      CPPTypedefType *other_td = other_type->as_typedef_type();
+
+      // Error out if the declaration is different than the previous one.
+      if (other_type != type &&
+          (other_td == NULL || other_td->_type != type)) {
+
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          type->output(errstr, 0, NULL, false);
+          errstr << " has conflicting declaration as ";
+          other_type->output(errstr, 0, NULL, true);
+          error_sink->error(errstr.str());
+        }
+      }
     }
   }
 
   if (type->is_template()) {
+    string simple_name = type->get_simple_name();
+
     pair<Templates::iterator, bool> result =
-      _templates.insert(Templates::value_type(name, type));
+      _templates.insert(Templates::value_type(simple_name, type));
 
     if (!result.second) {
       // The template was not inserted because we already had a
@@ -277,7 +305,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
   } else {
     CPPDeclaration *decl = using_decl->_ident->find_symbol(this, global_scope);
     if (decl != NULL) {
-      handle_declaration(decl, global_scope);
+      handle_declaration(decl, global_scope, error_sink);
     } else {
       if (error_sink != NULL) {
         error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
@@ -391,11 +419,13 @@ instantiate(const CPPTemplateParameterList *actual_params,
       CPPDeclaration *decl = (*pi);
       CPPClassTemplateParameter *ctp = decl->as_class_template_parameter();
       if (ctp != NULL) {
-        CPPInstance *inst = new CPPInstance(ctp, ctp->_ident);
-        CPPTypedef *td = new CPPTypedef(inst, true);
-        scope->_typedefs.insert(Typedefs::value_type
-                                (ctp->_ident->get_local_name(),
-                                 td));
+        //CPPTypedefType *td = new CPPTypedefType(ctp, ctp->_ident);
+        //scope->_typedefs.insert(Typedefs::value_type
+        //                        (ctp->_ident->get_local_name(),
+        //                         td));
+        scope->_types.insert(Types::value_type
+                             (ctp->_ident->get_local_name(),
+                              ctp));
       }
     }
   }
@@ -465,10 +495,10 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPScope::
 find_type(const string &name, bool recurse) const {
-  Typedefs::const_iterator ti;
-  ti = _typedefs.find(name);
-  if (ti != _typedefs.end()) {
-    return (*ti).second->_type;
+  Types::const_iterator ti;
+  ti = _types.find(name);
+  if (ti != _types.end()) {
+    return ti->second;
   }
 
   Using::const_iterator ui;
@@ -509,11 +539,11 @@ find_type(const string &name, bool recurse) const {
 CPPType *CPPScope::
 find_type(const string &name, CPPDeclaration::SubstDecl &subst,
           CPPScope *global_scope, bool recurse) const {
-  Typedefs::const_iterator ti;
-  ti = _typedefs.find(name);
-  if (ti != _typedefs.end()) {
+  Types::const_iterator ti;
+  ti = _types.find(name);
+  if (ti != _types.end()) {
     CPPScope *current_scope = (CPPScope *)this;
-    return (*ti).second->_type->substitute_decl
+    return (*ti).second->substitute_decl
       (subst, current_scope, global_scope)->as_type();
   }
 
@@ -562,10 +592,14 @@ find_scope(const string &name, bool recurse) const {
 
   CPPType *type = (CPPType *)NULL;
 
-  Typedefs::const_iterator ti;
-  ti = _typedefs.find(name);
-  if (ti != _typedefs.end()) {
-    type = (*ti).second->_type;
+  Types::const_iterator ti;
+  ti = _types.find(name);
+  if (ti != _types.end()) {
+    type = (*ti).second;
+    // Resolve if this is a typedef.
+    while (type->as_typedef_type() != (CPPTypedefType *)NULL) {
+      type = type->as_typedef_type()->_type;
+    }
 
   } else if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
@@ -613,10 +647,17 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
   if (type == NULL) {
     return NULL;
   }
+
+  // Resolve this if it is a typedef.
+  while (type->get_subtype() == CPPDeclaration::ST_typedef) {
+    type = type->as_typedef_type()->_type;
+  }
+
   CPPStructType *st = type->as_struct_type();
   if (st == NULL) {
     return NULL;
   }
+
   return st->_scope;
 }
 
@@ -631,10 +672,10 @@ find_symbol(const string &name, bool recurse) const {
     return _struct_type;
   }
 
-  Typedefs::const_iterator ti;
-  ti = _typedefs.find(name);
-  if (ti != _typedefs.end()) {
-    return (*ti).second->_type;
+  Types::const_iterator ti;
+  ti = _types.find(name);
+  if (ti != _types.end()) {
+    return (*ti).second;
   }
 
   Variables::const_iterator vi;
@@ -755,9 +796,14 @@ get_local_name(CPPScope *scope) const {
   }
   */
 
-  if (scope != NULL && _parent_scope != NULL && _parent_scope != scope) {
-    return _parent_scope->get_local_name(scope) + "::" +
-      _name.get_name_with_templ();
+  if (scope != NULL && _parent_scope != NULL/* && _parent_scope != scope*/) {
+    string parent_scope_name = _parent_scope->get_local_name(scope);
+    if (parent_scope_name.empty()) {
+      return _name.get_name_with_templ();
+    } else {
+      return parent_scope_name + "::" +
+        _name.get_name_with_templ();
+    }
   } else {
     return _name.get_name_with_templ();
   }
@@ -816,8 +862,7 @@ write(ostream &out, int indent_level, CPPScope *scope) const {
     }
     bool complete = false;
 
-    if (cd->as_typedef() != NULL || cd->as_type() != NULL ||
-        cd->as_namespace() != NULL) {
+    if (cd->as_type() != NULL || cd->as_namespace() != NULL) {
       complete = true;
     }
 
@@ -880,7 +925,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     }
     to_scope->_struct_type =
       new CPPStructType(_struct_type->_type,
-                        new CPPIdentifier(to_scope->_name),
+                        new CPPIdentifier(to_scope->_name, _struct_type->_file),
                         native_scope, to_scope, _struct_type->_file);
     to_scope->_struct_type->_incomplete = false;
 
@@ -985,11 +1030,11 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     }
   }
 
-  Typedefs::const_iterator ti;
-  for (ti = _typedefs.begin(); ti != _typedefs.end(); ++ti) {
-    CPPTypedef *td =
-      (*ti).second->substitute_decl(subst, to_scope, global_scope)->as_typedef();
-    to_scope->_typedefs.insert(Typedefs::value_type((*ti).first, td));
+  Types::const_iterator ti;
+  for (ti = _types.begin(); ti != _types.end(); ++ti) {
+    CPPType *td =
+      (*ti).second->substitute_decl(subst, to_scope, global_scope)->as_type();
+    to_scope->_types.insert(Types::value_type((*ti).first, td));
     if (td != (*ti).second) {
       anything_changed = true;
     }
@@ -999,6 +1044,19 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     CPPInstance *inst =
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
+    if (inst != (*vi).second) {
+      // I don't know if this _native_scope assignment is right, but it
+      // fixes some issues with variables in instantiated template scopes
+      // being printed out with an uninstantiated template scope prefix. ~rdb
+      inst->_ident->_native_scope = to_scope;
+      anything_changed = true;
+    }
+  }
+
+  for (vi = _enum_values.begin(); vi != _enum_values.end(); ++vi) {
+    CPPInstance *inst =
+      (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
+    to_scope->_enum_values.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
       anything_changed = true;
     }
@@ -1026,25 +1084,41 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
 //               functions, or whatever.
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
-  CPPTypedef *def = decl->as_typedef();
+handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
+                   CPPPreprocessor *error_sink) {
+  CPPTypedefType *def = decl->as_typedef_type();
   if (def != NULL) {
     string name = def->get_simple_name();
-    _typedefs[name] = def;
+
+    pair<Types::iterator, bool> result =
+      _types.insert(Types::value_type(name, def));
+
+    if (!result.second) {
+      CPPType *other_type = result.first->second;
+      CPPTypedefType *other_td = other_type->as_typedef_type();
+
+      // We don't do redefinitions of typedefs.  But we don't complain
+      // as long as this is actually a typedef to the previous definition.
+      if (other_type != def->_type &&
+          (other_td == NULL || other_td->_type != def->_type)) {
+
+        if (error_sink != NULL) {
+          ostringstream errstr;
+          def->output(errstr, 0, NULL, false);
+          errstr << " has conflicting declaration as ";
+          other_type->output(errstr, 0, NULL, true);
+          error_sink->error(errstr.str());
+        }
+      }
+    } else {
+      _types[name] = def;
+    }
 
     CPPExtensionType *et = def->_type->as_extension_type();
     if (et != NULL) {
-      define_extension_type(et);
+      define_extension_type(et, error_sink);
     }
 
-    if (!name.empty() && def->get_scope(this, global_scope) == this) {
-      // Don't add a new template definition if we already had one
-      // by the same name in another scope.
-
-      if (find_template(name) == NULL) {
-        _templates.insert(Templates::value_type(name, def));
-      }
-    }
     return;
   }
 
@@ -1052,7 +1126,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
   if (typedecl != (CPPTypeDeclaration *)NULL) {
     CPPExtensionType *et = typedecl->_type->as_extension_type();
     if (et != NULL) {
-      define_extension_type(et);
+      define_extension_type(et, error_sink);
     }
     return;
   }
@@ -1060,6 +1134,13 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
   CPPInstance *inst = decl->as_instance();
   if (inst != NULL) {
     inst->check_for_constructor(this, global_scope);
+
+    if (inst->_ident != NULL) {
+      // Not sure if this is the best place to assign this.  However,
+      // this fixes a bug with variables in expressions not having
+      // the proper scoping prefix. ~rdb
+      inst->_ident->_native_scope = this;
+    }
 
     string name = inst->get_simple_name();
     if (!name.empty() && inst->get_scope(this, global_scope) == this) {
@@ -1107,6 +1188,6 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
 
   CPPExtensionType *et = decl->as_extension_type();
   if (et != NULL) {
-    define_extension_type(et);
+    define_extension_type(et, error_sink);
   }
 }

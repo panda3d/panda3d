@@ -14,17 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Row::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LMatrix4)::Row>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_row[i] = v;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::__reduce__
 //       Access: Published
 //  Description: This special Python method is implement to provide
@@ -52,13 +41,14 @@ __reduce__(PyObject *self) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::python_repr
+//     Function: LMatrix4::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LMatrix4)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "(" 
+INLINE_LINMATH string Extension<FLOATNAME(LMatrix4)>::
+__repr__() const {
+  ostringstream out;
+  out << "LMatrix4" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_m(0, 0)) << ", "
       << MAYBE_ZERO(_this->_m(0, 1)) << ", "
       << MAYBE_ZERO(_this->_m(0, 2)) << ", "
@@ -78,5 +68,5 @@ python_repr(ostream &out, const string &class_name) const {
       << MAYBE_ZERO(_this->_m(3, 1)) << ", "
       << MAYBE_ZERO(_this->_m(3, 2)) << ", "
       << MAYBE_ZERO(_this->_m(3, 3)) << ")";
+  return out.str();
 }
-

@@ -23,15 +23,17 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LPoint2::python_repr
+//     Function: LPoint2::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LPoint2)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LPoint2)>::
+__repr__() const {
+  ostringstream out;
+  out << "LPoint2" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////

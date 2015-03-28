@@ -55,7 +55,9 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
   _lens->set_film_size(dimensions.x, -dimensions.y);
   _lens->set_film_offset(dimensions.x * 0.5, dimensions.y * 0.5);
   _lens->set_near_far(-1, 1);
-  set_camera(new Camera(context_name, _lens));
+
+  PT(Camera) cam = new Camera(context_name, _lens);
+  set_camera(NodePath(cam));
 }
 
 ////////////////////////////////////////////////////////////////////

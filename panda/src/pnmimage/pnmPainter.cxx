@@ -35,8 +35,8 @@ PNMPainter(PNMImage &image, int xo, int yo) :
   _image(image),
   _xo(xo), _yo(yo)
 {
-  _pen = PNMBrush::make_pixel(LColord(0, 0, 0, 1));
-  _fill = PNMBrush::make_pixel(LColord(1, 1, 1, 1));
+  _pen = PNMBrush::make_pixel(LColorf(0, 0, 0, 1));
+  _fill = PNMBrush::make_pixel(LColorf(1, 1, 1, 1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ PNMPainter(PNMImage &image, int xo, int yo) :
 //               current pen.
 ////////////////////////////////////////////////////////////////////
 void PNMPainter::
-draw_line(double xa, double ya, double xb, double yb) {
+draw_line(float xa, float ya, float xb, float yb) {
   // Shift the line coordinates to position the center of the pen on
   // the line.
   xa -= (_pen->get_xc() - 0.5);
@@ -55,8 +55,8 @@ draw_line(double xa, double ya, double xb, double yb) {
   yb -= (_pen->get_yc() - 0.5);
 
   // Compute the line delta.
-  double xd = xb - xa;
-  double yd = yb - ya;
+  float xd = xb - xa;
+  float yd = yb - ya;
 
   if (xa == xb && ya == yb) {
     // Just a single point.  Treat it as a very short horizontal line.
@@ -154,16 +154,16 @@ draw_line(double xa, double ya, double xb, double yb) {
 //               opposite corners.
 ////////////////////////////////////////////////////////////////////
 void PNMPainter::
-draw_rectangle(double xa, double ya, double xb, double yb) {
+draw_rectangle(float xa, float ya, float xb, float yb) {
   // Make (xa, ya) be the upper-left corner, and (xb, yb) the
   // lower-right.
   if (xa > xb) {
-    double t = xa;
+    float t = xa;
     xa = xb;
     xb = t;
   }
   if (ya > yb) {
-    double t = ya;
+    float t = ya;
     ya = yb;
     yb = t;
   }

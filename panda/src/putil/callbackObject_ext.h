@@ -21,6 +21,7 @@
 
 #include "extension.h"
 #include "pythonCallbackObject.h"
+#include "pointerTo.h"
 #include "py_panda.h"
 
 ////////////////////////////////////////////////////////////////////

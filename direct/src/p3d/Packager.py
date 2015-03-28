@@ -2263,7 +2263,7 @@ class Packager:
                 self.executablePath.appendDirectory('/usr/lib')
                 self.executablePath.appendDirectory('/usr/local/lib')
 
-        if os.uname()[1] == "pcbsd":
+        if self.platform.startswith('freebsd') and os.uname()[1] == "pcbsd":
             self.executablePath.appendDirectory('/usr/PCBSD/local/lib')
 
         # Set this flag true to automatically add allow_python_dev to

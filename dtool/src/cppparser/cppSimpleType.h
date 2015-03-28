@@ -26,14 +26,16 @@
 class CPPSimpleType : public CPPType {
 public:
   enum Type {
+    T_unknown,
     T_bool,
     T_char,
-    T_wchar_t,  // Not strictly a builtin type, but we pretend.
+    T_wchar_t,
+    T_char16_t,
+    T_char32_t,
     T_int,
     T_float,
     T_double,
     T_void,
-    T_unknown,
 
     // T_parameter is a special type which is assigned to expressions
     // that are discovered where a formal parameter was expected.

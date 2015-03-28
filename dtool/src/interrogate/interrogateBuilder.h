@@ -33,6 +33,8 @@ class CPPConstType;
 class CPPExtensionType;
 class CPPStructType;
 class CPPEnumType;
+class CPPTypedefType;
+class CPPArrayType;
 class CPPFunctionType;
 class CPPScope;
 class CPPIdentifier;
@@ -92,6 +94,7 @@ public:
   void scan_function(CPPInstance *function);
   void scan_struct_type(CPPStructType *type);
   void scan_enum_type(CPPEnumType *type);
+  void scan_typedef_type(CPPTypedefType *type);
   void scan_manifest(CPPManifest *manifest);
   ElementIndex scan_element(CPPInstance *element, CPPStructType *struct_type,
                             CPPScope *scope);
@@ -128,6 +131,8 @@ public:
   void define_method(CPPInstance *function, InterrogateType &itype,
                      CPPStructType *struct_type, CPPScope *scope);
   void define_enum_type(InterrogateType &itype, CPPEnumType *cpptype);
+  void define_typedef_type(InterrogateType &itype, CPPTypedefType *cpptype);
+  void define_array_type(InterrogateType &itype, CPPArrayType *cpptype);
   void define_extension_type(InterrogateType &itype,
                              CPPExtensionType *cpptype);
 

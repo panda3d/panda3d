@@ -447,6 +447,7 @@ EXPCL_DTOOLCONFIG bool interrogate_type_is_short(TypeIndex type);
 EXPCL_DTOOLCONFIG bool interrogate_type_is_wrapped(TypeIndex type);
 EXPCL_DTOOLCONFIG bool interrogate_type_is_pointer(TypeIndex type);
 EXPCL_DTOOLCONFIG bool interrogate_type_is_const(TypeIndex type);
+EXPCL_DTOOLCONFIG bool interrogate_type_is_typedef(TypeIndex type);
 EXPCL_DTOOLCONFIG TypeIndex interrogate_type_wrapped_type(TypeIndex type);
 
 // If interrogate_type_is_enum() returns true, this is an enumerated

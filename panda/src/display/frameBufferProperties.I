@@ -305,37 +305,42 @@ get_float_depth() const {
 INLINE void FrameBufferProperties::
 set_depth_bits(int n) {
   _property[FBP_depth_bits] = n;
-  _specified[FBP_depth_bits] = true;
+  _specified |= (1 << FBP_depth_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::set_color_bits
 //       Access: Published
-//  Description:
+//  Description: Sets the number of requested color bits as a single
+//               number that represents the sum of the individual
+//               numbers of red, green and blue bits.  Panda won't
+//               care how the individual bits are divided up.
+//
+//               See also set_rgba_bits, which allows you to specify
+//               requirements for the individual components.
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
 set_color_bits(int n) {
   _property[FBP_color_bits] = n;
-  _specified[FBP_color_bits] = true;
+  _specified |= (1 << FBP_color_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::set_rgba_bits
 //       Access: Published
-//  Description: Sets all color bit requirements separately.
+//  Description: Convenience method for setting the red, green, blue
+//               and alpha bits in one go.
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
 set_rgba_bits(int r, int g, int b, int a) {
   _property[FBP_red_bits] = r;
-  _specified[FBP_red_bits] = true;
   _property[FBP_green_bits] = g;
-  _specified[FBP_green_bits] = true;
   _property[FBP_blue_bits] = b;
-  _specified[FBP_blue_bits] = true;
   _property[FBP_alpha_bits] = a;
-  _specified[FBP_alpha_bits] = true;
   _property[FBP_color_bits] = r + g + b;
-  _specified[FBP_color_bits] = true;
+  _specified |= (1 << FBP_color_bits) | (1 << FBP_red_bits) |
+                (1 << FBP_green_bits) | (1 << FBP_blue_bits) |
+                (1 << FBP_alpha_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,7 +351,7 @@ set_rgba_bits(int r, int g, int b, int a) {
 INLINE void FrameBufferProperties::
 set_red_bits(int n) {
   _property[FBP_red_bits] = n;
-  _specified[FBP_red_bits] = true;
+  _specified |= (1 << FBP_red_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -357,7 +362,7 @@ set_red_bits(int n) {
 INLINE void FrameBufferProperties::
 set_green_bits(int n) {
   _property[FBP_green_bits] = n;
-  _specified[FBP_green_bits] = true;
+  _specified |= (1 << FBP_green_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,7 +373,7 @@ set_green_bits(int n) {
 INLINE void FrameBufferProperties::
 set_blue_bits(int n) {
   _property[FBP_blue_bits] = n;
-  _specified[FBP_blue_bits] = true;
+  _specified |= (1 << FBP_blue_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +384,7 @@ set_blue_bits(int n) {
 INLINE void FrameBufferProperties::
 set_alpha_bits(int n) {
   _property[FBP_alpha_bits] = n;
-  _specified[FBP_alpha_bits] = true;
+  _specified |= (1 << FBP_alpha_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -390,7 +395,7 @@ set_alpha_bits(int n) {
 INLINE void FrameBufferProperties::
 set_stencil_bits(int n) {
   _property[FBP_stencil_bits] = n;
-  _specified[FBP_stencil_bits] = true;
+  _specified |= (1 << FBP_stencil_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,7 +406,7 @@ set_stencil_bits(int n) {
 INLINE void FrameBufferProperties::
 set_accum_bits(int n) {
   _property[FBP_accum_bits] = n;
-  _specified[FBP_accum_bits] = true;
+  _specified |= (1 << FBP_accum_bits);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +418,7 @@ INLINE void FrameBufferProperties::
 set_aux_rgba(int n) {
   nassertv(n < 4);
   _property[FBP_aux_rgba] = n;
-  _specified[FBP_aux_rgba] = true;
+  _specified |= (1 << FBP_aux_rgba);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,7 +430,7 @@ INLINE void FrameBufferProperties::
 set_aux_hrgba(int n) {
   nassertv(n < 4);
   _property[FBP_aux_hrgba] = n;
-  _specified[FBP_aux_hrgba] = true;
+  _specified |= (1 << FBP_aux_hrgba);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +442,7 @@ INLINE void FrameBufferProperties::
 set_aux_float(int n) {
   nassertv(n < 4);
   _property[FBP_aux_float] = n;
-  _specified[FBP_aux_float] = true;
+  _specified |= (1 << FBP_aux_float);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,7 +453,7 @@ set_aux_float(int n) {
 INLINE void FrameBufferProperties::
 set_multisamples(int n) {
   _property[FBP_multisamples] = n;
-  _specified[FBP_multisamples] = true;
+  _specified |= (1 << FBP_multisamples);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,7 +465,7 @@ set_multisamples(int n) {
 INLINE void FrameBufferProperties::
 set_coverage_samples(int n) {
   _property[FBP_coverage_samples] = n;
-  _specified[FBP_coverage_samples] = true;
+  _specified |= (1 << FBP_coverage_samples);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -471,7 +476,7 @@ set_coverage_samples(int n) {
 INLINE void FrameBufferProperties::
 set_back_buffers(int n) {
   _property[FBP_back_buffers] = n;
-  _specified[FBP_back_buffers] = true;
+  _specified |= (1 << FBP_back_buffers);
 }
 
 ////////////////////////////////////////////////////////////////////
