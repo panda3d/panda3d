@@ -19,6 +19,7 @@ set(P3PUTIL_HEADERS
   callbackObject.h callbackObject.I
   clockObject.h clockObject.I
   collideMask.h
+  colorSpace.h
   copyOnWriteObject.h copyOnWriteObject.I
   copyOnWritePointer.h copyOnWritePointer.I
   compareTo.I compareTo.h
@@ -39,8 +40,7 @@ set(P3PUTIL_HEADERS
   indirectCompareSort.I indirectCompareSort.h
   indirectCompareTo.I indirectCompareTo.h
   ioPtaDatagramFloat.h ioPtaDatagramInt.h
-  ioPtaDatagramShort.h keyboardButton.h lineStream.I
-  lineStream.h lineStreamBuf.I lineStreamBuf.h
+  ioPtaDatagramShort.h keyboardButton.h
   linkedListNode.I linkedListNode.h
   load_prc_file.h
   loaderOptions.I loaderOptions.h
@@ -79,6 +79,7 @@ set(P3PUTIL_SOURCES
   callbackData.cxx
   callbackObject.cxx
   clockObject.cxx
+  colorSpace.cxx
   copyOnWriteObject.cxx
   copyOnWritePointer.cxx
   config_util.cxx configurable.cxx
@@ -90,7 +91,7 @@ set(P3PUTIL_SOURCES
   globalPointerRegistry.cxx
   ioPtaDatagramFloat.cxx
   ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx
-  keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx
+  keyboardButton.cxx
   linkedListNode.cxx
   load_prc_file.cxx
   loaderOptions.cxx

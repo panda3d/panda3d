@@ -14,7 +14,7 @@ set(P3CPPPARSER_HEADERS
 	cppSimpleType.h cppStructType.h cppTBDType.h
 	cppTemplateParameterList.h cppTemplateScope.h cppToken.h
 	cppType.h cppTypeDeclaration.h cppTypeParser.h
-	cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h
+	cppTypeProxy.h cppTypedefType.h cppUsing.h cppVisibility.h
 )
 
 set(P3CPPPARSER_SOURCES
@@ -32,7 +32,7 @@ set(P3CPPPARSER_SOURCES
 	cppStructType.cxx cppTBDType.cxx
 	cppTemplateParameterList.cxx cppTemplateScope.cxx
 	cppToken.cxx cppType.cxx cppTypeDeclaration.cxx
-	cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx
+	cppTypeParser.cxx cppTypeProxy.cxx cppTypedefType.cxx
 	cppUsing.cxx cppVisibility.cxx
 )
 

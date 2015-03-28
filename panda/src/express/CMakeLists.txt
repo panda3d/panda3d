@@ -123,6 +123,10 @@ set(P3EXPRESS_SOURCES
   zStream.cxx zStreamBuf.cxx)
 
 set(P3EXPRESS_IGATEEXT
+  filename_ext.cxx
+  filename_ext.h
+  globPattern_ext.cxx
+  globPattern_ext.h
   memoryUsagePointers_ext.cxx
   memoryUsagePointers_ext.h
   pointerToArray_ext.h
@@ -130,6 +134,8 @@ set(P3EXPRESS_IGATEEXT
   ramfile_ext.h
   streamReader_ext.cxx
   streamReader_ext.h
+  typeHandle_ext.cxx
+  typeHandle_ext.h
   virtualFileSystem_ext.cxx
   virtualFileSystem_ext.h)
 
