@@ -714,7 +714,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
         SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale", "libswscale/swscale.h"), target_pkg = "FFMPEG")
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample", "libswresample/swresample.h"), target_pkg = "FFMPEG")
-        SmartPkgEnable("FFTW",      "",          ("fftw", "rfftw"), ("fftw.h", "rfftw.h"))
+        SmartPkgEnable("FFTW",      "",          ("rfftw", "fftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
