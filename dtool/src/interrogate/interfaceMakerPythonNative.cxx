@@ -4659,6 +4659,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         }
         expected_params += "str";
       }
+      // Remember to clear the TypeError that any of the above methods raise.
+      clear_error = true;
       only_pyobjects = false;
 
     } else if (TypeManager::is_bool(type)) {
