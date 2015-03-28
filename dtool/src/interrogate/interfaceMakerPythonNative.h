@@ -82,6 +82,7 @@ private:
     WT_inplace_ternary_operator,
     WT_traverse,
     WT_compare,
+    WT_hash,
   };
 
   // This enum is passed to the wrapper generation functions to indicate
@@ -118,6 +119,7 @@ private:
     int _min_version;
     string _wrapper_name;
     set<FunctionRemap*> _remaps;
+    bool _keep_method;
   };
 
   typedef std::map<string, SlottedFunctionDef> SlottedFunctions;
@@ -197,7 +199,6 @@ public:
   bool DoesInheritFromIsClass(const CPPStructType * inclass, const std::string &name);
   bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
   void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const std::string &class_name, CPPType *ctype, bool is_const);
-  string HasAGetKeyFunction(const InterrogateType &itype_class);
   bool HasAGetClassTypeFunction(const InterrogateType &itype_class);
   int NeedsAStrFunction(const InterrogateType &itype_class);
   int NeedsAReprFunction(const InterrogateType &itype_class);

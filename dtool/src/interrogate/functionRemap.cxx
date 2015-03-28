@@ -796,22 +796,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_iter;
       }
 
-    } else if (fname == "__getbuffer__") {
-      if (_has_this && _parameters.size() == 3 &&
-          TypeManager::is_integer(_return_type->get_new_type()) &&
-          TypeManager::is_pointer_to_Py_buffer(_parameters[1]._remap->get_orig_type()) &&
-          TypeManager::is_integer(_parameters[2]._remap->get_orig_type())) {
-
-        _flags |= F_getbuffer;
-      }
-
-    } else if (fname == "__releasebuffer__") {
-      if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_pointer_to_Py_buffer(_parameters[1]._remap->get_orig_type())) {
-
-        _flags |= F_releasebuffer;
-      }
-
     } else if (fname == "compare_to") {
       if (_has_this && _parameters.size() == 2 &&
           TypeManager::is_integer(_return_type->get_new_type())) {
@@ -831,6 +815,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
           TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
         // This division operator takes a single float argument.
         _flags |= F_divide_float;
+      }
+
+    } else if (fname == "get_key" || fname == "get_hash") {
+      if (_has_this && _parameters.size() == 1 &&
+          TypeManager::is_integer(_return_type->get_new_type())) {
+        _flags |= F_hash;
       }
 
     } else if (fname == "operator ()" || fname == "__call__") {
