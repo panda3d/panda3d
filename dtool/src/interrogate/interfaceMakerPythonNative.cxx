@@ -6415,8 +6415,9 @@ is_remap_legal(FunctionRemap *remap) {
   }
 
   // We don't currently support returning pointers, but we accept
-  // them as function parameters.
-  if (TypeManager::is_pointer_to_simple(remap->_return_type->get_orig_type())) {
+  // them as function parameters.  But const char * is an exception.
+  if (!remap->_return_type->new_type_is_atomic_string() &&
+      TypeManager::is_pointer_to_simple(remap->_return_type->get_orig_type())) {
     return false;
   }
 
