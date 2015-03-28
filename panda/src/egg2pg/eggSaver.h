@@ -40,6 +40,7 @@ class GeomVertexData;
 class GeomPrimitive;
 class PandaNode;
 class RenderState;
+class Material;
 class Texture;
 class CharacterJoint;
 class EggVertex;

@@ -23,6 +23,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "nodePath.h"
 
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;

@@ -19,6 +19,7 @@
 #include "cppType.h"
 
 class CPPIdentifier;
+class CPPInstanceIdentifier;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPTypedefType
