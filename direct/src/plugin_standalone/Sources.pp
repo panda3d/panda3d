@@ -83,7 +83,6 @@
 #end bin_target
 
 #begin bin_target
-  #define BUILD_TARGET $[and $[HAVE_JPEG],$[HAVE_PNG]]
   #define USE_PACKAGES openssl zlib
   #define TARGET p3dembed
   #define LOCAL_LIBS plugin_common p3d_plugin_static
@@ -115,7 +114,7 @@
   // On Windows, we also need to build p3dembedw.exe, the non-console
   // version of p3dembed.exe.
 
-  #define BUILD_TARGET $[and $[HAVE_JPEG],$[HAVE_PNG],$[WINDOWS_PLATFORM]]
+  #define BUILD_TARGET $[WINDOWS_PLATFORM]
   #define USE_PACKAGES openssl zlib
   #define TARGET p3dembedw
   #define LOCAL_LIBS plugin_common p3d_plugin_static

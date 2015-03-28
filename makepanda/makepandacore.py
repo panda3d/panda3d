@@ -10,6 +10,7 @@
 ########################################################################
 
 import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
+import subprocess
 from distutils import sysconfig
 
 if sys.version_info >= (3, 0):
@@ -39,6 +40,7 @@ HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
 SYS_LIB_DIRS = []
+SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
@@ -1471,8 +1473,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
     if (os.path.isdir(pkg_dir)):
+        if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
+            FrameworkDirectory(target_pkg, pkg_dir)
+            LibName(target_pkg, "-framework " + framework)
+            return
+
         if os.path.isdir(os.path.join(pkg_dir, "include")):
             IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+
         if os.path.isdir(os.path.join(pkg_dir, "lib")):
             LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
 
@@ -1532,8 +1540,9 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (have_all_pkgs):
                 return
 
-    if (pkgconfig != None and (libs == None or len(libs) == 0)):
-        if (pkg in PkgListGet()):
+    if pkgconfig is not None and not libs:
+        # pkg-config is all we can do, abort if it wasn't found.
+        if pkg in PkgListGet():
             print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
             PkgDisable(pkg)
         else:
@@ -1551,7 +1560,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 LibName(target_pkg, "-l" + libname)
             else:
                 # Try searching in the package's LibDirectories.
-                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg or ppkg == "ALWAYS"]
                 if LibraryExists(libname, lpath):
                     LibName(target_pkg, "-l" + libname)
                 else:
@@ -1559,27 +1568,26 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     if VERBOSE:
                         print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
+        # Determine which include directories to look in.
+        incdirs = list(SYS_INC_DIRS)
+        for ppkg, pdir in INCDIRECTORIES:
+            if pkg == ppkg or ppkg == "ALWAYS":
+                incdirs.append(pdir)
+
+        # The incs list contains both subdirectories to explicitly add to
+        # the include path and header files to check the existence of.
         for i in incs:
             incdir = None
-            sysroot_usr = SDK.get("SYSROOT", "") + "/usr"
-            if (len(glob.glob(sysroot_usr + "/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/include/" + i))[-1]
-            elif (len(glob.glob(sysroot_usr + "/local/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/local/include/" + i))[-1]
-            elif (os.path.isdir(sysroot_usr + "/PCBSD") and len(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i)) > 0):
-                incdir = sorted(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i))[-1]
-            else:
-                # Try searching in the package's IncDirectories.
-                for ppkg, pdir in INCDIRECTORIES:
-                    if pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0:
-                        incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
-
-                if incdir is None and i.endswith(".h"):
-                    have_pkg = False
-                    if VERBOSE:
-                        print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+            for dir in incdirs:
+                if len(glob.glob(os.path.join(dir, i))) > 0:
+                    incdir = sorted(glob.glob(os.path.join(dir, i)))[-1]
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
+            if incdir is None and i.endswith(".h"):
+                have_pkg = False
+                if VERBOSE:
+                    print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+
             if incdir is not None and os.path.isdir(incdir):
                 IncDirectory(target_pkg, incdir)
 
@@ -1798,15 +1806,14 @@ def SdkLocateMax():
                         if (os.path.isdir(top + "\\" + subdir)!=0):
                             SDK[version+"CS"] = top + subdir
 
-def SdkLocatePython(force_use_sys_executable = False):
+def SdkLocatePython(prefer_thirdparty_python=False):
     if PkgSkip("PYTHON"):
+        # We're not compiling with Python support.  We still need to set this
+        # in case we want to run any scripts that use Python, though.
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
         return
 
-    if CrossCompiling():
-        force_use_sys_executable = False
-
-    if (GetTarget() == 'windows' and not force_use_sys_executable):
+    if GetTarget() == 'windows':
         SDK["PYTHON"] = GetThirdpartyBase() + "/win-python"
         if (GetOptimize() <= 2):
             SDK["PYTHON"] += "-dbg"
@@ -1838,7 +1845,7 @@ def SdkLocatePython(force_use_sys_executable = False):
 
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
-    elif CrossCompiling():
+    elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
         SDK["PYTHON"] = tp_python + "/include"
 
@@ -1857,11 +1864,12 @@ def SdkLocatePython(force_use_sys_executable = False):
 
         py_lib = os.path.basename(py_libs[0])
         SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+        SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
 
-    elif (GetTarget() == 'windows'):
-        SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-        SDK["PYTHONEXEC"] = sys.executable
+    #elif GetTarget() == 'windows':
+    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
+    #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+    #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
         SDK["PYTHON"] = sysconfig.get_python_inc()
@@ -1869,6 +1877,7 @@ def SdkLocatePython(force_use_sys_executable = False):
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
+        # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
         host_version = "python" + sysconfig.get_python_version()
         if SDK["PYTHONVERSION"] != host_version:
@@ -2065,7 +2074,7 @@ def SdkLocateAndroid():
 ########################################################################
 
 def SdkAutoDisableDirectX():
-    for ver in ["DX9", "DIRECTCAM"]:
+    for ver in DXVERSIONS + ["DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (ver not in SDK):
                 if (GetHost() == "windows"):
@@ -2184,6 +2193,7 @@ def SetupVisualStudioEnviron():
 
 INCDIRECTORIES = []
 LIBDIRECTORIES = []
+FRAMEWORKDIRECTORIES = []
 LIBNAMES = []
 DEFSYMBOLS = []
 
@@ -2193,6 +2203,9 @@ def IncDirectory(opt, dir):
 def LibDirectory(opt, dir):
     LIBDIRECTORIES.append((opt, dir))
 
+def FrameworkDirectory(opt, dir):
+    FRAMEWORKDIRECTORIES.append((opt, dir))
+
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
     # Are we a thirdparty library?
@@ -2201,8 +2214,9 @@ def LibName(opt, name):
         if not os.path.exists(name):
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
             if (opt in PkgListGet()):
-                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
-                PkgDisable(opt)
+                if not PkgSkip(opt):
+                    print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+                    PkgDisable(opt)
                 return
             else:
                 print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower()))
@@ -2232,10 +2246,10 @@ def SetupBuildEnvironment(compiler):
 
     if compiler == "GCC":
         # Invoke gcc to determine the system library directories.
-        global SYS_LIB_DIRS
+        global SYS_LIB_DIRS, SYS_INC_DIRS
 
         if sys.platform == "darwin":
-            # We need to add this one explicitly.
+            # We need to add this one explicitly for some reason.
             SYS_LIB_DIRS.append(SDK["MACOSX"] + "/usr/lib")
 
         if not SDK.get("MACOSX"):
@@ -2244,30 +2258,81 @@ def SetupBuildEnvironment(compiler):
             if os.path.isdir(local_lib):
                 SYS_LIB_DIRS.append(local_lib)
 
-        cmd = GetCXX() + " -print-search-dirs"
+        sysroot_flag = ""
 
         if SDK.get("MACOSX"):
             # The default compiler in Leopard does not respect --sysroot correctly.
-            cmd += " -isysroot " + SDK["MACOSX"]
+            sysroot_flag = " -isysroot " + SDK["MACOSX"]
         if SDK.get("SYSROOT"):
-            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+            sysroot_flag = ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Extract the dirs from the line that starts with 'libraries: ='.
+        cmd = GetCXX() + " -print-search-dirs" + sysroot_flag
         handle = os.popen(cmd)
         for line in handle:
             if not line.startswith('libraries: ='):
                 continue
 
             line = line[12:].strip()
-            SYS_LIB_DIRS += line.split(':')
+            for libdir in line.split(':'):
+                libdir = os.path.normpath(libdir)
+                if os.path.isdir(libdir):
+                    if libdir not in SYS_LIB_DIRS:
+                        SYS_LIB_DIRS.append(libdir)
+                elif GetVerbose():
+                    print("Ignoring non-existent library directory %s" % (libdir))
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
             print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
-        elif GetVerbose():
-            print("System library search path: %s" % ':'.join(SYS_LIB_DIRS))
+        # Now extract the preprocessor's include directories.
+        cmd = GetCXX() + sysroot_flag + " -x c++ -v -E /dev/null"
+        null = open(os.devnull, 'w')
+        handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
+        scanning = False
+        for line in handle.communicate()[1].splitlines():
+            line = line.decode('utf-8', 'replace')
+
+            # Start looking at a line that says:  #include "..." search starts here
+            if not scanning:
+                if line.startswith('#include'):
+                    scanning = True
+                continue
+
+            if not line.startswith(' /'):
+                continue
+
+            line = line.strip()
+            if line.endswith(" (framework directory)"):
+                pass
+            elif os.path.isdir(line):
+                SYS_INC_DIRS.append(os.path.normpath(line))
+            elif GetVerbose():
+                print("Ignoring non-existent include directory %s" % (line))
+
+        if handle.returncode != 0 or not SYS_INC_DIRS:
+            print("%sWARNING:%s %s failed or did not produce the expected result" % (GetColor("red"), GetColor(), cmd))
+            sysroot = SDK.get("SYSROOT", "")
+            # Add some sensible directories as a fallback.
+            SYS_INC_DIRS = [
+                sysroot + "/usr/include",
+                sysroot + "/usr/local/include"
+            ]
+            pcbsd_inc = sysroot + "/usr/PCBSD/local/include"
+            if os.path.isdir(pcbsd_inc):
+                SYS_INC_DIRS.append(pcbsd_inc)
+
+        # Print out the search paths
+        if GetVerbose():
+            print("System library search path:")
+            for dir in SYS_LIB_DIRS:
+                print("  " + dir)
+
+            print("System include search path:")
+            for dir in SYS_INC_DIRS:
+                print("  " + dir)
 
     # In the case of Android, we have to put the toolchain on the PATH in order to use it.
     if GetTarget() == 'android':
@@ -2420,13 +2485,16 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
             for fixer in lib2to3_fixers:
                 lib2to3_args += ['-f', fixer]
 
+    exclude_files = set(VCS_FILES)
+    exclude_files.add('panda3d.py')
+
     refactor = []
     for entry in os.listdir(srcdir):
         srcpth = os.path.join(srcdir, entry)
         dstpth = os.path.join(dstdir, entry)
-        if (os.path.isfile(srcpth)):
+        if os.path.isfile(srcpth):
             base, ext = os.path.splitext(entry)
-            if entry not in VCS_FILES and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
+            if entry not in exclude_files and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 

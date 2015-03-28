@@ -177,13 +177,13 @@ as_class_template_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPDeclaration::as_typedef
+//     Function: CPPDeclaration::as_typedef_type
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CPPTypedef *CPPDeclaration::
-as_typedef() {
-  return (CPPTypedef *)NULL;
+CPPTypedefType *CPPDeclaration::
+as_typedef_type() {
+  return (CPPTypedefType *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,3 +399,24 @@ is_less(const CPPDeclaration *other) const {
   return this < other;
 }
 
+
+ostream &
+operator << (ostream &out, const CPPDeclaration::SubstDecl &subst) {
+  CPPDeclaration::SubstDecl::const_iterator it;
+  for (it = subst.begin(); it != subst.end(); ++it) {
+    out << "  ";
+    if (it->first == NULL) {
+      out << "(null)";
+    } else {
+      out << *(it->first);
+    }
+    out << " -> ";
+    if (it->second == NULL) {
+      out << "(null)";
+    } else {
+      out << *(it->second);
+    }
+    out << "\n";
+  }
+  return out;
+}

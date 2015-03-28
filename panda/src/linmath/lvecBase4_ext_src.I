@@ -29,28 +29,19 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::python_repr
+//     Function: LVecBase4::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase4)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LVecBase4)>::
+__repr__() const {
+  ostringstream out;
+  out << "LVecBase4" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ", "
       << MAYBE_ZERO(_this->_v(2)) << ", "
       << MAYBE_ZERO(_this->_v(3)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,17 +247,6 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(3) = cpow(_this->_v(3), exponent);
   Py_INCREF(self);
   return self;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(UnalignedLVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
 }
 
 #undef PYNUMBER_FLOATTYPE

@@ -136,35 +136,28 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
-    if ((host==0)||
-        (!gl_support_fbo)||
-        ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)) {
+    if (!gl_support_fbo || host == NULL ||
+        (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
-    int _fbo_multisample = 0;
-    if (!ConfigVariableBool("framebuffer-object-multisample", false, PRC_DESC("Enabled Multisample."))) {
-      _fbo_multisample = 16;
-    }
-    if ((flags & BF_fb_props_optional)==0) {
-      if ((fb_prop.get_indexed_color() > 0)||
-          (fb_prop.get_back_buffers() > 0)||
-          (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > _fbo_multisample)) {
+    if ((flags & BF_fb_props_optional) == 0) {
+      if (fb_prop.get_indexed_color() ||
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
         return NULL;
       }
     }
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
-    if ((posixgsg != 0) &&
-        (posixgsg->is_valid()) &&
-        (!posixgsg->needs_reset()) &&
-        (posixgsg->_supports_framebuffer_object) &&
-        (posixgsg->_glDrawBuffers != 0)&&
-        (fb_prop.is_basic())) {
-      precertify = true;
+    if (posixgsg != NULL && posixgsg->is_valid() && !posixgsg->needs_reset()) {
+      if (!posixgsg->_supports_framebuffer_object ||
+          posixgsg->_glDrawBuffers == NULL) {
+        return NULL;
+      } else {
+        // Early success - if we are sure that this buffer WILL
+        // meet specs, we can precertify it.
+        precertify = true;
+      }
     }
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);

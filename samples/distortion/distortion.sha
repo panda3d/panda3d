@@ -1,0 +1,53 @@
+//Cg
+//
+// time
+//
+//   You need to pass the frame time here.
+//
+// desat.x
+//
+//   Desaturation level.  If zero, the bloom's color is equal to
+//   the color of the input pixel.  If one, the bloom's color is
+//   white.
+//
+// trigger.x
+//
+//   Must be equal to mintrigger.
+//
+//   mintrigger is the minimum brightness to trigger a bloom,
+//   and maxtrigger is the brightness at which the bloom
+//   reaches maximum intensity.
+//
+// trigger.y
+//
+//   Must be equal to (1.0/(maxtrigger-mintrigger)) where
+//   
+//   mintrigger is the minimum brightness to trigger a bloom,
+//   and maxtrigger is the brightness at which the bloom
+//   reaches maximum intensity.
+//
+
+void vshader(float4 vtx_position : POSITION,
+             uniform float4x4 mat_modelproj,
+             uniform float4x4 trans_model_to_clip,
+             out float4 l_position : POSITION,
+             out float4 l_texcoord0 : TEXCOORD0)
+{
+    l_position = mul(mat_modelproj, vtx_position);
+    l_texcoord0 = mul(trans_model_to_clip, vtx_position);
+    l_texcoord0.z = l_texcoord0.w;
+}
+
+void fshader(float4 l_texcoord0 : TEXCOORD0,
+       	     uniform sampler2D k_screen : TEXUNIT1,
+             uniform sampler2D k_waves : TEXUNIT0,
+             uniform float4 texpad_screen,
+             in uniform float sys_time,
+             out float4 o_color : COLOR)
+{
+    float3 screen = l_texcoord0.xyz / l_texcoord0.w;
+    float2 texcoords = float2(screen.xy) * texpad_screen.xy + texpad_screen.xy;
+    float4 disturbance = tex2D(k_waves, texcoords);
+    //o_color = tex2D(k_screen, texcoords + disturbance.xy * 0.05 * disturbance.z * sys_time.x * 1);
+    o_color = tex2D(k_screen, texcoords + disturbance.xy * 0.05 * disturbance.z * sin(sys_time.x) * 1);
+}

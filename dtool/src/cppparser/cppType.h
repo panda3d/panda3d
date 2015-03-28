@@ -22,7 +22,7 @@
 #include <set>
 
 class CPPType;
-class CPPTypedef;
+class CPPTypedefType;
 class CPPTypeDeclaration;
 
 
@@ -39,7 +39,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 class CPPType : public CPPDeclaration {
 public:
-  typedef vector<CPPTypedef *> Typedefs;
+  typedef vector<CPPTypedefType *> Typedefs;
   Typedefs _typedefs;
 
   CPPType(const CPPFile &file);

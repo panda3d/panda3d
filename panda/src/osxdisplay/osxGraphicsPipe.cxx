@@ -412,37 +412,32 @@ make_output(const string &name,
     return new osxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  
+
   // Second thing to try: a GLGraphicsBuffer
-  
+
   if (retry == 1) {
-    if (!osx_support_gl_buffer) {
-      return NULL;
-    }
-    if ((host==0)||
-        ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)) {
+    if (!osx_support_gl_buffer || !gl_support_fbo || host == NULL ||
+        (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
-    if ((flags & BF_fb_props_optional)==0) {
-      if ((fb_prop.get_indexed_color() > 0)||
-          (fb_prop.get_back_buffers() > 0)||
-          (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > 0)) {
+    if ((flags & BF_fb_props_optional) == 0) {
+      if (fb_prop.get_indexed_color() ||
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
         return NULL;
       }
     }
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
-    if ((osxgsg != 0) &&
-        (osxgsg->is_valid()) &&
-        (!osxgsg->needs_reset()) &&
-        (osxgsg->_supports_framebuffer_object) &&
-        (osxgsg->_glDrawBuffers != 0)&&
-        (fb_prop.is_basic())) {
-      precertify = true;
+    if (osxgsg != NULL && osxgsg->is_valid() && !osxgsg->needs_reset()) {
+      if (!osxgsg->_supports_framebuffer_object ||
+          osxgsg->_glDrawBuffers == NULL) {
+        return NULL;
+      } else if (fb_prop.is_basic()) {
+        // Early success - if we are sure that this buffer WILL
+        // meet specs, we can precertify it.
+        precertify = true;
+      }
     }
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }

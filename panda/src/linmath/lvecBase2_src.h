@@ -20,8 +20,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase2) {
 PUBLISHED:
+  typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
+
+  enum {
+    num_components = 2,
+
+#ifdef FLOATTYPE_IS_INT
+    is_int = 1
+#else
+    is_int = 0
+#endif
+  };
 
   INLINE_LINMATH FLOATNAME(LVecBase2)();
   INLINE_LINMATH FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy);
@@ -43,7 +54,6 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
@@ -130,11 +140,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2) fmin(const FLOATNAME(LVecBase2) &other) const;
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase2) &other,
-                           FLOATTYPE threshold) const;
+                                   FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase2) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);

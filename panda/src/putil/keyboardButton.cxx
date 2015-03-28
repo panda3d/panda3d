@@ -29,23 +29,6 @@ ascii_key(char ascii_equivalent) {
   return ButtonRegistry::ptr()->find_ascii_button(ascii_equivalent);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: KeyboardButton::ascii_key
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               particular ASCII character (taken from the first
-//               character of the indicated string), if there is one,
-//               or ButtonHandle::none() if there is not.
-////////////////////////////////////////////////////////////////////
-ButtonHandle KeyboardButton::
-ascii_key(const string &ascii_equivalent) {
-  if (ascii_equivalent.empty()) {
-    return ButtonHandle::none();
-  } else {
-    return ButtonRegistry::ptr()->find_ascii_button(ascii_equivalent[0]);
-  }
-}
-
 #define DEFINE_KEYBD_BUTTON_HANDLE(KeyName)     \
                   static ButtonHandle _##KeyName; \
                   ButtonHandle KeyboardButton::KeyName() { return _##KeyName; }

@@ -52,6 +52,7 @@ void CPPTemplateParameterList::
 build_subst_decl(const CPPTemplateParameterList &formal_params,
                  CPPDeclaration::SubstDecl &subst,
                  CPPScope *current_scope, CPPScope *global_scope) const {
+
   Parameters::const_iterator pfi, pai;
   for (pfi = formal_params._parameters.begin(), pai = _parameters.begin();
        pfi != formal_params._parameters.end() && pai != _parameters.end();

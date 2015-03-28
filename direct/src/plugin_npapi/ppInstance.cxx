@@ -1882,8 +1882,10 @@ send_window() {
     assert(!_use_xembed);
     parent_window._window_handle_type = _window_handle_type;
     if (_window_handle_type == P3D_WHT_osx_port) {
+#if !__LP64__
       NP_Port *port = (NP_Port *)_window.window;
       parent_window._handle._osx_port._port = port->port;
+#endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
       if (context != NULL) {
@@ -1929,8 +1931,10 @@ send_window() {
 #elif defined(__APPLE__)
     parent_window._window_handle_type = _window_handle_type;
     if (_window_handle_type == P3D_WHT_osx_port) {
+#if !__LP64__
       NP_Port *port = (NP_Port *)_window.window;
       parent_window._handle._osx_port._port = port->port;
+#endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
       if (context != NULL) {
@@ -2173,16 +2177,16 @@ set_failed() {
       NPObject *window_object = NULL;
       if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                             &window_object) == NPERR_NO_ERROR) {
-        NPString npexpr = { expression.c_str(), expression.length() };
+        NPString npexpr = { expression.c_str(), (uint32_t)expression.length() };
         NPVariant result;
-        if (browser->evaluate(_npp_instance, window_object, 
+        if (browser->evaluate(_npp_instance, window_object,
                               &npexpr, &result)) {
           nout << "Eval " << expression << "\n";
           browser->releasevariantvalue(&result);
         } else {
           nout << "Unable to eval " << expression << "\n";
         }
-        
+
         browser->releaseobject(window_object);
       }
     }

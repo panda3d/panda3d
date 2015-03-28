@@ -209,6 +209,7 @@ private:
 
   int _warning_count;
   int _error_count;
+  bool _error_abort;
 };
 
 #endif

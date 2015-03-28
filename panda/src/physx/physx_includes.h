@@ -50,6 +50,7 @@
 
 
 // PhysX headers
+#include "Nxp.h"
 #include "NxPhysics.h"
 #include "NxExtended.h"
 #include "NxStream.h"

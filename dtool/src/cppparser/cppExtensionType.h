@@ -25,7 +25,9 @@ class CPPIdentifier;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPExtensionType
-// Description :
+// Description : Base class of enum, class, struct, and union types.
+//               An instance of the base class (instead of one of
+//               the specializations) is used for forward references.
 ////////////////////////////////////////////////////////////////////
 class CPPExtensionType : public CPPType {
 public:
@@ -49,6 +51,9 @@ public:
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
+
+  virtual CPPType *resolve_type(CPPScope *current_scope,
+                                CPPScope *global_scope);
 
   virtual bool is_equivalent(const CPPType &other) const;
 

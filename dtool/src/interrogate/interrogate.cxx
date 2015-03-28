@@ -46,6 +46,7 @@ bool save_unique_names = false;
 bool no_database = false;
 bool generate_spam = false;
 bool left_inheritance_requires_upcast = true;
+bool mangle_names = true;
 CPPVisibility min_vis = V_published;
 string library_name;
 string module_name;

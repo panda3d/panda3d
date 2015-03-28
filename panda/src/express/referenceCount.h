@@ -71,7 +71,7 @@ private:
   void create_weak_list();
 
 private:
-  enum { 
+  enum {
     // We use this value as a flag to indicate an object has been
     // indicated as a local object, and should not be deleted except
     // by its own destructor.  Really, any nonzero value would do, but
@@ -87,7 +87,7 @@ private:
     deleted_ref_count = -100,
   };
 
-  AtomicAdjust::Integer _ref_count;
+  mutable AtomicAdjust::Integer _ref_count;
   AtomicAdjust::Pointer _weak_list;  // WeakReferenceList *
 
 public:

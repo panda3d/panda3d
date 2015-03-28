@@ -29,26 +29,17 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase2)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 2);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::python_repr
+//     Function: LVecBase2::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase2)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LVecBase2)>::
+__repr__() const {
+  ostringstream out;
+  out << "LVecBase2" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////

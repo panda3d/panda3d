@@ -82,7 +82,7 @@ get_fill() const {
 //               current pen.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMPainter::
-draw_point(double x, double y) {
+draw_point(float x, float y) {
   draw_line(x, y, x, y);
 }
 
@@ -93,9 +93,9 @@ draw_point(double x, double y) {
 //               mostly-horizontal line.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMPainter::
-draw_hline_point(int x, double xa, double ya, double xd, double yd,
-                 double pixel_scale) {
-  double y = (yd * (x - xa) / xd) + ya;
+draw_hline_point(int x, float xa, float ya, float xd, float yd,
+                 float pixel_scale) {
+  float y = (yd * (x - xa) / xd) + ya;
   int ymax = (int)cceil(y);
   int ymin = (int)cfloor(y);
   if (ymax == ymin) {
@@ -113,9 +113,9 @@ draw_hline_point(int x, double xa, double ya, double xd, double yd,
 //               mostly-vertical line.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMPainter::
-draw_vline_point(int y, double xa, double ya, double xd, double yd,
-                 double pixel_scale) {
-  double x = (xd * (y - ya) / yd) + xa;
+draw_vline_point(int y, float xa, float ya, float xd, float yd,
+                 float pixel_scale) {
+  float x = (xd * (y - ya) / yd) + xa;
   int xmax = (int)cceil(x);
   int xmin = (int)cfloor(x);
   if (xmax == xmin) {

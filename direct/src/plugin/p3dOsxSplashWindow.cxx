@@ -14,7 +14,7 @@
 
 #include "p3dOsxSplashWindow.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !__LP64__
 
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>

@@ -37,9 +37,9 @@ void FrameBufferProperties::
 operator = (const FrameBufferProperties &copy) {
   _flags_specified = copy._flags_specified;
   _flags = copy._flags;
+  _specified = copy._specified;
 
   for (int i = 0; i < FBP_COUNT; ++i) {
-    _specified[i] = copy._specified[i];
     _property[i]  = copy._property[i];
   }
 }
@@ -144,17 +144,24 @@ get_default() {
   if (depth_bits > 0) {
     default_props.set_depth_bits(depth_bits);
   }
-  if (color_bits > 0) {
-    default_props.set_color_bits(color_bits);
-  }
-  if (red_bits > 0) {
-    default_props.set_red_bits(red_bits);
-  }
-  if (green_bits > 0) {
-    default_props.set_green_bits(green_bits);
-  }
-  if (blue_bits > 0) {
-    default_props.set_blue_bits(blue_bits);
+  switch (color_bits.size()) {
+  case 0:
+    break;
+  case 1:
+    default_props.set_color_bits(color_bits[0]);
+    break;
+  case 3:
+    default_props.set_color_bits(color_bits[0] + color_bits[1] + color_bits[2]);
+    default_props.set_red_bits(color_bits[0]);
+    default_props.set_green_bits(color_bits[1]);
+    default_props.set_blue_bits(color_bits[2]);
+    break;
+  default:
+    default_props.set_color_bits(color_bits[0]);
+    display_cat.error()
+      << "Configuration variable color-bits takes either 1 or 3 values, not "
+      << color_bits.size() << "\n";
+    break;
   }
   if (alpha_bits > 0) {
     default_props.set_alpha_bits(alpha_bits);
@@ -189,10 +196,11 @@ operator == (const FrameBufferProperties &other) const {
     return false;
   }
 
+  if (_specified != other._specified) {
+    return false;
+  }
+
   for (int i = 0; i < FBP_COUNT; ++i) {
-    if (_specified[i] != other._specified[i]) {
-      return false;
-    }
     if (_property[i] != other._property[i]) {
       return false;
     }
@@ -214,9 +222,9 @@ clear() {
   _flags_specified = 0;
 
   for (int i = 0; i < FBP_COUNT; ++i) {
-    _specified[i] = 0;
     _property[i] = 0;
   }
+  _specified = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,9 +240,9 @@ add_properties(const FrameBufferProperties &other) {
   _flags |= other._flags & other._flags_specified;
 
   for (int i = 0; i < FBP_COUNT; ++i) {
-    if (other._specified[i]) {
+    if (other._specified & (1 << i)) {
       _property[i] = other._property[i];
-      _specified[i] = true;
+      _specified |= (1 << i);
     }
   }
 }
@@ -364,30 +372,18 @@ get_buffer_mask() const {
 ////////////////////////////////////////////////////////////////////
 bool FrameBufferProperties::
 is_any_specified() const {
-  if (_flags_specified != 0) {
-    return true;
-  }
-
-  for (int i = 0; i < FBP_COUNT; ++i) {
-    if (_specified[i]) {
-      return true;
-    }
-  }
-  return false;
+  return (_flags_specified | _specified) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::set_all_specified
 //       Access: Published
-//  Description: sets all the specified bits.
+//  Description: Marks all bits as having been specified.
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 set_all_specified() {
   _flags_specified = FBF_all;
-
-  for (int i = 0; i < FBP_COUNT; ++i) {
-    _specified[i] = true;
-  }
+  _specified = (1 << FBP_COUNT) - 1;
 }
 
 ////////////////////////////////////////////////////////////////////

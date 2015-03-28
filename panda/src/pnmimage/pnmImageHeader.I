@@ -23,6 +23,7 @@ PNMImageHeader() {
   _y_size = 0;
   _num_channels = 0;
   _maxval = 255;
+  _color_space = CS_unspecified;
   _type = (PNMFileType *)NULL;
 }
 
@@ -37,6 +38,7 @@ PNMImageHeader(const PNMImageHeader &copy) :
   _y_size(copy._y_size),
   _num_channels(copy._num_channels),
   _maxval(copy._maxval),
+  _color_space(copy._color_space),
   _type(copy._type)
 {
 }
@@ -52,6 +54,7 @@ operator = (const PNMImageHeader &copy) {
   _y_size = copy._y_size;
   _num_channels = copy._num_channels;
   _maxval = copy._maxval;
+  _color_space = copy._color_space;
   _comment = copy._comment;
   _type = copy._type;
 }
@@ -151,6 +154,17 @@ has_alpha() const {
 INLINE xelval PNMImageHeader::
 get_maxval() const {
   return _maxval;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_color_space
+//       Access: Published
+//  Description: Returns the color space that the image is encoded
+//               in, or CS_unspecified if unknown.
+////////////////////////////////////////////////////////////////////
+INLINE ColorSpace PNMImageHeader::
+get_color_space() const {
+  return _color_space;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,12 +34,15 @@ class CPPEnumType : public CPPExtensionType {
 public:
   CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
               const CPPFile &file);
+  CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
+              CPPScope *current_scope, const CPPFile &file);
 
   CPPInstance *add_element(const string &name,
                            CPPExpression *value = (CPPExpression *)NULL);
 
   virtual bool is_incomplete() const;
 
+  virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
@@ -49,6 +52,9 @@ public:
   virtual SubType get_subtype() const;
 
   virtual CPPEnumType *as_enum_type();
+
+  CPPScope *_parent_scope;
+  CPPType *_element_type;
 
   typedef vector<CPPInstance *> Elements;
   Elements _elements;

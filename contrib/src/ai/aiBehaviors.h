@@ -73,41 +73,41 @@ public:
   Flock *_flock_group;
 
   int _behaviors_flags;
-  LVecBase3f _steering_force;
+  LVecBase3 _steering_force;
 
   Seek *_seek_obj;
-  LVecBase3f _seek_force;
+  LVecBase3 _seek_force;
 
   Flee *_flee_obj;
-  LVecBase3f _flee_force;
+  LVecBase3 _flee_force;
 
   //! This list is used if the ai character needs to flee from multiple onjects.
   ListFlee _flee_list;
   ListFlee::iterator _flee_itr;
 
   Pursue *_pursue_obj;
-  LVecBase3f _pursue_force;
+  LVecBase3 _pursue_force;
 
   Evade *_evade_obj;
-  LVecBase3f _evade_force;
+  LVecBase3 _evade_force;
 
   //! This list is used if the ai character needs to evade from multiple onjects.
   ListEvade _evade_list;
   ListEvade::iterator _evade_itr;
 
   Arrival *_arrival_obj;
-  LVecBase3f _arrival_force;
+  LVecBase3 _arrival_force;
 
   //! Since Flock is a collective behavior the variables are declared within the AIBehaviors class.
   float _flock_weight;
-  LVecBase3f _flock_force;
+  LVecBase3 _flock_force;
   bool _flock_done;
 
   Wander * _wander_obj;
-  LVecBase3f _wander_force;
+  LVecBase3 _wander_force;
 
   ObstacleAvoidance *_obstacle_avoidance_obj;
-  LVecBase3f _obstacle_avoidance_force;
+  LVecBase3 _obstacle_avoidance_force;
 
   PathFollow *_path_follow_obj;
 
@@ -127,20 +127,20 @@ public:
 
   bool is_conflict();
 
-  void accumulate_force(string force_type, LVecBase3f force);
-  LVecBase3f calculate_prioritized();
+  void accumulate_force(string force_type, LVecBase3 force);
+  LVecBase3 calculate_prioritized();
 
   void flock_activate();
-  LVecBase3f do_flock();
+  LVecBase3 do_flock();
 
   int char_to_int(string ai_type);
 
 PUBLISHED:
   void seek(NodePath target_object, float seek_wt = 1.0);
-  void seek(LVecBase3f pos, float seek_wt = 1.0);
+  void seek(LVecBase3 pos, float seek_wt = 1.0);
 
   void flee(NodePath target_object, double panic_distance = 10.0, double relax_distance = 10.0, float flee_wt = 1.0);
-  void flee(LVecBase3f pos, double panic_distance = 10.0, double relax_distance = 10.0, float flee_wt = 1.0);
+  void flee(LVecBase3 pos, double panic_distance = 10.0, double relax_distance = 10.0, float flee_wt = 1.0);
 
   void pursue(NodePath target_object, float pursue_wt = 1.0);
 
@@ -155,12 +155,12 @@ PUBLISHED:
   void obstacle_avoidance(float feeler_length = 1.0);
 
   void path_follow(float follow_wt);
-  void add_to_path(LVecBase3f pos);
+  void add_to_path(LVecBase3 pos);
   void start_follow(string type = "normal");
 
   // should have different function names.
   void init_path_find(const char* navmesh_filename);
-  void path_find_to(LVecBase3f pos, string type = "normal");
+  void path_find_to(LVecBase3 pos, string type = "normal");
   void path_find_to(NodePath target, string type = "normal");
   void add_static_obstacle(NodePath obstacle);
   void add_dynamic_obstacle(NodePath obstacle);

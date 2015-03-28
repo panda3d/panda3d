@@ -24,7 +24,7 @@ class Extension<FLOATNAME(LPoint3)> : public ExtensionBase<FLOATNAME(LPoint3)> {
 public:
   INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const;
   INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+  INLINE_LINMATH string __repr__() const;
 };
 
 #include "lpoint3_ext_src.I"

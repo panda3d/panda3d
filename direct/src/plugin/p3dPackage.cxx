@@ -1539,6 +1539,10 @@ download_progress() {
   assert(_package->_active_download == this);
 
   switch (_dtype) {
+  case DT_contents_file:
+  case DT_redownload_contents_file:
+    break;
+
   case DT_desc_file:
     break;
 
@@ -1581,7 +1585,7 @@ download_finished(bool success) {
         _file_spec.get_actual_file()->output_hash(nout);
         nout << "\n";
       }
-      
+
       success = false;
     }
   }

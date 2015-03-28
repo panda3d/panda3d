@@ -142,7 +142,7 @@ INLINE BitArray::
 //               generic programming algorithms can use BitMask or
 //               BitArray interchangeably.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BitArray::
+CONSTEXPR bool BitArray::
 has_max_num_bits() {
   return false;
 }
@@ -160,10 +160,9 @@ has_max_num_bits() {
 //               is defined so generic programming algorithms can use
 //               BitMask or BitArray interchangeably.
 ////////////////////////////////////////////////////////////////////
-INLINE int BitArray::
+CONSTEXPR int BitArray::
 get_max_num_bits() {
-  nassertr(false, 0);
-  return 0;
+  return INT_MAX;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,7 +173,7 @@ get_max_num_bits() {
 //               limits the maximum number of bits that may be queried
 //               or set at once by extract() and store().
 ////////////////////////////////////////////////////////////////////
-INLINE int BitArray::
+CONSTEXPR int BitArray::
 get_num_bits_per_word() {
   return num_bits_per_word;
 }
@@ -393,7 +392,7 @@ get_word(int n) const {
 //               array.
 ////////////////////////////////////////////////////////////////////
 INLINE void BitArray::
-set_word(int n, MaskType value) {
+set_word(int n, WordType value) {
   nassertv(n >= 0);
   ensure_has_word(n);
   _array[n] = value;

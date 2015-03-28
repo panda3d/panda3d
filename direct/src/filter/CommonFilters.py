@@ -16,11 +16,10 @@ clunky approach.  - Josh
 """
 
 from FilterManager import FilterManager
-from pandac.PandaModules import Point3, Vec3, Vec4, Point2
-from pandac.PandaModules import NodePath, PandaNode
-from pandac.PandaModules import Filename
-from pandac.PandaModules import AuxBitplaneAttrib
-from pandac.PandaModules import RenderState, Texture, Shader, ATSNone
+from panda3d.core import LVecBase4, LPoint2
+from panda3d.core import Filename
+from panda3d.core import AuxBitplaneAttrib
+from panda3d.core import RenderState, Texture, Shader, ATSNone
 import sys,os
 
 CARTOON_BODY="""
@@ -348,13 +347,13 @@ class CommonFilters:
         if (changed == "CartoonInk") or fullrebuild:
             if ("CartoonInk" in configuration):
                 c = configuration["CartoonInk"]
-                self.finalQuad.setShaderInput("cartoonseparation", Vec4(c.separation, 0, c.separation, 0))
+                self.finalQuad.setShaderInput("cartoonseparation", LVecBase4(c.separation, 0, c.separation, 0))
                 self.finalQuad.setShaderInput("cartooncolor", c.color)
 
         if (changed == "BlurSharpen") or fullrebuild:
             if ("BlurSharpen" in configuration):
                 blurval = configuration["BlurSharpen"]
-                self.finalQuad.setShaderInput("blurval", Vec4(blurval, blurval, blurval, blurval))
+                self.finalQuad.setShaderInput("blurval", LVecBase4(blurval, blurval, blurval, blurval))
 
         if (changed == "Bloom") or fullrebuild:
             if ("Bloom" in configuration):
@@ -386,9 +385,9 @@ class CommonFilters:
 
         if "VolumetricLighting" in self.configuration:
             caster = self.configuration["VolumetricLighting"].caster
-            casterpos = Point2()
+            casterpos = LPoint2()
             self.manager.camera.node().getLens().project(caster.getPos(self.manager.camera), casterpos)
-            self.finalQuad.setShaderInput("casterpos", Vec4(casterpos.getX() * 0.5 + 0.5, (casterpos.getY() * 0.5 + 0.5), 0, 0))
+            self.finalQuad.setShaderInput("casterpos", LVecBase4(casterpos.getX() * 0.5 + 0.5, (casterpos.getY() * 0.5 + 0.5), 0, 0))
         if task != None:
             return task.cont
 

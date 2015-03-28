@@ -51,9 +51,9 @@ PUBLISHED:
   bool has_assert_handler() const;
   AssertHandler *get_assert_handler() const;
 
-  bool has_assert_failed() const;
-  const string &get_assert_error_message() const;
-  void clear_assert_failed();
+  INLINE bool has_assert_failed() const;
+  INLINE const string &get_assert_error_message() const;
+  INLINE void clear_assert_failed();
 
   NotifyCategory *get_top_category();
   NotifyCategory *get_category(const string &basename,

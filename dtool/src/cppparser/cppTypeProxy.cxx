@@ -358,6 +358,19 @@ as_tbd_type() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPTypeProxy::as_typedef_type
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPTypedefType *CPPTypeProxy::
+as_typedef_type() {
+  if (_actual_type == (CPPType *)NULL) {
+    return (CPPTypedefType *)NULL;
+  }
+  return _actual_type->as_typedef_type();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_type_proxy
 //       Access: Public, Virtual
 //  Description:
@@ -366,4 +379,3 @@ CPPTypeProxy *CPPTypeProxy::
 as_type_proxy() {
   return this;
 }
-

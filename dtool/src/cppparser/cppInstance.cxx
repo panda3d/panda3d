@@ -372,6 +372,7 @@ CPPDeclaration *CPPInstance::
 instantiate(const CPPTemplateParameterList *actual_params,
             CPPScope *current_scope, CPPScope *global_scope,
             CPPPreprocessor *error_sink) const {
+
   if (!is_template()) {
     if (error_sink != NULL) {
       error_sink->warning("Ignoring template parameters for instance " +
@@ -457,7 +458,6 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   rep->_type = new_type->as_type();
 
   if (rep->_type == NULL) {
-    cerr << "Type " << *_type << " became " << *new_type << " which isn't a type\n";
     rep->_type = _type;
   }
 

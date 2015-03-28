@@ -613,6 +613,12 @@ interrogate_type_is_const(TypeIndex type) {
   return InterrogateDatabase::get_ptr()->get_type(type).is_const();
 }
 
+bool
+interrogate_type_is_typedef(TypeIndex type) {
+  //cerr << "interrogate_type_is_typedef(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_typedef();
+}
+
 TypeIndex
 interrogate_type_wrapped_type(TypeIndex type) {
   //cerr << "interrogate_type_wrapped_type(" << type << ")\n";

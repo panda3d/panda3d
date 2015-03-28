@@ -99,6 +99,10 @@ output(ostream &out, int, CPPScope *, bool) const {
   }
 
   switch (_type) {
+  case T_unknown:
+    out << "unknown";
+    break;
+
   case T_bool:
     out << "bool";
     break;
@@ -109,6 +113,14 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   case T_wchar_t:
     out << "wchar_t";
+    break;
+
+  case T_char16_t:
+    out << "char16_t";
+    break;
+
+  case T_char32_t:
+    out << "char32_t";
     break;
 
   case T_int:
@@ -125,10 +137,6 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   case T_void:
     out << "void";
-    break;
-
-  case T_unknown:
-    out << "unknown";
     break;
 
   case T_parameter:

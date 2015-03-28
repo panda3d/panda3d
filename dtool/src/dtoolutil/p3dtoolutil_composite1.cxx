@@ -4,6 +4,8 @@
 #include "executionEnvironment.cxx"
 #include "filename.cxx"
 #include "globPattern.cxx"
+#include "lineStream.cxx"
+#include "lineStreamBuf.cxx"
 #include "load_dso.cxx"
 #include "pandaSystem.cxx"
 

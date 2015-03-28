@@ -110,6 +110,22 @@ operator T * () const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerTo::cheat
+//       Access: Public
+//  Description: Returns a reference to the underlying pointer.  This
+//               is a very unsafe method.  It's only used by some
+//               interrogate code.  If you think this method might be
+//               useful to you, you're probably wrong.
+//
+//               Promise me you won't use this, okay?
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE T *&PointerTo<T>::
+cheat() {
+  return (To *&)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::p
 //       Access: Published
 //  Description: Returns an ordinary pointer instead of a PointerTo.
@@ -274,11 +290,26 @@ operator -> () const {
 //               don't care which way it goes because either will be
 //               correct.
 ////////////////////////////////////////////////////////////////////
-
 template<class T>
 INLINE ConstPointerTo<T>::
 operator const T * () const {
 return (To *)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerTo::cheat
+//       Access: Public
+//  Description: Returns a reference to the underlying pointer.  This
+//               is a very unsafe method.  It's only used by some
+//               interrogate code.  If you think this method might be
+//               useful to you, you're probably wrong.
+//
+//               Promise me you won't use this, okay?
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE const T *&ConstPointerTo<T>::
+cheat() {
+  return (const To *&)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////

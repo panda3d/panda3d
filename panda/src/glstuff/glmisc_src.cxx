@@ -14,6 +14,12 @@
 
 #include "pandaSystem.h"
 
+ConfigVariableBool gl_support_fbo
+  ("gl-support-fbo", true,
+   PRC_DESC("Configure this false if your GL's implementation of "
+            "EXT_framebuffer_object is broken.  The system might still be "
+            "able to create buffers using pbuffers or the like."));
+
 ConfigVariableBool gl_cheap_textures
   ("gl-cheap-textures", false,
    PRC_DESC("Configure this true to glHint the textures into the cheapest "

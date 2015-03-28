@@ -408,7 +408,7 @@ class VFSSharedImporter:
             path = sys.path
 
         for dir in path:
-            pdir = Filename.fromOsSpecific(dir).cStr()
+            pdir = str(Filename.fromOsSpecific(dir))
             if pdir + '/' + basename == dirname:
                 # We found it!
                 return dir

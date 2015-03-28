@@ -28,7 +28,7 @@ public:
 
   NodePath _evade_target;
   float _evade_weight;
-  LVecBase3f _evade_direction;
+  LVecBase3 _evade_direction;
   double _evade_distance;
   double _evade_relax_distance;
   bool _evade_done;
@@ -38,7 +38,7 @@ public:
                                           double relax_distance, float evade_wt);
 
   ~Evade();
-  LVecBase3f do_evade();
+  LVecBase3 do_evade();
   void evade_activate();
 };
 

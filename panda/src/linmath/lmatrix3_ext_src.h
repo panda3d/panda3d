@@ -14,18 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Extension<LMatrix3::Row>
-// Description : This class defines the extension methods for
-//               LMatrix3::Row, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
-template<>
-class Extension<FLOATNAME(LMatrix3)::Row> : public ExtensionBase<FLOATNAME(LMatrix3)::Row> {
-public:
-  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
-};
-
-////////////////////////////////////////////////////////////////////
 //       Class : Extension<LMatrix3>
 // Description : This class defines the extension methods for
 //               LMatrix3, which are called instead of
@@ -35,7 +23,7 @@ template<>
 class Extension<FLOATNAME(LMatrix3)> : public ExtensionBase<FLOATNAME(LMatrix3)> {
 public:
   INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+  INLINE_LINMATH string __repr__() const;
 };
 
 #include "lmatrix3_ext_src.I"

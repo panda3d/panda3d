@@ -112,8 +112,8 @@ PUBLISHED:
   INLINE const LPoint4f &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
-  BLOCKING void box_filter_from(double radius, const PfmFile &copy);
-  BLOCKING void gaussian_filter_from(double radius, const PfmFile &copy);
+  BLOCKING void box_filter_from(float radius, const PfmFile &copy);
+  BLOCKING void gaussian_filter_from(float radius, const PfmFile &copy);
   BLOCKING void quick_filter_from(const PfmFile &copy);
 
   BLOCKING void reverse_rows();
@@ -128,8 +128,8 @@ PUBLISHED:
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
-  BLOCKING int pull_spot(const LPoint4f &delta, double xc, double yc, 
-                         double xr, double yr, double exponent);
+  BLOCKING int pull_spot(const LPoint4f &delta, float xc, float yc,
+                         float xr, float yr, float exponent);
 
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
@@ -143,17 +143,17 @@ PUBLISHED:
   void add_sub_image(const PfmFile &copy, int xto, int yto,
                      int xfrom = 0, int yfrom = 0,
                      int x_size = -1, int y_size = -1,
-                     double pixel_scale = 1.0);
+                     float pixel_scale = 1.0);
   void mult_sub_image(const PfmFile &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1,
-                      double pixel_scale = 1.0);
+                      float pixel_scale = 1.0);
   void divide_sub_image(const PfmFile &copy, int xto, int yto,
                         int xfrom = 0, int yfrom = 0,
                         int x_size = -1, int y_size = -1,
-                        double pixel_scale = 1.0);
+                        float pixel_scale = 1.0);
 
-  void operator *= (double multiplier);
+  void operator *= (float multiplier);
 
   void output(ostream &out) const;
 

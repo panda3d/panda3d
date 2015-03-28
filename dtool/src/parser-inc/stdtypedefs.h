@@ -38,7 +38,11 @@ typedef unsigned long ulong;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 
+#ifdef __cplusplus
+#define NULL 0
+#else
 #define NULL ((void *)0)
+#endif
 
 typedef int fd_set;
 
