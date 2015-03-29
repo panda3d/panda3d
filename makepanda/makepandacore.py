@@ -1217,8 +1217,9 @@ def UnsetLinkAllStatic():
 ##
 ########################################################################
 
-PKG_LIST_ALL=[]
-PKG_LIST_OMIT={}
+PKG_LIST_ALL = []
+PKG_LIST_OMIT = {}
+PKG_LIST_CUSTOM = set()
 
 def PkgListSet(pkgs):
     global PKG_LIST_ALL
@@ -1243,6 +1244,12 @@ def PkgEnable(pkg):
 
 def PkgDisable(pkg):
     PKG_LIST_OMIT[pkg] = 1
+
+def PkgSetCustomLocation(pkg):
+    PKG_LIST_CUSTOM.add(pkg)
+
+def PkgHasCustomLocation(pkg):
+    return pkg in PKG_LIST_CUSTOM
 
 def PkgSkip(pkg):
     return PKG_LIST_OMIT[pkg]
@@ -1401,22 +1408,22 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
 
-def LibraryExists(lib, lpath=[]):
+def LocateLibrary(lib, lpath=[]):
     """ Returns True if this library was found in the given search path, False otherwise. """
     target = GetTarget()
 
     for dir in lpath:
         if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
-            return True
+            return os.path.join(dir, 'lib%s.dylib' % lib)
         elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
-            return True
+            return os.path.join(dir, 'lib%s.so' % lib)
         elif os.path.isfile(os.path.join(dir, 'lib%s.a' % lib)):
-            return True
+            return os.path.join(dir, 'lib%s.a' % lib)
 
-    return False
+    return None
 
 def SystemLibraryExists(lib):
-    return LibraryExists(lib, SYS_LIB_DIRS)
+    return LocateLibrary(lib, SYS_LIB_DIRS) is not None
 
 def ChooseLib(libs, thirdparty=None):
     """ Chooses a library from the parameters, in order of preference. Returns the first if none of them were found. """
@@ -1430,7 +1437,7 @@ def ChooseLib(libs, thirdparty=None):
         libname = l
         if l.startswith("lib"):
             libname = l[3:]
-        if LibraryExists(libname, lpath):
+        if LocateLibrary(libname, lpath):
             return libname
 
     if len(libs) > 0:
@@ -1466,16 +1473,18 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         for d in olddefs:
             defs[d] = ""
 
-    if (pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h")):
+    custom_loc = PkgHasCustomLocation(pkg)
+
+    if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
         # Let it be handled by the ffmpeg package
         LibName(target_pkg, "-lswscale")
         return
-    if (pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h")):
+    if pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h"):
         LibName(target_pkg, "-lswresample")
         return
 
     pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
-    if (os.path.isdir(pkg_dir)):
+    if not custom_loc and os.path.isdir(pkg_dir):
         if framework and os.path.isdir(os.path.join(pkg_dir, framework + ".framework")):
             FrameworkDirectory(target_pkg, pkg_dir)
             LibName(target_pkg, "-framework " + framework)
@@ -1515,7 +1524,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             DefSymbol(target_pkg, d, v)
         return
 
-    elif (GetHost() == "darwin" and framework != None):
+    elif not custom_loc and GetHost() == "darwin" and framework != None:
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
@@ -1529,7 +1538,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         elif VERBOSE:
             print(ColorText("cyan", "Couldn't find the framework %s" % (framework)))
 
-    elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
+    elif not custom_loc and LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(target_pkg, pkgconfig, tool)
@@ -1559,22 +1568,38 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             libname = l
             if l.startswith("lib"):
                 libname = l[3:]
-            if SystemLibraryExists(libname):
+
+            if custom_loc:
+                # Try searching in the package's LibDirectories.
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                location = LocateLibrary(libname, lpath)
+                if location is not None:
+                    LibName(target_pkg, location)
+                else:
+                    have_pkg = False
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
+
+            elif SystemLibraryExists(libname):
+                # It exists in a system library directory.
                 LibName(target_pkg, "-l" + libname)
             else:
                 # Try searching in the package's LibDirectories.
                 lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg or ppkg == "ALWAYS"]
-                if LibraryExists(libname, lpath):
+                location = LocateLibrary(libname, lpath)
+                if location is not None:
                     LibName(target_pkg, "-l" + libname)
                 else:
                     have_pkg = False
-                    if VERBOSE:
+                    if VERBOSE or custom_loc:
                         print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
         # Determine which include directories to look in.
-        incdirs = list(SYS_INC_DIRS)
+        incdirs = []
+        if not custom_loc:
+            incdirs += list(SYS_INC_DIRS)
+
         for ppkg, pdir in INCDIRECTORIES:
-            if pkg == ppkg or ppkg == "ALWAYS":
+            if pkg == ppkg or (ppkg == "ALWAYS" and not custom_loc):
                 incdirs.append(pdir)
 
         # The incs list contains both subdirectories to explicitly add to
@@ -1588,14 +1613,17 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
             if incdir is None and i.endswith(".h"):
                 have_pkg = False
-                if VERBOSE:
+                if VERBOSE or custom_loc:
                     print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
 
             if incdir is not None and os.path.isdir(incdir):
                 IncDirectory(target_pkg, incdir)
 
-        if (not have_pkg):
-            if (pkg in PkgListGet()):
+        if not have_pkg:
+            if custom_loc:
+                print("%sERROR:%s Could not locate thirdparty package %s in specified directory, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
+                exit()
+            elif pkg in PkgListGet():
                 print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower()))
                 PkgDisable(pkg)
             else:

@@ -150,6 +150,9 @@ def usage(problem):
     for pkg in PkgListGet():
         p = pkg.lower()
         print("  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg))
+    if sys.platform != 'win32':
+        print("  --<PKG>-incdir    (custom location for header files of thirdparty package)")
+        print("  --<PKG>-libdir    (custom location for library files of thirdparty package)")
     print("")
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
@@ -180,11 +183,13 @@ def parseopts(args):
     target = None
     target_arch = None
     universal = False
-    for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
-    for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
+    for pkg in PkgListGet():
+        longopts.append("no-" + pkg.lower())
+        longopts.append(pkg.lower() + "-incdir=")
+        longopts.append(pkg.lower() + "-libdir=")
     try:
         opts, extras = getopt.getopt(args, "", longopts)
-        for option,value in opts:
+        for option, value in opts:
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
@@ -229,19 +234,25 @@ def parseopts(args):
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             else:
                 for pkg in PkgListGet():
-                    if (option=="--use-"+pkg.lower()):
+                    if option == "--use-" + pkg.lower():
                         PkgEnable(pkg)
                         break
-                for pkg in PkgListGet():
-                    if (option=="--no-"+pkg.lower()):
+                    elif option == "--use-" + pkg.lower():
                         PkgDisable(pkg)
                         break
-            if  (option=="--everything" or option.startswith("--use-")
-                or option=="--nothing" or option.startswith("--no-")):
+                    elif option == "--" + pkg.lower() + "-incdir":
+                        PkgSetCustomLocation(pkg)
+                        IncDirectory(pkg, value)
+                        break
+                    elif option == "--" + pkg.lower() + "-libdir":
+                        PkgSetCustomLocation(pkg)
+                        LibDirectory(pkg, value)
+                        break
+            if (option == "--everything" or option.startswith("--use-")
+                or option == "--nothing" or option.startswith("--no-")):
                 anything = 1
     except:
-        usage(0)
-        print("Exception while parsing commandline:", sys.exc_info()[0])
+        usage(sys.exc_info()[1])
 
     if not anything:
         if RUNTIME:
@@ -4179,7 +4190,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME and PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG']
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG']
   TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4188,7 +4199,7 @@ if (not RUNTIME and PkgSkip("GL")==0):
 #
 
 if (not RUNTIME and PkgSkip("GLES")==0):
-  OPTS=['DIR:panda/src/glesgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES']
+  OPTS=['DIR:panda/src/glesgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES', 'GLES']
   TargetAdd('p3glesgsg_config_glesgsg.obj', opts=OPTS, input='config_glesgsg.cxx')
   TargetAdd('p3glesgsg_glesgsg.obj', opts=OPTS, input='glesgsg.cxx')
 
@@ -4197,7 +4208,7 @@ if (not RUNTIME and PkgSkip("GLES")==0):
 #
 
 if (not RUNTIME and PkgSkip("GLES2")==0):
-  OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2']
+  OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2']
   TargetAdd('p3gles2gsg_config_gles2gsg.obj', opts=OPTS, input='config_gles2gsg.cxx')
   TargetAdd('p3gles2gsg_gles2gsg.obj', opts=OPTS, input='gles2gsg.cxx')
 
