@@ -238,7 +238,7 @@ def parseopts(args):
                     if option == "--use-" + pkg.lower():
                         PkgEnable(pkg)
                         break
-                    elif option == "--use-" + pkg.lower():
+                    elif option == "--no-" + pkg.lower():
                         PkgDisable(pkg)
                         break
                     elif option == "--" + pkg.lower() + "-incdir":
