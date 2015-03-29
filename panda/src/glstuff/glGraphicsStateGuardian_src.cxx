@@ -1310,10 +1310,19 @@ reset() {
        get_extension_func("glValidateProgram");
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
-    _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
-       get_extension_func("glVertexAttribIPointer");
-    _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
-       get_extension_func("glVertexAttribLPointer");
+
+    if (is_at_least_gl_version(3, 0)) {
+      _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
+         get_extension_func("glVertexAttribIPointer");
+    } else {
+      _glVertexAttribIPointer = NULL;
+    }
+    if (has_extension("GL_ARB_vertex_attrib_64bit")) {
+      _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
+         get_extension_func("glVertexAttribLPointer");
+    } else {
+      _glVertexAttribLPointer = NULL;
+    }
 
     if (_supports_geometry_shaders) {
       _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
