@@ -90,7 +90,7 @@ Options:
      each supported architecture).  On other platforms, this option
      does nothing.  This is therefore safe to apply in all cases, if
      you wish to take advantage of universal binaries.  This is
-     equivalent to "-P osx_i386 -P osx_x86_64" on Mac platforms.
+     equivalent to "-P osx_i386 -P osx_amd64" on Mac platforms.
 
   -P platform
      Specify the platform to masquerade as.  The default is whatever
@@ -215,7 +215,7 @@ if universalBinaries:
         print '\nYou may not specify both -u and -P.\n'
         sys.exit(1)
     if PandaSystem.getPlatform().startswith('osx_'):
-        platforms = ['osx_i386', 'osx_x86_64']
+        platforms = ['osx_i386', 'osx_amd64']
 
 if not platforms:
     platforms = [PandaSystem.getPlatform()]

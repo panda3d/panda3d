@@ -143,7 +143,7 @@ class CompilationEnvironment:
                 self.arch = '-arch i386'
             elif proc == 'ppc':
                 self.arch = '-arch ppc'
-            elif proc == 'x86_64':
+            elif proc == 'amd64':
                 self.arch = '-arch x86_64'
             self.compileObj = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"

@@ -184,6 +184,7 @@ def parseopts(args):
     target_arch = None
     universal = False
     for pkg in PkgListGet():
+        longopts.append("use-" + pkg.lower())
         longopts.append("no-" + pkg.lower())
         longopts.append(pkg.lower() + "-incdir=")
         longopts.append(pkg.lower() + "-libdir=")
@@ -1835,6 +1836,8 @@ def Package(target, inputs, opts):
             command += " -R \"%s\"" % SDK["MACOSX"]
 
         for arch in OSX_ARCHS:
+            if arch == "x86_64":
+                arch = "amd64"
             command += " -P osx_%s" % arch
 
     command += " -i \"" + GetOutputDir() + "/stage\""

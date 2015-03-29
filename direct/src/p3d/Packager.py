@@ -1119,14 +1119,19 @@ class Packager:
                     # Skip this file.
                     continue
 
+                origFilename = Filename(file.filename)
+
                 tempFile = Filename.temporary('', 'p3d_', '.txt')
                 command = '/usr/bin/otool -arch all -L "%s" >"%s"' % (
-                    file.filename.toOsSpecific(),
+                    origFilename.toOsSpecific(),
                     tempFile.toOsSpecific())
                 if self.arch:
+                    arch = self.arch
+                    if arch == "amd64":
+                        arch = "x86_64"
                     command = '/usr/bin/otool -arch %s -L "%s" >"%s"' % (
-                        self.arch,
-                        file.filename.toOsSpecific(),
+                        arch,
+                        origFilename.toOsSpecific(),
                         tempFile.toOsSpecific())
                 exitStatus = os.system(command)
                 if exitStatus != 0:
@@ -1137,13 +1142,13 @@ class Packager:
                     filenames = self.__parseDependenciesOSX(tempFile)
                     tempFile.unlink()
                 if filenames is None:
-                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
+                    self.notify.warning("Unable to determine dependencies from %s" % (origFilename))
                     continue
 
                 # Attempt to resolve the dependent filename relative
                 # to the original filename, before we resolve it along
                 # the PATH.
-                path = DSearchPath(Filename(file.filename.getDirname()))
+                path = DSearchPath(Filename(origFilename.getDirname()))
 
                 # Find the dependencies that are referencing a framework
                 framework_deps = []
@@ -1157,7 +1162,7 @@ class Packager:
 
                 for filename in filenames:
                     if '@loader_path' in filename:
-                        filename = filename.replace('@loader_path', file.filename.getDirname())
+                        filename = filename.replace('@loader_path', origFilename.getDirname())
 
                     if False and '.framework/' in filename:
                         # It references a framework, and besides the fact
@@ -2085,6 +2090,10 @@ class Packager:
             # particular architecture, use lipo to strip out the
             # part of the file for that architecture.
 
+            arch = self.arch
+            if arch == "amd64":
+                arch = "x86_64"
+
             # First, we need to verify that it is in fact a
             # universal binary.
             tfile = Filename.temporary('', 'p3d_')
@@ -2110,25 +2119,24 @@ class Packager:
                 arches = lipoData.rsplit(':', 1)[1]
                 arches = arches.split()
 
-            if arches == [self.arch]:
+            if arches == [arch]:
                 # The file only contains the one architecture that
                 # we want anyway.
                 file.filename.setBinary()
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
                 return True
 
-            if self.arch not in arches:
+            if arch not in arches:
                 # The file doesn't support the architecture that we
                 # want at all.  Omit the file.
                 self.notify.warning("%s doesn't support architecture %s" % (
                     file.filename, self.arch))
                 return False
 
-
             # The file contains multiple architectures.  Get
             # out just the one we want.
             command = '/usr/bin/lipo -thin %s -output "%s" "%s"' % (
-                self.arch, tfile.toOsSpecific(),
+                arch, tfile.toOsSpecific(),
                 file.filename.toOsSpecific())
             exitStatus = os.system(command)
             if exitStatus != 0:
