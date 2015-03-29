@@ -1062,7 +1062,10 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/panda3d")
     CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
-    if GetTarget() == 'android':
+    if GetTarget() == 'darwin':
+        MakeDirectory(OUTPUTDIR + "/Frameworks")
+
+    elif GetTarget() == 'android':
         MakeDirectory(OUTPUTDIR + "/libs")
         MakeDirectory(OUTPUTDIR + "/libs/" + ANDROID_ABI)
         MakeDirectory(OUTPUTDIR + "/src")
@@ -1847,7 +1850,6 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
-        SDK["PYTHON"] = tp_python + "/include"
 
         if GetTarget() == 'darwin':
             py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
@@ -1865,6 +1867,24 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         py_lib = os.path.basename(py_libs[0])
         SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
+        SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
+
+    elif GetTarget() == 'darwin' and SDK.get("MACOSX"):
+         # When targeting a specific Mac OS X version, use the system Python framework.
+         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/Current"
+
+         if not os.path.islink(py_fwx):
+             exit("Could not locate Python installation at %s" % (py_fwx))
+
+         ver = os.path.basename(os.readlink(py_fwx))
+         py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/%s" % ver
+
+         SDK["PYTHON"] = py_fwx + "/Headers"
+         SDK["PYTHONVERSION"] = "python" + ver
+         SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/" + ver + "/bin/python" + ver
+
+         if sys.version[:3] != ver:
+             print("Warning: building with Python %s instead of %s since you targeted a specific Mac OS X version." % (ver, sys.version[:3]))
 
     #elif GetTarget() == 'windows':
     #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
@@ -1932,22 +1952,23 @@ def SdkLocateMSPlatform(strMode = 'default'):
 def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
-        if (os.path.exists("/Developer/SDKs/MacOSX%su.sdk" % osxtarget)):
-            SDK["MACOSX"] = "/Developer/SDKs/MacOSX%su.sdk" % osxtarget
-        elif (os.path.exists("/Developer/SDKs/MacOSX%s.sdk" % osxtarget)):
-            SDK["MACOSX"] = "/Developer/SDKs/MacOSX%s.sdk" % osxtarget
-        elif (os.path.exists("/Developer/SDKs/MacOSX%s.0.sdk" % osxtarget)):
-            SDK["MACOSX"] = "/Developer/SDKs/MacOSX%s.0.sdk" % osxtarget
-        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % osxtarget)):
-            SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % osxtarget
+        sdkname = "MacOSX%d.%d" % osxtarget
+        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%s.0.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Developer/SDKs/%s.0.sdk" % sdkname
+        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
         else:
             handle = os.popen("xcode-select -print-path")
             result = handle.read().strip().rstrip('/')
             handle.close()
-            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % (result, osxtarget))):
-                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % (result, osxtarget)
+            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
+                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
             else:
-                exit("Couldn't find any MacOSX SDK for OSX version %s!" % osxtarget)
+                exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
     else:
         SDK["MACOSX"] = ""
 
@@ -2370,11 +2391,10 @@ def SetupBuildEnvironment(compiler):
     AddToPathEnv("PYTHONPATH", builtdir)
     AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
-    if (GetHost() == 'windows'):
-        AddToPathEnv("PATH", os.path.join(builtdir, "plugins"))
+    if GetHost() == 'windows':
+        # extension_native_helpers.py currently expects to find libpandaexpress on sys.path.
         AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
-    else:
-        AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "lib"))
+        AddToPathEnv("PATH", os.path.join(builtdir, "plugins"))
 
     # Now for the special (DY)LD_LIBRARY_PATH on Unix-esque systems.
     if GetHost() != 'windows':

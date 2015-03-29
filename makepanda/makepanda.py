@@ -67,7 +67,7 @@ MAJOR_VERSION=None
 COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
-UNIVERSAL=False
+OSX_ARCHS=[]
 HOST_URL=None
 global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
@@ -165,7 +165,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,UNIVERSAL,HOST_URL
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
     global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
     longopts = [
@@ -179,6 +179,7 @@ def parseopts(args):
     optimize = ""
     target = None
     target_arch = None
+    universal = False
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
     for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
     try:
@@ -197,7 +198,7 @@ def parseopts(args):
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
-            elif (option=="--universal"): UNIVERSAL=True
+            elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
@@ -252,22 +253,38 @@ def parseopts(args):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
     if (optimize=="" and (RTDIST or RUNTIME)): optimize = "4"
     elif (optimize==""): optimize = "3"
-    if (OSXTARGET != None and OSXTARGET.strip() == ""):
-        OSXTARGET = None
-    elif (OSXTARGET != None):
-        OSXTARGET = OSXTARGET.strip()
-        if (len(OSXTARGET) != 4 or not OSXTARGET.startswith("10.")):
-            usage("Invalid setting for OSXTARGET")
+
+    if OSXTARGET:
         try:
-            OSXTARGET = "10.%d" % (int(OSXTARGET[-1]))
+            maj, min = OSXTARGET.strip().split('.')
+            OSXTARGET = int(maj), int(min)
+            assert OSXTARGET[0] == 10
         except:
             usage("Invalid setting for OSXTARGET")
+    else:
+        OSXTARGET = None
 
-    if UNIVERSAL:
-        if not OSXTARGET:
-            exit("--universal requires --osxtarget")
+    if target is not None or target_arch is not None:
+        SetTarget(target, target_arch)
+
+    if universal:
         if target_arch:
             exit("--universal is incompatible with --arch")
+
+        OSX_ARCHS.append("i386")
+        if OSXTARGET:
+            osxver = OSXTARGET
+        else:
+            maj, min = platform.mac_ver()[0].split('.')[:2]
+            osxver = int(maj), int(min)
+
+        if osxver[1] < 6:
+            OSX_ARCHS.append("ppc")
+        else:
+            OSX_ARCHS.append("x86_64")
+
+    elif HasTargetArch():
+        OSX_ARCHS.append(GetTargetArch())
 
     try:
         SetOptimize(int(optimize))
@@ -277,9 +294,6 @@ def parseopts(args):
 
     if GIT_COMMIT is not None and not re.match("^[a-f0-9]{40}$", GIT_COMMIT):
         usage("Invalid SHA-1 hash given for --git-commit option!")
-
-    if target is not None or target_arch is not None:
-        SetTarget(target, target_arch)
 
     is_win7 = False
     if GetHost() == "windows":
@@ -316,8 +330,8 @@ if ("LDFLAGS" in os.environ):
     LDFLAGS = os.environ["LDFLAGS"].strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
-if (GetHost() == "darwin" and OSXTARGET != None):
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = OSXTARGET
+if GetHost() == "darwin" and OSXTARGET is not None:
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "%d.%d" % OSXTARGET
 
 ########################################################################
 ##
@@ -683,7 +697,7 @@ if (COMPILER=="GCC"):
     elif RUNTIME:
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    if UNIVERSAL or GetTargetArch() == 'x86_64':
+    if 'x86_64' in OSX_ARCHS:
         # 64-bits OS X doesn't have Carbon.
         PkgDisable("CARBON")
 
@@ -738,7 +752,7 @@ if (COMPILER=="GCC"):
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
             OPENCV_VER_23 = True
-            SmartPkgEnable("OPENCV", "opencv",   ("opencv_core"), ("opencv2/core/core.hpp"))
+            SmartPkgEnable("OPENCV", "opencv",   ("opencv_core", "opencv_highgui"), ("opencv2/core/core.hpp"))
         else:
             SmartPkgEnable("OPENCV", "opencv",   ("cv", "highgui", "cvaux", "ml", "cxcore"),
                            ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
@@ -752,8 +766,8 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
-            if GetHost() == "darwin" and GetTarget() == "darwin" and not RTDIST:
-                # Use the system Python framework in the standard Mac SDK.
+            if GetTarget() == "darwin" and SDK.get("MACOSX") and not RTDIST:
+                # When targeting a specific OSX version, use the system Python framework in the standard Mac SDK.
                 LibName("PYTHON", "-framework Python")
             else:
                 SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
@@ -1125,20 +1139,13 @@ def CompileCxx(obj,src,opts):
         # Mac-specific flags.
         if GetTarget() == "darwin":
             cmd += " -Wno-deprecated-declarations"
-            if (OSXTARGET != None):
+            if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=" + OSXTARGET
+                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
-            if UNIVERSAL:
-                cmd += " -arch i386"
-                if OSXTARGET:
-                    osxver = int(OSXTARGET[-1])
-                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
-                        cmd += " -arch ppc"
-                    if int(OSXTARGET[-1]) >= 5:
-                        cmd += " -arch x86_64"
-            elif HasTargetArch():
-                cmd += " -arch %s" % (GetTargetArch())
+            for arch in OSX_ARCHS:
+                if arch != "ppc" or "NOPPC" not in OPTS:
+                    cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
             cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
@@ -1587,20 +1594,13 @@ def CompileLink(dll, obj, opts):
         # Mac OS X specific flags.
         if GetTarget() == 'darwin':
             cmd += " -headerpad_max_install_names"
-            if OSXTARGET != None:
+            if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=" + OSXTARGET
+                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
-            if UNIVERSAL:
-                cmd += " -arch i386"
-                if OSXTARGET:
-                    osxver = int(OSXTARGET[-1])
-                    if "NOPPC" not in opts and int(OSXTARGET[-1]) < 6:
-                        cmd += " -arch ppc"
-                    if int(OSXTARGET[-1]) >= 5:
-                        cmd += " -arch x86_64"
-            elif HasTargetArch():
-                cmd += " -arch %s" % (GetTargetArch())
+            for arch in OSX_ARCHS:
+                if arch != "ppc" or "NOPPC" not in OPTS:
+                    cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
             cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
@@ -1820,10 +1820,11 @@ def Package(target, inputs, opts):
     command += "direct/src/p3d/ppackage.py"
 
     if GetTarget() == "darwin":
-        if SDK.get("MACOSX") is not None:
+        if SDK.get("MACOSX"):
             command += " -R \"%s\"" % SDK["MACOSX"]
-        if UNIVERSAL:
-            command += " -u"
+
+        for arch in OSX_ARCHS:
+            command += " -P osx_%s" % arch
 
     command += " -i \"" + GetOutputDir() + "/stage\""
     if (P3DSUFFIX):
@@ -2608,14 +2609,27 @@ if tp_dir is not None:
                 if (PkgSkip("PYTHON")==0 and os.path.exists(tp_pkg + "/bin/" + SDK["PYTHONVERSION"])):
                     CopyAllFiles(GetOutputDir() + "/bin/", tp_pkg + "/bin/" + SDK["PYTHONVERSION"] + "/")
         else:
-            if os.path.exists(tp_pkg + "/lib"):
-                CopyAllFiles(GetOutputDir() + "/lib/", tp_pkg + "/lib/")
-                if (PkgSkip("PYTHON")==0 and os.path.exists(tp_pkg + "/lib/" + SDK["PYTHONVERSION"])):
-                    CopyAllFiles(GetOutputDir() + "/lib/", tp_pkg + "/lib/" + SDK["PYTHONVERSION"] + "/")
+            for tp_lib in glob.glob(tp_pkg + "/lib/*.so*"):
+                CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+
+            if not PkgSkip("PYTHON"):
+                for tp_lib in glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.so*")):
+                    CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+
+            if GetTarget() == 'darwin':
+                for tp_lib in glob.glob(tp_pkg + "/lib/*.dylib"):
+                    CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+
+                if not PkgSkip("PYTHON"):
+                    for tp_lib in glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib")):
+                        CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+
+                for fwx in glob.glob(tp_pkg + "/*.framework"):
+                    CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
 
     if GetTarget() == 'windows':
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
-        if PkgSkip("PYTHON") == 0:
+        if not PkgSkip("PYTHON"):
             pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
             if (GetOptimize() <= 2): pydll += "_d.dll"
             else: pydll += ".dll"
@@ -3745,7 +3759,6 @@ if (not RUNTIME):
 
   TargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
 
-  OPTS=['WINSOCK2']
   TargetAdd('core.pyd', input='libp3downloader_igate.obj')
   TargetAdd('core.pyd', input='p3express_ext_composite.obj')
   TargetAdd('core.pyd', input='libp3express_igate.obj')
@@ -3795,7 +3808,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='core_module.obj')
   TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('core.pyd', opts=OPTS)
+  TargetAdd('core.pyd', opts=['PYTHON', 'WINSOCK2'])
 
 #
 # DIRECTORY: panda/src/vision/
@@ -6597,6 +6610,7 @@ def MakeInstallerOSX():
     oscmd("cp -R %s/models                dstroot/base/Developer/Panda3D/models" % GetOutputDir())
     oscmd("cp -R doc/LICENSE              dstroot/base/Developer/Panda3D/LICENSE")
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/Developer/Panda3D/ReleaseNotes")
+    oscmd("cp -R %s/Frameworks            dstroot/base/Developer/Panda3D/Frameworks" % GetOutputDir())
     if os.path.isdir(GetOutputDir()+"/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
 
@@ -6650,11 +6664,11 @@ def MakeInstallerOSX():
     if PkgSkip("PYTHON")==0:
         PV = SDK["PYTHONVERSION"].replace("python", "")
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
-        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/direct")
+        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D")
         oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
         WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % PV, "/Developer/Panda3D")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % GetOutputDir())
-        oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/direct")
+        oscmd("cp -R %s/direct                dstroot/pythoncode/Developer/Panda3D/direct" % GetOutputDir())
         oscmd("ln -s %s                       dstroot/pythoncode/usr/bin/ppython" % SDK["PYTHONEXEC"])
         if os.path.isdir(GetOutputDir()+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % GetOutputDir())
@@ -6691,15 +6705,15 @@ def MakeInstallerOSX():
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
 
-        if OSXTARGET:
-            target = '--target %s' % (OSXTARGET)
+        if OSXTARGET and OSXTARGET <= (10, 5):
+            target = '--target %d.%d' % (OSXTARGET)
         else:
             target = ''
 
         if os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
-            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:

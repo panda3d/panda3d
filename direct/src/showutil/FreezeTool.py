@@ -144,7 +144,7 @@ class CompilationEnvironment:
             elif proc == 'ppc':
                 self.arch = '-arch ppc'
             elif proc == 'x86_64':
-                self.arch = '-arch x86_x64'
+                self.arch = '-arch x86_64'
             self.compileObj = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
             self.linkDll = "gcc %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"

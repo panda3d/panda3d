@@ -1156,7 +1156,10 @@ class Packager:
                     self.__alterFrameworkDependencies(file, framework_deps)
 
                 for filename in filenames:
-                    if '.framework/' in filename:
+                    if '@loader_path' in filename:
+                        filename = filename.replace('@loader_path', file.filename.getDirname())
+
+                    if False and '.framework/' in filename:
                         # It references a framework, and besides the fact
                         # that those often contain absolute paths, they
                         # aren't commonly on the library path either.
