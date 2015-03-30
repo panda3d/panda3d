@@ -182,7 +182,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Lock the view for drawing.
   if (!_properties.get_fullscreen()) {
-    nassertr([_view lockFocusIfCanDraw], false);
+    nassertr_always([_view lockFocusIfCanDraw], false);
   }
 
   // Make the context current.
