@@ -1897,8 +1897,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
-    elif GetTarget() == 'darwin' and SDK.get("MACOSX"):
-         # When targeting a specific Mac OS X version, use the system Python framework.
+    elif GetTarget() == 'darwin':
+         # On Mac OS X, use the system Python framework.
          py_fwx = SDK.get("MACOSX", "") + "/System/Library/Frameworks/Python.framework/Versions/Current"
 
          if not os.path.islink(py_fwx):

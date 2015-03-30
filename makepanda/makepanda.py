@@ -778,8 +778,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
-            if GetTarget() == "darwin" and SDK.get("MACOSX") and not RTDIST:
-                # When targeting a specific OSX version, use the system Python framework in the standard Mac SDK.
+            if GetTarget() == "darwin" and not RTDIST and not PkgHasCustomLocation("PYTHON"):
                 LibName("PYTHON", "-framework Python")
             else:
                 SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
@@ -6741,7 +6740,7 @@ def MakeInstallerOSX():
     dist = open("dstroot/Panda3D/Panda3D.mpkg/Contents/distribution.dist", "w")
     dist.write('<?xml version="1.0" encoding="utf-8"?>\n')
     dist.write('<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">\n')
-    dist.write('    <title>Panda3D</title>\n')
+    dist.write('    <title>Panda3D SDK %s</title>\n' % (VERSION))
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
     dist.write('    <choices-outline>\n')
@@ -6780,8 +6779,8 @@ def MakeInstallerOSX():
     dist.write('</installer-script>\n')
     dist.close()
 
-    oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D')
-    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % VERSION)
+    oscmd('hdiutil create Panda3D-rw.dmg -volname "Panda3D SDK %s" -srcfolder dstroot/Panda3D' % (VERSION))
+    oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o Panda3D-%s.dmg' % (VERSION))
     oscmd('rm -f Panda3D-rw.dmg')
 
 def MakeInstallerFreeBSD():
