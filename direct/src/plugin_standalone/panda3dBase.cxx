@@ -62,8 +62,8 @@ Panda3DBase(bool console_environment) {
 
   _win_x = -1;
   _win_y = -1;
-  _win_width = 640;
-  _win_height = 480;
+  _win_width = 800;
+  _win_height = 600;
   _got_win_size = false;
 
   _exit_with_last_instance = true;

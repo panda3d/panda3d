@@ -301,7 +301,7 @@ ConfigVariableBool allow_incomplete_render
           "the frame render if necessary."));
 
 ConfigVariableInt win_size
-("win-size", "640 480",
+("win-size", "800 600",
  PRC_DESC("This is the default size at which to open a new window.  This "
           "replaces the deprecated win-width and win-height variables."));
 
