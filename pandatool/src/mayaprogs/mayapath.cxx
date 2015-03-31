@@ -78,7 +78,11 @@ find_pyzip(const Filename &maya_location) {
   return Filename();
 }
 
-struct { char *ver, *key; } maya_versions[] = {
+struct MayaVerInfo {
+  const char *ver, *key;
+};
+
+struct MayaVerInfo maya_versions[] = {
   { "MAYA6",    "6.0" },
   { "MAYA65",   "6.5" },
   { "MAYA7",    "7.0" },
@@ -96,10 +100,10 @@ struct { char *ver, *key; } maya_versions[] = {
   { 0, 0 },
 };
 
-static char *
+static const char *
 get_version_number(const char *ver) {
-  for (int i=0; maya_versions[i].ver != 0; i++) {
-    if (strcmp(maya_versions[i].ver, ver)==0) {
+  for (int i = 0; maya_versions[i].ver != 0; ++i) {
+    if (strcmp(maya_versions[i].ver, ver) == 0) {
       return maya_versions[i].key;
     }
   }
@@ -124,7 +128,7 @@ get_maya_location(const char *ver, string &loc) {
       HKEY hkey;
       res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, fullkey, 0, KEY_READ | (hive ? 256:0), &hkey);
       if (res == ERROR_SUCCESS) {
-        DWORD dtype; 
+        DWORD dtype;
         DWORD size = 4096;
         char result[4096 + 1];
         res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)result, &size);
@@ -176,7 +180,7 @@ get_maya_location(const char *ver, string &loc) {
 #endif  // _WIN32
 
 
-int 
+int
 main(int argc, char *argv[]) {
   // First, get the command line and append _bin, so we will actually
   // run maya2egg_bin.exe, egg2maya_bin.exe, etc.
@@ -246,7 +250,7 @@ main(int argc, char *argv[]) {
       maya_location.make_canonical();
       maya_location = Filename::from_os_specific(maya_location.to_os_long_name());
     }
-    
+
     if (maya_location.empty()) {
       // If it is not set, we use the standard version instead.
       maya_location = standard_maya_location;
@@ -322,12 +326,12 @@ main(int argc, char *argv[]) {
     cerr << "The directory referred to by $MAYA_LOCATION does not exist!\n";
     exit(1);
   }
-  
+
   // Look for OpenMaya.dll as a sanity check.
   Filename openmaya = Filename::dso_filename(Filename(maya_location, openmaya_filename));
   if (!openmaya.is_regular_file()) {
     cerr << "Could not find $MAYA_LOCATION/" << Filename::dso_filename(openmaya_filename).to_os_specific() << "!\n";
-    exit(1); 
+    exit(1);
   }
 
   // Re-set MAYA_LOCATION to its properly sanitized form.
@@ -376,7 +380,7 @@ main(int argc, char *argv[]) {
   // Also put the Maya bin directory on the PATH.
   Filename bin = Filename(maya_location, "bin");
   if (bin.is_directory()) {
-    char *path = getenv("PATH");
+    const char *path = getenv("PATH");
     if (path == NULL) {
       path = "";
     }
@@ -388,7 +392,7 @@ main(int argc, char *argv[]) {
 #ifdef IS_OSX
   // And on DYLD_LIBRARY_PATH.
   if (bin.is_directory()) {
-    char *path = getenv("DYLD_LIBRARY_PATH");
+    const char *path = getenv("DYLD_LIBRARY_PATH");
     if (path == NULL) {
       path = "";
     }
@@ -401,7 +405,7 @@ main(int argc, char *argv[]) {
 #elif !defined(_WIN32)
   // Linux (or other non-Windows OS) gets it added to LD_LIBRARY_PATH.
   if (bin.is_directory()) {
-    char *path = getenv("LD_LIBRARY_PATH");
+    const char *path = getenv("LD_LIBRARY_PATH");
     if (path == NULL) {
       path = "";
     }
@@ -416,7 +420,7 @@ main(int argc, char *argv[]) {
   // When this is set, Panda3D will try not to use any functions from the
   // CPython API.  This is necessary because Maya links with its own copy
   // of Python, which may be incompatible with ours.
-  putenv("PANDA_INCOMPATIBLE_PYTHON=1");
+  putenv((char *)"PANDA_INCOMPATIBLE_PYTHON=1");
 
   // Now that we have set up the environment variables properly, chain
   // to the actual maya2egg_bin (or whichever) executable.
@@ -428,7 +432,7 @@ main(int argc, char *argv[]) {
   PROCESS_INFORMATION process_info;
   GetStartupInfo(&startup_info);
   BOOL result = CreateProcess(os_command.c_str(),
-                              command_line, 
+                              command_line,
                               NULL, NULL, true, 0,
                               NULL, NULL,
                               &startup_info,

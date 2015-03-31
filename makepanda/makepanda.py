@@ -5973,19 +5973,19 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayapath'+VNUM+'.obj', opts=OPTS, input='mayapath.cxx')
 
     TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
-    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
-    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
+    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI']+VER_OPTS)
 
     TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
-    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI'])
-    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
+    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+VER_OPTS)
 
     TargetAdd('mayacopy'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
-    TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
-    TargetAdd('mayacopy'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('mayacopy'+VNUM+'.exe', input='libpandaexpress.dll')
+    TargetAdd('mayacopy'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI']+VER_OPTS)
 
 #
 # DIRECTORY: contrib/src/ai/
