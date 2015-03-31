@@ -1,3 +1,114 @@
+------------------------  RELEASE 1.9.0  ------------------------
+
+This is a major release with many exciting new features!
+Beware of bugs.
+
+The list below contains a subset of the changes introduced:
+
+* We now offer 64-bit Windows and Mac OS X builds.
+* Switch to MSVC 2010; no more assembly manifests.
+* Cocoa port for Mac OS X; 64-bit OS X support.
+* We now compile the Python modules into panda3d/*.pyd modules;
+  no more imp.load_dynamic hackery needed.
+* Support for GPU profiling in OpenGL, see pstats-gpu-timing
+* sRGB framebuffers, see framebuffer-srgb
+* sRGB texture support, see Texture::F_srgb et al.
+* Integer vector support, including passing to shaders
+* Native .ogg vorbis and .wav loader (does not require ffmpeg)
+* FFmpeg support is a separate plug-in module now, libp3ffmpeg.
+* Sample programs are now part of the source code repository
+* Can be built with Python 3 (highly experimental)
+* Improvements to Windows installer
+* M_filled_wireframe rendering mode
+* Support specifying sampler state separate from textures
+* Support for bindless texture clearing
+* Texture LOD bias and min/max LOD settings
+* Framebuffer properties allows separate red/green/blue bits
+* Explicit float color and float depth specification in fbprops
+* Coverage samples settable via FrameBufferProperties
+* Stereo buffer implementation in OpenGL via FBOs
+* Support enumeration of pixel formats in WebcamVideo
+* Frame rate meter can be configured to show milliseconds
+* Changes to improve font crispness with default settings
+* Fix assertion error when using more than one GraphicsEngine
+* raw-w, raw-a, etc. keyboard events for layout-independent input
+* Allow querying active keyboard layout via win.get_keyboard_map()
+* Distinguish between lmeta and rmeta keys on Mac OS X
+* Floating-point image manipulation API, support float tiffs
+* Various new 16-bit and 32-bit and int texture formats
+* Man pages are now available for the majority of utilities
+
+Pipeline:
+* Fix bugs with <Collide> group transformations in .egg
+* Don't create unnecessary intermediate node when loading .egg
+* bam2egg supports materials, and correctly converts animations
+* dae2egg has some skeletal animation support
+* Support Maya versions up to 2015
+
+OpenGL renderer changes:
+* Error checking is now OFF by default for performance reasons,
+    set gl-check-errors or gl-debug to true to enable.
+* GL 4.2 shader_image_load_store support (incl. multi-bind)
+* Layered render-to-texture (using geometry shaders)
+* Seamless cube maps (on by default), see gl-cube-map-seamless
+* Added gl-debug for improved debug output support
+* Added GL object labels when gl-debug is enabled
+* gl-dump-compiled-shaders can be used to dump program binaries
+* Direct3D-style NT_packed_dabc vertex arrays now directly supported
+* Native rendering of line strips, using primitive restart
+* Immutable texture storage support (disabled by default)
+* Bindless texture support (disabled by default)
+* Specular component is now computed separately in FFP
+
+Shader system:
+* Support for tessellation shaders
+* Support for compute shaders via ComputeNode
+* GLSL preprocessor with "#pragma include" support
+* Much better coverage of shader inputs in GLSL
+* GLSL error messages now show source filename
+* Fixes apiclip_of_x shader inputs
+* Matrices can be passed directly to setShaderInput
+* Support binding images to shaders
+* Viewport array support
+
+Optimizations and performance improvements:
+* Use of C++11 move semantics to reduce refcounting overhead
+* Build with Eigen by default for faster linear math
+* Dramatic overhead reduction of generated bindings
+* Streamline culling process
+* Tighter bounding volume generation
+* Take advantage of CPU features for bit operations
+* Circumvent bounding volume generation when not required
+* Optimizations for interned strings
+* Use of GCC atomics should improve 64-bit Linux performance
+
+API features:
+* Buffer protocol support for textures and arrays
+* Interrogate supports various C++11 features
+* Expose TextGlyph interfaces for making custom text renderers
+* Better handling of default arguments for many functions
+* Cyclic references can sometimes be tracked through tasks
+* ShowBase clean teardown possible
+* API documentation is more accurate
+* Improve interfaces for interop with other applications
+
+Deprecated features:
+* Use of pandac.PandaModules is discouraged; use panda3d.core
+* Deprecate DirectStart and global run() function; use ShowBase
+* Remove old decal system
+* Remove Direct3D 8 renderer
+* Remove M_light_vector tex gen mode and FFP-based bump mapping
+
+Bug fixes:
+* Various point rendering issues are fixed now
+* Fix pview issue with 1-frame and/or multiple animations
+* Fixes for multisampling in FBOs
+* Fix aspect ratio of frame rate meter
+* Support NaN and infinity values in Config.prc variables
+* Fixes for webcams on Linux that do not output Huffman tables
+* Better support for non-basic Cg shaders on non-NVIDIA cards
+* Many others
+
 ------------------------  RELEASE 1.8.1  ------------------------
 
 This is a bugfix release, fixing many issues in 1.8.0.
