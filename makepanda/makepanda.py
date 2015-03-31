@@ -4908,7 +4908,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['OPENSSL', 'FLTK', 'WINCOMCTL', 'WINSOCK', 'WINGDI', 'WINUSER', 'ADVAPI', 'WINOLE', 'WINSHELL', 'SUBSYSTEM:WINDOWS']
+      OPTS=['OPENSSL', 'FLTK', 'X11', 'WINCOMCTL', 'WINSOCK', 'WINGDI', 'WINUSER', 'ADVAPI', 'WINOLE', 'WINSHELL', 'SUBSYSTEM:WINDOWS']
       if GetTarget() == 'darwin':
           OPTS += ['OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
