@@ -3146,7 +3146,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // buffers are unbound, or the nVidia drivers may crash.
     unbind_buffers();
 
-    GeomContext *gc = ((Geom *)geom_reader->get_object())->prepare_now(get_prepared_objects(), this);
+    GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
@@ -4845,7 +4845,7 @@ setup_array_data(const unsigned char *&client_pointer,
   }
 
   // Prepare the buffer object and bind it.
-  VertexBufferContext *vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
+  VertexBufferContext *vbc = array_reader->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   if (!apply_vertex_buffer(vbc, array_reader, force)) {
     return false;
@@ -5039,7 +5039,7 @@ setup_primitive(const unsigned char *&client_pointer,
   }
 
   // Prepare the buffer object and bind it.
-  IndexBufferContext *ibc = ((GeomPrimitive *)reader->get_object())->prepare_now(get_prepared_objects(), this);
+  IndexBufferContext *ibc = reader->prepare_now(get_prepared_objects(), this);
   nassertr(ibc != (IndexBufferContext *)NULL, false);
   if (!apply_index_buffer(ibc, reader, force)) {
     return false;
@@ -5709,8 +5709,8 @@ do_issue_transform() {
 void CLP(GraphicsStateGuardian)::
 do_issue_shade_model() {
 #ifndef OPENGLES_2
-  const ShadeModelAttrib *target_shade_model = (const ShadeModelAttrib *)
-    _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot());
+  const ShadeModelAttrib *target_shade_model;
+  _target_rs->get_attrib_def(target_shade_model);
 
   switch (target_shade_model->get_mode()) {
   case ShadeModelAttrib::M_smooth:
@@ -5794,8 +5794,8 @@ do_issue_shader(bool state_has_changed) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = (const RenderModeAttrib *)
-    _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot());
+  const RenderModeAttrib *target_render_mode;
+  _target_rs->get_attrib_def(target_render_mode);
 
   _render_mode = target_render_mode->get_mode();
   _point_size = target_render_mode->get_thickness();
@@ -5840,8 +5840,8 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_antialias() {
-  const AntialiasAttrib *target_antialias = (const AntialiasAttrib *)
-    _target_rs->get_attrib_def(AntialiasAttrib::get_class_slot());
+  const AntialiasAttrib *target_antialias;
+  _target_rs->get_attrib_def(target_antialias);
 
   if (target_antialias->get_mode_type() == AntialiasAttrib::M_auto) {
     // In this special mode, we must enable antialiasing on a
@@ -5908,8 +5908,8 @@ do_issue_antialias() {
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
 #ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
-  const RescaleNormalAttrib *target_rescale_normal = (const RescaleNormalAttrib *)
-    _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot());
+  const RescaleNormalAttrib *target_rescale_normal;
+  _target_rs->get_attrib_def(target_rescale_normal);
 
   RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
@@ -5962,8 +5962,8 @@ do_issue_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_test() {
-  const DepthTestAttrib *target_depth_test = (const DepthTestAttrib *)
-    _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot());
+  const DepthTestAttrib *target_depth_test;
+  _target_rs->get_attrib_def(target_depth_test);
 
   DepthTestAttrib::PandaCompareFunc mode = target_depth_test->get_mode();
   if (mode == DepthTestAttrib::M_none) {
@@ -5985,8 +5985,8 @@ do_issue_alpha_test() {
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
   } else {
-    const AlphaTestAttrib *target_alpha_test = (const AlphaTestAttrib *)
-      _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot());
+    const AlphaTestAttrib *target_alpha_test;
+    _target_rs->get_attrib_def(target_alpha_test);
 
     AlphaTestAttrib::PandaCompareFunc mode = target_alpha_test->get_mode();
     if (mode == AlphaTestAttrib::M_none) {
@@ -6008,8 +6008,8 @@ do_issue_alpha_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_write() {
-  const DepthWriteAttrib *target_depth_write = (const DepthWriteAttrib *)
-    _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot());
+  const DepthWriteAttrib *target_depth_write;
+  _target_rs->get_attrib_def(target_depth_write);
 
   DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
@@ -6035,8 +6035,8 @@ do_issue_depth_write() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_cull_face() {
-  const CullFaceAttrib *target_cull_face = (const CullFaceAttrib *)
-    _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot());
+  const CullFaceAttrib *target_cull_face;
+  _target_rs->get_attrib_def(target_cull_face);
 
   CullFaceAttrib::Mode mode = target_cull_face->get_effective_mode();
 
@@ -6067,8 +6067,8 @@ do_issue_cull_face() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_fog() {
-  const FogAttrib *target_fog = (const FogAttrib *)
-    _target_rs->get_attrib_def(FogAttrib::get_class_slot());
+  const FogAttrib *target_fog;
+  _target_rs->get_attrib_def(target_fog);
 
   if (!target_fog->is_off()) {
     enable_fog(true);
@@ -6131,8 +6131,8 @@ do_issue_material() {
   static Material empty;
   const Material *material;
 
-  const MaterialAttrib *target_material = (const MaterialAttrib *)
-    _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
+  const MaterialAttrib *target_material;
+  _target_rs->get_attrib_def(target_material);
 
   if (target_material == (MaterialAttrib *)NULL ||
       target_material->is_off()) {
@@ -6239,8 +6239,8 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
-  const ColorWriteAttrib *target_color_write = (const ColorWriteAttrib *)
-    _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot());
+  const ColorWriteAttrib *target_color_write;
+  _target_rs->get_attrib_def(target_color_write);
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
@@ -6270,13 +6270,13 @@ do_issue_blending() {
   }
 
 
-  const ColorBlendAttrib *target_color_blend = (const ColorBlendAttrib *)
-    _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot());
+  const ColorBlendAttrib *target_color_blend;
+  _target_rs->get_attrib_def(target_color_blend);
   CPT(ColorBlendAttrib) color_blend = target_color_blend;
   ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
 
-  const TransparencyAttrib *target_transparency = (const TransparencyAttrib *)
-    _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot());
+  const TransparencyAttrib *target_transparency;
+  _target_rs->get_attrib_def(target_transparency);
   TransparencyAttrib::Mode transparency_mode = target_transparency->get_mode();
 
   _color_blend_involves_color_scale = color_blend->involves_color_scale();
@@ -9636,8 +9636,8 @@ do_issue_tex_matrix() {
 
     glMatrixMode(GL_TEXTURE);
 
-    const TexMatrixAttrib *target_tex_matrix = (const TexMatrixAttrib *)
-      _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot());
+    const TexMatrixAttrib *target_tex_matrix;
+    _target_rs->get_attrib_def(target_tex_matrix);
 
     if (target_tex_matrix->has_stage(stage)) {
       GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
@@ -11959,10 +11959,8 @@ do_issue_stencil() {
     return;
   }
 
-  const StencilAttrib *stencil = (const StencilAttrib *)
-    _target_rs->get_attrib(StencilAttrib::get_class_slot());
-
-  if (stencil != (const StencilAttrib *)NULL) {
+  const StencilAttrib *stencil;
+  if (_target_rs->get_attrib(stencil)) {
     // DEBUG
     if (false) {
       GLCAT.debug() << "STENCIL STATE CHANGE\n";
@@ -12052,8 +12050,8 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
-  const ScissorAttrib *target_scissor = (const ScissorAttrib *)
-    _target_rs->get_attrib_def(ScissorAttrib::get_class_slot());
+  const ScissorAttrib *target_scissor;
+  _target_rs->get_attrib_def(target_scissor);
 
   if (!target_scissor->is_off()) {
     // A non-off ScissorAttrib means to override the scissor setting

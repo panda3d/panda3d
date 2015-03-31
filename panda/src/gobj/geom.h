@@ -424,6 +424,9 @@ public:
 
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
+  INLINE GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+                                  GraphicsStateGuardianBase *gsg) const;
+
   bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
             const GeomVertexDataPipelineReader *data_reader,
             bool force) const;

@@ -374,6 +374,9 @@ public:
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;
 
+  INLINE IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+                                         GraphicsStateGuardianBase *gsg) const;
+
 private:
   CPT(GeomPrimitive) _object;
   Thread *_current_thread;

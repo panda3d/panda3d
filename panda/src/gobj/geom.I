@@ -800,6 +800,28 @@ get_modified() const {
   return _cdata->_modified;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPipelineReader::prepare_now
+//       Access: Public
+//  Description: Creates a context for the geom on the particular
+//               GSG, if it does not already exist.  Returns the new
+//               (or old) GeomContext.  This assumes that the
+//               GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               geoms.  If this is not necessarily the case, you
+//               should use prepare() instead.
+//
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian; a geom does not need to be
+//               explicitly prepared by the user before it may be
+//               rendered.
+////////////////////////////////////////////////////////////////////
+INLINE GeomContext *GeomPipelineReader::
+prepare_now(PreparedGraphicsObjects *prepared_objects,
+            GraphicsStateGuardianBase *gsg) const {
+  return ((Geom *)_object.p())->prepare_now(prepared_objects, gsg);
+}
+
 INLINE ostream &
 operator << (ostream &out, const Geom &obj) {
   obj.output(out);
