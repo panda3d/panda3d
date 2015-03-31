@@ -45,7 +45,6 @@ PUBLISHED:
   INLINE PNMImage &heightfield();
   bool set_heightfield(const Filename &filename, PNMFileType *type = NULL);
   INLINE bool set_heightfield(const PNMImage &image);
-  INLINE bool set_heightfield(const string &path);
   INLINE PNMImage &color_map();
   INLINE bool set_color_map(const Filename &filename,
                                   PNMFileType *type = NULL);
