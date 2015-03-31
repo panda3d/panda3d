@@ -37,7 +37,6 @@
     graphicsWindowInputDevice.h \
     graphicsWindowProc.h \
     graphicsWindowProcCallbackData.I graphicsWindowProcCallbackData.h \
-    lru.h \
     nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     pStatGPUTimer.I pStatGPUTimer.h \
@@ -74,7 +73,6 @@
     graphicsWindowProc.cxx \
     graphicsWindowProcCallbackData.cxx \
     graphicsDevice.cxx \
-    lru.cxx \
     nativeWindowHandle.cxx \
     parasiteBuffer.cxx \
     windowHandle.cxx \
@@ -109,7 +107,6 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
-    lru.h \
     nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     pStatGPUTimer.I pStatGPUTimer.h \
