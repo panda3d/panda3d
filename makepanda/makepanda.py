@@ -1155,7 +1155,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
             for arch in OSX_ARCHS:
-                if arch != "ppc" or "NOPPC" not in OPTS:
+                if 'NOARCH:' + arch.upper() not in OPTS:
                     cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
@@ -1610,7 +1610,7 @@ def CompileLink(dll, obj, opts):
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
             for arch in OSX_ARCHS:
-                if arch != "ppc" or "NOPPC" not in OPTS:
+                if 'NOARCH:' + arch.upper() not in OPTS:
                     cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
@@ -4455,10 +4455,10 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOPPC']
+  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC']
   TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
 
-  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOPPC']
+  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC']
   IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
@@ -4469,15 +4469,15 @@ if (PkgSkip("PHYSX")==0):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOPPC']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC']
   TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
 
   TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
   TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOPPC'])
+  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC'])
 
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOPPC']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC']
   TargetAdd('physx_module.obj', input='libpandaphysx.in')
   TargetAdd('physx_module.obj', opts=OPTS)
   TargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx'])
@@ -4487,7 +4487,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('physx.pyd', input='libpandaphysx.dll')
   TargetAdd('physx.pyd', input='core.pyd')
   TargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('physx.pyd', opts=['PYTHON', 'WINUSER', 'PHYSX', 'NOPPC'])
+  TargetAdd('physx.pyd', opts=['PYTHON', 'WINUSER', 'PHYSX', 'NOARCH:PPC'])
 
 #
 # DIRECTORY: panda/src/physics/
@@ -5934,8 +5934,11 @@ for VER in MAYAVERSIONS:
       TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    if GetTarget() == "darwin" and int(VNUM) >= 2009:
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
+
+    if GetTarget() == "darwin" and int(VNUM) >= 2012:
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', 'NOARCH:I386', VER])
+    elif GetTarget() == "darwin" and int(VNUM) >= 2009:
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', VER])
     else:
       TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
@@ -5947,8 +5950,11 @@ for VER in MAYAVERSIONS:
       TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    if GetTarget() == 'darwin' and int(VNUM) >= 2009:
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
+
+    if GetTarget() == 'darwin' and int(VNUM) >= 2012:
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', 'NOARCH:I386', VER])
+    elif GetTarget() == 'darwin' and int(VNUM) >= 2009:
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', VER])
     else:
       TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
@@ -5960,8 +5966,11 @@ for VER in MAYAVERSIONS:
       TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    if GetTarget() == 'darwin' and int(VNUM) >= 2009:
-      TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
+
+    if GetTarget() == 'darwin' and int(VNUM) >= 2012:
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', 'NOARCH:I386', VER])
+    elif GetTarget() == 'darwin' and int(VNUM) >= 2009:
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOARCH:PPC', VER])
     else:
       TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
