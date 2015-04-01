@@ -7,7 +7,7 @@ The list below contains a subset of the changes introduced:
 
 * We now offer 64-bit Windows and Mac OS X builds.
 * Switch to MSVC 2010; no more assembly manifests.
-* Cocoa port for Mac OS X; 64-bit OS X support.
+* Cocoa port for better Mac OS X support, esp. newer versions.
 * We now compile the Python modules into panda3d/*.pyd modules;
   no more imp.load_dynamic hackery needed.
 * Support for GPU profiling in OpenGL, see pstats-gpu-timing

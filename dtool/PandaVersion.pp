@@ -44,5 +44,4 @@
 // integers, but by convention it will consist of four integers, with
 // the first three matching the plugin version, and the fourth integer
 // being incremented with each new Core API revision.
-#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 1
-
+#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 2
