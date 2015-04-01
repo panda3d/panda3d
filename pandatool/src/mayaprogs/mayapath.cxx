@@ -50,6 +50,10 @@
 #include <sys/stat.h>
 #endif
 
+#ifdef HAVE_PYTHON
+#include "pystub.h"
+#endif
+
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
 
@@ -182,6 +186,11 @@ get_maya_location(const char *ver, string &loc) {
 
 int
 main(int argc, char *argv[]) {
+#ifdef HAVE_PYTHON
+  // Force pystub to be linked in.
+  pystub();
+#endif
+
   // First, get the command line and append _bin, so we will actually
   // run maya2egg_bin.exe, egg2maya_bin.exe, etc.
   Filename command = Filename::from_os_specific(argv[0]);
@@ -378,7 +387,11 @@ main(int argc, char *argv[]) {
   }
 
   // Also put the Maya bin directory on the PATH.
+#ifdef IS_OSX
+  Filename bin = Filename(maya_location, "MacOS");
+#else
   Filename bin = Filename(maya_location, "bin");
+#endif
   if (bin.is_directory()) {
     const char *path = getenv("PATH");
     if (path == NULL) {
@@ -398,6 +411,19 @@ main(int argc, char *argv[]) {
     }
     string sep = ":";
     string putenv_str = "DYLD_LIBRARY_PATH=" + bin.to_os_specific() + sep + path;
+    char *putenv_cstr = strdup(putenv_str.c_str());
+    putenv(putenv_cstr);
+  }
+
+  // We also have to give it a way to find the Maya frameworks.
+  Filename fw_dir = Filename(maya_location, "Frameworks");
+  if (fw_dir.is_directory()) {
+    const char *path = getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
+    if (path == NULL) {
+      path = "";
+    }
+    string sep = ":";
+    string putenv_str = "DYLD_FALLBACK_FRAMEWORK_PATH=" + fw_dir.to_os_specific() + sep + path;
     char *putenv_cstr = strdup(putenv_str.c_str());
     putenv(putenv_cstr);
   }
