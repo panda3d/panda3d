@@ -159,7 +159,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // Set the drawable.
   if (_properties.get_fullscreen()) {
     // Fullscreen.
-    [cocoagsg->_context setFullScreen];
+    CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
   } else {
     // Although not recommended, it is technically possible to
     // use the same context with multiple different-sized windows.
