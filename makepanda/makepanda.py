@@ -760,6 +760,7 @@ if (COMPILER=="GCC"):
 
         if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
             LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+            LibName("FFMPEG", "-framework VideoDecodeAcceleration")
 
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
