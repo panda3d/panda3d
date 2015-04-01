@@ -125,7 +125,7 @@ OpenALAudioManager() {
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
       alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
-      if (_context!=NULL) {
+      if (_context != NULL) {
         _openal_active = true;
       }
     }
@@ -142,20 +142,24 @@ OpenALAudioManager() {
   } else {
     alcGetError(_device); // clear errors
     alcMakeContextCurrent(_context);
-    alc_audio_errcheck("alcMakeContextCurrent(_context)",_device);
-
+    alc_audio_errcheck("alcMakeContextCurrent(_context)", _device);
 
     // set 3D sound characteristics as they are given in the configrc
     audio_3d_set_doppler_factor(audio_doppler_factor);
     audio_3d_set_distance_factor(audio_distance_factor);
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
+
+    if (audio_cat.is_debug()) {
+      audio_cat->debug()
+        << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;
+    }
   }
 
-  audio_cat->debug() << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;    
-  audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
-  audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
-  audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
-
+  if (audio_cat.is_debug()) {
+    audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+    audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+    audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
