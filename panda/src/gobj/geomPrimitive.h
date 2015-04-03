@@ -134,6 +134,7 @@ PUBLISHED:
   CPT(GeomPrimitive) reverse() const;
   CPT(GeomPrimitive) match_shade_model(ShadeModel shade_model) const;
   CPT(GeomPrimitive) make_points() const;
+  CPT(GeomPrimitive) make_lines() const;
   CPT(GeomPrimitive) make_patches() const;
 
   int get_num_bytes() const;

@@ -243,6 +243,19 @@ make_points() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_lines
+//       Access: Published
+//  Description: Returns a new Geom with lines at all the edges.
+//               See GeomPrimitive::make_lines().
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) Geom::
+make_lines() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->make_lines_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_patches
 //       Access: Published
 //  Description: Returns a new Geom with each primitive converted

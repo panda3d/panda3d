@@ -42,6 +42,12 @@ protected:
                                                   const GeomVertexAnimationSpec &animation);
   virtual CPT(GeomVertexFormat) premunge_format_impl(const GeomVertexFormat *orig);
 
+#ifdef OPENGLES
+  virtual void munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+                               Thread *current_thread);
+  virtual void premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+#endif
+
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 

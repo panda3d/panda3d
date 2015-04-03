@@ -49,6 +49,8 @@ protected:
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
+  INLINE RenderModeAttrib::Mode get_render_mode() const;
+
 private:
   int _num_components;
   NumericType _numeric_type;
