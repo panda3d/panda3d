@@ -16,7 +16,7 @@
 #include "configVariableCore.h"
 #include "config_prc.h"
 #include "pstrtod.h"
-
+#include "string_utils.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigDeclaration::Constructor
@@ -93,11 +93,7 @@ set_string_word(int n, const string &value) {
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
 set_bool_word(int n, bool value) {
-  if (value) {
-    set_string_word(n, "1");
-  } else {
-    set_string_word(n, "0");
-  }
+  set_string_word(n, value ? "1" : "0");
 
   _words[n]._flags |= (F_checked_bool | F_valid_bool);
   _words[n]._bool = value;
@@ -112,9 +108,7 @@ set_bool_word(int n, bool value) {
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
 set_int_word(int n, int value) {
-  ostringstream strm;
-  strm << value;
-  set_string_word(n, strm.str());
+  set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_int | F_valid_int);
   _words[n]._int = value;
@@ -129,9 +123,7 @@ set_int_word(int n, int value) {
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
 set_int64_word(int n, PN_int64 value) {
-  ostringstream strm;
-  strm << value;
-  set_string_word(n, strm.str());
+  set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_int64 | F_valid_int64);
   _words[n]._int_64 = value;
@@ -146,9 +138,7 @@ set_int64_word(int n, PN_int64 value) {
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
 set_double_word(int n, double value) {
-  ostringstream strm;
-  strm << value;
-  set_string_word(n, strm.str());
+  set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_double | F_valid_double);
   _words[n]._double = value;

@@ -323,9 +323,7 @@ void FLOATNAME(LQuaternion)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     FLOATNAME(LVecBase4)::init_type();
-    string name = "LQuaternion";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name,
+    register_type(_type_handle, FLOATNAME_STR(LQuaternion),
                   FLOATNAME(LVecBase4)::get_class_type());
   }
 }

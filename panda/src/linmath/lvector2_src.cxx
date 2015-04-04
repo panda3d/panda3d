@@ -23,9 +23,7 @@ void FLOATNAME(LVector2)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     FLOATNAME(LVecBase2)::init_type();
-    string name = "LVector2";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name,
+    register_type(_type_handle, FLOATNAME_STR(LVector2),
                   FLOATNAME(LVecBase2)::get_class_type());
   }
 }

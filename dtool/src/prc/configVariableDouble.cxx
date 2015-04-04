@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableDouble.h"
+#include "string_utils.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableDouble::set_default_value
@@ -21,8 +22,5 @@
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableDouble::
 set_default_value(double default_value) {
-  ostringstream strm;
-  strm << default_value;
-
-  _core->set_default_value(strm.str());
+  _core->set_default_value(format_string(default_value));
 }

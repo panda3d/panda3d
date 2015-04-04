@@ -8146,9 +8146,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     size_t u_size = scan.get_uint32();
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-      image[(int)u_idx] = scan.get_uint8();
-    }
+    scan.extract_bytes(image.p(), u_size);
 
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
@@ -8201,13 +8199,11 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
       cdata->_ram_images[n]._page_size = scan.get_uint32();
     }
 
-    size_t u_size = scan.get_uint32();
-
     // fill the cdata->_image buffer with image data
+    size_t u_size = scan.get_uint32();
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-      image[(int)u_idx] = scan.get_uint8();
-    }
+    scan.extract_bytes(image.p(), u_size);
+
     cdata->_ram_images[n]._image = image;
   }
   cdata->_loaded_from_image = true;
