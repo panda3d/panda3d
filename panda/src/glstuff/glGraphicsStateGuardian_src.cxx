@@ -51,7 +51,6 @@
 #include "bamCacheRecord.h"
 #include "alphaTestAttrib.h"
 #include "clipPlaneAttrib.h"
-#include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthWriteAttrib.h"
@@ -2094,6 +2093,7 @@ reset() {
   _polygon_offset_enabled = false;
   _flat_shade_model = false;
   _decal_level = 0;
+  _active_color_write_mask = ColorWriteAttrib::C_all;
   _tex_gen_point_sprite = false;
 
 #ifndef OPENGLES
@@ -2447,9 +2447,7 @@ clear(DrawableRegion *clearable) {
       if (clearable->get_clear_color_active()) {
         LColor v = clearable->get_clear_color();
         glClearColor(v[0], v[1], v[2], v[3]);
-        if (gl_color_mask) {
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
+        clear_color_write_mask();
         _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
         mask |= GL_COLOR_BUFFER_BIT;
       }
@@ -2944,35 +2942,43 @@ end_frame(Thread *current_thread) {
   if (_check_errors || (_supports_debug && gl_debug)) {
     report_my_gl_errors();
   } else {
-    PStatTimer timer(_check_error_pcollector);
+    static int frame_counter = -1;
 
     // If _check_errors is false, we still want to check for errors
-    // once during this frame, so that we know if anything went wrong.
-    GLenum error_code = glGetError();
-    if (error_code != GL_NO_ERROR) {
-      int error_count = 0;
-      bool deactivate = !report_errors_loop(__LINE__, __FILE__, error_code, error_count);
+    // the first few frames and once every N frames, so that we know if
+    // anything went wrong at all.
+    if (frame_counter++ <= 0) {
+      PStatTimer timer(_check_error_pcollector);
 
-      if (error_count == 1) {
-        GLCAT.error()
-          << "An OpenGL error (" << get_error_string(error_code)
-          << ") has occurred.";
-      } else {
-        GLCAT.error()
-          << error_count << " OpenGL errors have occurred.";
-      }
+      GLenum error_code = glGetError();
+      if (error_code != GL_NO_ERROR) {
+        int error_count = 0;
+        bool deactivate = !report_errors_loop(__LINE__, __FILE__, error_code, error_count);
 
-      if (_supports_debug) {
-        GLCAT.error(false) << "  Set gl-debug #t "
-          << "in your PRC file to display more information.\n";
-      } else {
-        GLCAT.error(false) << "  Set gl-check-errors #t "
-          << "in your PRC file to display more information.\n";
-      }
+        if (error_count == 1) {
+          GLCAT.error()
+            << "An OpenGL error (" << get_error_string(error_code)
+            << ") has occurred.";
+        } else {
+          GLCAT.error()
+            << error_count << " OpenGL errors have occurred.";
+        }
 
-      if (deactivate) {
-        panic_deactivate();
+        if (_supports_debug) {
+          GLCAT.error(false) << "  Set gl-debug #t "
+            << "in your PRC file to display more information.\n";
+        } else {
+          GLCAT.error(false) << "  Set gl-check-errors #t "
+            << "in your PRC file to display more information.\n";
+        }
+
+        if (deactivate) {
+          panic_deactivate();
+        }
       }
+    } else if (frame_counter > 100) {
+      // 100 frames have passed.  Check next frame.
+      frame_counter = 0;
     }
   }
 #endif
@@ -5257,9 +5263,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
-  if (gl_color_mask) {
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  }
+  clear_color_write_mask();
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -5473,9 +5477,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  if (gl_color_mask) {
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  }
+  clear_color_write_mask();
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
   // for glReadPixels() to work
@@ -5806,7 +5808,7 @@ do_issue_render_mode() {
   _target_rs->get_attrib_def(target_render_mode);
 
   _render_mode = target_render_mode->get_mode();
-  _point_size = target_render_mode->get_thickness();
+  PN_stdfloat thickness = target_render_mode->get_thickness();
   _point_perspective = target_render_mode->get_perspective();
 
 #ifndef OPENGLES  // glPolygonMode not supported by OpenGL ES.
@@ -5832,10 +5834,13 @@ do_issue_render_mode() {
 #endif  // OPENGLES
 
   // The thickness affects both the line width and the point size.
-  glLineWidth(_point_size);
+  if (thickness != _point_size) {
+    glLineWidth(_point_size);
 #ifndef OPENGLES_2
-  glPointSize(_point_size);
+    glPointSize(_point_size);
 #endif
+    _point_size = thickness;
+  }
   report_my_gl_errors();
 
   do_point_size();
@@ -6261,7 +6266,7 @@ do_issue_blending() {
     enable_multisample_alpha_mask(false);
     if (gl_color_mask) {
       enable_blend(false);
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      set_color_write_mask(ColorWriteAttrib::C_off);
     } else {
       enable_blend(true);
       _glBlendEquation(GL_FUNC_ADD);
@@ -6269,14 +6274,8 @@ do_issue_blending() {
     }
     return;
   } else {
-    if (gl_color_mask) {
-      glColorMask((color_channels & ColorWriteAttrib::C_red) != 0,
-                     (color_channels & ColorWriteAttrib::C_green) != 0,
-                     (color_channels & ColorWriteAttrib::C_blue) != 0,
-                     (color_channels & ColorWriteAttrib::C_alpha) != 0);
-    }
+    set_color_write_mask(color_channels);
   }
-
 
   const ColorBlendAttrib *target_color_blend;
   _target_rs->get_attrib_def(target_color_blend);
@@ -7029,12 +7028,7 @@ set_draw_buffer(int rbtype) {
 #endif  // OPENGLES
 
   // Also ensure that any global color channels are masked out.
-  if (gl_color_mask) {
-    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
-  }
+  set_color_write_mask(_color_write_mask);
 
   report_my_gl_errors();
 }

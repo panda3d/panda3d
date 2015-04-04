@@ -617,6 +617,35 @@ enable_polygon_offset(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_color_write_mask
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_color_write_mask(int mask) {
+  if (gl_color_mask && _active_color_write_mask != mask) {
+    _active_color_write_mask = mask;
+    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::clear_color_write_mask
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+clear_color_write_mask() {
+  if (gl_color_mask && _active_color_write_mask != ColorWriteAttrib::C_all) {
+    _active_color_write_mask = ColorWriteAttrib::C_all;
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogfv
 //       Access: Public
 //  Description: This method is necessary because there is no

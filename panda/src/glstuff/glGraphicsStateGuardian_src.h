@@ -21,6 +21,7 @@
 #include "texture.h"
 #include "displayRegion.h"
 #include "material.h"
+#include "colorWriteAttrib.h"
 #include "depthTestAttrib.h"
 #include "textureAttrib.h"
 #include "texMatrixAttrib.h"
@@ -443,6 +444,9 @@ protected:
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_polygon_offset(bool val);
 
+  INLINE void set_color_write_mask(int mask);
+  INLINE void clear_color_write_mask();
+
   INLINE void call_glFogfv(GLenum pname, const LColor &color);
   INLINE void call_glMaterialfv(GLenum face, GLenum pname, const LColor &color);
   INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value);
@@ -539,6 +543,7 @@ protected:
   bool _polygon_offset_enabled;
   bool _flat_shade_model;
   int  _decal_level;
+  int _active_color_write_mask;
 
   bool _dithering_enabled;
 
