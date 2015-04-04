@@ -196,6 +196,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _glgsg = glgsg;
   _glsl_program = 0;
   _uses_standard_vertex_arrays = false;
+  _has_divisor = false;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
 
@@ -537,8 +538,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               continue; }
             case GL_INT_SAMPLER_2D:
             case GL_UNSIGNED_INT_SAMPLER_2D:
-            case GL_SAMPLER_2D_SHADOW:
 #endif
+            case GL_SAMPLER_2D_SHADOW:
             case GL_SAMPLER_2D: {
               _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
@@ -553,13 +554,18 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_UNSIGNED_INT_SAMPLER_3D:
 #endif
             case GL_SAMPLER_3D: {
-              _glgsg->_glUniform1i(p, s->_tex_spec.size());
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = InternalName::make(param_name);
-              bind._desired_type = Texture::TT_3d_texture;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
+              if (_glgsg->_supports_3d_texture) {
+                _glgsg->_glUniform1i(p, s->_tex_spec.size());
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = InternalName::make(param_name);
+                bind._desired_type = Texture::TT_3d_texture;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+              } else {
+                GLCAT.error()
+                  << "GLSL shader uses 3D texture, which is unsupported by the driver.\n";
+              }
               continue; }
 #ifndef OPENGLES
             case GL_INT_SAMPLER_CUBE:
@@ -567,26 +573,36 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_SAMPLER_CUBE_SHADOW:
 #endif
             case GL_SAMPLER_CUBE: {
-              _glgsg->_glUniform1i(p, s->_tex_spec.size());
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = InternalName::make(param_name);
-              bind._desired_type = Texture::TT_cube_map;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
+              if (_glgsg->_supports_cube_map) {
+                _glgsg->_glUniform1i(p, s->_tex_spec.size());
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = InternalName::make(param_name);
+                bind._desired_type = Texture::TT_cube_map;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+              } else {
+                GLCAT.error()
+                  << "GLSL shader uses cube map, which is unsupported by the driver.\n";
+              }
               continue; }
 #ifndef OPENGLES
             case GL_INT_SAMPLER_2D_ARRAY:
             case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
             case GL_SAMPLER_2D_ARRAY_SHADOW:
             case GL_SAMPLER_2D_ARRAY: {
-              _glgsg->_glUniform1i(p, s->_tex_spec.size());
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = InternalName::make(param_name);
-              bind._desired_type = Texture::TT_2d_texture_array;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
+              if (_glgsg->_supports_2d_texture_array) {
+                _glgsg->_glUniform1i(p, s->_tex_spec.size());
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = InternalName::make(param_name);
+                bind._desired_type = Texture::TT_2d_texture_array;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+              } else {
+                GLCAT.error()
+                  << "GLSL shader uses 2D texture array, which is unsupported by the driver.\n";
+              }
               continue; }
 #endif
             case GL_FLOAT_MAT2:
@@ -1202,7 +1218,7 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     const GLint p = _glsl_parameter_map[bind._id._seqno];
-    if (_glgsg->_supports_vertex_attrib_divisor) {
+    if (_has_divisor) {
       _glgsg->_glVertexAttribDivisor(p, 0);
     }
     for (int i = 0; i < bind._elements; ++i) {
@@ -1291,6 +1307,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
           if (_glgsg->_supports_vertex_attrib_divisor) {
             _glgsg->_glVertexAttribDivisor(p, divisor);
+            _has_divisor = true;
           }
 
           ++p;
@@ -1342,22 +1359,32 @@ disable_shader_texture_bindings() {
 
     _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
 
+    switch (_shader->_tex_spec[i]._desired_type) {
+    case Texture::TT_1d_texture:
 #ifndef OPENGLES
-    glBindTexture(GL_TEXTURE_1D, 0);
-#endif  // OPENGLES
-    glBindTexture(GL_TEXTURE_2D, 0);
-#ifndef OPENGLES_1
-    if (_glgsg->_supports_3d_texture) {
-      glBindTexture(GL_TEXTURE_3D, 0);
-    }
-#endif  // OPENGLES_1
-#ifndef OPENGLES
-    if (_glgsg->_supports_2d_texture_array) {
-      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
-    }
+      glBindTexture(GL_TEXTURE_1D, 0);
 #endif
-    if (_glgsg->_supports_cube_map) {
+      break;
+
+    case Texture::TT_2d_texture:
+      glBindTexture(GL_TEXTURE_2D, 0);
+      break;
+
+    case Texture::TT_3d_texture:
+#ifndef OPENGLES_1
+      glBindTexture(GL_TEXTURE_3D, 0);
+#endif
+      break;
+
+    case Texture::TT_2d_texture_array:
+#ifndef OPENGLES
+      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
+#endif
+      break;
+
+    case Texture::TT_cube_map:
       glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      break;
     }
   }
 
