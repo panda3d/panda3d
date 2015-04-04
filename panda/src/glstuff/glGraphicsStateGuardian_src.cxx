@@ -1382,7 +1382,7 @@ reset() {
   // if it failed to compile. This default shader just outputs
   // a red color, indicating that something went wrong.
   if (_default_shader == NULL) {
-    _default_shader = Shader::load(Shader::SL_GLSL, default_vshader, default_fshader);
+    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
   }
 #endif
 
@@ -2996,6 +2996,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
+
+#ifdef OPENGLES_2
+  // We can't draw without a shader bound in OpenGL ES 2.  This shouldn't
+  // happen anyway unless the default shader failed to compile somehow.
+  if (_current_shader_context == NULL) {
+    return false;
+  }
+#endif
 
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
     return false;

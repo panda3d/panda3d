@@ -1593,7 +1593,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 //  Description: This subroutine prints the infolog for a shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_shader_errors(GLuint shader, Shader::ShaderType type) {
+glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -1642,6 +1642,9 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type) {
       GLCAT.error(false)
         << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
 
+    } else if (!fatal) {
+      GLCAT.warning(false) << line << "\n";
+
     } else {
       GLCAT.error(false) << line << "\n";
     }
@@ -1654,7 +1657,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type) {
 //  Description: This subroutine prints the infolog for a program.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_program_errors(GLuint program) {
+glsl_report_program_errors(GLuint program, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -1664,8 +1667,13 @@ glsl_report_program_errors(GLuint program) {
   if (length > 1) {
     info_log = (char *) alloca(length);
     _glgsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
+
     if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
-      GLCAT.error(false) << info_log << "\n";
+      if (!fatal) {
+        GLCAT.warning(false) << info_log << "\n";
+      } else {
+        GLCAT.error(false) << info_log << "\n";
+      }
     }
   }
 }
@@ -1733,7 +1741,7 @@ glsl_compile_shader(Shader::ShaderType type) {
     GLCAT.error()
       << "An error occurred while compiling GLSL shader "
       << _shader->get_filename(type) << ":\n";
-    glsl_report_shader_errors(handle, type);
+    glsl_report_shader_errors(handle, type, true);
     _glgsg->_glDeleteShader(handle);
     _glgsg->report_my_gl_errors();
     return false;
@@ -1743,7 +1751,7 @@ glsl_compile_shader(Shader::ShaderType type) {
   _glsl_shaders.push_back(handle);
 
   // There might be warnings, so report those.
-  glsl_report_shader_errors(handle, type);
+  glsl_report_shader_errors(handle, type, false);
 
   return true;
 }
@@ -1776,9 +1784,8 @@ glsl_compile_and_link() {
     valid &= glsl_compile_shader(Shader::ST_fragment);
   }
 
-#ifdef OPENGLES
-    nassertr(false, false); // OpenGL ES has no geometry shaders.
-#else
+  // OpenGL ES has no geometry shaders.
+#ifndef OPENGLES
   if (!_shader->get_text(Shader::ST_geometry).empty()) {
     valid &= glsl_compile_shader(Shader::ST_geometry);
 
@@ -1823,12 +1830,12 @@ glsl_compile_and_link() {
   _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     GLCAT.error() << "An error occurred while linking GLSL shader program!\n";
-    glsl_report_program_errors(_glsl_program);
+    glsl_report_program_errors(_glsl_program, true);
     return false;
   }
 
   // Report any warnings.
-  glsl_report_program_errors(_glsl_program);
+  glsl_report_program_errors(_glsl_program, false);
 
   // Dump the binary if requested.
 #if !defined(NDEBUG) && !defined(OPENGLES)
