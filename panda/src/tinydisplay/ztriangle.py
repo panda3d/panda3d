@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ This simple Python script can be run to generate
 ztriangle_code_*.h, ztriangle_table.*, and ztriangle_*.cxx, which
 are a poor man's form of generated code to cover the explosion of
