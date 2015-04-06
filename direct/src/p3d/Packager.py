@@ -2400,7 +2400,8 @@ class Packager:
             'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
             'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
-            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
+            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
+            'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
@@ -2410,6 +2411,7 @@ class Packager:
         # filenames.
         self.excludeSystemGlobs = [
             GlobPattern('d3dx9_*.dll'),
+            GlobPattern('api-ms-win-*.dll'),
 
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
