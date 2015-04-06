@@ -1652,8 +1652,7 @@ def CompileLink(dll, obj, opts):
             oscmd('%s --strip-unneeded %s' % (GetStrip(), BracketNameWithQuotes(new_path)))
 
         elif (GetOptimizeOption(opts)==4 and GetTarget() == 'linux'):
-            #oscmd(GetStrip() + " --strip-unneeded " + BracketNameWithQuotes(dll))
-            pass
+            oscmd(GetStrip() + " --strip-unneeded " + BracketNameWithQuotes(dll))
 
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
