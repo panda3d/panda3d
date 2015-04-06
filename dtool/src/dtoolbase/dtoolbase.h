@@ -105,7 +105,7 @@
 
 // This is a workaround for a glibc bug that is triggered by
 // clang when compiling with -ffast-math.
-#ifdef __clang__
+#if defined(__clang__) && !defined(__EMSCRIPTEN__)
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
 #define __extern_always_inline extern __always_inline

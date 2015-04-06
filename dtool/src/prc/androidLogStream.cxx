@@ -133,25 +133,4 @@ AndroidLogStream::
   delete rdbuf();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStream::out
-//       Access: Public, Static
-//  Description: Returns an AndroidLogStream suitable for writing
-//               log messages with the indicated severity.
-////////////////////////////////////////////////////////////////////
-ostream &AndroidLogStream::
-out(NotifySeverity severity) {
-  static AndroidLogStream* streams[NS_fatal + 1] = {NULL};
-
-  if (streams[severity] == NULL) {
-    int priority = ANDROID_LOG_UNKNOWN;
-    if (severity != NS_unspecified) {
-      priority = ((int)severity) + 1;
-    }
-    streams[severity] = new AndroidLogStream(priority);
-  }
-
-  return *streams[severity];
-}
-
 #endif  // ANDROID

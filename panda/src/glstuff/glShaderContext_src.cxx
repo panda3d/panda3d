@@ -1533,6 +1533,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     } else {
       if (texunit >= texattrib->get_num_on_stages()) {
+        // Apply a white texture in order to make it easier to use a shader
+        // that takes a texture on a model that doesn't have a texture applied.
+        _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+        _glgsg->apply_white_texture();
         continue;
       }
       TextureStage *stage = texattrib->get_on_stage(texunit);

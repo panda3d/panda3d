@@ -127,21 +127,30 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
 
 #ifdef OPENGLES_2
-// We have a default shader that will be applied when there
-// isn't any shader applied (e.g. if it failed to compile).
-// We need this because OpenGL ES 2.x does not have
-// a fixed-function pipeline.
-// This default shader just outputs a red color, telling
-// the user that something went wrong.
+// We have a default shader that will be applied when there isn't any
+// shader applied (e.g. if it failed to compile).  We need this because
+// OpenGL ES 2.x does not have a fixed-function pipeline.
+// This default shader just applies a single texture.
 static const string default_vshader =
-  "uniform mediump mat4 p3d_ModelViewProjectionMatrix;\n"
-  "attribute highp vec4 p3d_Vertex;\n"
+  "precision mediump float;\n"
+  "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "attribute vec4 p3d_Vertex;\n"
+  "attribute vec2 p3d_MultiTexCoord0;\n"
+  "varying vec2 texcoord;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
+  "  texcoord = p3d_MultiTexCoord0;\n"
   "}\n";
+
 static const string default_fshader =
+  "precision mediump float;\n"
+  "varying vec2 texcoord;\n"
+  "uniform vec4 p3d_Color;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
-  "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+  "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
+  "  gl_FragColor *= p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
 
@@ -323,6 +332,8 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
+
+  _white_texture = 0;
 
 #ifdef HAVE_CG
   _cg_context = 0;
@@ -985,7 +996,8 @@ reset() {
   }
 
 #ifdef OPENGLES_2
-  _supports_bgr = false;
+  // OpenGL ES 2 does not support BGRA.  However, we swizzle in shader.
+  _supports_bgr = true;
 #else
   _supports_bgr =
     has_extension("GL_EXT_bgra") || is_at_least_gl_version(1, 2);
@@ -1099,8 +1111,13 @@ reset() {
 #endif
 
 #ifdef OPENGLES
+#ifdef __EMSCRIPTEN__
+  if (has_extension("WEBGL_depth_texture") ||
+      has_extension("GL_ANGLE_depth_texture")) {
+#else
   if (has_extension("GL_ANGLE_depth_texture")) {
-    // This extension provides both depth textures and depth-stencil support.
+#endif
+    // These extensions provide both depth textures and depth-stencil support.
     _supports_depth_texture = true;
     _supports_depth_stencil = true;
 
@@ -1691,6 +1708,13 @@ reset() {
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
+#ifdef __EMSCRIPTEN__
+  if (has_extension("WEBGL_draw_buffers")) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
+      get_extension_func("glDrawBuffers");
+
+  } else
+#endif  // EMSCRIPTEN
   if (has_extension("GL_EXT_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersEXT");
@@ -8096,6 +8120,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     }
   }
 
+#if defined(__EMSCRIPTEN__) && defined(OPENGLES)
+  // WebGL has no sized formats, it would seem.
+  return get_external_image_format(tex);
+#endif
+
   switch (format) {
 #ifndef OPENGLES
   case Texture::F_color_index:
@@ -9701,7 +9730,30 @@ update_standard_texture_bindings() {
 }
 #endif  // !OPENGLES_2
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_white_texture
+//       Access: Private
+//  Description: Applies a white dummy texture.  This is useful to
+//               bind to a texture slot when a texture is missing.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+apply_white_texture() {
+  if (_white_texture != 0) {
+    glBindTexture(GL_TEXTURE_2D, _white_texture);
+    return;
+  }
 
+  glGenTextures(1, &_white_texture);
+  glBindTexture(GL_TEXTURE_2D, _white_texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////

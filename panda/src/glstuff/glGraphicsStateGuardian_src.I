@@ -173,7 +173,7 @@ maybe_gl_finish() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::has_extension
-//       Access: Published, Final
+//       Access: Published, Virtual
 //  Description: Returns true if the indicated extension is reported
 //               by the GL system, false otherwise.  The extension
 //               name is case-sensitive.
@@ -227,6 +227,13 @@ INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gles_version(int major_version, int minor_version) const {
 #ifndef OPENGLES
   return false;
+
+#elif defined(__EMSCRIPTEN__)
+  // We're running WebGL.  WebGL 1 is based on OpenGL ES 2, and
+  // WebGL 2 is based on OpenGL ES 3.  So add one to the major version.
+  // There don't appear to be minor WebGL versions (yet).
+  return (_gl_version_major + 1 >= major_version);
+
 #else
   if (_gl_version_major < major_version) {
     return false;

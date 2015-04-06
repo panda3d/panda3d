@@ -2,6 +2,7 @@
 #include "configVariableManager.cxx"
 #include "configVariableSearchPath.cxx"
 #include "configVariableString.cxx"
+#include "emscriptenLogStream.cxx"
 #include "encryptStreamBuf.cxx"
 #include "encryptStream.cxx"
 #include "nativeNumericData.cxx"

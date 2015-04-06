@@ -51,7 +51,8 @@ private:
 
 public:
   virtual ~AndroidLogStream();
-  static ostream &out(NotifySeverity severity);
+
+  friend class Notify;
 };
 
 #endif  // ANDROID

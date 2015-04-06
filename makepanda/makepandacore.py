@@ -42,6 +42,8 @@ ANDROID_ABI = None
 SYS_LIB_DIRS = []
 SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
+DEFAULT_CC = "gcc"
+DEFAULT_CXX = "g++"
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
@@ -357,6 +359,11 @@ def SetTarget(target, arch=None):
         elif host != 'linux':
             exit('Should specify an architecture when building for Linux')
 
+    elif target == 'emscripten':
+        global DEFAULT_CC, DEFAULT_CXX
+        DEFAULT_CC = "emcc"
+        DEFAULT_CXX = "em++"
+
     elif target == host:
         if arch is None or arch == host_arch:
             # Not a cross build.
@@ -398,10 +405,10 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
+    return os.environ.get('CC', TOOLCHAIN_PREFIX + DEFAULT_CC)
 
 def GetCXX():
-    return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
+    return os.environ.get('CXX', TOOLCHAIN_PREFIX + DEFAULT_CXX)
 
 def GetStrip():
     # Hack
@@ -1151,6 +1158,9 @@ def GetThirdpartyDir():
     elif (target == 'android'):
         THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
 
+    elif (target == 'emscripten'):
+        THIRDPARTYDIR = base + "/emscripten-libs/"
+
     else:
         print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
         return
@@ -1473,6 +1483,9 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         for d in olddefs:
             defs[d] = ""
 
+    if GetTarget() == "emscripten":
+        libs = ()
+
     custom_loc = PkgHasCustomLocation(pkg)
 
     if pkg.lower() == "swscale" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswscale/swscale.h"):
@@ -1552,7 +1565,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if (have_all_pkgs):
                 return
 
-    if pkgconfig is not None and not libs:
+    if pkgconfig is not None and not incs:
         # pkg-config is all we can do, abort if it wasn't found.
         if pkg in PkgListGet():
             print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
@@ -2316,7 +2329,9 @@ def SetupBuildEnvironment(compiler):
             sysroot_flag = ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Extract the dirs from the line that starts with 'libraries: ='.
-        cmd = GetCXX() + " -print-search-dirs" + sysroot_flag
+        # The -E is mostly to keep emscripten happy by preventing it from
+        # running the compiler and complaining about the lack of input files.
+        cmd = GetCXX() + " -E -print-search-dirs" + sysroot_flag
         handle = os.popen(cmd)
         for line in handle:
             if not line.startswith('libraries: ='):
@@ -2751,6 +2766,15 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/tmp/lib"+fn[:-4]+".so"
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+    elif (target == 'emscripten'):
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".bc"
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".bc"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".js"
+        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".js"
+        if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]+".js"
+        if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"

@@ -425,7 +425,7 @@ protected:
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  INLINE virtual bool has_extension(const string &extension) const FINAL;
+  INLINE virtual bool has_extension(const string &extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -517,6 +517,8 @@ protected:
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 #endif
+
+  void apply_white_texture();
 
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
@@ -896,6 +898,8 @@ public:
 
   bool _use_object_labels;
   PFNGLOBJECTLABELPROC _glObjectLabel;
+
+  GLuint _white_texture;
 
 #ifndef NDEBUG
   bool _show_texture_usage;

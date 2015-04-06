@@ -19,10 +19,6 @@
 #include "configVariableBool.h"
 #include "config_prc.h"
 
-#ifdef ANDROID
-#include "androidLogStream.h"
-#endif
-
 #include <time.h>  // for strftime().
 #include <assert.h>
 
@@ -65,18 +61,6 @@ NotifyCategory(const string &fullname, const string &basename,
 ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
-
-#ifdef ANDROID
-    // Android redirects stdio and stderr to /dev/null,
-    // but does provide its own logging system.  We use a special
-    // type of stream that redirects it to Android's log system.
-    if (prefix) {
-      return AndroidLogStream::out(severity) << *this << ": ";
-    } else {
-      return AndroidLogStream::out(severity);
-    }
-#else
-
     if (prefix) {
       if (get_notify_timestamp()) {
         // Format a timestamp to include as a prefix as well.
@@ -85,18 +69,17 @@ out(NotifySeverity severity, bool prefix) const {
 
         char buffer[128];
         strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", ptm);
-        nout << buffer;
+        Notify::out(severity) << buffer;
       }
 
       if (severity == NS_info) {
-        return nout << *this << ": ";
+        return Notify::out(severity) << *this << ": ";
       } else {
-        return nout << *this << "(" << severity << "): ";
+        return Notify::out(severity) << *this << "(" << severity << "): ";
       }
     } else {
-      return nout;
+      return Notify::out(severity);
     }
-#endif
 
   } else if (severity <= NS_debug && get_check_debug_notify_protect()) {
     // Someone issued a debug Notify output statement without

@@ -19,7 +19,13 @@
 #include "notifySeverity.h"
 #include <map>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 class NotifyCategory;
+class AndroidLogStream;
+class EmscriptenLogStream;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Notify
@@ -62,6 +68,7 @@ PUBLISHED:
                                const string &parent_fullname);
   NotifyCategory *get_category(const string &fullname);
 
+  static ostream &out(NotifySeverity severity);
   static ostream &out();
   static ostream &null();
   static void write_string(const string &str);
@@ -92,6 +99,12 @@ private:
   // initialize the global malloc pointers.
   typedef map<string, NotifyCategory *> Categories;
   Categories _categories;
+
+#if defined(ANDROID)
+  AndroidLogStream *_log_streams[NS_fatal + 1];
+#elif defined(__EMSCRIPTEN__)
+  EmscriptenLogStream *_log_streams[NS_fatal + 1];
+#endif
 
   static Notify *_global_ptr;
 };
@@ -185,11 +198,19 @@ private:
 
 #define nassert_raise(message) Notify::ptr()->assert_failure(message, __LINE__, __FILE__)
 
+#ifdef __EMSCRIPTEN__
+#define enter_debugger_if(condition) \
+  if (condition) { \
+    Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__); \
+    emscripten_debugger(); \
+  }
+#else
 #define enter_debugger_if(condition) \
   if (condition) { \
     Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__); \
     __asm { int 3 } \
   }
+#endif
 
 
 #endif  // NDEBUG

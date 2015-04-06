@@ -1204,6 +1204,9 @@ def CompileCxx(obj,src,opts):
             if arch.startswith('arm') and PkgSkip("NEON") == 0:
                 cmd += ' -mfpu=neon'
 
+        elif GetTarget() == 'emscripten':
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+
         else:
             cmd += " -pthread"
 
@@ -1228,7 +1231,7 @@ def CompileCxx(obj,src,opts):
             # Fast math is nice, but we'd like to see NaN in dev builds.
             cmd += " -fno-finite-math-only"
 
-        if (optlevel==1): cmd += " -ggdb -D_DEBUG"
+        if (optlevel==1): cmd += " -g -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
@@ -1596,9 +1599,14 @@ def CompileLink(dll, obj, opts):
                     cmd += " -Wl,-rpath '-Wl,$ORIGIN'"
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
-        for x in obj:
-            if GetOrigExt(x) != ".dat":
-                cmd += ' ' + x
+        if GetTarget() == 'emscripten' and GetOrigExt(dll) != ".exe":
+            for x in obj:
+                if GetOrigExt(x) not in (".dat", ".dll"):
+                    cmd += ' ' + x
+        else:
+            for x in obj:
+                if GetOrigExt(x) != ".dat":
+                    cmd += ' ' + x
 
         if (GetOrigExt(dll) == ".exe" and GetTarget() == 'windows' and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
@@ -1623,6 +1631,10 @@ def CompileLink(dll, obj, opts):
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             cmd += ' -lc -lm'
+
+        elif GetTarget() == 'emscripten':
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+
         else:
             cmd += " -pthread"
 
@@ -1639,8 +1651,14 @@ def CompileLink(dll, obj, opts):
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' ' + BracketNameWithQuotes(name)
 
-        if GetTarget() != 'freebsd':
+        if GetTarget() not in ('freebsd', 'emscripten'):
             cmd += " -ldl"
+
+        if GetTarget() == 'emscripten':
+            optlevel = GetOptimizeOption(opts)
+            if optlevel == 2: cmd += " -O1"
+            if optlevel == 3: cmd += " -O2"
+            if optlevel == 4: cmd += " -O3"
 
         oscmd(cmd)
 
@@ -2248,6 +2266,13 @@ def WriteConfigSettings():
         dtool_config["HAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
 
+    if (GetTarget() == "emscripten"):
+        # There are no threads in JavaScript, so don't bother using them.
+        dtool_config["HAVE_THREADS"] = 'UNDEF'
+        dtool_config["HAVE_POSIX_THREADS"] = 'UNDEF'
+        dtool_config["IS_LINUX"] = 'UNDEF'
+        dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
 
@@ -2275,7 +2300,7 @@ def WriteConfigSettings():
     #if (GetOptimize() <= 2):
     #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
 
-    if (GetOptimize() <= 3):
+    if (GetOptimize() <= 3) and GetTarget() != 'emscripten':
         dtool_config["DO_MEMORY_USAGE"] = '1'
 
     if (GetOptimize() <= 3):
@@ -3281,7 +3306,9 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
   TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
   TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
-  TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
+
+  if GetTarget() != "emscripten":
+    TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
   OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
   IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
@@ -3710,7 +3737,6 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3pnmimagetypes_composite2.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_composite2.obj')
-  TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
   TargetAdd('libpanda.dll', input='p3text_composite1.obj')
   TargetAdd('libpanda.dll', input='p3text_composite2.obj')
   TargetAdd('libpanda.dll', input='p3tform_composite1.obj')
@@ -3728,6 +3754,9 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3dxml_composite1.obj')
   TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
   TargetAdd('libpanda.dll', input='libp3dtool.dll')
+
+  if GetTarget() != "emscripten":
+    TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
 
   if PkgSkip("FREETYPE")==0:
     TargetAdd('libpanda.dll', input="p3pnmtext_composite1.obj")
@@ -4369,6 +4398,23 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
 
 #
+# DIRECTORY: panda/src/webgldisplay/
+#
+
+if GetTarget() == 'emscripten' and not PkgSkip("GLES2") and not RUNTIME:
+  DefSymbol('GLES2', 'OPENGLES_2', '')
+  OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
+  TargetAdd('p3webgldisplay_webgldisplay_composite1.obj', opts=OPTS, input='p3webgldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+  TargetAdd('p3webgldisplay_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
+  TargetAdd('libp3webgldisplay.dll', input='p3webgldisplay_pandagles2.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_config_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3webgldisplay_webgldisplay_composite1.obj')
+  TargetAdd('libp3webgldisplay.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3webgldisplay.dll', opts=['MODULE', 'GLES2', 'WEBGL'])
+
+#
 # DIRECTORY: panda/src/ode/
 #
 if (PkgSkip("ODE")==0 and not RUNTIME):
@@ -4594,6 +4640,10 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0 and GetTarget() != 'andro
   TargetAdd('pview.exe', input='libpandaegg.dll')
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
+
+  if GetTarget() == 'emscripten':
+      # Link in a graphical back-end.
+      TargetAdd('pview.exe', input='libp3webgldisplay.dll')
 
 #
 # DIRECTORY: panda/src/android/
