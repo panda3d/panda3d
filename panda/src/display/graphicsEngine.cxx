@@ -2001,9 +2001,11 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   // to use.  We have to do this here because the ShaderGenerator
   // needs a host window pointer.  Hopefully we'll be able to
   // eliminate that requirement in the future.
+#ifdef HAVE_CG
   if (gsg->get_shader_generator() == NULL) {
     gsg->set_shader_generator(new ShaderGenerator(gsg, window));
   }
+#endif
 
   return scene_setup;
 }

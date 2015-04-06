@@ -365,6 +365,7 @@ munge_state_impl(const RenderState *state) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   }
 
+#ifdef HAVE_CG
   if (_auto_shader) {
     CPT(RenderState) shader_state = munged_state->get_auto_shader_state();
     ShaderGenerator *shader_generator = get_gsg()->get_shader_generator();
@@ -379,6 +380,7 @@ munge_state_impl(const RenderState *state) {
     }
     munged_state = munged_state->set_attrib(shader_state->_generated_shader);
   }
+#endif
 
   return munged_state;
 }

@@ -45,6 +45,7 @@ EXPCL_PANDA_PNMIMAGE INLINE void encode_sRGB_uchar(const LColorf &from,
 
 // Use these functions if you know that SSE2 support is available.
 // Otherwise, they will crash!
+#if defined(__SSE2__) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)
 EXPCL_PANDA_PNMIMAGE unsigned char encode_sRGB_uchar_sse2(float val);
 EXPCL_PANDA_PNMIMAGE void encode_sRGB_uchar_sse2(const LColorf &from,
                                                  xel &into);
@@ -53,6 +54,11 @@ EXPCL_PANDA_PNMIMAGE void encode_sRGB_uchar_sse2(const LColorf &from,
 
 // Use the following to find out if you can call either of the above.
 EXPCL_PANDA_PNMIMAGE bool has_sse2_sRGB_encode();
+#else
+// The target architecture can't support the SSE2 extension at all.
+#define encode_sRGB_uchar_sse2 encode_sRGB_uchar
+#define has_sse2_sRGB_encode() (false)
+#endif
 
 #include "convert_srgb.I"
 
