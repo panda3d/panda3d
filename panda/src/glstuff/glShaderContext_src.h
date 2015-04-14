@@ -35,6 +35,8 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  bool get_sampler_texture_type(int &out, GLenum param_type);
+
   INLINE bool valid(void);
   void bind(bool reissue_parameters = true);
   void unbind();
