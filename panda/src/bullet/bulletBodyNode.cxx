@@ -155,6 +155,8 @@ output(ostream &out) const {
 
   out << " (" << get_num_shapes() << " shapes)";
 
+  out << (is_active() ? " active" : " inactive");
+
   if (is_static()) out << " static";
   if (is_kinematic()) out << " kinematic";
 }
@@ -448,18 +450,21 @@ set_active(bool active, bool force) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::set_deactivation_enabled
 //       Access: Published
-//  Description:
+//  Description: If true, this object will be deactivated after a
+//               certain amount of time has passed without movement.
+//               If false, the object will always remain active.
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_deactivation_enabled(const bool enabled, const bool force) {
+set_deactivation_enabled(bool enabled) {
 
-  int state = (enabled) ? WANTS_DEACTIVATION : DISABLE_DEACTIVATION;
+  // Don't change the state if it's currently active and we enable
+  // deactivation.
+  if (enabled != is_deactivation_enabled()) {
 
-  if (force) {
+    // It's OK to set to ACTIVE_TAG even if we don't mean to activate it; it
+    // will be disabled right away if the deactivation timer has run out.
+    int state = (enabled) ? ACTIVE_TAG : DISABLE_DEACTIVATION;
     get_object()->forceActivationState(state);
-  }
-  else {
-    get_object()->setActivationState(state);
   }
 }
 
@@ -471,7 +476,7 @@ set_deactivation_enabled(const bool enabled, const bool force) {
 bool BulletBodyNode::
 is_deactivation_enabled() const {
 
-  return (get_object()->getActivationState() & DISABLE_DEACTIVATION) == 0;
+  return (get_object()->getActivationState() != DISABLE_DEACTIVATION);
 }
 
 ////////////////////////////////////////////////////////////////////

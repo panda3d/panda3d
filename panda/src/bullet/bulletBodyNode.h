@@ -82,7 +82,7 @@ PUBLISHED:
   void set_deactivation_time(PN_stdfloat dt);
   PN_stdfloat get_deactivation_time() const;
 
-  void set_deactivation_enabled(const bool enabled, const bool force=false);
+  void set_deactivation_enabled(bool enabled);
   bool is_deactivation_enabled() const;
 
   // Debug Visualistion
