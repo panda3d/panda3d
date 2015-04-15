@@ -29,6 +29,9 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletBoxShape() : _shape(NULL) {};
 
 PUBLISHED:
   BulletBoxShape(const LVecBase3 &halfExtents);
@@ -47,7 +50,14 @@ public:
 private:
   btBoxShape *_shape;
 
-////////////////////////////////////////////////////////////////////
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -33,9 +33,10 @@ class BulletShape;
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
+protected:
+  BulletBodyNode(const char *name);
 
 PUBLISHED:
-  BulletBodyNode(const char *name);
   INLINE ~BulletBodyNode();
 
   // Shapes
@@ -48,6 +49,7 @@ PUBLISHED:
 
   LPoint3 get_shape_pos(int idx) const;
   LMatrix4 get_shape_mat(int idx) const;
+  CPT(TransformState) get_shape_transform(int idx) const;
   BoundingSphere get_shape_bounds() const;
 
   void add_shapes_from_collision_solids(CollisionNode *cnode);
@@ -142,7 +144,14 @@ private:
 
   static bool is_identity(btTransform &trans);
 
-////////////////////////////////////////////////////////////////////
+public:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

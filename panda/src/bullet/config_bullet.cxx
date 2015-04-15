@@ -182,6 +182,12 @@ init_libbullet() {
   BulletVehicle::init_type();
   BulletWorld::init_type();
 
+  // Register factory functions for constructing objects from .bam files
+  BulletBoxShape::register_with_read_factory();
+  BulletPlaneShape::register_with_read_factory();
+  BulletRigidBodyNode::register_with_read_factory();
+  BulletSphereShape::register_with_read_factory();
+
   // Custom contact callbacks
   gContactAddedCallback = contact_added_callback;
   gContactProcessedCallback = contact_processed_callback;

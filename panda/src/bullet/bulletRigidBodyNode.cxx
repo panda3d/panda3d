@@ -491,6 +491,28 @@ get_gravity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_linear_factor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_linear_factor() const {
+
+  return btVector3_to_LVector3(_rigid->getLinearFactor());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_angular_factor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_angular_factor() const {
+
+  return btVector3_to_LVector3(_rigid->getAngularFactor());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::set_linear_factor
 //       Access: Published
 //  Description:
@@ -650,3 +672,80 @@ pick_dirty_flag() {
   return _motion->pick_dirty_flag();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               BulletRigidBodyNode.
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  BulletBodyNode::write_datagram(manager, dg);
+
+  dg.add_stdfloat(get_mass());
+  dg.add_stdfloat(get_linear_damping());
+  dg.add_stdfloat(get_angular_damping());
+  dg.add_stdfloat(get_linear_sleep_threshold());
+  dg.add_stdfloat(get_angular_sleep_threshold());
+  get_gravity().write_datagram(dg);
+  get_linear_factor().write_datagram(dg);
+  get_angular_factor().write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of this type is encountered
+//               in the Bam file.  It should create the rigid body
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *BulletRigidBodyNode::
+make_from_bam(const FactoryParams &params) {
+  BulletRigidBodyNode *param = new BulletRigidBodyNode;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new BulletRigidBodyNode.
+////////////////////////////////////////////////////////////////////
+void BulletRigidBodyNode::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  BulletBodyNode::fillin(scan, manager);
+
+  set_mass(scan.get_stdfloat());
+  set_linear_damping(scan.get_stdfloat());
+  set_angular_damping(scan.get_stdfloat());
+  set_linear_sleep_threshold(scan.get_stdfloat());
+  set_angular_sleep_threshold(scan.get_stdfloat());
+
+  LVector3 gravity, linear_factor, angular_factor;
+  gravity.read_datagram(scan);
+  linear_factor.read_datagram(scan);
+  angular_factor.read_datagram(scan);
+
+  set_gravity(gravity);
+  set_linear_factor(linear_factor);
+  set_angular_factor(angular_factor);
+}

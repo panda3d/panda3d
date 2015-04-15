@@ -342,7 +342,16 @@ LPoint3 BulletBodyNode::
 get_shape_pos(int idx) const {
 
   nassertr(idx >= 0 && idx < (int)_shapes.size(), LPoint3::zero());
-  return get_shape_mat(idx).get_row3(3);
+
+  btCollisionShape *root = get_object()->getCollisionShape();
+  if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
+    btCompoundShape *compound = (btCompoundShape *)root;
+
+    btTransform trans = compound->getChildTransform(idx);
+    return btVector3_to_LVector3(trans.getOrigin());
+  }
+
+  return LPoint3::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -352,15 +361,24 @@ get_shape_pos(int idx) const {
 ////////////////////////////////////////////////////////////////////
 LMatrix4 BulletBodyNode::
 get_shape_mat(int idx) const {
+  return get_shape_transform(idx)->get_mat();
+}
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), LMatrix4::ident_mat());
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::get_shape_transform
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) BulletBodyNode::
+get_shape_transform(int idx) const {
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), TransformState::make_identity());
 
   btCollisionShape *root = get_object()->getCollisionShape();
   if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
     btCompoundShape *compound = (btCompoundShape *)root;
 
     btTransform trans = compound->getChildTransform(idx);
-    return btTrans_to_LMatrix4(trans);
+    return btTrans_to_TransformState(trans);
 
     // The above code assumes that shape's index in _shapes member
     // is the same as the shapes index within the compound. If it
@@ -377,7 +395,7 @@ get_shape_mat(int idx) const {
     */
   }
 
-  return LMatrix4::ident_mat();
+  return TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -705,3 +723,110 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
   return bounds;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  PandaNode::write_datagram(manager, dg);
+
+  dg.add_bool(is_static());
+  dg.add_bool(is_kinematic());
+  dg.add_bool(notifies_collisions());
+  dg.add_bool(get_collision_response());
+  dg.add_stdfloat(get_contact_processing_threshold());
+  //dg.add_bool(is_active());
+  dg.add_stdfloat(get_deactivation_time());
+  dg.add_bool(is_deactivation_enabled());
+  //dg.add_bool(is_debug_enabled());
+  dg.add_stdfloat(get_restitution());
+  dg.add_stdfloat(get_friction());
+#if BT_BULLET_VERSION >= 281
+  dg.add_stdfloat(get_rolling_friction());
+#else
+  dg.add_stdfloat(0);
+#endif
+  if (has_anisotropic_friction()) {
+    dg.add_bool(true);
+    get_anisotropic_friction().write_datagram(dg);
+  } else {
+    dg.add_bool(false);
+  }
+  dg.add_stdfloat(get_ccd_swept_sphere_radius());
+  dg.add_stdfloat(get_ccd_motion_threshold());
+
+  for (int i = 0; i < _shapes.size(); ++i) {
+    manager->write_pointer(dg, get_shape(i));
+    manager->write_pointer(dg, get_shape_transform(i));
+  }
+
+  // Write NULL pointer to indicate the end of the list.
+  manager->write_pointer(dg, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int BulletBodyNode::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = PandaNode::complete_pointers(p_list, manager);
+
+  BulletShape *shape = DCAST(BulletShape, p_list[pi++]);
+
+  while (shape != (BulletShape *)NULL) {
+    const TransformState *trans = DCAST(TransformState, p_list[pi++]);
+    add_shape(shape, trans);
+
+    shape = DCAST(BulletShape, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new BulletBodyNode.
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PandaNode::fillin(scan, manager);
+
+  set_static(scan.get_bool());
+  set_kinematic(scan.get_bool());
+  notify_collisions(scan.get_bool());
+  set_collision_response(scan.get_bool());
+  set_contact_processing_threshold(scan.get_stdfloat());
+  //set_active(scan.get_bool(), true);
+  set_deactivation_time(scan.get_stdfloat());
+  set_deactivation_enabled(scan.get_bool());
+  set_restitution(scan.get_stdfloat());
+  set_friction(scan.get_stdfloat());
+#if BT_BULLET_VERSION >= 281
+  set_rolling_friction(scan.get_stdfloat());
+#else
+  scan.get_stdfloat();
+#endif
+  if (scan.get_bool()) {
+    LVector3 friction;
+    friction.read_datagram(scan);
+    set_anisotropic_friction(friction);
+  }
+  set_ccd_swept_sphere_radius(scan.get_stdfloat());
+  set_ccd_motion_threshold(scan.get_stdfloat());
+
+  // Read shapes.  The list is bounded by a NULL pointer.
+  while (manager->read_pointer(scan)) {
+    // Each shape comes with a TransformState.
+    manager->read_pointer(scan);
+  }
+}
