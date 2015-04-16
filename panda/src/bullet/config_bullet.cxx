@@ -184,9 +184,13 @@ init_libbullet() {
 
   // Register factory functions for constructing objects from .bam files
   BulletBoxShape::register_with_read_factory();
+  BulletConvexHullShape::register_with_read_factory();
+  BulletDebugNode::register_with_read_factory();
   BulletPlaneShape::register_with_read_factory();
   BulletRigidBodyNode::register_with_read_factory();
   BulletSphereShape::register_with_read_factory();
+  BulletTriangleMesh::register_with_read_factory();
+  BulletTriangleMeshShape::register_with_read_factory();
 
   // Custom contact callbacks
   gContactAddedCallback = contact_added_callback;

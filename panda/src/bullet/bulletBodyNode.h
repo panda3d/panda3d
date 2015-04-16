@@ -148,6 +148,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist,
                                 BamReader *manager);
+  virtual bool require_fully_complete() const;
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);

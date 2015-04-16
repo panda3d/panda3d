@@ -167,13 +167,16 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-add_shape(BulletShape *shape, const TransformState *ts) {
+add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   nassertv(get_object());
   nassertv(ts);
 
-  nassertv(!(shape->ptr()->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE 
-    && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
+  btCollisionShape *shape = bullet_shape->ptr();
+  nassertv(shape != NULL);
+
+  nassertv(!(shape->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE &&
+            ((btConvexHullShape *)shape)->getNumVertices() == 0));
 
   // Transform
   btTransform trans = TransformState_to_btTrans(ts);
@@ -195,13 +198,13 @@ add_shape(BulletShape *shape, const TransformState *ts) {
       // After adding the shape we will have one shape, but with transform.
       // We need to wrap the shape within a compound shape, in oder to
       // be able to set the local transform.
-      next = shape->ptr();
+      next = shape;
     }
     else {
       // After adding the shape we will have a total of one shape, without 
       // local transform. We can set the shape directly.
       next = new btCompoundShape();
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
     }
 
     get_object()->setCollisionShape(next);
@@ -216,7 +219,7 @@ add_shape(BulletShape *shape, const TransformState *ts) {
       // to the compound shape.
       next = previous;
 
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
     }
     else {
       // We have one shape which is NOT a compound shape, and want to add
@@ -225,7 +228,7 @@ add_shape(BulletShape *shape, const TransformState *ts) {
 
       btTransform previous_trans = btTransform::getIdentity();
       ((btCompoundShape *)next)->addChildShape(previous_trans, previous);
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
 
       get_object()->setCollisionShape(next);
       _shape = next;
@@ -238,10 +241,10 @@ add_shape(BulletShape *shape, const TransformState *ts) {
     nassertv(previous->getShapeType() == COMPOUND_SHAPE_PROXYTYPE);
 
     next = previous;
-    ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+    ((btCompoundShape *)next)->addChildShape(trans, shape);
   }
 
-  _shapes.push_back(shape);
+  _shapes.push_back(bullet_shape);
 
   // Restore the local scaling again
   np.set_scale(scale);
@@ -778,7 +781,7 @@ int BulletBodyNode::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
 
-  BulletShape *shape = DCAST(BulletShape, p_list[pi++]);
+  PT(BulletShape) shape = DCAST(BulletShape, p_list[pi++]);
 
   while (shape != (BulletShape *)NULL) {
     const TransformState *trans = DCAST(TransformState, p_list[pi++]);
@@ -788,6 +791,22 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   }
 
   return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool BulletBodyNode::
+require_fully_complete() const {
+  // We require the shape pointers to be complete before we add them.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
