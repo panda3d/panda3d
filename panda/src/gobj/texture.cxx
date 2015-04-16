@@ -8124,6 +8124,14 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   cdata->_format = (Format)scan.get_uint8();
   cdata->_num_components = scan.get_uint8();
 
+  if ((int)cdata->_texture_type == 5) {
+    // As a kind little gesture to the people who try to load a Panda 1.10
+    // bam in Panda 1.9.
+    scan.get_uint8();
+    gobj_cat.error()
+      << "Buffer textures are not supported in this version of Panda3D.\n";
+  }
+
   cdata->inc_properties_modified();
 
   cdata->_auto_texture_scale = ATS_unspecified;
