@@ -121,6 +121,7 @@ PUBLISHED:
   INLINE int get_max_3d_texture_dimension() const;
   INLINE int get_max_2d_texture_array_layers() const; //z axis
   INLINE int get_max_cube_map_dimension() const;
+  INLINE int get_max_buffer_texture_size() const;
 
   INLINE bool get_supports_texture_combine() const;
   INLINE bool get_supports_texture_saved_result() const;
@@ -129,6 +130,7 @@ PUBLISHED:
   INLINE bool get_supports_3d_texture() const;
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
+  INLINE bool get_supports_buffer_texture() const;
   INLINE bool get_supports_tex_non_pow2() const;
   INLINE bool get_supports_texture_srgb() const;
 
@@ -476,6 +478,7 @@ protected:
   int _max_3d_texture_dimension;
   int _max_2d_texture_array_layers; //on the z axis
   int _max_cube_map_dimension;
+  int _max_buffer_texture_size;
 
   bool _supports_texture_combine;
   bool _supports_texture_saved_result;
@@ -484,6 +487,7 @@ protected:
   bool _supports_3d_texture;
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
+  bool _supports_buffer_texture;
   bool _supports_tex_non_pow2;
   bool _supports_texture_srgb;
 
