@@ -285,6 +285,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_parent_window()) {
     set_parent_window(other.get_parent_window());
   }
+  if (other.has_mouse_grabbed()) {
+    set_mouse_grabbed(other.has_mouse_grabbed());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,6 +350,9 @@ output(ostream &out) const {
     } else {
       out << "parent:" << *get_parent_window() << " ";
     }
+  }
+  if (has_mouse_grabbed()) {
+    out << get_mouse_grabbed() << " ";
   }
 }
 

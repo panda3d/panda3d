@@ -147,6 +147,11 @@ PUBLISHED:
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
 
+  INLINE void set_mouse_grabbed(bool mouse_grabbed);
+  INLINE bool get_mouse_grabbed() const;
+  INLINE bool has_mouse_grabbed() const;
+  INLINE void clear_mouse_grabbed();
+
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
@@ -172,6 +177,7 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
+    S_mouse_grabbed        = 0x10000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -186,6 +192,7 @@ private:
     F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
     F_raw_mice       = S_raw_mice,
+    F_mouse_grabbed  = S_mouse_grabbed,
   };
 
   int _specified;

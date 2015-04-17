@@ -711,6 +711,32 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_foreground();
   }
 
+  if (properties.has_mouse_grabbed()) {
+    if (properties.get_mouse_grabbed()) {
+      X11_Cursor cursor = None;
+      if (_properties.get_cursor_hidden()) {
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+        cursor = x11_pipe->get_hidden_cursor();
+      }
+
+      if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+          GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+        x11display_cat.error() << "Failed to grab pointer!\n";
+      } else {
+        _properties.set_mouse_grabbed(true);
+        properties.clear_mouse_grabbed();
+      }
+    } else {
+      if (XUngrabPointer(_display, CurrentTime) != GrabSuccess) {
+        x11display_cat.error() << "Failed to ungrab pointer!\n";
+      } else {
+        _properties.set_mouse_grabbed(false);
+        properties.clear_mouse_grabbed();
+      }
+    }
+  }
+
   set_wm_properties(wm_properties, true);
 }
 
