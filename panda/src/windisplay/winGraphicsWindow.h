@@ -214,6 +214,12 @@ private:
   static BOOL _saved_cursor_shadow;
   static BOOL _saved_mouse_vanish;
 
+  // This tracks the current window on which the user set the
+  // mouse_grabbed property.  Since only one window in the
+  // system has capture state, this can be a global.
+  static WinGraphicsWindow *_mouse_grabbed_window;
+  static RECT _mouse_ungrabbed_cliprect;
+
   // Since the Panda API requests icons and cursors by filename, we
   // need a table mapping filenames to handles, so we can avoid
   // re-reading the file each time we change icons.

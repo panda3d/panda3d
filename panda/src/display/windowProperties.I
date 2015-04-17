@@ -905,6 +905,67 @@ clear_parent_window() {
   _parent_window = NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_mouse_grabbed
+//       Access: Published
+//  Description: Specifies whether the primary mouse is grabbed
+//               by the window (true) or is free to move beyond the
+//               window (false, the default).
+//
+//               This is intended to handle cases like FPSes where
+//               the user can move the mouse arbitrarily while
+//               ensuring Panda3D always gets mouse events.
+//
+//               This operates differently on different OSes,
+//               however.  On Windows, the mouse is physically
+//               restricted to the window boundary.  On others,
+//               the mouse reports coordinates outside the window.
+//
+//               To implement the FPS use case, periodically
+//               move the pointer to the center of the window
+//               and track movement deltas.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_mouse_grabbed(bool mouse_grabbed) {
+  if (mouse_grabbed) {
+    _flags |= F_mouse_grabbed;
+  } else {
+    _flags &= ~F_mouse_grabbed;
+  }
+  _specified |= S_mouse_grabbed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_mouse_grabbed
+//       Access: Published
+//  Description: Returns true if the window is in mouse_grabbed mode.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+get_mouse_grabbed() const {
+  return (_flags & F_mouse_grabbed) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_mouse_grabbed
+//       Access: Published
+//  Description: Returns true if set_mouse_grabbed() has been specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_mouse_grabbed() const {
+  return ((_specified & S_mouse_grabbed) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_mouse_grabbed
+//       Access: Published
+//  Description: Removes the mouse_grabbed specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_mouse_grabbed() {
+  _specified &= ~S_mouse_grabbed;
+  _flags &= ~F_mouse_grabbed;
+}
+
 
 INLINE ostream &
 operator << (ostream &out, const WindowProperties &properties) {
