@@ -380,18 +380,16 @@ set_properties_now(WindowProperties &properties) {
           RECT clip;
 
           if (!GetWindowRect(_hWnd, &clip)) {
-            if (windisplay_cat.is_debug()) {
-              windisplay_cat.debug()
+            windisplay_cat.warning()
                 << "GetWindowRect() failed in set_properties_now.  Cannot confine cursor.\n";
-            }
           } else {
-            windisplay_cat.debug()
+            windisplay_cat.info()
                     << "ClipCursor() to " << clip.left << "," << clip.top << " to "
                     << clip.right << "," << clip.bottom << endl;
 
             GetClipCursor(&_mouse_unconfined_cliprect);
             if (!ClipCursor(&clip)) {
-              windisplay_cat.debug()
+              windisplay_cat.warning()
                       << "ClipCursor() failed in set_properties_now.  Ignoring.\n";
             } else {
               _properties.set_mouse_mode(WindowProperties::M_confined);
