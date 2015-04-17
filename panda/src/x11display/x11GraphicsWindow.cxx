@@ -747,6 +747,7 @@ set_properties_now(WindowProperties &properties) {
             XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
 
             _properties.set_mouse_mode(WindowProperties::M_relative);
+            properties.clear_mouse_mode();
             _dga_mouse_enabled = true;
 
             // Get the real mouse position, so we can add/subtract
@@ -762,12 +763,7 @@ set_properties_now(WindowProperties &properties) {
           _dga_mouse_enabled = false;
         }
       }
-      else
 #endif
-      {
-        // can't change
-        properties.clear_mouse_mode();
-      }
       break;
 
     case WindowProperties::M_confined:
