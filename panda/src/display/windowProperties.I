@@ -798,19 +798,30 @@ clear_z_order() {
 //     Function: WindowProperties::set_mouse_mode
 //       Access: Published
 //  Description: Specifies the mode in which the window is to operate
-//               its mouse pointer.  The default is M_absolute, which
-//               is the normal mode in which a mouse pointer operates;
-//               but you can also set M_relative, which is
-//               particularly useful for FPS-style mouse movements
-//               where you have hidden the mouse pointer and are are
-//               more interested in how fast the mouse is moving,
-//               rather than precisely where the pointer is hovering.
+//               its mouse pointer.
 //
-//               This has no effect on Windows, which does not
-//               have this concept; but is important to do on OSX
-//               and Unix/X11 to properly enable a smooth FPS-style
-//               mouselook mode.  On Unix/X11, this requires the
-//               Xxf86dga extension to be available.
+//               M_absolute: the normal mode in which a mouse pointer
+//               operates, where the mouse can move outside the window
+//               and the mouse coordinates are relative to its
+//               position in the window.
+//
+//               M_relative (OSX or Unix/X11 only): a mode where only
+//               relative movements are reported; particularly useful
+//               for FPS-style mouse movements where you have hidden
+//               the mouse pointer and are are more interested in how
+//               fast the mouse is moving, rather than precisely where
+//               the pointer is hovering.
+//
+//               This has no effect on Windows.  On Unix/X11, this
+//               requires the Xxf86dga extension to be available.
+//
+//               M_confined: this mode reports absolute mouse
+//               positions, but confines the mouse pointer to
+//               the window boundary.  It can portably replace
+//               M_relative for an FPS, but you need to periodically
+//               move the pointer to the center of the window
+//               and track movement deltas.
+//
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_mouse_mode(MouseMode mode) {

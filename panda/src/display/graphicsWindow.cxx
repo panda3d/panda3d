@@ -736,24 +736,10 @@ set_properties_now(WindowProperties &properties) {
     // Fullscreen property specified, but unchanged.
     properties.clear_fullscreen();
   }
-  if (properties.has_mouse_mode() ) {
-    
-    if (properties.get_mouse_mode() == _properties.get_mouse_mode()) {  
-      properties.clear_mouse_mode();
-    }
-    else {
-      if(properties.get_mouse_mode() == WindowProperties::M_absolute) {
-        _properties.set_mouse_mode(WindowProperties::M_absolute);
-        mouse_mode_absolute();
-        properties.clear_mouse_mode();
-      }
-      else
-      {
-        _properties.set_mouse_mode(WindowProperties::M_relative);
-        mouse_mode_relative();
-        properties.clear_mouse_mode();        
-      }    
-    }
+  if (properties.has_mouse_mode() &&
+      properties.get_mouse_mode() == _properties.get_mouse_mode()) {
+    // Mouse mode specified, but unchanged.
+    properties.clear_mouse_mode();
   }
 }
 

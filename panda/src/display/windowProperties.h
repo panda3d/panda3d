@@ -40,6 +40,7 @@ PUBLISHED:
   enum MouseMode {
     M_absolute,
     M_relative,
+    M_confined,
   };
 
   WindowProperties();
