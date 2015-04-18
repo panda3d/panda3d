@@ -204,6 +204,19 @@ CPPDeclaration *CPPTypedefType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
 
+  if (_ident != NULL && _ident->get_scope(current_scope, global_scope) == global_scope) {
+    // Hack... I know that size_t etc is supposed to work fine, so
+    // preserve these top-level typedefs.
+    CPPDeclaration *top =
+      CPPType::substitute_decl(subst, current_scope, global_scope);
+    if (top != this) {
+      return top;
+    }
+    top = new CPPTypedefType(*this);
+    subst.insert(SubstDecl::value_type(this, top));
+    return top;
+  }
+
   return _type->substitute_decl(subst, current_scope, global_scope);
 
   // Bah, this doesn't seem to work, and I can't figure out why.

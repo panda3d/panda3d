@@ -400,6 +400,8 @@ operator << (ostream &out, WindowProperties::MouseMode mode) {
     return out << "absolute";
   case WindowProperties::M_relative:
     return out << "relative";
+  case WindowProperties::M_confined:
+    return out << "confined";
   }
   return out << "**invalid WindowProperties::MouseMode(" << (int)mode << ")**";
 }
@@ -413,6 +415,8 @@ operator >> (istream &in, WindowProperties::MouseMode &mode) {
     mode = WindowProperties::M_absolute;
   } else if (word == "relative") {
     mode = WindowProperties::M_relative;
+  } else if (word == "confined") {
+    mode = WindowProperties::M_confined;
   } else {
     display_cat.warning()
       << "Unknown mouse mode: " << word << "\n";

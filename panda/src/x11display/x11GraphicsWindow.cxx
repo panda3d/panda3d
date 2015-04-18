@@ -711,6 +711,88 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_foreground();
   }
 
+  if (properties.has_mouse_mode()) {
+    switch (properties.get_mouse_mode()) {
+    case WindowProperties::M_absolute:
+      XUngrabPointer(_display, CurrentTime);
+#ifdef HAVE_XF86DGA
+      if (_dga_mouse_enabled) {
+        x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
+        XF86DGADirectVideo(_display, _screen, 0);
+        _dga_mouse_enabled = false;
+      }
+#endif
+      _properties.set_mouse_mode(WindowProperties::M_absolute);
+      properties.clear_mouse_mode();
+      break;
+
+    case WindowProperties::M_relative:
+#ifdef HAVE_XF86DGA
+      if (!_dga_mouse_enabled) {
+        int major_ver, minor_ver;
+        if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
+
+          X11_Cursor cursor = None;
+          if (_properties.get_cursor_hidden()) {
+            x11GraphicsPipe *x11_pipe;
+            DCAST_INTO_V(x11_pipe, _pipe);
+            cursor = x11_pipe->get_hidden_cursor();
+          }
+
+          if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+              GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+            x11display_cat.error() << "Failed to grab pointer!\n";
+          } else {
+            x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
+            XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
+
+            _properties.set_mouse_mode(WindowProperties::M_relative);
+            properties.clear_mouse_mode();
+            _dga_mouse_enabled = true;
+
+            // Get the real mouse position, so we can add/subtract
+            // our relative coordinates later.
+            XEvent event;
+            XQueryPointer(_display, _xwindow, &event.xbutton.root,
+              &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+              &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
+            _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+          }
+        } else {
+          x11display_cat.info() << "XF86DGA extension not available\n";
+          _dga_mouse_enabled = false;
+        }
+      }
+#endif
+      break;
+
+    case WindowProperties::M_confined:
+      {
+#ifdef HAVE_XF86DGA
+        if (_dga_mouse_enabled) {
+          XF86DGADirectVideo(_display, _screen, 0);
+          _dga_mouse_enabled = false;
+        }
+#endif
+        X11_Cursor cursor = None;
+        if (_properties.get_cursor_hidden()) {
+          x11GraphicsPipe *x11_pipe;
+          DCAST_INTO_V(x11_pipe, _pipe);
+          cursor = x11_pipe->get_hidden_cursor();
+        }
+
+        if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+            GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+          x11display_cat.error() << "Failed to grab pointer!\n";
+        } else {
+          _properties.set_mouse_mode(WindowProperties::M_confined);
+          properties.clear_mouse_mode();
+        }
+      }
+      break;
+    }
+  }
+
   set_wm_properties(wm_properties, true);
 }
 
@@ -721,14 +803,7 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 mouse_mode_absolute() {
-#ifdef HAVE_XF86DGA
-  if (!_dga_mouse_enabled) return;
-
-  XUngrabPointer(_display, CurrentTime);
-  x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
-  XF86DGADirectVideo(_display, _screen, 0);
-  _dga_mouse_enabled = false;
-#endif
+  // unused: remove in 1.10!
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -738,42 +813,7 @@ mouse_mode_absolute() {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 mouse_mode_relative() {
-#ifdef HAVE_XF86DGA
-  if (_dga_mouse_enabled) return;
-
-  int major_ver, minor_ver;
-  if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
-
-    X11_Cursor cursor = None;
-    if (_properties.get_cursor_hidden()) {
-      x11GraphicsPipe *x11_pipe;
-      DCAST_INTO_V(x11_pipe, _pipe);
-      cursor = x11_pipe->get_hidden_cursor();
-    }
-
-    if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
-        GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
-      x11display_cat.error() << "Failed to grab pointer!\n";
-      return;
-    }
-
-    x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
-    XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
-
-    _dga_mouse_enabled = true;
-  } else {
-    x11display_cat.info() << "XF86DGA extension not available\n";
-    _dga_mouse_enabled = false;
-  }
-
-  // Get the real mouse position, so we can add/subtract
-  // our relative coordinates later.
-  XEvent event;
-  XQueryPointer(_display, _xwindow, &event.xbutton.root,
-    &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
-    &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
-  _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-#endif
+  // unused: remove in 1.10!
 }
 
 ////////////////////////////////////////////////////////////////////

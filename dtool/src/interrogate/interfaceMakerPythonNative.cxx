@@ -2636,7 +2636,7 @@ write_module_class(ostream &out, Object *obj) {
     write_function_slot(out, 2, slots, "bf_getsegcount");
     write_function_slot(out, 2, slots, "bf_getcharbuffer");
     out << "#endif\n";
-    out << "#if PY_MAJOR_VERSION >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000\n";
     write_function_slot(out, 2, slots, "bf_getbuffer");
     write_function_slot(out, 2, slots, "bf_releasebuffer");
     out << "#endif\n";
