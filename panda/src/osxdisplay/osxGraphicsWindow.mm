@@ -2064,6 +2064,25 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_minimized();
   }
 
+  if (properties.has_mouse_mode()) {
+    switch (properties.get_mouse_mode()) {
+    case WindowProperties::M_absolute:
+      CGAssociateMouseAndMouseCursorPosition(true);
+      _properties.set_mouse_mode(WindowProperties::M_absolute);
+      properties.clear_mouse_mode();
+      break;
+
+    case WindowProperties::M_relative:
+      CGAssociateMouseAndMouseCursorPosition(false);
+      _properties.set_mouse_mode(WindowProperties::M_relative);
+      properties.clear_mouse_mode();
+      break;
+
+    case WindowProperties::M_confined:
+      break;
+    }
+  }
+
   if (osxdisplay_cat.is_debug()) {
     osxdisplay_cat.debug()
       << "set_properties_now Out....." << _properties << "\n";
