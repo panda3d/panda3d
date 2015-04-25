@@ -26,6 +26,7 @@ CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
   _glgsg = glgsg;
 
   glGenTextures(1, &_index);
+  _buffer = 0;
 
   _handle = 0;
   _has_storage = false;

@@ -602,16 +602,19 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_INT_SAMPLER_3D:
             case GL_INT_SAMPLER_2D_ARRAY:
             case GL_INT_SAMPLER_CUBE:
+            case GL_INT_SAMPLER_BUFFER:
             case GL_UNSIGNED_INT_SAMPLER_1D:
             case GL_UNSIGNED_INT_SAMPLER_2D:
             case GL_UNSIGNED_INT_SAMPLER_3D:
             case GL_UNSIGNED_INT_SAMPLER_CUBE:
             case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+            case GL_UNSIGNED_INT_SAMPLER_BUFFER:
             case GL_SAMPLER_1D_SHADOW:
             case GL_SAMPLER_1D:
             case GL_SAMPLER_CUBE_SHADOW:
             case GL_SAMPLER_2D_ARRAY:
             case GL_SAMPLER_2D_ARRAY_SHADOW:
+            case GL_SAMPLER_BUFFER:
 #endif  // !OPENGLES
             case GL_SAMPLER_2D:
             case GL_SAMPLER_2D_SHADOW:
@@ -620,7 +623,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
-              bind._desired_type = Texture::TT_2d_texture_array;
+              bind._desired_type = Texture::TT_2d_texture;
               bind._stage = texunitno++;
               if (get_sampler_texture_type(bind._desired_type, param_type)) {
                 _glgsg->_glUniform1i(p, s->_tex_spec.size());
@@ -761,16 +764,19 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_IMAGE_3D_EXT:
             case GL_IMAGE_CUBE_EXT:
             case GL_IMAGE_2D_ARRAY_EXT:
+            case GL_IMAGE_BUFFER_EXT:
             case GL_INT_IMAGE_1D_EXT:
             case GL_INT_IMAGE_2D_EXT:
             case GL_INT_IMAGE_3D_EXT:
             case GL_INT_IMAGE_CUBE_EXT:
             case GL_INT_IMAGE_2D_ARRAY_EXT:
+            case GL_INT_IMAGE_BUFFER_EXT:
             case GL_UNSIGNED_INT_IMAGE_1D_EXT:
             case GL_UNSIGNED_INT_IMAGE_2D_EXT:
             case GL_UNSIGNED_INT_IMAGE_3D_EXT:
             case GL_UNSIGNED_INT_IMAGE_CUBE_EXT:
             case GL_UNSIGNED_INT_IMAGE_2D_ARRAY_EXT:
+            case GL_UNSIGNED_INT_IMAGE_BUFFER_EXT:
               // This won't really change at runtime, so we might as well
               // bind once and then forget about it.
               _glgsg->_glUniform1i(p, imgunitno++);
@@ -1074,6 +1080,18 @@ get_sampler_texture_type(int &out, GLenum param_type) {
     } else {
       GLCAT.error()
         << "GLSL shader uses 2D texture array, which is unsupported by the driver.\n";
+      return false;
+    }
+
+  case GL_INT_SAMPLER_BUFFER:
+  case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+  case GL_SAMPLER_BUFFER:
+    out = Texture::TT_buffer_texture;
+    if (_glgsg->_supports_buffer_texture) {
+      return true;
+    } else {
+      GLCAT.error()
+        << "GLSL shader uses buffer texture, which is unsupported by the driver.\n";
       return false;
     }
 #endif
@@ -1508,6 +1526,12 @@ disable_shader_texture_bindings() {
 
     case Texture::TT_cube_map:
       glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      break;
+
+    case Texture::TT_buffer_texture:
+#ifndef OPENGLES
+      glBindTexture(GL_TEXTURE_BUFFER, 0);
+#endif
       break;
     }
   }

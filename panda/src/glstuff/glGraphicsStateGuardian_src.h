@@ -693,6 +693,10 @@ public:
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
+#ifndef OPENGLES
+  PFNGLTEXBUFFERPROC _glTexBuffer;
+#endif
+
   bool _supports_clear_texture;
 #ifndef OPENGLES
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;

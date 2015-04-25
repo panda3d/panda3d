@@ -216,6 +216,26 @@ setup_cube_map(int size, ComponentType component_type, Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_buffer_texture
+//       Access: Published
+//  Description: Sets the texture as an empty buffer texture with
+//               the specified size and properties.  Follow up
+//               with set_ram_image() or modify_ram_image() to fill
+//               the image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
+//
+//               Note that a buffer texture's format needs to match
+//               the component type.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_buffer_texture(int size, ComponentType component_type, Format format,
+                     GeomEnums::UsageHint usage) {
+  setup_texture(TT_buffer_texture, size, 1, 1, component_type, format);
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_image
 //       Access: Published
 //  Description: Clears the texture data without changing its format
@@ -884,6 +904,18 @@ INLINE Texture::ComponentType Texture::
 get_component_type() const {
   CDReader cdata(_cycler);
   return cdata->_component_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_usage_hint
+//       Access: Published
+//  Description: Returns the usage hint specified for buffer textures,
+//               or UH_unspecified for all other texture types.
+////////////////////////////////////////////////////////////////////
+INLINE GeomEnums::UsageHint Texture::
+get_usage_hint() const {
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,6 +29,8 @@ class BulletTriangleMesh;
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletTriangleMeshShape : public BulletShape {
+private:
+  INLINE BulletTriangleMeshShape();
 
 PUBLISHED:
   BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
@@ -50,7 +52,20 @@ private:
 
   PT(BulletTriangleMesh) _mesh;
 
-////////////////////////////////////////////////////////////////////
+  bool _dynamic : 1;
+  bool _compress : 1;
+  bool _bvh : 1;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                              BamReader *manager);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
