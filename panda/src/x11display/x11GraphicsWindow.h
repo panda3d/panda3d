@@ -100,15 +100,6 @@ protected:
   bool _awaiting_configure;
   bool _dga_mouse_enabled;
   Atom _wm_delete_window;
-  Atom _net_wm_window_type;
-  Atom _net_wm_window_type_splash;
-  Atom _net_wm_window_type_fullscreen;
-  Atom _net_wm_state;
-  Atom _net_wm_state_fullscreen;
-  Atom _net_wm_state_above;
-  Atom _net_wm_state_below;
-  Atom _net_wm_state_add;
-  Atom _net_wm_state_remove;
 
   struct MouseDeviceInfo {
     int    _fd;

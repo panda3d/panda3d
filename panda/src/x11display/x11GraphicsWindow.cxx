@@ -105,15 +105,6 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
   _wm_delete_window = x11_pipe->_wm_delete_window;
-  _net_wm_window_type = x11_pipe->_net_wm_window_type;
-  _net_wm_window_type_splash = x11_pipe->_net_wm_window_type_splash;
-  _net_wm_window_type_fullscreen = x11_pipe->_net_wm_window_type_fullscreen;
-  _net_wm_state = x11_pipe->_net_wm_state;
-  _net_wm_state_fullscreen = x11_pipe->_net_wm_state_fullscreen;
-  _net_wm_state_above = x11_pipe->_net_wm_state_above;
-  _net_wm_state_below = x11_pipe->_net_wm_state_below;
-  _net_wm_state_add = x11_pipe->_net_wm_state_add;
-  _net_wm_state_remove = x11_pipe->_net_wm_state_remove;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
@@ -174,7 +165,6 @@ move_pointer(int device, int x, int y) {
     return true;
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: x11GraphicsWindow::begin_frame
@@ -1037,6 +1027,9 @@ open_window() {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_V(x11_pipe, _pipe);
+
   // Name the window if there is a name
   XTextProperty window_name;
   XTextProperty *window_name_p = (XTextProperty *)NULL;
@@ -1117,15 +1110,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   if (properties.get_fullscreen()) {
     // For a "fullscreen" request, we pass this through, hoping the
     // window manager will support EWMH.
-    type_data[next_type_data++] = _net_wm_window_type_fullscreen;
+    type_data[next_type_data++] = x11_pipe->_net_wm_window_type_fullscreen;
 
     // We also request it as a state.
-    state_data[next_state_data++] = _net_wm_state_fullscreen;
+    state_data[next_state_data++] = x11_pipe->_net_wm_state_fullscreen;
     // Don't ask me why this has to be 1/0 and not _net_wm_state_add.
     // It doesn't seem to work otherwise.
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 1);
+    set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_fullscreen, 1);
   } else {
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 0);
+    set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_fullscreen, 0);
   }
 
   // If we asked for a window without a border, there's no excellent
@@ -1152,26 +1145,32 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   }
 
   if (properties.get_undecorated() && !properties.get_fullscreen()) {
-    type_data[next_type_data++] = _net_wm_window_type_splash;
+    type_data[next_type_data++] = x11_pipe->_net_wm_window_type_splash;
   }
 
   if (properties.has_z_order()) {
     switch (properties.get_z_order()) {
     case WindowProperties::Z_bottom:
-      state_data[next_state_data++] = _net_wm_state_below;
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_add);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_below;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_add);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_remove);
       break;
 
     case WindowProperties::Z_normal:
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_remove);
       break;
 
     case WindowProperties::Z_top:
-      state_data[next_state_data++] = _net_wm_state_above;
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_add);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_above;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_add);
       break;
     }
   }
@@ -1180,12 +1179,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   nassertv(next_state_data < max_state_data);
   nassertv(next_set_data < max_set_data);
 
-  XChangeProperty(_display, _xwindow, _net_wm_window_type,
+  // Add the process ID as a convenience for other applications.
+  Cardinal pid = getpid();
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_pid,
+                  XA_CARDINAL, 32, PropModeReplace,
+                  (unsigned char *)&pid, 1);
+
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_window_type,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)type_data, next_type_data);
 
   // Request the state properties all at once.
-  XChangeProperty(_display, _xwindow, _net_wm_state,
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_state,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)state_data, next_state_data);
 
@@ -1204,7 +1209,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
       event.send_event = True;
       event.display = _display;
       event.window = _xwindow;
-      event.message_type = _net_wm_state;
+      event.message_type = x11_pipe->_net_wm_state;
       event.format = 32;
       event.data.l[0] = set_data[i]._action;
       event.data.l[1] = set_data[i]._state;
