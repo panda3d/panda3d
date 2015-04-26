@@ -6928,8 +6928,8 @@ query_gl_version() {
       string_to_int(components[1], _gl_version_minor);
     }
 
-    if (GLCAT.is_info()) {
-      GLCAT.info()
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
         << "GL_VERSION = " << version << ", decoded to "
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
@@ -6949,19 +6949,21 @@ query_gl_version() {
       _gl_shadlang_ver_major = 1;
       _gl_shadlang_ver_minor = 1;
       const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-      if (verstr == NULL || sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major, &_gl_shadlang_ver_minor) != 2) {
-        GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+      if (verstr == NULL ||
+          sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
+                                  &_gl_shadlang_ver_minor) != 2) {
+        GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
       }
-      cerr << verstr << " -> " << _gl_shadlang_ver_major << " . " << _gl_shadlang_ver_minor << "\n";
     }
 #elif defined(OPENGLES_2)
     _gl_shadlang_ver_major = 1;
     _gl_shadlang_ver_minor = 0;
     const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    if (verstr == NULL || sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major, &_gl_shadlang_ver_minor) != 2) {
-      GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+    if (verstr == NULL ||
+        sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                               &_gl_shadlang_ver_minor) != 2) {
+      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
-    cerr << verstr << " -> " << _gl_shadlang_ver_major << " . " << _gl_shadlang_ver_minor << "\n";
 #endif
   }
 }
