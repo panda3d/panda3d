@@ -1022,6 +1022,23 @@ set_properties_now(WindowProperties &properties) {
     }
     properties.clear_z_order();
   }
+
+  if (properties.has_mouse_mode()) {
+    switch (properties.get_mouse_mode()) {
+    case WindowProperties::M_absolute:
+    case WindowProperties::M_confined:  // confined is maintained in mouse move event
+      CGAssociateMouseAndMouseCursorPosition(true);
+      _properties.set_mouse_mode(properties.get_mouse_mode());
+      properties.clear_mouse_mode();
+      break;
+
+    case WindowProperties::M_relative:
+      CGAssociateMouseAndMouseCursorPosition(false);
+      _properties.set_mouse_mode(properties.get_mouse_mode());
+      properties.clear_mouse_mode();
+      break;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1670,6 +1687,8 @@ handle_mouse_button_event(int button, bool down) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
+  double nx, ny;
+
   if (absolute) {
     if (cocoadisplay_cat.is_spam()) {
       if (in_window != _input_devices[0].get_pointer().get_in_window()) {
@@ -1682,14 +1701,39 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     }
 
     // Strangely enough, in Cocoa, mouse Y coordinates are 1-based.
-    _input_devices[0].set_pointer(in_window, x, y - 1,
-      ClockObject::get_global_clock()->get_frame_time());
+    nx = x;
+    ny = y - 1;
 
   } else {
     // We received deltas, so add it to the current mouse position.
     MouseData md = _input_devices[0].get_pointer();
-    _input_devices[0].set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+    nx = md.get_x() + x;
+    ny = md.get_y() + y;
   }
+
+  if (_properties.get_mouse_mode() == WindowProperties::M_confined
+      && !in_window) {
+    CGPoint point;
+
+    nx = std::max(0., std::min((double) get_x_size() - 1, nx));
+    ny = std::max(0., std::min((double) get_y_size() - 1, ny));
+
+    if (_properties.get_fullscreen()) {
+      point = CGPointMake(nx, ny + 1);
+    } else {
+      point = CGPointMake(nx + _properties.get_x_origin(),
+                          ny + _properties.get_y_origin() + 1);
+    }
+
+    if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+      in_window = true;
+    } else {
+      cocoadisplay_cat.warning() << "Failed to return mouse pointer to window\n";
+    }
+  }
+
+  _input_devices[0].set_pointer(in_window, nx, ny,
+      ClockObject::get_global_clock()->get_frame_time());
 
   if (in_window != _mouse_hidden && _properties.get_cursor_hidden()) {
     // Hide the cursor if the mouse enters the window,

@@ -34,7 +34,7 @@ class App(ShowBase):
         # Disable the camera trackball controls.
         self.disableMouse()
         
-        self.mouseMagnitude = 144
+        self.mouseMagnitude = 1
 
         self.rotateX, self.rotateY = 0, 0
 
@@ -100,9 +100,9 @@ class App(ShowBase):
         self.recenterMouse()
 
     def recenterMouse(self):
-        self.base.win.movePointer(0, 
-              int(self.base.win.getProperties().getXSize() / 2),
-              int(self.base.win.getProperties().getYSize() / 2))
+        self.base.win.movePointer(0,  
+              int(self.base.win.getProperties().getXSize() / 2.),
+              int(self.base.win.getProperties().getYSize() / 2.))
             
 
     def toggleRecenter(self):
@@ -119,6 +119,7 @@ class App(ShowBase):
         self.base.win.requestProperties(wp)
         
     def mouseTask(self, task):
+        
         mw = self.base.mouseWatcherNode
 
         hasMouse = mw.hasMouse()
@@ -146,7 +147,8 @@ class App(ShowBase):
         if self.manualRecenterMouse:
             # move mouse back to center
             self.recenterMouse()             
-
+            self.lastMouseX, self.lastMouseY = 0, 0  
+                
         # scale position and delta to pixels for user
         w, h = self.win.getSize()
         
@@ -158,8 +160,8 @@ class App(ShowBase):
              int(dx*w), int(dy*h))) 
 
         # rotate box by delta
-        self.rotateX += dx * 10
-        self.rotateY += dy * 10
+        self.rotateX += dx * 10 * self.mouseMagnitude
+        self.rotateY += dy * 10 * self.mouseMagnitude
 
         self.positionText.setText("Model rotation: {0}, {1}".format(
              int(self.rotateX*1000)/1000., int(self.rotateY*1000)/1000.))        
