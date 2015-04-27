@@ -145,7 +145,8 @@ class App(ShowBase):
             x, y, dx, dy = 0, 0, 0, 0
 
         if self.manualRecenterMouse:
-            self.recenterMouse()           
+            # move mouse back to center
+            self.recenterMouse()             
             self.lastMouseX, self.lastMouseY = 0, 0  
                 
         # scale position and delta to pixels for user
