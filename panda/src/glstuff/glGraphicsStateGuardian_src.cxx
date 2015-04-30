@@ -6979,16 +6979,20 @@ query_gl_version() {
       _gl_shadlang_ver_major = 1;
       _gl_shadlang_ver_minor = 1;
       const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-      if (verstr == NULL || sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major, &_gl_shadlang_ver_minor) != 2) {
-        GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+      if (verstr == NULL ||
+          sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
+                                  &_gl_shadlang_ver_minor) != 2) {
+        GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
       }
     }
 #elif defined(OPENGLES_2)
     _gl_shadlang_ver_major = 1;
     _gl_shadlang_ver_minor = 0;
     const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    if (verstr == NULL || sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major, &_gl_shadlang_ver_minor) != 2) {
-      GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+    if (verstr == NULL ||
+        sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                               &_gl_shadlang_ver_minor) != 2) {
+      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
 #endif
   }

@@ -157,6 +157,10 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
   _stack = NULL;
   _verify_result = -1;
 
+  // Center the window on the screen.
+  position((Fl::w() - w()) / 2, (Fl::h() - h()) / 2);
+  set_modal();
+
   read_cert_file(cert_filename);
   get_friendly_name();
   verify_cert();
@@ -583,6 +587,10 @@ ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
   _auth_dialog(auth_dialog),
   _cert(cert)
 {
+  // Center the window on the screen.
+  position((Fl::w() - w()) / 2, (Fl::h() - h()) / 2);
+  set_modal();
+
   layout();
 }
 
