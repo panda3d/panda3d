@@ -1420,9 +1420,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       GLint p = _glsl_parameter_map[bind._id._seqno];
 
       int num_elements, element_stride, divisor;
+      bool normalized;
       if (_glgsg->_data_reader->get_array_info(name, array_reader,
                                                num_values, numeric_type,
-                                               start, stride, divisor,
+                                               normalized, start, stride, divisor,
                                                num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
@@ -1440,11 +1441,14 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           } else
 #endif
           if (numeric_type == GeomEnums::NT_packed_dabc) {
+            // GL_BGRA is a special accepted value available since OpenGL 3.2.
+            // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
           } else {
-            _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                           GL_TRUE, stride, client_pointer);
+            _glgsg->_glVertexAttribPointer(p, num_values,
+                                           _glgsg->get_numeric_type(numeric_type),
+                                           normalized, stride, client_pointer);
           }
 
           if (_glgsg->_supports_vertex_attrib_divisor) {

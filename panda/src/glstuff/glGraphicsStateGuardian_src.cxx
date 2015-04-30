@@ -1013,8 +1013,9 @@ reset() {
 #ifdef OPENGLES
   _supports_packed_dabc = false;
 #else
-  _supports_packed_dabc = /*gl_support_packed_dabc &&*/
-    has_extension("GL_ARB_vertex_array_bgra") || has_extension("GL_EXT_vertex_array_bgra");
+  _supports_packed_dabc = is_at_least_gl_version(3, 2) ||
+                          has_extension("GL_ARB_vertex_array_bgra") ||
+                          has_extension("GL_EXT_vertex_array_bgra");
 #endif
 
   _supports_multisample =
@@ -7370,6 +7371,15 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_stdfloat:
     // Shouldn't happen, display error.
     break;
+
+  case Geom::NT_int8:
+    return GL_BYTE;
+
+  case Geom::NT_int16:
+    return GL_SHORT;
+
+  case Geom::NT_int32:
+    return GL_INT;
   }
 
   GLCAT.error()

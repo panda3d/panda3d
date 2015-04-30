@@ -453,7 +453,7 @@ public:
   bool get_array_info(const InternalName *name,
                       const GeomVertexArrayDataHandle *&array_reader,
                       int &num_values, NumericType &numeric_type,
-                      int &start, int &stride, int &divisor,
+                      bool &normalized, int &start, int &stride, int &divisor,
                       int &num_elements, int &element_stride) const;
 
   INLINE bool has_vertex() const;

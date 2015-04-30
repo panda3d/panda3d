@@ -87,6 +87,23 @@ munge_format_impl(const GeomVertexFormat *orig,
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
 
+#ifndef OPENGLES
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
+  // and texture coordinates.
+  const GeomVertexColumn *vertex_type = orig->get_vertex_column();
+  if (vertex_type != (GeomVertexColumn *)NULL &&
+      vertex_type->get_numeric_type() == NT_int8) {
+    int vertex_array = orig->get_array_with(InternalName::get_vertex());
+
+    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
+
+    // Replace the existing vertex format with the new format.
+    new_array_format->add_column
+      (InternalName::get_vertex(), 3, NT_int16,
+       C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
+  }
+#endif
+
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
       color_type->get_numeric_type() == NT_packed_dabc &&
@@ -236,6 +253,23 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
+
+#ifndef OPENGLES
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
+  // and texture coordinates.
+  const GeomVertexColumn *vertex_type = orig->get_vertex_column();
+  if (vertex_type != (GeomVertexColumn *)NULL &&
+      vertex_type->get_numeric_type() == NT_int8) {
+    int vertex_array = orig->get_array_with(InternalName::get_vertex());
+
+    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
+
+    // Replace the existing vertex format with the new format.
+    new_array_format->add_column
+      (InternalName::get_vertex(), 3, NT_int16,
+       C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
+  }
+#endif
 
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
