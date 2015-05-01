@@ -2002,6 +2002,17 @@ glsl_compile_and_link() {
   //  glsl_report_shader_errors(*it);
   //}
 
+  // Under core OpenGL, we have to make sure that we bind something to
+  // attribute 0.  Make sure that this is the position array.
+  _glgsg->_glBindAttribLocation(_glsl_program, 0, "p3d_Vertex");
+  _glgsg->_glBindAttribLocation(_glsl_program, 0, "vertex");
+
+  // While we're at it, let's also map these to fixed locations.  These
+  // attributes were historically fixed to these locations, so it might
+  // help a buggy driver.
+  _glgsg->_glBindAttribLocation(_glsl_program, 2, "p3d_Normal");
+  _glgsg->_glBindAttribLocation(_glsl_program, 3, "p3d_Color");
+
   // If we requested to retrieve the shader, we should indicate that before linking.
 #if !defined(NDEBUG) && !defined(OPENGLES)
   if (gl_dump_compiled_shaders && _glgsg->_supports_get_program_binary) {
