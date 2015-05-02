@@ -2,6 +2,7 @@
 #include "mutexWin32Impl.cxx"
 #include "mutexSpinlockImpl.cxx"
 #include "neverFreeMemory.cxx"
+#include "pdtoa.c"
 #include "pstrtod.cxx"
 #include "register_type.cxx"
 #include "typeHandle.cxx"

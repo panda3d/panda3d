@@ -23,9 +23,7 @@ void FLOATNAME(LPoint3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     FLOATNAME(LVecBase3)::init_type();
-    string name = "LPoint3";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name,
+    register_type(_type_handle, FLOATNAME_STR(LPoint3),
                   FLOATNAME(LVecBase3)::get_class_type());
   }
 }

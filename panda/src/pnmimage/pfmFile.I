@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::is_valid
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
 is_valid() const {
@@ -155,7 +155,7 @@ set_point2(int x, int y, const LVecBase2f &point) {
   case 4:
     (*(LPoint4f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], 0.0, 0.0);
     break;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ set_point3(int x, int y, const LVecBase3f &point) {
   case 4:
     (*(LPoint4f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], 0.0f, 0.0f);
     break;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,7 +350,7 @@ set_point4(int x, int y, const LVecBase4f &point) {
   case 4:
     *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels] = point;
     break;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -591,6 +591,71 @@ xform(const LMatrix4d &transform) {
 INLINE PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
   return compute_planar_bounds(LCAST(PN_float32, center), point_dist, sample_radius, points_only);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::gamma_correct
+//       Access: Published
+//  Description: Assuming the image was constructed with a gamma curve
+//               of from_gamma in the RGB channels, converts it to an
+//               image with a gamma curve of to_gamma in the RGB
+//               channels.  Does not affect the alpha channel.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+gamma_correct(float from_gamma, float to_gamma) {
+  apply_exponent(from_gamma / to_gamma);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::gamma_correct_alpha
+//       Access: Published
+//  Description: Assuming the image was constructed with a gamma curve
+//               of from_gamma in the alpha channel, converts it to an
+//               image with a gamma curve of to_gamma in the alpha
+//               channel.  Does not affect the RGB channels.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+gamma_correct_alpha(float from_gamma, float to_gamma) {
+  apply_exponent(1.0, from_gamma / to_gamma);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+apply_exponent(float gray_exponent) {
+  apply_exponent(gray_exponent, gray_exponent, gray_exponent, 1.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+apply_exponent(float gray_exponent, float alpha_exponent) {
+  apply_exponent(gray_exponent, gray_exponent, gray_exponent, alpha_exponent);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.  For a
+//               grayscale image, the blue_exponent value is used for
+//               the grayscale value, and red_exponent and
+//               green_exponent are unused.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent) {
+  apply_exponent(c0_exponent, c1_exponent, c2_exponent, 1.0);
 }
 
 ////////////////////////////////////////////////////////////////////

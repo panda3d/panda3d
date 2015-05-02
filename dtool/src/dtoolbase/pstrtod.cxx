@@ -132,9 +132,9 @@ pstrtod(const char *nptr, char **endptr) {
       }
 
       if (esign == '-') {
-        value /= pow(evalue, 10.0);
+        value /= pow(10.0, evalue);
       } else {
-        value *= pow(evalue, 10.0);
+        value *= pow(10.0, evalue);
       }
     }
   }

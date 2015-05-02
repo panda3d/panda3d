@@ -398,6 +398,22 @@ get_max_cube_map_dimension() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_buffer_texture_size
+//       Access: Published
+//  Description: Returns the largest possible buffer texture size,
+//               or -1 if there is no particular limit.  Returns 0
+//               if cube map textures are not supported.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_buffer_texture_size() const {
+  return _max_buffer_texture_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_texture_combine
 //       Access: Published
 //  Description: Returns true if this particular GSG can use the
@@ -467,6 +483,16 @@ get_supports_2d_texture_array() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_cube_map() const {
   return _supports_cube_map;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_buffer_texture
+//       Access: Published
+//  Description: Returns true if this GSG can render buffer textures.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_buffer_texture() const {
+  return _supports_buffer_texture;
 }
 
 ////////////////////////////////////////////////////////////////////

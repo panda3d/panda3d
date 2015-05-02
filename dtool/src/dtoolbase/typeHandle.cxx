@@ -49,7 +49,7 @@ get_memory_usage(MemoryClass memory_class) const {
 //               allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-inc_memory_usage(MemoryClass memory_class, int size) {
+inc_memory_usage(MemoryClass memory_class, size_t size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
@@ -72,7 +72,7 @@ inc_memory_usage(MemoryClass memory_class, int size) {
 //               the total allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-dec_memory_usage(MemoryClass memory_class, int size) {
+dec_memory_usage(MemoryClass memory_class, size_t size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);

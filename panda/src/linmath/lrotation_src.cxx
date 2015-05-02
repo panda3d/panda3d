@@ -24,9 +24,7 @@ init_type() {
   if (_type_handle == TypeHandle::none()) {
     FLOATNAME(LQuaternion)::init_type();
     // Format a string to describe the type.
-    string name = "LRotation";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name,
+    register_type(_type_handle, FLOATNAME_STR(LRotation),
                   FLOATNAME(LQuaternion)::get_class_type());
   }
 }

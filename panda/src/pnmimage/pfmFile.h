@@ -123,6 +123,7 @@ PUBLISHED:
   BLOCKING void forward_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void merge(const PfmFile &other);
+  BLOCKING void apply_mask(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void copy_channel_masked(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
@@ -154,6 +155,13 @@ PUBLISHED:
                         float pixel_scale = 1.0);
 
   void operator *= (float multiplier);
+
+  INLINE void gamma_correct(float from_gamma, float to_gamma);
+  INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
+  INLINE void apply_exponent(float gray_exponent);
+  INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
+  INLINE void apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent);
+  void apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent, float c3_exponent);
 
   void output(ostream &out) const;
 
@@ -204,7 +212,7 @@ private:
     int _dist;
   };
 
-  void fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size, 
+  void fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size,
                       int xi, int yi, int dist, int sxi, int syi) const;
 
   static bool has_point_noop(const PfmFile *file, int x, int y);

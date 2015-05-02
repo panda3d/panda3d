@@ -134,6 +134,7 @@ PUBLISHED:
   CPT(GeomPrimitive) reverse() const;
   CPT(GeomPrimitive) match_shade_model(ShadeModel shade_model) const;
   CPT(GeomPrimitive) make_points() const;
+  CPT(GeomPrimitive) make_lines() const;
   CPT(GeomPrimitive) make_patches() const;
 
   int get_num_bytes() const;
@@ -373,6 +374,9 @@ public:
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;
+
+  INLINE IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+                                         GraphicsStateGuardianBase *gsg) const;
 
 private:
   CPT(GeomPrimitive) _object;

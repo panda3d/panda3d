@@ -34,6 +34,11 @@ CLP(TextureContext)::
 
   glDeleteTextures(1, &_index);
   _index = 0;
+
+  if (_buffer != 0) {
+    _glgsg->_glDeleteBuffers(1, &_buffer);
+    _buffer = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +92,11 @@ reset_data() {
 
   // Free the texture resources.
   glDeleteTextures(1, &_index);
+
+  if (_buffer != 0) {
+    _glgsg->_glDeleteBuffers(1, &_buffer);
+    _buffer = 0;
+  }
 
   // We still need a valid index number, though, in case we want to
   // re-load the texture later.

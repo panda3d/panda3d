@@ -30,8 +30,6 @@ void FLOATNAME(LVecBase2)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
-    string name = "LVecBase2";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name);
+    register_type(_type_handle, FLOATNAME_STR(LVecBase2));
   }
 }

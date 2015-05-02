@@ -32,8 +32,6 @@
 #include "fog.h"
 #include "pointerToArray.h"
 
-#include "lru.h"
-
 #include "vertexElementArray.h"
 #include "dxShaderContext9.h"
 

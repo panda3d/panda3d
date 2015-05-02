@@ -656,7 +656,7 @@ r_build_node(const string &path) {
 
   // Otherwise, we have to create it.  Do this recursively, so we
   // create each node along the path.
-  MayaNodeDesc *node_desc;
+  MayaNodeDesc *node_desc = NULL;
 
   //mayaegg_cat.info() << "path: " << path << endl;
   if (path.empty()) {

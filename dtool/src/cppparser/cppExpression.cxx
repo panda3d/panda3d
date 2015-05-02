@@ -26,6 +26,7 @@
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
 #include "cppBison.h"
+#include "pdtoa.h"
 
 #include <assert.h>
 
@@ -1079,7 +1080,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_real:
-    out << _u._real;
+    {
+      // We use our own dtoa implementation here because it guarantees
+      // to never format the number as an integer.
+      char buffer[32];
+      pdtoa(_u._real, buffer);
+      out << buffer;
+    }
     break;
 
   case T_string:
@@ -1155,14 +1162,15 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_construct:
-    out << "(" << _u._typecast._to->get_typedef_name(scope)
-        << "(";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "(";
     _u._typecast._op1->output(out, indent_level, scope, false);
-    out << "))";
+    out << ")";
     break;
 
   case T_default_construct:
-    out << "(" << _u._typecast._to->get_typedef_name(scope) << "())";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "()";
     break;
 
   case T_new:

@@ -2636,7 +2636,7 @@ write_module_class(ostream &out, Object *obj) {
     write_function_slot(out, 2, slots, "bf_getsegcount");
     write_function_slot(out, 2, slots, "bf_getcharbuffer");
     out << "#endif\n";
-    out << "#if PY_MAJOR_VERSION >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000\n";
     write_function_slot(out, 2, slots, "bf_getbuffer");
     write_function_slot(out, 2, slots, "bf_releasebuffer");
     out << "#endif\n";
@@ -4475,15 +4475,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
   // Now convert (the rest of the) actual arguments, one by one.
   for (; pn < num_params; ++pn) {
-    if (pn > 0) {
-      expected_params += ", ";
+    ParameterRemap *param = remap->_parameters[pn]._remap;
+    CPPType *orig_type = param->get_orig_type();
+    CPPType *type = param->get_new_type();
+    CPPExpression *default_value = param->get_default_value();
+    string param_name = remap->get_parameter_name(pn);
+
+    if (!is_cpp_type_legal(orig_type)) {
+      // We can't wrap this.  We sometimes get here for default arguments.
+      // Just skip this parameter.
+      continue;
     }
 
-    bool is_optional = false;
     // Has this remap been selected to consider optional arguments for
     // this parameter?  We can do that by adding a vertical bar to the
     // PyArg_ParseTuple format string, coupled with some extra logic
     // in the argument handling, below.
+    bool is_optional = false;
     if (remap->_has_this && !is_constructor) {
       if (pn > min_num_args) {
         is_optional = true;
@@ -4500,11 +4508,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       }
     }
 
-    ParameterRemap *param = remap->_parameters[pn]._remap;
-    CPPType *orig_type = param->get_orig_type();
-    CPPType *type = param->get_new_type();
-    CPPExpression *default_value = param->get_default_value();
-    string param_name = remap->get_parameter_name(pn);
+    if (pn > 0) {
+      expected_params += ", ";
+    }
 
     // This is the string to convert our local variable to the
     // appropriate C++ type.  Normally this is just a cast.
@@ -6432,10 +6438,11 @@ is_remap_legal(FunctionRemap *remap) {
     return false;
   }
 
-  // all params must be legal
+  // all non-optional params must be legal
   for (int pn = 0; pn < (int)remap->_parameters.size(); pn++) {
-    CPPType *orig_type = remap->_parameters[pn]._remap->get_orig_type();
-    if (!is_cpp_type_legal(orig_type)) {
+    ParameterRemap *param = remap->_parameters[pn]._remap;
+    CPPType *orig_type = param->get_orig_type();
+    if (param->get_default_value() == NULL && !is_cpp_type_legal(orig_type)) {
       return false;
     }
   }

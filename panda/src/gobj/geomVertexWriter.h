@@ -144,13 +144,10 @@ PUBLISHED:
 
   INLINE void set_data1i(int data);
   INLINE void set_data2i(int a, int b);
-  INLINE void set_data2i(const int data[2]);
   INLINE void set_data2i(const LVecBase2i &data);
   INLINE void set_data3i(int a, int b, int c);
-  INLINE void set_data3i(const int data[3]);
   INLINE void set_data3i(const LVecBase3i &data);
   INLINE void set_data4i(int a, int b, int c, int d);
-  INLINE void set_data4i(const int data[4]);
   INLINE void set_data4i(const LVecBase4i &data);
 
   INLINE void add_data1f(float data);
@@ -185,13 +182,10 @@ PUBLISHED:
 
   INLINE void add_data1i(int data);
   INLINE void add_data2i(int a, int b);
-  INLINE void add_data2i(const int data[2]);
   INLINE void add_data2i(const LVecBase2i &data);
   INLINE void add_data3i(int a, int b, int c);
-  INLINE void add_data3i(const int data[3]);
   INLINE void add_data3i(const LVecBase3i &data);
   INLINE void add_data4i(int a, int b, int c, int d);
-  INLINE void add_data4i(const int data[4]);
   INLINE void add_data4i(const LVecBase4i &data);
 
   void output(ostream &out) const;

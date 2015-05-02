@@ -21,6 +21,7 @@ forcetype OFileStream
 forcetype FileStream
 forcetype IDecryptStream
 forcetype OEncryptStream
+forcetype LineStream
 
 forcetype ofstream
 forcetype ifstream

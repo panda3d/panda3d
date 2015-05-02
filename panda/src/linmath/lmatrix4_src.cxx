@@ -593,9 +593,7 @@ void FLOATNAME(LMatrix4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
-    string name = "LMatrix4";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name);
+    register_type(_type_handle, FLOATNAME_STR(LMatrix4));
   }
 }
 
@@ -608,8 +606,6 @@ void FLOATNAME(UnalignedLMatrix4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
-    string name = "UnalignedLMatrix4";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name);
+    register_type(_type_handle, FLOATNAME_STR(UnalignedLMatrix4));
   }
 }

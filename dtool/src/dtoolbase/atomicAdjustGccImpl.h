@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustGccImpl {
 public:
-#if __GCC_ATOMIC_LONG_LOCK_FREE > __GCC_ATOMIC_INT_LOCK_FREE
+#if __GCC_ATOMIC_LONG_LOCK_FREE >= __GCC_ATOMIC_INT_LOCK_FREE
   // If the long can be more lock-free than int, use it instead.
   typedef __attribute__ ((aligned (__SIZEOF_LONG__))) long Integer;
 #else

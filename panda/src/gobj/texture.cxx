@@ -1524,6 +1524,10 @@ write(ostream &out, int indent_level) const {
   case TT_cube_map:
     out << "cube map, " << cdata->_x_size << " x " << cdata->_y_size;
     break;
+
+  case TT_buffer_texture:
+    out << "buffer, " << cdata->_x_size;
+    break;
   }
 
   if (cdata->_num_views > 1) {
@@ -1924,6 +1928,8 @@ format_texture_type(TextureType tt) {
     return "2d_texture_array";
   case TT_cube_map:
     return "cube_map";
+  case TT_buffer_texture:
+    return "buffer_texture";
   }
   return "**invalid**";
 }
@@ -1946,6 +1952,8 @@ string_texture_type(const string &str) {
     return TT_2d_texture_array;
   } else if (cmp_nocase(str, "cube_map") == 0) {
     return TT_cube_map;
+  } else if (cmp_nocase(str, "buffer_texture") == 0) {
+    return TT_buffer_texture;
   }
 
   gobj_cat->error()
@@ -2673,6 +2681,7 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
     switch (cdata->_texture_type) {
     case TT_1d_texture:
     case TT_2d_texture:
+    case TT_buffer_texture:
       z_size = 1;
       break;
 
@@ -4854,7 +4863,8 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     }
 
 #ifndef NDEBUG
-    if (cdata->_texture_type == TT_1d_texture) {
+    if (cdata->_texture_type == TT_1d_texture ||
+        cdata->_texture_type == TT_buffer_texture) {
       nassertr(y_size == 1, false);
     } else if (cdata->_texture_type == TT_cube_map) {
       nassertr(x_size == y_size, false);
@@ -5051,6 +5061,10 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
     cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
     cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
+
+  case TT_buffer_texture:
+    nassertv(y_size == 1 && z_size == 1);
+    break;
   }
 
   if (texture_type != TT_2d_texture) {
@@ -5199,7 +5213,8 @@ do_set_x_size(CData *cdata, int x_size) {
 void Texture::
 do_set_y_size(CData *cdata, int y_size) {
   if (cdata->_y_size != y_size) {
-    nassertv(cdata->_texture_type != Texture::TT_1d_texture || y_size == 1);
+    nassertv((cdata->_texture_type != Texture::TT_buffer_texture &&
+              cdata->_texture_type != Texture::TT_1d_texture) || y_size == 1);
     cdata->_y_size = y_size;
     cdata->inc_image_modified();
     do_clear_ram_image(cdata);
@@ -7897,6 +7912,10 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_format);
   me.add_uint8(cdata->_num_components);
 
+  if (cdata->_texture_type == TT_buffer_texture) {
+    me.add_uint8(cdata->_usage_hint);
+  }
+
   me.add_uint8(cdata->_auto_texture_scale);
   me.add_uint32(cdata->_orig_file_x_size);
   me.add_uint32(cdata->_orig_file_y_size);
@@ -8063,6 +8082,7 @@ make_this_from_bam(const FactoryParams &params) {
       options.set_auto_texture_scale(auto_texture_scale);
 
       switch (texture_type) {
+      case TT_buffer_texture:
       case TT_1d_texture:
       case TT_2d_texture:
         if (alpha_filename.empty()) {
@@ -8124,6 +8144,10 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   cdata->_format = (Format)scan.get_uint8();
   cdata->_num_components = scan.get_uint8();
 
+  if (cdata->_texture_type == TT_buffer_texture) {
+    cdata->_usage_hint = (GeomEnums::UsageHint)scan.get_uint8();
+  }
+
   cdata->inc_properties_modified();
 
   cdata->_auto_texture_scale = ATS_unspecified;
@@ -8146,9 +8170,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     size_t u_size = scan.get_uint32();
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-      image[(int)u_idx] = scan.get_uint8();
-    }
+    scan.extract_bytes(image.p(), u_size);
 
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
@@ -8201,13 +8223,11 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
       cdata->_ram_images[n]._page_size = scan.get_uint32();
     }
 
-    size_t u_size = scan.get_uint32();
-
     // fill the cdata->_image buffer with image data
+    size_t u_size = scan.get_uint32();
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
-      image[(int)u_idx] = scan.get_uint8();
-    }
+    scan.extract_bytes(image.p(), u_size);
+
     cdata->_ram_images[n]._image = image;
   }
   cdata->_loaded_from_image = true;
@@ -8307,6 +8327,9 @@ CData() {
   // constructor), but set it to something else first to avoid the
   // check in do_set_format depending on an uninitialized value.
   _format = F_rgba;
+
+  // Only used for buffer textures.
+  _usage_hint = GeomEnums::UH_unspecified;
 
   _pad_x_size = 0;
   _pad_y_size = 0;

@@ -49,6 +49,19 @@ public:
   typedef TYPENAME base_class::const_iterator const_iterator;
   typedef TYPENAME base_class::reverse_iterator reverse_iterator;
   typedef TYPENAME base_class::const_reverse_iterator const_reverse_iterator;
+
+  // This exists because libc++'s remove implementation has a bug with
+  // Panda's allocator class.
+  INLINE void remove(const Type &val) {
+    iterator it = this->begin();
+    while (it != this->end()) {
+      if (*it == val) {
+        it = this->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  };
 };
 
 #endif  // USE_STL_ALLOCATOR

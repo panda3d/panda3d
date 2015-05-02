@@ -107,14 +107,13 @@ def Dtool_PreloadDLL(module):
 # Dtool_FindModule to find our panda3d.core module.  However, we
 # should be able to import it.  To differentiate the old-style Panda
 # build (with .dll's) from the new-style Panda build (with .pyd's), we
-# first try to import libpandaexpress directly; if it succeeds we're
-# in an old-style build, and if it fails we must be in a new-style
-# build.
+# first try to import panda3d.core directly; if it succeeds we're in a
+# new-style build, and if it fails we must be in an old-style build.
 try:
+    from panda3d.core import *
+except ImportError:
     Dtool_PreloadDLL("libpandaexpress")
     from libpandaexpress import *
-except ImportError:
-    from panda3d.core import *
 
 def Dtool_ObjectToDict(cls, name, obj):
     cls.DtoolClassDict[name] = obj;

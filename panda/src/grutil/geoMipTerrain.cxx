@@ -55,15 +55,16 @@ generate_block(unsigned short mx,
   // Create the format
   PT(GeomVertexArrayFormat) array = new GeomVertexArrayFormat();
   if (_has_color_map) {
-    array->add_column(InternalName::make("color"), 4,
-                                            Geom::NT_stdfloat, Geom::C_color);
+    array->add_column(InternalName::get_color(), 4,
+                      Geom::NT_stdfloat, Geom::C_color);
   }
-  array->add_column(InternalName::make("vertex"), 3,
-                                            Geom::NT_stdfloat, Geom::C_point);
-  array->add_column(InternalName::make("texcoord"), 2,
-                                            Geom::NT_stdfloat, Geom::C_texcoord);
-  array->add_column(InternalName::make("normal"), 3,
-                                            Geom::NT_stdfloat, Geom::C_vector);
+  array->add_column(InternalName::get_vertex(), 3,
+                    Geom::NT_stdfloat, Geom::C_point);
+  array->add_column(InternalName::get_texcoord(), 2,
+                    Geom::NT_stdfloat, Geom::C_texcoord);
+  array->add_column(InternalName::get_normal(), 3,
+                    Geom::NT_stdfloat, Geom::C_vector);
+
   PT(GeomVertexFormat) format = new GeomVertexFormat();
   format->add_array(array);
 
@@ -73,11 +74,11 @@ generate_block(unsigned short mx,
   vdata->unclean_set_num_rows((_block_size + 1) * (_block_size + 1));
   GeomVertexWriter cwriter;
   if (_has_color_map) {
-    cwriter = GeomVertexWriter(vdata, "color");
+    cwriter = GeomVertexWriter(vdata, InternalName::get_color());
   }
-  GeomVertexWriter vwriter (vdata, "vertex"  );
-  GeomVertexWriter twriter (vdata, "texcoord");
-  GeomVertexWriter nwriter (vdata, "normal"  );
+  GeomVertexWriter vwriter (vdata, InternalName::get_vertex());
+  GeomVertexWriter twriter (vdata, InternalName::get_texcoord());
+  GeomVertexWriter nwriter (vdata, InternalName::get_normal());
   PT(GeomTriangles) prim = new GeomTriangles(Geom::UH_stream);
 
   if (_bruteforce) {
@@ -109,20 +110,26 @@ generate_block(unsigned short mx,
   // This is the number of vertices at the certain level.
   unsigned short lowblocksize = _block_size / level + 1;
 
+  PN_stdfloat cmap_xratio = _color_map.get_x_size() / (PN_stdfloat)_xsize;
+  PN_stdfloat cmap_yratio = _color_map.get_y_size() / (PN_stdfloat)_ysize;
+
+  PN_stdfloat tc_xscale = 1.0f / PN_stdfloat(_xsize - 1);
+  PN_stdfloat tc_yscale = 1.0f / PN_stdfloat(_ysize - 1);
+
   for (int x = 0; x <= _block_size; x++) {
     for (int y = 0; y <= _block_size; y++) {
       if ((x % level) == 0 && (y % level) == 0) {
         if (_has_color_map) {
-          LVecBase4f color = _color_map.get_xel_a(int((mx * _block_size + x)
-                                  / double(_xsize) * _color_map.get_x_size()),
-                                                      int((my * _block_size + y)
-                                  / double(_ysize) * _color_map.get_y_size()));
+          LVecBase4f color = _color_map.get_xel_a(
+            int((mx * _block_size + x) * cmap_xratio),
+            int((my * _block_size + y) * cmap_yratio));
           cwriter.add_data4f(color);
         }
         vwriter.add_data3(x - 0.5 * _block_size, y - 0.5 * _block_size, get_pixel_value(mx, my, x, y));
-        twriter.add_data2((mx * _block_size + x) / double(_xsize - 1),
-                           (my * _block_size + y) / double(_ysize - 1));
+        twriter.add_data2((mx * _block_size + x) * tc_xscale,
+                          (my * _block_size + y) * tc_yscale);
         nwriter.add_data3(get_normal(mx, my, x, y));
+
         if (x > 0 && y > 0) {
           // Left border
           if (x == level && ljunction) {
@@ -654,20 +661,30 @@ set_heightfield(const Filename &filename, PNMFileType *ftype) {
     // Copy over the header to the heightfield image.
     _heightfield.copy_header_from(imgheader);
 
-    if(!is_power_of_two(imgheader.get_x_size() - 1) || !is_power_of_two(imgheader.get_y_size() - 1)) {
+    if (!is_power_of_two(imgheader.get_x_size() - 1) ||
+        !is_power_of_two(imgheader.get_y_size() - 1)) {
       // Calculate the nearest power-of-two-plus-one size.
       unsigned int reqx, reqy;
       reqx = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_x_size() - 1)) / log(2.0))) + 1);
       reqy = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_y_size() - 1)) / log(2.0))) + 1);
 
       // If it's not a valid size, tell PNMImage to resize it.
-      if (reqx != (unsigned int)imgheader.get_x_size() || reqy != (unsigned int)imgheader.get_y_size()) {
+      if (reqx != (unsigned int)imgheader.get_x_size() ||
+          reqy != (unsigned int)imgheader.get_y_size()) {
         grutil_cat.warning()
-      << "Rescaling heightfield image " << filename
-      << " from " << imgheader.get_x_size() << "x" << imgheader.get_y_size()
-      << " to " << reqx << "x" << reqy << " pixels.\n";
+          << "Rescaling heightfield image " << filename
+          << " from " << imgheader.get_x_size() << "x" << imgheader.get_y_size()
+          << " to " << reqx << "x" << reqy << " pixels.\n";
         _heightfield.set_read_size(reqx, reqy);
       }
+    }
+
+    if (imgheader.get_color_space() == CS_sRGB) {
+      // Probably a mistaken metadata setting on the file.
+      grutil_cat.warning()
+        << "Heightfield image is specified to have sRGB color space!\n"
+           "Panda applies gamma correction, which will probably cause "
+           "it to produce incorrect results.\n";
     }
 
     // Read the real image now

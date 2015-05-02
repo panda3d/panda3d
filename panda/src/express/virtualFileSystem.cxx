@@ -565,7 +565,7 @@ make_directory_full(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
 get_file(const Filename &filename, bool status_only) const {
-  int open_flags = status_only ? 0 : OF_status_only;
+  int open_flags = status_only ? OF_status_only : 0;
   ((VirtualFileSystem *)this)->_lock.acquire();
   PT(VirtualFile) result = do_get_file(filename, open_flags);
   ((VirtualFileSystem *)this)->_lock.release();
