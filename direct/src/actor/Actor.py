@@ -4,6 +4,7 @@ __all__ = ['Actor']
 
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject
+from direct.directnotify import DirectNotifyGlobal
 from pandac.PandaModules import LODNode
 import types, copy
 
@@ -12,7 +13,7 @@ class Actor(DirectObject, NodePath):
     Actor class: Contains methods for creating, manipulating
     and playing animations on characters
     """
-    notify = directNotify.newCategory("Actor")
+    notify = DirectNotifyGlobal.directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
 
     modelLoaderOptions = LoaderOptions(LoaderOptions.LFSearch |
