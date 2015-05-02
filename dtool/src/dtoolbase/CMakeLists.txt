@@ -22,6 +22,7 @@ set(P3DTOOLBASE_HEADERS
     nearly_zero.h
     neverFreeMemory.h neverFreeMemory.I
     numeric_types.h
+    pdtoa.h
     pstrtod.h
     register_type.I register_type.h
     selectThreadImpl.h
@@ -53,6 +54,7 @@ set(P3DTOOLBASE_SOURCES
     mutexWin32Impl.cxx
     mutexSpinlockImpl.cxx
     neverFreeMemory.cxx
+    pdtoa.cxx
     pstrtod.cxx
     register_type.cxx
     typeHandle.cxx

@@ -20,7 +20,6 @@ set(P3DISPLAY_HEADERS
   graphicsWindowInputDevice.I graphicsWindowInputDevice.h
   graphicsWindowProc.h
   graphicsWindowProcCallbackData.I graphicsWindowProcCallbackData.h
-  lru.h
   nativeWindowHandle.I nativeWindowHandle.h
   parasiteBuffer.I parasiteBuffer.h
   pStatGPUTimer.I pStatGPUTimer.h
@@ -56,7 +55,6 @@ set(P3DISPLAY_SOURCES
   graphicsWindowProc.cxx
   graphicsWindowProcCallbackData.cxx
   graphicsDevice.cxx
-  lru.cxx
   nativeWindowHandle.cxx
   parasiteBuffer.cxx
   windowHandle.cxx
