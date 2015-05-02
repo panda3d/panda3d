@@ -713,6 +713,7 @@ public:
   bool _supports_bgr;
   bool _supports_rescale_normal;
   bool _supports_packed_dabc;
+  bool _supports_packed_ufloat;
 
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
 #ifndef OPENGLES_2

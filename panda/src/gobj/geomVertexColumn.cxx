@@ -153,6 +153,7 @@ output(ostream &out) const {
     break;
 
   case NT_stdfloat:
+  case NT_packed_ufloat:
     out << "?";
     break;
   }
@@ -213,6 +214,11 @@ setup() {
 
   case NT_stdfloat:
     nassertv(false);
+    break;
+
+  case NT_packed_ufloat:
+    _component_bytes = 4;  // sizeof(PN_uint32)
+    _num_values *= 3;
     break;
   }
 
@@ -483,6 +489,12 @@ get_data1f(const unsigned char *pointer) {
   case NT_int32:
     return *(const PN_int32 *)pointer;
 
+  case NT_packed_ufloat:
+    {
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return GeomVertexData::unpack_ufloat_a(dword);
+    }
+
   default:
     nassertr(false, 0.0f);
   }
@@ -577,6 +589,10 @@ get_data2f(const unsigned char *pointer) {
         const PN_int32 *pi = (const PN_int32 *)pointer;
         _v2.set(pi[0], pi[1]);
       }
+      return _v2;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v2);
       return _v2;
     }
   }
@@ -680,6 +696,15 @@ get_data3f(const unsigned char *pointer) {
       {
         const PN_int32 *pi = (const PN_int32 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
+      }
+      return _v3;
+
+    case NT_packed_ufloat:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _v3.set(GeomVertexData::unpack_ufloat_a(dword),
+                GeomVertexData::unpack_ufloat_b(dword),
+                GeomVertexData::unpack_ufloat_c(dword));
       }
       return _v3;
     }
@@ -795,6 +820,10 @@ get_data4f(const unsigned char *pointer) {
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v4);
+      break;
     }
   }
 
@@ -837,8 +866,8 @@ get_data1d(const unsigned char *pointer) {
     return *(const PN_float64 *)pointer;
 
   case NT_stdfloat:
-    nassertr(false, 0.0f);
-    return 0.0f;
+    nassertr(false, 0.0);
+    return 0.0;
 
   case NT_int8:
     return *(const PN_int8 *)pointer;
@@ -848,9 +877,15 @@ get_data1d(const unsigned char *pointer) {
 
   case NT_int32:
     return *(const PN_int32 *)pointer;
+
+  case NT_packed_ufloat:
+    {
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return GeomVertexData::unpack_ufloat_a(dword);
+    }
   }
 
-  return 0.0f;
+  return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -941,6 +976,10 @@ get_data2d(const unsigned char *pointer) {
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v2d);
+      break;
     }
   }
 
@@ -1043,6 +1082,15 @@ get_data3d(const unsigned char *pointer) {
       {
         const PN_int32 *pi = (const PN_int32 *)pointer;
         _v3d.set(pi[0], pi[1], pi[2]);
+      }
+      return _v3d;
+
+    case NT_packed_ufloat:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
+                 GeomVertexData::unpack_ufloat_b(dword),
+                 GeomVertexData::unpack_ufloat_c(dword));
       }
       return _v3d;
     }
@@ -1158,6 +1206,10 @@ get_data4d(const unsigned char *pointer) {
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v4d);
+      break;
     }
   }
 
@@ -1211,6 +1263,12 @@ get_data1i(const unsigned char *pointer) {
 
   case NT_int32:
     return *(const PN_int32 *)pointer;
+
+  case NT_packed_ufloat:
+    {
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return (int)GeomVertexData::unpack_ufloat_a(dword);
+    }
   }
 
   return 0;
@@ -1302,6 +1360,10 @@ get_data2i(const unsigned char *pointer) {
         _v2i.set(pi[0], pi[1]);
       }
       return _v2i;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v2i);
+      break;
     }
   }
 
@@ -1401,6 +1463,15 @@ get_data3i(const unsigned char *pointer) {
       {
         const PN_int32 *pi = (const PN_int32 *)pointer;
         _v3i.set(pi[0], pi[1], pi[2]);
+      }
+      return _v3i;
+
+    case NT_packed_ufloat:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _v3i.set((int)GeomVertexData::unpack_ufloat_a(dword),
+                 (int)GeomVertexData::unpack_ufloat_b(dword),
+                 (int)GeomVertexData::unpack_ufloat_c(dword));
       }
       return _v3i;
     }
@@ -1513,6 +1584,10 @@ get_data4i(const unsigned char *pointer) {
         _v4i.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4i;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v4i);
+      break;
     }
   }
 
@@ -1569,6 +1644,10 @@ set_data1f(unsigned char *pointer, float data) {
     case NT_int32:
       *(PN_int32 *)pointer = (int)data;
       break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
+      break;
     }
     break;
 
@@ -1596,6 +1675,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   switch (_column->get_num_values()) {
   case 1:
     set_data1f(pointer, data[0]);
+    break;
 
   case 2:
     switch (_column->get_numeric_type()) {
@@ -1670,6 +1750,10 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -1781,6 +1865,10 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
       }
+      break;
+
+    case NT_packed_ufloat:
+      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -1904,6 +1992,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
         pi[3] = (int)data[3];
       }
       break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
+      break;
     }
     break;
   }
@@ -1958,6 +2050,10 @@ set_data1d(unsigned char *pointer, double data) {
 
     case NT_int32:
       *(PN_int32 *)pointer = (int)data;
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -2060,6 +2156,10 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
         pi[0] = (int)data[0];
         pi[1] = (int)data[1];
       }
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -2171,6 +2271,10 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
         pi[1] = (int)data[1];
         pi[2] = (int)data[2];
       }
+      break;
+
+    case NT_packed_ufloat:
+      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2294,6 +2398,10 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
         pi[3] = (int)data[3];
       }
       break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
+      break;
     }
     break;
   }
@@ -2352,6 +2460,10 @@ set_data1i(unsigned char *pointer, int data) {
 
     case NT_int32:
       *(PN_int32 *)pointer = data;
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -2452,6 +2564,10 @@ set_data2i(unsigned char *pointer, const LVecBase2i &data) {
         pi[0] = data[0];
         pi[1] = data[1];
       }
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -2560,6 +2676,10 @@ set_data3i(unsigned char *pointer, const LVecBase3i &data) {
         pi[1] = data[1];
         pi[2] = data[2];
       }
+      break;
+
+    case NT_packed_ufloat:
+      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
       break;
     }
     break;
@@ -2679,6 +2799,10 @@ set_data4i(unsigned char *pointer, const LVecBase4i &data) {
         pi[2] = data[2];
         pi[3] = data[3];
       }
+      break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
       break;
     }
     break;
@@ -2839,6 +2963,10 @@ get_data4f(const unsigned char *pointer) {
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v4);
+      break;
     }
   }
 
@@ -2999,6 +3127,10 @@ get_data4d(const unsigned char *pointer) {
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
+
+    case NT_packed_ufloat:
+      nassertr(false, _v4d);
+      break;
     }
   }
 
@@ -3160,6 +3292,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
         pi[3] = (int)data[3];
       }
       break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
+      break;
     }
     break;
   }
@@ -3320,6 +3456,10 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
         pi[3] = (int)data[3];
       }
       break;
+
+    case NT_packed_ufloat:
+      nassertv(false);
+      break;
     }
     break;
   }
@@ -3443,6 +3583,15 @@ get_data3f(const unsigned char *pointer) {
     case NT_int32:
       nassertr(false, _v3);
       return _v3;
+
+    case NT_packed_ufloat:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _v3.set(GeomVertexData::unpack_ufloat_a(dword),
+                GeomVertexData::unpack_ufloat_b(dword),
+                GeomVertexData::unpack_ufloat_c(dword));
+      }
+      return _v3;
     }
   } else {
     const LVecBase4f &v4 = get_data4f(pointer);
@@ -3528,6 +3677,7 @@ get_data4f(const unsigned char *pointer) {
     case NT_int8:
     case NT_int16:
     case NT_int32:
+    case NT_packed_ufloat:
       nassertr(false, _v4);
       return _v4;
     }
@@ -3652,6 +3802,15 @@ get_data3d(const unsigned char *pointer) {
     case NT_int32:
       nassertr(false, _v3d);
       return _v3d;
+
+    case NT_packed_ufloat:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _v3d.set(GeomVertexData::unpack_ufloat_a(dword),
+                 GeomVertexData::unpack_ufloat_b(dword),
+                 GeomVertexData::unpack_ufloat_c(dword));
+      }
+      return _v3d;
     }
   } else {
     const LVecBase4d &v4 = get_data4d(pointer);
@@ -3737,6 +3896,7 @@ get_data4d(const unsigned char *pointer) {
     case NT_int8:
     case NT_int16:
     case NT_int32:
+    case NT_packed_ufloat:
       nassertr(false, _v4d);
       return _v4d;
     }
@@ -3850,6 +4010,10 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     case NT_int32:
       nassertv(false);
       break;
+
+    case NT_packed_ufloat:
+      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      break;
     }
   } else {
     set_data4f(pointer, LVecBase4f(data[0], data[1], data[2], 1.0f));
@@ -3940,6 +4104,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     case NT_int8:
     case NT_int16:
     case NT_int32:
+      nassertv(false);
+      break;
+
+    case NT_packed_ufloat:
       nassertv(false);
       break;
     }
@@ -4053,6 +4221,10 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
     case NT_int32:
       nassertv(false);
       break;
+
+    case NT_packed_ufloat:
+      *(PN_uint32 *)pointer = GeomVertexData::pack_ufloat(data[0], data[1], data[2]);
+      break;
     }
   } else {
     set_data4d(pointer, LVecBase4d(data[0], data[1], data[2], 1.0f));
@@ -4143,6 +4315,10 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
     case NT_int8:
     case NT_int16:
     case NT_int32:
+      nassertv(false);
+      break;
+
+    case NT_packed_ufloat:
       nassertv(false);
       break;
     }

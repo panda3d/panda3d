@@ -92,7 +92,8 @@ munge_format_impl(const GeomVertexFormat *orig,
   // and texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
   if (vertex_type != (GeomVertexColumn *)NULL &&
-      vertex_type->get_numeric_type() == NT_int8) {
+      (vertex_type->get_numeric_type() == NT_int8 ||
+       vertex_type->get_numeric_type() == NT_uint8)) {
     int vertex_array = orig->get_array_with(InternalName::get_vertex());
 
     PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
@@ -102,7 +103,29 @@ munge_format_impl(const GeomVertexFormat *orig,
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
-#endif
+
+  // Convert packed formats that OpenGL may not understand.
+  for (int i = 0; i < orig->get_num_columns(); ++i) {
+    const GeomVertexColumn *column = orig->get_column(i);
+    int array = orig->get_array_with(column->get_name());
+
+    if (column->get_numeric_type() == NT_packed_dabc &&
+        !glgsg->_supports_packed_dabc) {
+      // Unpack the packed ARGB color into its four byte components.
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 4, NT_uint8, C_color,
+                               column->get_start(), column->get_column_alignment());
+
+    } else if (column->get_numeric_type() == NT_packed_ufloat &&
+               !glgsg->_supports_packed_ufloat) {
+      // Unpack to three 32-bit floats.  (In future, should try 16-bit float)
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 3, NT_float32,
+                               column->get_contents(), column->get_start(),
+                               column->get_column_alignment());
+    }
+  }
+#endif  // !OPENGLES
 
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
@@ -116,8 +139,8 @@ munge_format_impl(const GeomVertexFormat *orig,
 
     // Replace the existing color format with the new format.
     new_array_format->add_column
-      (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start(), color_type->get_column_alignment());
+      (InternalName::get_color(), 4, NT_uint8, C_color,
+       color_type->get_start(), color_type->get_column_alignment());
   }
 
   if (animation.get_animation_type() == AT_hardware) {
@@ -259,7 +282,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   // and texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
   if (vertex_type != (GeomVertexColumn *)NULL &&
-      vertex_type->get_numeric_type() == NT_int8) {
+      (vertex_type->get_numeric_type() == NT_int8 ||
+       vertex_type->get_numeric_type() == NT_uint8)) {
     int vertex_array = orig->get_array_with(InternalName::get_vertex());
 
     PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
@@ -269,23 +293,29 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
-#endif
 
-  const GeomVertexColumn *color_type = orig->get_color_column();
-  if (color_type != (GeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == NT_packed_dabc &&
-      !glgsg->_supports_packed_dabc) {
-    // We need to convert the color format; OpenGL doesn't support the
-    // byte order of DirectX's packed ARGB format.
-    int color_array = orig->get_array_with(InternalName::get_color());
+  // Convert packed formats that OpenGL may not understand.
+  for (int i = 0; i < orig->get_num_columns(); ++i) {
+    const GeomVertexColumn *column = orig->get_column(i);
+    int array = orig->get_array_with(column->get_name());
 
-    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
+    if (column->get_numeric_type() == NT_packed_dabc &&
+        !glgsg->_supports_packed_dabc) {
+      // Unpack the packed ARGB color into its four byte components.
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 4, NT_uint8, C_color,
+                               column->get_start(), column->get_column_alignment());
 
-    // Replace the existing color format with the new format.
-    new_array_format->add_column
-      (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start(), color_type->get_column_alignment());
+    } else if (column->get_numeric_type() == NT_packed_ufloat &&
+               !glgsg->_supports_packed_ufloat) {
+      // Unpack to three 32-bit floats.  (In future, should try 16-bit float)
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 3, NT_float32,
+                               column->get_contents(), column->get_start(),
+                               column->get_column_alignment());
+    }
   }
+#endif  // !OPENGLES
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
 

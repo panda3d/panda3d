@@ -186,6 +186,7 @@ PUBLISHED:
     NT_int8,         // An integer -128..127
     NT_int16,        // An integer -32768..32767
     NT_int32,        // An integer -2147483648..2147483647
+    NT_packed_ufloat,// Three 10/11-bit float components packed in a uint32
   };
 
   // The contents determine the semantic meaning of a numeric value

@@ -1012,10 +1012,13 @@ reset() {
 
 #ifdef OPENGLES
   _supports_packed_dabc = false;
+  _supports_packed_ufloat = false;
 #else
   _supports_packed_dabc = is_at_least_gl_version(3, 2) ||
                           has_extension("GL_ARB_vertex_array_bgra") ||
                           has_extension("GL_EXT_vertex_array_bgra");
+  _supports_packed_ufloat = is_at_least_gl_version(4, 4) ||
+                            has_extension("GL_ARB_vertex_type_10f_11f_11f_rev");
 #endif
 
   _supports_multisample =
@@ -3707,7 +3710,7 @@ update_standard_vertex_arrays(bool force) {
         return false;
       }
       glVertexPointer(num_values, get_numeric_type(numeric_type),
-                         stride, client_pointer + start);
+                      stride, client_pointer + start);
       glEnableClientState(GL_VERTEX_ARRAY);
     }
   }
@@ -7380,6 +7383,13 @@ get_numeric_type(Geom::NumericType numeric_type) {
 
   case Geom::NT_int32:
     return GL_INT;
+
+  case Geom::NT_packed_ufloat:
+#ifndef OPENGLES
+    return GL_UNSIGNED_INT_10F_11F_11F_REV;
+#else
+    break;
+#endif
   }
 
   GLCAT.error()

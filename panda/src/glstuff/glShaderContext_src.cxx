@@ -2002,8 +2002,8 @@ glsl_compile_and_link() {
   //  glsl_report_shader_errors(*it);
   //}
 
-  // Under core OpenGL, we have to make sure that we bind something to
-  // attribute 0.  Make sure that this is the position array.
+  // Under OpenGL's compatibility profile, we have to make sure that we bind
+  // something to attribute 0.  Make sure that this is the position array.
   _glgsg->_glBindAttribLocation(_glsl_program, 0, "p3d_Vertex");
   _glgsg->_glBindAttribLocation(_glsl_program, 0, "vertex");
 

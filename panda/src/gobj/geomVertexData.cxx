@@ -2579,7 +2579,7 @@ set_num_rows(int n) {
       while (pointer < stop) {
         PN_float64 *pi = (PN_float64 *)pointer;
         for (int i = 0; i < num_values; i++) {
-          pi[i] = 1.0f;
+          pi[i] = 1.0;
         }
         pointer += stride;
       }
@@ -2591,6 +2591,14 @@ set_num_rows(int n) {
     case NT_int32:
       // Shouldn't have this type in the format.
       nassertr(false, false);
+      break;
+
+    case NT_packed_ufloat:
+      while (pointer < stop) {
+        *(PN_int32 *)pointer = 0x781e03c0;
+        pointer += stride;
+      }
+      break;
     }
   }
 
