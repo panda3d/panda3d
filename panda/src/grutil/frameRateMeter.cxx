@@ -180,6 +180,10 @@ clear_window() {
 ////////////////////////////////////////////////////////////////////
 bool FrameRateMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  // This triggers when you try to parent a frame rate meter into
+  // the scene graph yourself.  Instead, use setup_window().
+  nassertr(_display_region != NULL, false);
+
   Thread *current_thread = trav->get_current_thread();
 
   // Statistics
