@@ -214,6 +214,9 @@ private:
   static BOOL _saved_cursor_shadow;
   static BOOL _saved_mouse_vanish;
 
+  // The mouse constraints before applying mouse mode M_confined.
+  static RECT _mouse_unconfined_cliprect;
+
   // Since the Panda API requests icons and cursors by filename, we
   // need a table mapping filenames to handles, so we can avoid
   // re-reading the file each time we change icons.

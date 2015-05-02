@@ -159,6 +159,13 @@ public:
 
   INLINE static void flush_level();
 
+#ifndef CPPPARSER
+  template<class AttribType>
+  INLINE bool get_attrib(const AttribType *&attrib) const;
+  template<class AttribType>
+  INLINE void get_attrib_def(const AttribType *&attrib) const;
+#endif  // CPPPARSER
+
 private:
   INLINE void check_hash() const;
   bool validate_filled_slots() const;

@@ -19,6 +19,7 @@
 #include "typedReferenceCount.h"
 #include "typeHandle.h"
 #include "eggTable.h"
+#include "epvector.h"
 
 #include "pre_fcollada_include.h"
 #include "FCollada.h"
@@ -49,7 +50,7 @@ public:
     const FCDSceneNode *_scene_node;
     DaeCharacter *_character;
   };
-  typedef pvector<Joint> Joints;
+  typedef epvector<Joint> Joints;
   typedef pmap<string, Joint> JointMap;
 
   void bind_joints(JointMap &joint_map);

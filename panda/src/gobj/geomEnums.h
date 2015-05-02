@@ -144,12 +144,12 @@ PUBLISHED:
     // SM_uniform: all vertices across all faces have the same colors
     // and normals.  It doesn't really matter which ShadeModelAttrib
     // mode is used to render this primitive.
-    SM_uniform, 
+    SM_uniform,
 
     // SM_smooth: vertices within a single face have different
     // colors/normals that should be smoothed across the face.  This
     // primitive should be rendered with SmoothModelAttrib::M_smooth.
-    SM_smooth,  
+    SM_smooth,
 
     // SM_flat_(first,last)_vertex: each face within the primitive
     // might have a different color/normal than the other faces, but
@@ -177,12 +177,16 @@ PUBLISHED:
   enum NumericType {
     NT_uint8,        // An integer 0..255
     NT_uint16,       // An integer 0..65535
-    NT_uint32,       // An integer 0..4294967296
+    NT_uint32,       // An integer 0..4294967295
     NT_packed_dcba,  // DirectX style, four byte values packed in a uint32
     NT_packed_dabc,  // DirectX packed color order (ARGB)
     NT_float32,      // A single-precision float
     NT_float64,      // A double-precision float
-    NT_stdfloat      // Either single- or double-precision, according to vertices-float64.
+    NT_stdfloat,     // Either single- or double-precision, according to vertices-float64.
+    NT_int8,         // An integer -128..127
+    NT_int16,        // An integer -32768..32767
+    NT_int32,        // An integer -2147483648..2147483647
+    NT_packed_ufloat,// Three 10/11-bit float components packed in a uint32
   };
 
   // The contents determine the semantic meaning of a numeric value

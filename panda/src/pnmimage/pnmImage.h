@@ -90,6 +90,7 @@ PUBLISHED:
 
   void copy_from(const PNMImage &copy);
   void copy_channel(const PNMImage &copy, int src_channel, int dest_channel);
+  void copy_channel_bits(const PNMImage &copy, int src_channel, int dest_channel, xelval src_mask, int right_shift);
   void copy_header_from(const PNMImageHeader &header);
   void take_from(PNMImage &orig);
 

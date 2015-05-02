@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON)
+#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON) && !__LP64__
 
 // We have to include this early, before anyone includes
 // netinet/tcp.h, which will define TCP_NODELAY and other symbols and

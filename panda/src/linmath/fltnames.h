@@ -38,8 +38,13 @@
 #undef FLOATTOKEN
 #undef FLOATCONST
 #undef FLOATTYPE_IS_INT
+#undef STRINGIFY
+#undef FLOATNAME_STR
 
 #define FLOATTYPE float
 #define FLOATNAME(ARG) ARG##f
 #define FLOATTOKEN 'f'
 #define FLOATCONST(ARG) ARG##f
+
+#define STRINGIFY(ARG) #ARG
+#define FLOATNAME_STR(ARG) STRINGIFY(ARG##f)

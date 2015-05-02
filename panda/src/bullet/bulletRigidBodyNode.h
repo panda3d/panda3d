@@ -80,6 +80,8 @@ PUBLISHED:
   LVector3 get_gravity() const;
 
   // Restrict movement
+  LVector3 get_linear_factor() const;
+  LVector3 get_angular_factor() const;
   void set_linear_factor(const LVector3 &factor);
   void set_angular_factor(const LVector3 &factor);
 
@@ -100,7 +102,7 @@ protected:
 private:
   virtual void shape_changed();
 
-  // The motion state is used for syncronisation between Bullet
+  // The motion state is used for synchronisation between Bullet
   // and the Panda3D scene graph.
   class MotionState : public btMotionState {
 
@@ -127,7 +129,14 @@ private:
   MotionState *_motion;
   btRigidBody *_rigid;
 
-////////////////////////////////////////////////////////////////////
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

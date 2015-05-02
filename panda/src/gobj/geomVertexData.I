@@ -404,6 +404,150 @@ unpack_abcd_d(PN_uint32 data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::pack_ufloat
+//       Access: Public, Static
+//  Description: Packs three float values in an unsigned 32-bit int.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint32 GeomVertexData::
+pack_ufloat(float a, float b, float c) {
+  // Since we have to clamp both low exponents and negative numbers to 0,
+  // it's easier to see a float as having a 9-bit signed exponent.
+  union {
+    PN_int32 _packed;
+    float _float;
+  } f0, f1, f2;
+
+  f0._float = a;
+  f1._float = b;
+  f2._float = c;
+
+  // There are several cases here:
+  // 1. exponent 0xff: NaN or infinity (negative infinity excluded)
+  // 2. exponent too large: clamped to maximum value
+  // 3. normalized float
+  // 4. exponent 0: denormal float
+  // 5. zero or anything negative, clamped to 0
+
+  PN_uint32 packed = 0;
+
+  if ((f0._packed & 0x7f800000) == 0x7f800000 && (unsigned)f0._packed != 0xff800000u) {
+    packed |= (f0._packed >> 17) & 0x7ffu;
+  } else if (f0._packed >= 0x47800000) {
+    packed |= 0x7bf;
+  } else if (f0._packed >= 0x38800000) {
+    packed |= (f0._packed >> 17) - 0x1c00;
+  } else if (f0._packed >= 0x35000000) {
+    packed |= ((f0._packed & 0x7c0000u) | 0x800000u) >> (130 - (f0._packed >> 23));
+  }
+
+  if ((f1._packed & 0x7f800000) == 0x7f800000 && (unsigned)f1._packed != 0xff800000u) {
+    packed |= (f1._packed >> 6) & 0x3ff800u;
+  } else if (f1._packed >= 0x47800000) {
+    packed |= 0x3df800;
+  } else if (f1._packed >= 0x38800000) {
+    packed |= ((f1._packed >> 6) - 0xe00000) & 0x3ff800;
+  } else if (f1._packed >= 0x35000000) {
+    packed |= (((f1._packed & 0x7c0000u) | 0x800000u) >> (119 - (f1._packed >> 23))) & 0x1f800u;
+  }
+
+  if ((f2._packed & 0x7f800000) == 0x7f800000 && (unsigned)f2._packed != 0xff800000u) {
+    packed |= (f2._packed & 0x0ffe0000u) << 4;
+  } else if (f2._packed >= 0x47800000) {
+    packed |= 0xf7c00000;
+  } else if (f2._packed >= 0x38800000) {
+    packed |= ((f2._packed - 0x38000000) << 4) & 0xffc00000;
+  } else if (f2._packed >= 0x35000000) {
+    packed |= ((((f2._packed << 3) & 0x03c00000u) | 0x04000000u) >> (112 - (f2._packed >> 23))) & 0x07c00000u;
+  }
+
+  return packed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::unpack_ufloat_a
+//       Access: Public, Static
+//  Description: Unpacks an unsigned float11 value from an uint32.
+////////////////////////////////////////////////////////////////////
+INLINE float GeomVertexData::
+unpack_ufloat_a(PN_uint32 data) {
+  if ((data & 0x7c0) == 0) {
+    // Denormal float (includes zero).
+    return ldexpf((data & 63) / 64.0f, -14);
+  }
+
+  union {
+    PN_uint32 _packed;
+    float _float;
+  } value;
+  value._packed = ((data & 0x7ff) << 17);
+
+  if ((data & 0x7c0) == 0x7c0) {
+    // Infinity / NaN
+    value._packed |= 0x7f800000;
+  } else {
+    value._packed += 0x38000000;
+  }
+
+  return value._float;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::unpack_ufloat_b
+//       Access: Public, Static
+//  Description: Unpacks an unsigned float11 value from an uint32.
+////////////////////////////////////////////////////////////////////
+INLINE float GeomVertexData::
+unpack_ufloat_b(PN_uint32 data) {
+  if ((data & 0x3e0000) == 0) {
+    // Denormal float (includes zero).
+    return ldexpf(((data >> 11) & 63) / 64.0f, -14);
+  }
+
+  union {
+    PN_uint32 _packed;
+    float _float;
+  } value;
+  value._packed = ((data & 0x3ff800) << 6);
+
+  if ((data & 0x3e0000) == 0x3e0000) {
+    // Infinity / NaN
+    value._packed |= 0x7f800000;
+  } else {
+    value._packed += 0x38000000;
+  }
+
+  return value._float;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::unpack_ufloat_c
+//       Access: Public, Static
+//  Description: Unpacks an unsigned float10 value from an uint32.
+////////////////////////////////////////////////////////////////////
+INLINE float GeomVertexData::
+unpack_ufloat_c(PN_uint32 data) {
+  if ((data & 0xf8000000u) == 0) {
+    // Denormal float (includes zero).
+    return ldexpf(((data >> 22) & 31) / 32.0f, -14);
+  }
+
+  union {
+    PN_uint32 _packed;
+    float _float;
+  } value;
+  value._packed = ((data & 0xffc00000u) >> 4);
+
+  if ((data & 0xf8000000u) == 0xf8000000u) {
+    // Infinity / NaN
+    value._packed |= 0x7f800000;
+  } else {
+    value._packed += 0x38000000;
+  }
+
+  return value._float;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::add_transform
 //       Access: Private, Static
 //  Description: Adds the indicated transform to the table, if it is

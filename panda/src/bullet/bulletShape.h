@@ -26,7 +26,9 @@
 //       Class : BulletShape
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDABULLET BulletShape : public TypedReferenceCount {
+class EXPCL_PANDABULLET BulletShape : public TypedWritableReferenceCount {
+protected:
+  INLINE BulletShape() {};
 
 PUBLISHED:
   INLINE virtual ~BulletShape();
@@ -58,9 +60,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "BulletShape", 
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

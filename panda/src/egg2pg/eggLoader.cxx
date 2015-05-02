@@ -2216,7 +2216,7 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 //               transform, just returns it.
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) EggLoader::
-make_vertex_data(const EggRenderState *render_state, 
+make_vertex_data(const EggRenderState *render_state,
                  EggVertexPool *vertex_pool, EggNode *primitive_home,
                  const LMatrix4d &transform, TransformBlendTable *blend_table,
                  bool is_dynamic, CharacterMaker *character_maker,
@@ -2231,7 +2231,7 @@ make_vertex_data(const EggRenderState *render_state,
   if (di != _vertex_pool_data.end()) {
     return (*di).second;
   }
-  
+
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
@@ -2244,9 +2244,15 @@ make_vertex_data(const EggRenderState *render_state,
   }
 
   if (!ignore_color) {
-    array_format->add_column
-      (InternalName::get_color(), 1, 
-       Geom::NT_packed_dabc, Geom::C_color);
+    // Let's not use Direct3D-style colors on platforms where we only
+    // have OpenGL anyway.
+#ifdef _WIN32
+    array_format->add_column(InternalName::get_color(), 1,
+                             Geom::NT_packed_dabc, Geom::C_color);
+#else
+    array_format->add_column(InternalName::get_color(), 4,
+                             Geom::NT_uint8, Geom::C_color);
+#endif
   }
 
   vector_string uv_names, uvw_names, tbn_names;

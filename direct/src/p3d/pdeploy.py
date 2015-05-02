@@ -319,7 +319,7 @@ elif deploy_mode == 'installer':
     del i
 
 elif deploy_mode == 'html':
-    w, h = tokens.get("width", 640), tokens.get("height", 480)
+    w, h = tokens.get("width", 800), tokens.get("height", 600)
     if "data" not in tokens:
         tokens["data"] = appFilename.getBasename()
 

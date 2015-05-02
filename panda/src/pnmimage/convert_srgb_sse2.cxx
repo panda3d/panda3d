@@ -127,10 +127,11 @@ encode_sRGB_uchar_sse2(const LColorf &color, xel &into, xelval &into_alpha) {
   into_alpha = _mm_extract_epi16(vals, 6);
 }
 
-#else
-// Somehow we're still compiling this without SSE2 support.  We'll
-// still have to define these functions, but emit a warning that the
-// build system isn't configured properly.
+#elif defined(__i386__) || defined(_M_IX86)
+// Somehow we're still compiling this without SSE2 support, even though the
+// target architecture could (in theory) support SSE2.  We still have to
+// define these functions, but emit a warning that the build system isn't
+// configured properly.
 #warning convert_srgb_sse2.cxx is being compiled without SSE2 support!
 
 unsigned char

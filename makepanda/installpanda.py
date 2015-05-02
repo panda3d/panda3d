@@ -127,6 +127,9 @@ def GetLibDir():
     something like "lib" or "lib64" or in some cases, something
     similar to "lib/x86_64-linux-gnu". """
 
+    if sys.platform == "darwin":
+        return "lib"
+
     # This one's a bit tricky.  Some systems require us to install
     # 64-bits libraries into /usr/lib64, some into /usr/lib.
     # Debian forbids installing to lib64 nowadays, and the only distros

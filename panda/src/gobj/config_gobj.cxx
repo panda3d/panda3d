@@ -279,7 +279,7 @@ ConfigVariableBool vertices_float64
           "slower."));
 
 ConfigVariableInt vertex_column_alignment
-("vertex-column-alignment", 1,
+("vertex-column-alignment", 4,
  PRC_DESC("This specifies the default byte alignment for each column of "
           "data within a GeomVertexData when it is assembled using the default "
           "interfaces.  Normally, you should not change this config variable "

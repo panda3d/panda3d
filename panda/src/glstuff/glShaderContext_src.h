@@ -35,6 +35,8 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  bool get_sampler_texture_type(int &out, GLenum param_type);
+
   INLINE bool valid(void);
   void bind(bool reissue_parameters = true);
   void unbind();
@@ -63,6 +65,7 @@ private:
   //typedef pvector<ParamContext> ParamContexts;
   //ParamContexts _params;
 
+  GLint _color_attrib_index;
   pvector<GLint> _glsl_parameter_map;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 
@@ -72,9 +75,10 @@ private:
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
+  bool _has_divisor;
 
-  void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type);
-  void glsl_report_program_errors(GLuint program);
+  void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
+  void glsl_report_program_errors(GLuint program, bool fatal);
   bool glsl_compile_shader(Shader::ShaderType type);
   bool glsl_compile_and_link();
   bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);

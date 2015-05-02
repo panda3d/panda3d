@@ -585,20 +585,20 @@ get_group() {
       change_state(ST_error);
       return false;
     }
-    
+
     // Now skip past exactly one newline character and any number of
     // other whitespace characters.
-    while (in!=0 && in.peek() != '\n') {
+    while (in && in.peek() != '\n') {
       in.get();
     }
     in.get();
-    while (in!=0 && isspace(in.peek()) && in.peek() != '\n') {
+    while (in && isspace(in.peek()) && in.peek() != '\n') {
       in.get();
     }
 
     getline(in, _string);
     _string = trim_right(_string);
-    
+
     if (!in) {
       change_state(ST_error);
       return false;

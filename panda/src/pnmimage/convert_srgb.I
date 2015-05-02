@@ -18,7 +18,7 @@
 //  Description: Decodes the sRGB-encoded unsigned char value to
 //               a linearized float in the range 0-1.
 ////////////////////////////////////////////////////////////////////
-CONSTEXPR float decode_sRGB_float(unsigned char val) {
+INLINE float decode_sRGB_float(unsigned char val) {
   return to_linear_float_table[val];
 }
 
@@ -40,7 +40,7 @@ INLINE float decode_sRGB_float(float val) {
 //  Description: Decodes the sRGB-encoded unsigned char value to
 //               a linearized unsigned char value.
 ////////////////////////////////////////////////////////////////////
-CONSTEXPR unsigned char decode_sRGB_uchar(unsigned char val) {
+INLINE unsigned char decode_sRGB_uchar(unsigned char val) {
   return to_linear_uchar_table[val];
 }
 
@@ -88,7 +88,7 @@ encode_sRGB_float(float val) {
 //  Description: Encodes the linearized unsigned char value to an
 //               sRGB-encoded unsigned char value.
 ////////////////////////////////////////////////////////////////////
-CONSTEXPR unsigned char
+INLINE unsigned char
 encode_sRGB_uchar(unsigned char val) {
   return to_srgb8_table[val];
 }

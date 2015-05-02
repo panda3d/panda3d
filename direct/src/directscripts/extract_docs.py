@@ -203,6 +203,11 @@ def processType(handle, type):
             if docstring:
                 print >>handle, docstring
             print >>handle, interrogate_type_enum_value_name(type, i_value), "=", interrogate_type_enum_value(type, i_value), ","
+
+    elif interrogate_type_is_typedef(type):
+        wrapped_type = translated_type_name(interrogate_type_wrapped_type(type))
+        print >>handle, "typedef %s %s;" % (wrapped_type, typename)
+        return
     else:
         if interrogate_type_is_struct(type):
             classtype = "struct"
@@ -211,7 +216,7 @@ def processType(handle, type):
         elif interrogate_type_is_union(type):
             classtype = "union"
         else:
-            print "I don't know what type %s is" % typename
+            print "I don't know what type %s is" % interrogate_type_true_name(type)
             return
         
         if len(derivations) > 0:

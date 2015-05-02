@@ -162,12 +162,4 @@ has_sse2_sRGB_encode() {
   return has_support;
 }
 
-#else
-// Other architectures don't support SSE2 at all.
-
-bool
-has_sse2_sRGB_encode() {
-  return false;
-}
-
 #endif  // __SSE2__

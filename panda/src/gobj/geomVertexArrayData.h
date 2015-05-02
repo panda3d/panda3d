@@ -104,7 +104,7 @@ PUBLISHED:
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
-  VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+  VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                    GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
@@ -127,7 +127,7 @@ private:
   INLINE void set_lru_size(size_t lru_size);
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
-  void reverse_data_endianness(unsigned char *dest, 
+  void reverse_data_endianness(unsigned char *dest,
                                const unsigned char *source, size_t size);
 
 
@@ -174,7 +174,7 @@ private:
     // This implements read-write locking.  Anyone who gets the data for
     // reading or writing will hold this mutex during the lock.
     ReMutex _rw_lock;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -182,7 +182,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "GeomVertexArrayData::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
 
@@ -253,13 +253,13 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
-  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object, 
+  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
                                    Thread *current_thread,
-                                   const GeomVertexArrayData::CData *_cdata, 
+                                   const GeomVertexArrayData::CData *_cdata,
                                    bool writable);
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
   INLINE void operator = (const GeomVertexArrayDataHandle &);
-  
+
 PUBLISHED:
   INLINE ~GeomVertexArrayDataHandle();
 
@@ -289,6 +289,9 @@ PUBLISHED:
 
   INLINE bool request_resident() const;
 
+  INLINE VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+                                          GraphicsStateGuardianBase *gsg) const;
+
   void copy_data_from(const GeomVertexArrayDataHandle *other);
   void copy_subdata_from(size_t to_start, size_t to_size,
                          const GeomVertexArrayDataHandle *other,
@@ -312,7 +315,7 @@ PUBLISHED:
   void set_subdata(size_t start, size_t size, const string &data);
 
   INLINE void mark_used() const;
-  
+
 private:
   PT(GeomVertexArrayData) _object;
   Thread *_current_thread;

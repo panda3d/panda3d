@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableColor.h"
+#include "pdtoa.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableColor::set_default_value
@@ -21,8 +22,21 @@
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableColor::
 set_default_value(const LColor &default_value) {
-  ostringstream strm;
-  strm << default_value;
+  char buffer[128];
+  char *p = buffer;
+  pdtoa(default_value[0], p);
 
-  _core->set_default_value(strm.str());
+  p += strlen(p);
+  *p++ = ' ';
+  pdtoa(default_value[1], p);
+
+  p += strlen(p);
+  *p++ = ' ';
+  pdtoa(default_value[2], p);
+
+  p += strlen(p);
+  *p++ = ' ';
+  pdtoa(default_value[3], p);
+
+  _core->set_default_value(buffer);
 }

@@ -35,6 +35,8 @@ WinGraphicsWindow *WinGraphicsWindow::_creating_window = NULL;
 WinGraphicsWindow *WinGraphicsWindow::_cursor_window = NULL;
 bool WinGraphicsWindow::_cursor_hidden = false;
 
+RECT WinGraphicsWindow::_mouse_unconfined_cliprect;
+
 // These are used to save the previous state of the fancy Win2000
 // effects that interfere with rendering when the mouse wanders into a
 // window's client area.
@@ -359,6 +361,48 @@ set_properties_now(WindowProperties &properties) {
       }
     }
   }
+
+  if (properties.has_mouse_mode()) {
+    if (properties.get_mouse_mode() != _properties.get_mouse_mode()) {
+      switch (properties.get_mouse_mode()) {
+      case WindowProperties::M_absolute:
+      case WindowProperties::M_relative:    // not implemented, treat as absolute
+
+        if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
+          ClipCursor(NULL);
+          windisplay_cat.info() << "Unconfining cursor from window\n";
+        }
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
+        break;
+
+      case WindowProperties::M_confined:
+        {
+          RECT clip;
+
+          if (!GetWindowRect(_hWnd, &clip)) {
+            windisplay_cat.warning()
+                << "GetWindowRect() failed in set_properties_now.  Cannot confine cursor.\n";
+          } else {
+            windisplay_cat.info()
+                    << "ClipCursor() to " << clip.left << "," << clip.top << " to "
+                    << clip.right << "," << clip.bottom << endl;
+
+            GetClipCursor(&_mouse_unconfined_cliprect);
+            if (!ClipCursor(&clip)) {
+              windisplay_cat.warning()
+                      << "ClipCursor() failed in set_properties_now.  Ignoring.\n";
+            } else {
+              _properties.set_mouse_mode(WindowProperties::M_confined);
+              windisplay_cat.info() << "Confining cursor to window\n";
+            }
+          }
+        }
+        break;
+      }
+    }
+    properties.clear_mouse_mode();
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////
