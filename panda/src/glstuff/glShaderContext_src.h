@@ -65,6 +65,7 @@ private:
   //typedef pvector<ParamContext> ParamContexts;
   //ParamContexts _params;
 
+  GLint _color_attrib_index;
   pvector<GLint> _glsl_parameter_map;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 

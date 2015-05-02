@@ -197,6 +197,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _glsl_program = 0;
   _uses_standard_vertex_arrays = false;
   _has_divisor = false;
+  _color_attrib_index = -1;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
 
@@ -925,7 +926,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                        param_type == GL_UNSIGNED_INT_VEC3 ||
                        param_type == GL_UNSIGNED_INT_VEC4 ||
 #endif
-                       param_type == GL_UNSIGNED_INT );
+                       param_type == GL_UNSIGNED_INT);
 
       if (noprefix.empty()) {
         // Arbitrarily named attribute.
@@ -939,6 +940,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
       } else if (noprefix == "Color") {
         bind._name = InternalName::get_color();
+
+        // Save the index, so we can apply special handling to this attrib.
+        _color_attrib_index = p;
 
       } else if (noprefix.substr(0, 7) == "Tangent") {
         bind._name = InternalName::get_tangent();
@@ -1419,9 +1423,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
       GLint p = _glsl_parameter_map[bind._id._seqno];
 
+      // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
       bool normalized;
-      if (_glgsg->_data_reader->get_array_info(name, array_reader,
+      if ((p != _color_attrib_index || _glgsg->_vertex_colors_enabled) &&
+          _glgsg->_data_reader->get_array_info(name, array_reader,
                                                num_values, numeric_type,
                                                normalized, start, stride, divisor,
                                                num_elements, element_stride)) {
@@ -1462,6 +1468,14 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       } else {
         for (int i = 0; i < bind._elements; ++i) {
           _glgsg->_glDisableVertexAttribArray(p + i);
+        }
+        if (p == _color_attrib_index) {
+          // Vertex colors are disabled or not present.  Apply flat color.
+#if defined(STDFLOAT_DOUBLE) && !defined(OPENGLES)
+          _glgsg->_glVertexAttrib4dv(p, _glgsg->_scene_graph_color.get_data());
+#else
+          _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
+#endif
         }
       }
     }
