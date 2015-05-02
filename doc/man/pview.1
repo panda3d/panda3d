@@ -1,4 +1,4 @@
-.TH PVIEW 1 "27 December 2014" "" Panda3D
+.TH PVIEW 1 "1 May 2015" "" Panda3D
 .SH NAME
 pview \- quickly view a Panda model and/or animation
 .SH SYNOPSIS
@@ -42,6 +42,15 @@ exit.
 .B \-D
 Delete the model files after loading them (presumably this option
 will only be used when loading a temporary model file).
+.TP
+.B \-L
+Enable lighting in the scene.  This can also be achieved with 
+the 'l' hotkey at runtime.
+.TP
+.BI "\-P " pipename
+Select the given graphics pipe for the window, rather than using
+the platform default.  The allowed values for <pipe> are those 
+from the Config.prc variables 'load-display' and 'aux-display'.
 .TP
 .B \-V
 Report the current version of Panda, and exit.
