@@ -3803,7 +3803,7 @@ disable_standard_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
 
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -3870,7 +3870,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
 
   report_my_gl_errors();
 
@@ -3997,7 +3997,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_trifans: " << *(reader->get_object()) << "\n";
@@ -4077,7 +4078,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
 
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -4153,7 +4154,8 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_lines: " << *(reader->get_object()) << "\n";
@@ -4217,7 +4219,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
 
   report_my_gl_errors();
 
@@ -4341,7 +4343,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+  //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "draw_points: " << *(reader->get_object()) << "\n";
