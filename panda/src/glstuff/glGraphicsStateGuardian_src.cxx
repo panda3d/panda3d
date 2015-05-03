@@ -11207,7 +11207,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
-          _glBufferSubData(GL_TEXTURE_BUFFER, 0, width, image_ptr);
+          _glBufferSubData(GL_TEXTURE_BUFFER, 0, view_size, image_ptr);
         } else {
           report_my_gl_errors();
           return false;
@@ -11391,7 +11391,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
-          _glBufferData(GL_TEXTURE_BUFFER, width, image_ptr,
+          _glBufferData(GL_TEXTURE_BUFFER, view_size, image_ptr,
                         get_usage(tex->get_usage_hint()));
         } else {
           report_my_gl_errors();
