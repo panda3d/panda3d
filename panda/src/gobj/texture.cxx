@@ -3071,10 +3071,16 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
 
     if (alpha_file_channel == 4 ||
         (alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
-      // Use the alpha channel.
-      for (int x = 0; x < image.get_x_size(); x++) {
-        for (int y = 0; y < image.get_y_size(); y++) {
-          image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+
+      if (!alpha_image.has_alpha()) {
+        gobj_cat.error()
+          << alpha_fullpath.get_basename() << " has no channel " << alpha_file_channel << ".\n";
+      } else {
+        // Use the alpha channel.
+        for (int x = 0; x < image.get_x_size(); x++) {
+          for (int y = 0; y < image.get_y_size(); y++) {
+            image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+          }
         }
       }
       cdata->_alpha_file_channel = alpha_image.get_num_channels();
