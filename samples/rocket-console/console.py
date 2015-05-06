@@ -1,7 +1,7 @@
 """
 Simple console widget for rocket
 """
-import sys
+import sys, os.path
 
 # workaround: https://www.panda3d.org/forums/viewtopic.php?t=10062&p=99697#p99054
 #from panda3d import rocket
@@ -10,8 +10,9 @@ import _rocketcore as rocket
 from panda3d.rocket import RocketRegion, RocketInputHandler
 
 class Console(object):
-    def __init__(self, base, context, cols, rows, commandHandler):
+    def __init__(self, base, basepath, context, cols, rows, commandHandler):
         self.base = base
+        self.basepath = basepath
 
         self.context = context
         self.loadFonts()
@@ -37,10 +38,11 @@ class Console(object):
             self.newEditLine()
 
     def loadFonts(self):
-        rocket.LoadFontFace("assets/Perfect DOS VGA 437.ttf")
+        rocket.LoadFontFace(os.path.join(self.basepath, "assets/Perfect DOS VGA 437.ttf"))
 
     def setupConsole(self):
-        self.document = self.context.LoadDocument("assets/console.rml");
+        self.document = self.context.LoadDocument(os.path.join(self.basepath,
+                                                               "assets/console.rml"))
         if not self.document:
             raise AssertionError("did not find console.rml")
 

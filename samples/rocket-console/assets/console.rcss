@@ -15,7 +15,7 @@ body
 text#content
 {
     z-index: 2;
-    font-size: 30pt;
+    font-size: 30px;
 
     white-space: pre-wrap;
 
@@ -27,7 +27,7 @@ text#content
     // account for non-proportionality of our 1024x512
     // buffer compared with VGA font proportions and
     // wanting to center the screen with 40 columns
-    top: 8px;
+    top: 16px;
     left: 32px;
 
     width: 100%;

@@ -9,7 +9,6 @@ from panda3d.core import PandaSystem
 import random
 from direct.interval.LerpInterval import LerpHprInterval, LerpPosInterval, LerpFunc
 
-loadPrcFileData("", "model-path ./assets")
 
 from direct.showbase.ShowBase import ShowBase
 
@@ -18,6 +17,11 @@ from direct.showbase.ShowBase import ShowBase
 import _rocketcore as rocket
 
 from panda3d.rocket import RocketRegion, RocketInputHandler
+
+import os.path
+BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+
+loadPrcFileData("", "model-path " + BASE_PATH + "/assets")
 
 import console
 
@@ -73,8 +77,7 @@ class MyApp(ShowBase):
         These are unfortunately not located using the model-path.
         TODO: should model-path be searched for these?
         """
-        rocket.LoadFontFace("assets/modenine.ttf")
-        rocket.LoadFontFace("assets/Perfect DOS VGA 437.ttf")
+        rocket.LoadFontFace(os.path.join(BASE_PATH, "assets/modenine.ttf"))
 
 
     def startModelLoading(self):
@@ -125,7 +128,7 @@ class MyApp(ShowBase):
 
         self.windowContext = self.windowRocketRegion.getContext()
 
-        self.loadingDocument = self.windowContext.LoadDocument("assets/loading.rml");
+        self.loadingDocument = self.windowContext.LoadDocument(os.path.join(BASE_PATH, "assets/loading.rml"))
         if not self.loadingDocument:
             raise AssertionError("did not find loading.rml")
 
@@ -318,8 +321,8 @@ class MyApp(ShowBase):
         self.rocketConsole.setInputHandler(self.inputHandler)
 
         self.consoleContext = self.rocketConsole.getContext()
-        self.console = console.Console(self, self.consoleContext,
-                                       40, 10, self.handleCommand)
+        self.console = console.Console(self, BASE_PATH, self.consoleContext,
+                                       40, 13, self.handleCommand)
 
         self.console.addLine("Panda DOS")
         self.console.addLine("type 'help'")
