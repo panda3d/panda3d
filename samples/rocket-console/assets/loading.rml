@@ -1,0 +1,54 @@
+<rml>
+    <head >
+        <title>Main Menu</title>
+        <link type="text/template" href="window.rml" />
+        <style>
+            body
+            {
+                width: 400px;
+                height: 225px;
+
+                margin: auto;
+
+                background-color: #44f;
+            }
+
+
+            div#title_bar_content
+            {
+                font-size: 48;
+
+                //text-align: left;
+                position: absolute;
+                top: 40%;
+                //vertical-align: center;
+
+            }
+
+        </style>
+
+        <script>
+
+import _rocketcore as rocket
+
+# This handler overrides the 'onkeydown' handler from the template
+def OnKeyDown(event, document):
+    keyId = event.parameters['key_identifier']
+    if keyId in [ rocket.key_identifier.RETURN,
+                rocket.key_identifier.ESCAPE,
+                 rocket.key_identifier.SPACE ]:
+        FireClosing(document)
+
+# custom event
+def FireClosing(document):
+    document.DispatchEvent("aboutToClose", { }, False)
+
+    </script>
+
+    </head>
+    <body id='window' template="window" onclick='FireClosing(document)'>
+        <div id="title_bar_content" >
+            <label id="loadingLabel">Loading...</label>
+        </div>
+    </body>
+</rml>
