@@ -10,9 +10,8 @@ import _rocketcore as rocket
 from panda3d.rocket import RocketRegion, RocketInputHandler
 
 class Console(object):
-    def __init__(self, base, basepath, context, cols, rows, commandHandler):
+    def __init__(self, base, context, cols, rows, commandHandler):
         self.base = base
-        self.basepath = basepath
 
         self.context = context
         self.loadFonts()
@@ -38,11 +37,10 @@ class Console(object):
             self.newEditLine()
 
     def loadFonts(self):
-        rocket.LoadFontFace(os.path.join(self.basepath, "assets/Perfect DOS VGA 437.ttf"))
+        rocket.LoadFontFace("Perfect DOS VGA 437.ttf")
 
     def setupConsole(self):
-        self.document = self.context.LoadDocument(os.path.join(self.basepath,
-                                                               "assets/console.rml"))
+        self.document = self.context.LoadDocument("console.rml")
         if not self.document:
             raise AssertionError("did not find console.rml")
 
