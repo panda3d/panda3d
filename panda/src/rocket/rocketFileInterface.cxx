@@ -41,9 +41,20 @@ Open(const Rocket::Core::String& path) {
 
   PT(VirtualFile) file = _vfs->get_file(fn);
   if (file == NULL) {
-    rocket_cat.error() << "Failed to find " << fn << "\n";
-    return (Rocket::Core::FileHandle) NULL;
+    // failed?  Try model-path as a Panda-friendly fallback.
+    if (!fn.resolve_filename(get_model_path())) {
+      rocket_cat.error() << "Could not resolve " << fn
+          << " along the model-path (currently: " << get_model_path() << ")\n";
+      return (Rocket::Core::FileHandle) NULL;
+    }
+
+    file = _vfs->get_file(fn);
+    if (file == NULL) {
+      rocket_cat.error() << "Failed to get " << fn << ", found on model-path\n";
+      return (Rocket::Core::FileHandle) NULL;
+    }
   }
+
 
   istream *str = file->open_read_file(true);
   if (str == NULL) {
