@@ -1267,8 +1267,15 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_model_to_view: {
     return &(get_external_transform()->get_mat());
   }
+  case Shader::SMO_model_to_apiview: {
+    return &(get_internal_transform()->get_mat());
+  }
   case Shader::SMO_view_to_model: {
     t = get_external_transform()->get_inverse()->get_mat();
+    return &t;
+  }
+  case Shader::SMO_apiview_to_model: {
+    t = get_internal_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_view: {
@@ -1302,6 +1309,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_view_to_apiclip: {
     t = _cs_transform->get_mat() * _projection_mat->get_mat();
     return &t;
+  }
+  case Shader::SMO_apiclip_to_apiview: {
+    return &(_projection_mat_inv->get_mat());
+  }
+  case Shader::SMO_apiview_to_apiclip: {
+    return &(_projection_mat->get_mat());
   }
   case Shader::SMO_view_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);

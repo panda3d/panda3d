@@ -483,6 +483,43 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
       spec._part[0] = spec._part[1];
       spec._arg[0] = spec._arg[1];
     }
+
+    // More optimal combinations for common matrices.
+
+    if (spec._part[0] == SMO_model_to_view &&
+        spec._part[1] == SMO_view_to_apiclip) {
+      spec._part[0] = SMO_model_to_apiview;
+      spec._part[1] = SMO_apiview_to_apiclip;
+
+    } else if (spec._part[0] == SMO_apiclip_to_view &&
+               spec._part[1] == SMO_view_to_model) {
+      spec._part[0] = SMO_apiclip_to_apiview;
+      spec._part[1] = SMO_apiview_to_model;
+
+    } else if (spec._part[0] == SMO_apiview_to_view &&
+               spec._part[1] == SMO_view_to_apiclip) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiview_to_apiclip;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_apiclip_to_view &&
+               spec._part[1] == SMO_view_to_apiview) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiclip_to_apiview;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_apiview_to_view &&
+               spec._part[1] == SMO_view_to_model) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiview_to_model;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_model_to_view &&
+               spec._part[1] == SMO_view_to_apiview) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_model_to_apiview;
+      spec._part[1] = SMO_identity;
+    }
   }
 
   // Calculate state and transform dependencies.
