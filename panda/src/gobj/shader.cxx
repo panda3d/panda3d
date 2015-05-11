@@ -413,8 +413,10 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
     dep |= SSD_fog;
   }
-  if ((inp == SMO_model_to_view)||
-      (inp == SMO_view_to_model)) {
+  if ((inp == SMO_model_to_view) ||
+      (inp == SMO_view_to_model) ||
+      (inp == SMO_model_to_apiview) ||
+      (inp == SMO_apiview_to_model)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
