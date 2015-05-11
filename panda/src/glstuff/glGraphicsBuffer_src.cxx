@@ -381,6 +381,10 @@ rebuild_bitplanes() {
       // buffer was requested.
       _use_depth_stencil = true;
     }
+  } else if (attach[RTP_depth_stencil] != NULL && attach[RTP_depth] == NULL) {
+    // The depth stencil slot was assigned a texture, but we don't support it.
+    // Downgrade to a regular depth texture.
+    swap(attach[RTP_depth], attach[RTP_depth_stencil]);
   }
 
   // Knowing this, we can already be a tiny bit more accurate about the
