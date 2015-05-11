@@ -7391,7 +7391,11 @@ get_numeric_type(Geom::NumericType numeric_type) {
     return GL_SHORT;
 
   case Geom::NT_int32:
+#ifndef OPENGLES_1
     return GL_INT;
+#else
+    break;
+#endif
 
   case Geom::NT_packed_ufloat:
 #ifndef OPENGLES
