@@ -1129,6 +1129,9 @@ reset() {
 #else
   _supports_depth_texture = (is_at_least_gl_version(1, 4) ||
                              has_extension("GL_ARB_depth_texture"));
+  _supports_depth_stencil = (is_at_least_gl_version(3, 0) ||
+                             has_extension("GL_ARB_framebuffer_object") ||
+                             has_extension("GL_EXT_packed_depth_stencil"));
 #endif
 
 #ifdef OPENGLES_2
