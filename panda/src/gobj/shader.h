@@ -186,6 +186,11 @@ public:
     // SMO_clipplane_x is world coords, GLSL needs eye coords
     SMO_apiview_clipplane_i,
 
+    SMO_model_to_apiview,
+    SMO_apiview_to_model,
+    SMO_apiview_to_apiclip,
+    SMO_apiclip_to_apiview,
+
     SMO_INVALID
   };
 

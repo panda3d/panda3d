@@ -304,7 +304,7 @@ int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_s
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
-  GraphicsStateGuardian(CS_yup_right, engine, pipe)
+  GraphicsStateGuardian(gl_coordinate_system, engine, pipe)
 {
   _error_count = 0;
 
@@ -2847,7 +2847,8 @@ calc_projection_mat(const Lens *lens) {
   // choice in the modelview matrix.
 
   LMatrix4 result =
-    LMatrix4::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
+    LMatrix4::convert_mat(_internal_coordinate_system,
+                          lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
   if (_scene_setup->get_inverted()) {

@@ -278,6 +278,15 @@ ConfigVariableBool gl_support_shadow_filter
             "cards suffered from a broken implementation of the "
             "shadow map filtering features."));
 
+ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
+  ("gl-coordinate-system", CS_yup_right,
+   PRC_DESC("Which coordinate system to use as the internal "
+            "coordinate system for OpenGL operations.  If you are "
+            "using features like fixed-function sphere mapping, it is "
+            "best to leave this to yup-right.  However, if you are "
+            "creating a shader-only application, it may be easier and "
+            "more efficient to set this to default."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {
