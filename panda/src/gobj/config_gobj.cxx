@@ -255,6 +255,11 @@ ConfigVariableBool dump_generated_shaders
           "to disk.  This is useful for debugging broken shader "
           "generators."));
 
+ConfigVariableBool cache_generated_shaders
+("cache-generated-shaders", true,
+ PRC_DESC("Set this true to cause all generated shaders to be cached in "
+          "memory.  This is useful to prevent unnecessary recompilation."));
+
 ConfigVariableBool enforce_attrib_lock
 ("enforce-attrib-lock", true,
  PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "

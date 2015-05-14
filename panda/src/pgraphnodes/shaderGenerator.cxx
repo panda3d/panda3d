@@ -649,7 +649,7 @@ synthesize_shader(const RenderState *rs) {
 
   text << "//Cg\n";
 
-  text << "/* Generated shader for render state " << rs << ":\n";
+  text << "/* Generated shader for render state:\n";
   rs->write(text, 2);
   text << "*/\n";
 
