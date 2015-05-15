@@ -697,8 +697,7 @@ class GravityWalker(DirectObject.DirectObject):
     # There are sometimes issues if the collision ray height is
     # so tall that it collides with multiple levels of floors.
     def setCollisionRayHeight(self, height):
-        oldNode = self.avatarNodePath.getNode(0)
-        cRayNode = oldNode.getChild(2)
+        cRayNode = self.cRayNodePath.node()
         cRayNode.removeSolid(0)
         cRay = CollisionRay(0.0, 0.0, height, 0.0, 0.0, -1.0)
-        cRayNode.addSolid(cRay)        
+        cRayNode.addSolid(cRay)
