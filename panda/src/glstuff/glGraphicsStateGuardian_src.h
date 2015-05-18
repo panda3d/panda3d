@@ -923,6 +923,8 @@ public:
   UsageTextures _usage_textures;
 #endif  // NDEBUG
 
+  BufferResidencyTracker _renderbuffer_residency;
+
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;

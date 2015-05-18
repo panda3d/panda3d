@@ -304,7 +304,8 @@ int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_s
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
-  GraphicsStateGuardian(gl_coordinate_system, engine, pipe)
+  GraphicsStateGuardian(gl_coordinate_system, engine, pipe),
+  _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
 {
   _error_count = 0;
 
@@ -2942,6 +2943,8 @@ begin_frame(Thread *current_thread) {
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
+  _renderbuffer_residency.begin_frame(current_thread);
+
   report_my_gl_errors();
 
 #ifdef DO_PSTATS
@@ -3101,6 +3104,8 @@ end_frame(Thread *current_thread) {
   maybe_gl_finish();
 
   GraphicsStateGuardian::end_frame(current_thread);
+
+  _renderbuffer_residency.end_frame(current_thread);
 
   // Flush any PCollectors specific to this kind of GSG.
   _primitive_batches_display_list_pcollector.flush_level();
@@ -10971,9 +10976,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_width = width;
       gtc->_height = height;
       gtc->_depth = depth;
-    }
 
-    if (!image.is_null()) {
       gtc->update_data_size_bytes(get_texture_memory_size(tex));
     }
 
