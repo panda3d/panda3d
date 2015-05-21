@@ -20,6 +20,7 @@
 #include "shader.h"
 #include "shaderContext.h"
 #include "deletedChain.h"
+#include "paramTexture.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -35,6 +36,12 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
+#ifndef OPENGLES
+  void reflect_uniform_block(int i, const char *block_name,
+                             char *name_buffer, GLsizei name_buflen);
+#endif
+  void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
   INLINE bool valid(void);
@@ -51,6 +58,7 @@ public:
   INLINE bool uses_custom_texture_bindings(void);
 
 private:
+  bool _validated;
   GLuint _glsl_program;
   typedef pvector<GLuint> GLSLShaders;
   GLSLShaders _glsl_shaders;
@@ -66,11 +74,14 @@ private:
   //ParamContexts _params;
 
   GLint _color_attrib_index;
-  pvector<GLint> _glsl_parameter_map;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 
-  pvector<CPT(InternalName)> _glsl_img_inputs;
-  pvector<CLP(TextureContext)*> _glsl_img_textures;
+  struct ImageInput {
+    CPT(InternalName) _name;
+    CLP(TextureContext) *_gtc;
+    bool _writable;
+  };
+  pvector<ImageInput> _glsl_img_inputs;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

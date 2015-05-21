@@ -106,8 +106,7 @@ PUBLISHED:
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
-  Texture *get_shader_input_texture(const InternalName *id) const;
-  const SamplerState &get_shader_input_sampler(const InternalName *id) const;
+  Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=NULL) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
 

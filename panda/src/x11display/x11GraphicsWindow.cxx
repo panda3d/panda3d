@@ -104,6 +104,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
+  _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
 
   GraphicsWindowInputDevice device =
@@ -946,9 +947,10 @@ open_window() {
   wa.border_pixel = 0;
   wa.colormap = _colormap;
   wa.event_mask = _event_mask;
+  wa.override_redirect = _override_redirect;
 
   unsigned long attrib_mask =
-    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect;
 
   _xwindow = XCreateWindow
     (_display, parent_window,

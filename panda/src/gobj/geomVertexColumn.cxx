@@ -30,6 +30,8 @@ operator = (const GeomVertexColumn &copy) {
   _contents = copy._contents;
   _start = copy._start;
   _column_alignment = copy._column_alignment;
+  _num_elements = copy._num_elements;
+  _element_stride = copy._element_stride;
 
   setup();
 }
@@ -159,6 +161,10 @@ output(ostream &out) const {
   }
 
   out << ")";
+
+  if (_num_elements > 1) {
+    out << "[" << _num_elements << "]";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +178,6 @@ setup() {
   nassertv(_num_components > 0 && _start >= 0);
 
   _num_values = _num_components;
-  _num_elements = 1;
 
   if (_numeric_type == NT_stdfloat) {
     if (vertices_float64) {
@@ -222,8 +227,13 @@ setup() {
     break;
   }
 
-  if (_contents == C_matrix) {
-    _num_elements = _num_components;
+  if (_num_elements == 0) {
+    // Matrices are assumed to be square.
+    if (_contents == C_matrix) {
+      _num_elements = _num_components;
+    } else {
+      _num_elements = 1;
+    }
   }
 
   if (_column_alignment < 1) {
@@ -236,7 +246,9 @@ setup() {
   // Enforce the column alignment requirements on the _start byte.
   _start = ((_start + _column_alignment - 1) / _column_alignment) * _column_alignment;
 
-  _element_stride = _component_bytes * _num_components;
+  if (_element_stride < 1) {
+    _element_stride = _component_bytes * _num_components;
+  }
   _total_bytes = _element_stride * _num_elements;
 
   if (_packer != NULL) {
@@ -432,6 +444,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() >= 29) {
     _column_alignment = scan.get_uint8();
   }
+
+  _num_elements = 0;
+  _element_stride = 0;
 
   setup();
 }

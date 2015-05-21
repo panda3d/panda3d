@@ -70,6 +70,7 @@ extern ConfigVariableBool gl_force_flush;
 extern ConfigVariableBool gl_separate_specular_color;
 extern ConfigVariableBool gl_cube_map_seamless;
 extern ConfigVariableBool gl_dump_compiled_shaders;
+extern ConfigVariableBool gl_validate_shaders;
 extern ConfigVariableBool gl_immutable_texture_storage;
 extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;

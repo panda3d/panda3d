@@ -222,6 +222,12 @@ ConfigVariableBool gl_dump_compiled_shaders
             "programs to disk with a filename like glsl_program0.dump "
             "into the current directory."));
 
+ConfigVariableBool gl_validate_shaders
+  ("gl-validate-shaders", true,
+   PRC_DESC("Set this to true to enable glValidateShader the first time "
+            "a shader is bound.  This may cause helpful information about "
+            "shaders to be printed."));
+
 ConfigVariableBool gl_immutable_texture_storage
   ("gl-immutable-texture-storage", false,
    PRC_DESC("This configures Panda to pre-allocate immutable storage "

@@ -33,13 +33,16 @@ GeomVertexColumn() :
 INLINE GeomVertexColumn::
 GeomVertexColumn(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,
-                 int start, int column_alignment) :
+                 int start, int column_alignment, int num_elements,
+                 int element_stride) :
   _name(MOVE(name)),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
   _start(start),
   _column_alignment(column_alignment),
+  _num_elements(num_elements),
+  _element_stride(element_stride),
   _packer(NULL)
 {
   setup();
@@ -58,6 +61,8 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   _contents(copy._contents),
   _start(copy._start),
   _column_alignment(copy._column_alignment),
+  _num_elements(copy._num_elements),
+  _element_stride(copy._element_stride),
   _packer(NULL)
 {
   setup();
@@ -316,6 +321,12 @@ compare_to(const GeomVertexColumn &other) const {
   }
   if (_column_alignment != other._column_alignment) {
     return _column_alignment - other._column_alignment;
+  }
+  if (_num_elements != other._num_elements) {
+    return _num_elements - other._num_elements;
+  }
+  if (_element_stride != other._element_stride) {
+    return _element_stride - other._element_stride;
   }
   return 0;
 }

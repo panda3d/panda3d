@@ -1461,6 +1461,23 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES
+  // Check for uniform buffers.
+  if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
+    _supports_uniform_buffers = true;
+    _glGetActiveUniformsiv = (PFNGLGETACTIVEUNIFORMSIVPROC)
+       get_extension_func("glGetActiveUniformsiv");
+    _glGetActiveUniformBlockiv = (PFNGLGETACTIVEUNIFORMBLOCKIVPROC)
+       get_extension_func("glGetActiveUniformBlockiv");
+    _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
+       get_extension_func("glGetActiveUniformBlockName");
+  } else {
+    _supports_uniform_buffers = false;
+  }
+#else
+  _supports_uniform_buffers = false;
+#endif
+
   // Check whether we support geometry instancing and instanced vertex attribs.
 #if defined(OPENGLES_1)
   _supports_vertex_attrib_divisor = false;

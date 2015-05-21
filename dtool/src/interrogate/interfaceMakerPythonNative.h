@@ -198,7 +198,7 @@ public:
   void get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructType *inclass, const std::string &upcast_seed = "", bool can_downcast = true);
   bool DoesInheritFromIsClass(const CPPStructType * inclass, const std::string &name);
   bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
-  void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const std::string &class_name, CPPType *ctype, bool is_const);
+  void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const InterrogateType &itype, bool is_const);
   bool HasAGetClassTypeFunction(const InterrogateType &itype_class);
   int NeedsAStrFunction(const InterrogateType &itype_class);
   int NeedsAReprFunction(const InterrogateType &itype_class);
