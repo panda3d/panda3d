@@ -321,6 +321,7 @@ PUBLISHED:
   INLINE void set_render_to_texture(bool render_to_texture);
 
   INLINE const SamplerState &get_default_sampler() const;
+  INLINE void set_default_sampler(const SamplerState &sampler);
   INLINE SamplerState::WrapMode get_wrap_u() const;
   INLINE SamplerState::WrapMode get_wrap_v() const;
   INLINE SamplerState::WrapMode get_wrap_w() const;
