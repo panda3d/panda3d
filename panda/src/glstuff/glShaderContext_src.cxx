@@ -1857,10 +1857,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
         tex = param->get_texture();
 
       } else if (sinp->get_value_type() == ShaderInput::M_texture) {
-        // This used to be legal, so just issue a warning.
+        // People find it convenient to be able to pass a texture without further ado.
         tex = sinp->get_texture();
-        GLCAT.warning()
-          << "Texture input " << *input._name << " was not specified as an image binding\n";
 
       } else {
         GLCAT.error()
@@ -1904,7 +1902,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
           internal_format = _glgsg->get_internal_image_format(tex, true);
         }
 
-        GLenum access = GL_READ_ONLY;
+        GLenum access = GL_READ_WRITE;
         GLint bind_level = 0;
         GLint bind_layer = 0;
         GLboolean layered = GL_TRUE;
