@@ -33,13 +33,16 @@ GeomVertexColumn() :
 INLINE GeomVertexColumn::
 GeomVertexColumn(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,
-                 int start, int column_alignment) :
+                 int start, int column_alignment, int num_elements,
+                 int element_stride) :
   _name(MOVE(name)),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
   _start(start),
   _column_alignment(column_alignment),
+  _num_elements(num_elements),
+  _element_stride(element_stride),
   _packer(NULL)
 {
   setup();
@@ -58,6 +61,8 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   _contents(copy._contents),
   _start(copy._start),
   _column_alignment(copy._column_alignment),
+  _num_elements(copy._num_elements),
+  _element_stride(copy._element_stride),
   _packer(NULL)
 {
   setup();
@@ -317,6 +322,12 @@ compare_to(const GeomVertexColumn &other) const {
   if (_column_alignment != other._column_alignment) {
     return _column_alignment - other._column_alignment;
   }
+  if (_num_elements != other._num_elements) {
+    return _num_elements - other._num_elements;
+  }
+  if (_element_stride != other._element_stride) {
+    return _element_stride - other._element_stride;
+  }
   return 0;
 }
 
@@ -364,296 +375,4 @@ INLINE ostream &
 operator << (ostream &out, const GeomVertexColumn &obj) {
   obj.output(out);
   return out;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_f
-//       Access: Public
-//  Description: Converts an integer (typically a uint8) value to a
-//               floating-point value.  If the contents value
-//               indicates this is a color value, scales it into the
-//               range 0..1 per convention; otherwise leaves it alone.
-////////////////////////////////////////////////////////////////////
-INLINE float GeomVertexColumn::Packer::
-maybe_scale_color_f(unsigned int value) {
-  if (_column->get_contents() == C_color) {
-    return (float)value / 255.0f;
-  } else {
-    return (float)value;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_f
-//       Access: Public
-//  Description: Converts a pair of integers into the _v2 member.  See
-//               one-parameter maybe_scale_color_f() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_f(unsigned int a, unsigned int b) {
-  if (_column->get_contents() == C_color) {
-    _v2.set((float)a / 255.0f,
-            (float)b / 255.0f);
-  } else {
-    _v2.set((float)a, (float)b);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_f
-//       Access: Public
-//  Description: Converts a pair of integers into the _v3 member.  See
-//               one-parameter maybe_scale_color_f() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_f(unsigned int a, unsigned int b, unsigned int c) {
-  if (_column->get_contents() == C_color) {
-    _v3.set((float)a / 255.0f,
-            (float)b / 255.0f,
-            (float)c / 255.0f);
-  } else {
-    _v3.set((float)a, (float)b, (float)c);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_f
-//       Access: Public
-//  Description: Converts a pair of integers into the _v4 member.  See
-//               one-parameter maybe_scale_color_f() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_f(unsigned int a, unsigned int b, unsigned int c,
-                    unsigned int d) {
-  if (_column->get_contents() == C_color) {
-    _v4.set((float)a / 255.0f,
-            (float)b / 255.0f,
-            (float)c / 255.0f,
-            (float)d / 255.0f);
-  } else {
-    _v4.set((float)a, (float)b, (float)c, (float)d);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
-//       Access: Public
-//  Description: Converts a floating-point value to a uint8 value.  If
-//               the contents value indicates this is a color value,
-//               scales it into the range 0..255 per convention;
-//               otherwise leaves it alone.
-////////////////////////////////////////////////////////////////////
-INLINE unsigned int GeomVertexColumn::Packer::
-maybe_unscale_color_f(float data) {
-  if (_column->get_contents() == C_color) {
-    return (unsigned int)(data * 255.0f);
-  } else {
-    return (unsigned int)data;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
-//       Access: Public
-//  Description: Converts an LVecBase2f into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_f() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_f(const LVecBase2f &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0f);
-    _b = (unsigned int)(data[1] * 255.0f);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
-//       Access: Public
-//  Description: Converts an LVecBase3f into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_f() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_f(const LVecBase3f &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0f);
-    _b = (unsigned int)(data[1] * 255.0f);
-    _c = (unsigned int)(data[2] * 255.0f);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-    _c = (unsigned int)data[2];
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_f
-//       Access: Public
-//  Description: Converts an LVecBase4f into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_f() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_f(const LVecBase4f &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0f);
-    _b = (unsigned int)(data[1] * 255.0f);
-    _c = (unsigned int)(data[2] * 255.0f);
-    _d = (unsigned int)(data[3] * 255.0f);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-    _c = (unsigned int)data[2];
-    _d = (unsigned int)data[3];
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_d
-//       Access: Public
-//  Description: Converts an integer (typically a uint8) value to a
-//               floating-point value.  If the contents value
-//               indicates this is a color value, scales it into the
-//               range 0..1 per convention; otherwise leaves it alone.
-////////////////////////////////////////////////////////////////////
-INLINE double GeomVertexColumn::Packer::
-maybe_scale_color_d(unsigned int value) {
-  if (_column->get_contents() == C_color) {
-    return (double)value / 255.0;
-  } else {
-    return (double)value;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_d
-//       Access: Public
-//  Description: Converts a pair of integers into the _v2d member.  See
-//               one-parameter maybe_scale_color_d() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_d(unsigned int a, unsigned int b) {
-  if (_column->get_contents() == C_color) {
-    _v2d.set((double)a / 255.0,
-             (double)b / 255.0);
-  } else {
-    _v2d.set((double)a, (double)b);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_d
-//       Access: Public
-//  Description: Converts a pair of integers into the _v3d member.  See
-//               one-parameter maybe_scale_color_d() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_d(unsigned int a, unsigned int b, unsigned int c) {
-  if (_column->get_contents() == C_color) {
-    _v3d.set((double)a / 255.0,
-             (double)b / 255.0,
-             (double)c / 255.0);
-  } else {
-    _v3d.set((double)a, (double)b, (double)c);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_scale_color_d
-//       Access: Public
-//  Description: Converts a pair of integers into the _v4d member.  See
-//               one-parameter maybe_scale_color_d() for more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_scale_color_d(unsigned int a, unsigned int b, unsigned int c,
-                    unsigned int d) {
-  if (_column->get_contents() == C_color) {
-    _v4d.set((double)a / 255.0,
-             (double)b / 255.0,
-             (double)c / 255.0,
-             (double)d / 255.0);
-  } else {
-    _v4d.set((double)a, (double)b, (double)c, (double)d);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
-//       Access: Public
-//  Description: Converts a floating-point value to a uint8 value.  If
-//               the contents value indicates this is a color value,
-//               scales it into the range 0..255 per convention;
-//               otherwise leaves it alone.
-////////////////////////////////////////////////////////////////////
-INLINE unsigned int GeomVertexColumn::Packer::
-maybe_unscale_color_d(double data) {
-  if (_column->get_contents() == C_color) {
-    return (unsigned int)(data * 255.0);
-  } else {
-    return (unsigned int)data;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
-//       Access: Public
-//  Description: Converts an LVecBase2d into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_d() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_d(const LVecBase2d &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0);
-    _b = (unsigned int)(data[1] * 255.0);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
-//       Access: Public
-//  Description: Converts an LVecBase3d into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_d() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_d(const LVecBase3d &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0);
-    _b = (unsigned int)(data[1] * 255.0);
-    _c = (unsigned int)(data[2] * 255.0);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-    _c = (unsigned int)data[2];
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Packer::maybe_unscale_color_d
-//       Access: Public
-//  Description: Converts an LVecBase4d into a pair of uint8
-//               values.  See one-parameter maybe_unscale_color_d() for
-//               more info.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexColumn::Packer::
-maybe_unscale_color_d(const LVecBase4d &data) {
-  if (_column->get_contents() == C_color) {
-    _a = (unsigned int)(data[0] * 255.0);
-    _b = (unsigned int)(data[1] * 255.0);
-    _c = (unsigned int)(data[2] * 255.0);
-    _d = (unsigned int)(data[3] * 255.0);
-  } else {
-    _a = (unsigned int)data[0];
-    _b = (unsigned int)data[1];
-    _c = (unsigned int)data[2];
-    _d = (unsigned int)data[3];
-  }
 }

@@ -429,9 +429,12 @@ get_shader_input_ptr(const InternalName *id) const {
 //       Access: Published
 //  Description: Returns the ShaderInput as a texture.  Assertion
 //               fails if there is none, or if it is not a texture.
+//
+//               If sampler is not NULL, the sampler state to use
+//               for this texture is assigned to it.
 ////////////////////////////////////////////////////////////////////
 Texture *ShaderAttrib::
-get_shader_input_texture(const InternalName *id) const {
+get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
   Inputs::const_iterator i = _inputs.find(id);
   if (i == _inputs.end()) {
     ostringstream strm;
@@ -447,34 +450,10 @@ get_shader_input_texture(const InternalName *id) const {
       nassert_raise(strm.str());
       return NULL;
     }
-    return p->get_texture();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderAttrib::get_shader_input_sampler
-//       Access: Published
-//  Description: Returns the ShaderInput as a sampler.  Assertion
-//               fails if there is none, or if it is not a texture.
-////////////////////////////////////////////////////////////////////
-const SamplerState &ShaderAttrib::
-get_shader_input_sampler(const InternalName *id) const {
-  Inputs::const_iterator i = _inputs.find(id);
-  if (i == _inputs.end()) {
-    ostringstream strm;
-    strm << "Shader input " << id->get_name() << " is not present.\n";
-    nassert_raise(strm.str());
-    return SamplerState::get_default();
-  } else {
-    const ShaderInput *p = (*i).second;
-    if (p->get_value_type() != ShaderInput::M_texture &&
-        p->get_value_type() != ShaderInput::M_texture_sampler) {
-      ostringstream strm;
-      strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
-      nassert_raise(strm.str());
-      return SamplerState::get_default();
+    if (sampler != NULL) {
+      *sampler = p->get_sampler();
     }
-    return p->get_sampler();
+    return p->get_texture();
   }
 }
 

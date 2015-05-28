@@ -643,9 +643,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     SamplerState sampler;
 
     if (id != NULL) {
-      const ShaderInput *input = _glgsg->_target_shader->get_shader_input(id);
-      tex = input->get_texture();
-      sampler = input->get_sampler();
+      tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
 
     } else {
       if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {

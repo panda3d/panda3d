@@ -17,6 +17,7 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 #include "geomEnums.h"
+#include "coordinateSystem.h"
 
 // Define some macros to transparently map to the double or float
 // versions of the OpenGL function names.
@@ -69,6 +70,7 @@ extern ConfigVariableBool gl_force_flush;
 extern ConfigVariableBool gl_separate_specular_color;
 extern ConfigVariableBool gl_cube_map_seamless;
 extern ConfigVariableBool gl_dump_compiled_shaders;
+extern ConfigVariableBool gl_validate_shaders;
 extern ConfigVariableBool gl_immutable_texture_storage;
 extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;
@@ -76,6 +78,7 @@ extern ConfigVariableBool gl_vertex_array_objects;
 extern ConfigVariableBool gl_support_primitive_restart_index;
 extern ConfigVariableBool gl_support_sampler_objects;
 extern ConfigVariableBool gl_support_shadow_filter;
+extern ConfigVariableEnum<CoordinateSystem> gl_coordinate_system;
 
 extern EXPCL_GL void CLP(init_classes)();
 

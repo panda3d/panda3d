@@ -647,12 +647,16 @@ read_handle(DatagramIterator &scan) {
 //               read_pointer() was called.  It is then the calling
 //               object's responsibility to store these pointers in the
 //               object properly.
+//
+//               We don't know what the final pointer will be yet,
+//               but we do know whether it was NULL, so this method
+//               returns true if the pointer is non-NULL, false if NULL.
 ////////////////////////////////////////////////////////////////////
-void BamReader::
+bool BamReader::
 read_pointer(DatagramIterator &scan) {
   Thread::consider_yield();
 
-  nassertv(_now_creating != _created_objs.end());
+  nassertr(_now_creating != _created_objs.end(), false);
   int requestor_id = (*_now_creating).first;
 
   // Read the object ID, and associate it with the requesting object.
@@ -680,6 +684,10 @@ read_pointer(DatagramIterator &scan) {
       // object for each non-NULL pointer we read.
       _num_extra_objects++;
     }
+
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -1214,6 +1222,11 @@ p_read_object() {
     }
 
     return p_read_object();
+
+  default:
+    bam_cat.error()
+      << "Encountered invalid BamObjectCode 0x" << hex << (int)boc << dec << ".\n";
+    return 0;
   }
 
   // An object definition in a Bam file consists of a TypeHandle

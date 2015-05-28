@@ -208,6 +208,20 @@ get_y_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_fb_size
+//       Access: Published
+//  Description: Returns the internal size of the window or buffer.
+//               This is almost always the same as get_size(),
+//               except when a pixel_zoom is in effect--see
+//               set_pixel_zoom().
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i GraphicsOutput::
+get_fb_size() const {
+  return LVecBase2i(max(int(_size.get_x() * get_pixel_factor()), 1),
+                    max(int(_size.get_y() * get_pixel_factor()), 1));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_fb_x_size
 //       Access: Published
 //  Description: Returns the internal width of the window or buffer.
@@ -231,6 +245,23 @@ get_fb_x_size() const {
 INLINE int GraphicsOutput::
 get_fb_y_size() const {
   return max(int(_size.get_y() * get_pixel_factor()), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_left_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel size of the left eye, based on scaling
+//               get_size() by get_sbs_left_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_size().
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i GraphicsOutput::
+get_sbs_left_size() const {
+  PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
+  PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
+  return LVecBase2i(max(int(_size.get_x() * left_w), 1),
+                    max(int(_size.get_y() * left_h), 1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,6 +292,23 @@ INLINE int GraphicsOutput::
 get_sbs_left_y_size() const {
   PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
   return max(int(_size.get_y() * left_h), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sbs_right_size
+//       Access: Published
+//  Description: If side-by-side stereo is enabled, this returns the
+//               pixel size of the right eye, based on scaling
+//               get_size() by get_sbs_right_dimensions().  If
+//               side-by-side stereo is not enabled, this returns the
+//               same as get_size().
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i GraphicsOutput::
+get_sbs_right_size() const {
+  PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
+  PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
+  return LVecBase2i(max(int(_size.get_x() * right_w), 1),
+                    max(int(_size.get_y() * right_h), 1));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -213,3 +213,125 @@ write(ostream &out, int indent_level) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMesh::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               BulletTriangleMesh.
+////////////////////////////////////////////////////////////////////
+void BulletTriangleMesh::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMesh::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BulletTriangleMesh::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  dg.add_stdfloat(get_welding_distance());
+
+  // In case we ever want to represent more than 1 indexed mesh.
+  dg.add_int32(1);
+
+  btIndexedMesh &mesh = _mesh->getIndexedMeshArray()[0];
+  dg.add_int32(mesh.m_numVertices);
+  dg.add_int32(mesh.m_numTriangles);
+
+  // In case we want to use this to distinguish 16-bit vs 32-bit indices.
+  dg.add_bool(true);
+
+  // Add the vertices.
+  const unsigned char *vptr = mesh.m_vertexBase;
+  nassertv(vptr != NULL || mesh.m_numVertices == 0);
+
+  for (int i = 0; i < mesh.m_numVertices; ++i) {
+    const btVector3 &vertex = *((btVector3 *)vptr);
+    dg.add_stdfloat(vertex.getX());
+    dg.add_stdfloat(vertex.getY());
+    dg.add_stdfloat(vertex.getZ());
+    vptr += mesh.m_vertexStride;
+  }
+
+  // Now add the triangle indices.
+  const unsigned char *iptr = mesh.m_triangleIndexBase;
+  nassertv(iptr != NULL || mesh.m_numTriangles == 0);
+
+  if (_mesh->getUse32bitIndices()) {
+    for (int i = 0; i < mesh.m_numTriangles; ++i) {
+      int *triangle = (int *)iptr;
+      dg.add_int32(triangle[0]);
+      dg.add_int32(triangle[1]);
+      dg.add_int32(triangle[2]);
+      iptr += mesh.m_triangleIndexStride;
+    }
+  } else {
+    for (int i = 0; i < mesh.m_numTriangles; ++i) {
+      short int *triangle = (short int *)iptr;
+      dg.add_int32(triangle[0]);
+      dg.add_int32(triangle[1]);
+      dg.add_int32(triangle[2]);
+      iptr += mesh.m_triangleIndexStride;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMesh::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type BulletShape is encountered
+//               in the Bam file.  It should create the BulletShape
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *BulletTriangleMesh::
+make_from_bam(const FactoryParams &params) {
+  BulletTriangleMesh *param = new BulletTriangleMesh;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMesh::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new BulletTriangleMesh.
+////////////////////////////////////////////////////////////////////
+void BulletTriangleMesh::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  set_welding_distance(scan.get_stdfloat());
+
+  nassertv(scan.get_int32() == 1);
+  int num_vertices = scan.get_int32();
+  int num_triangles = scan.get_int32();
+  nassertv(scan.get_bool() == true);
+
+  // Read and add the vertices.
+  _mesh->preallocateVertices(num_vertices);
+  for (int i = 0; i < num_vertices; ++i) {
+    PN_stdfloat x = scan.get_stdfloat();
+    PN_stdfloat y = scan.get_stdfloat();
+    PN_stdfloat z = scan.get_stdfloat();
+    _mesh->findOrAddVertex(btVector3(x, y, z), false);
+  }
+
+  // Now read and add the indices.
+  int num_indices = num_triangles * 3;
+  _mesh->preallocateIndices(num_indices);
+  for (int i = 0; i < num_indices; ++i) {
+    _mesh->addIndex(scan.get_int32());
+  }
+
+  // Since we manually added the vertices individually, we have to
+  // update the triangle count appropriately.
+  _mesh->getIndexedMeshArray()[0].m_numTriangles = num_triangles;
+}

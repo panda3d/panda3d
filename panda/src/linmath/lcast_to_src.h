@@ -86,6 +86,33 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix3) &source);
 INLINE_LINMATH FLOATNAME2(LMatrix4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix4) &source);
 
+INLINE_LINMATH FLOATNAME2(LVecBase2)
+lcast_to(FLOATTYPE2 *, const LVecBase2i &source);
+
+INLINE_LINMATH FLOATNAME2(LVecBase3)
+lcast_to(FLOATTYPE2 *, const LVecBase3i &source);
+
+INLINE_LINMATH FLOATNAME2(LVecBase4)
+lcast_to(FLOATTYPE2 *, const LVecBase4i &source);
+
+INLINE_LINMATH FLOATNAME2(LVector2)
+lcast_to(FLOATTYPE2 *, const LVector2i &source);
+
+INLINE_LINMATH FLOATNAME2(LVector3)
+lcast_to(FLOATTYPE2 *, const LVector3i &source);
+
+INLINE_LINMATH FLOATNAME2(LVector4)
+lcast_to(FLOATTYPE2 *, const LVector4i &source);
+
+INLINE_LINMATH FLOATNAME2(LPoint2)
+lcast_to(FLOATTYPE2 *, const LPoint2i &source);
+
+INLINE_LINMATH FLOATNAME2(LPoint3)
+lcast_to(FLOATTYPE2 *, const LPoint3i &source);
+
+INLINE_LINMATH FLOATNAME2(LPoint4)
+lcast_to(FLOATTYPE2 *, const LPoint4i &source);
+
 #include "lcast_to_src.I"
 
 #endif  // CPPPARSER

@@ -27,6 +27,11 @@ format_string(const string &value) {
 }
 
 INLINE string
+format_string(bool value) {
+  return string(value ? "true" : "false");
+}
+
+INLINE string
 format_string(float value) {
   char buffer[32];
   pdtoa(value, buffer);

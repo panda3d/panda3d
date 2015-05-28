@@ -176,6 +176,11 @@ public:
   static INLINE unsigned int unpack_abcd_c(PN_uint32 data);
   static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
 
+  static INLINE PN_uint32 pack_ufloat(float a, float b, float c);
+  static INLINE float unpack_ufloat_a(PN_uint32 data);
+  static INLINE float unpack_ufloat_b(PN_uint32 data);
+  static INLINE float unpack_ufloat_c(PN_uint32 data);
+
 private:
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
@@ -453,7 +458,7 @@ public:
   bool get_array_info(const InternalName *name,
                       const GeomVertexArrayDataHandle *&array_reader,
                       int &num_values, NumericType &numeric_type,
-                      int &start, int &stride, int &divisor,
+                      bool &normalized, int &start, int &stride, int &divisor,
                       int &num_elements, int &element_stride) const;
 
   INLINE bool has_vertex() const;

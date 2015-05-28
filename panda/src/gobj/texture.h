@@ -42,6 +42,7 @@
 #include "samplerState.h"
 #include "pnmImage.h"
 #include "colorSpace.h"
+#include "geomEnums.h"
 
 class PNMImage;
 class PfmFile;
@@ -82,6 +83,7 @@ PUBLISHED:
     TT_3d_texture,
     TT_2d_texture_array,
     TT_cube_map,
+    TT_buffer_texture,
   };
 
   enum ComponentType {
@@ -240,6 +242,8 @@ PUBLISHED:
   INLINE void setup_2d_texture_array(int z_size = 1);
   INLINE void setup_2d_texture_array(int x_size, int y_size, int z_size,
                                      ComponentType component_type, Format format);
+  INLINE void setup_buffer_texture(int size, ComponentType component_type,
+                                   Format format, GeomEnums::UsageHint usage);
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
 
@@ -304,6 +308,7 @@ PUBLISHED:
   INLINE TextureType get_texture_type() const;
   INLINE Format get_format() const;
   INLINE ComponentType get_component_type() const;
+  INLINE GeomEnums::UsageHint get_usage_hint() const;
 
   INLINE void set_wrap_u(WrapMode wrap);
   INLINE void set_wrap_v(WrapMode wrap);
@@ -316,6 +321,7 @@ PUBLISHED:
   INLINE void set_render_to_texture(bool render_to_texture);
 
   INLINE const SamplerState &get_default_sampler() const;
+  INLINE void set_default_sampler(const SamplerState &sampler);
   INLINE SamplerState::WrapMode get_wrap_u() const;
   INLINE SamplerState::WrapMode get_wrap_v() const;
   INLINE SamplerState::WrapMode get_wrap_w() const;
@@ -829,6 +835,7 @@ protected:
     TextureType _texture_type;
     Format _format;
     ComponentType _component_type;
+    GeomEnums::UsageHint _usage_hint;
 
     bool _loaded_from_image;
     bool _loaded_from_txo;

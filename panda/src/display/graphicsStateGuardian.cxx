@@ -185,6 +185,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _max_3d_texture_dimension = 0;
   _max_2d_texture_array_layers = 0;
   _max_cube_map_dimension = 0;
+  _max_buffer_texture_size = 0;
 
   // Assume we don't support these fairly advanced texture combiner
   // modes.
@@ -195,6 +196,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_3d_texture = false;
   _supports_2d_texture_array = false;
   _supports_cube_map = false;
+  _supports_buffer_texture = false;
   _supports_tex_non_pow2 = false;
   _supports_texture_srgb = false;
   _supports_compressed_texture = false;
@@ -1265,8 +1267,15 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_model_to_view: {
     return &(get_external_transform()->get_mat());
   }
+  case Shader::SMO_model_to_apiview: {
+    return &(get_internal_transform()->get_mat());
+  }
   case Shader::SMO_view_to_model: {
     t = get_external_transform()->get_inverse()->get_mat();
+    return &t;
+  }
+  case Shader::SMO_apiview_to_model: {
+    t = get_internal_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_view: {
@@ -1300,6 +1309,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_view_to_apiclip: {
     t = _cs_transform->get_mat() * _projection_mat->get_mat();
     return &t;
+  }
+  case Shader::SMO_apiclip_to_apiview: {
+    return &(_projection_mat_inv->get_mat());
+  }
+  case Shader::SMO_apiview_to_apiclip: {
+    return &(_projection_mat->get_mat());
   }
   case Shader::SMO_view_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);

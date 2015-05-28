@@ -558,7 +558,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
     out << " = 0";
   }
   if (_initializer != NULL) {
-    out << " = (" << *_initializer << ")";
+    out << " = " << *_initializer;
   }
 }
 

@@ -33,7 +33,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_minor_ver = 37;
+static const unsigned short _bam_minor_ver = 38;
 // Bumped to minor version 14 on 12/19/07 to change default ColorAttrib.
 // Bumped to minor version 15 on 4/9/08 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 5/13/08 to add Texture::_quality_level.
@@ -58,5 +58,6 @@ static const unsigned short _bam_minor_ver = 37;
 // Bumped to minor version 35 on 12/3/14 to change StencilAttrib.
 // Bumped to minor version 36 on 12/9/14 to add samplers and lod settings.
 // Bumped to minor version 37 on 1/22/15 to add GeomVertexArrayFormat::_divisor.
+// Bumped to minor version 38 on 4/15/15 to add various Bullet classes.
 
 #endif

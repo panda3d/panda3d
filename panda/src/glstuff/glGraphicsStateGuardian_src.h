@@ -180,6 +180,8 @@ typedef void (APIENTRYP PFNGLUNIFORM4IVPROC) (GLint location, GLsizei count, con
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX3FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLVERTEXATTRIB4FVPROC) (GLuint index, const GLfloat *v);
+typedef void (APIENTRYP PFNGLVERTEXATTRIB4DVPROC) (GLuint index, const GLdouble *v);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
@@ -636,6 +638,7 @@ protected:
   GLint _max_image_units;
   bool _supports_multi_bind;
   bool _supports_get_program_binary;
+  bool _supports_uniform_buffers;
 
 #ifdef OPENGLES
   bool _supports_depth24;
@@ -695,6 +698,10 @@ public:
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
+#ifndef OPENGLES
+  PFNGLTEXBUFFERPROC _glTexBuffer;
+#endif
+
   bool _supports_clear_texture;
 #ifndef OPENGLES
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
@@ -711,6 +718,7 @@ public:
   bool _supports_bgr;
   bool _supports_rescale_normal;
   bool _supports_packed_dabc;
+  bool _supports_packed_ufloat;
 
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
 #ifndef OPENGLES_2
@@ -830,6 +838,8 @@ public:
   PFNGLUNIFORMMATRIX3FVPROC _glUniformMatrix3fv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
+  PFNGLVERTEXATTRIB4FVPROC _glVertexAttrib4fv;
+  PFNGLVERTEXATTRIB4DVPROC _glVertexAttrib4dv;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
@@ -838,6 +848,9 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLGETACTIVEUNIFORMSIVPROC _glGetActiveUniformsiv;
+  PFNGLGETACTIVEUNIFORMBLOCKIVPROC _glGetActiveUniformBlockiv;
+  PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC _glGetActiveUniformBlockName;
   PFNGLGENSAMPLERSPROC _glGenSamplers;
   PFNGLDELETESAMPLERSPROC _glDeleteSamplers;
   PFNGLBINDSAMPLERPROC _glBindSampler;
@@ -917,6 +930,8 @@ public:
   typedef pmap<UsageTextureKey, GLuint> UsageTextures;
   UsageTextures _usage_textures;
 #endif  // NDEBUG
+
+  BufferResidencyTracker _renderbuffer_residency;
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;

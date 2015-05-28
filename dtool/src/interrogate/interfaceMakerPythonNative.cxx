@@ -720,11 +720,16 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
 ///////////////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_python_instance(ostream &out, int indent_level, const string &return_expr,
-                      bool owns_memory, const string &class_name,
-                      CPPType *ctype, bool is_const) {
+                      bool owns_memory, const InterrogateType &itype, bool is_const) {
   out << boolalpha;
 
-  if (IsPandaTypedObject(ctype->as_struct_type())) {
+  if (!isExportThisRun(itype._cpptype)) {
+    _external_imports.insert(itype._cpptype);
+  }
+
+  string class_name = itype.get_scoped_name();
+
+  if (IsPandaTypedObject(itype._cpptype->as_struct_type())) {
     // We can't let DTool_CreatePyInstanceTyped do the NULL check since we
     // will be grabbing the type index (which would obviously crash when called
     // on a NULL pointer), so we do it here.
@@ -2636,7 +2641,7 @@ write_module_class(ostream &out, Object *obj) {
     write_function_slot(out, 2, slots, "bf_getsegcount");
     write_function_slot(out, 2, slots, "bf_getcharbuffer");
     out << "#endif\n";
-    out << "#if PY_MAJOR_VERSION >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000\n";
     write_function_slot(out, 2, slots, "bf_getbuffer");
     write_function_slot(out, 2, slots, "bf_releasebuffer");
     out << "#endif\n";
@@ -6046,31 +6051,19 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
         TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
         const InterrogateType &itype = idb->get_type(type_index);
 
-        if (!isExportThisRun(itype._cpptype)) {
-          _external_imports.insert(itype._cpptype);
-        }
-
-        write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+        write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
 
       } else {
         TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
         const InterrogateType &itype = idb->get_type(type_index);
 
-        if (!isExportThisRun(itype._cpptype)) {
-          _external_imports.insert(itype._cpptype);
-        }
-
-        write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+        write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
       }
     } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
       const InterrogateType &itype = idb->get_type(type_index);
 
-      if (!isExportThisRun(itype._cpptype)) {
-        _external_imports.insert(itype._cpptype);
-      }
-
-      write_python_instance(out, indent_level, return_expr, owns_memory, itype.get_scoped_name(), itype._cpptype, is_const);
+      write_python_instance(out, indent_level, return_expr, owns_memory, itype, is_const);
 
     } else {
       indent(out, indent_level) << "Should Never Reach This InterfaceMakerPythonNative::pack_python_value";
@@ -6638,6 +6631,7 @@ HasAGetClassTypeFunction(const InterrogateType &itype_class) {
 
   int num_methods = itype_class.number_of_methods();
   int mi;
+
   for (mi = 0; mi < num_methods; mi++) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);

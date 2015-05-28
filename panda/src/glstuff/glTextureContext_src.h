@@ -48,6 +48,9 @@ public:
   // This is the GL "name" of the texture object.
   GLuint _index;
 
+  // This is only used for buffer textures.
+  GLuint _buffer;
+
   // This is the bindless "handle" to the texture object.
   GLuint64 _handle;
   bool _handle_resident;

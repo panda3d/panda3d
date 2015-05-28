@@ -153,6 +153,57 @@ copy_channel(const PNMImage &copy, int src_channel, int dest_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::copy_channel_bits
+//       Access: Published
+//  Description: Copies some subset of the bits of the specified
+//               channel from one image into some subset of the bits
+//               of the specified channel in another image.  Images
+//               must be the same size.
+//
+//               If right_shift is negative, it means a left shift.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+copy_channel_bits(const PNMImage &copy, int src_channel, int dest_channel, xelval src_mask, int right_shift) {
+  // Make sure the channels are in range
+  nassertv(src_channel >= 0 && src_channel <= 3);
+  nassertv(dest_channel >= 0 && dest_channel <= 3);
+  // Make sure that images are valid
+  if (!copy.is_valid() || !is_valid()) {
+    pnmimage_cat.error() << "One of the images is invalid!\n";
+    return;
+  }
+  // Make sure the images are the same size
+  if (_x_size != copy.get_x_size() || _y_size != copy.get_y_size()){
+    pnmimage_cat.error() << "Image size doesn't match!\n";
+    return;
+  }
+
+  // Do the actual copying.
+  if (right_shift >= 0) {
+    xelval dest_mask = ~(src_mask >> right_shift);
+    for (int x = 0; x < _x_size; x++) {
+      for (int y = 0; y < _y_size; y++) {
+        xelval src = copy.get_channel_val(x, y, src_channel);
+        xelval dest = get_channel_val(x, y, dest_channel);
+        dest = (dest & dest_mask) | ((src & src_mask) >> right_shift);
+        set_channel_val(x, y, dest_channel, dest);
+      }
+    }
+  } else {
+    int left_shift = -right_shift;
+    xelval dest_mask = ~(src_mask << left_shift);
+    for (int x = 0; x < _x_size; x++) {
+      for (int y = 0; y < _y_size; y++) {
+        xelval src = copy.get_channel_val(x, y, src_channel);
+        xelval dest = get_channel_val(x, y, dest_channel);
+        dest = (dest & dest_mask) | ((src & src_mask) << left_shift);
+        set_channel_val(x, y, dest_channel, dest);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_header_from
 //       Access: Published
 //  Description: Copies just the header information into this image.
@@ -164,6 +215,12 @@ void PNMImage::
 copy_header_from(const PNMImageHeader &header) {
   clear();
   PNMImageHeader::operator = (header);
+
+  if (_maxval == 0) {
+    _inv_maxval = 0.0f;
+  } else {
+    _inv_maxval = 1.0f / (float)_maxval;
+  }
 
   if (has_alpha()) {
     allocate_alpha();
@@ -1708,7 +1765,7 @@ rescale(float min_val, float max_val) {
     for (int y = 0; y < get_y_size(); y++) {
       for (int x = 0; x < get_x_size(); x++) {
         LRGBColorf xel = get_xel(x, y);
-        set_xel(x, y, 
+        set_xel(x, y,
                 (xel[0] - min_val) / scale,
                 (xel[1] - min_val) / scale,
                 (xel[2] - min_val) / scale);
@@ -1899,7 +1956,7 @@ unfiltered_stretch_from(const PNMImage &copy) {
     }
   }
 
-  if (has_alpha() && copy.has_alpha()) { 
+  if (has_alpha() && copy.has_alpha()) {
     for (int yt = 0; yt < get_y_size(); yt++) {
       int ys = yt * copy.get_y_size() / get_y_size();
       for (int xt = 0; xt < get_x_size(); xt++) {

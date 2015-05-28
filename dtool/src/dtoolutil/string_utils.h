@@ -69,6 +69,7 @@ INLINE string format_string(const Thing &thing);
 
 // Fast specializations for some primitive types.
 INLINE string format_string(const string &value);
+INLINE string format_string(bool value);
 INLINE string format_string(float value);
 INLINE string format_string(double value);
 INLINE string format_string(unsigned int value);

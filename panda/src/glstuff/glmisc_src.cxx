@@ -222,6 +222,12 @@ ConfigVariableBool gl_dump_compiled_shaders
             "programs to disk with a filename like glsl_program0.dump "
             "into the current directory."));
 
+ConfigVariableBool gl_validate_shaders
+  ("gl-validate-shaders", true,
+   PRC_DESC("Set this to true to enable glValidateShader the first time "
+            "a shader is bound.  This may cause helpful information about "
+            "shaders to be printed."));
+
 ConfigVariableBool gl_immutable_texture_storage
   ("gl-immutable-texture-storage", false,
    PRC_DESC("This configures Panda to pre-allocate immutable storage "
@@ -277,6 +283,15 @@ ConfigVariableBool gl_support_shadow_filter
             "implementation of ARB_shadow.  Particularly, older ATI "
             "cards suffered from a broken implementation of the "
             "shadow map filtering features."));
+
+ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
+  ("gl-coordinate-system", CS_yup_right,
+   PRC_DESC("Which coordinate system to use as the internal "
+            "coordinate system for OpenGL operations.  If you are "
+            "using features like fixed-function sphere mapping, it is "
+            "best to leave this to yup-right.  However, if you are "
+            "creating a shader-only application, it may be easier and "
+            "more efficient to set this to default."));
 
 extern ConfigVariableBool gl_parallel_arrays;
 
