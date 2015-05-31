@@ -92,6 +92,7 @@ private:
   static CPT(RenderState) get_fake_view_frustum_cull_state();
 };
 
+/* okcircular */
 #include "cullTraverser.h"
 
 #include "cullTraverserData.I"
