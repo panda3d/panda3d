@@ -50,9 +50,11 @@
     matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
+    paramTexture.I paramTexture.h \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     queryContext.I queryContext.h \
+    samplerState.I samplerState.h \
     savedContext.I savedContext.h \
     shader.I shader.h \
     shaderContext.h shaderContext.I \
@@ -61,6 +63,7 @@
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureCollection.I textureCollection.h \
+    textureCollection_ext.h \
     textureContext.I textureContext.h \
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
@@ -123,9 +126,11 @@
     materialPool.cxx matrixLens.cxx \
     occlusionQueryContext.cxx \
     orthographicLens.cxx  \
+    paramTexture.cxx \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     queryContext.cxx \
+    samplerState.cxx \
     savedContext.cxx \
     shader.cxx \
     shaderContext.cxx \
@@ -196,10 +201,12 @@
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
-    orthographicLens.I orthographicLens.h perspectiveLens.I \
-    perspectiveLens.h \
+    orthographicLens.I orthographicLens.h \
+    paramTexture.I paramTexture.h \
+    perspectiveLens.I perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     queryContext.I queryContext.h \
+    samplerState.I samplerState.h \
     savedContext.I savedContext.h \
     shader.I shader.h \
     shaderContext.h shaderContext.I \

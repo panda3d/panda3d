@@ -79,6 +79,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA20135","2013.5"),
                    ("MAYA2014","2014"),
                    ("MAYA2015","2015"),
+                   ("MAYA2016","2016"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),

@@ -1,5 +1,5 @@
 #ifndef __SOCKET_FDSET_H__
-#define __SOCKET_FDSET_H__ 
+#define __SOCKET_FDSET_H__
 
 ////////////////////////////////////////////////////
 //
@@ -16,27 +16,29 @@
 #include "time_base.h"
 #include "socket_ip.h"
 
-class Socket_fdset
-{
+class Socket_fdset {
 PUBLISHED:
-    
-    inline Socket_fdset();
-    inline void setForSocket(const Socket_IP &incon);
-    inline bool IsSetFor(const Socket_IP & incon) const;
-    inline int WaitForRead(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
-    inline int WaitForWrite(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
-    inline int WaitForError(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
-    
-    
-    inline int WaitForRead(bool zeroFds, const Time_Span & timeout);
-    inline void clear();
+  inline Socket_fdset();
+  inline void setForSocket(const Socket_IP &incon);
+  inline bool IsSetFor(const Socket_IP &incon) const;
+  inline int WaitForRead(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
+  inline int WaitForWrite(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
+  inline int WaitForError(bool zeroFds, PN_uint32 sleep_time = 0xffffffff);
+
+  inline int WaitForRead(bool zeroFds, const Time_Span & timeout);
+  inline void clear();
+
 private:
-    inline void setForSocketNative(const SOCKET inid);
-    inline bool isSetForNative(const SOCKET inid) const;
-    
-    friend struct Socket_Selector;
-    SOCKET _maxid;
-    mutable fd_set _the_set;
+  inline void setForSocketNative(const SOCKET inid);
+  inline bool isSetForNative(const SOCKET inid) const;
+
+  friend struct Socket_Selector;
+
+  SOCKET _maxid;
+
+#ifndef CPPPARSER
+  mutable fd_set _the_set;
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////
