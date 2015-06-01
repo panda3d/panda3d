@@ -623,6 +623,63 @@ make_grayscale(float rc, float gc, float bc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::premultiply_alpha
+//       Access: Published
+//  Description: Converts an image in-place to its "premultiplied"
+//               form, where, for every pixel in the image, the
+//               red, green, and blue components are multiplied by
+//               that pixel's alpha value.
+//
+//               This does not modify any alpha values.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+premultiply_alpha() {
+  if (!has_alpha()) {
+    return;
+  }
+
+  for (int y = 0; y < get_y_size(); y++) {
+    for (int x = 0; x < get_x_size(); x++) {
+      float alpha = get_alpha(x, y);
+      float r = get_red(x, y) * alpha;
+      float g = get_green(x, y) * alpha;
+      float b = get_blue(x, y) * alpha;
+      set_xel(x, y, r, g, b);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::unpremultiply_alpha
+//       Access: Published
+//  Description: Converts an image in-place to its "straight alpha"
+//               form (presumably from a "premultiplied" form),
+//               where, for every pixel in the image, the red,
+//               green, and blue components are divided by that
+//               pixel's alpha value.
+//
+//               This does not modify any alpha values.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+unpremultiply_alpha() {
+  if (!has_alpha()) {
+    return;
+  }
+
+  for (int y = 0; y < get_y_size(); y++) {
+    for (int x = 0; x < get_x_size(); x++) {
+      float alpha = get_alpha(x, y);
+      if (alpha > 0) {
+        float r = get_red(x, y) / alpha;
+        float g = get_green(x, y) / alpha;
+        float b = get_blue(x, y) / alpha;
+        set_xel(x, y, r, g, b);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::reverse_rows
 //       Access: Published
 //  Description: Performs an in-place reversal of the row (y) data.
