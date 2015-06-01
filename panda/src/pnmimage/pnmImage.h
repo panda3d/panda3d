@@ -133,6 +133,9 @@ PUBLISHED:
   void make_grayscale(float rc, float gc, float bc);
   INLINE void make_rgb();
 
+  void premultiply_alpha();
+  void unpremultiply_alpha();
+
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
 
