@@ -38,11 +38,16 @@ After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:
 
 ```bash
-makepanda\makepanda.bat --everything --installer
+makepanda\makepanda.bat --everything --installer --no-eigen
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
 install Panda3D on your system.
+
+Note: you may choose to remove --no-eigen and build with Eigen support in
+order to improve runtime performance.  However, this will cause the build to
+take hours to complete, as Eigen is a heavily template-based library, and the
+the MSVC compiler does not perform well under these circumstances.
 
 Linux
 -----

@@ -17,7 +17,7 @@
 
 #include "pvector.h"
 
-#if defined(HAVE_EIGEN) && defined(_WIN32) && !defined(CPPPARSER)
+#if defined(HAVE_EIGEN) && defined(_WIN32) && !defined(_WIN64) && !defined(CPPPARSER)
 
 #include <Eigen/StdVector>
 
