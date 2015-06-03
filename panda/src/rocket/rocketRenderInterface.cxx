@@ -66,7 +66,10 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
 //  Description: Called internally to make a Geom from Rocket data.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) RocketRenderInterface::
-make_geom(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, GeomEnums::UsageHint uh) {
+make_geom(Rocket::Core::Vertex* vertices,
+          int num_vertices, int* indices, int num_indices,
+          GeomEnums::UsageHint uh, const LVecBase2 &tex_scale) {
+
   PT(GeomVertexData) vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4t2(), uh);
   vdata->unclean_set_num_rows(num_vertices);
   {
@@ -81,7 +84,8 @@ make_geom(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int nu
       vwriter.add_data3f(LVector3f::right() * vertex.position.x + LVector3f::up() * vertex.position.y);
       cwriter.add_data4i(vertex.colour.red, vertex.colour.green,
                          vertex.colour.blue, vertex.colour.alpha);
-      twriter.add_data2f(vertex.tex_coord.x, 1.0f - vertex.tex_coord.y);
+      twriter.add_data2f(vertex.tex_coord.x * tex_scale[0],
+                         (1.0f - vertex.tex_coord.y) * tex_scale[1]);
     }
   }
 
@@ -140,12 +144,24 @@ render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vect
 //               that the application does not wish to optimize.
 ////////////////////////////////////////////////////////////////////
 void RocketRenderInterface::
-RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation) {
-  PT(Geom) geom = make_geom(vertices, num_vertices, indices, num_indices, GeomEnums::UH_stream);
+RenderGeometry(Rocket::Core::Vertex* vertices,
+               int num_vertices, int* indices, int num_indices,
+               Rocket::Core::TextureHandle thandle,
+               const Rocket::Core::Vector2f& translation) {
+
+  Texture *texture = (Texture *)thandle;
+
+  LVecBase2 tex_scale(1, 1);
+  if (texture != (Texture *)NULL) {
+    tex_scale = texture->get_tex_scale();
+  }
+
+  PT(Geom) geom = make_geom(vertices, num_vertices, indices, num_indices,
+                            GeomEnums::UH_stream, tex_scale);
 
   CPT(RenderState) state;
-  if ((Texture*) texture != (Texture*) NULL) {
-    state = RenderState::make(TextureAttrib::make((Texture*) texture));
+  if (texture != (Texture *)NULL) {
+    state = RenderState::make(TextureAttrib::make(texture));
   } else {
     state = RenderState::make_empty();
   }
@@ -160,29 +176,39 @@ RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, i
 //               it believes will be static for the forseeable future.
 ////////////////////////////////////////////////////////////////////
 Rocket::Core::CompiledGeometryHandle RocketRenderInterface::
-CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture) {
+CompileGeometry(Rocket::Core::Vertex* vertices,
+                int num_vertices, int* indices, int num_indices,
+                Rocket::Core::TextureHandle thandle) {
+
+  Texture *texture = (Texture *)thandle;
 
   CompiledGeometry *c = new CompiledGeometry;
-  c->_geom = make_geom(vertices, num_vertices, indices, num_indices, GeomEnums::UH_static);
+  LVecBase2 tex_scale(1, 1);
 
-  if ((Texture*) texture != (Texture*) NULL) {
+  if (texture != (Texture *)NULL) {
+    rocket_cat.debug()
+      << "Compiling geom " << c->_geom << " with texture '"
+      << texture->get_name() << "'\n";
+
+    tex_scale = texture->get_tex_scale();
+
     PT(TextureStage) stage = new TextureStage("");
     stage->set_mode(TextureStage::M_modulate);
 
     CPT(TextureAttrib) attr = DCAST(TextureAttrib, TextureAttrib::make());
-    attr = DCAST(TextureAttrib, attr->add_on_stage(stage, (Texture*) texture));
+    attr = DCAST(TextureAttrib, attr->add_on_stage(stage, (Texture *)texture));
 
     c->_state = RenderState::make(attr);
 
-    rocket_cat.debug()
-      << "Compiled geom " << c->_geom << " with texture '"
-      << ((Texture*) texture)->get_name() << "'\n";
   } else {
-    c->_state = RenderState::make_empty();
-
     rocket_cat.debug()
-      << "Compiled geom " << c->_geom << " without texture\n";
+      << "Compiling geom " << c->_geom << " without texture\n";
+
+    c->_state = RenderState::make_empty();
   }
+
+  c->_geom = make_geom(vertices, num_vertices, indices, num_indices,
+                       GeomEnums::UH_static, tex_scale);
 
   return (Rocket::Core::CompiledGeometryHandle) c;
 }
@@ -222,7 +248,16 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
             Rocket::Core::Vector2i& texture_dimensions,
             const Rocket::Core::String& source) {
 
-  PT(Texture) tex = TexturePool::load_texture(Filename::from_os_specific(source.CString()));
+  // Prefer padding over scaling to avoid blurring people's pixel art.
+  LoaderOptions options;
+  if (Texture::get_textures_power_2() == ATS_none) {
+    options.set_auto_texture_scale(ATS_none);
+  } else {
+    options.set_auto_texture_scale(ATS_pad);
+  }
+
+  Filename fn = Filename::from_os_specific(source.CString());
+  PT(Texture) tex = TexturePool::load_texture(fn, 0, false, options);
   if (tex == NULL) {
     texture_handle = 0;
     texture_dimensions.x = 0;
@@ -233,8 +268,12 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
   tex->set_minfilter(SamplerState::FT_nearest);
   tex->set_magfilter(SamplerState::FT_nearest);
 
-  texture_dimensions.x = tex->get_x_size();
-  texture_dimensions.y = tex->get_y_size();
+  // Since libRocket may make layout decisions based on the size of
+  // the image, it's important that we give it the original size of
+  // the image file in order to produce consistent results.
+  texture_dimensions.x = tex->get_orig_file_x_size();
+  texture_dimensions.y = tex->get_orig_file_y_size();
+
   tex->ref();
   texture_handle = (Rocket::Core::TextureHandle) tex.p();
 
@@ -255,18 +294,26 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   PT(Texture) tex = new Texture;
   tex->setup_2d_texture(source_dimensions.x, source_dimensions.y,
                         Texture::T_unsigned_byte, Texture::F_rgba);
+
+  // Pad to nearest power of two if necessary.  It may not be necessary
+  // as libRocket seems to give power-of-two sizes already, but can't hurt.
+  tex->set_size_padded(source_dimensions.x, source_dimensions.y);
+
   PTA_uchar image = tex->modify_ram_image();
 
   // Convert RGBA to BGRA
-  size_t row_size = source_dimensions.x * 4;
-  size_t y2 = image.size();
-  for (size_t y = 0; y < image.size(); y += row_size) {
-    y2 -= row_size;
-    for (size_t i = 0; i < row_size; i += 4) {
-      image[y2 + i + 0] = source[y + i + 2];
-      image[y2 + i + 1] = source[y + i + 1];
-      image[y2 + i + 2] = source[y + i];
-      image[y2 + i + 3] = source[y + i + 3];
+  size_t src_stride = source_dimensions.x * 4;
+  size_t dst_stride = tex->get_x_size() * 4;
+  const unsigned char *src_ptr = source + (src_stride * source_dimensions.y);
+  unsigned char *dst_ptr = &image[0];
+
+  for (; src_ptr >= source; dst_ptr += dst_stride) {
+    src_ptr -= src_stride;
+    for (size_t i = 0; i < src_stride; i += 4) {
+      dst_ptr[i + 0] = src_ptr[i + 2];
+      dst_ptr[i + 1] = src_ptr[i + 1];
+      dst_ptr[i + 2] = src_ptr[i];
+      dst_ptr[i + 3] = src_ptr[i + 3];
     }
   }
 
@@ -289,9 +336,9 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
 ////////////////////////////////////////////////////////////////////
 void RocketRenderInterface::
 ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
-  Texture* tex = (Texture*) texture_handle;
-  if (tex != (Texture*) NULL) {
-    tex->unref();
+  Texture *tex = (Texture *)texture_handle;
+  if (tex != (Texture *)NULL) {
+    unref_delete(tex);
   }
 }
 

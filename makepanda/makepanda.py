@@ -913,9 +913,19 @@ if (COMPILER=="GCC"):
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic():
-    DefSymbol("ALWAYS", "LINK_ALL_STATIC", "")
+    DefSymbol("ALWAYS", "LINK_ALL_STATIC")
 if GetTarget() == 'android':
-    DefSymbol("ALWAYS", "ANDROID", "")
+    DefSymbol("ALWAYS", "ANDROID")
+
+if not PkgSkip("EIGEN"):
+    DefSymbol("ALWAYS", "EIGEN_MPL2_ONLY")
+    if GetOptimize() >= 3:
+        DefSymbol("ALWAYS", "EIGEN_NO_DEBUG")
+        if COMPILER == "MSVC":
+            # Squeeze out a bit more performance on MSVC builds...
+            # Only do this if EIGEN_NO_DEBUG is also set, otherwise it
+            # will turn them into runtime assertions.
+            DefSymbol("ALWAYS", "EIGEN_NO_STATIC_ASSERT")
 
 ########################################################################
 ##
@@ -1018,10 +1028,10 @@ def CompileCxx(obj,src,opts):
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
             if (optlevel==2): cmd += " /MDd /Zi"
-            if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING"
+            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast"
             if (optlevel==4):
-               cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-               cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
+                cmd += " /MD /Zi /GS- /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+                cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
 
             cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
 
@@ -1036,7 +1046,7 @@ def CompileCxx(obj,src,opts):
             if 'EXCEPTIONS' in opts:
                 cmd += " /EHsc"
             else:
-                cmd += " -D_HAS_EXCEPTIONS=0"
+                cmd += " /D_HAS_EXCEPTIONS=0"
 
             if 'RTTI' not in opts:
                  cmd += " /GR-"

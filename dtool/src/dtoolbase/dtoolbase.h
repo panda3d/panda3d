@@ -427,6 +427,19 @@
 #define EXTEND
 #endif
 
+/* These symbols are used in dtoolsymbols.h and pandasymbols.h. */
+#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#define EXPORT_CLASS __declspec(dllexport)
+#define EXPORT_TEMPL
+#define IMPORT_CLASS __declspec(dllimport)
+#define IMPORT_TEMPL extern
+#else
+#define EXPORT_CLASS
+#define EXPORT_TEMPL
+#define IMPORT_CLASS
+#define IMPORT_TEMPL extern
+#endif
+
 #ifdef __cplusplus
 #include "dtoolbase_cc.h"
 #endif
