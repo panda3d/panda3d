@@ -22,366 +22,261 @@
    C++-style comments, since this file is occasionally included by a C
    file. */
 
-#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
-
 #ifdef BUILDING_CFTALK
-  #define EXPCL_CFTALK __declspec(dllexport)
-  #define EXPTP_CFTALK
+  #define EXPCL_CFTALK EXPORT_CLASS
+  #define EXPTP_CFTALK EXPORT_TEMPL
 #else
-  #define EXPCL_CFTALK __declspec(dllimport)
-  #define EXPTP_CFTALK extern
+  #define EXPCL_CFTALK IMPORT_CLASS
+  #define EXPTP_CFTALK IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_COLLADA
-  #define EXPCL_COLLADA __declspec(dllexport)
-  #define EXPTP_COLLADA
+  #define EXPCL_COLLADA EXPORT_CLASS
+  #define EXPTP_COLLADA EXPORT_TEMPL
 #else
-  #define EXPCL_COLLADA __declspec(dllimport)
-  #define EXPTP_COLLADA extern
+  #define EXPCL_COLLADA IMPORT_CLASS
+  #define EXPTP_COLLADA IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_FFMPEG
-  #define EXPCL_FFMPEG __declspec(dllexport)
-  #define EXPTP_FFMPEG
+  #define EXPCL_FFMPEG EXPORT_CLASS
+  #define EXPTP_FFMPEG EXPORT_TEMPL
 #else
-  #define EXPCL_FFMPEG __declspec(dllimport)
-  #define EXPTP_FFMPEG extern
+  #define EXPCL_FFMPEG IMPORT_CLASS
+  #define EXPTP_FFMPEG IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_FRAMEWORK
-  #define EXPCL_FRAMEWORK __declspec(dllexport)
-  #define EXPTP_FRAMEWORK
+  #define EXPCL_FRAMEWORK EXPORT_CLASS
+  #define EXPTP_FRAMEWORK EXPORT_TEMPL
 #else
-  #define EXPCL_FRAMEWORK __declspec(dllimport)
-  #define EXPTP_FRAMEWORK extern
+  #define EXPCL_FRAMEWORK IMPORT_CLASS
+  #define EXPTP_FRAMEWORK IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_LINUX_AUDIO
-  #define EXPCL_LINUX_AUDIO __declspec(dllexport)
-  #define EXPTP_LINUX_AUDIO
+  #define EXPCL_LINUX_AUDIO EXPORT_CLASS
+  #define EXPTP_LINUX_AUDIO EXPORT_TEMPL
 #else
-  #define EXPCL_LINUX_AUDIO __declspec(dllimport)
-  #define EXPTP_LINUX_AUDIO extern
+  #define EXPCL_LINUX_AUDIO IMPORT_CLASS
+  #define EXPTP_LINUX_AUDIO IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_MILES_AUDIO
-  #define EXPCL_MILES_AUDIO __declspec(dllexport)
-  #define EXPTP_MILES_AUDIO
+  #define EXPCL_MILES_AUDIO EXPORT_CLASS
+  #define EXPTP_MILES_AUDIO EXPORT_TEMPL
 #else
-  #define EXPCL_MILES_AUDIO __declspec(dllimport)
-  #define EXPTP_MILES_AUDIO extern
+  #define EXPCL_MILES_AUDIO IMPORT_CLASS
+  #define EXPTP_MILES_AUDIO IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_FMOD_AUDIO
-  #define EXPCL_FMOD_AUDIO __declspec(dllexport)
-  #define EXPTP_FMOD_AUDIO
+  #define EXPCL_FMOD_AUDIO EXPORT_CLASS
+  #define EXPTP_FMOD_AUDIO EXPORT_TEMPL
 #else
-  #define EXPCL_FMOD_AUDIO __declspec(dllimport)
-  #define EXPTP_FMOD_AUDIO extern
+  #define EXPCL_FMOD_AUDIO IMPORT_CLASS
+  #define EXPTP_FMOD_AUDIO IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_OCULUSVR
-  #define EXPCL_OCULUSVR __declspec(dllexport)
-  #define EXPTP_OCULUSVR
+  #define EXPCL_OCULUSVR EXPORT_CLASS
+  #define EXPTP_OCULUSVR EXPORT_TEMPL
 #else
-  #define EXPCL_OCULUSVR __declspec(dllimport)
-  #define EXPTP_OCULUSVR extern
+  #define EXPCL_OCULUSVR IMPORT_CLASS
+  #define EXPTP_OCULUSVR IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_OPENAL_AUDIO
-  #define EXPCL_OPENAL_AUDIO __declspec(dllexport)
-  #define EXPTP_OPENAL_AUDIO
+  #define EXPCL_OPENAL_AUDIO EXPORT_CLASS
+  #define EXPTP_OPENAL_AUDIO EXPORT_TEMPL
 #else
-  #define EXPCL_OPENAL_AUDIO __declspec(dllimport)
-  #define EXPTP_OPENAL_AUDIO extern
+  #define EXPCL_OPENAL_AUDIO IMPORT_CLASS
+  #define EXPTP_OPENAL_AUDIO IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDA
-  #define EXPCL_PANDA __declspec(dllexport)
-  #define EXPTP_PANDA
+  #define EXPCL_PANDA EXPORT_CLASS
+  #define EXPTP_PANDA EXPORT_TEMPL
 #else
-  #define EXPCL_PANDA __declspec(dllimport)
-  #define EXPTP_PANDA extern
+  #define EXPCL_PANDA IMPORT_CLASS
+  #define EXPTP_PANDA IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAAWESOMIUM
-  #define EXPCL_PANDAAWESOMIUM __declspec(dllexport)
-  #define EXPTP_PANDAAWESOMIUM
+  #define EXPCL_PANDAAWESOMIUM EXPORT_CLASS
+  #define EXPTP_PANDAAWESOMIUM EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAAWESOMIUM __declspec(dllimport)
-  #define EXPTP_PANDAAWESOMIUM extern
+  #define EXPCL_PANDAAWESOMIUM IMPORT_CLASS
+  #define EXPTP_PANDAAWESOMIUM IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDABULLET
-  #define EXPCL_PANDABULLET __declspec(dllexport)
-  #define EXPTP_PANDABULLET
+  #define EXPCL_PANDABULLET EXPORT_CLASS
+  #define EXPTP_PANDABULLET EXPORT_TEMPL
 #else
-  #define EXPCL_PANDABULLET __declspec(dllimport)
-  #define EXPTP_PANDABULLET extern
+  #define EXPCL_PANDABULLET IMPORT_CLASS
+  #define EXPTP_PANDABULLET IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDACR
-  #define EXPCL_PANDACR __declspec(dllexport)
-  #define EXPTP_PANDACR
+  #define EXPCL_PANDACR EXPORT_CLASS
+  #define EXPTP_PANDACR EXPORT_TEMPL
 #else
-  #define EXPCL_PANDACR __declspec(dllimport)
-  #define EXPTP_PANDACR extern
+  #define EXPCL_PANDACR IMPORT_CLASS
+  #define EXPTP_PANDACR IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDADX
-  #define EXPCL_PANDADX __declspec(dllexport)
-  #define EXPTP_PANDADX
+  #define EXPCL_PANDADX EXPORT_CLASS
+  #define EXPTP_PANDADX EXPORT_TEMPL
 #else
-  #define EXPCL_PANDADX __declspec(dllimport)
-  #define EXPTP_PANDADX extern
+  #define EXPCL_PANDADX IMPORT_CLASS
+  #define EXPTP_PANDADX IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAEGG
-  #define EXPCL_PANDAEGG __declspec(dllexport)
-  #define EXPTP_PANDAEGG
+  #define EXPCL_PANDAEGG EXPORT_CLASS
+  #define EXPTP_PANDAEGG EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAEGG __declspec(dllimport)
-  #define EXPTP_PANDAEGG extern
+  #define EXPCL_PANDAEGG IMPORT_CLASS
+  #define EXPTP_PANDAEGG IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAEXPRESS
-  #define EXPCL_PANDAEXPRESS __declspec(dllexport)
-  #define EXPTP_PANDAEXPRESS
+  #define EXPCL_PANDAEXPRESS EXPORT_CLASS
+  #define EXPTP_PANDAEXPRESS EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAEXPRESS __declspec(dllimport)
-  #define EXPTP_PANDAEXPRESS extern
+  #define EXPCL_PANDAEXPRESS IMPORT_CLASS
+  #define EXPTP_PANDAEXPRESS IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAFX
-  #define EXPCL_PANDAFX __declspec(dllexport)
-  #define EXPTP_PANDAFX
+  #define EXPCL_PANDAFX EXPORT_CLASS
+  #define EXPTP_PANDAFX EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAFX __declspec(dllimport)
-  #define EXPTP_PANDAFX extern
+  #define EXPCL_PANDAFX IMPORT_CLASS
+  #define EXPTP_PANDAFX IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAGL
-  #define EXPCL_PANDAGL __declspec(dllexport)
-  #define EXPTP_PANDAGL
+  #define EXPCL_PANDAGL EXPORT_CLASS
+  #define EXPTP_PANDAGL EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAGL __declspec(dllimport)
-  #define EXPTP_PANDAGL extern
+  #define EXPCL_PANDAGL IMPORT_CLASS
+  #define EXPTP_PANDAGL IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAGLES
-  #define EXPCL_PANDAGLES __declspec(dllexport)
-  #define EXPTP_PANDAGLES
+  #define EXPCL_PANDAGLES EXPORT_CLASS
+  #define EXPTP_PANDAGLES EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAGLES __declspec(dllimport)
-  #define EXPTP_PANDAGLES extern
+  #define EXPCL_PANDAGLES IMPORT_CLASS
+  #define EXPTP_PANDAGLES IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAGLES2
-  #define EXPCL_PANDAGLES2 __declspec(dllexport)
-  #define EXPTP_PANDAGLES2
+  #define EXPCL_PANDAGLES2 EXPORT_CLASS
+  #define EXPTP_PANDAGLES2 EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAGLES2 __declspec(dllimport)
-  #define EXPTP_PANDAGLES2 extern
+  #define EXPCL_PANDAGLES2 IMPORT_CLASS
+  #define EXPTP_PANDAGLES2 IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAODE
-  #define EXPCL_PANDAODE __declspec(dllexport)
-  #define EXPTP_PANDAODE
+  #define EXPCL_PANDAODE EXPORT_CLASS
+  #define EXPTP_PANDAODE EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAODE __declspec(dllimport)
-  #define EXPTP_PANDAODE extern
+  #define EXPCL_PANDAODE IMPORT_CLASS
+  #define EXPTP_PANDAODE IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAPHYSICS
-  #define EXPCL_PANDAPHYSICS __declspec(dllexport)
-  #define EXPTP_PANDAPHYSICS
+  #define EXPCL_PANDAPHYSICS EXPORT_CLASS
+  #define EXPTP_PANDAPHYSICS EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAPHYSICS __declspec(dllimport)
-  #define EXPTP_PANDAPHYSICS extern
+  #define EXPCL_PANDAPHYSICS IMPORT_CLASS
+  #define EXPTP_PANDAPHYSICS IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAPHYSX
-  #define EXPCL_PANDAPHYSX __declspec(dllexport)
-  #define EXPTP_PANDAPHYSX
+  #define EXPCL_PANDAPHYSX EXPORT_CLASS
+  #define EXPTP_PANDAPHYSX EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAPHYSX __declspec(dllimport)
-  #define EXPTP_PANDAPHYSX extern
+  #define EXPCL_PANDAPHYSX IMPORT_CLASS
+  #define EXPTP_PANDAPHYSX IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDASPEEDTREE
-  #define EXPCL_PANDASPEEDTREE __declspec(dllexport)
-  #define EXPTP_PANDASPEEDTREE
+  #define EXPCL_PANDASPEEDTREE EXPORT_CLASS
+  #define EXPTP_PANDASPEEDTREE EXPORT_TEMPL
 #else
-  #define EXPCL_PANDASPEEDTREE __declspec(dllimport)
-  #define EXPTP_PANDASPEEDTREE extern
+  #define EXPCL_PANDASPEEDTREE IMPORT_CLASS
+  #define EXPTP_PANDASPEEDTREE IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDASKEL
-  #define EXPCL_PANDASKEL __declspec(dllexport)
-  #define EXPTP_PANDASKEL
+  #define EXPCL_PANDASKEL EXPORT_CLASS
+  #define EXPTP_PANDASKEL EXPORT_TEMPL
 #else
-  #define EXPCL_PANDASKEL __declspec(dllimport)
-  #define EXPTP_PANDASKEL extern
+  #define EXPCL_PANDASKEL IMPORT_CLASS
+  #define EXPTP_PANDASKEL IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAWIN
-  #define EXPCL_PANDAWIN __declspec(dllexport)
-  #define EXPTP_PANDAWIN
+  #define EXPCL_PANDAWIN EXPORT_CLASS
+  #define EXPTP_PANDAWIN EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAWIN __declspec(dllimport)
-  #define EXPTP_PANDAWIN extern
+  #define EXPCL_PANDAWIN IMPORT_CLASS
+  #define EXPTP_PANDAWIN IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_PANDAX11
-  #define EXPCL_PANDAX11 __declspec(dllexport)
-  #define EXPTP_PANDAX11
+  #define EXPCL_PANDAX11 EXPORT_CLASS
+  #define EXPTP_PANDAX11 EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAX11 __declspec(dllimport)
-  #define EXPTP_PANDAX11 extern
+  #define EXPCL_PANDAX11 IMPORT_CLASS
+  #define EXPTP_PANDAX11 IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_ROCKET
-  #define EXPCL_ROCKET __declspec(dllexport)
-  #define EXPTP_ROCKET
+  #define EXPCL_ROCKET EXPORT_CLASS
+  #define EXPTP_ROCKET EXPORT_TEMPL
 #else
-  #define EXPCL_ROCKET __declspec(dllimport)
-  #define EXPTP_ROCKET extern
+  #define EXPCL_ROCKET IMPORT_CLASS
+  #define EXPTP_ROCKET IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_SHADER
-  #define EXPCL_SHADER __declspec(dllexport)
-  #define EXPTP_SHADER
+  #define EXPCL_SHADER EXPORT_CLASS
+  #define EXPTP_SHADER EXPORT_TEMPL
 #else
-  #define EXPCL_SHADER __declspec(dllimport)
-  #define EXPTP_SHADER extern
+  #define EXPCL_SHADER IMPORT_CLASS
+  #define EXPTP_SHADER IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_TINYDISPLAY
-  #define EXPCL_TINYDISPLAY __declspec(dllexport)
-  #define EXPTP_TINYDISPLAY
+  #define EXPCL_TINYDISPLAY EXPORT_CLASS
+  #define EXPTP_TINYDISPLAY EXPORT_TEMPL
 #else
-  #define EXPCL_TINYDISPLAY __declspec(dllimport)
-  #define EXPTP_TINYDISPLAY extern
+  #define EXPCL_TINYDISPLAY IMPORT_CLASS
+  #define EXPTP_TINYDISPLAY IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_VISION
-  #define EXPCL_VISION __declspec(dllexport)
-  #define EXPTP_VISION
+  #define EXPCL_VISION EXPORT_CLASS
+  #define EXPTP_VISION EXPORT_TEMPL
 #else
-  #define EXPCL_VISION __declspec(dllimport)
-  #define EXPTP_VISION extern
+  #define EXPCL_VISION IMPORT_CLASS
+  #define EXPTP_VISION IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_VRPN
-  #define EXPCL_VRPN __declspec(dllexport)
-  #define EXPTP_VRPN
+  #define EXPCL_VRPN EXPORT_CLASS
+  #define EXPTP_VRPN EXPORT_TEMPL
 #else
-  #define EXPCL_VRPN __declspec(dllimport)
-  #define EXPTP_VRPN extern
+  #define EXPCL_VRPN IMPORT_CLASS
+  #define EXPTP_VRPN IMPORT_TEMPL
 #endif
-
-#else   /* !WIN32_VC */
-
-#define EXPCL_CFTALK
-#define EXPTP_CFTALK
-
-#define EXPCL_COLLADA
-#define EXPTP_COLLADA
-
-#define EXPCL_FFMPEG
-#define EXPTP_FFMPEG
-
-#define EXPCL_FRAMEWORK
-#define EXPTP_FRAMEWORK
-
-#define EXPCL_LINUX_AUDIO
-#define EXPTP_LINUX_AUDIO
-
-#define EXPCL_MILES_AUDIO
-#define EXPTP_MILES_AUDIO
-
-#define EXPCL_FMOD_AUDIO
-#define EXPTP_FMOD_AUDIO
-
-#define EXPCL_OCULUSVR
-#define EXPTP_OCULUSVR
-
-#define EXPCL_OPENAL_AUDIO
-#define EXPTP_OPENAL_AUDIO
-
-#define EXPCL_PANDA
-#define EXPTP_PANDA
-
-#define EXPCL_PANDAAWESOMIUM
-#define EXPTP_PANDAAWESOMIUM
-
-#define EXPCL_PANDABULLET
-#define EXPTP_PANDABULLET
-
-#define EXPCL_PANDACR
-#define EXPTP_PANDACR
-
-#define EXPCL_PANDADX
-#define EXPTP_PANDADX
-
-#define EXPCL_PANDAEGG
-#define EXPTP_PANDAEGG
-
-#define EXPCL_PANDAEXPRESS
-#define EXPTP_PANDAEXPRESS
-
-#define EXPCL_PANDAFX
-#define EXPTP_PANDAFX
-
-#define EXPCL_PANDAGL
-#define EXPTP_PANDAGL
-
-#define EXPCL_PANDAGLES
-#define EXPTP_PANDAGLES
-
-#define EXPCL_PANDAGLES2
-#define EXPTP_PANDAGLES2
-
-#define EXPCL_PANDAODE
-#define EXPTP_PANDAODE
-
-#define EXPCL_PANDAPHYSICS
-#define EXPTP_PANDAPHYSICS
-
-#define EXPCL_PANDAPHYSX
-#define EXPTP_PANDAPHYSX
-
-#define EXPCL_PANDASPEEDTREE
-#define EXPTP_PANDASPEEDTREE
-
-#define EXPCL_PANDARIB
-#define EXPTP_PANDARIB
-
-#define EXPCL_PANDASKEL
-#define EXPTP_PANDASKEL
-
-#define EXPCL_PANDAWIN
-#define EXPTP_PANDAWIN
-
-#define EXPCL_PANDAX11
-#define EXPTP_PANDAX11
-
-#define EXPCL_ROCKET
-#define EXPTP_ROCKET
-
-#define EXPCL_SHADER
-#define EXPTP_SHADER
-
-#define EXPCL_TINYDISPLAY
-#define EXPTP_TINYDISPLAY
-
-#define EXPCL_VISION
-#define EXPTP_VISION
-
-#define EXPCL_VRPN
-#define EXPTP_VRPN
-
-#endif  /* WIN32_VC */
 
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER)
 #define INLINE_LINMATH __forceinline

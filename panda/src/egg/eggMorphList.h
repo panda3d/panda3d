@@ -65,6 +65,9 @@ private:
   Morphs _morphs;
 };
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorph<LVector3d> >);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorphList<EggMorph<LVector4> >);
+
 typedef EggMorphList<EggMorphVertex> EggMorphVertexList;
 typedef EggMorphList<EggMorphNormal> EggMorphNormalList;
 typedef EggMorphList<EggMorphTexCoord> EggMorphTexCoordList;

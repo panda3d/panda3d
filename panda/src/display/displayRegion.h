@@ -360,6 +360,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_DISPLAY, EXPTP_PANDA_DISPLAY, epvector<DisplayRegion::Region>);
+
 #include "displayRegion.I"
 
 #endif /* DISPLAYREGION_H */

@@ -607,6 +607,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ, epvector<Shader::ShaderMatSpec>);
+
 #include "shader.I"
 
 #endif
