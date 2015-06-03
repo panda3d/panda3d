@@ -271,8 +271,16 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
   // Since libRocket may make layout decisions based on the size of
   // the image, it's important that we give it the original size of
   // the image file in order to produce consistent results.
-  texture_dimensions.x = tex->get_orig_file_x_size();
-  texture_dimensions.y = tex->get_orig_file_y_size();
+  int width = tex->get_orig_file_x_size();
+  int height = tex->get_orig_file_y_size();
+  if (width == 0 && height == 0) {
+    // This shouldn't happen unless someone is playing very strange
+    // tricks with the TexturePool, but we might as well handle it.
+    width = tex->get_x_size();
+    height = tex->get_y_size();
+  }
+  texture_dimensions.x = width;
+  texture_dimensions.y = height;
 
   tex->ref();
   texture_handle = (Rocket::Core::TextureHandle) tex.p();
@@ -307,7 +315,7 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   const unsigned char *src_ptr = source + (src_stride * source_dimensions.y);
   unsigned char *dst_ptr = &image[0];
 
-  for (; src_ptr >= source; dst_ptr += dst_stride) {
+  for (; src_ptr > source; dst_ptr += dst_stride) {
     src_ptr -= src_stride;
     for (size_t i = 0; i < src_stride; i += 4) {
       dst_ptr[i + 0] = src_ptr[i + 2];
