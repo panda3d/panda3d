@@ -232,6 +232,7 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
 
   tex->set_minfilter(SamplerState::FT_nearest);
   tex->set_magfilter(SamplerState::FT_nearest);
+  tex->rescale_texture();
 
   texture_dimensions.x = tex->get_x_size();
   texture_dimensions.y = tex->get_y_size();
@@ -255,6 +256,7 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   PT(Texture) tex = new Texture;
   tex->setup_2d_texture(source_dimensions.x, source_dimensions.y,
                         Texture::T_unsigned_byte, Texture::F_rgba);
+
   PTA_uchar image = tex->modify_ram_image();
 
   // Convert RGBA to BGRA
@@ -274,6 +276,7 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   tex->set_wrap_v(SamplerState::WM_clamp);
   tex->set_minfilter(SamplerState::FT_nearest);
   tex->set_magfilter(SamplerState::FT_nearest);
+  tex->rescale_texture();
 
   tex->ref();
   texture_handle = (Rocket::Core::TextureHandle) tex.p();
