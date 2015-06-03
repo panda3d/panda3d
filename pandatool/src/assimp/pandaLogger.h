@@ -17,7 +17,7 @@
 
 #include "config_assimp.h"
 
-#include "Logger.h"
+#include "assimp/Logger.hpp"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaLogger

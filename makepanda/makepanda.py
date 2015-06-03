@@ -87,7 +87,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
-  ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA",       # 3D Formats support
+  ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", # 3D Formats support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
@@ -595,6 +595,7 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("FFTW")==0):     LibName("FFTW",     GetThirdpartyDir() + "fftw/lib/fftw.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",GetThirdpartyDir() + "artoolkit/lib/libAR.lib")
     if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", GetThirdpartyDir() + "fcollada/lib/FCollada.lib")
+    if (PkgSkip("ASSIMP")==0):   PkgDisable("ASSIMP")  # Not yet supported
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cv.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/highgui.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
@@ -737,6 +738,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
+        SmartPkgEnable("ASSIMP",    "assimp", ("assimp"), "assimp")
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
         SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale", "libswscale/swscale.h"), target_pkg = "FFMPEG")
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample", "libswresample/swresample.h"), target_pkg = "FFMPEG")
@@ -5206,6 +5208,16 @@ if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
   TargetAdd('p3daeegg_composite1.obj', opts=OPTS, input='p3daeegg_composite1.cxx')
   TargetAdd('libp3daeegg.lib', input='p3daeegg_composite1.obj')
   TargetAdd('libp3daeegg.lib', opts=['FCOLLADA', 'CARBON'])
+
+#
+# DIRECTORY: pandatool/src/assimp
+#
+if (PkgSkip("PANDATOOL") == 0 and PkgSkip("ASSIMP")==0):
+  OPTS=['DIR:pandatool/src/assimp', 'ASSIMP', 'MODULE']
+  TargetAdd('p3assimp_composite1.obj', opts=OPTS, input='p3assimp_composite1.cxx')
+  TargetAdd('libp3assimp.dll', input='p3assimp_composite1.obj')
+  TargetAdd('libp3assimp.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3assimp.dll', opts=OPTS)
 
 #
 # DIRECTORY: pandatool/src/daeprogs/
