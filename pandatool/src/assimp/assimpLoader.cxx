@@ -36,7 +36,7 @@
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
-#include "aiPostProcess.h"
+#include "assimp/postprocess.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AssimpLoader::Constructor

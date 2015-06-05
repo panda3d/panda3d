@@ -17,7 +17,7 @@
 
 #include "config_assimp.h"
 
-#include "IOStream.h"
+#include "assimp/IOStream.hpp"
 
 class PandaIOSystem;
 
