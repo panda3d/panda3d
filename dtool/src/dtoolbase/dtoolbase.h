@@ -436,7 +436,7 @@
 #define IMPORT_CLASS
 #endif
 /* "extern template" is now part of the C++11 standard. */
-#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_TEMPL
 #define IMPORT_TEMPL extern
 #else

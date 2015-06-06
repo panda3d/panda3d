@@ -174,7 +174,7 @@ typedef ios::seekdir ios_seekdir;
 #  define MOVE(x) x
 #endif
 
-#if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
+#if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
 // This macro must be used to export an instantiated template class
 // from a DLL.  If the template class name itself contains commas, it
 // may be necessary to first define a macro for the class name, to
