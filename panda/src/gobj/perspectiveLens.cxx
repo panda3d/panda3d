@@ -82,12 +82,18 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
   PN_stdfloat fl = do_get_focal_length(lens_cdata);
   PN_stdfloat fFar = do_get_far(lens_cdata);
   PN_stdfloat fNear = do_get_near(lens_cdata);
-  PN_stdfloat far_minus_near = fFar-fNear;
-  PN_stdfloat a = (fFar + fNear);
-  PN_stdfloat b = -2.0f * fFar * fNear;
+  PN_stdfloat a, b;
 
-  a /= far_minus_near;
-  b /= far_minus_near;
+  if (cinf(fFar)) {
+    a = 1;
+    b = -2 * fNear;
+  } else {
+    PN_stdfloat far_minus_near = fFar-fNear;
+    a = (fFar + fNear);
+    b = -2 * fFar * fNear;
+    a /= far_minus_near;
+    b /= far_minus_near;
+  }
 
   LMatrix4 canonical;
   switch (cs) {
