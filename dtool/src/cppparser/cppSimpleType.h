@@ -66,6 +66,7 @@ public:
   int _flags;
 
   virtual bool is_tbd() const;
+  virtual bool is_trivial() const;
   virtual bool is_parameter_expr() const;
 
   virtual string get_preferred_name() const;

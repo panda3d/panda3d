@@ -80,12 +80,12 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomVertexData(const string &name,
-                 const GeomVertexFormat *format,
-                 UsageHint usage_hint);
+  explicit GeomVertexData(const string &name,
+                          const GeomVertexFormat *format,
+                          UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
-  GeomVertexData(const GeomVertexData &copy,
-                 const GeomVertexFormat *format);
+  explicit GeomVertexData(const GeomVertexData &copy,
+                          const GeomVertexFormat *format);
   void operator = (const GeomVertexData &copy);
   virtual ~GeomVertexData();
   ALLOC_DELETED_CHAIN(GeomVertexData);

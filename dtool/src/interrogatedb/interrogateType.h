@@ -231,14 +231,4 @@ INLINE istream &operator >> (istream &in, InterrogateType::EnumValue &d);
 
 #include "interrogateType.I"
 
-#include <set>
-#include <map>
-struct Dtool_PyTypedObject;
-typedef std::map< int , Dtool_PyTypedObject *>   RunTimeTypeDictionary;
-typedef std::set<int >                           RunTimeTypeList;
-
-EXPCL_DTOOLCONFIG  RunTimeTypeDictionary & GetRunTimeDictionary();
-EXPCL_DTOOLCONFIG  RunTimeTypeList & GetRunTimeTypeList();
-
-
 #endif

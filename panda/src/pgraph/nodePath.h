@@ -177,8 +177,8 @@ PUBLISHED:
   INLINE explicit NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
   INLINE explicit NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
-  NodePath(const NodePath &parent, PandaNode *child_node,
-           Thread *current_thread = Thread::get_current_thread());
+  explicit NodePath(const NodePath &parent, PandaNode *child_node,
+                    Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);

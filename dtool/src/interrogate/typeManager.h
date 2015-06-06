@@ -146,7 +146,7 @@ public:
 
   static bool is_exported(CPPType *type);
   static bool is_local(CPPType *type);
-
+  static bool is_trivial(CPPType *type);
 };
 
 #endif

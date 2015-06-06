@@ -69,6 +69,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_trivial() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter

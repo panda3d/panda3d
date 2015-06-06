@@ -160,6 +160,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPFunctionType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPFunctionType::
+is_trivial() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::output
 //       Access: Public, Virtual
 //  Description:

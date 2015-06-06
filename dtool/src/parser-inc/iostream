@@ -43,6 +43,9 @@ __published:
   static const openmode in;
   static const openmode out;
   static const openmode trunc;
+protected:
+  // Force this to be a non-trivial type.
+  ios_base() {};
 };
 class ios : public ios_base {
 __published:

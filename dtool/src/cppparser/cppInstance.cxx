@@ -347,9 +347,33 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
         CPPType *void_type = CPPType::new_type
           (new CPPSimpleType(CPPSimpleType::T_void));
 
+        int flags = func->_flags | CPPFunctionType::F_constructor;
+
+        // Check if it might be a copy or move constructor.
+        CPPParameterList *params = func->_parameters;
+        if (params->_parameters.size() == 1 && !params->_includes_ellipsis) {
+          CPPType *param_type = params->_parameters[0]->_type;
+          CPPReferenceType *ref_type = param_type->as_reference_type();
+
+          if (ref_type != NULL) {
+            param_type = ref_type->_pointing_at;
+
+            if (param_type->get_subtype() == CPPDeclaration::ST_const) {
+              param_type = param_type->as_const_type()->_wrapped_around;
+            }
+
+            if (class_name == param_type->get_simple_name()) {
+              if (ref_type->_value_category == CPPReferenceType::VC_rvalue) {
+                flags |= CPPFunctionType::F_move_constructor;
+              } else {
+                flags |= CPPFunctionType::F_copy_constructor;
+              }
+            }
+          }
+        }
+
         _type = CPPType::new_type
-          (new CPPFunctionType(void_type, func->_parameters,
-                               func->_flags | CPPFunctionType::F_constructor));
+          (new CPPFunctionType(void_type, func->_parameters, flags));
 
       } else if (method_name == "~" + class_name) {
         CPPType *void_type = CPPType::new_type

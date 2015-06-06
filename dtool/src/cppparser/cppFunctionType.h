@@ -29,14 +29,16 @@ class CPPIdentifier;
 class CPPFunctionType : public CPPType {
 public:
   enum Flags {
-    F_const_method      = 0x01,
-    F_operator_typecast = 0x02,
-    F_constructor       = 0x04,
-    F_destructor        = 0x08,
-    F_method_pointer    = 0x10,
-    F_unary_op          = 0x20,
-    F_operator          = 0x40,
-    F_noexcept          = 0x80,
+    F_const_method      = 0x001,
+    F_operator_typecast = 0x002,
+    F_constructor       = 0x004,
+    F_destructor        = 0x008,
+    F_method_pointer    = 0x010,
+    F_unary_op          = 0x020,
+    F_operator          = 0x040,
+    F_noexcept          = 0x080,
+    F_copy_constructor  = 0x200,
+    F_move_constructor  = 0x400,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
@@ -57,6 +59,7 @@ public:
                                 CPPScope *global_scope);
 
   virtual bool is_tbd() const;
+  virtual bool is_trivial() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;

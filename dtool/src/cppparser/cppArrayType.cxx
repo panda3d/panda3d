@@ -77,6 +77,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPArrayType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPArrayType::
+is_trivial() const {
+  return _element_type->is_trivial();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it

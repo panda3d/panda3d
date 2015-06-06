@@ -68,8 +68,8 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
-                      UsageHint usage_hint);
+  explicit GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
+                               UsageHint usage_hint);
   GeomVertexArrayData(const GeomVertexArrayData &copy);
   void operator = (const GeomVertexArrayData &copy);
   virtual ~GeomVertexArrayData();
