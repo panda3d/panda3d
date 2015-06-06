@@ -6649,6 +6649,29 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 WWW: http://www.panda3d.org/
 """
 
+# FreeBSD pkg-descr
+RUNTIME_INSTALLER_PKG_DESCR_FILE = """
+Runtime binary and browser plugin for the Panda3D Game Engine
+
+This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
+
+WWW: http://www.panda3d.org/
+"""
+
+# FreeBSD PKG Manifest template file
+INSTALLER_PKG_MANIFEST_FILE = """
+name: NAME
+version: VERSION
+arch: ARCH
+origin: ORIGIN
+comment: "Panda 3D Engine"
+www: http://www.panda3d.org
+maintainer: rdb <me@rdb.name>
+prefix: /usr/local
+flatsize: INSTSIZEMB
+deps: {DEPENDS}
+"""
+
 def MakeInstallerLinux():
     if not RUNTIME and not PkgSkip("PYTHON"):
         PYTHONV = SDK["PYTHONVERSION"]
@@ -6965,8 +6988,7 @@ def MakeInstallerOSX():
     oscmd('rm -f Panda3D-rw.dmg')
 
 def MakeInstallerFreeBSD():
-    import compileall
-    oscmd("rm -rf targetroot pkg-descr pkg-plist")
+    oscmd("rm -rf targetroot +DESC pkg-plist +MANIFEST")
     oscmd("mkdir targetroot")
 
     # Invoke installpanda.py to install it into a temporary dir
@@ -6975,52 +6997,48 @@ def MakeInstallerFreeBSD():
     else:
         InstallPanda(destdir = "targetroot", prefix = "/usr/local", outputdir = GetOutputDir())
 
-    if (not os.path.exists("/usr/sbin/pkg_create")):
-        exit("Cannot create an installer without pkg_create")
+    if not os.path.exists("/usr/sbin/pkg"):
+        exit("Cannot create an installer without pkg")
 
-    if (RUNTIME):
-        descr_txt = RUNTIME_INSTALLER_PKG_DESCR_FILE[1:]
-    else:
-        descr_txt = INSTALLER_PKG_DESCR_FILE[1:]
-    descr_txt = descr_txt.replace("VERSION", VERSION)
-    if (RUNTIME):
-        plist_txt = "@name panda3d-runtime-%s\n" % VERSION
-    else:
-        plist_txt = "@name panda3d-%s\n" % VERSION
+    plist_txt = ''
     for root, dirs, files in os.walk("targetroot/usr/local/", True):
         for f in files:
             plist_txt += os.path.join(root, f)[21:] + "\n"
 
-    if (not RUNTIME):
+    if not RUNTIME:
         plist_txt += "@exec /sbin/ldconfig -m /usr/local/lib\n"
         plist_txt += "@unexec /sbin/ldconfig -R\n"
 
         for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
             for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):
                 for d in dirs:
-                    plist_txt += "@dirrm %s\n" % os.path.join(root, d)[21:]
-            plist_txt += "@dirrm %s\n" % remdir
+                    plist_txt += "@dir %s\n" % os.path.join(root, d)[21:]
+            plist_txt += "@dir %s\n" % remdir
+
+    oscmd("echo \"`pkg config abi | tr '[:upper:]' '[:lower:]' | cut -d: -f1,2`:*\" > " + GetOutputDir() + "/tmp/architecture.txt")
+    pkg_arch = ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
+
+    dependencies = ''
+    if PkgSkip("PYTHON") == 0:
+        # If this version of Python was installed from a package or ports, let's mark it as dependency.
+        oscmd("rm -f %s/tmp/python_dep" % GetOutputDir())
+        oscmd("pkg query \"\n\t%%n : {\n\t\torigin : %%o,\n\t\tversion : %%v\n\t},\n\" python%s > %s/tmp/python_dep" % (SDK["PYTHONVERSION"][6:9:2], GetOutputDir()), True)
+        if os.path.isfile(GetOutputDir() + "/tmp/python_dep"):
+            python_pkg = ReadFile(GetOutputDir() + "/tmp/python_dep")
+            if python_pkg:
+                dependencies += python_pkg
+
+    manifest_txt = INSTALLER_PKG_MANIFEST_FILE[1:].replace("NAME", 'Panda3D' if not RUNTIME else 'Panda3D-Runtime')
+    manifest_txt = manifest_txt.replace("VERSION", VERSION)
+    manifest_txt = manifest_txt.replace("ARCH", pkg_arch)
+    manifest_txt = manifest_txt.replace("ORIGIN", 'devel/panda3d' if not RUNTIME else 'graphics/panda3d-runtime')
+    manifest_txt = manifest_txt.replace("DEPENDS", dependencies)
+    manifest_txt = manifest_txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024 / 1024))
 
     WriteFile("pkg-plist", plist_txt)
-    WriteFile("pkg-descr", descr_txt)
-    cmd = "pkg_create"
-    if GetVerbose():
-        cmd += " --verbose"
-    if PkgSkip("PYTHON")==0:
-        # If this version of Python was installed from a package, let's mark it as dependency.
-        oscmd("rm -f %s/tmp/python-pkg.txt" % GetOutputDir())
-        oscmd("pkg_info -E 'python%s>=%s' > %s/tmp/python-pkg.txt" % (SDK["PYTHONVERSION"][6:9:2], SDK["PYTHONVERSION"][6:9], GetOutputDir()), True)
-        if (os.path.isfile(GetOutputDir() + "/tmp/python-pkg.txt")):
-            python_pkg = ReadFile(GetOutputDir() + "/tmp/python-pkg.txt").strip()
-            if (python_pkg):
-                cmd += " -P " + python_pkg
-    cmd += " -p /usr/local -S \"%s\"" % os.path.abspath("targetroot")
-    if (RUNTIME):
-        cmd += " -c -\"The Panda3D free 3D engine runtime\" -o graphics/panda3d-runtime"
-    else:
-        cmd += " -c -\"The Panda3D free 3D engine SDK\" -o devel/panda3d"
-    cmd += " -d pkg-descr -f pkg-plist panda3d-%s" % VERSION
-    oscmd(cmd)
+    WriteFile("+DESC", INSTALLER_PKG_DESCR_FILE[1:] if not RUNTIME else RUNTIME_INSTALLER_PKG_DESCR_FILE[1:])
+    WriteFile("+MANIFEST", manifest_txt)
+    oscmd("pkg create -p pkg-plist -r %s  -m . -o . %s" % (os.path.abspath("targetroot"), "--verbose" if GetVerbose() else "--quiet"))
 
 try:
     if INSTALLER:
