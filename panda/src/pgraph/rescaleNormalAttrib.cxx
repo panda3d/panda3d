@@ -115,6 +115,21 @@ get_hash_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RescaleNormalAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RescaleNormalAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  // We currently only support M_normalize in the ShaderGenerator.
+  if (_mode == M_none || _mode == M_normalize) {
+    return this;
+  } else {
+    return RescaleNormalAttrib::make(M_normalize);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RescaleNormalAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

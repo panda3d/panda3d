@@ -146,6 +146,7 @@ protected:
   bool _need_world_normal;
   bool _need_eye_position;
   bool _need_eye_normal;
+  bool _normalize_normals;
   bool _auto_normal_on;
   bool _auto_glow_on;
   bool _auto_gloss_on;
