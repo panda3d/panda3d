@@ -620,6 +620,7 @@ push_file(const CPPFile &file) {
     indent(cerr, _files.size() * 2)
       << "Reading " << file << "\n";
   }
+
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
 
@@ -1158,7 +1159,7 @@ process_directive(int c) {
   } else if (command == "include") {
     handle_include_directive(args, first_line, first_col, first_file);
   } else if (command == "pragma") {
-    // Quietly ignore pragmas.
+    handle_pragma_directive(args, first_line, first_col, first_file);
   } else if (command == "ident") {
     // Quietly ignore idents.
   } else if (command == "error") {
@@ -1462,7 +1463,16 @@ handle_include_directive(const string &args, int first_line,
               first_line, first_col, first_file);
     } else {
       _last_c = '\0';
-      if (!push_file(CPPFile(filename, filename_as_referenced, source))) {
+
+      CPPFile file(filename, filename_as_referenced, source);
+
+      // Don't include it if we included it before and it had #pragma once.
+      ParsedFiles::const_iterator it = _parsed_files.find(file);
+      if (it->_pragma_once) {
+        return;
+      }
+
+      if (!push_file(file)) {
         warning("Unable to read " + filename.get_fullpath(),
                 first_line, first_col, first_file);
       }
@@ -1470,6 +1480,21 @@ handle_include_directive(const string &args, int first_line,
   } else {
     warning("Ignoring invalid #include directive",
             first_line, first_col, first_file);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::handle_pragma_directive
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPPreprocessor::
+handle_pragma_directive(const string &args, int first_line,
+                        int first_col, const CPPFile &first_file) {
+  if (args == "once") {
+    ParsedFiles::iterator it = _parsed_files.find(first_file);
+    assert(it != _parsed_files.end());
+    it->_pragma_once = true;
   }
 }
 

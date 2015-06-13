@@ -2466,7 +2466,8 @@ class ShowBase(DirectObject.DirectObject):
     def saveCubeMap(self, namePrefix = 'cube_map_#.png',
                     defaultFilename = 0, source = None,
                     camera = None, size = 128,
-                    cameraMask = PandaNode.getAllCameraMask()):
+                    cameraMask = PandaNode.getAllCameraMask(),
+                    sourceLens = None):
 
         """
         Similar to screenshot(), this sets up a temporary cube map
@@ -2494,6 +2495,9 @@ class ShowBase(DirectObject.DirectObject):
             if camera == None:
                 camera = base.camera
 
+        if sourceLens == None:
+            sourceLens = base.camLens
+
         if hasattr(source, "getWindow"):
             source = source.getWindow()
 
@@ -2504,7 +2508,8 @@ class ShowBase(DirectObject.DirectObject):
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
-        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
+
+        lens.setNearFar(sourceLens.getNear(), sourceLens.getFar())
 
         # Now render a frame to fill up the texture.
         rig.reparentTo(camera)
@@ -2525,7 +2530,7 @@ class ShowBase(DirectObject.DirectObject):
                       defaultFilename = 0, source = None,
                       camera = None, size = 256,
                       cameraMask = PandaNode.getAllCameraMask(),
-                      numVertices = 1000):
+                      numVertices = 1000, sourceLens = None):
         """
         This works much like saveCubeMap(), and uses the graphics
         API's hardware cube-mapping ability to get a 360-degree view
@@ -2550,6 +2555,9 @@ class ShowBase(DirectObject.DirectObject):
             if camera == None:
                 camera = base.camera
 
+        if sourceLens == None:
+            sourceLens = base.camLens
+
         if hasattr(source, "getWindow"):
             source = source.getWindow()
 
@@ -2568,7 +2576,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
-        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
+        lens.setNearFar(sourceLens.getNear(), sourceLens.getFar())
 
         # Set up the scene to convert the cube map.  It's just a
         # simple scene, with only the FisheyeMaker object in it.
