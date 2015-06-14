@@ -151,6 +151,9 @@ operator << (ostream &out, GeomEnums::Contents contents) {
 
   case GeomEnums::C_matrix:
     return out << "matrix";
+
+  case GeomEnums::C_normal:
+    return out << "normal";
   }
 
   return out << "**invalid contents (" << (int)contents << ")**";
