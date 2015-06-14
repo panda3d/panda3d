@@ -825,6 +825,7 @@ do_register() {
       break;
 
     case C_vector:
+    case C_normal:
       // It's a vector.
       _vectors.push_back(column->get_name());
       break;
@@ -1017,7 +1018,7 @@ make_standard_formats() {
                           (InternalName::get_vertex(), 3,
                            NT_stdfloat, C_point,
                            InternalName::get_normal(), 3,
-                           NT_stdfloat, C_vector));
+                           NT_stdfloat, C_normal));
 
   _v3t2 = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
@@ -1029,7 +1030,7 @@ make_standard_formats() {
                             (InternalName::get_vertex(), 3,
                              NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_stdfloat, C_vector,
+                             NT_stdfloat, C_normal,
                              InternalName::get_texcoord(), 2,
                              NT_stdfloat, C_texcoord));
 
@@ -1044,7 +1045,7 @@ make_standard_formats() {
                             (InternalName::get_vertex(), 3,
                              NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_stdfloat, C_vector,
+                             NT_stdfloat, C_normal,
                              InternalName::get_color(), 1,
                              NT_packed_dabc, C_color));
 
@@ -1060,7 +1061,7 @@ make_standard_formats() {
                               (InternalName::get_vertex(), 3,
                                NT_stdfloat, C_point,
                                InternalName::get_normal(), 3,
-                               NT_stdfloat, C_vector,
+                               NT_stdfloat, C_normal,
                                InternalName::get_color(), 1,
                                NT_packed_dabc, C_color,
                                InternalName::get_texcoord(), 2,
@@ -1079,7 +1080,7 @@ make_standard_formats() {
                             (InternalName::get_vertex(), 3,
                              NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_stdfloat, C_vector,
+                             NT_stdfloat, C_normal,
                              InternalName::get_color(), 4,
                              NT_uint8, C_color));
 
@@ -1095,7 +1096,7 @@ make_standard_formats() {
                               (InternalName::get_vertex(), 3,
                                NT_stdfloat, C_point,
                                InternalName::get_normal(), 3,
-                               NT_stdfloat, C_vector,
+                               NT_stdfloat, C_normal,
                                InternalName::get_color(), 4,
                                NT_uint8, C_color,
                                InternalName::get_texcoord(), 2,

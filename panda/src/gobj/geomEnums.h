@@ -192,7 +192,7 @@ PUBLISHED:
     C_other,        // Arbitrary meaning, leave it alone
     C_point,        // A point in 3-space or 4-space
     C_clip_point,   // A point pre-transformed into clip coordinates
-    C_vector,       // A surface normal, tangent, or binormal
+    C_vector,       // A surface tangent or binormal (see C_normal for normals)
     C_texcoord,     // A texture coordinate
     C_color,        // 3- or 4-component color, ordered R, G, B, [A]
     C_index,        // An index value into some other table
@@ -201,6 +201,10 @@ PUBLISHED:
     // A transformation matrix.  This is typically three or four
     // columns, but we pretend it's only one for convenience.
     C_matrix,
+
+    // A special version of C_vector that should be used for normal
+    // vectors, which are scaled differently from other vectors.
+    C_normal,
   };
 
   // The type of animation data that is represented by a particular

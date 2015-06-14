@@ -2240,7 +2240,7 @@ make_vertex_data(const EggRenderState *render_state,
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3,
-       Geom::NT_stdfloat, Geom::C_vector);
+       Geom::NT_stdfloat, Geom::C_normal);
   }
 
   if (!ignore_color) {

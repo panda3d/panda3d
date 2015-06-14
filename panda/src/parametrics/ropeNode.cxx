@@ -282,7 +282,7 @@ get_format(bool support_normals) const {
   if (support_normals && get_normal_mode() == NM_vertex) {
     array_format->add_column
       (InternalName::get_normal(), 3, Geom::NT_stdfloat,
-       Geom::C_vector);
+       Geom::C_normal);
   }
   if (get_use_vertex_color()) {
     array_format->add_column

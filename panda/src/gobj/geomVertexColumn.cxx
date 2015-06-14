@@ -340,6 +340,11 @@ make_packer() const {
       break;
     }
     return new Packer_color;
+  case C_normal:
+    if (get_num_values() != 3) {
+      gobj_cat.error()
+        << "GeomVertexColumn with contents C_normal must have 3 components!\n";
+    }
   default:
     // Otherwise, we just read it as a generic value.
     switch (get_numeric_type()) {
