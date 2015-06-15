@@ -807,6 +807,11 @@ set_properties_now(WindowProperties &properties) {
       cocoadisplay_cat.debug()
         << "Setting size to " << width << ", " << height << "\n";
 
+      // Cocoa doesn't send an event, and the other
+      // resize-window handlers will do nothing once the properties
+      // have been changed, so do this now
+      set_size_and_recalc(width, height);
+
       _context_needs_update = true;
       properties.clear_size();
 
