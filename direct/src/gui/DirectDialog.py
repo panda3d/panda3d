@@ -95,7 +95,7 @@ class DirectDialog(DirectFrame):
             ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
             ('image',             DGG.getDefaultDialogGeom(), None),
-            ('relief',            DGG.RAISED,     None),
+            ('relief',            None,     None),
             ('borderWidth',       (0.01, 0.01),  None),
             ('buttonTextList',    [],            DGG.INITOPT),
             ('buttonGeomList',    [],            DGG.INITOPT),
