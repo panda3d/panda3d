@@ -353,9 +353,9 @@ make_packer() const {
     return new Packer_color;
 
   case C_normal:
-    if (get_num_values() != 3) {
+    if (get_num_values() != 3 && get_num_values() != 4) {
       gobj_cat.error()
-        << "GeomVertexColumn with contents C_normal must have 3 components!\n";
+        << "GeomVertexColumn with contents C_normal must have 3 or 4 components!\n";
     }
 
   default:
