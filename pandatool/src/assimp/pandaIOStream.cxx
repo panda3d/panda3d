@@ -78,6 +78,11 @@ Seek(size_t offset, aiOrigin origin) {
   case aiOrigin_END:
     _istream.seekg(offset, ios::end);
     break;
+
+  default:
+    // Keep compiler happy
+    nassertr(false, AI_FAILURE);
+    break;
   }
 
   if (_istream.good()) {
@@ -105,4 +110,5 @@ Tell() const {
 size_t PandaIOStream::
 Write(const void *buffer, size_t size, size_t count) {
   nassertr(false, 0);
+  return 0;
 }

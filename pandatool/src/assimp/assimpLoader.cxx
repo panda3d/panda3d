@@ -25,7 +25,6 @@
 #include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
-#include "lightNode.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
@@ -570,12 +569,15 @@ load_light(const aiLight &light) {
   aiColor3D col;
   aiVector3D vec;
 
-  PT(LightNode) lnode;
+  PT(PandaNode) lnode;
 
   switch (light.mType) {
   case aiLightSource_DIRECTIONAL: {
     PT(DirectionalLight) dlight = new DirectionalLight(name);
-    lnode = DCAST(LightNode, dlight);
+    lnode = DCAST(PandaNode, dlight);
+
+    col = light.mColorDiffuse;
+    dlight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     dlight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -589,7 +591,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_POINT: {
     PT(PointLight) plight = new PointLight(name);
-    lnode = DCAST(LightNode, plight);
+    lnode = DCAST(PandaNode, plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -604,7 +609,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_SPOT: {
     PT(Spotlight) plight = new Spotlight(name);
-    lnode = DCAST(LightNode, plight);
+    lnode = DCAST(PandaNode, plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -630,15 +638,13 @@ load_light(const aiLight &light) {
   }
 
   // If there's an ambient color, add it as ambient light.
+  col = light.mColorAmbient;
   LVecBase4 ambient (col.r, col.g, col.b, 0);
   if (ambient != LVecBase4::zero()) {
     PT(AmbientLight) alight = new AmbientLight(name);
-    col = light.mColorAmbient;
     alight->set_color(ambient);
     _root->add_child(alight);
   }
 
   _root->add_child(lnode);
-  col = light.mColorDiffuse;
-  lnode->set_color(LColor(col.r, col.g, col.b, 1));
 }

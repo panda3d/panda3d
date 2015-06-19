@@ -30,7 +30,7 @@ public:
 
 protected:
   INLINE bool attachStream(Assimp::LogStream*, unsigned int) {};
-  INLINE bool detatchStream(Assimp::LogStream*, unsigned int) {};
+  INLINE bool detatchStream(Assimp::LogStream*, unsigned int) {}; // sic
 
   void OnDebug(const char *message);
   void OnError(const char *message);
