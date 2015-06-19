@@ -569,12 +569,10 @@ load_light(const aiLight &light) {
   aiColor3D col;
   aiVector3D vec;
 
-  PT(PandaNode) lnode;
-
   switch (light.mType) {
   case aiLightSource_DIRECTIONAL: {
     PT(DirectionalLight) dlight = new DirectionalLight(name);
-    lnode = DCAST(PandaNode, dlight);
+    _root->add_child(dlight);
 
     col = light.mColorDiffuse;
     dlight->set_color(LColor(col.r, col.g, col.b, 1));
@@ -591,7 +589,7 @@ load_light(const aiLight &light) {
 
   case aiLightSource_POINT: {
     PT(PointLight) plight = new PointLight(name);
-    lnode = DCAST(PandaNode, plight);
+    _root->add_child(plight);
 
     col = light.mColorDiffuse;
     plight->set_color(LColor(col.r, col.g, col.b, 1));
@@ -609,7 +607,7 @@ load_light(const aiLight &light) {
 
   case aiLightSource_SPOT: {
     PT(Spotlight) plight = new Spotlight(name);
-    lnode = DCAST(PandaNode, plight);
+    _root->add_child(plight);
 
     col = light.mColorDiffuse;
     plight->set_color(LColor(col.r, col.g, col.b, 1));
@@ -632,6 +630,10 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
+  case aiLightSource_AMBIENT:
+    // This is handled below.
+    break;
+
   default:
     assimp_cat.warning() << "Light '" << name << "' has an unknown type!\n";
     return;
@@ -645,6 +647,4 @@ load_light(const aiLight &light) {
     alight->set_color(ambient);
     _root->add_child(alight);
   }
-
-  _root->add_child(lnode);
 }
