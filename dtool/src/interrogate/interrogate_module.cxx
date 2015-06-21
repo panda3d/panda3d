@@ -209,7 +209,7 @@ int write_python_table_native(ostream &out) {
 
   out << "NULL};\n"
       << "\n"
-      << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n"
+      << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
       << "  if (module != NULL) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {

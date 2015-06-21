@@ -509,10 +509,10 @@ EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 EXPCL_DTOOLCONFIG PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op);
 
 EXPCL_DTOOLCONFIG PyObject *
-copy_from_make_copy(PyObject *self);
+copy_from_make_copy(PyObject *self, PyObject *noargs);
 
 EXPCL_DTOOLCONFIG PyObject *
-copy_from_copy_constructor(PyObject *self);
+copy_from_copy_constructor(PyObject *self, PyObject *noargs);
 
 EXPCL_DTOOLCONFIG PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);

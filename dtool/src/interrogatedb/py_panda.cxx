@@ -810,7 +810,7 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
 //  Description: This is a support function for a synthesized
 //               __copy__() method from a C++ make_copy() method.
 ////////////////////////////////////////////////////////////////////
-PyObject *copy_from_make_copy(PyObject *self) {
+PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   return PyObject_CallMethod(self, (char *)"make_copy", (char *)"()");
 }
 
@@ -819,7 +819,7 @@ PyObject *copy_from_make_copy(PyObject *self) {
 //  Description: This is a support function for a synthesized
 //               __copy__() method from a C++ copy constructor.
 ////////////////////////////////////////////////////////////////////
-PyObject *copy_from_copy_constructor(PyObject *self) {
+PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *this_class = PyObject_Type(self);
   if (this_class == NULL) {
     return NULL;

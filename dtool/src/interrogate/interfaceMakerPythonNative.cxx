@@ -831,6 +831,7 @@ write_prototypes(ostream &out_code, ostream *out_h) {
 
     out_code << "// " << class_name << "\n";
 
+    out_code << "#ifndef LINK_ALL_STATIC\n";
     //out_code << "IMPORT_THIS struct Dtool_PyTypedObject Dtool_" << safe_name << ";\n";
     out_code << "static struct Dtool_PyTypedObject *Dtool_Ptr_" << safe_name << ";\n";
     //out_code << "#define Dtool_Ptr_" << safe_name << " &Dtool_" << safe_name << "\n";
@@ -884,6 +885,29 @@ write_prototypes(ostream &out_code, ostream *out_h) {
         }
       }
     }
+    out_code << "#else\n";
+    out_code << "extern struct Dtool_PyTypedObject Dtool_" << safe_name << ";\n";
+    out_code << "static struct Dtool_PyTypedObject *const Dtool_Ptr_" << safe_name << " = &Dtool_" << safe_name << ";\n";
+
+    if (has_coerce > 0) {
+      if (TypeManager::is_reference_count(type)) {
+        assert(!type->is_trivial());
+        out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, CPT(" << class_name << ") &coerced);\n";
+        if (has_coerce > 1) {
+          out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, PT(" << class_name << ") &coerced);\n";
+        }
+
+      } else if (TypeManager::is_trivial(type)) {
+        out_code << "extern " << class_name << " *Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " &coerced);\n";
+
+      } else {
+        out_code << "extern bool Dtool_ConstCoerce_" << safe_name << "(PyObject *args, " << class_name << " const *&coerced, bool &manage);\n";
+        if (has_coerce > 1) {
+          out_code << "extern bool Dtool_Coerce_" << safe_name << "(PyObject *args, " << class_name << " *&coerced, bool &manage);\n";
+        }
+      }
+    }
+    out_code << "#endif\n";
   }
 }
 
@@ -1259,7 +1283,6 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   Objects::iterator oi;
 
   out << "void Dtool_" << def->library_name << "_RegisterTypes() {\n";
-
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     Object *object = (*oi).second;
     if (object->_itype.is_class() ||
@@ -1276,8 +1299,10 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
               << "  RegisterRuntimeTypedClass(Dtool_" << class_name << ");\n";
 
         } else {
-          out << "  RegisterNamedClass(\"" << object->_itype.get_scoped_name()
-              << "\", Dtool_" << class_name << ");\n";
+          out << "#ifndef LINK_ALL_STATIC\n"
+              << "  RegisterNamedClass(\"" << object->_itype.get_scoped_name()
+              << "\", Dtool_" << class_name << ");\n"
+              << "#endif\n";
 
           if (IsPandaTypedObject(object->_itype._cpptype->as_struct_type())) {
             nout << object->_itype.get_scoped_name() << " derives from TypedObject, "
@@ -1290,6 +1315,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "}\n\n";
 
   out << "void Dtool_" << def->library_name << "_ResolveExternals() {\n";
+  out << "#ifndef LINK_ALL_STATIC\n";
   out << "  // Resolve externally imported types.\n";
 
   for (std::set<CPPType *>::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ++ii) {
@@ -1302,6 +1328,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       out << "  Dtool_Ptr_" << safe_name << " = LookupNamedClass(\"" << class_name << "\");\n";
     }
   }
+  out << "#endif\n";
   out << "}\n\n";
 
   out << "void Dtool_" << def->library_name << "_BuildInstants(PyObject *module) {\n";
@@ -1387,9 +1414,11 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       string name2 = methodNameFromCppName(func, "", true);
 
       string flags;
+      string fptr = "&" + func->_name;
       switch (func->_args_type) {
       case AT_keyword_args:
         flags = "METH_VARARGS | METH_KEYWORDS";
+        fptr = "(PyCFunction) " + fptr;
         break;
 
       case AT_varargs:
@@ -1408,11 +1437,11 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       // Note: we shouldn't add METH_STATIC here, since both METH_STATIC
       // and METH_CLASS are illegal for module-level functions.
 
-      out << "  {\"" << name1 << "\", (PyCFunction) &"
-          << func->_name << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
+      out << "  {\"" << name1 << "\", " << fptr
+          << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
       if (name1 != name2) {
-        out << "  {\"" << name2 << "\", (PyCFunction) &"
-            << func->_name << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
+        out << "  {\"" << name2 << "\", " << fptr
+            << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
       }
     }
   }
@@ -1542,9 +1571,11 @@ write_module_class(ostream &out, Object *obj) {
     string name2 = methodNameFromCppName(func, export_class_name, true);
 
     string flags;
+    string fptr = "&" + func->_name;
     switch (func->_args_type) {
     case AT_keyword_args:
       flags = "METH_VARARGS | METH_KEYWORDS";
+      fptr = "(PyCFunction) " + fptr;
       break;
 
     case AT_varargs:
@@ -1634,29 +1665,29 @@ write_module_class(ostream &out, Object *obj) {
       }
 
       // This method has non-slotted remaps, so write it out into the function table.
-      out << "  {\"" << name1 << "\", (PyCFunction) &"
-          << func->_name << ", " << flags << ", (char *) " << func->_name << "_comment},\n";
+      out << "  {\"" << name1 << "\", " << fptr
+          << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
       if (name1 != name2) {
-        out << "  {\"" << name2 << "\", (PyCFunction) &"
-            << func->_name << ", " << flags << ", (char *) " << func->_name << "_comment},\n";
+        out << "  {\"" << name2 << "\", " << fptr
+            << ", " << flags << ", (const char *)" << func->_name << "_comment},\n";
       }
     }
   }
 
   if (obj->_protocol_types & Object::PT_make_copy) {
     if (!got_copy) {
-      out << "  {\"__copy__\", (PyCFunction) &copy_from_make_copy, METH_NOARGS, NULL},\n";
+      out << "  {\"__copy__\", &copy_from_make_copy, METH_NOARGS, NULL},\n";
       got_copy = true;
     }
   } else if (obj->_protocol_types & Object::PT_copy_constructor) {
     if (!got_copy) {
-      out << "  {\"__copy__\", (PyCFunction) &copy_from_copy_constructor, METH_NOARGS, NULL},\n";
+      out << "  {\"__copy__\", &copy_from_copy_constructor, METH_NOARGS, NULL},\n";
       got_copy = true;
     }
   }
 
   if (got_copy && !got_deepcopy) {
-    out << "  {\"__deepcopy__\", (PyCFunction) &map_deepcopy_to_copy, METH_VARARGS, NULL},\n";
+    out << "  {\"__deepcopy__\", &map_deepcopy_to_copy, METH_VARARGS, NULL},\n";
   }
 
   MakeSeqs::iterator msi;
@@ -3271,6 +3302,7 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
     break;
 
   default:
+    prototype += ", PyObject *";
     break;
   }
   prototype += ")";
