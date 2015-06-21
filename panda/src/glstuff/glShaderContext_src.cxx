@@ -211,6 +211,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _uses_standard_vertex_arrays = false;
   _has_divisor = false;
   _color_attrib_index = -1;
+  _transform_table_index = -1;
+  _slider_table_index = -1;
   _validated = !gl_validate_shaders;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
@@ -881,6 +883,26 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         return;
       }
       _shader->_mat_spec.push_back(bind);
+      return;
+    }
+    if (noprefix == "TransformTable") {
+      if (param_type != GL_FLOAT_MAT4) {
+        GLCAT.error()
+          << "p3d_TransformTable should be uniform mat4\n";
+        return;
+      }
+      _transform_table_index = p;
+      _transform_table_size = param_size;
+      return;
+    }
+    if (noprefix == "SliderTable") {
+      if (param_type != GL_FLOAT) {
+        GLCAT.error()
+          << "p3d_SliderTable should be uniform float\n";
+        return;
+      }
+      _slider_table_index = p;
+      _slider_table_size = param_size;
       return;
     }
     GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
@@ -1587,6 +1609,58 @@ issue_parameters(int altered) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::update_transform_table
+//       Access: Public
+//  Description: Changes the active transform table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+update_transform_table(const TransformTable *table) {
+  LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
+
+  int i = 0;
+  if (table != NULL) {
+    int num_transforms = min(_transform_table_size, table->get_num_transforms());
+    for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+      LMatrix4 matrix;
+      table->get_transform(i)->get_matrix(matrix);
+      matrices[i] = LCAST(float, matrix);
+#else
+      table->get_transform(i)->get_matrix(matrices[i]);
+#endif
+    }
+  }
+  for (; i < _transform_table_size; ++i) {
+    matrices[i] = LMatrix4f::ident_mat();
+  }
+
+  _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
+                              GL_FALSE, (float *)matrices);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::update_slider_table
+//       Access: Public
+//  Description: Changes the active slider table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+update_slider_table(const SliderTable *table) {
+  float *sliders = (float *)alloca(_slider_table_size * 4);
+  memset(sliders, 0, _slider_table_size * 4);
+
+  if (table != NULL) {
+    int num_sliders = min(_slider_table_size, table->get_num_sliders());
+    for (int i = 0; i < num_sliders; ++i) {
+      sliders[i] = table->get_slider(i)->get_slider();
+    }
+  }
+
+  _glgsg->_glUniform1fv(_slider_table_index, _slider_table_size, sliders);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::disable_shader_vertex_arrays
 //       Access: Public
 //  Description: Disable all the vertex arrays used by this shader.
@@ -1715,6 +1789,16 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
     }
+  }
+
+  if (_transform_table_index >= 0) {
+    const TransformTable *table = _glgsg->_data_reader->get_transform_table();
+    update_transform_table(table);
+  }
+
+  if (_slider_table_index >= 0) {
+    const SliderTable *table = _glgsg->_data_reader->get_slider_table();
+    update_slider_table(table);
   }
 
   _glgsg->report_my_gl_errors();

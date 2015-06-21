@@ -3275,11 +3275,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
+#ifndef OPENGLES
   const GeomVertexAnimationSpec &animation =
     _data_reader->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
-#ifndef OPENGLES
-  if (hardware_animation) {
+  if (hardware_animation && _current_shader_context == NULL) {
     // Set up the transform matrices for vertex blending.
     nassertr(_supports_vertex_blend, false);
     glEnable(GL_VERTEX_BLEND_ARB);
@@ -3361,6 +3361,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
     }
   }
+#else
+  const bool hardware_animation = false;
 #endif
 
 #ifndef OPENGLES_2

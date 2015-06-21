@@ -48,6 +48,7 @@ PUBLISHED:
   enum {
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
     F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
   };
 
   INLINE bool               has_shader() const;
