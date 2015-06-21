@@ -1903,7 +1903,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  if (res != NULL) {\n";
           out << "    return res;\n";
           out << "  }\n";
-          out << "  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {\n";
+          out << "  if (_PyErr_OCCURRED() != PyExc_AttributeError) {\n";
           out << "    return NULL;\n";
           out << "  }\n";
           out << "  PyErr_Clear();\n\n";
@@ -5733,6 +5733,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         << "return Dtool_Return_Bool(" << return_expr << ");\n";
       return_flags &= ~RF_pyobject;
 
+    } else if (return_null && TypeManager::is_pointer_to_PyObject(remap->_return_type->get_new_type())) {
+      indent(out, indent_level)
+        << "return Dtool_Return(" << return_expr << ");\n";
+      return_flags &= ~RF_pyobject;
+
     } else {
       indent(out, indent_level)
         << "if (Dtool_CheckErrorOccurred()) {\n";
@@ -5836,7 +5841,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         << "return DTool_PyInit_Finalize(self, (void *)" << return_expr << ", &" << CLASS_PREFIX << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
     } else if (TypeManager::is_integer(orig_type)) {
-      if (return_flags & RF_compare) {
+      if ((return_flags & RF_compare) == RF_compare) {
         // Make sure it returns -1, 0, or 1, or Python complains with:
         // RuntimeWarning: tp_compare didn't return -1, 0 or 1
         indent(out, indent_level) << "return (int)(" << return_expr << " > 0) - (int)(" << return_expr << " < 0);\n";
