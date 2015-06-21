@@ -37,6 +37,7 @@
 #include "texture.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
+#include "rescaleNormalAttrib.h"
 #include "pointLight.h"
 #include "spotlight.h"
 #include "lightLensNode.h"
@@ -326,6 +327,12 @@ analyze_renderstate(const RenderState *rs) {
     _need_eye_normal = true;
   }
 
+  // Determine whether we should normalize the normals.
+  const RescaleNormalAttrib *rescale;
+  rs->get_attrib_def(rescale);
+
+  _normalize_normals = (rescale->get_mode() != RescaleNormalAttrib::M_none);
+
   // Find the material.
 
   const MaterialAttrib *material = DCAST(MaterialAttrib, rs->get_attrib_def(MaterialAttrib::get_class_slot()));
@@ -487,6 +494,7 @@ clear_analysis() {
   _need_world_normal = false;
   _need_eye_position = false;
   _need_eye_normal = false;
+  _normalize_normals = false;
   _auto_normal_on = false;
   _auto_glow_on   = false;
   _auto_gloss_on  = false;
@@ -716,6 +724,8 @@ synthesize_shader(const RenderState *rs) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
+  } else if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
+    text << "\t uniform float4x4 trans_model_to_view,\n";
   }
   if (_need_eye_normal) {
     eye_normal_freg = alloc_freg();
@@ -774,7 +784,11 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
   if (_need_eye_normal) {
-    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
+    if (_normalize_normals) {
+      text << "\t l_eye_normal.xyz = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+    } else {
+      text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
+    }
     text << "\t l_eye_normal.w = 0;\n";
   }
   pmap<const InternalName *, const char *>::const_iterator it;
@@ -787,9 +801,9 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_color = vtx_color;\n";
   }
   if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
-    text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_" << tangent_input << ".xyz);\n";
+    text << "\t l_tangent.xyz = normalize(mul((float3x3)trans_model_to_view, vtx_" << tangent_input << ".xyz));\n";
     text << "\t l_tangent.w = 0;\n";
-    text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_" << binormal_input << ".xyz);\n";
+    text << "\t l_binormal.xyz = normalize(mul((float3x3)trans_model_to_view, -vtx_" << binormal_input << ".xyz));\n";
     text << "\t l_binormal.w = 0;\n";
   }
   if (_shadows && _auto_shadow_on) {

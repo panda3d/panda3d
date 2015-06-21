@@ -2892,6 +2892,8 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
   }
   image.copy_header_from(*image_reader);
 
+  AutoTextureScale auto_texture_scale = do_get_auto_texture_scale(cdata);
+
   // If it's a floating-point image file, read it by default into a
   // floating-point texture.
   bool read_floating_point;
@@ -2929,9 +2931,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       y_size = 1;
 
     } else {
-      consider_rescale(image, fullpath.get_basename(), do_get_auto_texture_scale(cdata));
-      x_size = image.get_read_x_size();
-      y_size = image.get_read_y_size();
+      adjust_size(x_size, y_size, fullpath.get_basename(), false, auto_texture_scale);
     }
 
     if (read_floating_point) {
@@ -2949,9 +2949,15 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
 
   } else {
     if (z == 0 && n == 0) {
-      cdata->_orig_file_x_size = image.get_x_size();
-      cdata->_orig_file_y_size = image.get_y_size();
-      consider_rescale(image, fullpath.get_basename(), do_get_auto_texture_scale(cdata));
+      int x_size = image.get_x_size();
+      int y_size = image.get_y_size();
+
+      cdata->_orig_file_x_size = x_size;
+      cdata->_orig_file_y_size = y_size;
+
+      if (adjust_size(x_size, y_size, fullpath.get_basename(), false, auto_texture_scale)) {
+        image.set_read_size(x_size, y_size);
+      }
     } else {
       image.set_read_size(do_get_expected_mipmap_x_size(cdata, n),
                           do_get_expected_mipmap_y_size(cdata, n));

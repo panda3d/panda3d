@@ -589,7 +589,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   // Strip off [0] suffix that some drivers append to arrays.
   size_t size = strlen(name_buffer);
   if (size > 3 && strncmp(name_buffer + (size - 3), "[0]", 3) == 0) {
-    name_buffer[size - 3] = 0;
+    size -= 3;
+    name_buffer[size] = 0;
   }
 
   string param_name(name_buffer);
@@ -606,6 +607,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     bool transpose = false;
     bool inverse = false;
     string matrix_name(noprefix);
+    size = matrix_name.size();
 
     // Check for and chop off any "Transpose" or "Inverse" suffix.
     if (size > 15 && matrix_name.compare(size - 9, 9, "Transpose") == 0) {

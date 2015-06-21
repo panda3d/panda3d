@@ -30,6 +30,8 @@ THE SOFTWARE.
 
 #if defined(_MSC_VER)
 #include <intrin.h>
+#include <float.h>
+#define copysign _copysign
 #endif
 
 #define UINT64_C2(h, l) ((static_cast<uint64_t>(h) << 32) | static_cast<uint64_t>(l))

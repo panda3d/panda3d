@@ -21,7 +21,7 @@ class EmptyClass {
 Define_Module_Class_Private(dtoolconfig, DTOOL_SUPER_BASE, EmptyClass, DTOOL_SUPER_BASE111);
 
 static PyObject *GetSuperBase(PyObject *self) {
-  Py_INCREF(&(Dtool_DTOOL_SUPER_BASE.As_PyTypeObject())); // order is important .. this is used for static functions
+  Py_INCREF((PyTypeObject *)&Dtool_DTOOL_SUPER_BASE); // order is important .. this is used for static functions
   return (PyObject *) &Dtool_DTOOL_SUPER_BASE;
 };
 
@@ -35,21 +35,21 @@ EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module
   if (!initdone) {
 
     initdone = true;
-    Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict = PyDict_New();
-    PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict, "DtoolClassDict", Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict);
+    Dtool_DTOOL_SUPER_BASE._PyType.tp_dict = PyDict_New();
+    PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE._PyType.tp_dict, "DtoolClassDict", Dtool_DTOOL_SUPER_BASE._PyType.tp_dict);
 
-    if (PyType_Ready(&Dtool_DTOOL_SUPER_BASE.As_PyTypeObject()) < 0) {
+    if (PyType_Ready((PyTypeObject *)&Dtool_DTOOL_SUPER_BASE) < 0) {
       PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPER_BASE)");
       return;
     }
-    Py_INCREF(&Dtool_DTOOL_SUPER_BASE.As_PyTypeObject());
+    Py_INCREF((PyTypeObject *)&Dtool_DTOOL_SUPER_BASE);
 
-    PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE.As_PyTypeObject().tp_dict, "DtoolGetSuperBase", PyCFunction_New(&Dtool_Methods_DTOOL_SUPER_BASE[0], &Dtool_DTOOL_SUPER_BASE.As_PyObject()));
+    PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE._PyType.tp_dict, "DtoolGetSuperBase", PyCFunction_New(&Dtool_Methods_DTOOL_SUPER_BASE[0], (PyObject *)&Dtool_DTOOL_SUPER_BASE));
   }
 
   if (module != NULL) {
-    Py_INCREF(&Dtool_DTOOL_SUPER_BASE.As_PyTypeObject());
-    PyModule_AddObject(module, "DTOOL_SUPER_BASE", (PyObject *)&Dtool_DTOOL_SUPER_BASE.As_PyTypeObject());
+    Py_INCREF((PyTypeObject *)&Dtool_DTOOL_SUPER_BASE);
+    PyModule_AddObject(module, "DTOOL_SUPER_BASE", (PyObject *)&Dtool_DTOOL_SUPER_BASE);
   }
 }
 
@@ -123,9 +123,12 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
     0,
     0,
   },
+  TypeHandle::none(),
+  Dtool_PyModuleClassInit_DTOOL_SUPER_BASE,
   Dtool_UpcastInterface_DTOOL_SUPER_BASE,
   Dtool_DowncastInterface_DTOOL_SUPER_BASE,
-  TypeHandle::none(),
+  NULL,
+  NULL,
 };
 
 #endif  // HAVE_PYTHON

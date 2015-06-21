@@ -30,8 +30,6 @@
 #include "interrogateType.h"
 #include "pnotify.h"
 
-extern bool inside_python_native;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: FunctionRemap::Constructor
 //       Access: Public
@@ -120,11 +118,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
       InterfaceMaker::indent(out, indent_level)
         << "unref_delete(" << container << ");\n";
     } else {
-      if (inside_python_native) {
-        InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self);\n";
-      } else {
-        InterfaceMaker::indent(out, indent_level) << "delete " << container << ";\n";
-      }
+      InterfaceMaker::indent(out, indent_level) << "delete " << container << ";\n";
     }
 
   } else if (_type == T_typecast_method) {
@@ -866,12 +860,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     break;
 
   case T_constructor:
-    if (!_has_this && _parameters.size() == 1 &&
-        TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
-        TypeManager::unwrap(_return_type->get_orig_type())) {
-      // If this is the only parameter, and it's the same as the
-      // "this" type, this is a copy constructor.
+    if (_ftype->_flags & CPPFunctionType::F_copy_constructor) {
+      // It's a copy constructor.
       _flags |= F_copy_constructor;
+
+    } else if (_ftype->_flags & CPPFunctionType::F_move_constructor) {
 
     } else if (!_has_this && _parameters.size() > 0 &&
                (_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0) {

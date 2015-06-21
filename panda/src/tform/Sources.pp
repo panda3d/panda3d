@@ -31,7 +31,7 @@
     mouseWatcher.cxx \
     mouseWatcherBase.cxx \
     mouseWatcherGroup.cxx \
-    mouseWatcherParameter.cxx
+    mouseWatcherParameter.cxx \
     mouseWatcherRegion.cxx \
     trackball.cxx \
     transform2sg.cxx

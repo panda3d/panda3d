@@ -72,7 +72,7 @@ class GraphicsStateGuardianBase;
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
                                      public Namable, public LinkedListNode {
 PUBLISHED:
-  PandaNode(const string &name);
+  explicit PandaNode(const string &name);
   virtual ~PandaNode();
   //published so that characters can be combined.
   virtual PandaNode *combine_with(PandaNode *other);

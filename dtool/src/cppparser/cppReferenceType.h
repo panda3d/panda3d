@@ -35,9 +35,6 @@ public:
   CPPType *_pointing_at;
   ValueCategory _value_category;
 
-  inline bool is_lvalue() const;
-  inline bool is_rvalue() const;
-
   virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
@@ -47,6 +44,7 @@ public:
                                 CPPScope *global_scope);
 
   virtual bool is_tbd() const;
+  virtual bool is_trivial() const;
   virtual bool is_equivalent(const CPPType &other) const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,

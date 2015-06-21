@@ -23,7 +23,9 @@
     encrypt_string.h \
     error_utils.h \
     export_dtool.h \
+    filename_ext.h \
     fileReference.h fileReference.I \
+    globPattern_ext.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \
@@ -45,6 +47,7 @@
     patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
+    pointerToArray_ext.h \
     pointerToArrayBase.I pointerToArrayBase.h \
     pointerToBase.I pointerToBase.h \
     pointerToVoid.I pointerToVoid.h \
@@ -61,6 +64,7 @@
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
     trueClock.I trueClock.h \
+    typeHandle_ext.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     vector_uchar.h vector_double.h vector_float.h \
     vector_stdfloat.h \

@@ -2304,8 +2304,6 @@ reset() {
   }
 #endif
 
-  _auto_rescale_normal = false;
-
   // Ensure the initial state is what we say it should be (in some
   // cases, we don't want the GL default settings; in others, we have
   // to force the point with some drivers that aren't strictly
@@ -5956,10 +5954,6 @@ do_issue_transform() {
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   glMatrixMode(GL_MODELVIEW);
   GLPf(LoadMatrix)(transform->get_mat().get_data());
-
-  if (_auto_rescale_normal) {
-    do_auto_rescale_normal();
-  }
 #endif
   _transform_stale = false;
 
@@ -6179,12 +6173,12 @@ do_issue_antialias() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
+  RescaleNormalAttrib::Mode mode = RescaleNormalAttrib::M_none;
+
   const RescaleNormalAttrib *target_rescale_normal;
-  _target_rs->get_attrib_def(target_rescale_normal);
-
-  RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
-
-  _auto_rescale_normal = false;
+  if (_target_rs->get_attrib(target_rescale_normal)) {
+    mode = target_rescale_normal->get_mode();
+  }
 
   switch (mode) {
   case RescaleNormalAttrib::M_none:
@@ -6208,11 +6202,6 @@ do_issue_rescale_normal() {
     if (_supports_rescale_normal && support_rescale_normal) {
       glDisable(GL_RESCALE_NORMAL);
     }
-    break;
-
-  case RescaleNormalAttrib::M_auto:
-    _auto_rescale_normal = true;
-    do_auto_rescale_normal();
     break;
 
   default:
@@ -9488,61 +9477,6 @@ free_pointers() {
   if (_cg_context != 0) {
     cgDestroyContext(_cg_context);
     _cg_context = 0;
-  }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_auto_rescale_normal
-//       Access: Protected
-//  Description: Issues the appropriate GL commands to either rescale
-//               or normalize the normals according to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-do_auto_rescale_normal() {
-#ifndef OPENGLES_2
-  if (_internal_transform->has_identity_scale()) {
-    // If there's no scale at all, don't do anything.
-    glDisable(GL_NORMALIZE);
-    if (GLCAT.is_spam()) {
-      GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
-    }
-    if (_supports_rescale_normal && support_rescale_normal) {
-      glDisable(GL_RESCALE_NORMAL);
-      if (GLCAT.is_spam()) {
-        GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
-      }
-    }
-
-  } else if (_internal_transform->has_uniform_scale()) {
-    // There's a uniform scale; use the rescale feature if available.
-    if (_supports_rescale_normal && support_rescale_normal) {
-      glEnable(GL_RESCALE_NORMAL);
-      glDisable(GL_NORMALIZE);
-      if (GLCAT.is_spam()) {
-        GLCAT.spam() << "glEnable(GL_RESCALE_NORMAL)\n";
-        GLCAT.spam() << "glDisable(GL_NORMALIZE)\n";
-      }
-    } else {
-      glEnable(GL_NORMALIZE);
-      if (GLCAT.is_spam()) {
-        GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
-      }
-    }
-
-  } else {
-    // If there's a non-uniform scale, normalize everything.
-    glEnable(GL_NORMALIZE);
-    if (GLCAT.is_spam()) {
-      GLCAT.spam() << "glEnable(GL_NORMALIZE)\n";
-    }
-    if (_supports_rescale_normal && support_rescale_normal) {
-      glDisable(GL_RESCALE_NORMAL);
-      if (GLCAT.is_spam()) {
-        GLCAT.spam() << "glDisable(GL_RESCALE_NORMAL)\n";
-      }
-    }
   }
 #endif
 }

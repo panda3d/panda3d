@@ -29,10 +29,14 @@
 //               rather than defining the pta again.
 ////////////////////////////////////////////////////////////////////
 
+#if !defined(__clang__) && __GNUC__ == 4 && __GNUC_MINOR__ < 7
+// GCC 4.6 has a weird bug related to this type.
+#else
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToBase<ReferenceCountedVector<uchar> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArrayBase<uchar>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArray<unsigned char>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArray<unsigned char>)
+#endif
 
 typedef PointerToArray<unsigned char> PTA_uchar;
 typedef ConstPointerToArray<unsigned char> CPTA_uchar;

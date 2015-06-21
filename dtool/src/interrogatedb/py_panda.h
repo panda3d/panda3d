@@ -143,17 +143,17 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////////
 
 struct Dtool_PyTypedObject;
-typedef std::map<int, Dtool_PyTypedObject *>   RunTimeTypeDictionary;
-typedef std::set<int>                           RunTimeTypeList;
-
-EXPCL_DTOOLCONFIG RunTimeTypeDictionary &GetRunTimeDictionary();
-EXPCL_DTOOLCONFIG RunTimeTypeList &GetRunTimeTypeList();
+typedef std::map<int, Dtool_PyTypedObject *> RuntimeTypeMap;
+typedef std::set<int> RuntimeTypeSet;
+typedef std::map<std::string, Dtool_PyTypedObject *> NamedTypeMap;
 
 //////////////////////////////////////////////////////////
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
 typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
+typedef void *(*CoerceFunction)(PyObject *, void *);
+typedef void (*ModuleClassInitFunction)(PyObject *module);
 
 //inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 //inline void     Dtool_Deallocate_General(PyObject * self);
@@ -196,16 +196,16 @@ struct Dtool_PyTypedObject {
   // Standard Python Features..
   PyTypeObject _PyType;
 
-  // My Class Level Features..
-  UpcastFunction _Dtool_UpcastInterface;    // The Upcast Function By Slot
-  DowncastFunction _Dtool_DowncastInterface; // The Downcast Function By Slot
-
   // May be TypeHandle::none() to indicate a non-TypedObject class.
   TypeHandle _type;
 
-  // some convenience functions..
-  inline PyTypeObject &As_PyTypeObject() { return _PyType; };
-  inline PyObject &As_PyObject() { return (PyObject &)_PyType; };
+  ModuleClassInitFunction _Dtool_ModuleClassInit;
+
+  UpcastFunction _Dtool_UpcastInterface;    // The Upcast Function By Slot
+  DowncastFunction _Dtool_DowncastInterface; // The Downcast Function By Slot
+
+  CoerceFunction _Dtool_ConstCoerce;
+  CoerceFunction _Dtool_Coerce;
 };
 
 // This is now simply a forward declaration.  The actual definition is created
@@ -217,7 +217,7 @@ struct Dtool_PyTypedObject {
 //  More Macro(s) to Implement class functions.. Usually used if C++ needs type information
 ////////////////////////////////////////////////////////////////////////
 #define Define_Dtool_new(CLASS_NAME,CNAME)\
-PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds) {\
+static PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds) {\
   (void) args; (void) kwds;\
   PyObject *self = type->tp_alloc(type, 0);\
   ((Dtool_PyInstDef *)self)->_signature = PY_PANDA_SIGNATURE;\
@@ -291,7 +291,11 @@ EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-EXPCL_DTOOLCONFIG void RegisterRuntimeClass(Dtool_PyTypedObject *otype, int class_id);
+EXPCL_DTOOLCONFIG void RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype);
+EXPCL_DTOOLCONFIG void RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype);
+
+EXPCL_DTOOLCONFIG Dtool_PyTypedObject *LookupNamedClass(const string &name);
+EXPCL_DTOOLCONFIG Dtool_PyTypedObject *LookupRuntimeTypedClass(TypeHandle handle);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -305,7 +309,7 @@ EXPCL_DTOOLCONFIG Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
 //      with these as the generated code depends on how this is set
 //      up..
 ////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
+EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer);
 
 EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, bool report_errors);
 
@@ -340,6 +344,7 @@ EXPCL_DTOOLCONFIG bool Dtool_CheckErrorOccurred();
 EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_AssertionError();
 EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_TypeError(const char *message);
 EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
+EXPCL_DTOOLCONFIG PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
 
 EXPCL_DTOOLCONFIG PyObject *_Dtool_Raise_BadArgumentsError();
 #ifdef NDEBUG
@@ -352,11 +357,14 @@ EXPCL_DTOOLCONFIG PyObject *_Dtool_Raise_BadArgumentsError();
 
 EXPCL_DTOOLCONFIG PyObject *_Dtool_Return_None();
 EXPCL_DTOOLCONFIG PyObject *Dtool_Return_Bool(bool value);
+EXPCL_DTOOLCONFIG PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
 #define Dtool_Return_None() (_PyErr_OCCURRED() != NULL ? NULL : (Py_INCREF(Py_None), Py_None))
+#define Dtool_Return(value) (_PyErr_OCCURRED() != NULL ? NULL : value)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()
+#define Dtool_Return(value) _Dtool_Return(value)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
@@ -407,11 +415,9 @@ template<class T> INLINE PyObject *DTool_CreatePyInstanceTyped(T *obj, bool memo
 //struct Dtool_PyTypedObject Dtool_##CLASS_NAME;
 
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
-extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;\
-int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
-PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
-void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
-void  *     Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);
+extern struct Dtool_PyTypedObject Dtool_##CLASS_NAME;\
+static int Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
+static PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 ///////////////////////////////////////////////////////////////////////////////
 #define Define_Module_Class(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
@@ -460,10 +466,7 @@ EXPCL_DTOOLCONFIG void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &them
 /// fallowing structors and code.. along with the support of interigate_module
 ///////////////////////////////////////////////////////////////////////////////
 struct LibraryDef {
-  typedef void (*ConstantFunction)(PyObject *);
-
   PyMethodDef *_methods;
-  ConstantFunction _constants;
 };
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -506,14 +509,10 @@ EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
 EXPCL_DTOOLCONFIG PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op);
 
 EXPCL_DTOOLCONFIG PyObject *
-make_list_for_item(PyObject *self, const char *num_name,
-                   const char *element_name);
+copy_from_make_copy(PyObject *self, PyObject *noargs);
 
 EXPCL_DTOOLCONFIG PyObject *
-copy_from_make_copy(PyObject *self);
-
-EXPCL_DTOOLCONFIG PyObject *
-copy_from_copy_constructor(PyObject *self);
+copy_from_copy_constructor(PyObject *self, PyObject *noargs);
 
 EXPCL_DTOOLCONFIG PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
@@ -526,6 +525,8 @@ PyLongOrInt_FromUnsignedLong(unsigned long value);
 
 EXPCL_DTOOLCONFIG extern struct Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE;
 EXPCL_DTOOLCONFIG extern void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module);
+
+#define Dtool_Ptr_DTOOL_SUPER_BASE (&Dtool_DTOOL_SUPER_BASE)
 
 #endif  // HAVE_PYTHON && !CPPPARSER
 

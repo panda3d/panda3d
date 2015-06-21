@@ -1062,7 +1062,7 @@ make_array_format(const VisColumns &vis_columns) const {
     case CT_normal3:
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;
-      contents = GeomEnums::C_vector;
+      contents = GeomEnums::C_normal;
       break;
 
     case CT_blend1:
@@ -1072,7 +1072,7 @@ make_array_format(const VisColumns &vis_columns) const {
       break;
     }
     nassertr(num_components != 0, NULL);
-    
+
     array_format->add_column(name, num_components, numeric_type, contents);
   }
 

@@ -527,7 +527,6 @@ protected:
   void upload_usage_texture(int width, int height);
 #endif  // NDEBUG
 
-  void do_auto_rescale_normal();
   bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
   bool apply_texture(TextureContext *tc);
   bool apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc);
@@ -627,7 +626,6 @@ protected:
   DirectionalLights _dlights;
 
   int _pass_number;
-  bool _auto_rescale_normal;
   GLuint _geom_display_list;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;

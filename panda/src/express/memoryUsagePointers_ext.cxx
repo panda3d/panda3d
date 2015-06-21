@@ -17,9 +17,9 @@
 #if defined(HAVE_PYTHON) && defined(DO_MEMORY_USAGE)
 
 #ifndef CPPPARSER
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedObject;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedReferenceCount;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_ReferenceCount;
+extern Dtool_PyTypedObject Dtool_TypedObject;
+extern Dtool_PyTypedObject Dtool_TypedReferenceCount;
+extern Dtool_PyTypedObject Dtool_ReferenceCount;
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////

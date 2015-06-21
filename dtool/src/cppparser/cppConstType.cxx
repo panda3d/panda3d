@@ -102,6 +102,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPConstType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPConstType::
+is_trivial() const {
+  return _wrapped_around->is_trivial();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it
