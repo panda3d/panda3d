@@ -49,8 +49,6 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
-import unicodedata
-import bisect
 
 __report_indent = 3
 
