@@ -735,7 +735,6 @@ if (COMPILER=="GCC"):
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
-        SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
         SmartPkgEnable("ASSIMP",    "assimp", ("assimp"), "assimp")
@@ -747,11 +746,8 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
         SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
-        SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
-        SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
-        SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
@@ -759,6 +755,14 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
         SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+
+        if GetTarget() != 'emscripten':
+            SmartPkgEnable("EIGEN", "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
+            SmartPkgEnable("OPENAL","openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+            SmartPkgEnable("GLES2", "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+            SmartPkgEnable("EGL",   "egl",       ("EGL"), ("EGL/egl.h"))
+        else:
+            PkgDisable("EIGEN")
 
         if GetTarget() == "darwin" and not PkgSkip("FFMPEG"):
             LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
@@ -783,6 +787,8 @@ if (COMPILER=="GCC"):
         if not PkgSkip("PYTHON"):
             if GetTarget() == "darwin" and not RTDIST and not PkgHasCustomLocation("PYTHON"):
                 LibName("PYTHON", "-framework Python")
+            elif GetTarget() == "emscripten":
+                SmartPkgEnable("PYTHON", "", "", (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
             else:
                 SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
 
@@ -794,7 +800,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("WX", tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("FL/Fl.H"), tool = "fltk-config")
 
-    if GetTarget() != 'darwin':
+    if GetTarget() not in ('darwin', 'emscripten'):
         # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
         if not PkgSkip("NVIDIACG") and not RUNTIME:
             SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h")
@@ -1217,7 +1223,7 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -mfpu=neon'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -s NO_FILESYSTEM=1"
 
         else:
             cmd += " -pthread"
@@ -1228,6 +1234,8 @@ def CompileCxx(obj,src,opts):
                 cmd += " -fexceptions"
             else:
                 cmd += " -fno-exceptions"
+                if GetTarget() == 'emscripten':
+                    cmd += " -s DISABLE_EXCEPTION_CATCHING=1"
 
             if 'RTTI' not in opts:
                 # We always disable RTTI on Android for memory usage reasons.
@@ -1358,6 +1366,9 @@ def CompileIgate(woutd,wsrc,opts):
         else:
             cmd += ' -D__i386__'
 
+    if GetTarget() == "emscripten":
+        cmd += ' -D__EMSCRIPTEN__'
+
     optlevel = GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
     if (optlevel==2): cmd += ' -D_DEBUG'
@@ -1398,10 +1409,8 @@ def CompileIgate(woutd,wsrc,opts):
 def CompileImod(wobj, wsrc, opts):
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
-    if (COMPILER=="MSVC"):
-        woutc = wobj[:-4]+".cxx"
-    if (COMPILER=="GCC"):
-        woutc = wobj[:-2]+".cxx"
+    woutc = os.path.splitext(wobj)[0] + ".cxx"
+
     if (PkgSkip("PYTHON")):
         WriteFile(woutc, "")
         CompileCxx(wobj, woutc, opts)
@@ -1642,6 +1651,8 @@ def CompileLink(dll, obj, opts):
 
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            if GetOrigExt(dll) == ".exe":
+                cmd += " --memory-init-file 0"
 
         else:
             cmd += " -pthread"
@@ -1655,9 +1666,10 @@ def CompileLink(dll, obj, opts):
         for (opt, dir) in FRAMEWORKDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' -F' + BracketNameWithQuotes(dir)
-        for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opt in opts):
-                cmd += ' ' + BracketNameWithQuotes(name)
+        if GetOrigExt(dll) == ".exe" or GetTarget() != 'emscripten':
+            for (opt, name) in LIBNAMES:
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += ' ' + BracketNameWithQuotes(name)
 
         if GetTarget() not in ('freebsd', 'emscripten'):
             cmd += " -ldl"
@@ -1982,7 +1994,7 @@ def CompileAnything(target, inputs, opts, progress = None):
                 if target.lower().endswith(".dylib"):
                     target = target[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
-            elif tplatform != "windows" and tplatform != "android":
+            elif tplatform not in ("windows", "android", "emscripten"):
                 # On Linux, libraries are named like libpanda.so.1.2
                 target += "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
@@ -2280,6 +2292,8 @@ def WriteConfigSettings():
         dtool_config["HAVE_POSIX_THREADS"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["HAVE_NET"] = 'UNDEF'
+        dtool_config["LINK_ALL_STATIC"] = '1'
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
@@ -3329,7 +3343,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/nativenet/
 #
 
-if (not RUNTIME):
+if (not RUNTIME and GetTarget() != 'emscripten'):
   OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
   TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
 
@@ -3343,7 +3357,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/net/
 #
 
-if (not RUNTIME):
+if (not RUNTIME and GetTarget() != 'emscripten'):
   OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
   TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
   TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
@@ -3754,9 +3768,6 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3audio_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pgui_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pgui_composite2.obj')
-  TargetAdd('libpanda.dll', input='p3net_composite1.obj')
-  TargetAdd('libpanda.dll', input='p3net_composite2.obj')
-  TargetAdd('libpanda.dll', input='p3nativenet_composite1.obj')
   TargetAdd('libpanda.dll', input='p3pandabase_pandabase.obj')
   TargetAdd('libpanda.dll', input='libpandaexpress.dll')
   TargetAdd('libpanda.dll', input='p3dxml_composite1.obj')
@@ -3764,6 +3775,9 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
   if GetTarget() != "emscripten":
+    TargetAdd('libpanda.dll', input='p3net_composite1.obj')
+    TargetAdd('libpanda.dll', input='p3net_composite2.obj')
+    TargetAdd('libpanda.dll', input='p3nativenet_composite1.obj')
     TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
 
   if PkgSkip("FREETYPE")==0:
@@ -3799,11 +3813,13 @@ if (not RUNTIME):
   TargetAdd('core_module.obj', input='libp3tform.in')
   TargetAdd('core_module.obj', input='libp3putil.in')
   TargetAdd('core_module.obj', input='libp3audio.in')
-  TargetAdd('core_module.obj', input='libp3nativenet.in')
-  TargetAdd('core_module.obj', input='libp3net.in')
   TargetAdd('core_module.obj', input='libp3pgui.in')
   TargetAdd('core_module.obj', input='libp3movies.in')
   TargetAdd('core_module.obj', input='libp3dxml.in')
+
+  if GetTarget() != "emscripten":
+    TargetAdd('core_module.obj', input='libp3nativenet.in')
+    TargetAdd('core_module.obj', input='libp3net.in')
 
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core_module.obj', input='libp3pnmtext.in')
@@ -3839,9 +3855,11 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='libp3putil_igate.obj')
   TargetAdd('core.pyd', input='libp3audio_igate.obj')
   TargetAdd('core.pyd', input='libp3pgui_igate.obj')
-  TargetAdd('core.pyd', input='libp3net_igate.obj')
-  TargetAdd('core.pyd', input='libp3nativenet_igate.obj')
   TargetAdd('core.pyd', input='libp3dxml_igate.obj')
+
+  if GetTarget() != "emscripten":
+    TargetAdd('core.pyd', input='libp3net_igate.obj')
+    TargetAdd('core.pyd', input='libp3nativenet_igate.obj')
 
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
@@ -3857,7 +3875,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
-  TargetAdd('core.pyd', input='libp3tinyxml.ilb')
+  #TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=['PYTHON', 'WINSOCK2'])
 
@@ -4777,7 +4795,7 @@ if (PkgSkip("DIRECT")==0):
 # DIRECTORY: direct/src/distributed/
 #
 
-if (PkgSkip("DIRECT")==0):
+if not PkgSkip("DIRECT") and GetTarget() != 'emscripten':
   OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'OPENSSL']
   TargetAdd('p3distributed_config_distributed.obj', opts=OPTS, input='config_distributed.cxx')
   TargetAdd('p3distributed_cConnectionRepository.obj', opts=OPTS, input='cConnectionRepository.cxx')
@@ -4838,9 +4856,10 @@ if (PkgSkip("DIRECT")==0):
     TargetAdd('libp3direct.dll', input='p3showbase_showBase_assist.obj')
   TargetAdd('libp3direct.dll', input='p3deadrec_composite1.obj')
   TargetAdd('libp3direct.dll', input='p3interval_composite1.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_cConnectionRepository.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
+  if GetTarget() != 'emscripten':
+    TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
+    TargetAdd('libp3direct.dll', input='p3distributed_cConnectionRepository.obj')
+    TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
@@ -4849,7 +4868,8 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct_module.obj', input='libp3showbase.in')
   TargetAdd('direct_module.obj', input='libp3deadrec.in')
   TargetAdd('direct_module.obj', input='libp3interval.in')
-  TargetAdd('direct_module.obj', input='libp3distributed.in')
+  if GetTarget() != 'emscripten':
+    TargetAdd('direct_module.obj', input='libp3distributed.in')
   TargetAdd('direct_module.obj', opts=OPTS)
   TargetAdd('direct_module.obj', opts=['IMOD:panda3d.direct', 'ILIB:direct', 'IMPORT:panda3d.core'])
 
@@ -4857,7 +4877,8 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3showbase_igate.obj')
   TargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
   TargetAdd('direct.pyd', input='libp3interval_igate.obj')
-  TargetAdd('direct.pyd', input='libp3distributed_igate.obj')
+  if GetTarget() != 'emscripten':
+    TargetAdd('direct.pyd', input='libp3distributed_igate.obj')
 
   TargetAdd('direct.pyd', input='direct_module.obj')
   TargetAdd('direct.pyd', input='libp3direct.dll')

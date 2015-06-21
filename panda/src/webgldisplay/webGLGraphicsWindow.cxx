@@ -381,6 +381,22 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
       handle = KeyboardButton::caps_lock();
       break;
 
+    case 37:
+      handle = KeyboardButton::left();
+      break;
+
+    case 38:
+      handle = KeyboardButton::up();
+      break;
+
+    case 39:
+      handle = KeyboardButton::right();
+      break;
+
+    case 40:
+      handle = KeyboardButton::down();
+      break;
+
     case 186:
       handle = KeyboardButton::ascii_key(';');
       break;
@@ -419,14 +435,15 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
 
     if (handle != ButtonHandle::none()) {
       if (type == EMSCRIPTEN_EVENT_KEYUP) {
-        webgldisplay_cat.info() << "button up " << handle << "\n";
+        //webgldisplay_cat.info() << "button up " << handle << "\n";
         device->button_up(handle);
       } else if (event->repeat) {
         device->button_resume_down(handle);
       } else {
-        webgldisplay_cat.info() << "button down " << handle << "\n";
+        //webgldisplay_cat.info() << "button down " << handle << "\n";
         device->button_down(handle);
       }
+      return true;
     } else {
       webgldisplay_cat.info() << "button event code " << event->which << "\n";
     }

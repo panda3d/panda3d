@@ -35,7 +35,7 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 
-void em_do_frame(void *arg) {
+static void em_do_frame(void *arg) {
   PandaFramework *fwx = (PandaFramework *)arg;
   nassertv_always(fwx != NULL);
 

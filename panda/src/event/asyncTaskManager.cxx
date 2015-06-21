@@ -733,3 +733,16 @@ make_global_ptr() {
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();
 }
+
+#ifdef __EMSCRIPTEN__
+
+extern "C" void task_manager_poll();
+
+void task_manager_poll() {
+  AsyncTaskManager *mgr = AsyncTaskManager::get_global_ptr();
+  nassertv_always(mgr != NULL);
+
+  mgr->poll();
+}
+
+#endif
