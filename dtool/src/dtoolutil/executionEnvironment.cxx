@@ -272,7 +272,9 @@ ns_get_environment_variable(const string &var) const {
       // marked BLOCKING, which releases the Python thread state, we
       // have to temporarily re-establish our thread state in the
       // Python interpreter.
+#ifdef WITH_THREAD
       PyGILState_STATE state = PyGILState_Ensure();
+#endif
 
       Filename main_dir;
       PyObject *obj = PySys_GetObject((char*) "argv");  // borrowed reference
@@ -303,7 +305,9 @@ ns_get_environment_variable(const string &var) const {
         }
       }
 
+#ifdef WITH_THREAD
       PyGILState_Release(state);
+#endif
 
       if (main_dir.empty()) {
         // We must be running in the Python interpreter directly, so return the CWD.
