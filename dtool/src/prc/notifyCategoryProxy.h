@@ -125,8 +125,9 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
 // appear in the config_*.h file.  The proxy object will be named
 // basename_cat.
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
-
+#ifdef CPPPARSER
+#define NotifyCategoryDecl(basename, expcl, exptp)
+#else
 #define NotifyCategoryDecl(basename, expcl, exptp) \
   class expcl NotifyCategoryGetCategory_ ## basename { \
   public: \
@@ -135,18 +136,7 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
   }; \
   exptp template class expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename>; \
   extern expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
-
-#else // WIN32_VC
-
-#define NotifyCategoryDecl(basename, expcl, exptp) \
-  class NotifyCategoryGetCategory_ ## basename { \
-  public: \
-    NotifyCategoryGetCategory_ ## basename(); \
-    static NotifyCategory *get_category(); \
-  }; \
-  extern NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
-
-#endif  // WIN32_VC
+#endif
 
 // This macro is the same as the above, except that it declares a category
 // that is not intended to be exported from any DLL.

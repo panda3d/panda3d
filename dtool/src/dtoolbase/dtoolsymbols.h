@@ -97,7 +97,12 @@
 /* These two are always defined empty, because pystub is statically
    built.  But we leave the symbol around in case we change our minds
    to make pystub once again be a dynamic library. */
+#if __GNUC__ >= 4
+/* In GCC, though, we still need to mark the symbols as visible. */
+#define EXPCL_PYSTUB __attribute__((visibility("default")))
+#else
 #define EXPCL_PYSTUB
+#endif
 #define EXPTP_PYSTUB
 
 #endif

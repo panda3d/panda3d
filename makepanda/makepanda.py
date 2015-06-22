@@ -1160,6 +1160,8 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
 
+        cmd += ' -fvisibility=hidden'
+
         # Mac-specific flags.
         if GetTarget() == "darwin":
             cmd += " -Wno-deprecated-declarations"
