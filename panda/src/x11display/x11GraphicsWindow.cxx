@@ -103,6 +103,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 #endif
 
   _awaiting_configure = false;
+  _expected_fixed_size_x = 0;
+  _expected_fixed_size_y = 0;
   _dga_mouse_enabled = false;
   _wm_delete_window = x11_pipe->_wm_delete_window;
 
@@ -430,29 +432,58 @@ process_events() {
     // XConfigureWindow too.)
     properties.set_origin(configure_event.x, configure_event.y);
 
-    if (_properties.get_fixed_size()) {
-      // If the window properties indicate a fixed size only, undo
-      // any attempt by the user to change them.  In X, there
-      // doesn't appear to be a way to universally disallow this
-      // directly (although we do set the min_size and max_size to
-      // the same value, which seems to work for most window
-      // managers.)  Incidentally, this also works to force my
-      // tiling window manager into 'floating' mode.
-      WindowProperties current_props = get_properties();
-      if (configure_event.width != current_props.get_x_size() ||
-          configure_event.height != current_props.get_y_size()) {
+    WindowProperties current_props = get_properties();
+    if (configure_event.width != current_props.get_x_size() ||
+        configure_event.height != current_props.get_y_size()) {
+
+      // The WM may take a few event cycles to honor a resize.
+      // If the window is fixed size, ignore attempts to resize
+      // unless they match the expected size.
+      if (_properties.get_fixed_size() &&
+          (configure_event.width != _expected_fixed_size_x
+            || configure_event.height != _expected_fixed_size_y)) {
+        // If the window properties indicate a fixed size only, undo
+        // any attempt by the user to change them.  In X, there
+        // doesn't appear to be a way to universally disallow this
+        // directly (although we do set the min_size and max_size to
+        // the same value, which seems to work for most window
+        // managers.)  Incidentally, this also works to force my
+        // tiling window manager into 'floating' mode.
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "overriding attempt to resize fixed_size window to "
+            << configure_event.width << 'x' << configure_event.height << " from "
+            << current_props.get_x_size() << 'x' << current_props.get_y_size() << "\n";
+        }
+
         XWindowChanges changes;
         changes.width = current_props.get_x_size();
         changes.height = current_props.get_y_size();
         int value_mask = (CWWidth | CWHeight);
         XConfigureWindow(_display, _xwindow, value_mask, &changes);
-      }
 
-    } else {
-      // A normal window may be resized by the user at will.
-      properties.set_size(configure_event.width, configure_event.height);
+        // NOTE: this is required to convince
+        // GraphicsWindow::system_changed_size() to do any work.
+        _properties.set_size(0, 0);
+
+        properties.set_size(current_props.get_x_size(), current_props.get_y_size());
+      } else {
+        // A normal window may be resized by the user at will,
+        // or, the WM finally honored the resize request.
+
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "resizing window to "
+            << configure_event.width << 'x' << configure_event.height << "\n";
+        }
+
+        properties.set_size(configure_event.width, configure_event.height);
+
+        _expected_fixed_size_x = 0;
+        _expected_fixed_size_y = 0;
+      }
+      changed_properties = true;
     }
-    changed_properties = true;
   }
 
   if (changed_properties) {
@@ -499,6 +530,15 @@ set_properties_now(WindowProperties &properties) {
     if (properties.get_fullscreen()) {
       if (_have_xrandr) {
 #ifdef HAVE_XRANDR
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "setting fullscreen via XRandR\n";
+          if (properties.has_size())
+            x11display_cat.debug() << "\tsetting size: " << properties.get_x_size() << 'x' << properties.get_y_size() << '\n';
+          else
+            x11display_cat.debug() << "\tkeeping size: " << _properties.get_x_size() << 'x' << _properties.get_y_size() << '\n';
+        }
+
         XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
         if (_orig_size_id == (SizeID) -1) {
           _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
@@ -626,9 +666,18 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_size()) {
-    changes.width = properties.get_x_size();
-    changes.height = properties.get_y_size();
-    value_mask |= (CWWidth | CWHeight);
+    if (!_properties.get_fixed_size() && !properties.get_fixed_size()) {
+      // If not fixed size, ask X to make the window change directly
+      changes.width = properties.get_x_size();
+      changes.height = properties.get_y_size();
+      value_mask |= (CWWidth | CWHeight);
+    } else {
+      // Else, let this fall through to apply_wm_properties()
+      // and wait for a future ConfigureEvent (*not* the very
+      // next one).
+      _expected_fixed_size_x = properties.get_x_size();
+      _expected_fixed_size_y = properties.get_y_size();
+    }
     properties.clear_size();
   }
 
@@ -658,6 +707,15 @@ set_properties_now(WindowProperties &properties) {
 
   if (value_mask != 0) {
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
+
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "asked X to reconfigure window\n";
+      if (value_mask & CWWidth + CWHeight)
+        x11display_cat.debug() << "\tsize: " << changes.width << 'x' << changes.height << '\n';
+      if (value_mask & CWX + CWY)
+        x11display_cat.debug() << "\torigin: " << changes.x << 'x' << changes.y << '\n';
+    }
 
     // Don't draw anything until this is done reconfiguring.
     _awaiting_configure = true;
@@ -1061,12 +1119,24 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
         size_hints_p->height = properties.get_y_size();
         size_hints_p->flags |= USSize;
 
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "asking window manager for size "
+            << properties.get_x_size() << 'x' << properties.get_y_size() << "\n";
+        }
+
         if (properties.get_fixed_size()) {
           size_hints_p->min_width = properties.get_x_size();
           size_hints_p->min_height = properties.get_y_size();
           size_hints_p->max_width = properties.get_x_size();
           size_hints_p->max_height = properties.get_y_size();
           size_hints_p->flags |= (PMinSize | PMaxSize);
+
+          if (x11display_cat.is_debug()) {
+            x11display_cat.debug()
+              << "asking window manager for fixed size of "
+              << properties.get_x_size() << 'x' << properties.get_y_size() << "\n";
+          }
         }
       }
     }
