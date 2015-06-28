@@ -5,7 +5,7 @@ __all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
            'EventArgument', ]
 
 from direct.showbase.DirectObject import DirectObject
-import types
+
 
 class PushesStateChanges:
     # base class for objects that broadcast state changes to a set of subscriber objects

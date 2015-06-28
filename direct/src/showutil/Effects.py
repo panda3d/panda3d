@@ -1,6 +1,6 @@
 """ Showutil Effects module: contains code for useful showcode effects. """
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.interval.IntervalGlobal import *
 
 # bounce types

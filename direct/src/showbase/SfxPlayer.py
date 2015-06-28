@@ -2,9 +2,8 @@
 
 __all__ = ['SfxPlayer']
 
-
 import math
-from pandac.PandaModules import *
+from panda3d.core import *
 
 class SfxPlayer:
     """

@@ -72,7 +72,6 @@ if (EXTENSIONS is None):
 ##############################################################
 
 from direct.ffi import DoGenPyCode
-from direct.ffi import FFIConstants
 DoGenPyCode.outputCodeDir = PANDAC
 DoGenPyCode.outputHTMLDir = os.path.join(PANDAC,"..","doc")
 DoGenPyCode.directDir = DIRECT

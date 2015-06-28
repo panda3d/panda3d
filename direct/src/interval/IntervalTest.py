@@ -4,12 +4,14 @@ __all__ = []
 
 
 if __name__ == "__main__":
-    from direct.directbase import DirectStart
-    from pandac.PandaModules import *
+    from direct.showbase.ShowBase import ShowBase
+    from panda3d.core import *
     from IntervalGlobal import *
     from direct.actor.Actor import *
 
     from direct.directutil import Mopath
+
+    base = ShowBase()
 
     boat = loader.loadModel('models/misc/smiley')
     boat.reparentTo(render)
@@ -205,4 +207,4 @@ if __name__ == "__main__":
         # return mt
 
     test(5)
-    run()
+    base.run()
