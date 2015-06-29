@@ -1061,7 +1061,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac")
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
-    CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
     if GetTarget() == 'darwin':
         MakeDirectory(OUTPUTDIR + "/Frameworks")

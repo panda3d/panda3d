@@ -2589,6 +2589,26 @@ if os.path.isfile(core_so):
 if os.path.isfile(direct_so):
     os.remove(direct_so)
 
+# Write an appropriate panda3d/__init__.py
+p3d_init = """"Python bindings for the Panda3D libraries"
+"""
+
+if GetTarget() == 'windows':
+    p3d_init += """
+import os
+
+bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
+if os.path.isfile(os.path.join(bindir, 'libpanda.dll')):
+    if not os.environ.get('PATH'):
+        os.environ['PATH'] = bindir
+    else:
+        os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
+
+del os, bindir
+"""
+
+ConditionalWriteFile(GetOutputDir() + '/panda3d/__init__.py', p3d_init)
+
 # PandaModules is now deprecated; generate a shim for backward compatibility.
 for fn in glob.glob(GetOutputDir() + '/pandac/*.py') + glob.glob(GetOutputDir() + '/pandac/*.py[co]'):
     if os.path.basename(fn) not in ('PandaModules.py', '__init__.py'):
