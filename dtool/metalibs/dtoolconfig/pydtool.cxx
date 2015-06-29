@@ -2489,6 +2489,8 @@ static struct PyModuleDef python_simple_module = {
 
 #ifdef _WIN32
 extern "C" __declspec(dllexport) INIT_FUNC();
+#elif __GNUC__ >= 4
+extern "C" __attribute__((visibility("default"))) INIT_FUNC();
 #else
 extern "C" INIT_FUNC();
 #endif
