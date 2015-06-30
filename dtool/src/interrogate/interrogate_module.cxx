@@ -95,13 +95,13 @@ int write_python_table_native(ostream &out) {
     FunctionIndex function_index = interrogate_get_function(fi);
 
     // Consider only those that belong in the module we asked for.
-    if (interrogate_function_has_module_name(function_index) &&
-      module_name == interrogate_function_module_name(function_index)) {
+    //if (interrogate_function_has_module_name(function_index) &&
+    //  module_name == interrogate_function_module_name(function_index)) {
       // if it has a library name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
         libraries.insert(interrogate_function_library_name(function_index));
       }
-    }
+    //}
   }
 
   for (int ti = 0; ti < interrogate_number_of_types(); ti++) {

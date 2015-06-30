@@ -222,7 +222,7 @@ class DirectCameraControl(DirectObject):
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
             self.computeCOA(base.direct.iRay.pickGeom(skipFlags = skipFlags))
             # Record reference point
-            self.coaMarkerRef.iPosHprScale(base.cam)
+            self.coaMarkerRef.setPosHprScale(base.cam, 0, 0, 0, 0, 0, 0, 1, 1, 1)
             # Record entries
             self.cqEntries = []
             for i in range(base.direct.iRay.getNumEntries()):

@@ -2475,16 +2475,16 @@ static PyMethodDef python_simple_funcs[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef python_simple_module = {
   PyModuleDef_HEAD_INIT,
-  "dtoolconfig",
+  "interrogatedb",
   NULL,
   -1,
   python_simple_funcs,
   NULL, NULL, NULL, NULL
 };
 
-#define INIT_FUNC PyObject *PyInit_dtoolconfig
+#define INIT_FUNC PyObject *PyInit_interrogatedb
 #else
-#define INIT_FUNC void initdtoolconfig
+#define INIT_FUNC void initinterrogatedb
 #endif
 
 #ifdef _WIN32
@@ -2499,7 +2499,6 @@ INIT_FUNC() {
 #if PY_MAJOR_VERSION >= 3
   return PyModule_Create(&python_simple_module);
 #else
-  Py_InitModule("dtoolconfig", python_simple_funcs);
+  Py_InitModule("interrogatedb", python_simple_funcs);
 #endif
 }
-

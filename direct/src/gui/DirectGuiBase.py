@@ -3,7 +3,7 @@
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from OnscreenText import *
 from OnscreenGeom import *
@@ -11,9 +11,7 @@ from OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
-from direct.showbase import ShowBase
 from direct.showbase.PythonUtil import recordCreationStackStr
-from pandac.PandaModules import PStatCollector
 import types
 
 guiObjectCollector = PStatCollector("Client::GuiObjects")
@@ -1069,8 +1067,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def printConfig(self, indent = 0):
         space = ' ' * indent
         print space + self.guiId, '-', self.__class__.__name__
-        print space + 'Pos:   ' + self.getPos().pPrintValues()
-        print space + 'Scale: ' + self.getScale().pPrintValues()
+        print space + 'Pos:   %s' % tuple(self.getPos())
+        print space + 'Scale: %s' % tuple(self.getScale())
         # Print out children info
         for child in self.getChildren():
             messenger.send(DGG.PRINT + child.getName(), [indent + 2])

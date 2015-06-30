@@ -1061,7 +1061,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac")
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
-    CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
     if GetTarget() == 'darwin':
         MakeDirectory(OUTPUTDIR + "/Frameworks")
@@ -2694,17 +2693,20 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def CalcLocation(fn, ipath):
+    if fn.startswith("panda3d/") and fn.endswith(".py"):
+        return OUTPUTDIR + "/" + fn
+
     if (fn.count("/")): return fn
     dllext = ""
     target = GetTarget()
     if (GetOptimize() <= 2 and target == 'windows'): dllext = "_d"
 
-    if (fn == "PandaModules.py"): return OUTPUTDIR+"/pandac/" + fn
     if (fn == "AndroidManifest.xml"): return OUTPUTDIR+"/"+fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+    if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)

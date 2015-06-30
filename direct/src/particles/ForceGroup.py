@@ -1,4 +1,5 @@
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.physics import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PhysicsManagerGlobal import *
 

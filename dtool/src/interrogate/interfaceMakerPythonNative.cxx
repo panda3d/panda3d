@@ -1264,9 +1264,15 @@ write_sub_module(ostream &out, Object *obj) {
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
   std::string export_class_name2 = classNameFromCppName(obj->_itype.get_name(), true);
 
-//  out << "  Py_INCREF(&Dtool_" << class_name << ".As_PyTypeObject());\n";
+  // Note: PyModule_AddObject steals a reference, so we have to call Py_INCREF
+  // for every but the first time we add it to the module.
+  if (obj->_itype.is_typedef()) {
+    out << "  Py_INCREF((PyObject *)&Dtool_" << class_name << ");\n";
+  }
+
   out << "  PyModule_AddObject(module, \"" << export_class_name << "\", (PyObject *)&Dtool_" << class_name << ");\n";
   if (export_class_name != export_class_name2) {
+    out << "  Py_INCREF((PyObject *)&Dtool_" << class_name << ");\n";
     out << "  PyModule_AddObject(module, \"" << export_class_name2 << "\", (PyObject *)&Dtool_" << class_name << ");\n";
   }
 }

@@ -1,4 +1,6 @@
-from panda3d.core import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
+__all__ = ["PackageInfo"]
+
+from panda3d.core import Filename, DocumentSpec, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
 import panda3d.core as core
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.ScanDirectoryNode import ScanDirectoryNode

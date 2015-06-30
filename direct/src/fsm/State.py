@@ -4,7 +4,6 @@ __all__ = ['State']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
-import types
 
 
 class State(DirectObject):

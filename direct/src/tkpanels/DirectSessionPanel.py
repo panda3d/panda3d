@@ -6,7 +6,7 @@ __all__ = ['DirectSessionPanel']
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from Tkinter import *
-from pandac.PandaModules import *
+from panda3d.core import *
 import Pmw, string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
@@ -724,7 +724,7 @@ class DirectSessionPanel(AppShell):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + repr(nodePath.id())
+            dictName = name + '-' + repr(hash(nodePath))
         if dictName not in dict:
             # Update combo box to include new item
             names.append(dictName)

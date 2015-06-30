@@ -2,10 +2,8 @@
 
 __all__ = ['Transitions']
 
-
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.gui.DirectGui import *
-from direct.task import Task
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
 from direct.interval.MetaInterval import Sequence, Parallel
 from direct.interval.FunctionInterval import Func

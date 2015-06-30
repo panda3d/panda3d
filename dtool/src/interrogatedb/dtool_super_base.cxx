@@ -30,7 +30,7 @@ PyMethodDef Dtool_Methods_DTOOL_SUPER_BASE[] = {
   { NULL, NULL }
 };
 
-EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
+EXPCL_INTERROGATEDB void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   static bool initdone = false;
   if (!initdone) {
 

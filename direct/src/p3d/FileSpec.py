@@ -1,3 +1,5 @@
+__all__ = ["FileSpec"]
+
 import os
 import time
 from panda3d.core import Filename, HashVal, VirtualFileSystem

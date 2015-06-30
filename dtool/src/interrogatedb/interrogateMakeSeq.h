@@ -26,7 +26,7 @@ class IndexRemapper;
 // Description : Represents a synthetic method created via the
 //               MAKE_SEQ() macro.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG InterrogateMakeSeq : public InterrogateComponent {
+class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
   INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);
   INLINE InterrogateMakeSeq(const InterrogateMakeSeq &copy);

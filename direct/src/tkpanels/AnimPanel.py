@@ -11,7 +11,7 @@ from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askfloat
 from Tkinter import *
-import Pmw, string, math, types
+import Pmw, string, types
 from direct.task import Task
 
 FRAMES = 0

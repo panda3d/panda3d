@@ -1,3 +1,5 @@
+__all__ = ["InstalledPackageData"]
+
 class InstalledPackageData:
     """ A list of instances of this class is maintained by
     InstalledHostData (which is in turn returned by
