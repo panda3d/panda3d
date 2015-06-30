@@ -3131,6 +3131,10 @@ TargetAdd('p3dconfig_composite1.obj', opts=OPTS, input='p3dconfig_composite1.cxx
 OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:DTOOLCONFIG']
 TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
 TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
+TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
+TargetAdd('libp3interrogatedb.dll', opts=['PYTHON'])
 
 #
 # DIRECTORY: dtool/metalibs/dtoolconfig/
@@ -3139,8 +3143,6 @@ TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_co
 OPTS=['DIR:dtool/metalibs/dtoolconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('p3dtoolconfig_dtoolconfig.obj', opts=OPTS, input='dtoolconfig.cxx')
 TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_dtoolconfig.obj')
-TargetAdd('libp3dtoolconfig.dll', input='p3interrogatedb_composite1.obj')
-TargetAdd('libp3dtoolconfig.dll', input='p3interrogatedb_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3dconfig_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
@@ -3153,6 +3155,7 @@ if not PkgSkip("PYTHON"):
   TargetAdd('dtoolconfig.pyd', input='dtoolconfig_pydtool.obj')
   TargetAdd('dtoolconfig.pyd', input='libp3dtoolconfig.dll')
   TargetAdd('dtoolconfig.pyd', input='libp3dtool.dll')
+  TargetAdd('dtoolconfig.pyd', input='libp3interrogatedb.dll')
   TargetAdd('dtoolconfig.pyd', opts=['PYTHON'])
 
 #
@@ -3177,12 +3180,14 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='interrogate_composite2.obj')
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
   TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
   TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   if (not RTDIST):
@@ -3190,6 +3195,7 @@ if (not RUNTIME):
     TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+    TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
     TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3212,6 +3218,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
+  TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
@@ -3930,6 +3937,7 @@ if (not RUNTIME):
 
   TargetAdd('_core.pyd', input='core_module.obj')
   TargetAdd('_core.pyd', input='libp3tinyxml.ilb')
+  TargetAdd('_core.pyd', input='libp3interrogatedb.dll')
   TargetAdd('_core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('_core.pyd', opts=['PYTHON', 'WINSOCK2'])
 
@@ -3967,6 +3975,7 @@ if (PkgSkip("VISION") == 0) and (not RUNTIME):
   TargetAdd('vision.pyd', input='vision_module.obj')
   TargetAdd('vision.pyd', input='libp3vision_igate.obj')
   TargetAdd('vision.pyd', input='libp3vision.dll')
+  TargetAdd('vision.pyd', input='libp3interrogatedb.dll')
   TargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('vision.pyd', opts=['PYTHON'])
 
@@ -3998,6 +4007,7 @@ if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   TargetAdd('rocket.pyd', input='libp3rocket_igate.obj')
   TargetAdd('rocket.pyd', input='p3rocket_rocketRegion_ext.obj')
   TargetAdd('rocket.pyd', input='libp3rocket.dll')
+  TargetAdd('rocket.pyd', input='libp3interrogatedb.dll')
   TargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('rocket.pyd', opts=['PYTHON', 'ROCKET'])
 
@@ -4024,6 +4034,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
   TargetAdd('awesomium.pyd', input='awesomium_module.obj')
   TargetAdd('awesomium.pyd', input='libp3awesomium_igate.obj')
   TargetAdd('awesomium.pyd', input='libp3awesomium.dll')
+  TargetAdd('awesomium.pyd', input='libp3interrogatedb.dll')
   TargetAdd('awesomium.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('awesomium.pyd', opts=['PYTHON'])
 
@@ -4057,6 +4068,7 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
   TargetAdd('skel.pyd', input='skel_module.obj')
   TargetAdd('skel.pyd', input='libp3skel_igate.obj')
   TargetAdd('skel.pyd', input='libpandaskel.dll')
+  TargetAdd('skel.pyd', input='libp3interrogatedb.dll')
   TargetAdd('skel.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('skel.pyd', opts=['PYTHON'])
 
@@ -4095,6 +4107,7 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   TargetAdd('fx.pyd', input='fx_module.obj')
   TargetAdd('fx.pyd', input='libp3distort_igate.obj')
   TargetAdd('fx.pyd', input='libpandafx.dll')
+  TargetAdd('fx.pyd', input='libp3interrogatedb.dll')
   TargetAdd('fx.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('fx.pyd', opts=['PYTHON'])
 
@@ -4122,6 +4135,7 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
   TargetAdd('vrpn.pyd', input='vrpn_module.obj')
   TargetAdd('vrpn.pyd', input='libp3vrpn_igate.obj')
   TargetAdd('vrpn.pyd', input='libp3vrpn.dll')
+  TargetAdd('vrpn.pyd', input='libp3interrogatedb.dll')
   TargetAdd('vrpn.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('vrpn.pyd', opts=['PYTHON'])
 
@@ -4356,6 +4370,7 @@ if (not RUNTIME):
   TargetAdd('egg.pyd', input='libp3egg_igate.obj')
   TargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
   TargetAdd('egg.pyd', input='libpandaegg.dll')
+  TargetAdd('egg.pyd', input='libp3interrogatedb.dll')
   TargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('egg.pyd', opts=['PYTHON'])
 
@@ -4521,6 +4536,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('ode.pyd', input='libpandaode_igate.obj')
   TargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
   TargetAdd('ode.pyd', input='libpandaode.dll')
+  TargetAdd('ode.pyd', input='libp3interrogatedb.dll')
   TargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('ode.pyd', opts=['PYTHON', 'WINUSER', 'ODE'])
 
@@ -4557,6 +4573,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   TargetAdd('bullet.pyd', input='bullet_module.obj')
   TargetAdd('bullet.pyd', input='libpandabullet_igate.obj')
   TargetAdd('bullet.pyd', input='libpandabullet.dll')
+  TargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
   TargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('bullet.pyd', opts=['PYTHON', 'WINUSER', 'BULLET'])
 
@@ -4595,6 +4612,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('physx.pyd', input='physx_module.obj')
   TargetAdd('physx.pyd', input='libpandaphysx_igate.obj')
   TargetAdd('physx.pyd', input='libpandaphysx.dll')
+  TargetAdd('physx.pyd', input='libp3interrogatedb.dll')
   TargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('physx.pyd', opts=['PYTHON', 'WINUSER', 'PHYSX', 'NOARCH:PPC'])
 
@@ -4662,6 +4680,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   if (PkgSkip("PANDAPARTICLESYSTEM")==0):
     TargetAdd('physics.pyd', input='libp3particlesystem_igate.obj')
   TargetAdd('physics.pyd', input='libpandaphysics.dll')
+  TargetAdd('physics.pyd', input='libp3interrogatedb.dll')
   TargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('physics.pyd', opts=['PYTHON'])
 
@@ -4921,6 +4940,7 @@ if (PkgSkip("DIRECT")==0):
 
   TargetAdd('_direct.pyd', input='direct_module.obj')
   TargetAdd('_direct.pyd', input='libp3direct.dll')
+  TargetAdd('_direct.pyd', input='libp3interrogatedb.dll')
   TargetAdd('_direct.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('_direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI'])
 
@@ -6129,6 +6149,7 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('ai.pyd', input='ai_module.obj')
   TargetAdd('ai.pyd', input='libpandaai_igate.obj')
   TargetAdd('ai.pyd', input='libpandaai.dll')
+  TargetAdd('ai.pyd', input='libp3interrogatedb.dll')
   TargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('ai.pyd', opts=['PYTHON'])
 

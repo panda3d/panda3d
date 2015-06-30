@@ -24,13 +24,6 @@
 #include "referenceCount.h"
 #include "pvector.h"
 
-#ifdef HAVE_PYTHON
-
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
