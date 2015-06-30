@@ -848,7 +848,7 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
 //               to whether the indicated value will fit.
 ////////////////////////////////////////////////////////////////////
 #if PY_MAJOR_VERSION < 3
-EXPCL_DTOOLCONFIG PyObject *
+EXPCL_INTERROGATEDB PyObject *
 PyLongOrInt_FromUnsignedLong(unsigned long value) {
   if ((long)value < 0) {
     return PyLong_FromUnsignedLong(value);

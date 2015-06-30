@@ -26,8 +26,8 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#define EXPCL EXPCL_DTOOLCONFIG
-#define EXPTP EXPTP_DTOOLCONFIG
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
 #define TYPE int
 #define NAME vector_int
 

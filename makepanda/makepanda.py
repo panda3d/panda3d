@@ -2580,14 +2580,18 @@ if (PkgSkip("DIRECT")==0):
 if sys.platform == 'win32':
     core_so = GetOutputDir() + '/panda3d/core.pyd'
     direct_so = GetOutputDir() + '/panda3d/direct.pyd'
+    dtoolconfig_so = GetOutputDir() + '/panda3d/dtoolconfig.pyd'
 else:
     core_so = GetOutputDir() + '/panda3d/core.so'
     direct_so = GetOutputDir() + '/panda3d/direct.so'
+    dtoolconfig_so = GetOutputDir() + '/panda3d/dtoolconfig.so'
 
 if os.path.isfile(core_so):
     os.remove(core_so)
 if os.path.isfile(direct_so):
     os.remove(direct_so)
+if os.path.isfile(dtoolconfig_so):
+    os.remove(dtoolconfig_so)
 
 # Write an appropriate panda3d/__init__.py
 p3d_init = """"Python bindings for the Panda3D libraries"
@@ -3125,18 +3129,6 @@ OPTS=['DIR:dtool/src/dconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('p3dconfig_composite1.obj', opts=OPTS, input='p3dconfig_composite1.cxx')
 
 #
-# DIRECTORY: dtool/src/interrogatedb/
-#
-
-OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:DTOOLCONFIG']
-TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
-TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
-TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
-TargetAdd('libp3interrogatedb.dll', opts=['PYTHON'])
-
-#
 # DIRECTORY: dtool/metalibs/dtoolconfig/
 #
 
@@ -3149,14 +3141,32 @@ TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
 
+#
+# DIRECTORY: dtool/src/interrogatedb/
+#
+
+OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
+TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
+TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
+TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
+TargetAdd('libp3interrogatedb.dll', input='libp3dtoolconfig.dll')
+TargetAdd('libp3interrogatedb.dll', opts=['PYTHON'])
+
 if not PkgSkip("PYTHON"):
+  # This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
+  # stuff, so it has been renamed appropriately.
   OPTS=['DIR:dtool/metalibs/dtoolconfig']
-  TargetAdd('dtoolconfig_pydtool.obj', opts=OPTS, input="pydtool.cxx")
-  TargetAdd('dtoolconfig.pyd', input='dtoolconfig_pydtool.obj')
-  TargetAdd('dtoolconfig.pyd', input='libp3dtoolconfig.dll')
-  TargetAdd('dtoolconfig.pyd', input='libp3dtool.dll')
-  TargetAdd('dtoolconfig.pyd', input='libp3interrogatedb.dll')
-  TargetAdd('dtoolconfig.pyd', opts=['PYTHON'])
+  TargetAdd('interrogatedb_pydtool.obj', opts=OPTS, input="pydtool.cxx")
+  TargetAdd('interrogatedb.pyd', input='interrogatedb_pydtool.obj')
+  TargetAdd('interrogatedb.pyd', input='libp3dtool.dll')
+  TargetAdd('interrogatedb.pyd', input='libp3dtoolconfig.dll')
+  TargetAdd('interrogatedb.pyd', input='libp3interrogatedb.dll')
+  TargetAdd('interrogatedb.pyd', opts=['PYTHON'])
+
+  # Make a stub file importing the new one for backward compatibility.
+  TargetAdd('panda3d/dtoolconfig.py', input='interrogatedb.pyd')
 
 #
 # DIRECTORY: dtool/src/pystub/
