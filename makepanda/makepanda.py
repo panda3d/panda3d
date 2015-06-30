@@ -5240,7 +5240,7 @@ if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
 # DIRECTORY: pandatool/src/assimp
 #
 if (PkgSkip("PANDATOOL") == 0 and PkgSkip("ASSIMP")==0):
-  OPTS=['DIR:pandatool/src/assimp', 'ASSIMP', 'MODULE']
+  OPTS=['DIR:pandatool/src/assimp', 'BUILDING:ASSIMP', 'ASSIMP', 'MODULE']
   TargetAdd('p3assimp_composite1.obj', opts=OPTS, input='p3assimp_composite1.cxx')
   TargetAdd('libp3assimp.dll', input='p3assimp_composite1.obj')
   TargetAdd('libp3assimp.dll', input=COMMON_PANDA_LIBS)
