@@ -630,7 +630,9 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
-  case aiLightSource_AMBIENT:
+  // This is a somewhat recent addition to Assimp, so let's be kind to
+  // those that don't have an up-to-date version of Assimp.
+  case 0x4: //aiLightSource_AMBIENT:
     // This is handled below.
     break;
 
