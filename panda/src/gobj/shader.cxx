@@ -1485,21 +1485,22 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
     ultimate = CG_PROFILE_UNKNOWN;
   };
 
-  cgGetError();
-
   if (type == ST_fragment && caps._bug_list.count(SBUG_ati_draw_buffers)) {
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = "ATI_draw_buffers";
   }
 
   char version_arg[16];
-  if (!cg_glsl_version.empty() && cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
+  if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
+      cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
     snprintf(version_arg, 16, "version=%s", cg_glsl_version.c_str());
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = version_arg;
   }
 
   compiler_args[nargs] = 0;
+
+  cgGetError();
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     // Print out some debug information about what we're doing.
@@ -1564,6 +1565,11 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   if (err == CG_NO_ERROR) {
     return prog;
+  }
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Compilation with ultimate profile failed: " << cgGetErrorString(err) << "\n";
   }
 
   if (prog != 0) {
