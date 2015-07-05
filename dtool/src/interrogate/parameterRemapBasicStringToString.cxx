@@ -24,6 +24,12 @@ ParameterRemapBasicStringToString::
 ParameterRemapBasicStringToString(CPPType *orig_type) :
   ParameterRemapToString(orig_type)
 {
+  static CPPType *const_char_star_type = (CPPType *)NULL;
+  if (const_char_star_type == (CPPType *)NULL) {
+    const_char_star_type = parser.parse_type("const char *");
+  }
+
+  _new_type = const_char_star_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +41,7 @@ ParameterRemapBasicStringToString(CPPType *orig_type) :
 ////////////////////////////////////////////////////////////////////
 void ParameterRemapBasicStringToString::
 pass_parameter(ostream &out, const string &variable_name) {
-  out << variable_name;
+  out << "std::string(" << variable_name << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +79,14 @@ get_return_expr(const string &expression) {
 ////////////////////////////////////////////////////////////////////
 ParameterRemapBasicWStringToWString::
 ParameterRemapBasicWStringToWString(CPPType *orig_type) :
-  ParameterRemapToString(orig_type)
+  ParameterRemapToWString(orig_type)
 {
+  static CPPType *const_wchar_star_type = (CPPType *)NULL;
+  if (const_wchar_star_type == (CPPType *)NULL) {
+    const_wchar_star_type = parser.parse_type("const wchar_t *");
+  }
+
+  _new_type = const_wchar_star_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +98,7 @@ ParameterRemapBasicWStringToWString(CPPType *orig_type) :
 ////////////////////////////////////////////////////////////////////
 void ParameterRemapBasicWStringToWString::
 pass_parameter(ostream &out, const string &variable_name) {
-  out << variable_name;
+  out << "std::wstring(" << variable_name << ")";
 }
 
 ////////////////////////////////////////////////////////////////////

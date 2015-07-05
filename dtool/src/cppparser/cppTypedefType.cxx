@@ -381,7 +381,7 @@ is_equal(const CPPDeclaration *other) const {
   const CPPTypedefType *ot = ((CPPDeclaration *)other)->as_typedef_type();
   assert(ot != NULL);
 
-  return (_type == ot->_type) && (*_ident == *ot->_ident);
+  return (*_type == *ot->_type) && (*_ident == *ot->_ident);
 }
 
 ////////////////////////////////////////////////////////////////////

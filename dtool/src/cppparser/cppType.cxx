@@ -323,6 +323,12 @@ new_type(CPPType *type) {
     return type;
   }
 
+  // If this triggers, we probably messed up by defining is_less()
+  // incorrectly; they provide a relative ordering even though they
+  // are equal to each other.  Or, we provided an is_equal() that
+  // gives false negatives.
+  assert(**result.first == *type);
+
   // The insertion has not taken place; thus, there was previously
   // another equivalent type declared.
   if (*result.first != type) {

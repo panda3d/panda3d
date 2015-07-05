@@ -217,11 +217,11 @@ is_equal(const CPPDeclaration *other) const {
     if (*_bounds != *ot->_bounds) {
       return false;
     }
-  } else if (_bounds == NULL || ot->_bounds == NULL) {
+  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
     return false;
   }
 
-  return _element_type == ot->_element_type;
+  return *_element_type == *ot->_element_type;
 }
 
 
@@ -241,10 +241,13 @@ is_less(const CPPDeclaration *other) const {
     if (*_bounds != *ot->_bounds) {
       return *_bounds < *ot->_bounds;
     }
-  } else if (_bounds == NULL || ot->_bounds == NULL) {
+  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
     return _bounds < ot->_bounds;
   }
 
-  return _element_type < ot->_element_type;
+  if (*_element_type != *ot->_element_type) {
+    return *_element_type < *ot->_element_type;
+  }
+  return false;
 }
 

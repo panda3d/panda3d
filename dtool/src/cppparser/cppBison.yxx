@@ -724,7 +724,7 @@ typedef_declaration:
       inst->_storage_class |= (current_storage_class | $1);
       current_scope->add_declaration(inst, global_scope, current_lexer, @2);
       CPPTypedefType *typedef_type = new CPPTypedefType(inst->_type, inst->_ident, current_scope);
-      current_scope->add_declaration(typedef_type, global_scope, current_lexer, @2);
+      current_scope->add_declaration(CPPType::new_type(typedef_type), global_scope, current_lexer, @2);
     }
   }
 }
@@ -735,13 +735,13 @@ typedef_instance_identifiers:
 {
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
+  current_scope->add_declaration(CPPType::new_type(typedef_type), global_scope, current_lexer, @1);
 }
         | instance_identifier maybe_initialize ',' typedef_instance_identifiers
 {
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
+  current_scope->add_declaration(CPPType::new_type(typedef_type), global_scope, current_lexer, @1);
 }
         ;
 
@@ -751,14 +751,14 @@ typedef_const_instance_identifiers:
   $1->add_modifier(IIT_const);
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
+  current_scope->add_declaration(CPPType::new_type(typedef_type), global_scope, current_lexer, @1);
 }
         | instance_identifier maybe_initialize ',' typedef_const_instance_identifiers
 {
   $1->add_modifier(IIT_const);
   CPPType *target_type = current_type;
   CPPTypedefType *typedef_type = new CPPTypedefType(target_type, $1, current_scope, @1.file);
-  current_scope->add_declaration(typedef_type, global_scope, current_lexer, @1);
+  current_scope->add_declaration(CPPType::new_type(typedef_type), global_scope, current_lexer, @1);
 }
         ;
 

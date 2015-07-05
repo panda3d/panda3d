@@ -4748,8 +4748,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           << "PyUnicode_AsWideChar(" << param_name << ", " << param_name << "_str, " << param_name << "_len);\n"
           << "#endif\n";
 
-        pexpr_string = "std::wstring(" +
-          param_name + "_str, " + param_name + "_len)";
+        pexpr_string = param_name + "_str, " + param_name + "_len";
 
         extra_cleanup
           << "#if PY_VERSION_HEX >= 0x03030000\n"
@@ -4774,8 +4773,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           << "PyUnicode_AsWideChar(" << param_name << ", " << param_name << "_str, " << param_name << "_len);\n"
           << "#endif\n";
 
-        pexpr_string = "&std::wstring(" +
-          param_name + "_str, " + param_name + "_len)";
+        pexpr_string = param_name + "_str, " + param_name + "_len";
 
         extra_cleanup
           << "#if PY_VERSION_HEX >= 0x03030000\n"
@@ -4822,13 +4820,12 @@ write_function_instance(ostream &out, FunctionRemap *remap,
             + "_str, &" + param_name + "_len";
         }
 
-        if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
-          pexpr_string = "&std::string(" +
-            param_name + "_str, " + param_name + "_len)";
-        } else {
-          pexpr_string = "std::string(" +
-            param_name + "_str, " + param_name + "_len)";
-        }
+//        if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
+//          pexpr_string = "&std::string(" +
+//            param_name + "_str, " + param_name + "_len)";
+//        } else {
+          pexpr_string = param_name + "_str, " + param_name + "_len";
+//        }
         expected_params += "str";
       }
       // Remember to clear the TypeError that any of the above methods raise.

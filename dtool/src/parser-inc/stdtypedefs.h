@@ -20,8 +20,8 @@
 #ifndef STDTYPEDEFS_H
 #define STDTYPEDEFS_H
 #ifndef __APPLE__
-typedef unsigned int size_t;
-typedef int ssize_t;
+typedef unsigned long size_t;
+typedef long ssize_t;
 typedef int off_t;
 typedef unsigned int time_t;
 typedef int clock_t;

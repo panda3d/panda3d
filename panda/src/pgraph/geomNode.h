@@ -36,7 +36,7 @@ class GraphicsStateGuardianBase;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
-  GeomNode(const string &name);
+  explicit GeomNode(const string &name);
 
 protected:
   GeomNode(const GeomNode &copy);

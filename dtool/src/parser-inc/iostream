@@ -59,6 +59,10 @@ __published:
   bool bad() const;
   void clear();
 };
+
+// We actually want to wrap streampos as streamoff.
+#define streampos streamoff
+
 class ostream : virtual public ios {
 __published:
   void put(char c);
@@ -104,6 +108,6 @@ extern istream cin;
 extern ostream cout;
 extern ostream cerr;
 
-typedef int streampos;
+typedef long streamoff;
 
 #endif

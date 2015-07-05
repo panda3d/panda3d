@@ -1537,6 +1537,12 @@ get_getter(CPPType *expr_type, string expression,
     assert(expr_type != (CPPType *)NULL);
   }
 
+  // We can't return an array from a function, but we can decay it
+  // into a pointer.
+  while (expr_type->get_subtype() == CPPDeclaration::ST_array) {
+    expr_type = CPPType::new_type(new CPPPointerType(expr_type->as_array_type()->_element_type));
+  }
+
   // Make up a CPPFunctionType.
   CPPParameterList *params = new CPPParameterList;
   CPPFunctionType *ftype = new CPPFunctionType(expr_type, params, 0);

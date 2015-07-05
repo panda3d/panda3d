@@ -39,7 +39,7 @@ public:
 // Description : Maps a concrete basic_string<wchar_t> to an atomic
 //               string.
 ////////////////////////////////////////////////////////////////////
-class ParameterRemapBasicWStringToWString : public ParameterRemapToString {
+class ParameterRemapBasicWStringToWString : public ParameterRemapToWString {
 public:
   ParameterRemapBasicWStringToWString(CPPType *orig_type);
 

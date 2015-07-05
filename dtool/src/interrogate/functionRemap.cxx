@@ -94,9 +94,29 @@ get_parameter_name(int n) const {
 //       Access: Public
 //  Description: Writes a sequence of commands to the given output
 //               stream to call the wrapped function.  The parameter
-//               values are taken from pexprs, if it is nonempty, or
-//               are assumed to be simply the names of the parameters,
-//               if it is empty.
+//               values are assumed to be simply the names of the
+//               parameters.
+//
+//               The return value is the expression to return, if we
+//               are returning a value, or the empty string if we
+//               return nothing.
+////////////////////////////////////////////////////////////////////
+string FunctionRemap::
+call_function(ostream &out, int indent_level, bool convert_result,
+              const string &container) const {
+  vector_string pexprs;
+  for (int i = 0; i < _parameters.size(); ++i) {
+    pexprs.push_back(get_parameter_name(i));
+  }
+  return call_function(out, indent_level, convert_result, container, pexprs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FunctionRemap::call_function
+//       Access: Public
+//  Description: Writes a sequence of commands to the given output
+//               stream to call the wrapped function.  The parameter
+//               values are taken from pexprs.
 //
 //               The return value is the expression to return, if we
 //               are returning a value, or the empty string if we
@@ -219,7 +239,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
     string call = get_call_str(container, pexprs);
 
     if (!convert_result) {
-      return_expr = get_call_str(container, pexprs);
+      return_expr = call;
 
     } else {
       //if (_return_type->return_value_should_be_simple()) {
@@ -371,22 +391,34 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 
   // Getters and setters are a special case.
   if (_type == T_getter) {
-    if (!container.empty()) {
+    if (_has_this && !container.empty()) {
       call << "(" << container << ")->" << _expression;
     } else {
       call << _expression;
     }
 
   } else if (_type == T_setter) {
-    if (!container.empty()) {
-      call << "(" << container << ")->" << _expression;
+    string expr;
+    if (_has_this && !container.empty()) {
+      expr = "(" + container + ")->" + _expression;
     } else {
-      call << _expression;
+      expr = _expression;
     }
 
-    call << " = ";
+    // It's not possible to assign arrays in C++, we have to copy them.
+    CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
+    if (array_type != NULL) {
+      call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
+    } else {
+      call << expr << " = ";
+    }
+
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
+
+    if (array_type != NULL) {
+      call << ')';
+    }
 
   } else {
     const char *separator = "";
