@@ -48,7 +48,7 @@ public:
   INLINE bool has_net_python_tag(const string &key) const;
   NodePath find_net_python_tag(const string &key) const;
 
-  PyObject *get_tight_bounds() const;
+  PyObject *get_tight_bounds(const NodePath &other = NodePath()) const;
 };
 
 BEGIN_PUBLISH

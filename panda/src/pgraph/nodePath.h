@@ -876,9 +876,10 @@ PUBLISHED:
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                         const NodePath &other = NodePath(),
                          Thread *current_thread = Thread::get_current_thread()) const;
 
-  EXTENSION(PyObject *get_tight_bounds() const);
+  EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
 
   //  void analyze() const;
 
