@@ -1155,7 +1155,8 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
 
-        cmd += ' -fvisibility=hidden'
+        if not GetLinkAllStatic():
+            cmd += ' -fvisibility=hidden'
 
         # Mac-specific flags.
         if GetTarget() == "darwin":
@@ -3227,8 +3228,8 @@ if (not RTDIST and not RUNTIME):
   OPTS=['DIR:dtool/src/test_interrogate']
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
-  TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
   TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
+  TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
   TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
