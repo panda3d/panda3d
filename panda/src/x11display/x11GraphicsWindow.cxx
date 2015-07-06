@@ -2148,7 +2148,6 @@ get_cursor(const Filename &filename) {
   }
   fi = _cursor_filenames.find(resolved);
   if (fi != _cursor_filenames.end()) {
-    _cursor_filenames[filename] = (*fi).second;
     return fi->second;
   }
 
