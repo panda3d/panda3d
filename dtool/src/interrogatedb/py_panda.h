@@ -114,6 +114,7 @@ inline PyObject* doPy_RETURN_FALSE()
 #define PyLongOrInt_FromSize_t PyLong_FromSize_t
 #define PyLongOrInt_FromLong PyLong_FromLong
 #define PyLongOrInt_FromUnsignedLong PyLong_FromUnsignedLong
+#define PyLongOrInt_AS_LONG PyLong_AS_LONG
 #define PyInt_Check PyLong_Check
 #define PyInt_AsLong PyLong_AsLong
 #define PyInt_AS_LONG PyLong_AS_LONG
@@ -122,6 +123,7 @@ inline PyObject* doPy_RETURN_FALSE()
 // PyInt_FromSize_t automatically picks the right type.
 #define PyLongOrInt_FromSize_t PyInt_FromSize_t
 #define PyLongOrInt_FromLong PyInt_FromLong
+#define PyLongOrInt_AS_LONG PyInt_AsLong
 
 // For more portably defining hash functions.
 typedef long Py_hash_t;
