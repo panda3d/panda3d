@@ -3619,6 +3619,8 @@ get_data3f(const unsigned char *pointer) {
     _v3.set(v4[0], v4[1], v4[2]);
     return _v3;
   }
+
+  return _v3;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3703,6 +3705,8 @@ get_data4f(const unsigned char *pointer) {
       return _v4;
     }
   }
+
+  return _v4;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3838,6 +3842,8 @@ get_data3d(const unsigned char *pointer) {
     _v3d.set(v4[0], v4[1], v4[2]);
     return _v3d;
   }
+
+  return _v3d;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3922,6 +3928,8 @@ get_data4d(const unsigned char *pointer) {
       return _v4d;
     }
   }
+
+  return _v4d;
 }
 
 ////////////////////////////////////////////////////////////////////
