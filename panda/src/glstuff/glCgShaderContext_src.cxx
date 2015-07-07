@@ -172,7 +172,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
           // can only ever be sure that vtx_position is bound.
           GLCAT.warning()
             << "CG varying vtx_position is bound to generic attribute " << loc
-            << "instead of 0.  Use ATTR0 semantic to prevent this.\n";
+            << " instead of 0.  Use ATTR0 semantic to prevent this.\n";
         }
       }
 
@@ -816,7 +816,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             break;
 
           case CA_color:
-            glColorPointer(num_values, type, stride, client_pointer);
+            if (numeric_type == GeomEnums::NT_packed_dabc) {
+              glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, client_pointer);
+            } else {
+              glColorPointer(num_values, type, stride, client_pointer);
+            }
             glEnableClientState(GL_COLOR_ARRAY);
             break;
 
