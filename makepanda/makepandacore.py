@@ -1845,12 +1845,18 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         return
 
     if GetTarget() == 'windows':
-        SDK["PYTHON"] = GetThirdpartyBase() + "/win-python"
-        if (GetOptimize() <= 2):
-            SDK["PYTHON"] += "-dbg"
-        if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
-            SDK["PYTHON"] += "-x64"
+        sdkdir = GetThirdpartyBase() + "/win-python"
 
+        if sys.version_info >= (3, 0):
+            # Python 3 build...
+            sdkdir += "%d.%d" % sys.version_info[:2]
+
+        if GetOptimize() <= 2:
+            sdkdir += "-dbg"
+        if GetTargetArch() == 'x64':
+            sdkdir += "-x64"
+
+        SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
@@ -1872,9 +1878,13 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
         py_dll = os.path.basename(py_dlls[0])
-        SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
+        ver = py_dll[6] + "." + py_dll[7]
 
+        SDK["PYTHONVERSION"] = "python" + ver
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
+
+        if sys.version[:3] != ver:
+            print("Warning: running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -1933,6 +1943,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     if GetVerbose():
         print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+    else:
+        print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
 
 def SdkLocateVisualStudio():
     if (GetHost() != "windows"): return
@@ -2287,7 +2299,7 @@ def SetupBuildEnvironment(compiler):
         print("Host OS: %s" % GetHost())
         print("Host arch: %s" % GetHostArch())
         print("Target OS: %s" % GetTarget())
-        print("Target arch: %s" % GetTargetArch())
+    print("Target arch: %s" % GetTargetArch())
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.

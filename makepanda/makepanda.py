@@ -2764,6 +2764,10 @@ if tp_dir is not None:
             CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
             if not RTDIST:
                 CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
+                if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
+                    CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
+                if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
+                    CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
                 ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
 
 ########################################################################
@@ -6411,7 +6415,7 @@ def MakeInstallerNSIS(file, title, installdir):
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
 
-    print("Building "+title+" installer. This can take up to an hour.")
+    print("Building "+title+" installer at %s" % (file))
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if (os.path.exists("nsis-output.exe")):
@@ -6953,19 +6957,29 @@ try:
     if INSTALLER:
         ProgressOutput(100.0, "Building installer")
         target = GetTarget()
-        if (target == 'windows'):
-            dbg = ""
-            if (GetOptimize() <= 2): dbg = "-dbg"
-            if GetTargetArch() == 'x64':
-                if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+"-x64.exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
-                else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION+"-x64")
+        if target == 'windows':
+            fn = "Panda3D-"
+            dir = "C:\\Panda3D-" + VERSION
+
+            if RUNTIME:
+                fn += "Runtime-"
+                title = "Panda3D " + VERSION
             else:
-                if (RUNTIME):
-                    MakeInstallerNSIS("Panda3D-Runtime-"+VERSION+dbg+".exe", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
-                else:
-                    MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D SDK "+VERSION, "C:\\Panda3D-"+VERSION)
+                title = "Panda3D SDK " + VERSION
+
+            fn += VERSION
+
+            if SDK["PYTHONVERSION"] != "python2.7":
+                fn += '-py' + SDK["PYTHONVERSION"][6:]
+
+            if GetOptimize() <= 2:
+                fn += "-dbg"
+            if GetTargetArch() == 'x64':
+                fn += '-x64'
+                dir += '-x64'
+
+            fn += '.exe'
+            MakeInstallerNSIS(fn, title, dir)
         elif (target == 'linux'):
             MakeInstallerLinux()
         elif (target == 'darwin'):
