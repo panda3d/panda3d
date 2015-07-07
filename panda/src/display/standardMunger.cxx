@@ -131,7 +131,8 @@ munge_data_impl(const GeomVertexData *data) {
   }
 
   GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
-  if (_shader_skinning) {
+  if (_shader_skinning || (_auto_shader && hardware_animated_vertices &&
+      !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
     animation.set_hardware(4, true);
 
   } else if (hardware_animated_vertices &&
@@ -387,7 +388,17 @@ munge_state_impl(const RenderState *state) {
     }
     if (shader_state->_generated_shader == NULL) {
       // Cache the generated ShaderAttrib on the shader state.
-      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state);
+      GeomVertexAnimationSpec spec;
+
+      // Currently we overload this flag to request vertex animation
+      // for the shader generator.
+      const ShaderAttrib *sattr;
+      shader_state->get_attrib_def(sattr);
+      if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
+        spec.set_hardware(4, true);
+      }
+
+      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state, spec);
     }
     munged_state = munged_state->set_attrib(shader_state->_generated_shader);
   }

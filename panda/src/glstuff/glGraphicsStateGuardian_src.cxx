@@ -599,6 +599,17 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES
+  if (is_at_least_gl_version(1, 4)) {
+    _glSecondaryColorPointer = (PFNGLSECONDARYCOLORPOINTERPROC)
+      get_extension_func("glSecondaryColorPointer");
+
+  } else if (has_extension("GL_EXT_secondary_color")) {
+    _glSecondaryColorPointer = (PFNGLSECONDARYCOLORPOINTERPROC)
+      get_extension_func("glSecondaryColorPointerEXT");
+  }
+#endif
+
 #ifdef OPENGLES_2
   _supports_vertex_blend = false;
 #else
@@ -7121,6 +7132,7 @@ get_extension_func(const char *name) {
 #endif
 #ifdef EXPECT_GL_VERSION_1_4
     { "glPointParameterfv", (void *)&glPointParameterfv },
+    { "glSecondaryColorPointer", (void *)&glSecondaryColorPointer },
 #endif
 #ifdef EXPECT_GL_VERSION_1_5
     { "glBeginQuery", (void *)&glBeginQuery },

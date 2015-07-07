@@ -41,6 +41,11 @@ CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _cg_program = 0;
+  _glsl_program = 0;
+  _has_divisor = false;
+  _color_attrib_index = CA_color;
+  _transform_table_param = 0;
+  _slider_table_param = 0;
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
@@ -51,6 +56,21 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   if (!s->cg_compile_for(_glgsg->_shader_caps, context,
                          _cg_program, _cg_parameter_map)) {
     return;
+  }
+
+  _transform_table_param = cgGetNamedParameter(_cg_program, "tbl_transforms");
+  if (_transform_table_param) {
+    _transform_table_size = cgGetArraySize(_transform_table_param, 0);
+  }
+
+  _slider_table_param = cgGetNamedParameter(_cg_program, "tbl_sliders");
+  if (_slider_table_param) {
+    _slider_table_size = cgGetArraySize(_slider_table_param, 0);
+  }
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Loading Cg shader " << s->get_filename() << "\n";
   }
 
   // Load the program.
@@ -71,6 +91,214 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
         << " (" << str << ")\n";
       release_resources();
     }
+  }
+
+  if (_cg_program != 0) {
+    if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
+      _glsl_program = cgGLGetProgramID(_cg_program);
+
+      // Sometimes it fails to link, and Cg fails to propagate the error.
+      GLint link_status;
+      _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &link_status);
+      if (link_status != GL_TRUE) {
+        release_resources();
+      }
+    }
+  }
+
+  if (_cg_program == 0) {
+    return;
+  }
+
+  // We don't use cgGLSetParameterPointer to set the vertex attributes any
+  // longer, since it is buggy on non-NVIDIA hardware and doesn't allow explicit
+  // control over some parameters.  Instead, we have to figure out ourselves how
+  // to map the input varyings to OpenGL vertex attributes.
+  //
+  // We use positive indices to indicate generic vertex attributes, and negative
+  // indices to indicate conventional vertex attributes (ie. glVertexPointer).
+  int nvarying = _shader->_var_spec.size();
+  for (int i = 0; i < nvarying; ++i) {
+    Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+    CGparameter p = _cg_parameter_map[i];
+    if (p == 0) {
+      bind._id._seqno = CA_unknown;
+      continue;
+    }
+
+    GLint loc = CA_unknown;
+    CGresource res = cgGetParameterResource(p);
+
+    if (cgGetParameterBaseResource(p) == CG_ATTR0) {
+      // The Cg toolkit claims that it is bound to a generic vertex attribute.
+      if (_glsl_program != 0) {
+        // This is where the Cg glslv compiler lies, making the stupid assumption
+        // that we're using an NVIDIA card where generic attributes are aliased
+        // with conventional vertex attributes.  Instead, it always uses
+        // conventional attributes in this case.  Correct this.
+        int index = cgGetParameterResourceIndex(p);
+        switch (index) {
+        case 0:  // gl_Vertex
+          loc = CA_vertex;
+          break;
+        case 2:  // gl_Normal
+          loc = CA_normal;
+          break;
+        case 3:  // gl_Color
+          loc = CA_color;
+          break;
+        case 4:  // gl_SecondaryColor
+          loc = CA_secondary_color;
+          break;
+        case 1:  // glWeightPointerARB?
+        case 5:  // gl_FogCoord
+        case 6:  // PSIZE?
+        case 7:  // BLENDINDICES
+          GLCAT.error()
+            << "Cg varying " << cgGetParameterName(p) << " is bound to "
+               "unrecognized attribute " << index << "\n";
+          loc = CA_unknown;
+          break;
+        default:
+          loc = CA_texcoord + (index - 8);
+          break;
+        }
+      } else {
+        loc = cgGetParameterResourceIndex(p);
+
+        if (loc != 0 && bind._id._name == "vtx_position") {
+          // We really have to bind the vertex position to attribute 0, since
+          // OpenGL will hide the model if attribute 0 is not enabled, and we
+          // can only ever be sure that vtx_position is bound.
+          GLCAT.warning()
+            << "CG varying vtx_position is bound to generic attribute " << loc
+            << "instead of 0.  Use ATTR0 semantic to prevent this.\n";
+        }
+      }
+
+    } else if (res == CG_GLSL_ATTRIB || _glsl_program != 0) {
+      // With cg-glsl-version 130 and higher, no conventional attributes are
+      // used, but it instead uses specially named variables.
+      // A bit of guesswork is involved here; Cg seems to mostly use the
+      // semantics as attribute names in GLSL, with a few exceptions.
+      const char *attribname = NULL;
+      switch (res) {
+      case CG_POSITION0:
+        attribname = "cg_Vertex";
+        break;
+      case CG_NORMAL0:
+        attribname = "NORMAL";
+        break;
+      case CG_COLOR0:
+      case CG_DIFFUSE0:
+        attribname = "COLOR";
+        break;
+      case CG_COLOR1:
+      case CG_SPECULAR0:
+        attribname = "SPECULAR";
+        break;
+      default:
+        // Everything else appears to be named after the semantic string.
+        attribname = cgGetParameterSemantic(p);
+      }
+      loc = _glgsg->_glGetAttribLocation(_glsl_program, attribname);
+
+      if (bind._id._name == "vtx_color") {
+        _color_attrib_index = loc;
+      }
+
+      if (loc == -1) {
+        const char *resource = cgGetParameterResourceName(p);
+        if (!resource) {
+          resource = "unknown";
+        }
+        GLCAT.error()
+          << "Could not find Cg varying " << cgGetParameterName(p);
+        if (attribname) {
+          GLCAT.error(false) << " : " << attribname;
+        }
+        GLCAT.error(false) << " (" << resource << ") in the compiled GLSL program.\n";
+
+      } else if (loc != 0 && bind._id._name == "vtx_position") {
+        // We really have to bind the vertex position to attribute 0, since
+        // OpenGL will hide the model if attribute 0 is not enabled, and we
+        // can only ever be sure that vtx_position is bound.
+        GLCAT.warning()
+          << "CG varying vtx_position is bound to generic attribute " << loc
+          << "instead of 0.  Use ATTR0 semantic to prevent this.\n";
+      }
+
+    } else if (cgGetParameterBaseResource(p) == CG_TEXCOORD0) {
+      // A conventional texture coordinate set.
+      loc = CA_texcoord + cgGetParameterResourceIndex(p);
+
+    } else {
+      // Some other conventional vertex attribute.
+      switch (res) {
+      case CG_POSITION0:
+        loc = CA_vertex;
+        break;
+      case CG_NORMAL0:
+        loc = CA_normal;
+        break;
+      case CG_COLOR0:
+      case CG_DIFFUSE0:
+        loc = CA_color;
+        break;
+      case CG_COLOR1:
+      case CG_SPECULAR0:
+        loc = CA_secondary_color;
+        break;
+      default:
+        GLCAT.error()
+          << "Cg varying " << cgGetParameterName(p);
+        if (cgGetParameterSemantic(p)) {
+          GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
+        }
+        GLCAT.error(false) << " has an unrecognized resource";
+        if (cgGetParameterResourceName(p)) {
+          GLCAT.error(false) << " (" << cgGetParameterResourceName(p) << ")";
+        }
+        GLCAT.error(false) << ".\n";
+        loc = CA_unknown;
+      }
+    }
+
+#ifndef NDEBUG
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Cg varying " << cgGetParameterName(p);
+
+      const char *semantic = cgGetParameterSemantic(p);
+      if (semantic) {
+        GLCAT.debug(false) << " : " << semantic;
+      }
+
+      if (loc == CA_unknown) {
+        GLCAT.debug(false)
+          << " is not bound to a vertex attribute\n";
+
+      } else if (loc >= 0) {
+        GLCAT.debug(false)
+          << " is bound to generic attribute " << loc << "\n";
+
+      } else {
+        const char *resource = cgGetParameterResourceName(p);
+        if (!resource) {
+          resource = "unknown";
+        }
+        GLCAT.debug(false)
+          << " is bound to a conventional attribute (" << resource << ")\n";
+      }
+    }
+    if (loc == CA_unknown) {
+      // Suggest fix to developer.
+      GLCAT.error() << "Try using a different semantic.\n";
+    }
+#endif
+
+    // Abuse the seqno field to store the GLSL attribute location.
+    bind._id._seqno = loc;
   }
 
   _glgsg->report_my_gl_errors();
@@ -386,6 +614,58 @@ issue_parameters(int altered) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CgGLShaderContext::update_transform_table
+//       Access: Public
+//  Description: Changes the active transform table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(CgShaderContext)::
+update_transform_table(const TransformTable *table) {
+  LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
+
+  int i = 0;
+  if (table != NULL) {
+    int num_transforms = min(_transform_table_size, (long)table->get_num_transforms());
+    for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+      LMatrix4 matrix;
+      table->get_transform(i)->get_matrix(matrix);
+      matrices[i] = LCAST(float, matrix);
+#else
+      table->get_transform(i)->get_matrix(matrices[i]);
+#endif
+    }
+  }
+  for (; i < _transform_table_size; ++i) {
+    matrices[i] = LMatrix4f::ident_mat();
+  }
+
+  cgGLSetMatrixParameterArrayfc(_transform_table_param, 0,
+                                _transform_table_size, (float *)matrices);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CgGLShaderContext::update_slider_table
+//       Access: Public
+//  Description: Changes the active slider table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(CgShaderContext)::
+update_slider_table(const SliderTable *table) {
+  float *sliders = (float *)alloca(_slider_table_size * 4);
+  memset(sliders, 0, _slider_table_size * 4);
+
+  if (table != NULL) {
+    int num_sliders = min(_slider_table_size, (long)table->get_num_sliders());
+    for (int i = 0; i < num_sliders; ++i) {
+      sliders[i] = table->get_slider(i)->get_slider();
+    }
+  }
+
+  cgGLSetParameterArray4f(_slider_table_param, 0, _slider_table_size, sliders);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLCgShaderContext::disable_shader_vertex_arrays
 //       Access: Public
 //  Description: Disable all the vertex arrays used by this shader.
@@ -396,27 +676,35 @@ disable_shader_vertex_arrays() {
     return;
   }
 
-  for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-    if (p == 0) continue;
+  for (int i = 0; i < (int)_shader->_var_spec.size(); ++i) {
+    GLint p = _shader->_var_spec[i]._id._seqno;
 
-    if (cgGetParameterBaseResource(p) == CG_ATTR0) {
-      int index = cgGetParameterResourceIndex(p);
-      if (index >= 8) {
-        _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-      } else if (index == 0) {
-        glDisableClientState(GL_VERTEX_ARRAY);
-
-      } else if (index == 2) {
-        glDisableClientState(GL_NORMAL_ARRAY);
-
-      } else if (index == 3) {
-        glDisableClientState(GL_COLOR_ARRAY);
+    if (p >= 0) {
+      _glgsg->_glDisableVertexAttribArray(p);
+      if (_has_divisor) {
+        _glgsg->_glVertexAttribDivisor(p, 0);
       }
     } else {
-      cgGLDisableClientState(p);
+      switch (p) {
+      case CA_unknown:
+        break;
+      case CA_vertex:
+        glDisableClientState(GL_VERTEX_ARRAY);
+        break;
+      case CA_normal:
+        glDisableClientState(GL_NORMAL_ARRAY);
+        break;
+      case CA_color:
+        glDisableClientState(GL_COLOR_ARRAY);
+        break;
+      case CA_secondary_color:
+        glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
+        break;
+      default:
+        _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        break;
+      }
     }
   }
 
@@ -458,12 +746,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int start, stride, num_values;
     int nvarying = _shader->_var_spec.size();
     for (int i = 0; i < nvarying; ++i) {
-      if (_cg_parameter_map[_shader->_var_spec[i]._id._seqno] == 0) {
-        continue;
-      }
-
-      InternalName *name = _shader->_var_spec[i]._name;
-      int texslot = _shader->_var_spec[i]._append_uv;
+      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+      InternalName *name = bind._name;
+      int texslot = bind._append_uv;
       if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
         InternalName *texname = stage->get_texcoord_name();
@@ -474,82 +759,144 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
-      if (_glgsg->_data_reader->get_array_info(name,
-                                               array_reader, num_values, numeric_type,
-                                               start, stride)) {
+      GLint p = bind._id._seqno;
+
+      // Don't apply vertex colors if they are disabled with a ColorAttrib.
+      int num_elements, element_stride, divisor;
+      bool normalized;
+      if ((p != _color_attrib_index || _glgsg->_vertex_colors_enabled) &&
+          _glgsg->_data_reader->get_array_info(name, array_reader,
+                                               num_values, numeric_type,
+                                               normalized, start, stride, divisor,
+                                               num_elements, element_stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
+        client_pointer += start;
 
-        CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
+        // We don't use cgGLSetParameterPointer because it is very buggy and
+        // limited in the options we can set.start
+        GLenum type = _glgsg->get_numeric_type(numeric_type);
+        if (p >= 0) {
+          _glgsg->_glEnableVertexAttribArray(p);
 
-        if (numeric_type == GeomEnums::NT_packed_dabc) {
-          // Yes, this is a thing.
-          num_values = GL_BGRA;
-        }
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(p, num_values, type,
+                                            stride, client_pointer);
+          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
+            // GL_BGRA is a special accepted value available since OpenGL 3.2.
+            // It requires us to pass GL_TRUE for normalized.
+            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                           GL_TRUE, stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribPointer(p, num_values, type,
+                                           normalized, stride, client_pointer);
+          }
 
-        // cgGLSetParameterPointer is just stupidly bugged on every level.
-        // Sigh.  This seems to work on both NVIDIA and AMD cards now.
-        if (cgGetParameterBaseResource(p) == CG_ATTR0) {
-          int index = cgGetParameterResourceIndex(p);
-          switch (index) {
-          case 0:  // gl_Vertex
-            glVertexPointer(num_values, _glgsg->get_numeric_type(numeric_type),
-                            stride, client_pointer + start);
+          if (_glgsg->_supports_vertex_attrib_divisor) {
+            _glgsg->_glVertexAttribDivisor(p, divisor);
+            _has_divisor = true;
+          }
+
+        } else {
+          // It's a conventional vertex attribute.  Ugh.
+          switch (p) {
+          case CA_unknown:
+            break;
+
+          case CA_vertex:
+            glVertexPointer(num_values, type, stride, client_pointer);
             glEnableClientState(GL_VERTEX_ARRAY);
             break;
 
-          case 2:  // gl_Normal
-            glNormalPointer(_glgsg->get_numeric_type(numeric_type),
-                            stride, client_pointer + start);
+          case CA_normal:
+            glNormalPointer(type, stride, client_pointer);
             glEnableClientState(GL_NORMAL_ARRAY);
             break;
 
-          case 3:  // gl_Color
-            glColorPointer(num_values, _glgsg->get_numeric_type(numeric_type),
-                           stride, client_pointer + start);
+          case CA_color:
+            glColorPointer(num_values, type, stride, client_pointer);
             glEnableClientState(GL_COLOR_ARRAY);
             break;
 
-          case 4:  // gl_SecondaryColor
-            //glSecondaryColorPointer(num_values, _glgsg->get_numeric_type(numeric_type),
-            //                        stride, client_pointer + start);
-            //glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
-            //break;
-          case 5:  // gl_FogCoord
-          case 6:  // PSIZE?
-          case 7:  // BLENDINDICES?
-          case 1:  // glWeightPointerARB?
-            GLCAT.error()
-              << "Unable to bind " << *name << " to "
-              << cgGetParameterResourceName(p) << "\n";
+          case CA_secondary_color:
+            _glgsg->_glSecondaryColorPointer(num_values, type,
+                                             stride, client_pointer);
+            glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
             break;
 
           default:
-            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (index - 8));
-            glTexCoordPointer(num_values, _glgsg->get_numeric_type(numeric_type),
-                              stride, client_pointer + start);
+            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+            glTexCoordPointer(num_values, type, stride, client_pointer);
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             break;
           }
-        } else {
-          if (name == InternalName::get_normal() && num_values == 4) {
-            // In some cases, the normals are aligned to 4 values.  We tell
-            // it to use three values exactly, otherwise we get the error:
-            // An unsupported GL extension was required to perform this operation.
-            num_values = 3;
-          }
-          cgGLSetParameterPointer(p, num_values,
-                                  _glgsg->get_numeric_type(numeric_type),
-                                  stride, client_pointer + start);
-          cgGLEnableClientState(p);
         }
       } else {
-        CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-        cgGLDisableClientState(p);
+        // There is no vertex column with this name; disable the attribute array.
+        if (p == 0) {
+          //NOTE: if we disable attribute 0 in compatibility profile, the object
+          // will disappear.  In GLSL we fix this by forcing the vertex column
+          // to be at 0, but we don't have control over that with Cg.  So, we
+          // work around this by just binding something silly to 0.
+          // This breaks flat colors, but it's better than invisible objects?
+          _glgsg->_glEnableVertexAttribArray(0);
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
+          } else {
+            _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+          }
+
+        } else if (p > 0) {
+          _glgsg->_glDisableVertexAttribArray(p);
+
+          if (p == _color_attrib_index) {
+#ifdef STDFLOAT_DOUBLE
+            _glgsg->_glVertexAttrib4dv(p, _glgsg->_scene_graph_color.get_data());
+#else
+            _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
+#endif
+          }
+        } else {
+          switch (p) {
+          case CA_unknown:
+            break;
+          case CA_vertex:
+            glDisableClientState(GL_VERTEX_ARRAY);
+            break;
+          case CA_normal:
+            glDisableClientState(GL_NORMAL_ARRAY);
+            break;
+          case CA_color:
+            glDisableClientState(GL_COLOR_ARRAY);
+#ifdef STDFLOAT_DOUBLE
+            glColor4dv(_glgsg->_scene_graph_color.get_data());
+#else
+            glColor4fv(_glgsg->_scene_graph_color.get_data());
+#endif
+            break;
+          case CA_secondary_color:
+            glDisableClientState(GL_SECONDARY_COLOR_ARRAY);
+            break;
+          default:
+            _glgsg->_glClientActiveTexture(GL_TEXTURE0 + (p - CA_texcoord));
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            break;
+          }
+        }
       }
     }
+  }
+
+  if (_transform_table_param) {
+    const TransformTable *table = _glgsg->_data_reader->get_transform_table();
+    update_transform_table(table);
+  }
+
+  if (_slider_table_param) {
+    const SliderTable *table = _glgsg->_data_reader->get_slider_table();
+    update_slider_table(table);
   }
 
   cg_report_errors();

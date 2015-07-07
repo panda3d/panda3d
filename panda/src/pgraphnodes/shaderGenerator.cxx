@@ -92,19 +92,25 @@ reset_register_allocator() {
 ////////////////////////////////////////////////////////////////////
 const char *ShaderGenerator::
 alloc_vreg() {
+  // The ATTR# input sseem to map to generic vertex attributes in
+  // both arbvp1 and glslv, which behave more consistently.
   switch (_vtregs_used) {
-  case  0: _vtregs_used += 1; return "TEXCOORD0";
-  case  1: _vtregs_used += 1; return "TEXCOORD1";
-  case  2: _vtregs_used += 1; return "TEXCOORD2";
-  case  3: _vtregs_used += 1; return "TEXCOORD3";
-  case  4: _vtregs_used += 1; return "TEXCOORD4";
-  case  5: _vtregs_used += 1; return "TEXCOORD5";
-  case  6: _vtregs_used += 1; return "TEXCOORD6";
-  case  7: _vtregs_used += 1; return "TEXCOORD7";
+  case  0: _vtregs_used += 1; return "ATTR8";
+  case  1: _vtregs_used += 1; return "ATTR9";
+  case  2: _vtregs_used += 1; return "ATTR10";
+  case  3: _vtregs_used += 1; return "ATTR11";
+  case  4: _vtregs_used += 1; return "ATTR12";
+  case  5: _vtregs_used += 1; return "ATTR13";
+  case  6: _vtregs_used += 1; return "ATTR14";
+  case  7: _vtregs_used += 1; return "ATTR15";
   }
   switch (_vcregs_used) {
-  case  0: _vcregs_used += 1; return "COLOR0";
-  case  1: _vcregs_used += 1; return "COLOR1";
+  case  0: _vcregs_used += 1; return "ATTR3";
+  case  1: _vcregs_used += 1; return "ATTR4";
+  case  2: _vcregs_used += 1; return "ATTR5";
+  case  3: _vcregs_used += 1; return "ATTR6";
+  case  4: _vcregs_used += 1; return "ATTR7";
+  case  5: _vcregs_used += 1; return "ATTR1";
   }
   // These don't exist in arbvp1, though they're reportedly
   // supported by other profiles.
@@ -615,6 +621,7 @@ update_shadow_buffer(NodePath light_np) {
 //               - texmatrix
 //               - 1D/2D/3D textures, cube textures, 2D tex arrays
 //               - linear/exp/exp2 fog
+//               - animation
 //
 //               Not yet supported:
 //               - dot3_rgb and dot3_rgba combine modes
@@ -624,7 +631,7 @@ update_shadow_buffer(NodePath light_np) {
 //
 ////////////////////////////////////////////////////////////////////
 CPT(ShaderAttrib) ShaderGenerator::
-synthesize_shader(const RenderState *rs) {
+synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   analyze_renderstate(rs);
   reset_register_allocator();
 
@@ -706,7 +713,7 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   if (_vertex_colors) {
-    text << "\t in float4 vtx_color : COLOR0,\n";
+    text << "\t in float4 vtx_color : ATTR3,\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
   if (_need_world_position || _need_world_normal) {
@@ -733,7 +740,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
-    text << "\t in float3 vtx_normal : NORMAL,\n";
+    text << "\t in float3 vtx_normal : ATTR2,\n";
   }
   if (_map_index_height >= 0) {
     text << "\t uniform float4 mspos_view,\n";
@@ -765,10 +772,49 @@ synthesize_shader(const RenderState *rs) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
   }
-  text << "\t float4 vtx_position : POSITION,\n";
+  if (anim.get_animation_type() == GeomEnums::AT_hardware &&
+      anim.get_num_transforms() > 0) {
+    int num_transforms;
+    if (anim.get_indexed_transforms()) {
+      num_transforms = 120;
+    } else {
+      num_transforms = anim.get_num_transforms();
+    }
+    text << "\t uniform float4x4 tbl_transforms[" << num_transforms << "],\n";
+    text << "\t in float4 vtx_transform_weight : ATTR1,\n";
+    if (anim.get_indexed_transforms()) {
+      text << "\t in uint4 vtx_transform_index : ATTR7,\n";
+    }
+  }
+  text << "\t in float4 vtx_position : ATTR0,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
+
+  if (anim.get_animation_type() == GeomEnums::AT_hardware &&
+      anim.get_num_transforms() > 0) {
+
+    if (!anim.get_indexed_transforms()) {
+      text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
+    }
+
+    text << "\t float4x4 matrix = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
+    if (anim.get_num_transforms() > 1) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
+    }
+    if (anim.get_num_transforms() > 2) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.z] * vtx_transform_weight.z";
+    }
+    if (anim.get_num_transforms() > 3) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
+    }
+    text << ";\n";
+
+    text << "\t vtx_position = mul(matrix, vtx_position);\n";
+    if (_need_world_normal || _need_eye_normal) {
+      text << "\t vtx_normal = mul((float3x3)matrix, vtx_normal);\n";
+    }
+  }
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
   if (_fog) {

@@ -814,17 +814,12 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
-  // We can cast the RenderState to a non-const object because we are
-  // only updating a cache within the RenderState, not really changing
-  // any of its properties.
-  RenderState *nc_state = ((RenderState *)state);
-
   // Before we even look up the map, see if the _last_mi value points
   // to this GSG.  This is likely because we tend to visit the same
   // state multiple times during a frame.  Also, this might well be
   // the only GSG in the world anyway.
-  if (!nc_state->_mungers.empty()) {
-    RenderState::Mungers::const_iterator mi = nc_state->_last_mi;
+  if (!state->_mungers.empty()) {
+    RenderState::Mungers::const_iterator mi = state->_last_mi;
     if (!(*mi).first.was_deleted() && (*mi).first == this) {
       if ((*mi).second->is_registered()) {
         return (*mi).second;
@@ -833,23 +828,23 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
   }
 
   // Nope, we have to look it up in the map.
-  RenderState::Mungers::iterator mi = nc_state->_mungers.find(this);
-  if (mi != nc_state->_mungers.end() && !(*mi).first.was_deleted()) {
+  RenderState::Mungers::iterator mi = state->_mungers.find(this);
+  if (mi != state->_mungers.end() && !(*mi).first.was_deleted()) {
     if ((*mi).second->is_registered()) {
-      nc_state->_last_mi = mi;
+      state->_last_mi = mi;
       return (*mi).second;
     }
     // This GeomMunger is no longer registered.  Remove it from the
     // map.
-    nc_state->_mungers.erase(mi);
+    state->_mungers.erase(mi);
   }
 
   // Nothing in the map; create a new entry.
-  PT(GeomMunger) munger = make_geom_munger(nc_state, current_thread);
+  PT(GeomMunger) munger = make_geom_munger(state, current_thread);
   nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
 
-  mi = nc_state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
-  nc_state->_last_mi = mi;
+  mi = state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
+  state->_last_mi = mi;
 
   return munger;
 }
