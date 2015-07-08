@@ -4929,7 +4929,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       expected_params += "long";
       only_pyobjects = false;
 
-    } else if (TypeManager::is_unsigned_short(type)) {
+    } else if (TypeManager::is_unsigned_short(type) ||
+               TypeManager::is_unsigned_char(type) || TypeManager::is_signed_char(type)) {
+
       if (args_type == AT_single_arg) {
         type_check = "PyLongOrInt_Check(arg)";
         extra_convert
@@ -4945,12 +4947,25 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // The "H" format code, unlike "h", does not do overflow checking, so
       // we have to do it ourselves (except in release builds).
       extra_convert
-        << "#ifndef NDEBUG\n"
-        << "if (" << param_name << " < 0 || " << param_name << " > USHRT_MAX) {\n";
+        << "#ifndef NDEBUG\n";
 
-      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
-                         "value %ld out of range for unsigned short integer",
-                         param_name);
+      if (TypeManager::is_unsigned_short(type)) {
+        extra_convert << "if (" << param_name << " < 0 || " << param_name << " > USHRT_MAX) {\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %ld out of range for unsigned short integer",
+                           param_name);
+      } else if (TypeManager::is_unsigned_char(type)) {
+        extra_convert << "if (" << param_name << " < 0 || " << param_name << " > UCHAR_MAX) {\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %ld out of range for unsigned byte",
+                           param_name);
+      } else {
+        extra_convert << "if (" << param_name << " < CHAR_MIN || " << param_name << " > CHAR_MAX) {\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %ld out of range for signed byte",
+                           param_name);
+      }
+
       extra_convert
         << "}\n"
         << "#endif\n";
