@@ -4931,10 +4931,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
     } else if (TypeManager::is_unsigned_short(type)) {
       if (args_type == AT_single_arg) {
-        // This is defined to PyLong_Check for Python 3 by py_panda.h.
-        type_check = "PyInt_Check(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
         extra_convert
-          << "long " << param_name << " = PyInt_AS_LONG(arg);\n";
+          << "long " << param_name << " = PyLongOrInt_AS_LONG(arg);\n";
 
         pexpr_string = "(" + type->get_local_name(&parser) + ")" + param_name;
       } else {
@@ -4961,12 +4960,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
     } else if (TypeManager::is_short(type)) {
       if (args_type == AT_single_arg) {
-        // This is defined to PyLong_Check for Python 3 by py_panda.h.
-        type_check = "PyInt_Check(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
 
         // Perform overflow checking in debug builds.
         extra_convert
-          << "long arg_val = PyInt_AS_LONG(arg);\n"
+          << "long arg_val = PyLongOrInt_AS_LONG(arg);\n"
           << "#ifndef NDEBUG\n"
           << "if (arg_val < SHRT_MIN || arg_val > SHRT_MAX) {\n";
 
@@ -5024,14 +5022,13 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
     } else if (TypeManager::is_integer(type)) {
       if (args_type == AT_single_arg) {
-        // This is defined to PyLong_Check for Python 3 by py_panda.h.
-        type_check = "PyInt_Check(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
 
         // Perform overflow checking in debug builds.  Note that Python 2
         // stores longs internally, for ints, so we don't do it on Windows,
         // where longs are the same size as ints.
         extra_convert
-          << "long arg_val = PyInt_AS_LONG(arg);\n"
+          << "long arg_val = PyLongOrInt_AS_LONG(arg);\n"
           << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
           << "if (arg_val < INT_MIN || arg_val > INT_MAX) {\n";
 
