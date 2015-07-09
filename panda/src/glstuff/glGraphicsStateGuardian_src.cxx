@@ -610,115 +610,6 @@ reset() {
   }
 #endif
 
-#ifdef OPENGLES_2
-  _supports_vertex_blend = false;
-#else
-  _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
-
-  if (_supports_vertex_blend) {
-    _glWeightPointer = (PFNGLWEIGHTPOINTERARBPROC)
-      get_extension_func("glWeightPointerARB");
-    _glVertexBlend = (PFNGLVERTEXBLENDARBPROC)
-      get_extension_func("glVertexBlendARB");
-    _glWeightfv = (PFNGLWEIGHTFVARBPROC)
-      get_extension_func("glWeightfvARB");
-    _glWeightdv = (PFNGLWEIGHTDVARBPROC)
-      get_extension_func("glWeightdvARB");
-
-    if (_glWeightPointer == NULL || _glVertexBlend == NULL ||
-        GLfv(_glWeight) == NULL) {
-      GLCAT.warning()
-        << "Vertex blending advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_vertex_blend = false;
-    }
-  }
-#endif
-
-#ifndef OPENGLES_2
-  if (_supports_vertex_blend) {
-#ifndef OPENGLES
-    glEnable(GL_WEIGHT_SUM_UNITY_ARB);
-#endif
-
-    GLint max_vertex_units = 0;
-    glGetIntegerv(GL_MAX_VERTEX_UNITS_ARB, &max_vertex_units);
-    _max_vertex_transforms = max_vertex_units;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "max vertex transforms = " << _max_vertex_transforms << "\n";
-    }
-  }
-#endif
-
-  _supports_matrix_palette = false;
-#ifndef OPENGLES
-  if (has_extension("GL_ARB_matrix_palette")) {
-    _supports_matrix_palette = true;
-    _glCurrentPaletteMatrix = (PFNGLCURRENTPALETTEMATRIXARBPROC)
-      get_extension_func("glCurrentPaletteMatrixARB");
-    _glMatrixIndexPointer = (PFNGLMATRIXINDEXPOINTERARBPROC)
-      get_extension_func("glMatrixIndexPointerARB");
-    _glMatrixIndexuiv = (PFNGLMATRIXINDEXUIVARBPROC)
-      get_extension_func("glMatrixIndexuivARB");
-
-    if (_glCurrentPaletteMatrix == NULL ||
-        _glMatrixIndexPointer == NULL ||
-        _glMatrixIndexuiv == NULL) {
-      GLCAT.warning()
-        << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_matrix_palette = false;
-    }
-  }
-#elif defined(OPENGLES_1)
-  if (has_extension("GL_OES_matrix_palette")) {
-    _supports_matrix_palette = true;
-    _glCurrentPaletteMatrix = (PFNGLCURRENTPALETTEMATRIXOESPROC)
-      get_extension_func("glCurrentPaletteMatrixOES");
-    _glMatrixIndexPointer = (PFNGLMATRIXINDEXPOINTEROESPROC)
-      get_extension_func("glMatrixIndexPointerOES");
-
-    if (_glCurrentPaletteMatrix == NULL ||
-        _glMatrixIndexPointer == NULL) {
-      GLCAT.warning()
-        << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_matrix_palette = false;
-    }
-  }
-#endif
-
-  /*
-    The matrix_palette support in this module is completely untested
-    (because I don't happen to have a card handy whose driver supports
-    this extension), so I have this ConfigVariable set to
-    unconditionally set this flag off for now, to protect the unwary.
-    When we have shown that the code works, we should remove this bit.
-    In the meantime, you must put both "matrix-palette 1" and
-    "gl-matrix-palette 1" in your Config.prc to exercise the new
-    code. */
-  if (!gl_matrix_palette) {
-    if (_supports_matrix_palette) {
-      if (GLCAT.is_debug()) {
-        GLCAT.debug() << "Forcing off matrix palette support.\n";
-      }
-    }
-    _supports_matrix_palette = false;
-  }
-
-  if (_supports_matrix_palette) {
-    GLint max_palette_matrices = 0;
-#ifdef OPENGLES_1
-    glGetIntegerv(GL_MAX_PALETTE_MATRICES_OES, &max_palette_matrices);
-#endif
-#ifndef OPENGLES
-    glGetIntegerv(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
-#endif
-    _max_vertex_transform_indices = max_palette_matrices;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "max vertex transform indices = " << _max_vertex_transform_indices << "\n";
-    }
-  }
-
 #ifndef OPENGLES
   _glDrawRangeElements = null_glDrawRangeElements;
 
@@ -2391,8 +2282,6 @@ reset() {
   _point_size = 1.0f;
   _point_perspective = false;
 
-  _vertex_blending_enabled = false;
-
   report_my_gl_errors();
 
 #ifndef OPENGLES_2
@@ -3286,96 +3175,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-#ifndef OPENGLES
-  const GeomVertexAnimationSpec &animation =
-    _data_reader->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
-  if (hardware_animation && _current_shader_context == NULL) {
-    // Set up the transform matrices for vertex blending.
-    nassertr(_supports_vertex_blend, false);
-    glEnable(GL_VERTEX_BLEND_ARB);
-    _glVertexBlend(animation.get_num_transforms());
-
-    const TransformTable *table = _data_reader->get_transform_table();
-    if (table != (TransformTable *)NULL) {
-      if (animation.get_indexed_transforms()) {
-        nassertr(_supports_matrix_palette, false);
-        // We are loading the indexed matrix palette.  The ARB decided
-        // to change this interface from that for the list of
-        // nonindexed matrices, to make it easier to load an arbitrary
-        // number of matrices.
-        glEnable(GL_MATRIX_PALETTE_ARB);
-
-        glMatrixMode(GL_MATRIX_PALETTE_ARB);
-
-        for (int i = 0; i < table->get_num_transforms(); ++i) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          _glCurrentPaletteMatrix(i);
-          GLPf(LoadMatrix)(mat.get_data());
-        }
-
-        // Presumably loading the matrix palette does not step on the
-        // GL_MODELVIEW matrix?
-
-      } else {
-        // We are loading the list of nonindexed matrices.  This is a
-        // little clumsier.
-
-        if (_supports_matrix_palette) {
-          glDisable(GL_MATRIX_PALETTE_ARB);
-        }
-
-        // GL_MODELVIEW0 and 1 are different than the rest.
-        int i = 0;
-        if (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW0_ARB);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-        if (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW1_ARB);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-        while (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW2_ARB + i - 2);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-
-        // Setting the GL_MODELVIEW0 matrix steps on the world matrix,
-        // so we have to set a flag to reload the world matrix later.
-        _transform_stale = true;
-      }
-    }
-    _vertex_blending_enabled = true;
-
-  } else {
-    // We're not using vertex blending.
-    if (_vertex_blending_enabled) {
-      glDisable(GL_VERTEX_BLEND_ARB);
-      if (_supports_matrix_palette) {
-        glDisable(GL_MATRIX_PALETTE_ARB);
-      }
-      _vertex_blending_enabled = false;
-    }
-
-    if (_transform_stale) {
-      glMatrixMode(GL_MODELVIEW);
-      GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
-    }
-  }
-#else
-  const bool hardware_animation = false;
-#endif
-
 #ifndef OPENGLES_2
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
@@ -3393,7 +3192,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 #ifndef OPENGLES  // Display lists not supported by OpenGL ES.
   if (geom_reader->get_usage_hint() == Geom::UH_static &&
       _data_reader->get_usage_hint() == Geom::UH_static &&
-      display_lists && (!hardware_animation || display_list_animation)) {
+      display_lists) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
 
@@ -3528,9 +3327,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 update_standard_vertex_arrays(bool force) {
-  const GeomVertexAnimationSpec &animation =
-    _data_reader->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     // We must use immediate mode to render primitives.
@@ -3587,20 +3383,6 @@ update_standard_vertex_arrays(bool force) {
       ++stage_index;
     }
     _last_max_stage_index = max_stage_index;
-
-    if (_supports_vertex_blend) {
-      if (hardware_animation) {
-        // Issue the weights and/or transform indices for vertex blending.
-        _sender.add_vector_column(_data_reader, InternalName::get_transform_weight(),
-                                  GLfv(_glWeight));
-
-        if (animation.get_indexed_transforms()) {
-          // Issue the matrix palette indices.
-          _sender.add_vector_uint_column(_data_reader, InternalName::get_transform_index(),
-                                         _glMatrixIndexuiv);
-        }
-      }
-    }
 
     // We must add vertex last, because glVertex3f() is the key
     // function call that actually issues the vertex.
@@ -3703,48 +3485,6 @@ update_standard_vertex_arrays(bool force) {
     }
     _last_max_stage_index = max_stage_index;
 
-#ifndef OPENGLES
-    if (_supports_vertex_blend) {
-      if (hardware_animation) {
-        // Issue the weights and/or transform indices for vertex blending.
-        if (_data_reader->get_array_info(InternalName::get_transform_weight(),
-                                         array_reader, num_values, numeric_type,
-                                         start, stride)) {
-          if (!setup_array_data(client_pointer, array_reader, force)) {
-            return false;
-          }
-          _glWeightPointer(num_values, get_numeric_type(numeric_type),
-                           stride, client_pointer + start);
-          glEnableClientState(GL_WEIGHT_ARRAY_ARB);
-        } else {
-          glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-        }
-
-        if (animation.get_indexed_transforms()) {
-          // Issue the matrix palette indices.
-          if (_data_reader->get_array_info(InternalName::get_transform_index(),
-                                           array_reader, num_values, numeric_type,
-                                           start, stride)) {
-            if (!setup_array_data(client_pointer, array_reader, force)) {
-              return false;
-            }
-            _glMatrixIndexPointer(num_values, get_numeric_type(numeric_type),
-                                  stride, client_pointer + start);
-            glEnableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-          } else {
-            glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-          }
-        }
-
-      } else {
-        glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-        if (_supports_matrix_palette) {
-          glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-        }
-      }
-    }
-#endif
-
     // There's no requirement that we add vertices last, but we do
     // anyway.
     if (_data_reader->get_vertex_info(array_reader, num_values, numeric_type,
@@ -3818,15 +3558,6 @@ disable_standard_vertex_arrays() {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
   _last_max_stage_index = 0;
-
-#ifndef OPENGLES
-  if (_supports_vertex_blend) {
-    glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-    if (_supports_matrix_palette) {
-      glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-    }
-  }
-#endif
 
   glDisableClientState(GL_VERTEX_ARRAY);
   report_my_gl_errors();
@@ -4457,15 +4188,6 @@ end_draw_primitives() {
     _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
-
-  // Clean up the vertex blending state.
-  if (_vertex_blending_enabled) {
-    glDisable(GL_VERTEX_BLEND_ARB);
-    if (_supports_matrix_palette) {
-      glDisable(GL_MATRIX_PALETTE_ARB);
-    }
-    _vertex_blending_enabled = false;
-  }
 #endif
 
 #ifndef OPENGLES_2

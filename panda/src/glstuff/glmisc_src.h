@@ -64,7 +64,6 @@ extern ConfigVariableBool gl_debug_object_labels;
 extern ConfigVariableBool gl_debug_buffers;
 extern ConfigVariableBool gl_finish;
 extern ConfigVariableBool gl_force_depth_stencil;
-extern ConfigVariableBool gl_matrix_palette;
 extern ConfigVariableBool gl_check_errors;
 extern ConfigVariableBool gl_force_flush;
 extern ConfigVariableBool gl_separate_specular_color;

@@ -131,16 +131,9 @@ typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURELAYERPROC) (GLenum target, GLenum
 typedef void (APIENTRYP PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 typedef void (APIENTRYP PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC) (GLenum target, GLenum attachment, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGENERATEMIPMAPEXTPROC) (GLenum target);
-typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXARBPROC) (GLint index);
-typedef void (APIENTRYP PFNGLMATRIXINDEXUIVARBPROC) (GLint size, const GLuint *indices);
-typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTERARBPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLBLITFRAMEBUFFEREXTPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLenum target, GLsizei coverageSamples, GLsizei colorSamples, GLenum internalformat, GLsizei width, GLsizei height);
-typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXOESPROC) (GLuint matrixpaletteindex);
-typedef void (APIENTRYP PFNGLLOADPALETTEFROMMODELVIEWMATRIXOESPROC) (void);
-typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
-typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLTEXSTORAGE1DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
 typedef void (APIENTRYP PFNGLTEXSTORAGE2DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLTEXSTORAGE3DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
@@ -586,7 +579,6 @@ protected:
   RenderModeAttrib::Mode _render_mode;
   PN_stdfloat _point_size;
   bool _point_perspective;
-  bool _vertex_blending_enabled;
   bool _scissor_enabled;
   bool _scissor_attrib_active;
   epvector<LVecBase4i> _scissor_array;
@@ -665,23 +657,6 @@ public:
 
 #ifndef OPENGLES
   PFNGLSECONDARYCOLORPOINTERPROC _glSecondaryColorPointer;
-#endif
-
-  bool _supports_vertex_blend;
-  PFNGLWEIGHTPOINTERARBPROC _glWeightPointer;
-  PFNGLVERTEXBLENDARBPROC _glVertexBlend;
-  PFNGLWEIGHTFVARBPROC _glWeightfv;
-  PFNGLWEIGHTDVARBPROC _glWeightdv;
-
-  bool _supports_matrix_palette;
-#ifdef OPENGLES_1
-  PFNGLCURRENTPALETTEMATRIXOESPROC _glCurrentPaletteMatrix;
-  PFNGLMATRIXINDEXPOINTEROESPROC _glMatrixIndexPointer;
-#endif
-#ifndef OPENGLES
-  PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrix;
-  PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointer;
-  PFNGLMATRIXINDEXUIVARBPROC _glMatrixIndexuiv;
 #endif
 
 #ifndef OPENGLES

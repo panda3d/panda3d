@@ -183,10 +183,6 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
-ConfigVariableBool gl_matrix_palette
-  ("gl-matrix-palette", false,
-   PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
-
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,
    PRC_DESC("Regularly call glGetError() to check for OpenGL errors.  "
