@@ -14,6 +14,10 @@
 
 #include "pandaSystem.h"
 
+ConfigVariableInt gl_version
+  ("gl-version", "",
+   PRC_DESC("Set this to get an OpenGL context with a specific version."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "

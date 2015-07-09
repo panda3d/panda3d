@@ -685,6 +685,7 @@ disable_shader_vertex_arrays() {
         _glgsg->_glVertexAttribDivisor(p, 0);
       }
     } else {
+#ifdef SUPPORT_FIXED_FUNCTION
       switch (p) {
       case CA_unknown:
         break;
@@ -705,6 +706,7 @@ disable_shader_vertex_arrays() {
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         break;
       }
+#endif  // SUPPORT_FIXED_FUNCTION
     }
   }
 
@@ -801,6 +803,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
         } else {
           // It's a conventional vertex attribute.  Ugh.
+#ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {
           case CA_unknown:
             break;
@@ -836,9 +839,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             break;
           }
+#endif  // SUPPORT_FIXED_FUNCTION
         }
       } else {
         // There is no vertex column with this name; disable the attribute array.
+#ifdef SUPPORT_FIXED_FUNCTION
         if (p == 0) {
           //NOTE: if we disable attribute 0 in compatibility profile, the object
           // will disappear.  In GLSL we fix this by forcing the vertex column
@@ -852,7 +857,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
           }
 
-        } else if (p > 0) {
+        } else
+#endif  // SUPPORT_FIXED_FUNCTION
+        if (p >= 0) {
           _glgsg->_glDisableVertexAttribArray(p);
 
           if (p == _color_attrib_index) {
@@ -863,6 +870,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 #endif
           }
         } else {
+#ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {
           case CA_unknown:
             break;
@@ -888,6 +896,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             break;
           }
+#endif  // SUPPORT_FIXED_FUNCTION
         }
       }
     }
@@ -920,35 +929,27 @@ disable_shader_texture_bindings() {
     return;
   }
 
-#ifndef OPENGLES_2
-  for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
     if (p == 0) continue;
 
     int texunit = cgGetParameterResourceIndex(p);
     _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
 
-#ifndef OPENGLES
     glBindTexture(GL_TEXTURE_1D, 0);
-#endif  // OPENGLES
     glBindTexture(GL_TEXTURE_2D, 0);
-#ifndef OPENGLES_1
     if (_glgsg->_supports_3d_texture) {
       glBindTexture(GL_TEXTURE_3D, 0);
     }
-#endif  // OPENGLES_1
-#ifndef OPENGLES
     if (_glgsg->_supports_2d_texture_array) {
       glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
     }
-#endif
     if (_glgsg->_supports_cube_map) {
       glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     // This is probably faster - but maybe not as safe?
     //cgGLDisableTextureParameter(p);
   }
-#endif  // OPENGLES_2
 
   cg_report_errors();
   _glgsg->report_my_gl_errors();
@@ -981,9 +982,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
   nassertv(texattrib != (TextureAttrib *)NULL);
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    InternalName *id = _shader->_tex_spec[i]._name;
+    Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
+    const InternalName *id = spec._name;
 
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+    CGparameter p = _cg_parameter_map[spec._id._seqno];
     if (p == 0) {
       continue;
     }
@@ -997,23 +999,27 @@ update_shader_texture_bindings(ShaderContext *prev) {
       tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
 
     } else {
-      if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
+      if (spec._stage >= texattrib->get_num_on_stages()) {
+        // Apply a white texture in order to make it easier to use a shader
+        // that takes a texture on a model that doesn't have a texture applied.
+        _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+        _glgsg->apply_white_texture();
         continue;
       }
-      TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
+      TextureStage *stage = texattrib->get_on_stage(spec._stage);
       tex = texattrib->get_on_texture(stage);
       sampler = texattrib->get_on_sampler(stage);
       view += stage->get_tex_view_offset();
     }
 
-    if (_shader->_tex_spec[i]._suffix != 0) {
+    if (spec._suffix != 0) {
       // The suffix feature is inefficient. It is a temporary hack.
       if (tex == 0) {
         continue;
       }
-      tex = tex->load_related(_shader->_tex_spec[i]._suffix);
+      tex = tex->load_related(spec._suffix);
     }
-    if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
+    if ((tex == 0) || (tex->get_texture_type() != spec._desired_type)) {
       continue;
     }
 
@@ -1035,11 +1041,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     _glgsg->apply_texture(tc);
-    _glgsg->apply_sampler(i, sampler, tc);
+    _glgsg->apply_sampler(texunit, sampler, tc);
   }
 
   cg_report_errors();
   _glgsg->report_my_gl_errors();
 }
 
-#endif  // OPENGLES_1
+#endif  // !OPENGLES

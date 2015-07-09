@@ -2052,6 +2052,7 @@ DTOOL_CONFIG=[
     ("DO_DCAST",                       'UNDEF',                  'UNDEF'),
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_IMMEDIATE_MODE",         'UNDEF',                  'UNDEF'),
+    ("SUPPORT_FIXED_FUNCTION",         '1',                      '1'),
     ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  '1',                      '1'),

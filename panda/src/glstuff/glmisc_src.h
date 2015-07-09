@@ -41,6 +41,7 @@
 
 //#define GSG_VERBOSE 1
 
+extern ConfigVariableInt gl_version;
 extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;

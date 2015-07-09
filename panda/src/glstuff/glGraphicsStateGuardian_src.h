@@ -57,6 +57,7 @@ typedef double GLdouble;
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
 #if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
+typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC) (GLDEBUGPROC callback, const void *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECONTROLPROC) (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
@@ -137,6 +138,9 @@ typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLen
 typedef void (APIENTRYP PFNGLTEXSTORAGE1DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
 typedef void (APIENTRYP PFNGLTEXSTORAGE2DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLTEXSTORAGE3DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+typedef void (APIENTRYP PFNGLBINDVERTEXARRAYPROC) (GLuint array);
+typedef void (APIENTRYP PFNGLDELETEVERTEXARRAYSPROC) (GLsizei n, const GLuint *arrays);
+typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -341,7 +345,7 @@ public:
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void apply_fog(Fog *fog);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
@@ -351,8 +355,6 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 #endif
-
-  void print_gfx_visual();
 
   LVecBase4 get_light_color(Light *light) const;
 
@@ -386,23 +388,25 @@ protected:
   void do_issue_rescale_normal();
   void do_issue_color_write();
   void do_issue_depth_test();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_alpha_test();
 #endif
   void do_issue_depth_write();
   void do_issue_cull_face();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_fog();
 #endif
   void do_issue_depth_offset();
   void do_issue_shade_model();
+#ifndef OPENGLES_1
   void do_issue_shader(bool state_has_changed = false);
-#ifndef OPENGLES_2
+#endif
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_material();
 #endif
   void do_issue_texture();
   void do_issue_blending();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
 #endif
@@ -418,10 +422,11 @@ protected:
   static string get_error_string(GLenum error_code);
   string show_gl_string(const string &name, GLenum id);
   virtual void query_gl_version();
+  void query_glsl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  INLINE virtual bool has_extension(const string &extension) const FINAL;
+  INLINE virtual bool has_extension(const string &extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -429,7 +434,7 @@ protected:
 
   virtual void reissue_transforms();
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const LColor &color);
   virtual void enable_light(int light_id, bool enable);
@@ -464,7 +469,7 @@ protected:
   INLINE void set_color_write_mask(int mask);
   INLINE void clear_color_write_mask();
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   INLINE void call_glFogfv(GLenum pname, const LColor &color);
   INLINE void call_glMaterialfv(GLenum face, GLenum pname, const LColor &color);
   INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value);
@@ -475,7 +480,7 @@ protected:
 
   INLINE void call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value);
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
 #endif
@@ -507,12 +512,14 @@ protected:
   static GLenum get_usage(Geom::UsageHint usage_hint);
 
   void unbind_buffers();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void disable_standard_vertex_arrays();
   bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 #endif
+
+  void apply_white_texture();
 
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
@@ -590,8 +597,7 @@ protected:
   ShaderContext *_vertex_array_shader_context;
   PT(Shader) _texture_binding_shader;
   ShaderContext *_texture_binding_shader_context;
-#endif
-#ifdef OPENGLES_2
+
   static PT(Shader) _default_shader;
 #endif
 
@@ -655,7 +661,7 @@ public:
   bool _explicit_primitive_restart;
 #endif
 
-#ifndef OPENGLES
+#if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)
   PFNGLSECONDARYCOLORPOINTERPROC _glSecondaryColorPointer;
 #endif
 
@@ -692,14 +698,18 @@ public:
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;
-  bool _supports_rescale_normal;
   bool _supports_packed_dabc;
   bool _supports_packed_ufloat;
 
+#ifdef SUPPORT_FIXED_FUNCTION
+  bool _supports_rescale_normal;
+#endif
+
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
-#ifndef OPENGLES_2
-  bool _supports_multitexture;
+#ifdef SUPPORT_FIXED_FUNCTION
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
+#endif
+#ifdef SUPPORT_IMMEDIATE_MODE
   PFNGLMULTITEXCOORD1FPROC _glMultiTexCoord1f;
   PFNGLMULTITEXCOORD2FPROC _glMultiTexCoord2f;
   PFNGLMULTITEXCOORD3FPROC _glMultiTexCoord3f;
@@ -719,6 +729,12 @@ public:
 
   PFNGLBLENDEQUATIONPROC _glBlendEquation;
   PFNGLBLENDCOLORPROC _glBlendColor;
+
+  bool _supports_vao;
+  GLuint _current_vao_index;
+  PFNGLBINDVERTEXARRAYPROC _glBindVertexArray;
+  PFNGLDELETEVERTEXARRAYSPROC _glDeleteVertexArrays;
+  PFNGLGENVERTEXARRAYSPROC _glGenVertexArrays;
 
   bool _supports_framebuffer_object;
   PFNGLISRENDERBUFFEREXTPROC _glIsRenderbuffer;
@@ -887,6 +903,8 @@ public:
 
   bool _use_object_labels;
   PFNGLOBJECTLABELPROC _glObjectLabel;
+
+  GLuint _white_texture;
 
 #ifndef NDEBUG
   bool _show_texture_usage;

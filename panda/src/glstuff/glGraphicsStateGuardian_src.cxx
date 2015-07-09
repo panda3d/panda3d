@@ -83,7 +83,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Upda
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 
-#ifdef OPENGLES_2
+#ifndef OPENGLES_1
 PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
 #endif
 
@@ -126,22 +126,54 @@ static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
 
-#ifdef OPENGLES_2
-// We have a default shader that will be applied when there
-// isn't any shader applied (e.g. if it failed to compile).
-// We need this because OpenGL ES 2.x does not have
-// a fixed-function pipeline.
-// This default shader just outputs a red color, telling
-// the user that something went wrong.
+#ifndef OPENGLES_1
+// We have a default shader that will be applied when there isn't any
+// shader applied (e.g. if it failed to compile).  We need this because
+// OpenGL ES 2.x and OpenGL 3.2+ core don't have a fixed-function pipeline.
+// This default shader just applies a single texture, which is good enough
+// for drawing GUIs and such.
 static const string default_vshader =
-  "uniform mediump mat4 p3d_ModelViewProjectionMatrix;\n"
-  "attribute highp vec4 p3d_Vertex;\n"
+#ifndef OPENGLES
+  "#version 130\n"
+  "in vec4 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in vec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+#else
+  "precision mediump float;\n"
+  "attribute vec4 p3d_Vertex;\n"
+  "attribute vec4 p3d_Color;\n"
+  "attribute vec2 p3d_MultiTexCoord0;\n"
+  "varying vec2 texcoord;\n"
+  "varying vec4 color;\n"
+#endif
+  "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
+  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
+
 static const string default_fshader =
+#ifndef OPENGLES
+  "#version 130\n"
+  "in vec2 texcoord;\n"
+  "in vec4 color;\n"
+#else
+  "precision mediump float;\n"
+  "varying vec2 texcoord;\n"
+  "varying vec4 color;\n"
+#endif
+  "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
-  "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+#ifndef OPENGLES
+  "  gl_FragColor = texture(p3d_Texture0, texcoord);\n"
+#else
+  "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
+#endif
+  "  gl_FragColor *= color;\n"
   "}\n";
 #endif
 
@@ -308,6 +340,8 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
 {
   _error_count = 0;
+  _gl_shadlang_ver_major = 0;
+  _gl_shadlang_ver_minor = 0;
 
   // Hack.  Turn on the flag that we turned off at a higher level,
   // since we know this works properly in OpenGL, and we want the
@@ -324,6 +358,8 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
+
+  _white_texture = 0;
 
 #ifdef HAVE_CG
   _cg_context = 0;
@@ -447,8 +483,55 @@ reset() {
 
   // Save the extensions tokens.
   _extensions.clear();
-  save_extensions((const char *)glGetString(GL_EXTENSIONS));
+
+  // In OpenGL 3.0 and later, glGetString(GL_EXTENSIONS) is deprecated.
+#ifndef OPENGLES
+  if (is_at_least_gl_version(3, 0)) {
+    PFNGLGETSTRINGIPROC _glGetStringi =
+      (PFNGLGETSTRINGIPROC)get_extension_func("glGetStringi");
+
+    if (_glGetStringi != NULL) {
+      GLint n = 0;
+      glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+      for (GLint i = 0; i < n; ++i) {
+        const char *extension = (const char *)_glGetStringi(GL_EXTENSIONS, i);
+        _extensions.insert(string(extension));
+      }
+    } else {
+      GLCAT.error() << "glGetStringi is not available!\n";
+      save_extensions((const char *)glGetString(GL_EXTENSIONS));
+    }
+  } else
+#endif
+  {
+    save_extensions((const char *)glGetString(GL_EXTENSIONS));
+  }
+
   get_extra_extensions();
+
+  // This needs access to the extensions, so put this after save_extensions.
+  query_glsl_version();
+
+#ifndef OPENGLES
+  bool core_profile;
+  if (_gl_version_major < 3 || has_extension("GL_ARB_compatibility")) {
+    core_profile = false;
+  } else {
+    core_profile = true;
+  }
+
+  if (core_profile) {
+    GLCAT.debug() << "Using core profile\n";
+  } else {
+    GLCAT.debug() << "Using compatibility profile\n";
+  }
+#elif defined(OPENGLES_1)
+  static const bool core_profile = false;
+#else
+  static const bool core_profile = true;
+#endif
+
+  // Print out a list of all extensions.
   report_extensions();
 
   // Initialize OpenGL debugging output first, if enabled and supported.
@@ -599,7 +682,7 @@ reset() {
   }
 #endif
 
-#ifndef OPENGLES
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
   if (is_at_least_gl_version(1, 4)) {
     _glSecondaryColorPointer = (PFNGLSECONDARYCOLORPOINTERPROC)
       get_extension_func("glSecondaryColorPointer");
@@ -905,11 +988,9 @@ reset() {
     has_extension("GL_EXT_bgra") || is_at_least_gl_version(1, 2);
 #endif
 
-#ifdef OPENGLES_2
-  _supports_rescale_normal = true;
-#else
+#ifdef SUPPORT_FIXED_FUNCTION
   _supports_rescale_normal =
-    gl_support_rescale_normal &&
+    !core_profile && gl_support_rescale_normal &&
     (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
 #endif
 
@@ -945,13 +1026,19 @@ reset() {
 #ifdef OPENGLES_2
   _glActiveTexture = glActiveTexture;
 #else
+  bool supports_multitexture = false;
   if (is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1)) {
-    _supports_multitexture = true;
+    supports_multitexture = true;
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glActiveTexture");
+
+#ifdef SUPPORT_FIXED_FUNCTION
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glClientActiveTexture");
+#endif
+
+#ifdef SUPPORT_IMMEDIATE_MODE
     _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
       get_extension_func("glMultiTexCoord1f");
     _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
@@ -968,14 +1055,20 @@ reset() {
       get_extension_func("glMultiTexCoord3d");
     _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
       get_extension_func("glMultiTexCoord4d");
+#endif
 
   } else if (has_extension("GL_ARB_multitexture")) {
-    _supports_multitexture = true;
+    supports_multitexture = true;
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glActiveTextureARB");
+
+#ifdef SUPPORT_FIXED_FUNCTION
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glClientActiveTextureARB");
+#endif
+
+#ifdef SUPPORT_IMMEDIATE_MODE
     _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
       get_extension_func("glMultiTexCoord1fARB");
     _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
@@ -992,12 +1085,16 @@ reset() {
       get_extension_func("glMultiTexCoord3dARB");
     _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
       get_extension_func("glMultiTexCoord4dARB");
+#endif
   } else {
-    _supports_multitexture = false;
+    supports_multitexture = false;
   }
 
-  if (_supports_multitexture) {
-    if (_glActiveTexture == NULL || _glClientActiveTexture == NULL
+  if (supports_multitexture) {
+    if (_glActiveTexture == NULL
+#ifdef SUPPORT_FIXED_FUNCTION
+        || _glClientActiveTexture == NULL
+#endif
 #ifdef SUPPORT_IMMEDIATE_MODE
         || GLf(_glMultiTexCoord1) == NULL || GLf(_glMultiTexCoord2) == NULL
         || GLf(_glMultiTexCoord3) == NULL || GLf(_glMultiTexCoord4) == NULL
@@ -1005,16 +1102,21 @@ reset() {
         ) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_multitexture = false;
+      supports_multitexture = false;
     }
   }
 
-  if (!_supports_multitexture) {
+  if (!supports_multitexture) {
     // Replace with dummy no-op functions.
     _glActiveTexture = null_glActiveTexture;
+  }
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!supports_multitexture || core_profile) {
     _glClientActiveTexture = null_glActiveTexture;
   }
 #endif
+#endif  // OPENGLES_2
 
 #ifdef OPENGLES
   if (has_extension("GL_ANGLE_depth_texture")) {
@@ -1058,17 +1160,19 @@ reset() {
     _supports_shadow_filter = false;
   }*/
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   _supports_texture_combine = false;
   _supports_texture_saved_result = false;
   _supports_texture_dot3 = false;
 #else
-  _supports_texture_combine =
-    has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
-  _supports_texture_saved_result =
-    has_extension("GL_ARB_texture_env_crossbar") || has_extension("GL_OES_texture_env_crossbar") || is_at_least_gl_version(1, 4);
-  _supports_texture_dot3 =
-    has_extension("GL_ARB_texture_env_dot3") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+  if (!core_profile) {
+    _supports_texture_combine =
+      has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+    _supports_texture_saved_result =
+      has_extension("GL_ARB_texture_env_crossbar") || has_extension("GL_OES_texture_env_crossbar") || is_at_least_gl_version(1, 4);
+    _supports_texture_dot3 =
+      has_extension("GL_ARB_texture_env_dot3") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+  }
 #endif
 
 #ifdef OPENGLES_2
@@ -1122,6 +1226,38 @@ reset() {
     }
   }
 #endif
+
+  _supports_vao = false;
+
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_vertex_array_object")) {
+    _supports_vao = true;
+
+    _glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)
+      get_extension_func("glBindVertexArray");
+    _glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)
+      get_extension_func("glDeleteVertexArrays");
+    _glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)
+      get_extension_func("glGenVertexArrays");
+
+  } else if (has_extension("GL_OES_vertex_array_object")) {
+    _supports_vao = true;
+
+    _glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)
+      get_extension_func("glBindVertexArrayOES");
+    _glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)
+      get_extension_func("glDeleteVertexArraysOES");
+    _glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)
+      get_extension_func("glGenVertexArraysOES");
+  }
+
+  if (_supports_vao) {
+    if (_glBindVertexArray == NULL || _glDeleteVertexArrays == NULL ||
+        _glGenVertexArrays == NULL) {
+      GLCAT.warning()
+        << "Vertex array objects advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_vao = false;
+    }
+  }
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
   if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
@@ -1353,12 +1489,14 @@ reset() {
   _glVertexAttribPointer = glVertexAttribPointer;
   _glVertexAttribIPointer = NULL;
   _glVertexAttribLPointer = NULL;
+#endif
 
+#ifndef OPENGLES_1
   // We need to have a default shader to apply in case
   // something didn't happen to have a shader applied, or
   // if it failed to compile. This default shader just outputs
   // a red color, indicating that something went wrong.
-  if (_default_shader == NULL) {
+  if (_default_shader == NULL && core_profile) {
     _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
   }
 #endif
@@ -2161,11 +2299,17 @@ reset() {
 
   report_my_gl_errors();
 
-  if (support_stencil) {
+  if (core_profile) {
+    //TODO: better detection mechanism?
+    _supports_stencil = true;
+  }
+#ifdef SUPPORT_FIXED_FUNCTION
+  else if (support_stencil) {
     GLint num_stencil_bits;
     glGetIntegerv(GL_STENCIL_BITS, &num_stencil_bits);
     _supports_stencil = (num_stencil_bits != 0);
   }
+#endif
 
   _supports_stencil_wrap =
     has_extension("GL_EXT_stencil_wrap") || has_extension("GL_OES_stencil_wrap");
@@ -2189,11 +2333,17 @@ reset() {
   glFrontFace(GL_CCW);
 #ifndef OPENGLES_2
   glDisable(GL_LINE_SMOOTH);
-  glDisable(GL_POINT_SMOOTH);
+#endif
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    glDisable(GL_POINT_SMOOTH);
+  }
+#endif
 #ifndef OPENGLES
   glDisable(GL_POLYGON_SMOOTH);
 #endif  // OPENGLES
 
+#ifndef OPENGLES_2
   if (_supports_multisample) {
     glDisable(GL_MULTISAMPLE);
   }
@@ -2231,38 +2381,39 @@ reset() {
   _texture_binding_shader_context = (ShaderContext *)NULL;
 #endif
 
-#ifdef OPENGLES_2
-  _max_lights = 0;
-#else
   // Count the max number of lights
-  GLint max_lights = 0;
-  glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
-  _max_lights = max_lights;
+  _max_lights = 0;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint max_lights = 0;
+    glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
+    _max_lights = max_lights;
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "max lights = " << _max_lights << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max lights = " << _max_lights << "\n";
+    }
   }
 #endif
 
-#ifdef OPENGLES_2
-  _max_clip_planes = 0;
-#else
   // Count the max number of clipping planes
-  GLint max_clip_planes = 0;
-  glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
-  _max_clip_planes = max_clip_planes;
+  _max_clip_planes = 0;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint max_clip_planes = 0;
+    glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
+    _max_clip_planes = max_clip_planes;
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "max clip planes = " << _max_clip_planes << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max clip planes = " << _max_clip_planes << "\n";
+    }
   }
 #endif
 
-#ifdef OPENGLES_2
-  _max_texture_stages = 0;
-#else
-  if (_supports_multitexture) {
+  _max_texture_stages = 1;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (supports_multitexture && !core_profile) {
     GLint max_texture_stages = 0;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &max_texture_stages);
     _max_texture_stages = max_texture_stages;
@@ -2276,6 +2427,7 @@ reset() {
 
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
+  _current_vao_index = 0;
   _current_fbo = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
@@ -2284,28 +2436,34 @@ reset() {
 
   report_my_gl_errors();
 
-#ifndef OPENGLES_2
-  if (gl_cheap_textures) {
-    GLCAT.info()
-      << "Setting glHint() for fastest textures.\n";
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-  }
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    if (gl_cheap_textures) {
+      GLCAT.info()
+        << "Setting glHint() for fastest textures.\n";
+      glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+    }
 
-  // Use per-vertex fog if per-pixel fog requires SW renderer
-  glHint(GL_FOG_HINT, GL_DONT_CARE);
+    // Use per-vertex fog if per-pixel fog requires SW renderer
+    glHint(GL_FOG_HINT, GL_DONT_CARE);
+  }
 #endif
 
-  GLint num_red_bits = 0;
-  glGetIntegerv(GL_RED_BITS, &num_red_bits);
-  if (num_red_bits < 8) {
-    glEnable(GL_DITHER);
-    _dithering_enabled = true;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "frame buffer depth = " << num_red_bits
-        << " bits/channel, enabling dithering\n";
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint num_red_bits = 0;
+    glGetIntegerv(GL_RED_BITS, &num_red_bits);
+    if (num_red_bits < 8) {
+      glEnable(GL_DITHER);
+      _dithering_enabled = true;
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "frame buffer depth = " << num_red_bits
+          << " bits/channel, enabling dithering\n";
+      }
     }
   }
+#endif
 
   _error_count = 0;
 
@@ -2414,6 +2572,20 @@ reset() {
       << "\n";
   }
 
+#endif
+
+  // OpenGL core profile requires a VAO to be bound.  It's a bit silly,
+  // because we can just bind a VAO and then forget about it.
+#if !defined(OPENGLES)
+  if (core_profile) {
+    if (_supports_vao) {
+      _glGenVertexArrays(1, &_current_vao_index);
+      _glBindVertexArray(_current_vao_index);
+    } else {
+      GLCAT.error()
+        << "Core profile enabled, but vertex array objects not supported!\n";
+    }
+  }
 #endif
 
   // Now that the GSG has been initialized, make it available for
@@ -2745,7 +2917,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
 #endif
   unbind_buffers();
@@ -2754,7 +2926,7 @@ clear_before_callback() {
   // texture stage is still set to stage 0.  CEGUI, in particular,
   // makes this assumption.
   _glActiveTexture(GL_TEXTURE0);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
 
@@ -2824,7 +2996,7 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glMatrixMode(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
@@ -2835,6 +3007,12 @@ prepare_lens() {
   report_my_gl_errors();
 
   do_point_size();
+#endif
+
+#ifndef OPENGLES_1
+  if (_current_shader_context) {
+    _current_shader_context->issue_parameters(Shader::SSD_transform);
+  }
 #endif
 
   return true;
@@ -3029,6 +3207,7 @@ end_frame(Thread *current_thread) {
 
   // Now is a good time to delete any pending display lists.
 #ifndef OPENGLES
+#ifdef SUPPORT_FIXED_FUNCTION
   if (display_lists) {
     LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
@@ -3045,6 +3224,7 @@ end_frame(Thread *current_thread) {
       _deleted_display_lists.clear();
     }
   }
+#endif
 
   // And deleted queries, too, unless we're using query timers
   // in which case we'll need to reuse lots of them.
@@ -3131,7 +3311,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif  // NDEBUG
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // We can't draw without a shader bound in OpenGL ES 2.  This shouldn't
   // happen anyway unless the default shader failed to compile somehow.
   if (_current_shader_context == NULL) {
@@ -3175,7 +3355,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview
@@ -3189,7 +3369,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-#ifndef OPENGLES  // Display lists not supported by OpenGL ES.
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
   if (geom_reader->get_usage_hint() == Geom::UH_static &&
       _data_reader->get_usage_hint() == Geom::UH_static &&
       display_lists) {
@@ -3271,13 +3451,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       if (_vertex_array_shader_context != 0) {
         _vertex_array_shader_context->disable_shader_vertex_arrays();
       }
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       if (!update_standard_vertex_arrays(force)) {
         return false;
       }
 #endif
     } else {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       // Shader.
       if (_vertex_array_shader_context == 0 || _vertex_array_shader_context->uses_standard_vertex_arrays()) {
         // Previous shader used standard arrays.
@@ -3291,7 +3471,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
           disable_standard_vertex_arrays();
         }
       }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
       if (_current_shader_context->uses_custom_vertex_arrays()) {
         // The current shader also uses custom vertex arrays.
         if (!_current_shader_context->
@@ -3312,7 +3492,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   return true;
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_vertex_arrays
 //       Access: Protected
@@ -3499,7 +3679,7 @@ update_standard_vertex_arrays(bool force) {
   }
   return true;
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::unbind_buffers
@@ -3527,12 +3707,12 @@ unbind_buffers() {
     _current_ibuffer_index = 0;
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
 #endif
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_vertex_arrays
 //       Access: Protected
@@ -3562,7 +3742,7 @@ disable_standard_vertex_arrays() {
   glDisableClientState(GL_VERTEX_ARRAY);
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_triangles
@@ -4176,7 +4356,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
-#ifndef OPENGLES  // Display lists not supported by OpenGL ES.
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
   if (_geom_display_list != 0) {
     // If we were building a display list, close it now.
     glEndList();
@@ -4190,7 +4370,7 @@ end_draw_primitives() {
   _geom_display_list = 0;
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_transform_stale) {
     glMatrixMode(GL_MODELVIEW);
     GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
@@ -5615,7 +5795,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   return true;
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_fog
 //       Access: Public, Virtual
@@ -5640,7 +5820,7 @@ apply_fog(Fog *fog) {
   call_glFogfv(GL_FOG_COLOR, fog->get_color());
   report_my_gl_errors();
 }
-#endif  // OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_transform
@@ -5653,7 +5833,7 @@ apply_fog(Fog *fog) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_transform() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   // OpenGL ES 2 does not support glLoadMatrix.
 
   const TransformState *transform = _internal_transform;
@@ -5677,7 +5857,7 @@ do_issue_transform() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shade_model
 //       Access: Protected
@@ -5700,8 +5880,9 @@ do_issue_shade_model() {
     break;
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
+#ifndef OPENGLES_1
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shader
 //       Access: Protected
@@ -5709,24 +5890,25 @@ do_issue_shade_model() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_shader(bool state_has_changed) {
-#ifndef OPENGLES_1
   ShaderContext *context = 0;
   Shader *shader = (Shader *)(_target_shader->get_shader());
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // If we don't have a shader, apply the default shader.
   if (!shader) {
     shader = _default_shader;
+    nassertv(shader != NULL);
   }
 
 #endif
   if (shader) {
     context = shader->prepare_now(get_prepared_objects(), this);
   }
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // If it failed, try applying the default shader.
   if (shader != _default_shader && (context == 0 || !context->valid())) {
     shader = _default_shader;
+    nassertv(shader != NULL);
     context = shader->prepare_now(get_prepared_objects(), this);
   }
 #endif
@@ -5757,8 +5939,8 @@ do_issue_shader(bool state_has_changed) {
   }
 
   report_my_gl_errors();
-#endif
 }
+#endif  // !OPENGLES_1
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_render_mode
@@ -5876,7 +6058,7 @@ do_issue_antialias() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
+#ifdef SUPPORT_FIXED_FUNCTION // OpenGL ES 2.0 doesn't support rescaling normals.
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_rescale_normal
 //       Access: Protected
@@ -5921,7 +6103,7 @@ do_issue_rescale_normal() {
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
@@ -5946,7 +6128,7 @@ do_issue_depth_test() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_alpha_test
 //       Access: Protected
@@ -5970,7 +6152,7 @@ do_issue_alpha_test() {
     }
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_depth_write
@@ -6031,7 +6213,7 @@ do_issue_cull_face() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_fog
 //       Access: Protected
@@ -6052,7 +6234,7 @@ do_issue_fog() {
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_depth_offset
@@ -6093,7 +6275,7 @@ do_issue_depth_offset() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_material
 //       Access: Protected
@@ -6199,7 +6381,7 @@ do_issue_material() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_blending
@@ -6330,7 +6512,7 @@ do_issue_blending() {
   enable_blend(false);
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6373,9 +6555,9 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6425,9 +6607,9 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6471,7 +6653,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 ////////////////////////////////////////////////////////////////////
@@ -6680,8 +6862,7 @@ query_gl_version() {
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
-  _gl_shadlang_ver_major = 0;
-  _gl_shadlang_ver_minor = 0;
+
 
   const GLubyte *text = glGetString(GL_VERSION);
   if (text == (const GLubyte *)NULL) {
@@ -6727,38 +6908,45 @@ query_gl_version() {
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::query_glsl_version
+//       Access: Protected
+//  Description: Queries the supported GLSL version.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+query_glsl_version() {
+  _gl_shadlang_ver_major = 0;
+  _gl_shadlang_ver_minor = 0;
 
 #ifndef OPENGLES
-    if (_gl_version_major == 1) {
-      // We can't call has_extension at this point yet.
-      const char *extstr = (const char *) glGetString(GL_EXTENSIONS);
-      if (extstr != NULL) {
-        if (strstr(extstr, "GL_ARB_shading_language_100") != NULL) {
-          _gl_shadlang_ver_major = 1;
-          _gl_shadlang_ver_minor = 0;
-        }
-      }
-    } else if (_gl_version_major >= 2) {
+  if (_gl_version_major == 1) {
+    if (has_extension("GL_ARB_shading_language_100")) {
       _gl_shadlang_ver_major = 1;
-      _gl_shadlang_ver_minor = 1;
-      const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-      if (verstr == NULL ||
-          sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
-                                  &_gl_shadlang_ver_minor) != 2) {
-        GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
-      }
+      _gl_shadlang_ver_minor = 0;
     }
-#elif defined(OPENGLES_2)
+  } else if (_gl_version_major >= 2) {
     _gl_shadlang_ver_major = 1;
-    _gl_shadlang_ver_minor = 0;
+    _gl_shadlang_ver_minor = 1;
     const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
     if (verstr == NULL ||
-        sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
-                                               &_gl_shadlang_ver_minor) != 2) {
+        sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
+                                &_gl_shadlang_ver_minor) != 2) {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
-#endif
   }
+#elif defined(OPENGLES_2)
+  _gl_shadlang_ver_major = 1;
+  _gl_shadlang_ver_minor = 0;
+  const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+  if (verstr == NULL ||
+      sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                             &_gl_shadlang_ver_minor) != 2) {
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7579,8 +7767,14 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_blue:
     return GL_BLUE;
 #endif
+
   case Texture::F_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_ALPHA;
+#else
+    return GL_RED;
+#endif
+
 #ifndef OPENGLES_1
   case Texture::F_rg16:
   case Texture::F_rg32:
@@ -7613,13 +7807,22 @@ get_external_image_format(Texture *tex) const {
 #else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
 #endif
+
   case Texture::F_luminance:
   case Texture::F_sluminance:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_LUMINANCE;
+#else
+    return GL_RED;
+#endif
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_LUMINANCE_ALPHA;
+#else
+    return GL_RG;
+#endif
 
 #ifndef OPENGLES
   case Texture::F_r8i:
@@ -8127,7 +8330,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 
   case Texture::F_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return force_sized ? GL_ALPHA8 : GL_ALPHA;
+#else
+    return force_sized ? GL_R8 : GL_RED;
+#endif
 
   case Texture::F_luminance:
 #ifndef OPENGLES
@@ -8243,7 +8450,7 @@ is_compressed_format(GLenum format) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_apply_mode_type(TextureStage::Mode am) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (am) {
   case TextureStage::M_modulate: return GL_MODULATE;
   case TextureStage::M_decal: return GL_DECAL;
@@ -8275,7 +8482,7 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_combine_type(TextureStage::CombineMode cm) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (cm) {
   case TextureStage::CM_undefined: // fall through
   case TextureStage::CM_replace: return GL_REPLACE;
@@ -8303,7 +8510,7 @@ GLint CLP(GraphicsStateGuardian)::
 get_texture_src_type(TextureStage::CombineSource cs,
                      int last_stage, int last_saved_result,
                      int this_stage) const {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
   case TextureStage::CS_texture: return GL_TEXTURE;
@@ -8365,6 +8572,7 @@ get_texture_operand_type(TextureStage::CombineOperand co) {
   return GL_SRC_COLOR;
 }
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected, Static
@@ -8374,23 +8582,18 @@ GLenum CLP(GraphicsStateGuardian)::
 get_fog_mode_type(Fog::Mode m) {
   switch(m) {
   case Fog::M_linear: return GL_LINEAR;
-#ifndef OPENGLES_2
   case Fog::M_exponential: return GL_EXP;
   case Fog::M_exponential_squared: return GL_EXP2;
-#endif
     /*
       case Fog::M_spline: return GL_FOG_FUNC_SGIS;
     */
 
   default:
     GLCAT.error() << "Invalid Fog::Mode value" << endl;
-#ifdef OPENGLES_2
-    return GL_LINEAR;
-#else
     return GL_EXP;
-#endif
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_blend_equation_type
@@ -8539,65 +8742,6 @@ get_usage(Geom::UsageHint usage_hint) {
   return GL_STATIC_DRAW;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::print_gfx_visual
-//       Access: Public
-//  Description: Prints a description of the current visual selected.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-print_gfx_visual() {
-  GLint i;
-  GLboolean j;
-  cout << "Graphics Visual Info (# bits of each):" << endl;
-
-  cout << "RGBA: ";
-  glGetIntegerv( GL_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << i << endl;
-
-#ifndef OPENGLES
-  cout << "Accum RGBA: ";
-  glGetIntegerv( GL_ACCUM_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_ALPHA_BITS, &i ); cout << i << endl;
-
-  glGetIntegerv( GL_INDEX_BITS, &i ); cout << "Color Index: " << i << endl;
-#endif
-
-  glGetIntegerv( GL_DEPTH_BITS, &i ); cout << "Depth: " << i << endl;
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
-  glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
-
-#ifndef OPENGLES
-  glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
-                                                << (int)j << endl;
-
-  glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
-#endif
-
-  if (_supports_multisample) {
-#ifndef OPENGLES_2
-    glGetBooleanv( GL_MULTISAMPLE, &j ); cout << "Multisample? " << (int)j << endl;
-#endif
-    glGetIntegerv( GL_SAMPLES, &i ); cout << "Samples: " << i << endl;
-  }
-
-  glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
-#ifndef OPENGLES_2
-  glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
-                                                << (int)j << endl;
-  glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
-                                               << (int)j << endl;
-#endif
-
-#ifndef OPENGLES
-  glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
-#endif
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
 //       Access: Public
@@ -8640,7 +8784,7 @@ reissue_transforms() {
   do_issue_transform();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
@@ -8660,9 +8804,9 @@ enable_lighting(bool enable) {
     glDisable(GL_LIGHTING);
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_ambient_light
 //       Access: Protected, Virtual
@@ -8683,9 +8827,9 @@ set_ambient_light(const LColor &color) {
         c[3] * _light_color_scale[3]);
   call_glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_light
 //       Access: Protected, Virtual
@@ -8704,9 +8848,9 @@ enable_light(int light_id, bool enable) {
     glDisable(get_light_id(light_id));
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_bind_lights
 //       Access: Protected, Virtual
@@ -8738,9 +8882,9 @@ begin_bind_lights() {
   glPushMatrix();
   GLPf(LoadMatrix)(render_transform->get_mat().get_data());
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::end_bind_lights
 //       Access: Protected, Virtual
@@ -8758,9 +8902,9 @@ end_bind_lights() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_clip_plane
 //       Access: Protected, Virtual
@@ -8777,9 +8921,9 @@ enable_clip_plane(int plane_id, bool enable) {
     glDisable(get_clip_plane_id(plane_id));
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
 //       Access: Protected, Virtual
@@ -8808,9 +8952,9 @@ begin_bind_clip_planes() {
   glPushMatrix();
   GLPf(LoadMatrix)(render_transform->get_mat().get_data());
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_clip_plane
 //       Access: Protected, Virtual
@@ -8840,9 +8984,9 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::end_bind_clip_planes
 //       Access: Protected, Virtual
@@ -8857,7 +9001,7 @@ end_bind_clip_planes() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_state_and_transform
@@ -8908,7 +9052,7 @@ set_state_and_transform(const RenderState *target,
   _instance_count = _target_shader->get_instance_count();
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
       !_state_mask.get_bit(alpha_test_slot) ||
@@ -9000,7 +9144,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(render_mode_slot);
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
   if (_target_rs->get_attrib(rescale_normal_slot) != _state_rs->get_attrib(rescale_normal_slot) ||
       !_state_mask.get_bit(rescale_normal_slot)) {
@@ -9010,7 +9154,7 @@ set_state_and_transform(const RenderState *target,
   }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int shade_model_slot = ShadeModelAttrib::get_class_slot();
   if (_target_rs->get_attrib(shade_model_slot) != _state_rs->get_attrib(shade_model_slot) ||
       !_state_mask.get_bit(shade_model_slot)) {
@@ -9046,7 +9190,7 @@ set_state_and_transform(const RenderState *target,
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader(false);
   }
@@ -9073,7 +9217,7 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_tex_gen_modifies_mat) {
     int tex_gen_slot = TexGenAttrib::get_class_slot();
     int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
@@ -9095,7 +9239,7 @@ set_state_and_transform(const RenderState *target,
   }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int tex_gen_slot = TexGenAttrib::get_class_slot();
   if (_target_tex_gen != _state_tex_gen ||
       !_state_mask.get_bit(tex_gen_slot)) {
@@ -9110,7 +9254,7 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(material_slot) != _state_rs->get_attrib(material_slot) ||
       !_state_mask.get_bit(material_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_material_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_material();
 #endif
     _state_mask.set_bit(material_slot);
@@ -9125,7 +9269,7 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(light_slot) != _state_rs->get_attrib(light_slot) ||
       !_state_mask.get_bit(light_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_light_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_light();
 #endif
     _state_mask.set_bit(light_slot);
@@ -9148,7 +9292,7 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
       !_state_mask.get_bit(fog_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_fog_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_fog();
 #endif
     _state_mask.set_bit(fog_slot);
@@ -9206,12 +9350,12 @@ do_issue_texture() {
     if (_texture_binding_shader_context != 0) {
       _texture_binding_shader_context->disable_shader_texture_bindings();
     }
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     update_standard_texture_bindings();
 #endif
   } else {
     if (_texture_binding_shader_context == 0) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       disable_standard_texture_bindings();
 #endif
       _current_shader_context->update_shader_texture_bindings(NULL);
@@ -9226,7 +9370,7 @@ do_issue_texture() {
 #endif
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
 //       Access: Private
@@ -9470,9 +9614,32 @@ update_standard_texture_bindings() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_white_texture
+//       Access: Private
+//  Description: Applies a white dummy texture.  This is useful to
+//               bind to a texture slot when a texture is missing.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+apply_white_texture() {
+  if (_white_texture != 0) {
+    glBindTexture(GL_TEXTURE_2D, _white_texture);
+    return;
+  }
 
+  glGenTextures(1, &_white_texture);
+  glBindTexture(GL_TEXTURE_2D, _white_texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
@@ -9515,7 +9682,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
     tc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   // Disable all texture stages.
   for (i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
@@ -9551,7 +9718,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     // Choose the corresponding usage texture and apply it.
     _glActiveTexture(GL_TEXTURE0 + i);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     glEnable(GL_TEXTURE_2D);
 #endif
 
@@ -9652,7 +9819,7 @@ upload_usage_texture(int width, int height) {
 }
 #endif  // NDEBUG
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
 //       Access: Private
@@ -9681,9 +9848,9 @@ disable_standard_texture_bindings() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_matrix
 //       Access: Protected
@@ -9718,9 +9885,9 @@ do_issue_tex_matrix() {
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_gen
 //       Access: Protected
@@ -10003,7 +10170,7 @@ do_issue_tex_gen() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::specify_texture
@@ -10099,7 +10266,7 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
       tex->get_format() == Texture::F_depth_component16 ||
       tex->get_format() == Texture::F_depth_component24 ||
       tex->get_format() == Texture::F_depth_component32) {
-#ifndef OPENGLES
+#ifdef SUPPORT_FIXED_FUNCTION
     glTexParameteri(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
 #endif
     if (_supports_shadow_filter) {
@@ -10530,6 +10697,36 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     if (gtc->_generate_mipmaps && _glGenerateMipmap == NULL) {
       // The old, deprecated way to generate mipmaps.
       glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+    }
+#endif
+
+#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES_2)
+    // Do we need to apply a swizzle mask to emulate these deprecated
+    // texture formats?
+    switch (tex->get_format()) {
+    case Texture::F_alpha:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
+      break;
+
+    case Texture::F_luminance:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+      break;
+
+    case Texture::F_luminance_alpha:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+      break;
+
+    default:
+      break;
     }
 #endif
 
@@ -10987,12 +11184,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             GLCAT.warning()
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
-  #ifndef OPENGLES
+#ifndef OPENGLES
             if (is_at_least_gl_version(1, 2)) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
-  #endif
+#endif
             break;
           }
 
