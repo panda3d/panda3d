@@ -2,7 +2,7 @@
 
 __all__ = ['DirectScrollBar']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *

@@ -1106,6 +1106,28 @@ get_default_sampler() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_default_sampler
+//       Access: Published
+//  Description: This sets the default sampler state for this
+//               texture, containing the wrap and filter properties
+//               specified on the texture level; it may still be
+//               overridden by a sampler state specified at a higher
+//               level.  This encompasses the settings for get_wrap_u,
+//               get_minfilter, get_anisotropic_degree, etc.
+//
+//               This makes a copy of the SamplerState object, so
+//               future modifications of the same SamplerState will
+//               have no effect on this texture unless you call
+//               set_default_sampler again.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_default_sampler(const SamplerState &sampler) {
+  CDWriter cdata(_cycler, true);
+  cdata->_default_sampler = sampler;
+  cdata->inc_properties_modified();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_wrap_u
 //       Access: Published
 //  Description: Returns the wrap mode of the texture in the U

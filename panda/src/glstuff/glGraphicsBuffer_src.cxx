@@ -32,7 +32,8 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
   _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples"),
   _requested_multisamples(0),
-  _requested_coverage_samples(0)
+  _requested_coverage_samples(0),
+  _rb_context(NULL)
 {
   // A FBO doesn't have a back buffer.
   _draw_buffer_type       = RenderBuffer::T_front;
@@ -50,6 +51,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
     _rb[i] = 0;
     _rbm[i] = 0;
   }
+  _rb_data_size_bytes = 0;
 
   _shared_depth_buffer = 0;
   _bound_tex_page = -1;
@@ -246,6 +248,7 @@ rebuild_bitplanes() {
     } else {
       glgsg->bind_fbo(0);
     }
+    _rb_context->set_active(true);
     return;
   }
 
@@ -273,6 +276,7 @@ rebuild_bitplanes() {
     rb_resize = true;
   }
   _rb_size_z = 1;
+  _rb_data_size_bytes = 0;
 
   int num_fbos = 1;
 
@@ -381,6 +385,10 @@ rebuild_bitplanes() {
       // buffer was requested.
       _use_depth_stencil = true;
     }
+  } else if (attach[RTP_depth_stencil] != NULL && attach[RTP_depth] == NULL) {
+    // The depth stencil slot was assigned a texture, but we don't support it.
+    // Downgrade to a regular depth texture.
+    swap(attach[RTP_depth], attach[RTP_depth_stencil]);
   }
 
   // Knowing this, we can already be a tiny bit more accurate about the
@@ -521,6 +529,9 @@ rebuild_bitplanes() {
   if (!_have_any_color) {
     _fb_properties.set_rgba_bits(0, 0, 0, 0);
   }
+
+  _rb_context->set_active(true);
+  _rb_context->update_data_size_bytes(_rb_data_size_bytes);
 
   _initial_clear = false;
   report_my_gl_errors();
@@ -824,6 +835,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_STENCIL_SIZE_EXT, &stencil_size);
       _fb_properties.set_depth_bits(depth_size);
       _fb_properties.set_stencil_bits(stencil_size);
+      _rb_data_size_bytes += _rb_size_x * _rb_size_y * ((depth_size + stencil_size) / 8);
 
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
@@ -847,6 +859,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
       _fb_properties.set_depth_bits(depth_size);
+      _rb_data_size_bytes += _rb_size_x * _rb_size_y * (depth_size / 8);
 
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
@@ -864,14 +877,17 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       GLCAT.debug() << "Creating color renderbuffer.\n";
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
+      GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_GREEN_SIZE_EXT, &green_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_BLUE_SIZE_EXT, &blue_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_ALPHA_SIZE_EXT, &alpha_size);
+
       if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
-        GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
-        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
-        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_GREEN_SIZE_EXT, &green_size);
-        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_BLUE_SIZE_EXT, &blue_size);
-        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_ALPHA_SIZE_EXT, &alpha_size);
         _fb_properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
       }
+      _rb_data_size_bytes += _rb_size_x * _rb_size_y * ((red_size + green_size + blue_size + alpha_size) / 8);
+
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
                                         GL_RENDERBUFFER_EXT, _rb[slot]);
@@ -1038,7 +1054,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   // to a framebuffer attachment.
   glgsg->apply_texture(gtc);
 
-#ifndef OPENGLES
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
   GLclampf priority = 1.0f;
   glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
@@ -1232,6 +1248,10 @@ open_buffer() {
     return false;
   }
 
+  if (_rb_context == NULL) {
+    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
+  }
+
   // Describe the framebuffer properties of the FBO.
   //
   // Unfortunately, we can't currently predict which formats
@@ -1403,6 +1423,13 @@ open_buffer() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 close_buffer() {
+  _rb_data_size_bytes = 0;
+  if (_rb_context != NULL) {
+    _rb_context->update_data_size_bytes(0);
+    delete _rb_context;
+    _rb_context = NULL;
+  }
+
   check_host_valid();
 
   if (_gsg == 0) {
@@ -1421,13 +1448,14 @@ close_buffer() {
       _rb[i] = 0;
     }
   }
-  // Delete the renderbuffers.
+  // Delete the multisample renderbuffers.
   for (int i=0; i<RTP_COUNT; i++) {
     if (_rbm[i] != 0) {
       glgsg->_glDeleteRenderbuffers(1, &(_rbm[i]));
       _rb[i] = 0;
     }
   }
+
   _rb_size_x = 0;
   _rb_size_y = 0;
   report_my_gl_errors();

@@ -1,4 +1,4 @@
-// Filename: vector_LPoint2f.h
+// Filename: vector_int.h
 // Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,26 +12,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef VECTOR_LPOINT2F_H
-#define VECTOR_LPOINT2F_H
+#ifndef VECTOR_INT_H
+#define VECTOR_INT_H
 
-#include "pandabase.h"
-#include "luse.h"
-#include "pvector.h"
+#include "dtoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : vector_LPoint2f
-// Description : A vector of LPoint2fs.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
+//       Class : vector_int
+// Description : A vector of ints.  This class is defined once here,
+//               and exported to DTOOLCONFIG.DLL; other packages that want
 //               to use a vector of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#define EXPCL EXPCL_PANDA_LINMATH
-#define EXPTP EXPTP_PANDA_LINMATH
-#define TYPE LPoint2f
-#define NAME vector_LPoint2f
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
+#define TYPE int
+#define NAME vector_int
 
 #include "vector_src.h"
 

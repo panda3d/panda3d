@@ -431,7 +431,6 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   apply_node_properties(egg_group, node, false);
 
   // turn it into a collision node
-  egg_group->set_cs_type(EggGroup::CST_polyset);
   egg_group->set_collide_flags(EggGroup::CF_descend);
 
   NodePath np = node_path.get_node_path();
@@ -451,6 +450,8 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
     for (int i = 0; i < num_solids; i++) {
       CPT(CollisionSolid) child = node->get_solid(i);
       if (child->is_of_type(CollisionPolygon::get_class_type())) {
+        egg_group->set_cs_type(EggGroup::CST_polyset);
+
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
 
@@ -464,10 +465,71 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           EggVertex *new_egg_vert = cvpool->create_unique_vertex(egg_vert);
           egg_poly->add_vertex(new_egg_vert);
         }
-      } else if (child->is_of_type(CollisionPlane::get_class_type())) {
-        nout << "Encountered unhandled collsion type: CollisionPlane" << "\n";
+
       } else if (child->is_of_type(CollisionSphere::get_class_type())) {
-        nout << "Encountered unhandled collsion type: CollisionSphere" << "\n";
+        CPT(CollisionSphere) sphere = DCAST(CollisionSphere, child);
+        LPoint3 center = sphere->get_center();
+        LVector3 offset(sphere->get_radius(), 0, 0);
+
+        EggGroup *egg_sphere;
+        if (num_solids == 1) {
+          egg_sphere = egg_group;
+        } else {
+          egg_sphere = new EggGroup;
+          egg_sphere->set_collide_flags(EggGroup::CF_descend);
+          egg_group->add_child(egg_sphere);
+        }
+        egg_sphere->set_cs_type(EggGroup::CST_sphere);
+
+        EggVertex ev1, ev2;
+        ev1.set_pos(LCAST(double, (center + offset) * net_mat));
+        ev2.set_pos(LCAST(double, (center - offset) * net_mat));
+
+        EggPolygon *egg_poly = new EggPolygon;
+        egg_sphere->add_child(egg_poly);
+
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev2));
+
+      } else if (child->is_of_type(CollisionPlane::get_class_type())) {
+        LPlane plane = DCAST(CollisionPlane, child)->get_plane();
+        LPoint3 origin = plane.get_point();
+        LVector3 normal = plane.get_normal();
+
+        // Get an arbitrary vector on the plane by taking the cross product
+        // with any vector, as long as it is different.
+        LVector3 vec1;
+        if (abs(normal[2]) > abs(normal[1])) {
+          vec1 = normal.cross(LVector3(0, 1, 0));
+        } else {
+          vec1 = normal.cross(LVector3(0, 0, 1));
+        }
+
+        // Find a second vector perpendicular to the two.
+        LVector3 vec2 = normal.cross(vec1);
+
+        EggGroup *egg_plane;
+        if (num_solids == 1) {
+          egg_plane = egg_group;
+        } else {
+          egg_plane = new EggGroup;
+          egg_plane->set_collide_flags(EggGroup::CF_descend);
+          egg_group->add_child(egg_plane);
+        }
+        egg_plane->set_cs_type(EggGroup::CST_plane);
+
+        EggVertex ev0, ev1, ev2;
+        ev0.set_pos(LCAST(double, origin * net_mat));
+        ev1.set_pos(LCAST(double, (origin + vec1) * net_mat));
+        ev2.set_pos(LCAST(double, (origin + vec2) * net_mat));
+
+        EggPolygon *egg_poly = new EggPolygon;
+        egg_plane->add_child(egg_poly);
+
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
+        egg_poly->add_vertex(cvpool->create_unique_vertex(ev2));
+
       } else if (child->is_of_type(CollisionBox::get_class_type())) {
         nout << "Encountered unhandled collsion type: CollisionBox" << "\n";
       } else if (child->is_of_type(CollisionInvSphere::get_class_type())) {

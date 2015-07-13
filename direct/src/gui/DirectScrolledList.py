@@ -2,13 +2,13 @@
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
 from DirectFrame import *
 from DirectButton import *
-import string, types
+import types
 
 
 class DirectScrolledListItem(DirectButton):

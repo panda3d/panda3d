@@ -11,6 +11,8 @@
 
   #define SOURCES \
      config_pnmimage.h \
+     convert_srgb.I convert_srgb.h \
+     convert_srgb_sse2.cxx \
      pfmFile.I pfmFile.h \
      pfmFile_ext.cxx pfmFile_ext.h \
      pnmbitio.h \
@@ -24,6 +26,7 @@
 
   #define INCLUDED_SOURCES \
      config_pnmimage.cxx \
+     convert_srgb.cxx \
      pfmFile.cxx \
      pnm-image-filter.cxx \
      pnmbitio.cxx \
@@ -36,6 +39,7 @@
 
   #define INSTALL_HEADERS \
      config_pnmimage.h \
+     convert_srgb.I convert_srgb.h \
      pfmFile.I pfmFile.h \
      pfmFile_ext.cxx pfmFile_ext.h \
      pnmBrush.h pnmBrush.I \

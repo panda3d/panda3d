@@ -125,28 +125,28 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
 // appear in the config_*.h file.  The proxy object will be named
 // basename_cat.
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
-
+#ifdef CPPPARSER
+#define NotifyCategoryDecl(basename, expcl, exptp)
+#elif defined(WIN32_VC)
+// MSVC's rules for extern template classes differ slightly.
 #define NotifyCategoryDecl(basename, expcl, exptp) \
   class expcl NotifyCategoryGetCategory_ ## basename { \
   public: \
     NotifyCategoryGetCategory_ ## basename(); \
     static NotifyCategory *get_category(); \
   }; \
-  exptp template class expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename>; \
+  EXPORT_TEMPLATE_CLASS(expcl, exptp, NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename>); \
   extern expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
-
-#else // WIN32_VC
-
+#else
 #define NotifyCategoryDecl(basename, expcl, exptp) \
-  class NotifyCategoryGetCategory_ ## basename { \
+  class expcl NotifyCategoryGetCategory_ ## basename { \
   public: \
     NotifyCategoryGetCategory_ ## basename(); \
     static NotifyCategory *get_category(); \
   }; \
-  extern NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
-
-#endif  // WIN32_VC
+  EXPORT_TEMPLATE_CLASS(expcl, extern, NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename>); \
+  extern expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
+#endif
 
 // This macro is the same as the above, except that it declares a category
 // that is not intended to be exported from any DLL.
@@ -171,6 +171,7 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
 
 #else
 #define NotifyCategoryDefName(basename, actual_name, parent_category) \
+  template class NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename>; \
   NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat; \
   static NotifyCategoryGetCategory_ ## basename force_init_ ## basename ## _cat; \
   NotifyCategoryGetCategory_ ## basename:: \

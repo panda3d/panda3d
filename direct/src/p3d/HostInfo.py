@@ -1,3 +1,5 @@
+__all__ = ["HostInfo"]
+
 from panda3d.core import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
 from panda3d.core import HTTPChannel, ConfigVariableInt
 from panda3d import core

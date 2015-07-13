@@ -104,6 +104,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
+  _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
 
   GraphicsWindowInputDevice device =
@@ -946,9 +947,10 @@ open_window() {
   wa.border_pixel = 0;
   wa.colormap = _colormap;
   wa.event_mask = _event_mask;
+  wa.override_redirect = _override_redirect;
 
   unsigned long attrib_mask =
-    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect;
 
   _xwindow = XCreateWindow
     (_display, parent_window,
@@ -1180,7 +1182,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   nassertv(next_set_data < max_set_data);
 
   // Add the process ID as a convenience for other applications.
-  Cardinal pid = getpid();
+  PN_int32 pid = getpid();
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_pid,
                   XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char *)&pid, 1);
@@ -2146,7 +2148,6 @@ get_cursor(const Filename &filename) {
   }
   fi = _cursor_filenames.find(resolved);
   if (fi != _cursor_filenames.end()) {
-    _cursor_filenames[filename] = (*fi).second;
     return fi->second;
   }
 

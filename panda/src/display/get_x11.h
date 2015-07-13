@@ -52,7 +52,6 @@ struct XVisualInfo;
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
-#include <X11/Intrinsic.h>
 
 #ifdef HAVE_XRANDR
 #include <X11/extensions/Xrandr.h>
@@ -63,7 +62,7 @@ struct XVisualInfo;
 #endif
 
 #ifdef HAVE_XF86DGA
-#include <X11/extensions/xf86dga.h>
+#include <X11/extensions/Xxf86dga.h>
 #endif
 
 #include "post_x11_include.h"

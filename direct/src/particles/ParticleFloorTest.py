@@ -1,5 +1,6 @@
 
-from pandac.PandaModules import *
+from panda3d.core import NodePath
+from panda3d.physics import LinearVectorForce
 from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
@@ -48,8 +49,8 @@ class ParticleFloorTest(NodePath):
 
 if __name__ == "__main__":
     from direct.directbase.TestStart import *
-    pt=ParticleFloorTest()
+    pt = ParticleFloorTest()
     pt.reparentTo(render)
     pt.start()
-    camera.setY(-10.0)
-    run()
+    base.camera.setY(-10.0)
+    base.run()

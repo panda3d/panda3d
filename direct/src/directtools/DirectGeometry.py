@@ -1,5 +1,5 @@
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from DirectGlobals import *
 from DirectUtil import *
 import math

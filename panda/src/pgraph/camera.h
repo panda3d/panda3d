@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
-  Camera(const string &name, Lens *lens = new PerspectiveLens());
+  explicit Camera(const string &name, Lens *lens = new PerspectiveLens());
   Camera(const Camera &copy);
 
 public:

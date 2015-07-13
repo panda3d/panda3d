@@ -29,7 +29,7 @@
     callbackObject.h callbackObject.I \
     callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
-    collideMask.h \
+    colorSpace.h collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \
     copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \
@@ -91,9 +91,10 @@
     callbackData.cxx \
     callbackObject.cxx \
     clockObject.cxx \
+    colorSpace.cxx \
+    config_util.cxx configurable.cxx \
     copyOnWriteObject.cxx \
     copyOnWritePointer.cxx \
-    config_util.cxx configurable.cxx \
     cPointerCallbackObject.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     doubleBitMask.cxx \
@@ -141,7 +142,7 @@
     callbackObject.h callbackObject.I \
     callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
-    collideMask.h \
+    colorSpace.h collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \
     copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \

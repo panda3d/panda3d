@@ -25,6 +25,7 @@
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
 #include "pset.h"
+#include "vector_string.h"
 
 Filename output_code_filename;
 string module_name;
@@ -33,6 +34,7 @@ bool build_c_wrappers = false;
 bool build_python_wrappers = false;
 bool build_python_native_wrappers = false;
 bool track_interpreter = false;
+vector_string imports;
 
 // Short command-line options.
 static const char *short_options = "";
@@ -46,6 +48,7 @@ enum CommandOptions {
   CO_python,
   CO_python_native,
   CO_track_interpreter,
+  CO_import,
 };
 
 static struct option long_options[] = {
@@ -56,6 +59,7 @@ static struct option long_options[] = {
   { "python", no_argument, NULL, CO_python },
   { "python-native", no_argument, NULL, CO_python_native },
   { "track-interpreter", no_argument, NULL, CO_track_interpreter },
+  { "import", required_argument, NULL, CO_import },
   { NULL }
 };
 
@@ -91,13 +95,13 @@ int write_python_table_native(ostream &out) {
     FunctionIndex function_index = interrogate_get_function(fi);
 
     // Consider only those that belong in the module we asked for.
-    if (interrogate_function_has_module_name(function_index) &&
-      module_name == interrogate_function_module_name(function_index)) {
+    //if (interrogate_function_has_module_name(function_index) &&
+    //  module_name == interrogate_function_module_name(function_index)) {
       // if it has a library name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
         libraries.insert(interrogate_function_library_name(function_index));
       }
-    }
+    //}
   }
 
   for (int ti = 0; ti < interrogate_number_of_types(); ti++) {
@@ -113,6 +117,9 @@ int write_python_table_native(ostream &out) {
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     printf("Referencing Library %s\n", (*ii).c_str());
     out << "extern LibraryDef " << *ii << "_moddef;\n";
+    out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";
+    out << "extern void Dtool_" << *ii << "_ResolveExternals();\n";
+    out << "extern void Dtool_" << *ii << "_BuildInstants(PyObject *module);\n";
   }
 
   out << "\n"
@@ -128,6 +135,8 @@ int write_python_table_native(ostream &out) {
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
       << "#else\n"
       << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
       << "#endif\n"
@@ -138,6 +147,19 @@ int write_python_table_native(ostream &out) {
     out << "  in_interpreter = 1;\n";
   }
 
+  vector_string::const_iterator si;
+  for (si = imports.begin(); si != imports.end(); ++si) {
+    out << "  PyImport_Import(PyUnicode_FromString(\"" << *si << "\"));\n";
+  }
+
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "  Dtool_" << *ii << "_RegisterTypes();\n";
+  }
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
+  }
+  out << "\n";
+
   out << "  LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
@@ -145,13 +167,23 @@ int write_python_table_native(ostream &out) {
 
   out << "NULL};\n"
       << "\n"
-      << "  return Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
+      << "  PyObject *module = Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
+      << "  if (module != NULL) {\n";
+
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
+  }
+
+  out << "  }\n"
+      << "  return module;\n"
       << "}\n"
       << "\n"
       << "#else  // Python 2 case\n"
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
       << "#else\n"
       << "extern \"C\" void init" << library_name << "();\n"
       << "#endif\n"
@@ -162,6 +194,18 @@ int write_python_table_native(ostream &out) {
     out << "  in_interpreter = 1;\n";
   }
 
+  for (si = imports.begin(); si != imports.end(); ++si) {
+    out << "  PyImport_Import(PyUnicode_FromString(\"" << *si << "\"));\n";
+  }
+
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "  Dtool_" << *ii << "_RegisterTypes();\n";
+  }
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
+  }
+  out << "\n";
+
   out << "  LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
@@ -169,7 +213,14 @@ int write_python_table_native(ostream &out) {
 
   out << "NULL};\n"
       << "\n"
-      << "  Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n"
+      << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
+      << "  if (module != NULL) {\n";
+
+  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
+  }
+
+  out << "  }\n"
       << "}\n"
       << "#endif\n"
       << "\n";
@@ -333,6 +384,10 @@ int main(int argc, char *argv[]) {
 
     case CO_track_interpreter:
       track_interpreter = true;
+      break;
+
+    case CO_import:
+      imports.push_back(optarg);
       break;
 
     default:

@@ -1,6 +1,5 @@
 
 from ClusterClient import *
-import string
 
 # A dictionary of information for various cluster configurations.
 # Dictionary is keyed on cluster-config string

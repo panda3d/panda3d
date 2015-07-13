@@ -26,6 +26,7 @@
 #include "luse.h"
 #include "globPattern.h"
 #include "plist.h"
+#include "bamCacheRecord.h"
 
 class EggTextureCollection;
 class EggMaterialCollection;
@@ -33,7 +34,6 @@ class EggPolygon;
 class EggVertex;
 class EggVertexPool;
 class DSearchPath;
-class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggGroupNode

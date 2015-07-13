@@ -1,3 +1,34 @@
+------------------------  RELEASE 1.9.1  ------------------------
+
+This minor release fixes some important regressions and bugs found
+in 1.9.0, but also introduces a few minor features.
+
+It also reintroduces the deployment pipeline that was absent from
+the previous release.
+
+* Textures were not being scaled to power-of-2 in some cases
+* Fix various issues with shader inputs
+* Bullet step function accidentally defaulted to step size of 0
+* Use model-path for finding libRocket assets
+* Fix inconsistent behavior with non-power-of-2 textures in rocket
+* Fix regression with memoryviews
+* Fix symbol error when loading libp3ffmpeg on Mac OS X
+* Fix issues running maya2egg on Mac OS X
+* PStats now tracks memory residency of graphics buffers
+* Support wireframe and point rendering modes in OpenGL ES
+* Add missing keys to libRocket keymap
+* Fix incorrect parsing of numbers with exponents in Config.prc
+* Various performance optimizations
+* Fix for reading URLs mounted via the virtual file system
+* Improve GLSL error reporting
+* Fix issue with model disappearing in rare cases with GLSL
+* Fix shader generator memory leaks and runtime performance
+* Add M_confined mouse mode that keeps cursor in window
+* Expose _NET_WM_PID to window managers in X11
+* bam2egg supports collision sphere and plane solids
+* Add sample program demonstrating mouse modes
+* Add -L (lighting) and -P (graphics pipe) pview options
+
 ------------------------  RELEASE 1.9.0  ------------------------
 
 This is a major release with many exciting new features!

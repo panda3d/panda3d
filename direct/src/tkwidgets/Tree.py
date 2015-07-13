@@ -20,12 +20,9 @@ __all__ = ['TreeNode', 'TreeItem']
 # - optimize tree redraw after expand of subnode
 
 import os
-import sys
-import string
 from direct.showbase.TkGlobal import *
 from Tkinter import *
-import Pmw
-from pandac.PandaModules import *
+from panda3d.core import *
 
 # Initialize icon directory
 ICONDIR = ConfigVariableSearchPath('model-path').findFile(Filename('icons')).toOsSpecific()

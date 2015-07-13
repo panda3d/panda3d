@@ -6,11 +6,11 @@ __all__ = ['ParticleInterval']
 Contains the ParticleInterval class
 """
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from Interval import Interval
 
-from direct.particles import ParticleEffect
 
 class ParticleInterval(Interval):
     """

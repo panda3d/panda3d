@@ -49,6 +49,11 @@
   #error OPENGLES_2 should not be defined!
 #endif
 
+// OpenGL ES 1 has only the fixed-function pipeline.
+#ifndef SUPPORT_FIXED_FUNCTION
+#define SUPPORT_FIXED_FUNCTION
+#endif
+
 // This prevents glext.h from getting included by gl.h
 // That way, we can provide our own, better version.
 #define __glext_h_

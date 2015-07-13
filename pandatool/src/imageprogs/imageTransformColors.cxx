@@ -477,19 +477,19 @@ process_image(PNMImage &image) {
   if (_hls) {
     for (int yi = 0; yi < image.get_y_size(); ++yi) {
       for (int xi = 0; xi < image.get_x_size(); ++xi) {
-        LRGBColord rgb = image.get_xel(xi, yi);
+        LRGBColord rgb = LCAST(double, image.get_xel(xi, yi));
         rgb = hls2rgb(_mat.xform_point(rgb2hls(rgb)));
-        image.set_xel(xi, yi, rgb);
+        image.set_xel(xi, yi, LCAST(float, rgb));
       }
-    }    
-  } else {  
+    }
+  } else {
     for (int yi = 0; yi < image.get_y_size(); ++yi) {
       for (int xi = 0; xi < image.get_x_size(); ++xi) {
-        LRGBColord rgb = image.get_xel(xi, yi);
+        LRGBColord rgb = LCAST(double, image.get_xel(xi, yi));
         rgb = _mat.xform_point(rgb);
-        image.set_xel(xi, yi, rgb);
+        image.set_xel(xi, yi, LCAST(float, rgb));
       }
-    }    
+    }
   }
 }
 

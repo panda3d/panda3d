@@ -53,7 +53,6 @@
 
 InterrogateBuilder builder;
 std::string EXPORT_IMPORT_PREFIX;
-bool inside_python_native = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::add_source_file
@@ -1538,6 +1537,12 @@ get_getter(CPPType *expr_type, string expression,
     assert(expr_type != (CPPType *)NULL);
   }
 
+  // We can't return an array from a function, but we can decay it
+  // into a pointer.
+  while (expr_type->get_subtype() == CPPDeclaration::ST_array) {
+    expr_type = CPPType::new_type(new CPPPointerType(expr_type->as_array_type()->_element_type));
+  }
+
   // Make up a CPPFunctionType.
   CPPParameterList *params = new CPPParameterList;
   CPPFunctionType *ftype = new CPPFunctionType(expr_type, params, 0);
@@ -1912,27 +1917,29 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
   CPPType *return_type = NULL;
 
   CPPFunctionGroup *fgroup = make_property->_getter;
-  CPPFunctionGroup::Instances::const_iterator fi;
-  for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
-    CPPInstance *function = (*fi);
-    CPPFunctionType *ftype =
-      function->_type->as_function_type();
-    if (ftype != NULL && ftype->_parameters->_parameters.size() == 0) {
-      getter = function;
-      return_type = ftype->_return_type;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL && ftype->_parameters->_parameters.size() == 0) {
+        getter = function;
+        return_type = ftype->_return_type;
 
-      // The return type of the non-const method probably better represents
-      // the type of the property we are creating.
-      if ((ftype->_flags & CPPFunctionType::F_const_method) == 0) {
-        break;
+        // The return type of the non-const method probably better represents
+        // the type of the property we are creating.
+        if ((ftype->_flags & CPPFunctionType::F_const_method) == 0) {
+          break;
+        }
       }
     }
-  }
 
-  if (getter == NULL || return_type == NULL) {
-    cerr << "No instance of getter '"
-         << make_property->_getter->_name << "' is suitable!\n";
-    return 0;
+    if (getter == NULL || return_type == NULL) {
+      cerr << "No instance of getter '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
   }
 
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -1944,11 +1951,17 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
   iproperty._name = make_property->get_simple_name();
   iproperty._scoped_name = descope(make_property->get_local_name(&parser));
 
-  iproperty._type = get_type(return_type, false);
+  if (return_type != NULL) {
+    iproperty._type = get_type(return_type, false);
+  } else {
+    iproperty._type = 0;
+  }
 
-  iproperty._flags |= InterrogateElement::F_has_getter;
-  iproperty._getter = get_function(getter, "", struct_type,
-                                   struct_type->get_scope(), 0);
+  if (getter != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_getter;
+    iproperty._getter = get_function(getter, "", struct_type,
+                                     struct_type->get_scope(), 0);
+  }
 
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
   if (make_property->_leading_comment != (CPPCommentBlock *)NULL) {
@@ -1958,6 +1971,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
   // Now look for setters.
   fgroup = make_property->_setter;
   if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       iproperty._flags |= InterrogateElement::F_has_setter;

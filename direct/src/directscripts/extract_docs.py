@@ -7,7 +7,7 @@ files in the lib/pandac/input directory. """
 
 __all__ = []
 
-import os, re
+import os
 import panda3d, pandac
 from panda3d.dtoolconfig import *
 
@@ -135,6 +135,8 @@ def translated_type_name(type, scoped=True):
     typename = interrogate_type_name(type)
     if typename in ("PyObject", "_object"):
         return "object"
+    elif typename == "PN_stdfloat":
+        return "float"
 
     if interrogate_type_is_atomic(type):
         token = interrogate_type_atomic_token(type)
@@ -143,7 +145,9 @@ def translated_type_name(type, scoped=True):
         else:
             return typename
 
-    typename = translateTypeName(typename)
+    if not typename.endswith('_t'):
+        # Hack: don't mangle size_t etc.
+        typename = translateTypeName(typename)
 
     if scoped and interrogate_type_is_nested(type):
         return translated_type_name(interrogate_type_outer_class(type)) + '::' + typename

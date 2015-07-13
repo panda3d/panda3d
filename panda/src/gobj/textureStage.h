@@ -37,7 +37,7 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
-  TextureStage(const string &name);
+  explicit TextureStage(const string &name);
   INLINE TextureStage(TextureStage &copy);
   void operator = (const TextureStage &copy);
 

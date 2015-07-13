@@ -20,7 +20,8 @@
 #include "modelRoot.h"
 #include "texture.h"
 
-#include "aiScene.h"
+#include "assimp/scene.h"
+#include "assimp/Importer.hpp"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AssimpLoader

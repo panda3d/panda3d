@@ -10,6 +10,7 @@
     addHash.I addHash.h \
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
+    atomicAdjustGccImpl.h atomicAdjustGccImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
@@ -30,7 +31,7 @@
     nearly_zero.h \
     neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
-    pstrtod.h \
+    pdtoa.h pstrtod.h \
     register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
@@ -47,6 +48,7 @@
  #define INCLUDED_SOURCES  \
     addHash.cxx \
     atomicAdjustDummyImpl.cxx \
+    atomicAdjustGccImpl.cxx \
     atomicAdjustI386Impl.cxx \
     atomicAdjustPosixImpl.cxx \
     atomicAdjustWin32Impl.cxx \
@@ -59,6 +61,7 @@
     mutexWin32Impl.cxx \
     mutexSpinlockImpl.cxx \
     neverFreeMemory.cxx \
+    pdtoa.cxx \
     pstrtod.cxx \
     register_type.cxx \
     typeHandle.cxx \
@@ -69,6 +72,7 @@
     addHash.I addHash.h \
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
+    atomicAdjustGccImpl.h atomicAdjustGccImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
@@ -89,7 +93,7 @@
     nearly_zero.h \
     neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
-    pstrtod.h \
+    pdtoa.h pstrtod.h \
     register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \

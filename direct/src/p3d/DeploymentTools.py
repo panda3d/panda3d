@@ -4,7 +4,7 @@ to build for as many platforms as possible. """
 
 __all__ = ["Standalone", "Installer"]
 
-import os, sys, subprocess, tarfile, shutil, time, zipfile, glob, socket, getpass, struct
+import os, sys, subprocess, tarfile, shutil, time, zipfile, socket, getpass, struct
 from cStringIO import StringIO
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
@@ -73,7 +73,7 @@ class Standalone:
 
         self.tempDir = Filename.temporary("", self.basename, "") + "/"
         self.tempDir.makeDir()
-        self.host = HostInfo(PandaSystem.getPackageHostUrl(), appRunner = appRunner, hostDir = self.tempDir, asMirror = False, perPlatform = True)
+        self.host = HostInfo(PandaSystem.getPackageHostUrl(), appRunner = appRunner, hostDir = self.tempDir, asMirror = False)
 
         self.http = HTTPClient.getGlobalPtr()
         if not self.host.hasContentsFile:
@@ -233,7 +233,7 @@ class PackageTree:
         if hostUrl in self.hosts:
             return self.hosts[hostUrl]
 
-        host = HostInfo(hostUrl, appRunner = appRunner, hostDir = self.hostDir, asMirror = False, perPlatform = False)
+        host = HostInfo(hostUrl, appRunner = appRunner, hostDir = self.hostDir, asMirror = False)
         if not host.hasContentsFile:
             if not host.readContentsFile():
                 if not host.downloadContentsFile(self.http):
@@ -587,15 +587,22 @@ class Installer:
         for package in pkgTree.packages.values():
             xpackage = TiXmlElement('package')
             xpackage.SetAttribute('name', package.packageName)
+
+            filename = package.packageName + "/"
+
+            if package.packageVersion:
+                xpackage.SetAttribute('version', package.packageVersion)
+                filename += package.packageVersion + "/"
+
             if package.platform:
                 xpackage.SetAttribute('platform', package.platform)
+                filename += package.platform + "/"
                 assert package.platform == platform
-            xpackage.SetAttribute('per_platform', '0')
-            if package.packageVersion:
-                xpackage.SetAttribute('version', version)
-                xpackage.SetAttribute('filename', package.packageName + "/" + package.packageVersion + "/" + package.descFileBasename)
-            else:
-                xpackage.SetAttribute('filename', package.packageName + "/" + package.descFileBasename)
+
+            xpackage.SetAttribute('per_platform', '1')
+
+            filename += package.descFileBasename
+            xpackage.SetAttribute('filename', filename)
             xcontents.InsertEndChild(xpackage)
 
         doc.InsertEndChild(xcontents)

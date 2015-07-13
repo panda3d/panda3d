@@ -26,7 +26,8 @@ CPPFile::
 CPPFile(const Filename &filename, const Filename &filename_as_referenced,
         Source source) :
   _filename(filename), _filename_as_referenced(filename_as_referenced),
-  _source(source)
+  _source(source),
+  _pragma_once(false)
 {
   _filename.set_text();
   _filename_as_referenced.set_text();
@@ -42,7 +43,8 @@ CPPFile::
 CPPFile(const CPPFile &copy) :
   _filename(copy._filename),
   _filename_as_referenced(copy._filename_as_referenced),
-  _source(copy._source)
+  _source(copy._source),
+  _pragma_once(copy._pragma_once)
 {
 }
 
@@ -56,6 +58,7 @@ operator = (const CPPFile &copy) {
   _filename = copy._filename;
   _filename_as_referenced = copy._filename_as_referenced;
   _source = copy._source;
+  _pragma_once = copy._pragma_once;
 }
 
 ////////////////////////////////////////////////////////////////////

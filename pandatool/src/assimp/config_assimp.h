@@ -17,8 +17,6 @@
 
 #include "pandatoolbase.h"
 
-#include "assimp.hpp"
-
 #include "dconfig.h"
 
 ConfigureDecl(config_assimp, EXPCL_ASSIMP, EXPTP_ASSIMP);

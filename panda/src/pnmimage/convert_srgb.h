@@ -22,9 +22,9 @@
 // The below functions can encode and decode sRGB colors in various
 // representations.  Some of them are implemented using look-up tables,
 // some others using SSE2 intrinsics.
-extern EXPCL_PANDA_PNMIMAGE ALIGN_64BYTE const unsigned char to_srgb8_table[256];
-extern EXPCL_PANDA_PNMIMAGE ALIGN_64BYTE const unsigned char to_linear_uchar_table[256];
-extern EXPCL_PANDA_PNMIMAGE ALIGN_64BYTE const float to_linear_float_table[256];
+extern EXPCL_PANDA_PNMIMAGE const unsigned char to_srgb8_table[256];
+extern EXPCL_PANDA_PNMIMAGE const unsigned char to_linear_uchar_table[256];
+extern EXPCL_PANDA_PNMIMAGE const float to_linear_float_table[256];
 
 EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(unsigned char val);
 EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(float val);

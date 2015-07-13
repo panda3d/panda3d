@@ -2,11 +2,10 @@
 
 __all__ = ['Actor']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
-from pandac.PandaModules import LODNode
-import types, copy
+import types
 
 class Actor(DirectObject, NodePath):
     """

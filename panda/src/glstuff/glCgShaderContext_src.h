@@ -41,6 +41,8 @@ public:
   void bind(bool reissue_parameters = true);
   void unbind();
   void issue_parameters(int altered);
+  void update_transform_table(const TransformTable *table);
+  void update_slider_table(const SliderTable *table);
   void disable_shader_vertex_arrays();
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
   void disable_shader_texture_bindings();
@@ -50,12 +52,31 @@ public:
   INLINE bool uses_custom_vertex_arrays(void);
   INLINE bool uses_custom_texture_bindings(void);
 
+  // Special values for location to indicate conventional attrib slots.
+  enum ConventionalAttrib {
+    CA_unknown = -1,
+    CA_vertex = -2,
+    CA_normal = -3,
+    CA_color = -4,
+    CA_secondary_color = -5,
+    CA_texcoord = -32,
+  };
+
 private:
   CGprogram _cg_program;
+  GLuint _glsl_program;
+
+  GLint _color_attrib_index;
+  CGparameter _transform_table_param;
+  CGparameter _slider_table_param;
+  long _transform_table_size;
+  long _slider_table_size;
 
   pvector<CGparameter> _cg_parameter_map;
 
   CLP(GraphicsStateGuardian) *_glgsg;
+
+  bool _has_divisor;
 
   void release_resources();
 

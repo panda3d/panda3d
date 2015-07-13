@@ -8,5 +8,6 @@
 #include "stringDecoder.cxx"
 #include "textEncoder.cxx"
 #include "unicodeLatinMap.cxx"
+#include "vector_int.cxx"
 #include "vector_string.cxx"
 #include "win32ArgParser.cxx"

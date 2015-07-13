@@ -37,13 +37,13 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   StateMunger(gsg),
   _num_components(num_components),
   _numeric_type(numeric_type),
-  _contents(contents)
+  _contents(contents),
+  _munge_color(false),
+  _munge_color_scale(false),
+  _auto_shader(false),
+  _shader_skinning(false)
 {
   _render_mode = DCAST(RenderModeAttrib, state->get_attrib(RenderModeAttrib::get_class_slot()));
-
-  _munge_color = false;
-  _munge_color_scale = false;
-  _auto_shader = false;
 
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
@@ -98,6 +98,9 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   if (shader_attrib->auto_shader()) {
     _auto_shader = true;
   }
+  if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
+    _shader_skinning = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,9 +131,13 @@ munge_data_impl(const GeomVertexData *data) {
   }
 
   GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
-  if (hardware_animated_vertices &&
-      animation.get_animation_type() == AT_panda &&
-      new_data->get_slider_table() == (SliderTable *)NULL) {
+  if (_shader_skinning || (_auto_shader && hardware_animated_vertices &&
+      !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
+    animation.set_hardware(4, true);
+
+  } else if (hardware_animated_vertices &&
+             animation.get_animation_type() == AT_panda &&
+             new_data->get_slider_table() == (SliderTable *)NULL) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
     if (table != (TransformBlendTable *)NULL &&
@@ -161,7 +168,7 @@ munge_data_impl(const GeomVertexData *data) {
       }
     }
   }
-  
+
   CPT(GeomVertexFormat) orig_format = new_data->get_format();
   CPT(GeomVertexFormat) new_format = munge_format(orig_format, animation);
 
@@ -306,7 +313,9 @@ compare_to_impl(const GeomMunger *other) const {
       return compare;
     }
   }
-
+  if (_shader_skinning != om->_shader_skinning) {
+    return (int)_shader_skinning - (int)om->_shader_skinning;
+  }
   if (_auto_shader != om->_auto_shader) {
     return (int)_auto_shader - (int)om->_auto_shader;
   }
@@ -345,6 +354,9 @@ geom_compare_to_impl(const GeomMunger *other) const {
       return compare;
     }
   }
+  if (_shader_skinning != om->_shader_skinning) {
+    return (int)_shader_skinning - (int)om->_shader_skinning;
+  }
 
   return StateMunger::geom_compare_to_impl(other);
 }
@@ -376,7 +388,17 @@ munge_state_impl(const RenderState *state) {
     }
     if (shader_state->_generated_shader == NULL) {
       // Cache the generated ShaderAttrib on the shader state.
-      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state);
+      GeomVertexAnimationSpec spec;
+
+      // Currently we overload this flag to request vertex animation
+      // for the shader generator.
+      const ShaderAttrib *sattr;
+      shader_state->get_attrib_def(sattr);
+      if (sattr->get_flag(ShaderAttrib::F_hardware_skinning)) {
+        spec.set_hardware(4, true);
+      }
+
+      shader_state->_generated_shader = shader_generator->synthesize_shader(shader_state, spec);
     }
     munged_state = munged_state->set_attrib(shader_state->_generated_shader);
   }

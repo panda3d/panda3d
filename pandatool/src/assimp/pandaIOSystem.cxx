@@ -95,5 +95,6 @@ Open(const char *file, const char *mode) {
 
   } else {
     nassertr(false, NULL); // Not implemented on purpose.
+    return NULL;
   }
 }

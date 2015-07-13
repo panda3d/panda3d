@@ -2,12 +2,12 @@
 
 __all__ = ['DirectFrame']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectGuiBase import *
 from OnscreenImage import OnscreenImage
 from OnscreenGeom import OnscreenGeom
-import string, types
+import types
 
 class DirectFrame(DirectGuiWidget):
     DefDynGroups = ('text', 'geom', 'image')
