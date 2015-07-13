@@ -327,6 +327,11 @@ overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
 on DirectX rendering." ${IS_DEBUG_BUILD})
 
+option(SUPPORT_FIXED_FUNCTION
+  "This option compiles in support for the fixed-function OpenGL
+pipeline.  It is only really useful to turn this off if you are targeting
+an OpenGL ES 2 system." ON)
+
 option(USE_MEMORY_DLMALLOC
   "This is an optional alternative memory-allocation scheme
 available within Panda.  You can experiment with it to see
