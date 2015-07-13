@@ -20,6 +20,7 @@
 #include "cppTemplateScope.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppParameterList.h"
 #include "cppTBDType.h"
 #include "indent.h"
 #include "cppParser.h"

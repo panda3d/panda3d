@@ -14,6 +14,7 @@
 
 #include "parameterRemapBasicStringToString.h"
 #include "interfaceMaker.h"
+#include "interrogate.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapBasicStringToString::Constructor

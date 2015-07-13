@@ -22,7 +22,9 @@
 #include "interrogateBuilder.h"
 
 #include "interrogateDatabase.h"
+#include "cppExpression.h"
 #include "cppInstance.h"
+#include "cppArrayType.h"
 #include "cppConstType.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
