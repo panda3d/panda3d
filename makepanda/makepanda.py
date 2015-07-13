@@ -1020,7 +1020,6 @@ def CompileCxx(obj,src,opts):
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
             for (opt,var,val) in DEFSYMBOLS:
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
-            if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
             if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
@@ -1070,7 +1069,6 @@ def CompileCxx(obj,src,opts):
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
             for (opt,var,val) in DEFSYMBOLS:
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
-            if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
             if (opts.count('MSFORSCOPE')):  cmd += ' /Zc:forScope-'
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
@@ -1339,14 +1337,15 @@ def CompileIgate(woutd,wsrc,opts):
         cmd = 'interrogate'
 
     cmd += ' -srcdir %s -I%s -Dvolatile -Dmutable' % (srcdir, srcdir)
+    cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L'
     if (COMPILER=="MSVC"):
-        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
+        cmd += ' -D__inline -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
         if GetTargetArch() == 'x64':
             cmd += ' -DWIN64_VC -DWIN64 -D_WIN64'
         # NOTE: this 1600 value is the version number for VC2010.
-        cmd += ' -D_MSC_VER=1600 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
+        cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
-        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__attribute__\(x\)='
+        cmd += ' -D__inline -D__const=const -D__attribute__\(x\)='
         if GetTargetArch() in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
         else:
