@@ -1,4 +1,4 @@
-// Filename: vector_LPoint2f.cxx
+// Filename: vector_int.cxx
 // Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,12 +12,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "vector_LPoint2f.h"
+#include "vector_int.h"
 
-#define EXPCL EXPCL_PANDA_LINMATH
-#define EXPTP EXPTP_PANDA_LINMATH
-#define TYPE LPoint2f
-#define NAME vector_LPoint2f
+#define EXPCL EXPCL_DTOOL
+#define EXPTP EXPTP_DTOOL
+#define TYPE int
+#define NAME vector_int
 
 #include "vector_src.cxx"
 

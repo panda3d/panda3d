@@ -2708,6 +2708,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   int t_bits = get_tex_shift(y_size);
 
   if (s_bits < 0 || t_bits < 0) {
+    tinydisplay_cat.error()
+      << "Texture size " << x_size << 'x' << y_size
+      << " unsupported: dimensions must be power of two"
+      << " and smaller than " << _max_texture_dimension << '\n';
     return false;
   }
 

@@ -13,7 +13,6 @@ print e.tables
 """
 
 from xml.sax import saxutils
-from xml.sax import parse
 
 class ExcelHandler(saxutils.DefaultHandler):
     def __init__(self):

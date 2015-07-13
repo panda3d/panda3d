@@ -13,7 +13,7 @@ from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
 from WxPandaWindow import WxPandaWindow
-from pandac.PandaModules import WindowProperties, OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
+from panda3d.core import OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 
 HORIZONTAL = wx.SPLIT_HORIZONTAL

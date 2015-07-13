@@ -133,6 +133,8 @@ private:
                            int first_col, const CPPFile &first_file);
   void handle_include_directive(const string &args, int first_line,
                                 int first_col, const CPPFile &first_file);
+  void handle_pragma_directive(const string &args, int first_line,
+                               int first_col, const CPPFile &first_file);
   void handle_error_directive(const string &args, int first_line,
                               int first_col, const CPPFile &first_file);
 

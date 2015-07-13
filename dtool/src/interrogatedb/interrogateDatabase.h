@@ -35,7 +35,7 @@ class IndexRemapper;
 // Description : This stores all of the interrogate data and handles
 //               reading the data from a disk file when necessary.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG InterrogateDatabase {
+class EXPCL_INTERROGATEDB InterrogateDatabase {
 private:
   InterrogateDatabase();
 

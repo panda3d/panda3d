@@ -639,6 +639,40 @@ is_unsigned_char(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_signed_char
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is signed char,
+//               but not unsigned or 'plain' char.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_signed_char(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_signed_char(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return
+          (simple_type->_type == CPPSimpleType::T_char) &&
+          (simple_type->_flags & CPPSimpleType::F_signed) != 0;
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_signed_char(type->as_typedef_type()->_type);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_char_pointer
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is char * or const
@@ -2570,4 +2604,59 @@ is_local(CPPType *source_type) {
 
  return false;
  */
-};
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_trivial
+//       Access: Public, Static
+//  Description: Returns true if the type is trivial (or trivial
+//               enough for our purposes).
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_trivial(CPPType *source_type) {
+  switch (source_type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_trivial(source_type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return false;
+
+  case CPPDeclaration::ST_pointer:
+    return true;
+
+  case CPPDeclaration::ST_simple:
+    return true;
+
+  case CPPDeclaration::ST_typedef:
+    return is_trivial(source_type->as_typedef_type()->_type);
+
+  default:
+    if (source_type->is_trivial()) {
+      return true;
+    } else {
+      // This is a bit of a hack.  is_trivial() returns false for types that
+      // have an empty constructor (since we can't use =default yet).
+      // For the other classes, it's just convenient to consider them trivial
+      // even if they aren't, since they are simple enough.
+      string name = source_type->get_simple_name();
+      return (name == "ButtonHandle" || name == "DatagramIterator" ||
+              name == "BitMask" || name == "Filename" || name == "pixel" ||
+              name == "NodePath" || name == "LoaderOptions" ||
+              name == "PointerToArray" || name == "ConstPointerToArray" ||
+              name == "PStatThread" ||
+              (name.size() >= 6 && name.substr(0, 6) == "LPlane") ||
+              (name.size() > 6 && name.substr(0, 6) == "LPoint") ||
+              (name.size() > 7 && name.substr(0, 7) == "LVector") ||
+              (name.size() > 7 && name.substr(0, 7) == "LMatrix") ||
+              (name.size() > 8 && name.substr(0, 8) == "LVecBase") ||
+              (name.size() >= 9 && name.substr(0, 9) == "LParabola") ||
+              (name.size() >= 9 && name.substr(0, 9) == "LRotation") ||
+              (name.size() >= 11 && name.substr(0, 11) == "LQuaternion") ||
+              (name.size() >= 12 && name.substr(0, 12) == "LOrientation") ||
+              (name.size() > 16 && name.substr(0, 16) == "UnalignedLMatrix") ||
+              (name.size() > 17 && name.substr(0, 17) == "UnalignedLVecBase"));
+    }
+  }
+
+  return false;
+}

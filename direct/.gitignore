@@ -1,4 +1,5 @@
 *.pyc
+*.pyo
 /__init__.py
 # These are files that are generated within the source tree by the
 # ppremake system.

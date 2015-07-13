@@ -68,10 +68,10 @@ class PNMFileType;
 class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
-  PNMImage(const Filename &filename, PNMFileType *type = NULL);
-  INLINE PNMImage(int x_size, int y_size, int num_channels = 3,
-                  xelval maxval = 255, PNMFileType *type = NULL,
-                  ColorSpace color_space = CS_linear);
+  explicit PNMImage(const Filename &filename, PNMFileType *type = NULL);
+  INLINE explicit PNMImage(int x_size, int y_size, int num_channels = 3,
+                           xelval maxval = 255, PNMFileType *type = NULL,
+                           ColorSpace color_space = CS_linear);
   INLINE PNMImage(const PNMImage &copy);
   INLINE void operator = (const PNMImage &copy);
 
@@ -133,6 +133,9 @@ PUBLISHED:
   INLINE void make_grayscale();
   void make_grayscale(float rc, float gc, float bc);
   INLINE void make_rgb();
+
+  void premultiply_alpha();
+  void unpremultiply_alpha();
 
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);

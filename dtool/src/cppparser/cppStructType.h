@@ -47,6 +47,7 @@ public:
   bool check_virtual();
   virtual bool is_fully_specified() const;
   virtual bool is_incomplete() const;
+  virtual bool is_trivial() const;
 
   CPPInstance *get_destructor() const;
 

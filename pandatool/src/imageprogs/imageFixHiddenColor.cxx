@@ -111,7 +111,7 @@ run() {
 
   // First, get the average color of all the opaque pixels.
   int count = 0;
-  LRGBColord color(0.0, 0.0, 0.0);
+  LRGBColor color(0.0, 0.0, 0.0);
   int xi, yi;
   for (yi = 0; yi < _image.get_y_size(); ++yi) {
     for (xi = 0; xi < _image.get_x_size(); ++xi) {
@@ -127,7 +127,7 @@ run() {
   }
   color /= (double)count;
   nout << "  average color of " << count << " opaque pixels is " << color << "\n";
-  
+
   // Now, apply that wherever there are transparent pixels.
   count = 0;
   for (yi = 0; yi < _image.get_y_size(); ++yi) {
@@ -143,7 +143,7 @@ run() {
     exit(1);
   }
   nout << "  applied to " << count << " transparent pixels.\n";
-    
+
   write_image(_image);
 }
 

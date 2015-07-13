@@ -48,6 +48,7 @@ PUBLISHED:
   enum {
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
     F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
   };
 
   INLINE bool               has_shader() const;
@@ -106,8 +107,7 @@ PUBLISHED:
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
-  Texture *get_shader_input_texture(const InternalName *id) const;
-  const SamplerState &get_shader_input_sampler(const InternalName *id) const;
+  Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=NULL) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
 

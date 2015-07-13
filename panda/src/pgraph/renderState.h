@@ -271,8 +271,8 @@ private:
   // The code to manage this map lives in
   // GraphicsStateGuardian::get_geom_munger().
   typedef pmap<WCPT(GraphicsStateGuardianBase), PT(GeomMunger) > Mungers;
-  Mungers _mungers;
-  Mungers::const_iterator _last_mi;
+  mutable Mungers _mungers;
+  mutable Mungers::const_iterator _last_mi;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;

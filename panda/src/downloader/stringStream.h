@@ -34,6 +34,8 @@ PUBLISHED:
 
   INLINE string get_data();
   INLINE void set_data(const string &data);
+
+public:
   INLINE void swap_data(pvector<unsigned char> &data);
 
 private:

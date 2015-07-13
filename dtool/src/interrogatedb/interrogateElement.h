@@ -26,7 +26,7 @@ class IndexRemapper;
 // Description : An internal representation of a data element, like a
 //               data member or a global variable.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG InterrogateElement : public InterrogateComponent {
+class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
   INLINE InterrogateElement(InterrogateModuleDef *def = NULL);
   INLINE InterrogateElement(const InterrogateElement &copy);

@@ -138,3 +138,48 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix4) &source) {
      source(2, 0), source(2, 1), source(2, 2), source(2, 3),
      source(3, 0), source(3, 1), source(3, 2), source(3, 3));
 }
+
+INLINE_LINMATH FLOATNAME2(LVecBase2)
+lcast_to(FLOATTYPE2 *, const LVecBase2i &source) {
+  return FLOATNAME2(LVecBase2)(source[0], source[1]);
+}
+
+INLINE_LINMATH FLOATNAME2(LVecBase3)
+lcast_to(FLOATTYPE2 *, const LVecBase3i &source) {
+  return FLOATNAME2(LVecBase3)(source[0], source[1], source[2]);
+}
+
+INLINE_LINMATH FLOATNAME2(LVecBase4)
+lcast_to(FLOATTYPE2 *, const LVecBase4i &source) {
+  return FLOATNAME2(LVecBase4)(source[0], source[1], source[2], source[3]);
+}
+
+INLINE_LINMATH FLOATNAME2(LVector2)
+lcast_to(FLOATTYPE2 *, const LVector2i &source) {
+  return FLOATNAME2(LVector2)(source[0], source[1]);
+}
+
+INLINE_LINMATH FLOATNAME2(LVector3)
+lcast_to(FLOATTYPE2 *, const LVector3i &source) {
+  return FLOATNAME2(LVector3)(source[0], source[1], source[2]);
+}
+
+INLINE_LINMATH FLOATNAME2(LVector4)
+lcast_to(FLOATTYPE2 *, const LVector4i &source) {
+  return FLOATNAME2(LVector4)(source[0], source[1], source[2], source[3]);
+}
+
+INLINE_LINMATH FLOATNAME2(LPoint2)
+lcast_to(FLOATTYPE2 *, const LPoint2i &source) {
+  return FLOATNAME2(LPoint2)(source[0], source[1]);
+}
+
+INLINE_LINMATH FLOATNAME2(LPoint3)
+lcast_to(FLOATTYPE2 *, const LPoint3i &source) {
+  return FLOATNAME2(LPoint3)(source[0], source[1], source[2]);
+}
+
+INLINE_LINMATH FLOATNAME2(LPoint4)
+lcast_to(FLOATTYPE2 *, const LPoint4i &source) {
+  return FLOATNAME2(LPoint4)(source[0], source[1], source[2], source[3]);
+}

@@ -354,7 +354,7 @@ enable_line_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
@@ -532,7 +532,7 @@ enable_depth_test(bool val) {
   }
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_fog
 //       Access:
@@ -559,7 +559,7 @@ enable_fog(bool val) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_alpha_test
 //       Access:
@@ -644,7 +644,7 @@ clear_color_write_mask() {
   }
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogfv
 //       Access: Public
@@ -662,7 +662,7 @@ call_glFogfv(GLenum pname, const LColor &color) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glMaterialfv
 //       Access: Public
@@ -680,7 +680,7 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -698,7 +698,7 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -716,7 +716,7 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightModelfv
 //       Access: Public
@@ -734,7 +734,7 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glTexEnvfv
 //       Access: Public
@@ -768,7 +768,7 @@ call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #endif  //  STDFLOAT_DOUBLE
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
@@ -780,7 +780,7 @@ get_light_id(int index) const {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_clip_plane_id
 //       Access: Public

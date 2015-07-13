@@ -158,7 +158,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (animation.get_num_transforms() > 1) {
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column
-        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+        (InternalName::get_transform_weight(), animation.get_num_transforms(),
          NT_stdfloat, C_other);
 
       if (animation.get_indexed_transforms()) {

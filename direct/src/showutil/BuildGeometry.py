@@ -1,8 +1,5 @@
-from direct.distributed import DistributedObject
-from direct.directnotify import DirectNotifyGlobal
-from pandac.PandaModules import *
+from panda3d.core import *
 from math import *
-import math
 
 GEO_ID = 0
 

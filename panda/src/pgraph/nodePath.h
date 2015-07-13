@@ -177,8 +177,8 @@ PUBLISHED:
   INLINE explicit NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
   INLINE explicit NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
-  NodePath(const NodePath &parent, PandaNode *child_node,
-           Thread *current_thread = Thread::get_current_thread());
+  explicit NodePath(const NodePath &parent, PandaNode *child_node,
+                    Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
@@ -876,9 +876,10 @@ PUBLISHED:
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                         const NodePath &other = NodePath(),
                          Thread *current_thread = Thread::get_current_thread()) const;
 
-  EXTENSION(PyObject *get_tight_bounds() const);
+  EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
 
   //  void analyze() const;
 

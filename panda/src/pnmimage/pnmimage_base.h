@@ -42,8 +42,9 @@ typedef unsigned char gray;
 struct pixel {
 PUBLISHED:
   pixel() { }
+  pixel(gray fill) : r(fill), g(fill), b(fill) { }
   pixel(gray r, gray g, gray b) : r(r), g(g), b(b) { }
-  static int size() { return 3; }
+
   gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }
   gray &operator [](int i) { nassertr(i >= 0 && i < 3, r); return *(&r + i); }
   pixel operator + (const pixel &other) const
@@ -60,6 +61,7 @@ PUBLISHED:
     { r *= mult; g *= mult; b *= mult; }
 
 #ifdef HAVE_PYTHON
+  static int size() { return 3; }
   void output(ostream &out) {
     out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
   }

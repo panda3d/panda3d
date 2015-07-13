@@ -1222,6 +1222,11 @@ p_read_object() {
     }
 
     return p_read_object();
+
+  default:
+    bam_cat.error()
+      << "Encountered invalid BamObjectCode 0x" << hex << (int)boc << dec << ".\n";
+    return 0;
   }
 
   // An object definition in a Bam file consists of a TypeHandle

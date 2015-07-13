@@ -80,12 +80,12 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomVertexData(const string &name,
-                 const GeomVertexFormat *format,
-                 UsageHint usage_hint);
+  explicit GeomVertexData(const string &name,
+                          const GeomVertexFormat *format,
+                          UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
-  GeomVertexData(const GeomVertexData &copy,
-                 const GeomVertexFormat *format);
+  explicit GeomVertexData(const GeomVertexData &copy,
+                          const GeomVertexFormat *format);
   void operator = (const GeomVertexData &copy);
   virtual ~GeomVertexData();
   ALLOC_DELETED_CHAIN(GeomVertexData);
@@ -339,6 +339,8 @@ private:
                                   const LMatrix4 &mat, int begin_row, int end_row);
   static void table_xform_point3f(unsigned char *datat, size_t num_rows,
                                   size_t stride, const LMatrix4f &matf);
+  static void table_xform_normal3f(unsigned char *datat, size_t num_rows,
+                                   size_t stride, const LMatrix4f &matf);
   static void table_xform_vector3f(unsigned char *datat, size_t num_rows,
                                    size_t stride, const LMatrix4f &matf);
   static void table_xform_vecbase4f(unsigned char *datat, size_t num_rows,

@@ -24,6 +24,7 @@
 #include "fogAttrib.h"
 #include "transparencyAttrib.h"
 #include "renderState.h"
+#include "rescaleNormalAttrib.h"
 #include "clockObject.h"
 #include "config_pgraph.h"
 #include "depthOffsetAttrib.h"
@@ -122,14 +123,30 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   Thread *current_thread = traverser->get_current_thread();
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
 
-  // Check to see if there's a special transparency setting.
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);
 
-  const TransparencyAttrib *trans = (const TransparencyAttrib *)
-    state->get_attrib(TransparencyAttrib::get_class_slot());
+  // This is probably a good time to check for an auto rescale setting.
+  const RescaleNormalAttrib *rescale;
+  state->get_attrib_def(rescale);
+  if (rescale->get_mode() == RescaleNormalAttrib::M_auto) {
+    RescaleNormalAttrib::Mode mode;
 
-  if (trans != (const TransparencyAttrib *)NULL) {
+    if (object->_internal_transform->has_identity_scale()) {
+      mode = RescaleNormalAttrib::M_none;
+    } else if (object->_internal_transform->has_uniform_scale()) {
+      mode = RescaleNormalAttrib::M_rescale;
+    } else {
+      mode = RescaleNormalAttrib::M_normalize;
+    }
+
+    state = state->set_attrib(RescaleNormalAttrib::make(mode));
+    object->_state = state;
+  }
+
+  // Check to see if there's a special transparency setting.
+  const TransparencyAttrib *trans;
+  if (state->get_attrib(trans)) {
     switch (trans->get_mode()) {
     case TransparencyAttrib::M_alpha:
       // M_alpha implies an alpha-write test, so we don't waste time

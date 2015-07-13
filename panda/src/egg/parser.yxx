@@ -699,6 +699,15 @@ texture_body:
   } else if (cmp_nocase_uh(name, "read_mipmaps") == 0) {
     texture->set_read_mipmaps(((int)value) != 0);
 
+  } else if (cmp_nocase_uh(name, "min_lod") == 0) {
+    texture->set_min_lod(value);
+
+  } else if (cmp_nocase_uh(name, "max_lod") == 0) {
+    texture->set_max_lod(value);
+
+  } else if (cmp_nocase_uh(name, "lod_bias") == 0) {
+    texture->set_lod_bias(value);
+
   } else {
     eggyywarning("Unsupported texture scalar: " + name);
   }

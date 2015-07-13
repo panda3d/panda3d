@@ -2,17 +2,17 @@
 
 __all__ = ['Actor']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import LODNode
-import types, copy
+from direct.directnotify import DirectNotifyGlobal
+import types
 
 class Actor(DirectObject, NodePath):
     """
     Actor class: Contains methods for creating, manipulating
     and playing animations on characters
     """
-    notify = directNotify.newCategory("Actor")
+    notify = DirectNotifyGlobal.directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
 
     modelLoaderOptions = LoaderOptions(LoaderOptions.LFSearch |

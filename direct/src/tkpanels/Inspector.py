@@ -7,7 +7,6 @@ so that I can just type: inspect(anObject) any time."""
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
-import string
 from direct.showbase.TkGlobal import *
 from Tkinter import *
 import Pmw
@@ -23,11 +22,11 @@ def inspect(anObject):
 ### private
 
 def inspectorFor(anObject):
-    typeName = string.capitalize(type(anObject).__name__) + 'Type'
+    typeName = type(anObject).__name__.capitalize() + 'Type'
     if typeName in _InspectorMap:
         inspectorName = _InspectorMap[typeName]
     else:
-        print "Can't find an inspector for " + typeName
+        print("Can't find an inspector for " + typeName)
         inspectorName = 'Inspector'
     inspector = globals()[inspectorName](anObject)
     return inspector
@@ -96,7 +95,7 @@ class Inspector:
 
     def title(self):
         "Subclasses may override."
-        return string.capitalize(self.objectType().__name__)
+        return self.objectType().__name__.capitalize()
 
     def getLastPartNumber(self):
         return self.lastPartNumber
@@ -406,14 +405,14 @@ class InspectorWindow:
         return self.topInspector().inspectorFor(part)
 
     def popupMenu(self, event):
-        print event
+        print(event)
         partNumber = self.selectedIndex()
-        print partNumber
+        print(partNumber)
         if partNumber == None:
             return
         part = self.topInspector().partNumber(partNumber)
-        print part
-        from pandac.PandaModules import NodePath
+        print(part)
+        from panda3d.core import NodePath
         from direct.fsm import ClassicFSM
         popupMenu = None
         if isinstance(part, NodePath):
@@ -427,7 +426,7 @@ class InspectorWindow:
             popupMenu = self.createPopupMenu(
                 part,
                 [('Inspect ClassicFSM', FSMInspector.FSMInspector)])
-        print popupMenu
+        print(popupMenu)
         if popupMenu:
             popupMenu.post(event.widget.winfo_pointerx(),
                            event.widget.winfo_pointery())

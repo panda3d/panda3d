@@ -413,8 +413,10 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
     dep |= SSD_fog;
   }
-  if ((inp == SMO_model_to_view)||
-      (inp == SMO_view_to_model)) {
+  if ((inp == SMO_model_to_view) ||
+      (inp == SMO_view_to_model) ||
+      (inp == SMO_model_to_apiview) ||
+      (inp == SMO_apiview_to_model)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
@@ -483,6 +485,43 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
       spec._part[0] = spec._part[1];
       spec._arg[0] = spec._arg[1];
     }
+
+    // More optimal combinations for common matrices.
+
+    if (spec._part[0] == SMO_model_to_view &&
+        spec._part[1] == SMO_view_to_apiclip) {
+      spec._part[0] = SMO_model_to_apiview;
+      spec._part[1] = SMO_apiview_to_apiclip;
+
+    } else if (spec._part[0] == SMO_apiclip_to_view &&
+               spec._part[1] == SMO_view_to_model) {
+      spec._part[0] = SMO_apiclip_to_apiview;
+      spec._part[1] = SMO_apiview_to_model;
+
+    } else if (spec._part[0] == SMO_apiview_to_view &&
+               spec._part[1] == SMO_view_to_apiclip) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiview_to_apiclip;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_apiclip_to_view &&
+               spec._part[1] == SMO_view_to_apiview) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiclip_to_apiview;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_apiview_to_view &&
+               spec._part[1] == SMO_view_to_model) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_apiview_to_model;
+      spec._part[1] = SMO_identity;
+
+    } else if (spec._part[0] == SMO_model_to_view &&
+               spec._part[1] == SMO_view_to_apiview) {
+      spec._func = SMF_first;
+      spec._part[0] = SMO_model_to_apiview;
+      spec._part[1] = SMO_identity;
+    }
   }
 
   // Calculate state and transform dependencies.
@@ -514,6 +553,7 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
       ShaderArgClass     arg_subclass = arg_class;
 
       CGenum vbl = cgGetParameterVariability(parameter);
+      CGtype base_type = cgGetParameterBaseType(parameter);
 
       if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
         switch (cgGetParameterType(parameter)) {
@@ -528,16 +568,28 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
 
             arg_dim[0]  = cgGetArraySize(parameter, 0);
 
+            // Fall through
           default: {
             arg_dim[1] = cgGetParameterRows(parameter);
             arg_dim[2] = cgGetParameterColumns(parameter);
 
-            ShaderArgId id;
-            id._name = cgGetParameterName(parameter);
-            id._type  = type;
-            id._seqno = -1;
-            success &= compile_parameter(id, arg_class, arg_subclass, arg_type,
-                arg_dir, (vbl == CG_VARYING), arg_dim, shader_cat.get_safe_ptr()); break;
+            ShaderArgInfo p;
+            p._id._name   = cgGetParameterName(parameter);
+            p._id._type   = type;
+            p._id._seqno  = -1;
+            p._class      = arg_class;
+            p._subclass   = arg_subclass;
+            p._type       = arg_type;
+            p._direction  = arg_dir;
+            p._varying    = (vbl == CG_VARYING);
+            p._integer    = (base_type == CG_UINT || base_type == CG_INT ||
+                             base_type == CG_ULONG || base_type == CG_LONG ||
+                             base_type == CG_USHORT || base_type == CG_SHORT ||
+                             base_type == CG_UCHAR || base_type == CG_CHAR);
+            p._cat        = shader_cat.get_safe_ptr();
+
+            success &= compile_parameter(p, arg_dim);
+            break;
           }
         }
       }
@@ -562,24 +614,7 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
 //               an error message onto the error messages.
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-compile_parameter(const ShaderArgId        &arg_id,
-                  const ShaderArgClass     &arg_class,
-                  const ShaderArgClass     &arg_subclass,
-                  const ShaderArgType      &arg_type,
-                  const ShaderArgDir       &arg_direction,
-                  bool                      arg_varying,
-                  int                      *arg_dim,
-                  NotifyCategory           *arg_cat)
-{
-  ShaderArgInfo p;
-  p._id         = arg_id;
-  p._class      = arg_class;
-  p._subclass   = arg_subclass;
-  p._type       = arg_type;
-  p._direction  = arg_direction;
-  p._varying    = arg_varying;
-  p._cat        = arg_cat;
-
+compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   if (p._id._name.size() == 0) return true;
   if (p._id._name[0] == '$') return true;
 
@@ -611,9 +646,9 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderVarSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._append_uv = -1;
-    bind._integer = false;
+    bind._integer = p._integer;
 
     if (pieces.size() == 2) {
       if (pieces[1] == "position") {
@@ -645,6 +680,24 @@ compile_parameter(const ShaderArgId        &arg_id,
         }
         _var_spec.push_back(bind);
         return true;
+      }
+    } else if (pieces.size() == 3) {
+      if (pieces[1] == "transform") {
+        if (pieces[2] == "blend") {
+          bind._name = InternalName::get_transform_blend();
+          _var_spec.push_back(bind);
+          return true;
+        }
+        if (pieces[2] == "index") {
+          bind._name = InternalName::get_transform_index();
+          _var_spec.push_back(bind);
+          return true;
+        }
+        if (pieces[2] == "weight") {
+          bind._name = InternalName::get_transform_weight();
+          _var_spec.push_back(bind);
+          return true;
+        }
       }
     }
 
@@ -754,7 +807,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
 
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._func = SMF_compose;
 
     int next = 1;
@@ -817,7 +870,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       if (!cp_errchk_parameter_float(p,16,16)) {
         return false;
       }
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._piece = SMP_transpose;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_material;
@@ -828,7 +881,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
       }
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_color;
@@ -839,7 +892,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
       }
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_colorscale;
@@ -850,7 +903,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
       }
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fog;
@@ -861,7 +914,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
       }
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fogcolor;
@@ -901,7 +954,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_alight_x;
@@ -922,7 +975,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_satten_x;
@@ -942,7 +995,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_transpose;
     int next = 1;
     pieces.push_back("");
@@ -984,7 +1037,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_whole;
     bind._func = SMF_first;
     bind._part[0] = SMO_texmat_x;
@@ -1005,7 +1058,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_plane_x;
@@ -1026,7 +1079,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_clipplane_x;
@@ -1048,7 +1101,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[1] = SMO_identity;
@@ -1097,7 +1150,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderTexSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._name = 0;
     bind._stage = atoi(pieces[1].c_str());
     switch (p._type) {
@@ -1129,7 +1182,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texpad_x;
@@ -1149,7 +1202,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = p._id;
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texpix_x;
@@ -1158,6 +1211,11 @@ compile_parameter(const ShaderArgId        &arg_id,
     bind._arg[1] = NULL;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "tbl") {
+    // Handled elsewhere.
     return true;
   }
 
@@ -1196,7 +1254,7 @@ compile_parameter(const ShaderArgId        &arg_id,
       return false;
 
     ShaderPtrSpec bind;
-    bind._id      = arg_id;
+    bind._id      = p._id;
     bind._arg     = kinputname;
     bind._info    = p;
     bind._dep[0]  = SSD_general | SSD_shaderinputs;
@@ -1214,7 +1272,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     switch (p._type) {
     case SAT_sampler1d: {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
@@ -1222,7 +1280,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     case SAT_sampler2d: {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
@@ -1230,7 +1288,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     case SAT_sampler3d: {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
@@ -1238,7 +1296,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     case SAT_sampler2dArray: {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_2d_texture_array;
       _tex_spec.push_back(bind);
@@ -1246,7 +1304,7 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     case SAT_samplercube: {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_cube_map;
       _tex_spec.push_back(bind);
@@ -1346,7 +1404,8 @@ cg_parameter_type(CGparameter p) {
     default: return SAT_unknown;
     }
   case CG_PARAMETERCLASS_ARRAY: return SAT_unknown;
-  default: return SAT_unknown;
+  default:
+    return SAT_unknown;
   }
 }
 
@@ -1446,21 +1505,22 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
     ultimate = CG_PROFILE_UNKNOWN;
   };
 
-  cgGetError();
-
   if (type == ST_fragment && caps._bug_list.count(SBUG_ati_draw_buffers)) {
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = "ATI_draw_buffers";
   }
 
   char version_arg[16];
-  if (!cg_glsl_version.empty() && cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
+  if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
+      cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
     snprintf(version_arg, 16, "version=%s", cg_glsl_version.c_str());
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = version_arg;
   }
 
   compiler_args[nargs] = 0;
+
+  cgGetError();
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     // Print out some debug information about what we're doing.
@@ -1491,6 +1551,12 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
     if (shader_cat.is_debug()) {
       shader_cat.debug()
         << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
+      if (err == CG_COMPILER_ERROR) {
+        const char *listing = cgGetLastListing(context);
+        if (listing != NULL) {
+          shader_cat.debug(false) << listing;
+        }
+      }
     }
   }
 
@@ -1525,6 +1591,11 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   if (err == CG_NO_ERROR) {
     return prog;
+  }
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Compilation with ultimate profile failed: " << cgGetErrorString(err) << "\n";
   }
 
   if (prog != 0) {
@@ -1587,19 +1658,19 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
       shader_cat.debug()
         << "Cg vertex profile: " << cgGetProfileString((CGprofile)_cg_vprofile) << "\n";
       vertex_program = cgGetProgramString(_cg_vprogram, CG_COMPILED_PROGRAM);
-      shader_cat.debug() << vertex_program << "\n";
+      shader_cat.spam() << vertex_program << "\n";
     }
     if (_cg_fprogram != 0) {
       shader_cat.debug()
         << "Cg fragment profile: " << cgGetProfileString((CGprofile)_cg_fprofile) << "\n";
       fragment_program = cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM);
-      shader_cat.debug() << fragment_program << "\n";
+      shader_cat.spam() << fragment_program << "\n";
     }
     if (_cg_gprogram != 0) {
       shader_cat.debug()
         << "Cg geometry profile: " << cgGetProfileString((CGprofile)_cg_gprofile) << "\n";
       geometry_program = cgGetProgramString(_cg_gprogram, CG_COMPILED_PROGRAM);
-      shader_cat.debug() << geometry_program << "\n";
+      shader_cat.spam() << geometry_program << "\n";
     }
   }
 
@@ -1700,16 +1771,17 @@ cg_analyze_shader(const ShaderCaps &caps) {
     }
   }
 
-  // Assign sequence numbers to all parameters.
+  // Assign sequence numbers to all parameters.  GLCgShaderContext relies
+  // on the fact that the varyings start at seqno 0.
   int seqno = 0;
+  for (int i=0; i<(int)_var_spec.size(); i++) {
+    _var_spec[i]._id._seqno = seqno++;
+  }
   for (int i=0; i<(int)_mat_spec.size(); i++) {
     _mat_spec[i]._id._seqno = seqno++;
   }
   for (int i=0; i<(int)_tex_spec.size(); i++) {
     _tex_spec[i]._id._seqno = seqno++;
-  }
-  for (int i=0; i<(int)_var_spec.size(); i++) {
-    _var_spec[i]._id._seqno = seqno++;
   }
 
   for (int i=0; i<(int)_ptr_spec.size(); i++) {
@@ -1790,6 +1862,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
   //    }
   //  }
 
+  cg_release_resources();
   return true;
 }
 
@@ -1909,7 +1982,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
       const char *resource = cgGetParameterResourceName(p);
       if (resource != NULL) {
         shader_cat.debug() << "Texture parameter " << id._name
-                         << " is bound to resource " << resource << "\n";
+                          << " is bound to resource " << resource << "\n";
       }
     }
     map[id._seqno] = p;
@@ -1921,48 +1994,18 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     const char *resource = cgGetParameterResourceName(p);
     if (shader_cat.is_debug() && resource != NULL) {
-      shader_cat.debug()
-        << "Varying parameter " << id._name << " is bound to resource "
-        << cgGetParameterResourceName(p) << "\n";
+      if (cgGetParameterResource(p) == CG_GLSL_ATTRIB) {
+        shader_cat.debug()
+          << "Varying parameter " << id._name << " is bound to GLSL attribute "
+          << resource << "\n";
+      } else {
+        shader_cat.debug()
+          << "Varying parameter " << id._name << " is bound to resource "
+          << resource << " (" << cgGetParameterResource(p)
+          << ", index " << cgGetParameterResourceIndex(p) << ")\n";
+      }
     }
 
-    if (cgGetParameterBaseResource(p) == CG_UNDEFINED) {
-      // I really don't know what this means, but it happens when I
-      // use the NORMAL0 semantic instead of NORMAL, or POSITION0
-      // instead of POSITION, etc.  Not catching this results in a
-      // continuous stream of errors at the renderer side.
-      shader_cat.error()
-        << "Varying parameter " << id._name;
-
-      const char *semantic = cgGetParameterSemantic(p);
-      if (semantic != NULL) {
-        shader_cat.error(false) << " : " << semantic;
-      }
-      if (resource != NULL) {
-        shader_cat.error(false) << " (bound to resource " << resource << ")";
-      }
-      shader_cat.error(false) << " is invalid!\n";
-
-#ifndef NDEBUG
-      // Let's try to give the developer a hint...
-      if (semantic != NULL) {
-        if (strcmp(semantic, "POSITION0") == 0) {
-          shader_cat.error() << "Try using the semantic POSITION instead of POSITION0.\n";
-        } else if (strcmp(semantic, "NORMAL0") == 0) {
-          shader_cat.error() << "Try using the semantic NORMAL instead of NORMAL0.\n";
-        } else if (strcmp(semantic, "DIFFUSE0") == 0) {
-          shader_cat.error() << "Try using the semantic DIFFUSE instead of DIFFUSE0.\n";
-        } else if (strcmp(semantic, "SPECULAR0") == 0) {
-          shader_cat.error() << "Try using the semantic SPECULAR instead of SPECULAR0.\n";
-        } else if (strcmp(semantic, "FOGCOORD0") == 0) {
-          shader_cat.error() << "Try using the semantic FOGCOORD instead of FOGCOORD0.\n";
-        } else if (strcmp(semantic, "PSIZE0") == 0) {
-          shader_cat.error() << "Try using the semantic PSIZE instead of PSIZE0.\n";
-        }
-      }
-#endif  // NDEBUG
-      p = 0;
-    }
     map[id._seqno] = p;
   }
 
@@ -2013,9 +2056,9 @@ Shader(ShaderLanguage lang) :
   _cg_fprofile = CG_PROFILE_UNKNOWN;
   _cg_gprofile = CG_PROFILE_UNKNOWN;
   if (_default_caps._ultimate_vprofile == 0 || _default_caps._ultimate_vprofile == CG_PROFILE_UNKNOWN) {
-    _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
-    _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
-    _default_caps._active_gprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._active_vprofile = CG_PROFILE_GENERIC;
+    _default_caps._active_fprofile = CG_PROFILE_GENERIC;
+    _default_caps._active_gprofile = CG_PROFILE_GENERIC;
     _default_caps._ultimate_vprofile = cgGetProfile("glslv");
     _default_caps._ultimate_fprofile = cgGetProfile("glslf");
     _default_caps._ultimate_gprofile = cgGetProfile("glslg");
@@ -2618,9 +2661,12 @@ make(const string &body, ShaderLanguage lang) {
 #endif
 
   ShaderFile sbody(body);
-  ShaderTable::const_iterator i = _make_table.find(sbody);
-  if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    return i->second;
+
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(sbody);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
   }
 
   PT(Shader) shader = new Shader(lang);
@@ -2639,7 +2685,9 @@ make(const string &body, ShaderLanguage lang) {
   }
 #endif
 
-  _make_table[sbody] = shader;
+  if (cache_generated_shaders) {
+    _make_table[sbody] = shader;
+  }
 
   if (dump_generated_shaders) {
     ostringstream fns;
@@ -2679,9 +2727,11 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
 
   ShaderFile sbody(vertex, fragment, geometry, tess_control, tess_evaluation);
 
-  ShaderTable::const_iterator i = _make_table.find(sbody);
-  if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    return i->second;
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(sbody);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
   }
 
   PT(Shader) shader = new Shader(lang);
@@ -2698,8 +2748,10 @@ make(ShaderLanguage lang, const string &vertex, const string &fragment,
   }
 #endif
 
+  if (cache_generated_shaders) {
+    _make_table[sbody] = shader;
+  }
 
-  _make_table[sbody] = shader;
   return shader;
 }
 
@@ -2720,16 +2772,22 @@ make_compute(ShaderLanguage lang, const string &body) {
   sbody._separate = true;
   sbody._compute = body;
 
-  ShaderTable::const_iterator i = _make_table.find(sbody);
-  if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    return i->second;
+
+  if (cache_generated_shaders) {
+    ShaderTable::const_iterator i = _make_table.find(sbody);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      return i->second;
+    }
   }
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
   shader->_text = sbody;
 
-  _make_table[sbody] = shader;
+  if (cache_generated_shaders) {
+    _make_table[sbody] = shader;
+  }
+
   return shader;
 }
 

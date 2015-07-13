@@ -18,6 +18,7 @@
 #include "colorAttrib.h"
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
+#include "shaderAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
 #include "cullTraverser.h"
@@ -126,6 +127,17 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     // a GSG-friendly form.
     if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
       return false;
+    }
+
+    // If we have prepared it for skinning via the shader generator,
+    // mark a flag on the state so that the shader generator will do this.
+    // We should probably find a cleaner way to do this.
+    const ShaderAttrib *sattr;
+    if (_state->get_attrib(sattr) && sattr->auto_shader()) {
+      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+      if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
+        _state = _state->set_attrib(sattr->set_flag(ShaderAttrib::F_hardware_skinning, true));
+      }
     }
 
     StateMunger *state_munger;

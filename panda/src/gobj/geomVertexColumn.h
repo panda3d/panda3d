@@ -43,7 +43,8 @@ private:
 PUBLISHED:
   INLINE GeomVertexColumn(CPT_InternalName name, int num_components,
                           NumericType numeric_type, Contents contents,
-                          int start, int column_alignment = 0);
+                          int start, int column_alignment = 0,
+                          int num_elements = 0, int element_stride = 0);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();
@@ -346,7 +347,7 @@ private:
     }
   };
 
-  class Packer_nativedouble_3 : public Packer_float64_3 {
+  class Packer_nativedouble_3 FINAL : public Packer_float64_3 {
   public:
     virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
 
@@ -355,7 +356,7 @@ private:
     }
   };
 
-  class Packer_point_nativedouble_2 : public Packer_point_float64_2 {
+  class Packer_point_nativedouble_2 FINAL : public Packer_point_float64_2 {
   public:
     virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
 
@@ -364,7 +365,7 @@ private:
     }
   };
 
-  class Packer_point_nativedouble_3 : public Packer_point_float64_3 {
+  class Packer_point_nativedouble_3 FINAL : public Packer_point_float64_3 {
   public:
     virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
 
@@ -382,7 +383,7 @@ private:
     }
   };
 
-  class Packer_argb_packed : public Packer_color {
+  class Packer_argb_packed FINAL : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
@@ -392,7 +393,7 @@ private:
     }
   };
 
-  class Packer_rgba_uint8_4 : public Packer_color {
+  class Packer_rgba_uint8_4 FINAL : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
@@ -412,7 +413,7 @@ private:
     }
   };
 
-  class Packer_rgba_nativefloat_4 : public Packer_rgba_float32_4 {
+  class Packer_rgba_nativefloat_4 FINAL : public Packer_rgba_float32_4 {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
 
@@ -421,7 +422,7 @@ private:
     }
   };
 
-  class Packer_uint16_1 : public Packer {
+  class Packer_uint16_1 FINAL : public Packer {
   public:
     virtual int get_data1i(const unsigned char *pointer);
     virtual void set_data1i(unsigned char *pointer, int value);

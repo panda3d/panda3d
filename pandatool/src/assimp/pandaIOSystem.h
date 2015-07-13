@@ -18,7 +18,7 @@
 #include "config_assimp.h"
 #include "virtualFileSystem.h"
 
-#include "IOSystem.h"
+#include "assimp/IOSystem.hpp"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaIOSystem

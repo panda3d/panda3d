@@ -17,21 +17,12 @@
 
 /* See dtoolsymbols.h for a rant on the purpose of this file.  */
 
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
-
 #ifdef BUILDING_DIRECT
-  #define EXPCL_DIRECT __declspec(dllexport)
-  #define EXPTP_DIRECT
+  #define EXPCL_DIRECT EXPORT_CLASS
+  #define EXPTP_DIRECT EXPORT_TEMPL
 #else
-  #define EXPCL_DIRECT __declspec(dllimport)
-  #define EXPTP_DIRECT extern
+  #define EXPCL_DIRECT IMPORT_CLASS
+  #define EXPTP_DIRECT IMPORT_TEMPL
 #endif
-
-#else   /* !WIN32_VC */
-
-#define EXPCL_DIRECT
-#define EXPTP_DIRECT
-
-#endif  /* WIN32_VC */
 
 #endif

@@ -1,4 +1,4 @@
-from pandac.PandaModules import Vec3, Point3, BitMask32
+from panda3d.core import Vec3, Point3, BitMask32
 
 UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
               'GridBack', 'unpickable']

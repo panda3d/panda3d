@@ -22,6 +22,8 @@
 #include "geomVertexWriter.h"
 #include "geomVertexRewriter.h"
 #include "geomPoints.h"
+#include "geomLines.h"
+#include "geomTriangles.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
 #include "bamReader.h"

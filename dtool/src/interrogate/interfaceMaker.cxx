@@ -442,8 +442,8 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     return new ParameterRemapEnumToInt(param_type);
     */
 
-  } else if (TypeManager::is_const_simple(param_type)) {
-    return new ParameterRemapConstToNonConst(param_type);
+  //} else if (TypeManager::is_const_simple(param_type)) {
+  //  return new ParameterRemapConstToNonConst(param_type);
 
   } else if (TypeManager::is_const_ref_to_simple(param_type)) {
     return new ParameterRemapReferenceToConcrete(param_type);
@@ -833,9 +833,9 @@ manage_return_value(ostream &out, int indent_level,
 
       indent(out, indent_level)
         << "if (" << return_expr << " != ("
-        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
       indent(out, indent_level + 2)
-        << return_expr << "->ref();\n";
+        << "(" << return_expr << ")->ref();\n";
       indent(out, indent_level)
         << "}\n";
       output_ref(out, indent_level, remap, "refcount");

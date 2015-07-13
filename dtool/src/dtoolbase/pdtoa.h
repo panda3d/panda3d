@@ -9,7 +9,7 @@
 #ifndef PDTOA_H
 #define PDTOA_H
 
-#include "dtoolsymbols.h"
+#include "dtoolbase.h"
 
 #ifdef __cplusplus
 extern "C" {

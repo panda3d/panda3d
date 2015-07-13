@@ -1088,36 +1088,38 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     tex->set_compression(convert_compression_mode(egg_tex->get_compression_mode()));
   }
 
+  SamplerState sampler;
+
   EggTexture::WrapMode wrap_u = egg_tex->determine_wrap_u();
   EggTexture::WrapMode wrap_v = egg_tex->determine_wrap_v();
   EggTexture::WrapMode wrap_w = egg_tex->determine_wrap_w();
 
   if (wrap_u != EggTexture::WM_unspecified) {
-    tex->set_wrap_u(convert_wrap_mode(wrap_u));
+    sampler.set_wrap_u(convert_wrap_mode(wrap_u));
   }
   if (wrap_v != EggTexture::WM_unspecified) {
-    tex->set_wrap_v(convert_wrap_mode(wrap_v));
+    sampler.set_wrap_v(convert_wrap_mode(wrap_v));
   }
   if (wrap_w != EggTexture::WM_unspecified) {
-    tex->set_wrap_w(convert_wrap_mode(wrap_w));
+    sampler.set_wrap_w(convert_wrap_mode(wrap_w));
   }
 
   if (egg_tex->has_border_color()) {
-    tex->set_border_color(egg_tex->get_border_color());
+    sampler.set_border_color(egg_tex->get_border_color());
   }
 
   switch (egg_tex->get_minfilter()) {
   case EggTexture::FT_nearest:
-    tex->set_minfilter(SamplerState::FT_nearest);
+    sampler.set_minfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1125,13 +1127,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
     }
     break;
 
@@ -1139,13 +1141,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear_mipmap_nearest);
+      sampler.set_minfilter(SamplerState::FT_linear_mipmap_nearest);
     }
     break;
 
@@ -1153,13 +1155,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_nearest_mipmap_linear);
+      sampler.set_minfilter(SamplerState::FT_nearest_mipmap_linear);
     }
     break;
 
@@ -1167,13 +1169,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
+      sampler.set_minfilter(SamplerState::FT_linear_mipmap_linear);
     }
     break;
 
@@ -1185,7 +1187,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest:
   case EggTexture::FT_nearest_mipmap_nearest:
   case EggTexture::FT_nearest_mipmap_linear:
-    tex->set_magfilter(SamplerState::FT_nearest);
+    sampler.set_magfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
@@ -1194,9 +1196,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring magfilter request\n";
-      tex->set_magfilter(SamplerState::FT_nearest);
+      sampler.set_magfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_magfilter(SamplerState::FT_linear);
+      sampler.set_magfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1205,8 +1207,22 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   }
 
   if (egg_tex->has_anisotropic_degree()) {
-    tex->set_anisotropic_degree(egg_tex->get_anisotropic_degree());
+    sampler.set_anisotropic_degree(egg_tex->get_anisotropic_degree());
   }
+
+  if (egg_tex->has_min_lod()) {
+    sampler.set_min_lod(egg_tex->get_min_lod());
+  }
+
+  if (egg_tex->has_max_lod()) {
+    sampler.set_max_lod(egg_tex->get_max_lod());
+  }
+
+  if (egg_tex->has_lod_bias()) {
+    sampler.set_lod_bias(egg_tex->get_lod_bias());
+  }
+
+  tex->set_default_sampler(sampler);
 
   if (tex->get_num_components() == 1) {
     switch (egg_tex->get_format()) {
@@ -2240,7 +2256,7 @@ make_vertex_data(const EggRenderState *render_state,
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3,
-       Geom::NT_stdfloat, Geom::C_vector);
+       Geom::NT_stdfloat, Geom::C_normal);
   }
 
   if (!ignore_color) {

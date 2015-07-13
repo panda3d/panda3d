@@ -1,7 +1,11 @@
 
-from pandac.PandaModules import *
-import Particles
-import ForceGroup
+from panda3d.core import *
+
+# Leave these imports in, they may be used by ptf files.
+from panda3d.physics import *
+from . import Particles
+from . import ForceGroup
+
 from direct.directnotify import DirectNotifyGlobal
 
 class ParticleEffect(NodePath):
