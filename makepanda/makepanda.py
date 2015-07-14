@@ -2648,7 +2648,7 @@ for module in panda_modules:
     panda_modules_code += """
 try:
     from panda3d.%s import *
-except ImportError, err:
+except ImportError as err:
     if "No module named %s" not in str(err):
         raise""" % (module, module)
 
