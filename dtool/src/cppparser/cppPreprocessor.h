@@ -106,7 +106,7 @@ protected:
   bool push_file(const CPPFile &file);
   bool push_string(const string &input, bool lock_position);
 
-  string expand_manifests(const string &input_expr);
+  string expand_manifests(const string &input_expr, bool expand_undefined);
   CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
                             CPPScope *global_scope);
 

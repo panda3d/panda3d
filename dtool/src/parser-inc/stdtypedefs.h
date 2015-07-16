@@ -39,10 +39,13 @@ typedef unsigned short ushort;
 typedef unsigned char uchar;
 
 #ifdef __cplusplus
-#define NULL 0
+#define NULL 0L
 #else
 #define NULL ((void *)0)
 #endif
 
-#endif
+// One day, we might extend interrogate to be able to parse this,
+// but we currently don't need it.
+#define alignas(x)
 
+#endif
