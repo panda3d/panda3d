@@ -3,7 +3,8 @@
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import get_config_showbase
 import DirectGuiGlobals as DGG
 from OnscreenText import *
 from OnscreenGeom import *
@@ -11,9 +12,7 @@ from OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
-from direct.showbase import ShowBase
 from direct.showbase.PythonUtil import recordCreationStackStr
-from pandac.PandaModules import PStatCollector
 import types
 
 guiObjectCollector = PStatCollector("Client::GuiObjects")
@@ -632,7 +631,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if base.config.GetBool('debug-directgui-msgs', False):
+        if get_config_showbase().GetBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print gEvent
             print StackTrace()
@@ -655,7 +654,7 @@ def setGuiGridSpacing(spacing):
 # this should trigger off of __dev__, but it's not available at this point.
 # __debug__ works because the production client is not __debug__ and the
 # production AI doesn't create any GUI.
-if config.GetBool('record-gui-creation-stack', __debug__):
+if get_config_showbase().GetBool('record-gui-creation-stack', __debug__):
     # this will help track down the code that created DirectGui objects
     # call obj.printCreationStackTrace() to figure out what code created it
     DirectGuiBase = recordCreationStackStr(DirectGuiBase)
@@ -668,8 +667,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    #guiEdit = base.config.GetBool('direct-gui-edit', 0)
-    guiEdit = config.GetBool('direct-gui-edit', 0)
+    guiEdit = get_config_showbase().GetBool('direct-gui-edit', 0)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -1069,8 +1067,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def printConfig(self, indent = 0):
         space = ' ' * indent
         print space + self.guiId, '-', self.__class__.__name__
-        print space + 'Pos:   ' + self.getPos().pPrintValues()
-        print space + 'Scale: ' + self.getScale().pPrintValues()
+        print space + 'Pos:   %s' % tuple(self.getPos())
+        print space + 'Scale: %s' % tuple(self.getScale())
         # Print out children info
         for child in self.getChildren():
             messenger.send(DGG.PRINT + child.getName(), [indent + 2])

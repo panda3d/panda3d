@@ -702,6 +702,7 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
   attrib->_auto_gloss_on = _auto_gloss_on;
   attrib->_auto_ramp_on = _auto_ramp_on;
   attrib->_auto_shadow_on = _auto_shadow_on;
+  attrib->_flags = _flags;
   return return_new(attrib);
 }
 

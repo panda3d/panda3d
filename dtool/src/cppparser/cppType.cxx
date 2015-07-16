@@ -69,6 +69,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_trivial() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter
@@ -311,6 +322,12 @@ new_type(CPPType *type) {
     assert(*result.first == type);
     return type;
   }
+
+  // If this triggers, we probably messed up by defining is_less()
+  // incorrectly; they provide a relative ordering even though they
+  // are equal to each other.  Or, we provided an is_equal() that
+  // gives false negatives.
+  assert(**result.first == *type);
 
   // The insertion has not taken place; thus, there was previously
   // another equivalent type declared.

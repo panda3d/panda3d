@@ -35,7 +35,6 @@ __all__ = ['indent',
 
 import types
 import string
-import re
 import math
 import operator
 import inspect
@@ -49,12 +48,9 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
-import unicodedata
-import bisect
 
 __report_indent = 3
 
-from direct.directutil import Verify
 from panda3d.core import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)

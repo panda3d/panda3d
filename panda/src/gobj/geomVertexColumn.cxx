@@ -352,6 +352,12 @@ make_packer() const {
     }
     return new Packer_color;
 
+  case C_normal:
+    if (get_num_values() != 3 && get_num_values() != 4) {
+      gobj_cat.error()
+        << "GeomVertexColumn with contents C_normal must have 3 or 4 components!\n";
+    }
+
   default:
     // Otherwise, we just read it as a generic value.
     switch (get_numeric_type()) {
@@ -3613,6 +3619,8 @@ get_data3f(const unsigned char *pointer) {
     _v3.set(v4[0], v4[1], v4[2]);
     return _v3;
   }
+
+  return _v3;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3697,6 +3705,8 @@ get_data4f(const unsigned char *pointer) {
       return _v4;
     }
   }
+
+  return _v4;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3832,6 +3842,8 @@ get_data3d(const unsigned char *pointer) {
     _v3d.set(v4[0], v4[1], v4[2]);
     return _v3d;
   }
+
+  return _v3d;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3916,6 +3928,8 @@ get_data4d(const unsigned char *pointer) {
       return _v4d;
     }
   }
+
+  return _v4d;
 }
 
 ////////////////////////////////////////////////////////////////////

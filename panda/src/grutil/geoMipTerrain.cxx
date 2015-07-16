@@ -63,7 +63,7 @@ generate_block(unsigned short mx,
   array->add_column(InternalName::get_texcoord(), 2,
                     Geom::NT_stdfloat, Geom::C_texcoord);
   array->add_column(InternalName::get_normal(), 3,
-                    Geom::NT_stdfloat, Geom::C_vector);
+                    Geom::NT_stdfloat, Geom::C_normal);
 
   PT(GeomVertexFormat) format = new GeomVertexFormat();
   format->add_array(array);

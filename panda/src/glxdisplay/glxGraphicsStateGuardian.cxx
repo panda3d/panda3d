@@ -355,6 +355,14 @@ choose_pixel_format(const FrameBufferProperties &properties,
       n = 0;
       attrib_list[n++] = GLX_RENDER_TYPE;
       attrib_list[n++] = render_type;
+      if (gl_version.get_num_words() > 0) {
+        attrib_list[n++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+        attrib_list[n++] = gl_version[0];
+        if (gl_version.get_num_words() > 1) {
+          attrib_list[n++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+          attrib_list[n++] = gl_version[1];
+        }
+      }
       if (gl_debug) {
         attrib_list[n++] = GLX_CONTEXT_FLAGS_ARB;
         attrib_list[n++] = GLX_CONTEXT_DEBUG_BIT_ARB;

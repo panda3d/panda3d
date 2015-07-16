@@ -19,8 +19,8 @@ from FilterManager import FilterManager
 from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import Filename
 from panda3d.core import AuxBitplaneAttrib
-from panda3d.core import RenderState, Texture, Shader, ATSNone
-import sys,os
+from panda3d.core import Texture, Shader, ATSNone
+import os
 
 CARTOON_BODY="""
 float4 cartoondelta = k_cartoonseparation * texpix_txaux.xwyw;

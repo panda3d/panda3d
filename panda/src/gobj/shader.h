@@ -297,6 +297,7 @@ public:
     ShaderArgType     _type;
     ShaderArgDir      _direction;
     bool              _varying;
+    bool              _integer;
     NotifyCategory   *_cat;
   };
 
@@ -478,14 +479,7 @@ public:
                           bool &success);
 #endif
 
-  bool compile_parameter(const ShaderArgId        &arg_id,
-                         const ShaderArgClass     &arg_class,
-                         const ShaderArgClass     &arg_subclass,
-                         const ShaderArgType      &arg_type,
-                         const ShaderArgDir       &arg_direction,
-                         bool                      arg_varying,
-                         int                      *arg_dim,
-                         NotifyCategory           *arg_cat);
+  bool compile_parameter(ShaderArgInfo &p, int *arg_dim);
 
   void clear_parameters();
 
@@ -606,8 +600,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ, epvector<Shader::ShaderMatSpec>);
 
 #include "shader.I"
 

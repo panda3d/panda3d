@@ -52,7 +52,6 @@ struct XVisualInfo;
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
-#include <X11/Intrinsic.h>
 
 #ifdef HAVE_XRANDR
 #include <X11/extensions/Xrandr.h>

@@ -48,6 +48,8 @@ public:
   void bind(bool reissue_parameters = true);
   void unbind();
   void issue_parameters(int altered);
+  void update_transform_table(const TransformTable *table);
+  void update_slider_table(const SliderTable *table);
   void disable_shader_vertex_arrays();
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
   void disable_shader_texture_bindings();
@@ -74,6 +76,10 @@ private:
   //ParamContexts _params;
 
   GLint _color_attrib_index;
+  GLint _transform_table_index;
+  GLint _slider_table_index;
+  GLsizei _transform_table_size;
+  GLsizei _slider_table_size;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 
   struct ImageInput {
@@ -92,7 +98,7 @@ private:
   void glsl_report_program_errors(GLuint program, bool fatal);
   bool glsl_compile_shader(Shader::ShaderType type);
   bool glsl_compile_and_link();
-  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
+  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *s);
   void release_resources();
 
 public:

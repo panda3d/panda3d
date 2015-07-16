@@ -14,28 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::Constructor
-//       Access: Published
-//  Description: The default constructor must do nothing, because we
-//               can't guarantee ordering of static initializers.  If
-//               the constructor tried to initialize its value, it
-//               might happen after the value had already been set
-//               previously by another static initializer!
-////////////////////////////////////////////////////////////////////
-INLINE TypeHandle::
-TypeHandle() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE TypeHandle::
-TypeHandle(const TypeHandle &copy) : _index(copy._index) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Equality Operator
 //       Access: Published
 //  Description:

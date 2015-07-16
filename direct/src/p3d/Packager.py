@@ -3,17 +3,17 @@ within a Panda3D Multifile, which can be easily be downloaded and/or
 patched onto a client machine, for the purpose of running a large
 application. """
 
+__all__ = ["Packager", "PackagerError", "OutsideOfPackageError", "ArgumentError"]
+
 # Important to import panda3d first, to avoid naming conflicts with
 # Python's "string" and "Loader" names that are imported later.
 from panda3d.core import *
 import sys
 import os
 import glob
-import marshal
 import string
 import types
 import getpass
-import platform
 import struct
 import subprocess
 from direct.p3d.FileSpec import FileSpec

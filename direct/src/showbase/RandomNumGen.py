@@ -3,7 +3,7 @@
 __all__ = ['randHash', 'RandomNumGen']
 
 from direct.directnotify import DirectNotifyGlobal
-from pandac.PandaModules import Mersenne
+from panda3d.core import Mersenne
 
 def randHash(num):
     """ this returns a random 16-bit integer, given a seed integer.

@@ -33,6 +33,7 @@ class DirectionalLight;
 class PointLight;
 class Spotlight;
 class LightAttrib;
+class GeomVertexAnimationSpec;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderGenerator
@@ -71,7 +72,8 @@ class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
   ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);
   virtual ~ShaderGenerator();
-  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs);
+  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
+                                              const GeomVertexAnimationSpec &anim);
 
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
@@ -146,6 +148,7 @@ protected:
   bool _need_world_normal;
   bool _need_eye_position;
   bool _need_eye_normal;
+  bool _normalize_normals;
   bool _auto_normal_on;
   bool _auto_glow_on;
   bool _auto_gloss_on;

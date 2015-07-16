@@ -10,11 +10,13 @@ from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import messenger
-import signal
 import types
-import time
 import random
-import string
+
+try:
+    import signal
+except ImportError:
+    signal = None
 
 from panda3d.core import *
 
@@ -149,7 +151,8 @@ class TaskManager:
     def invokeDefaultHandler(self, signalNumber, stackFrame):
         print '*** allowing mid-frame keyboard interrupt.'
         # Restore default interrupt handler
-        signal.signal(signal.SIGINT, signal.default_int_handler)
+        if signal:
+            signal.signal(signal.SIGINT, signal.default_int_handler)
         # and invoke it
         raise KeyboardInterrupt
 
@@ -454,7 +457,8 @@ class TaskManager:
         # after task list processing is complete.
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
-        signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
+        if signal:
+            signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
         startFrameTime = self.globalClock.getRealTime()
 
@@ -465,7 +469,8 @@ class TaskManager:
         self.doYield(startFrameTime, nextTaskTime)
 
         # Restore default interrupt handler
-        signal.signal(signal.SIGINT, signal.default_int_handler)
+        if signal:
+            signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
 

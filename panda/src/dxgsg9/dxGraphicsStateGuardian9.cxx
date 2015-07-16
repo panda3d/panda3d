@@ -2316,8 +2316,6 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
-  _auto_rescale_normal = false;
-
   // overwrite gsg defaults with these values
 
   HRESULT hr;
@@ -2864,10 +2862,6 @@ do_issue_transform() {
   }
 
   _transform_stale = false;
-
-  if (_auto_rescale_normal) {
-    do_auto_rescale_normal();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3001,10 +2995,12 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_rescale_normal() {
-  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
-  RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
+  RescaleNormalAttrib::Mode mode = RescaleNormalAttrib::M_none;
 
-  _auto_rescale_normal = false;
+  const RescaleNormalAttrib *target_rescale_normal;
+  if (_target_rs->get_attrib(target_rescale_normal)) {
+    mode = target_rescale_normal->get_mode();
+  }
 
   switch (mode) {
   case RescaleNormalAttrib::M_none:
@@ -3014,11 +3010,6 @@ do_issue_rescale_normal() {
   case RescaleNormalAttrib::M_rescale:
   case RescaleNormalAttrib::M_normalize:
     set_render_state(D3DRS_NORMALIZENORMALS, true);
-    break;
-
-  case RescaleNormalAttrib::M_auto:
-    _auto_rescale_normal = true;
-    do_auto_rescale_normal();
     break;
 
   default:
@@ -4232,24 +4223,6 @@ set_read_buffer(const RenderBuffer &rb) {
     dxgsg9_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
   }
   return;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_auto_rescale_normal
-//       Access: Protected
-//  Description: Issues the appropriate DX commands to either rescale
-//               or normalize the normals according to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-do_auto_rescale_normal() {
-  if (_internal_transform->has_identity_scale()) {
-    // If there's no scale, don't normalize anything.
-    set_render_state(D3DRS_NORMALIZENORMALS, false);
-  } else {
-    // If there is a scale, turn on normalization.
-    set_render_state(D3DRS_NORMALIZENORMALS, true);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

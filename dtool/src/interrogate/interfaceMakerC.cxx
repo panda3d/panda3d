@@ -173,13 +173,17 @@ write_function_for(ostream &out, InterfaceMaker::Function *func) {
 void InterfaceMakerC::
 write_function_instance(ostream &out, InterfaceMaker::Function *func,
                         FunctionRemap *remap) {
+  if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
+    return;
+  }
+
   out << "/*\n"
       << " * C wrapper for\n"
       << " * ";
   remap->write_orig_prototype(out, 0);
   out << "\n"
       << " */\n";
-    
+
   if (!output_function_names) {
     // If we're not saving the function names, don't export it from
     // the library.
@@ -192,17 +196,17 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
   if (generate_spam) {
     write_spam_message(out, remap);
   }
-    
-  string return_expr = 
+
+  string return_expr =
     remap->call_function(out, 2, true, "param0");
   return_expr = manage_return_value(out, 2, remap, return_expr);
   if (!return_expr.empty()) {
     out << "  return " << return_expr << ";\n";
   }
-  
+
   out << "}\n\n";
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerC::write_function_header
 //       Access: Private
@@ -212,6 +216,10 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
 void InterfaceMakerC::
 write_function_header(ostream &out, InterfaceMaker::Function *func,
                       FunctionRemap *remap, bool newline) {
+  if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
+    return;
+  }
+
   if (remap->_void_return) {
     out << "void";
   } else {

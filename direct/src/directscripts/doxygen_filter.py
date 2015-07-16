@@ -2,7 +2,7 @@
 doxygen can understand and process.  It can be used
 as an INPUT_FILTER in doxygen. """
 
-import sys, re, os
+import sys, os
 
 # Explicitly include these files.  Besides these, all
 # files ending in _src will be explicitly included too.

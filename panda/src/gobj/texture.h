@@ -43,6 +43,7 @@
 #include "pnmImage.h"
 #include "colorSpace.h"
 #include "geomEnums.h"
+#include "bamCacheRecord.h"
 
 class PNMImage;
 class PfmFile;
@@ -51,7 +52,6 @@ class FactoryParams;
 class PreparedGraphicsObjects;
 class CullTraverser;
 class CullTraverserData;
-class BamCacheRecord;
 class TexturePeeker;
 struct DDSHeader;
 

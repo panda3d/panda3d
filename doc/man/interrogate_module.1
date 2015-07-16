@@ -1,4 +1,4 @@
-.TH INTERROGATE_MODULE 1 "26 December 2014" "" Panda3D
+.TH INTERROGATE_MODULE 1 "02 June 2015" "" Panda3D
 .SH NAME
 interrogate_module \- generate module-level code for interrogate
 .SH SYNOPSIS
@@ -64,6 +64,9 @@ may be specified. If all are omitted, the default is \fB\-c\fP.
 Generate code within each wrapper function to adjust the global
 variable "in_interpreter" to indicated whether code is running
 within the Panda C++ environment or within the high-level language.
+.TP
+.BI "\-import " module_name
+Used to import an external dependency module.
 .SH "SEE ALSO"
 .BR interrogate (1),
 .BR test_interrogate (1)

@@ -14,13 +14,12 @@ Still need to implement:
 
 """
 
-from panda3d.core import NodePath, PandaNode
-from panda3d.core import RenderState, Texture, Shader
+from panda3d.core import NodePath
+from panda3d.core import Texture
 from panda3d.core import CardMaker
-from panda3d.core import TextureStage
 from panda3d.core import GraphicsPipe, GraphicsOutput
 from panda3d.core import WindowProperties, FrameBufferProperties
-from panda3d.core import Camera, DisplayRegion
+from panda3d.core import Camera
 from panda3d.core import OrthographicLens
 from panda3d.core import AuxBitplaneAttrib
 from direct.directnotify.DirectNotifyGlobal import *

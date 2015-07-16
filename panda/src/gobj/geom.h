@@ -60,7 +60,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  Geom(const GeomVertexData *data);
+  explicit Geom(const GeomVertexData *data);
 
 protected:
   Geom(const Geom &copy);

@@ -22,15 +22,15 @@
 #include "interrogateBuilder.h"
 
 #include "interrogateDatabase.h"
+#include "cppExpression.h"
 #include "cppInstance.h"
+#include "cppArrayType.h"
 #include "cppConstType.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
 #include "cppReferenceType.h"
 #include "interrogateType.h"
 #include "pnotify.h"
-
-extern bool inside_python_native;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FunctionRemap::Constructor
@@ -96,9 +96,29 @@ get_parameter_name(int n) const {
 //       Access: Public
 //  Description: Writes a sequence of commands to the given output
 //               stream to call the wrapped function.  The parameter
-//               values are taken from pexprs, if it is nonempty, or
-//               are assumed to be simply the names of the parameters,
-//               if it is empty.
+//               values are assumed to be simply the names of the
+//               parameters.
+//
+//               The return value is the expression to return, if we
+//               are returning a value, or the empty string if we
+//               return nothing.
+////////////////////////////////////////////////////////////////////
+string FunctionRemap::
+call_function(ostream &out, int indent_level, bool convert_result,
+              const string &container) const {
+  vector_string pexprs;
+  for (int i = 0; i < _parameters.size(); ++i) {
+    pexprs.push_back(get_parameter_name(i));
+  }
+  return call_function(out, indent_level, convert_result, container, pexprs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FunctionRemap::call_function
+//       Access: Public
+//  Description: Writes a sequence of commands to the given output
+//               stream to call the wrapped function.  The parameter
+//               values are taken from pexprs.
 //
 //               The return value is the expression to return, if we
 //               are returning a value, or the empty string if we
@@ -120,11 +140,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
       InterfaceMaker::indent(out, indent_level)
         << "unref_delete(" << container << ");\n";
     } else {
-      if (inside_python_native) {
-        InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self);\n";
-      } else {
-        InterfaceMaker::indent(out, indent_level) << "delete " << container << ";\n";
-      }
+      InterfaceMaker::indent(out, indent_level) << "delete " << container << ";\n";
     }
 
   } else if (_type == T_typecast_method) {
@@ -225,7 +241,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
     string call = get_call_str(container, pexprs);
 
     if (!convert_result) {
-      return_expr = get_call_str(container, pexprs);
+      return_expr = call;
 
     } else {
       //if (_return_type->return_value_should_be_simple()) {
@@ -377,22 +393,34 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 
   // Getters and setters are a special case.
   if (_type == T_getter) {
-    if (!container.empty()) {
+    if (_has_this && !container.empty()) {
       call << "(" << container << ")->" << _expression;
     } else {
       call << _expression;
     }
 
   } else if (_type == T_setter) {
-    if (!container.empty()) {
-      call << "(" << container << ")->" << _expression;
+    string expr;
+    if (_has_this && !container.empty()) {
+      expr = "(" + container + ")->" + _expression;
     } else {
-      call << _expression;
+      expr = _expression;
     }
 
-    call << " = ";
+    // It's not possible to assign arrays in C++, we have to copy them.
+    CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
+    if (array_type != NULL) {
+      call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
+    } else {
+      call << expr << " = ";
+    }
+
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
+
+    if (array_type != NULL) {
+      call << ')';
+    }
 
   } else {
     const char *separator = "";
@@ -866,12 +894,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     break;
 
   case T_constructor:
-    if (!_has_this && _parameters.size() == 1 &&
-        TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
-        TypeManager::unwrap(_return_type->get_orig_type())) {
-      // If this is the only parameter, and it's the same as the
-      // "this" type, this is a copy constructor.
+    if (_ftype->_flags & CPPFunctionType::F_copy_constructor) {
+      // It's a copy constructor.
       _flags |= F_copy_constructor;
+
+    } else if (_ftype->_flags & CPPFunctionType::F_move_constructor) {
 
     } else if (!_has_this && _parameters.size() > 0 &&
                (_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0) {

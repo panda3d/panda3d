@@ -394,8 +394,11 @@ align_columns_for_animation() {
   Columns::const_iterator ci;
   for (ci = orig_columns.begin(); ci != orig_columns.end(); ++ci) {
     GeomVertexColumn *column = (*ci);
-    if ((column->get_contents() == C_point || column->get_contents() == C_vector) &&
-        (column->get_numeric_type() == NT_float32 || column->get_numeric_type() == NT_float64) &&
+    if ((column->get_contents() == C_point ||
+         column->get_contents() == C_vector ||
+         column->get_contents() == C_normal) &&
+        (column->get_numeric_type() == NT_float32 ||
+         column->get_numeric_type() == NT_float64) &&
         column->get_num_components() >= 3) {
       add_column(column->get_name(), 4, column->get_numeric_type(), column->get_contents(), -1, 16);
     } else {

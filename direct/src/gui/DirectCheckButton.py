@@ -2,8 +2,7 @@
 
 __all__ = ['DirectCheckButton']
 
-from pandac.PandaModules import *
-import DirectGuiGlobals as DGG
+from panda3d.core import *
 from DirectButton import *
 from DirectLabel import *
 

@@ -51,59 +51,51 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
-parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objShader) {
+parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
   Shader::ShaderArgInfo p;
   p._id = arg_id;
   p._cat = GLCAT;
 
   string basename(arg_id._name);
+
   // Split it at the underscores.
   vector_string pieces;
   tokenize(basename, pieces, "_");
 
-  if (pieces[0] == "mstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("model");
-  }
-  if (pieces[0] == "wstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("world");
-  }
-  if (pieces[0] == "vstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("view");
-  }
-  if (pieces[0] == "cstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("clip");
-  }
-  if (pieces[0] == "mspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("model");
-  }
-  if (pieces[0] == "wspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("world");
-  }
-  if (pieces[0] == "vspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("view");
-  }
-  if (pieces[0] == "cspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("clip");
+  if (pieces.size() == 0 || pieces[0].size() < 3) {
+    return false;
   }
 
-  if ((pieces[0] == "mat") || (pieces[0] == "inv") ||
-      (pieces[0] == "tps") || (pieces[0] == "itp")) {
+  // mstrans, wstrans, vstrans, cstrans, mspos, wspos, vspos, cspos
+  if (strcmp(pieces[0].c_str() + 1, "strans") == 0 ||
+      strcmp(pieces[0].c_str() + 1, "spos") == 0) {
+    pieces.push_back("to");
+
+    switch (pieces[0][0]) {
+    case 'm':
+      pieces.push_back("model");
+      break;
+    case 'w':
+      pieces.push_back("world");
+      break;
+    case 'v':
+      pieces.push_back("view");
+      break;
+    case 'c':
+      pieces.push_back("clip");
+      break;
+    default:
+      return false;
+    }
+    if (strcmp(pieces[0].c_str() + 1, "strans") == 0) {
+      pieces[0] = "trans";
+    } else {
+      pieces[0] = "row3";
+    }
+  // mat_modelproj et al
+  } else if (pieces[0].size() == 3 &&
+             (pieces[0] == "mat" || pieces[0] == "inv" ||
+              pieces[0] == "tps" || pieces[0] == "itp")) {
     if (!objShader->cp_errchk_parameter_words(p, 2)) {
       return false;
     }
@@ -156,16 +148,58 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
     pieces.push_back("");
 
     // Decide whether this is a matrix or vector.
-    if      (pieces[0] == "trans") bind._piece = Shader::SMP_whole;
-    else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose;
-    else if (pieces[0] == "row0")  bind._piece = Shader::SMP_row0;
-    else if (pieces[0] == "row1")  bind._piece = Shader::SMP_row1;
-    else if (pieces[0] == "row2")  bind._piece = Shader::SMP_row2;
-    else if (pieces[0] == "row3")  bind._piece = Shader::SMP_row3;
-    else if (pieces[0] == "col0")  bind._piece = Shader::SMP_col0;
-    else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
-    else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
-    else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
+    if (param_type == GL_FLOAT_MAT4) {
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_whole;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose;
+      else {
+        GLCAT.error() << basename << " should be vec4, not mat3\n";
+        return false;
+      }
+    } else if (param_type == GL_FLOAT_MAT3) {
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_upper3x3;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose3x3;
+      else {
+        GLCAT.error() << basename << " should be vec4, not mat3\n";
+        return false;
+      }
+    } else if (param_type == GL_FLOAT_VEC4) {
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_col0;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_row0;
+      else if (pieces[0] == "row0")  bind._piece = Shader::SMP_row0;
+      else if (pieces[0] == "row1")  bind._piece = Shader::SMP_row1;
+      else if (pieces[0] == "row2")  bind._piece = Shader::SMP_row2;
+      else if (pieces[0] == "row3")  bind._piece = Shader::SMP_row3;
+      else if (pieces[0] == "col0")  bind._piece = Shader::SMP_col0;
+      else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
+      else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
+      else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
+      else {
+        GLCAT.error() << basename << " should be mat4, not vec4\n";
+        return false;
+      }
+    } else if (pieces[0] == "row3") {
+      // We'll permit this too, simply because we can support it.
+      switch (param_type) {
+      case GL_FLOAT:
+        bind._piece = Shader::SMP_row3x1;
+        break;
+      case GL_FLOAT_VEC2:
+        bind._piece = Shader::SMP_row3x2;
+        break;
+      case GL_FLOAT_VEC3:
+        bind._piece = Shader::SMP_row3x3;
+        break;
+      default:
+        GLCAT.error() << basename << " should be vec4\n";
+        return false;
+      }
+    } else if (pieces[0] == "trans" || pieces[0] == "tpose") {
+      GLCAT.error() << basename << " should be mat4 or mat3\n";
+      return false;
+    } else {
+      GLCAT.error() << basename << " should be vec4\n";
+      return false;
+    }
 
     if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, true)) {
       return false;
@@ -194,6 +228,25 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
 
     objShader->cp_optimize_mat_spec(bind);
     objShader->_mat_spec.push_back(bind);
+
+    if (param_size > 1) {
+      // We support arrays of rows and arrays of columns, so we can
+      // run the GLSL shaders that cgc spits out.
+      if (bind._piece == Shader::SMP_row0 || bind._piece == Shader::SMP_col0) {
+        if (param_size > 4) {
+          GLCAT.warning() << basename << "[" << param_size << "] is too large, only the first four elements will be defined\n";
+          param_size = 4;
+        }
+        for (int i = 1; i < param_size; ++i) {
+          bind._id._seqno += 1;
+          bind._piece = (Shader::ShaderMatPiece)((int)bind._piece + 1);
+          objShader->_mat_spec.push_back(bind);
+        }
+      } else {
+        GLCAT.warning() << basename << "[" << param_size << "] should not be an array, only the first element will be defined\n";
+      }
+    }
+
     return true;
   }
   return false;
@@ -211,6 +264,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _uses_standard_vertex_arrays = false;
   _has_divisor = false;
   _color_attrib_index = -1;
+  _transform_table_index = -1;
+  _slider_table_index = -1;
   _validated = !gl_validate_shaders;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
@@ -883,6 +938,26 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->_mat_spec.push_back(bind);
       return;
     }
+    if (noprefix == "TransformTable") {
+      if (param_type != GL_FLOAT_MAT4) {
+        GLCAT.error()
+          << "p3d_TransformTable should be uniform mat4\n";
+        return;
+      }
+      _transform_table_index = p;
+      _transform_table_size = param_size;
+      return;
+    }
+    if (noprefix == "SliderTable") {
+      if (param_type != GL_FLOAT) {
+        GLCAT.error()
+          << "p3d_SliderTable should be uniform float\n";
+        return;
+      }
+      _slider_table_index = p;
+      _slider_table_size = param_size;
+      return;
+    }
     GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
     return;
 
@@ -941,7 +1016,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
   } else {
     // Tries to parse shorthand notations like mspos_XXX and trans_model_to_clip_of_XXX
-    if (parse_and_set_short_hand_shader_vars(arg_id, _shader)) {
+    if (parse_and_set_short_hand_shader_vars(arg_id, param_type, param_size, _shader)) {
       return;
     }
   }
@@ -1587,6 +1662,58 @@ issue_parameters(int altered) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::update_transform_table
+//       Access: Public
+//  Description: Changes the active transform table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+update_transform_table(const TransformTable *table) {
+  LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
+
+  int i = 0;
+  if (table != NULL) {
+    int num_transforms = min(_transform_table_size, table->get_num_transforms());
+    for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+      LMatrix4 matrix;
+      table->get_transform(i)->get_matrix(matrix);
+      matrices[i] = LCAST(float, matrix);
+#else
+      table->get_transform(i)->get_matrix(matrices[i]);
+#endif
+    }
+  }
+  for (; i < _transform_table_size; ++i) {
+    matrices[i] = LMatrix4f::ident_mat();
+  }
+
+  _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
+                              GL_FALSE, (float *)matrices);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::update_slider_table
+//       Access: Public
+//  Description: Changes the active slider table, used for hardware
+//               skinning.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+update_slider_table(const SliderTable *table) {
+  float *sliders = (float *)alloca(_slider_table_size * 4);
+  memset(sliders, 0, _slider_table_size * 4);
+
+  if (table != NULL) {
+    int num_sliders = min(_slider_table_size, table->get_num_sliders());
+    for (int i = 0; i < num_sliders; ++i) {
+      sliders[i] = table->get_slider(i)->get_slider();
+    }
+  }
+
+  _glgsg->_glUniform1fv(_slider_table_index, _slider_table_size, sliders);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::disable_shader_vertex_arrays
 //       Access: Public
 //  Description: Disable all the vertex arrays used by this shader.
@@ -1715,6 +1842,16 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
     }
+  }
+
+  if (_transform_table_index >= 0) {
+    const TransformTable *table = _glgsg->_data_reader->get_transform_table();
+    update_transform_table(table);
+  }
+
+  if (_slider_table_index >= 0) {
+    const SliderTable *table = _glgsg->_data_reader->get_slider_table();
+    update_slider_table(table);
   }
 
   _glgsg->report_my_gl_errors();
@@ -1963,8 +2100,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
       tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
 
     } else {
-      // Numbered texture input.
       if (spec._stage >= texattrib->get_num_on_stages()) {
+        // Apply a white texture in order to make it easier to use a shader
+        // that takes a texture on a model that doesn't have a texture applied.
+        _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+        _glgsg->apply_white_texture();
         continue;
       }
       TextureStage *stage = texattrib->get_on_stage(spec._stage);
