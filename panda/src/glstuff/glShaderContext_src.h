@@ -80,6 +80,8 @@ private:
   GLint _slider_table_index;
   GLsizei _transform_table_size;
   GLsizei _slider_table_size;
+  GLint _frame_number_loc;
+  GLint _frame_number;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 
   struct ImageInput {

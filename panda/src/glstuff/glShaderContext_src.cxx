@@ -266,6 +266,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
+  _frame_number_loc = -1;
+  _frame_number = -1;
   _validated = !gl_validate_shaders;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
@@ -941,7 +943,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     if (noprefix == "TransformTable") {
       if (param_type != GL_FLOAT_MAT4) {
         GLCAT.error()
-          << "p3d_TransformTable should be uniform mat4\n";
+          << "p3d_TransformTable should be uniform mat4[]\n";
         return;
       }
       _transform_table_index = p;
@@ -951,7 +953,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     if (noprefix == "SliderTable") {
       if (param_type != GL_FLOAT) {
         GLCAT.error()
-          << "p3d_SliderTable should be uniform float\n";
+          << "p3d_SliderTable should be uniform float[]\n";
         return;
       }
       _slider_table_index = p;
@@ -965,8 +967,6 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     string noprefix(name_buffer + 4);
     // These inputs are supported by OpenSceneGraph.  We can support
     // them as well, to increase compatibility.
-    // Other inputs we may support in the future:
-    // int osg_FrameNumber
 
     Shader::ShaderMatSpec bind;
     bind._id = arg_id;
@@ -983,7 +983,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->_mat_spec.push_back(bind);
       return;
 
-    } else if (noprefix == "InverseViewMatrix") {
+    } else if (noprefix == "InverseViewMatrix" || noprefix == "ViewMatrixInverse") {
       bind._piece = Shader::SMP_whole;
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_apiview_to_view;
@@ -1011,6 +1011,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._dep[0] = Shader::SSD_general;
       bind._dep[1] = Shader::SSD_NONE;
       _shader->_mat_spec.push_back(bind);
+      return;
+
+    } else if (noprefix == "FrameNumber") {
+      // We don't currently support ints with this mechanism,
+      // so we special-case this one.
+      if (param_type != GL_INT) {
+        GLCAT.error() << "osg_FrameNumber should be uniform int\n";
+      } else {
+        _frame_number_loc = p;
+      }
       return;
     }
 
@@ -1512,6 +1522,14 @@ issue_parameters(int altered) {
 
   if (!valid()) {
     return;
+  }
+
+  if (_frame_number_loc != -1) {
+    int current_frame = ClockObject::get_global_clock()->get_frame_count();
+    if (current_frame != _frame_number) {
+      _glgsg->_glUniform1i(_frame_number_loc, current_frame);
+      _frame_number = current_frame;
+    }
   }
 
   // Iterate through _ptr parameters
