@@ -1526,6 +1526,7 @@ issue_parameters(int altered) {
       }
 
       GLint p = spec._id._seqno;
+      int array_size = min(spec._dim[0], ptr_data->_size / spec._dim[1]);
       switch (spec._type) {
       case Shader::SPT_float:
         {
@@ -1534,16 +1535,16 @@ issue_parameters(int altered) {
           switch (ptr_data->_type) {
           case Shader::SPT_int:
             // Convert int data to float data.
-            data = (float*) alloca(sizeof(float) * spec._dim[0] * spec._dim[1]);
-            for (int i = 0; i < (spec._dim[0] * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((int*)ptr_data->_ptr)[i]);
             }
             break;
 
           case Shader::SPT_double:
             // Downgrade double data to float data.
-            data = (float*) alloca(sizeof(float) * spec._dim[0] * spec._dim[1]);
-            for (int i = 0; i < (spec._dim[0] * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((double*)ptr_data->_ptr)[i]);
             }
             break;
@@ -1557,12 +1558,12 @@ issue_parameters(int altered) {
           }
 
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1fv(p, spec._dim[0], (float*)data); continue;
-          case 2: _glgsg->_glUniform2fv(p, spec._dim[0], (float*)data); continue;
-          case 3: _glgsg->_glUniform3fv(p, spec._dim[0], (float*)data); continue;
-          case 4: _glgsg->_glUniform4fv(p, spec._dim[0], (float*)data); continue;
-          case 9: _glgsg->_glUniformMatrix3fv(p, spec._dim[0], GL_FALSE, (float*)data); continue;
-          case 16: _glgsg->_glUniformMatrix4fv(p, spec._dim[0], GL_FALSE, (float*)data); continue;
+          case 1: _glgsg->_glUniform1fv(p, array_size, (float*)data); continue;
+          case 2: _glgsg->_glUniform2fv(p, array_size, (float*)data); continue;
+          case 3: _glgsg->_glUniform3fv(p, array_size, (float*)data); continue;
+          case 4: _glgsg->_glUniform4fv(p, array_size, (float*)data); continue;
+          case 9: _glgsg->_glUniformMatrix3fv(p, array_size, GL_FALSE, (float*)data); continue;
+          case 16: _glgsg->_glUniformMatrix4fv(p, array_size, GL_FALSE, (float*)data); continue;
           }
           nassertd(false) continue;
         }
@@ -1579,10 +1580,10 @@ issue_parameters(int altered) {
 
         } else {
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
+          case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data->_ptr); continue;
           }
           nassertd(false) continue;
         }
