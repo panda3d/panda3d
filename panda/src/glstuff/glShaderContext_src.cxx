@@ -1186,7 +1186,7 @@ issue_parameters(int altered) {
       }
 
       GLint p = _glsl_parameter_map[spec._id._seqno];
-      int array_size = min(spec._dim[0], ptr_data->_size / spec._dim[1]);
+      int array_size = min(spec._dim[0], (int)ptr_data->_size / spec._dim[1]);
       switch (spec._type) {
       case Shader::SPT_float:
         {
