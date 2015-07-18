@@ -690,12 +690,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         } else {
           bind._piece = Shader::SMP_transpose3x3;
         }
-      } else {
+      } else if (param_type == GL_FLOAT_MAT4) {
         if (transpose) {
           bind._piece = Shader::SMP_transpose;
         } else {
           bind._piece = Shader::SMP_whole;
         }
+      } else {
+        GLCAT.error()
+          << "Matrix input p3d_" << matrix_name << " should be mat3 or mat4\n";
+        return;
       }
       bind._arg[0] = NULL;
       bind._arg[1] = NULL;
@@ -731,7 +735,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[1] = Shader::SMO_identity;
 
         if (param_type != GL_FLOAT_MAT3) {
-          GLCAT.error() << "p3d_NormalMatrix input should be mat3, not mat4!\n";
+          GLCAT.warning() << "p3d_NormalMatrix input should be mat3, not mat4!\n";
         }
 
       } else if (matrix_name == "ModelMatrix") {
@@ -760,6 +764,27 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_world_to_view;
           bind._part[1] = Shader::SMO_view_to_apiclip;
         }
+
+      } else if (matrix_name == "TextureMatrix") {
+        // We may support 2-D texmats later, but let's make sure that people
+        // don't think they can just use a mat3 to get the 2-D version.
+        if (param_type != GL_FLOAT_MAT4) {
+          GLCAT.error() << "p3d_TextureMatrix should be mat4[], not mat3[]!\n";
+          return;
+        }
+
+        bind._func = Shader::SMF_first;
+        bind._part[0] = inverse ? Shader::SMO_inv_texmat_i
+                                : Shader::SMO_texmat_i;
+        bind._part[1] = Shader::SMO_identity;
+        bind._dep[0] = Shader::SSD_general | Shader::SSD_tex_matrix;
+        bind._dep[1] = 0;
+
+        // Add it once for each index.
+        for (bind._index = 0; bind._index < param_size; ++bind._index) {
+          _shader->_mat_spec.push_back(bind);
+        }
+        return;
 
       } else {
         GLCAT.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";

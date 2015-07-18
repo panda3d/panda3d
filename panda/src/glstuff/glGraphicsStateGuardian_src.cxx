@@ -9217,7 +9217,6 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-#ifdef SUPPORT_FIXED_FUNCTION
   if (_tex_gen_modifies_mat) {
     int tex_gen_slot = TexGenAttrib::get_class_slot();
     int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
@@ -9234,10 +9233,16 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
       !_state_mask.get_bit(tex_matrix_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_tex_matrix_pcollector);
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_tex_matrix();
-    _state_mask.set_bit(tex_matrix_slot);
-  }
 #endif
+    _state_mask.set_bit(tex_matrix_slot);
+#ifndef OPENGLES_1
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
+    }
+#endif
+  }
 
 #ifdef SUPPORT_FIXED_FUNCTION
   int tex_gen_slot = TexGenAttrib::get_class_slot();
