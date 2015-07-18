@@ -47,6 +47,8 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _supports_wgl_multisample = false;
   _supports_wgl_render_texture = false;
 
+  _wglCreateContextAttribsARB = NULL;
+
   get_gamma_table();
   atexit(atexit_function);
 }
@@ -345,6 +347,14 @@ choose_pixel_format(const FrameBufferProperties &properties,
   get_extra_extensions();
   _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
   _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
+
+  if (has_extension("WGL_ARB_create_context")) {
+    _wglCreateContextAttribsARB =
+      (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+  } else {
+    _wglCreateContextAttribsARB = NULL;
+  }
+
   _extensions.clear();
 
   if (!_supports_pixel_format) {
@@ -614,7 +624,34 @@ make_context(HDC hdc) {
 
   // Attempt to create a context.
   wglGraphicsPipe::_current_valid = false;
-  _context = wglCreateContext(hdc);
+
+  if (_wglCreateContextAttribsARB != NULL) {
+    // We have a fancier version of wglCreateContext that allows us
+    // to specify what kind of OpenGL context we would like.
+    int attrib_list[32];
+    int n = 0;
+    attrib_list[0] = NULL;
+
+    if (gl_version.get_num_words() > 0) {
+      attrib_list[n++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+      attrib_list[n++] = gl_version[0];
+      if (gl_version.get_num_words() > 1) {
+        attrib_list[n++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+        attrib_list[n++] = gl_version[1];
+      }
+    }
+    if (gl_debug) {
+      attrib_list[n++] = WGL_CONTEXT_FLAGS_ARB;
+      attrib_list[n++] = WGL_CONTEXT_DEBUG_BIT_ARB;
+    }
+    attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+    attrib_list[n++] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+    attrib_list[n] = NULL;
+
+    _context = _wglCreateContextAttribsARB(hdc, 0, attrib_list);
+  } else {
+    _context = wglCreateContext(hdc);
+  }
 
   if (_context == NULL) {
     wgldisplay_cat.error()

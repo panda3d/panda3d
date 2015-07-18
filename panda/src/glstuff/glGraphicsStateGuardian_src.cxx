@@ -6835,10 +6835,9 @@ show_gl_string(const string &name, GLenum id) {
   const GLubyte *text = glGetString(id);
 
   if (text == (const GLubyte *)NULL) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Unable to query " << name << "\n";
-    }
+    GLCAT.warning()
+      << "Unable to query " << name << "\n";
+
   } else {
     result = (const char *)text;
     if (GLCAT.is_debug()) {
@@ -6859,20 +6858,60 @@ void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
   _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
+  _gl_version = show_gl_string("GL_VERSION", GL_VERSION);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
 
+    // This is the most preposterous driver bug: NVIDIA drivers will claim
+    // that the version is 1.2 as long as the process is named pview.exe!
+#ifndef OPENGLES
+  if (_gl_version.substr(0, 10) == "1.2 NVIDIA") {
+    Filename exec_name = ExecutionEnvironment::get_binary_name();
+    if (cmp_nocase(exec_name.get_basename(), "pview.exe") == 0) {
+      glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+      glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
 
-  const GLubyte *text = glGetString(GL_VERSION);
-  if (text == (const GLubyte *)NULL) {
-    GLCAT.warning()
-      << "Unable to query GL_VERSION\n";
+      if (glGetError() == GL_INVALID_ENUM) {
+        _gl_version_major = 1;
+        _gl_version_minor = 2;
+        GLCAT.warning()
+          << "Driver possibly misreported GL_VERSION!  Unable to detect "
+             "correct OpenGL version.\n";
+
+      } else if (_gl_version_major != 1 || _gl_version_minor != 2) {
+        GLCAT.debug()
+          << "Driver misreported GL_VERSION!  Correct version detected as "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+#endif
+
+  // If we asked for a GL 3 context, let's first try and see if we
+  // can use the OpenGL 3 way to query version.
+  if (gl_version.get_num_words() > 0 && gl_version[0] >= 3) {
+    glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+    glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
+
+    if (_gl_version_major >= 1) {
+      // Fair enough, seems to check out.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Detected OpenGL version: "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+
+  // Otherwise, parse the GL_VERSION string.
+  if (_gl_version.empty()) {
+    GLCAT.error() << "Unable to detect OpenGL version\n";
+
   } else {
-    string version((const char *)text);
-    _gl_version = version;
-
-    string input = version;
+    string input = _gl_version;
 
     // Skip any initial words that don't begin with a digit.
     while (!input.empty() && !isdigit(input[0])) {
@@ -6904,7 +6943,7 @@ query_gl_version() {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "GL_VERSION = " << version << ", decoded to "
+        << "GL_VERSION decoded to: "
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
     }
