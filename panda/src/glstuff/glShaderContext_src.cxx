@@ -212,10 +212,11 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   if (_glsl_parameter_map.size() == 0) {
     int seqno = 0, texunitno = 0, imgunitno = 0;
     string noprefix;
-    GLint param_count, param_maxlength, param_size;
+    GLint param_count = 0, param_maxlength = 0, param_size;
     GLenum param_type;
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param_maxlength);
+    param_maxlength = max(64, param_maxlength);
     char* param_name_cstr = (char *)alloca(param_maxlength);
 
     for (int i = 0; i < param_count; ++i) {
@@ -856,6 +857,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     // Now we've processed the uniforms, we'll process the attribs.
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
+    param_maxlength = max(64, param_maxlength);
     param_name_cstr = (char *)alloca(param_maxlength);
 
     for (int i = 0; i < param_count; ++i) {
@@ -1940,13 +1942,13 @@ glsl_compile_and_link() {
   if (!_shader->get_text(Shader::ST_geometry).empty()) {
     valid &= glsl_compile_shader(Shader::ST_geometry);
 
-    // Set the vertex output limit to the maximum.
-    // This is slow, but it is probably reasonable to require
-    // the user to override this in his shader using layout().
-    nassertr(_glgsg->_glProgramParameteri != NULL, false);
-    GLint max_vertices;
-    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
-    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
+    //XXX Actually, it turns out that this is unavailable in the core
+    // version of geometry shaders.  Probably no need to bother with it.
+
+    //nassertr(_glgsg->_glProgramParameteri != NULL, false);
+    //GLint max_vertices;
+    //glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
+    //_glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
   }
 #endif
 
