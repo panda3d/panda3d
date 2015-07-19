@@ -4828,8 +4828,8 @@ prepare_shader(Shader *se) {
       return NULL;
     }
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
+#if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
       result = new CLP(CgShaderContext)(this, se);
       break;
@@ -4838,6 +4838,10 @@ prepare_shader(Shader *se) {
         << "Tried to load Cg shader, but basic shaders not supported.\n";
       return NULL;
     }
+#elif defined(OPENGLES)
+    GLCAT.error()
+      << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
+    return NULL;
 #else
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support not compiled in.\n";
