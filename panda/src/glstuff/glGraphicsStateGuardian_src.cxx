@@ -2128,61 +2128,22 @@ reset() {
         GLCAT.debug()
           << "No specific compressed texture formats are supported.\n";
       } else {
+#ifndef NDEBUG
         GLCAT.debug()
           << "Supported compressed texture formats:\n";
         GLint *formats = (GLint *)alloca(num_compressed_formats * sizeof(GLint));
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
-          switch (formats[i]) {
-          case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
-            break;
-#ifdef OPENGLES
-          case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG\n";
-            break;
-#endif
-#ifndef OPENGLES_1
-          case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n";
-            break;
-#endif
-#ifndef OPENGLES
-          case GL_COMPRESSED_RGB_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_FXT1_3DFX\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_FXT1_3DFX\n";
-            break;
-#endif
-
-          default:
+          const char *format_str = get_compressed_format_string(formats[i]);
+          if (format_str != NULL) {
+            GLCAT.debug(false) << "  " << format_str << '\n';
+          } else {
             GLCAT.debug(false)
               << "  Unknown compressed format 0x" << hex << formats[i]
               << dec << "\n";
           }
         }
+#endif
       }
     }
   }
@@ -7049,11 +7010,25 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "GL Extensions:\n";
+    ostream &out = GLCAT.debug();
+    out << "GL Extensions:\n";
+
+    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
-      GLCAT.debug() << (*ei) << "\n";
+      size_t len = (*ei).size();
+      out << "  " << (*ei);
+
+      // Display a second column.
+      if (len <= 38) {
+        if (++ei != _extensions.end()) {
+          for (int i = len; i < 38; ++i) {
+            out.put(' ');
+          }
+          out << ' ' << (*ei);
+        }
+      }
+      out.put('\n');
     }
   }
 }
@@ -8799,6 +8774,125 @@ get_usage(Geom::UsageHint usage_hint) {
   GLCAT.error()
     << "Unexpected usage_hint " << (int)usage_hint << endl;
   return GL_STATIC_DRAW;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_compressed_format_string
+//       Access: Public, Static
+//  Description: Returns a string describing an compression format.
+////////////////////////////////////////////////////////////////////
+const char *CLP(GraphicsStateGuardian)::
+get_compressed_format_string(GLenum format) {
+  switch (format) {
+  case 0x83F0: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
+  case 0x83F1: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
+  case 0x83F2: return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
+  case 0x83F3: return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
+  case 0x86B0: return "GL_COMPRESSED_RGB_FXT1_3DFX";
+  case 0x86B1: return "GL_COMPRESSED_RGBA_FXT1_3DFX";
+  case 0x8A54: return "GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT";
+  case 0x8A55: return "GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT";
+  case 0x8A56: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT";
+  case 0x8A57: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT";
+  case 0x8B90: return "GL_PALETTE4_RGB8_OES";
+  case 0x8B91: return "GL_PALETTE4_RGBA8_OES";
+  case 0x8B92: return "GL_PALETTE4_R5_G6_B5_OES";
+  case 0x8B93: return "GL_PALETTE4_RGBA4_OES";
+  case 0x8B94: return "GL_PALETTE4_RGB5_A1_OES";
+  case 0x8B95: return "GL_PALETTE8_RGB8_OES";
+  case 0x8B96: return "GL_PALETTE8_RGBA8_OES";
+  case 0x8B97: return "GL_PALETTE8_R5_G6_B5_OES";
+  case 0x8B98: return "GL_PALETTE8_RGBA4_OES";
+  case 0x8B99: return "GL_PALETTE8_RGB5_A1_OES";
+  case 0x8C00: return "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG";
+  case 0x8C01: return "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG";
+  case 0x8C02: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG";
+  case 0x8C03: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG";
+  case 0x8C48: return "GL_COMPRESSED_SRGB_EXT";
+  case 0x8C49: return "GL_COMPRESSED_SRGB_ALPHA_EXT";
+  case 0x8C4A: return "GL_COMPRESSED_SLUMINANCE_EXT";
+  case 0x8C4B: return "GL_COMPRESSED_SLUMINANCE_ALPHA_EXT";
+  case 0x8C4C: return "GL_COMPRESSED_SRGB_S3TC_DXT1_EXT";
+  case 0x8C4D: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT";
+  case 0x8C4E: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT";
+  case 0x8C4F: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT";
+  case 0x8C70: return "GL_COMPRESSED_LUMINANCE_LATC1_EXT";
+  case 0x8C71: return "GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT";
+  case 0x8C72: return "GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8C73: return "GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8DBB: return "GL_COMPRESSED_RED_RGTC1";
+  case 0x8DBC: return "GL_COMPRESSED_SIGNED_RED_RGTC1";
+  case 0x8DBD: return "GL_COMPRESSED_RG_RGTC2";
+  case 0x8DBE: return "GL_COMPRESSED_SIGNED_RG_RGTC2";
+  case 0x8E8C: return "GL_COMPRESSED_RGBA_BPTC_UNORM";
+  case 0x8E8D: return "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM";
+  case 0x8E8E: return "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT";
+  case 0x8E8F: return "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT";
+  case 0x9137: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG";
+  case 0x9138: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG";
+  case 0x9270: return "GL_COMPRESSED_R11_EAC";
+  case 0x9271: return "GL_COMPRESSED_SIGNED_R11_EAC";
+  case 0x9272: return "GL_COMPRESSED_RG11_EAC";
+  case 0x9273: return "GL_COMPRESSED_SIGNED_RG11_EAC";
+  case 0x9274: return "GL_COMPRESSED_RGB8_ETC2";
+  case 0x9275: return "GL_COMPRESSED_SRGB8_ETC2";
+  case 0x9276: return "GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9277: return "GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9278: return "GL_COMPRESSED_RGBA8_ETC2_EAC";
+  case 0x9279: return "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
+  case 0x93B0: return "GL_COMPRESSED_RGBA_ASTC_4x4_KHR";
+  case 0x93B1: return "GL_COMPRESSED_RGBA_ASTC_5x4_KHR";
+  case 0x93B2: return "GL_COMPRESSED_RGBA_ASTC_5x5_KHR";
+  case 0x93B3: return "GL_COMPRESSED_RGBA_ASTC_6x5_KHR";
+  case 0x93B4: return "GL_COMPRESSED_RGBA_ASTC_6x6_KHR";
+  case 0x93B5: return "GL_COMPRESSED_RGBA_ASTC_8x5_KHR";
+  case 0x93B6: return "GL_COMPRESSED_RGBA_ASTC_8x6_KHR";
+  case 0x93B7: return "GL_COMPRESSED_RGBA_ASTC_8x8_KHR";
+  case 0x93B8: return "GL_COMPRESSED_RGBA_ASTC_10x5_KHR";
+  case 0x93B9: return "GL_COMPRESSED_RGBA_ASTC_10x6_KHR";
+  case 0x93BA: return "GL_COMPRESSED_RGBA_ASTC_10x8_KHR";
+  case 0x93BB: return "GL_COMPRESSED_RGBA_ASTC_10x10_KHR";
+  case 0x93BC: return "GL_COMPRESSED_RGBA_ASTC_12x10_KHR";
+  case 0x93BD: return "GL_COMPRESSED_RGBA_ASTC_12x12_KHR";
+  case 0x93C0: return "GL_COMPRESSED_RGBA_ASTC_3x3x3_OES";
+  case 0x93C1: return "GL_COMPRESSED_RGBA_ASTC_4x3x3_OES";
+  case 0x93C2: return "GL_COMPRESSED_RGBA_ASTC_4x4x3_OES";
+  case 0x93C3: return "GL_COMPRESSED_RGBA_ASTC_4x4x4_OES";
+  case 0x93C4: return "GL_COMPRESSED_RGBA_ASTC_5x4x4_OES";
+  case 0x93C5: return "GL_COMPRESSED_RGBA_ASTC_5x5x4_OES";
+  case 0x93C6: return "GL_COMPRESSED_RGBA_ASTC_5x5x5_OES";
+  case 0x93C7: return "GL_COMPRESSED_RGBA_ASTC_6x5x5_OES";
+  case 0x93C8: return "GL_COMPRESSED_RGBA_ASTC_6x6x5_OES";
+  case 0x93C9: return "GL_COMPRESSED_RGBA_ASTC_6x6x6_OES";
+  case 0x93D0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR";
+  case 0x93D1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR";
+  case 0x93D2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR";
+  case 0x93D3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR";
+  case 0x93D4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR";
+  case 0x93D5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR";
+  case 0x93D6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR";
+  case 0x93D7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR";
+  case 0x93D8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR";
+  case 0x93D9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR";
+  case 0x93DA: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR";
+  case 0x93DB: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR";
+  case 0x93DC: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR";
+  case 0x93DD: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR";
+  case 0x93E0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_3x3x3_OES";
+  case 0x93E1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x3x3_OES";
+  case 0x93E2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x3_OES";
+  case 0x93E3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x4_OES";
+  case 0x93E4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4x4_OES";
+  case 0x93E5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x4_OES";
+  case 0x93E6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x5_OES";
+  case 0x93E7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5x5_OES";
+  case 0x93E8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x5_OES";
+  case 0x93E9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x6_OES";
+  case 0x93F0: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG";
+  case 0x93F1: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG";
+  default:
+    return NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
