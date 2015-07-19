@@ -17,29 +17,30 @@
 
 #include "typedef.h"
 
-typedef struct {
+struct EXPCL_PANDA_DISPLAY DisplayMode {
+PUBLISHED:
   int width;
   int height;
   int bits_per_pixel;
   int refresh_rate;
   int fullscreen_only;
-}
-DisplayMode;
+
+  bool operator == (const DisplayMode &other) const;
+  bool operator != (const DisplayMode &other) const;
+  void output(ostream &out) const;
+};
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayInformation
 // Description : This class contains various display information.
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_PANDA_DISPLAY DisplayInformation {
-
 PUBLISHED:
-
   enum DetectionState {
-    DS_unknown,  
-    DS_success,  
+    DS_unknown,
+    DS_success,
 
-    DS_direct_3d_create_error,  
+    DS_direct_3d_create_error,
     DS_create_window_error,
     DS_create_device_error,
   };
@@ -54,6 +55,10 @@ PUBLISHED:
   int get_window_bits_per_pixel();
 
   int get_total_display_modes();
+  const DisplayMode &get_display_mode(int display_index);
+  MAKE_SEQ(get_display_modes, get_total_display_modes, get_display_mode);
+
+  // Older interface for display modes.
   int get_display_mode_width(int display_index);
   int get_display_mode_height(int display_index);
   int get_display_mode_bits_per_pixel(int display_index);

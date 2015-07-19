@@ -16,9 +16,51 @@
 #include "displayInformation.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayMode::Comparison Operator
+//       Access: Published
+//  Description: Returns true if these two DisplayModes are identical.
+////////////////////////////////////////////////////////////////////
+bool DisplayMode::
+operator == (const DisplayMode &other) const {
+  return (width == other.width && height == other.height &&
+          bits_per_pixel == other.bits_per_pixel &&
+          refresh_rate == other.refresh_rate &&
+          fullscreen_only == other.fullscreen_only);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayMode::Comparison Operator
+//       Access: Published
+//  Description: Returns false if these two DisplayModes are identical.
+////////////////////////////////////////////////////////////////////
+bool DisplayMode::
+operator != (const DisplayMode &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayMode::output
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DisplayMode::
+output(ostream &out) const {
+  out << width << 'x' << height;
+  if (bits_per_pixel > 0) {
+    out << ' ' << bits_per_pixel << "bpp";
+  }
+  if (refresh_rate > 0) {
+    out << ' ' << refresh_rate << "Hz";
+  }
+  if (fullscreen_only > 0) {
+    out << " (fullscreen only)";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayInformation::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayInformation::
 ~DisplayInformation() {
@@ -179,6 +221,21 @@ get_window_bits_per_pixel() {
 int DisplayInformation::
 get_total_display_modes() {
   return _total_display_modes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_display_mode
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+const DisplayMode &DisplayInformation::
+get_display_mode(int display_index) {
+#ifndef NDEBUG
+  static DisplayMode err_mode = {0};
+  nassertr(display_index >= 0 && display_index < _total_display_modes, err_mode);
+#endif
+
+  return _display_mode_array[display_index];
 }
 
 ////////////////////////////////////////////////////////////////////
