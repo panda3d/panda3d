@@ -876,7 +876,7 @@ get_maximum_simultaneous_render_targets() const {
 //       Access: Published
 //  Description: Returns the ShaderModel
 ////////////////////////////////////////////////////////////////////
-INLINE int GraphicsStateGuardian::
+INLINE GraphicsStateGuardian::ShaderModel GraphicsStateGuardian::
 get_shader_model() const {
   return _shader_model;
 }
@@ -889,7 +889,7 @@ get_shader_model() const {
 //               testing lower-end shaders.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
-set_shader_model(int shader_model) {
+set_shader_model(ShaderModel shader_model) {
   if (shader_model <= _auto_detect_shader_model) {
     _shader_model = shader_model;
   }

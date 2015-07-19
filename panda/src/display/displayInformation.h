@@ -16,6 +16,7 @@
 #define DISPLAYINFORMATION_H
 
 #include "typedef.h"
+#include "graphicsStateGuardian.h"
 
 struct EXPCL_PANDA_DISPLAY DisplayMode {
 PUBLISHED:
@@ -65,7 +66,7 @@ PUBLISHED:
   int get_display_mode_refresh_rate(int display_index);
   int get_display_mode_fullscreen_only(int display_index);
 
-  int get_shader_model();
+  GraphicsStateGuardian::ShaderModel get_shader_model();
   int get_video_memory();
   int get_texture_memory();
 
@@ -126,9 +127,9 @@ public:
   int _maximum_window_width;
   int _maximum_window_height;
   int _window_bits_per_pixel;
-  int _total_display_modes;  
+  int _total_display_modes;
   DisplayMode *_display_mode_array;
-  int _shader_model;
+  GraphicsStateGuardian::ShaderModel _shader_model;
   int _video_memory;
   int _texture_memory;
 

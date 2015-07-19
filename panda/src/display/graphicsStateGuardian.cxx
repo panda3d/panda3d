@@ -3344,3 +3344,11 @@ int GraphicsStateGuardian::
 get_driver_shader_version_minor() {
   return -1;
 }
+
+ostream &
+operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm) {
+  static const char *sm_strings[] = {"none", "1.1", "2.0", "2.x", "3.0", "4.0", "5.0", "5.1"};
+  nassertr(sm >= 0 && sm <= GraphicsStateGuardian::SM_51, out);
+  out << sm_strings[sm];
+  return out;
+}

@@ -64,6 +64,7 @@
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
 #include "samplerState.h"
+#include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 #include "Cg/cgGL.h"
@@ -2450,58 +2451,39 @@ reset() {
 
   report_my_gl_errors();
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-
-  typedef struct {
-    CGprofile cg_profile;
-    int shader_model;
-  } CG_PROFILE_TO_SHADER_MODEL;
-
-  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array[] = {
+#ifndef OPENGLES
+  if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
-    (CGprofile)7017, /*CG_PROFILE_GP5FP,*/
-    SM_50,
+    _shader_model = SM_50;
 
+  } else if (_gl_shadlang_ver_major >= 3 ||
+             has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
-    (CGprofile)7010, /*CG_PROFILE_GP4FP,*/
-    SM_40,
+    _shader_model = SM_40;
 
+  } else if (has_extension("GL_NV_fragment_program2")) {
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx
     // Series, NV4x-based Quadro FX, etc.)
-    CG_PROFILE_FP40,
-    SM_30,
+    _shader_model = SM_30;
 
+  } else if (has_extension("GL_NV_fragment_program")) {
     // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
-    CG_PROFILE_FP30,
-    SM_2X,
+    _shader_model = SM_2X;
 
+  } else if (_gl_shadlang_ver_major >= 1 ||
+             has_extension("GL_ARB_fragment_program")) {
     // This OpenGL profile corresponds to the per-fragment
-    // functionality introduced by GeForce FX and other DirectX 9
-    // GPUs.
-    CG_PROFILE_ARBFP1,
-    SM_20,
+    // functionality introduced by GeForce FX and other DirectX 9 GPUs.
+    _shader_model = SM_20;
 
+  } else if (has_extension("GL_NV_texture_shader2")) {
     // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti,
     // Quadro DCC, etc.)
-    CG_PROFILE_FP20,
-    SM_11,
+    _shader_model = SM_11;
 
-    // no shader support
-    CG_PROFILE_UNKNOWN,
-    SM_00,
-  };
-
-  int index;
-  CG_PROFILE_TO_SHADER_MODEL *cg_profile_to_shader_model;
-
-  index = 0;
-  cg_profile_to_shader_model = cg_profile_to_shader_model_array;
-  while (cg_profile_to_shader_model->shader_model != SM_00) {
-    if (cgGLIsProfileSupported(cg_profile_to_shader_model->cg_profile)) {
-      _shader_model = cg_profile_to_shader_model->shader_model;
-      break;
-    }
-    cg_profile_to_shader_model++;
+  } else {
+    // No shader support
+    _shader_model = SM_00;
   }
 
   // DisplayInformation may have better shader model detection
@@ -2521,12 +2503,8 @@ reset() {
   }
   _auto_detect_shader_model = _shader_model;
 
-  CGprofile vertex_profile;
-  CGprofile pixel_profile;
-
-  vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
-  pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
+#ifdef HAVE_CG
 #if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
@@ -2539,21 +2517,24 @@ reset() {
 #endif  // CG_VERSION_NUM >= 2200
 
 #if CG_VERSION_NUM >= 3100
-    if (GLCAT.is_debug()) {
-      CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
-      GLCAT.debug()
-        << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
-    }
-#endif
-
+    CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
     GLCAT.debug()
-      << "\nCg latest vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
-      << "\nCg latest pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
-      << "\nshader model = " << _shader_model
-      << "\n";
-  }
-
+      << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
 #endif
+
+    CGprofile vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
+    CGprofile pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    GLCAT.debug()
+      << "Cg latest vertex profile = " << cgGetProfileString(vertex_profile)
+      << " (" << vertex_profile << ")\n";
+    GLCAT.debug()
+      << "Cg latest pixel profile = " << cgGetProfileString(pixel_profile)
+      << " (" << pixel_profile << ")\n";
+#endif  // HAVE_CG
+
+    GLCAT.debug() << "shader model = " << _shader_model << "\n";
+  }
+#endif  // !OPENGLES
 
   // OpenGL core profile requires a VAO to be bound.  It's a bit silly,
   // because we can just bind a VAO and then forget about it.
@@ -6872,7 +6853,6 @@ query_gl_version() {
       return;
     }
   }
-#endif
 
   // If we asked for a GL 3 context, let's first try and see if we
   // can use the OpenGL 3 way to query version.
@@ -6890,6 +6870,7 @@ query_gl_version() {
       return;
     }
   }
+#endif  // !OPENGLES
 
   // Otherwise, parse the GL_VERSION string.
   if (_gl_version.empty()) {
@@ -6946,29 +6927,34 @@ query_glsl_version() {
   _gl_shadlang_ver_minor = 0;
 
 #ifndef OPENGLES
-  if (_gl_version_major == 1) {
-    if (has_extension("GL_ARB_shading_language_100")) {
-      _gl_shadlang_ver_major = 1;
-      _gl_shadlang_ver_minor = 0;
-    }
-  } else if (_gl_version_major >= 2) {
+  // OpenGL 2.0 introduces GLSL in the core.  In 1.x, it is an extension.
+  if (_gl_version_major >= 2 || has_extension("GL_ARB_shading_language_100")) {
+    string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
     _gl_shadlang_ver_major = 1;
-    _gl_shadlang_ver_minor = 1;
-    const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    if (verstr == NULL ||
-        sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
-                                &_gl_shadlang_ver_minor) != 2) {
+    _gl_shadlang_ver_minor = (_gl_version_major >= 2) ? 1 : 0;
+    if (ver.empty() ||
+        sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
+                                     &_gl_shadlang_ver_minor) != 2) {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
   }
-#elif defined(OPENGLES_2)
+#elif !defined(OPENGLES_1)
+  // OpenGL ES 2.0 and above has shader support built-in.
+  string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
   _gl_shadlang_ver_major = 1;
   _gl_shadlang_ver_minor = 0;
-  const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-  if (verstr == NULL ||
-      sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
-                                             &_gl_shadlang_ver_minor) != 2) {
+  if (ver.empty() ||
+      sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                                  &_gl_shadlang_ver_minor) != 2) {
     GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+  }
+#endif
+
+#ifndef OPENGLES_1
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Detected GLSL version: "
+      << _gl_shadlang_ver_major << "." << _gl_shadlang_ver_minor << "\n";
   }
 #endif
 }
