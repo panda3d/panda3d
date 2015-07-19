@@ -814,13 +814,22 @@ reset() {
 
   _supports_2d_texture_array = false;
 #ifndef OPENGLES
-  _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
-  if (_supports_2d_texture_array) {
+  if (is_at_least_gl_version(3, 0)) {
+    _supports_2d_texture_array = true;
+
+    _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
+      get_extension_func("glFramebufferTextureLayer");
+
+  } else if (has_extension("GL_EXT_texture_array")) {
+    _supports_2d_texture_array = true;
+
     _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
       get_extension_func("glFramebufferTextureLayerEXT");
-  } else {
-    // ARB_geometry_shader4 also provides a version.
-    _glFramebufferTextureLayer = NULL;
+  }
+
+  if (_supports_2d_texture_array && _glFramebufferTextureLayer == NULL) {
+    GLCAT.warning()
+      << "Texture arrays advertised as supported by OpenGL runtime, but could not get pointer to glFramebufferTextureLayer function.\n";
   }
 #endif
 
@@ -1316,20 +1325,40 @@ reset() {
 #endif // HAVE_CG
 
 
-#ifdef OPENGLES_2
+#if defined(OPENGLES_1)
+  _supports_glsl = false;
+  _supports_geometry_shaders = false;
+  _supports_tessellation_shaders = false;
+#elif defined(OPENGLES)
   _supports_glsl = true;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
 #else
-  #ifdef OPENGLES_1
-    _supports_glsl = false;
+  _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
+  _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
+
+  if (is_at_least_gl_version(3, 2)) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTexture");
+
+  } else if (has_extension("GL_ARB_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTextureARB");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriARB");
+
+  } else if (has_extension("GL_EXT_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = NULL;
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriEXT");
+
+  } else {
     _supports_geometry_shaders = false;
-    _supports_tessellation_shaders = false;
-  #else
-    _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
-    _supports_geometry_shaders = is_at_least_gl_version(3, 2) || has_extension("GL_ARB_geometry_shader4");
-    _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
-  #endif
+    _glFramebufferTexture = NULL;
+  }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
 
@@ -1435,17 +1464,6 @@ reset() {
       _glVertexAttribLPointer = NULL;
     }
 
-    if (_supports_geometry_shaders) {
-      _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
-        get_extension_func("glProgramParameteri");
-      _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
-        get_extension_func("glFramebufferTextureARB");
-
-      if (_glFramebufferTextureLayer == NULL) {
-        _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
-          get_extension_func("glFramebufferTextureLayerARB");
-      }
-    }
     if (_supports_tessellation_shaders) {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
@@ -1611,7 +1629,7 @@ reset() {
     _glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)
       get_extension_func("glDrawElementsInstancedARB");
     _supports_geometry_instancing = true;
-  
+
   } else if (has_extension("GL_EXT_draw_instanced")) {
     _glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)
       get_extension_func("glDrawArraysInstancedEXT");
@@ -2290,8 +2308,10 @@ reset() {
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
       get_extension_func("glGetProgramBinary");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteri");
 
-    if (_glGetProgramBinary != NULL) {
+    if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
       _supports_get_program_binary = true;
     }
   }
