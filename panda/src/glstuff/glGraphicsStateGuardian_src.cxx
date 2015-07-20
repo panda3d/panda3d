@@ -1269,63 +1269,7 @@ reset() {
     }
   }
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
-      cgGLIsProfileSupported(CG_PROFILE_ARBVP1)) {
-    _supports_basic_shaders = true;
-    if (basic_shaders_only) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
-    } else {
-      _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
-      _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
-      _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
-
-      // cgGLGetLatestProfile doesn't seem to return anything other
-      // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
-      // So, if this happens, we set it to GLSL, which is
-      // usually supported on all cards.
-      // The GLSL profiles are horribly broken on non-NVIDIA cards, but
-      // I think I've worked around the issues sufficiently.
-      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
-           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
-
-        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-#if CG_VERSION_NUM >= 2200
-        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
-          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-        }
-#endif
-      }
-    }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
-
-    _cg_context = cgCreateContext();
-
-#if CG_VERSION_NUM >= 3100
-    // This just sounds like a good thing to do.
-    cgGLSetContextGLSLVersion(_cg_context, cgGLDetectGLSLVersion());
-    if (_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
-      cgGLSetContextOptimalOptions(_cg_context, CG_PROFILE_GLSLC);
-    }
-#endif
-
-    // Bug workaround for radeons.
-    if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
-      if (has_extension("GL_ATI_draw_buffers")) {
-        _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
-      }
-    }
-  }
-#endif // HAVE_CG
-
-
+  // Check for GLSL support.
 #if defined(OPENGLES_1)
   _supports_glsl = false;
   _supports_geometry_shaders = false;
@@ -1335,7 +1279,7 @@ reset() {
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
 #else
-  _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
+  _supports_glsl = (_gl_shadlang_ver_major >= 1);
   _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
 
   if (is_at_least_gl_version(3, 2)) {
@@ -1362,6 +1306,79 @@ reset() {
   }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
+
+  // Check for support for other types of shaders that can be used by Cg.
+  _supports_basic_shaders = false;
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  if (has_extension("GL_ARB_vertex_program") &&
+      has_extension("GL_ARB_fragment_program")) {
+    _supports_basic_shaders = true;
+    _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
+    _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
+
+    if (basic_shaders_only) {
+      // We're happy with ARB programs, thanks.
+    } else if (has_extension("GL_NV_gpu_program5")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GP5VP;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GP5FP;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GP5GP;
+
+    } else if (has_extension("GL_NV_gpu_program4")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GP4VP;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GP4FP;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GP4GP;
+
+    } else if (has_extension("GL_NV_vertex_program3") &&
+               has_extension("GL_NV_fragment_program2")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP40;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP40;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (has_extension("GL_NV_vertex_program2") &&
+               has_extension("GL_NV_fragment_program")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP30;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP30;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (has_extension("GL_NV_vertex_program1_1") &&
+               has_extension("GL_NV_texture_shader2") &&
+               has_extension("GL_NV_register_combiners2")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP20;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP20;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (_supports_glsl) {
+      // This is what will be available to non-NVIDIA cards.  It is the last
+      // option since it is slower to compile GLSL than the other options.
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+      if (_supports_geometry_shaders) {
+        _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+      }
+    }
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
+
+    // Bug workaround for radeons.
+    if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
+      if (has_extension("GL_ATI_draw_buffers")) {
+        _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
+      }
+    }
+
+  } else if (_supports_glsl) {
+    // No, but we do support GLSL...
+    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+    if (_supports_geometry_shaders) {
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+    } else {
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+    }
+  }
+#endif  // HAVE_CG
 
   _supports_compute_shaders = false;
 #ifndef OPENGLES
@@ -2517,19 +2534,31 @@ reset() {
 #endif  // CG_VERSION_NUM >= 2200
 
 #if CG_VERSION_NUM >= 3100
-    CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
-    GLCAT.debug()
-      << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
+    GLCAT.debug() << "Cg GLSL version = "
+      << cgGLGetGLSLVersionString(cgGLDetectGLSLVersion()) << "\n";
 #endif
 
-    CGprofile vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
-    CGprofile pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
     GLCAT.debug()
-      << "Cg latest vertex profile = " << cgGetProfileString(vertex_profile)
-      << " (" << vertex_profile << ")\n";
+      << "Cg latest vertex profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_VERTEX)) << "\n";
     GLCAT.debug()
-      << "Cg latest pixel profile = " << cgGetProfileString(pixel_profile)
-      << " (" << pixel_profile << ")\n";
+      << "Cg latest fragment profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_FRAGMENT)) << "\n";
+#if CG_VERSION_NUM >= 2000
+    GLCAT.debug()
+      << "Cg latest geometry profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_GEOMETRY)) << "\n";
+#endif
+    GLCAT.debug() << "basic-shaders-only " << basic_shaders_only << "\n";
+    GLCAT.debug()
+      << "Cg active vertex profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_vprofile) << "\n";
+    GLCAT.debug()
+      << "Cg active fragment profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_fprofile) << "\n";
+    GLCAT.debug()
+      << "Cg active geometry profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_gprofile) << "\n";
 #endif  // HAVE_CG
 
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
