@@ -4,7 +4,7 @@ from panda3d.core import *
 import sys
 import os
 
-import direct.directbase.DirectStart
+from direct.showbase.ShowBase import ShowBase
 from direct.interval.IntervalGlobal import *
 from direct.gui.DirectGui import OnscreenText
 from direct.showbase.DirectObject import DirectObject
@@ -235,5 +235,7 @@ class World(DirectObject):
             'A/Z: Increase/Decrease the Push-Bias [%F]' % self.pushBias)
         render.setShaderInput('push', self.pushBias)
 
-w = World()
-base.run()
+if __name__ == '__main__':
+    base = ShowBase()
+    w = World()
+    base.run()

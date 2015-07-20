@@ -1,6 +1,5 @@
 from direct.distributed.DistributedSmoothNodeBase import DistributedSmoothNodeBase
 from direct.distributed.GridParent import GridParent
-from pandac.PandaModules import EmbeddedValue
 
 class GridChild:
     """
