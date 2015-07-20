@@ -16,6 +16,7 @@
 #include "x11GraphicsWindow.h"
 #include "config_x11display.h"
 #include "frameBufferProperties.h"
+#include "displayInformation.h"
 
 TypeHandle x11GraphicsPipe::_type_handle;
 

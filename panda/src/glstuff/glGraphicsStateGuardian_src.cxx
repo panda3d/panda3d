@@ -64,6 +64,7 @@
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
 #include "samplerState.h"
+#include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 #include "Cg/cgGL.h"
@@ -814,13 +815,22 @@ reset() {
 
   _supports_2d_texture_array = false;
 #ifndef OPENGLES
-  _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
-  if (_supports_2d_texture_array) {
+  if (is_at_least_gl_version(3, 0)) {
+    _supports_2d_texture_array = true;
+
+    _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
+      get_extension_func("glFramebufferTextureLayer");
+
+  } else if (has_extension("GL_EXT_texture_array")) {
+    _supports_2d_texture_array = true;
+
     _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
       get_extension_func("glFramebufferTextureLayerEXT");
-  } else {
-    // ARB_geometry_shader4 also provides a version.
-    _glFramebufferTextureLayer = NULL;
+  }
+
+  if (_supports_2d_texture_array && _glFramebufferTextureLayer == NULL) {
+    GLCAT.warning()
+      << "Texture arrays advertised as supported by OpenGL runtime, but could not get pointer to glFramebufferTextureLayer function.\n";
   }
 #endif
 
@@ -1316,20 +1326,40 @@ reset() {
 #endif // HAVE_CG
 
 
-#ifdef OPENGLES_2
+#if defined(OPENGLES_1)
+  _supports_glsl = false;
+  _supports_geometry_shaders = false;
+  _supports_tessellation_shaders = false;
+#elif defined(OPENGLES)
   _supports_glsl = true;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
 #else
-  #ifdef OPENGLES_1
-    _supports_glsl = false;
+  _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
+  _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
+
+  if (is_at_least_gl_version(3, 2)) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTexture");
+
+  } else if (has_extension("GL_ARB_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTextureARB");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriARB");
+
+  } else if (has_extension("GL_EXT_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = NULL;
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriEXT");
+
+  } else {
     _supports_geometry_shaders = false;
-    _supports_tessellation_shaders = false;
-  #else
-    _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
-    _supports_geometry_shaders = is_at_least_gl_version(3, 2) || has_extension("GL_ARB_geometry_shader4");
-    _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
-  #endif
+    _glFramebufferTexture = NULL;
+  }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
 
@@ -1435,17 +1465,6 @@ reset() {
       _glVertexAttribLPointer = NULL;
     }
 
-    if (_supports_geometry_shaders) {
-      _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
-        get_extension_func("glProgramParameteri");
-      _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
-        get_extension_func("glFramebufferTextureARB");
-
-      if (_glFramebufferTextureLayer == NULL) {
-        _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
-          get_extension_func("glFramebufferTextureLayerARB");
-      }
-    }
     if (_supports_tessellation_shaders) {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
@@ -1611,7 +1630,7 @@ reset() {
     _glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)
       get_extension_func("glDrawElementsInstancedARB");
     _supports_geometry_instancing = true;
-  
+
   } else if (has_extension("GL_EXT_draw_instanced")) {
     _glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)
       get_extension_func("glDrawArraysInstancedEXT");
@@ -2110,61 +2129,22 @@ reset() {
         GLCAT.debug()
           << "No specific compressed texture formats are supported.\n";
       } else {
+#ifndef NDEBUG
         GLCAT.debug()
           << "Supported compressed texture formats:\n";
         GLint *formats = (GLint *)alloca(num_compressed_formats * sizeof(GLint));
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
-          switch (formats[i]) {
-          case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
-            break;
-#ifdef OPENGLES
-          case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG\n";
-            break;
-#endif
-#ifndef OPENGLES_1
-          case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n";
-            break;
-#endif
-#ifndef OPENGLES
-          case GL_COMPRESSED_RGB_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_FXT1_3DFX\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_FXT1_3DFX\n";
-            break;
-#endif
-
-          default:
+          const char *format_str = get_compressed_format_string(formats[i]);
+          if (format_str != NULL) {
+            GLCAT.debug(false) << "  " << format_str << '\n';
+          } else {
             GLCAT.debug(false)
               << "  Unknown compressed format 0x" << hex << formats[i]
               << dec << "\n";
           }
         }
+#endif
       }
     }
   }
@@ -2290,8 +2270,10 @@ reset() {
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
       get_extension_func("glGetProgramBinary");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteri");
 
-    if (_glGetProgramBinary != NULL) {
+    if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
       _supports_get_program_binary = true;
     }
   }
@@ -2469,58 +2451,39 @@ reset() {
 
   report_my_gl_errors();
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-
-  typedef struct {
-    CGprofile cg_profile;
-    int shader_model;
-  } CG_PROFILE_TO_SHADER_MODEL;
-
-  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array[] = {
+#ifndef OPENGLES
+  if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
-    (CGprofile)7017, /*CG_PROFILE_GP5FP,*/
-    SM_50,
+    _shader_model = SM_50;
 
+  } else if (_gl_shadlang_ver_major >= 3 ||
+             has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
-    (CGprofile)7010, /*CG_PROFILE_GP4FP,*/
-    SM_40,
+    _shader_model = SM_40;
 
+  } else if (has_extension("GL_NV_fragment_program2")) {
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx
     // Series, NV4x-based Quadro FX, etc.)
-    CG_PROFILE_FP40,
-    SM_30,
+    _shader_model = SM_30;
 
+  } else if (has_extension("GL_NV_fragment_program")) {
     // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
-    CG_PROFILE_FP30,
-    SM_2X,
+    _shader_model = SM_2X;
 
+  } else if (_gl_shadlang_ver_major >= 1 ||
+             has_extension("GL_ARB_fragment_program")) {
     // This OpenGL profile corresponds to the per-fragment
-    // functionality introduced by GeForce FX and other DirectX 9
-    // GPUs.
-    CG_PROFILE_ARBFP1,
-    SM_20,
+    // functionality introduced by GeForce FX and other DirectX 9 GPUs.
+    _shader_model = SM_20;
 
+  } else if (has_extension("GL_NV_texture_shader2")) {
     // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti,
     // Quadro DCC, etc.)
-    CG_PROFILE_FP20,
-    SM_11,
+    _shader_model = SM_11;
 
-    // no shader support
-    CG_PROFILE_UNKNOWN,
-    SM_00,
-  };
-
-  int index;
-  CG_PROFILE_TO_SHADER_MODEL *cg_profile_to_shader_model;
-
-  index = 0;
-  cg_profile_to_shader_model = cg_profile_to_shader_model_array;
-  while (cg_profile_to_shader_model->shader_model != SM_00) {
-    if (cgGLIsProfileSupported(cg_profile_to_shader_model->cg_profile)) {
-      _shader_model = cg_profile_to_shader_model->shader_model;
-      break;
-    }
-    cg_profile_to_shader_model++;
+  } else {
+    // No shader support
+    _shader_model = SM_00;
   }
 
   // DisplayInformation may have better shader model detection
@@ -2540,12 +2503,8 @@ reset() {
   }
   _auto_detect_shader_model = _shader_model;
 
-  CGprofile vertex_profile;
-  CGprofile pixel_profile;
-
-  vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
-  pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
+#ifdef HAVE_CG
 #if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
@@ -2558,21 +2517,24 @@ reset() {
 #endif  // CG_VERSION_NUM >= 2200
 
 #if CG_VERSION_NUM >= 3100
-    if (GLCAT.is_debug()) {
-      CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
-      GLCAT.debug()
-        << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
-    }
-#endif
-
+    CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
     GLCAT.debug()
-      << "\nCg latest vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
-      << "\nCg latest pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
-      << "\nshader model = " << _shader_model
-      << "\n";
-  }
-
+      << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
 #endif
+
+    CGprofile vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
+    CGprofile pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    GLCAT.debug()
+      << "Cg latest vertex profile = " << cgGetProfileString(vertex_profile)
+      << " (" << vertex_profile << ")\n";
+    GLCAT.debug()
+      << "Cg latest pixel profile = " << cgGetProfileString(pixel_profile)
+      << " (" << pixel_profile << ")\n";
+#endif  // HAVE_CG
+
+    GLCAT.debug() << "shader model = " << _shader_model << "\n";
+  }
+#endif  // !OPENGLES
 
   // OpenGL core profile requires a VAO to be bound.  It's a bit silly,
   // because we can just bind a VAO and then forget about it.
@@ -4778,8 +4740,8 @@ prepare_shader(Shader *se) {
       return NULL;
     }
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
+#if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
       result = new CLP(CgShaderContext)(this, se);
       break;
@@ -4788,6 +4750,10 @@ prepare_shader(Shader *se) {
         << "Tried to load Cg shader, but basic shaders not supported.\n";
       return NULL;
     }
+#elif defined(OPENGLES)
+    GLCAT.error()
+      << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
+    return NULL;
 #else
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support not compiled in.\n";
@@ -6835,10 +6801,9 @@ show_gl_string(const string &name, GLenum id) {
   const GLubyte *text = glGetString(id);
 
   if (text == (const GLubyte *)NULL) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Unable to query " << name << "\n";
-    }
+    GLCAT.warning()
+      << "Unable to query " << name << "\n";
+
   } else {
     result = (const char *)text;
     if (GLCAT.is_debug()) {
@@ -6859,20 +6824,60 @@ void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
   _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
+  _gl_version = show_gl_string("GL_VERSION", GL_VERSION);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
 
+    // This is the most preposterous driver bug: NVIDIA drivers will claim
+    // that the version is 1.2 as long as the process is named pview.exe!
+#ifndef OPENGLES
+  if (_gl_version.substr(0, 10) == "1.2 NVIDIA") {
+    Filename exec_name = ExecutionEnvironment::get_binary_name();
+    if (cmp_nocase(exec_name.get_basename(), "pview.exe") == 0) {
+      glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+      glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
 
-  const GLubyte *text = glGetString(GL_VERSION);
-  if (text == (const GLubyte *)NULL) {
-    GLCAT.warning()
-      << "Unable to query GL_VERSION\n";
+      if (glGetError() == GL_INVALID_ENUM) {
+        _gl_version_major = 1;
+        _gl_version_minor = 2;
+        GLCAT.warning()
+          << "Driver possibly misreported GL_VERSION!  Unable to detect "
+             "correct OpenGL version.\n";
+
+      } else if (_gl_version_major != 1 || _gl_version_minor != 2) {
+        GLCAT.debug()
+          << "Driver misreported GL_VERSION!  Correct version detected as "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+
+  // If we asked for a GL 3 context, let's first try and see if we
+  // can use the OpenGL 3 way to query version.
+  if (gl_version.get_num_words() > 0 && gl_version[0] >= 3) {
+    glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+    glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
+
+    if (_gl_version_major >= 1) {
+      // Fair enough, seems to check out.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Detected OpenGL version: "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+#endif  // !OPENGLES
+
+  // Otherwise, parse the GL_VERSION string.
+  if (_gl_version.empty()) {
+    GLCAT.error() << "Unable to detect OpenGL version\n";
+
   } else {
-    string version((const char *)text);
-    _gl_version = version;
-
-    string input = version;
+    string input = _gl_version;
 
     // Skip any initial words that don't begin with a digit.
     while (!input.empty() && !isdigit(input[0])) {
@@ -6904,7 +6909,7 @@ query_gl_version() {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "GL_VERSION = " << version << ", decoded to "
+        << "GL_VERSION decoded to: "
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
     }
@@ -6922,29 +6927,34 @@ query_glsl_version() {
   _gl_shadlang_ver_minor = 0;
 
 #ifndef OPENGLES
-  if (_gl_version_major == 1) {
-    if (has_extension("GL_ARB_shading_language_100")) {
-      _gl_shadlang_ver_major = 1;
-      _gl_shadlang_ver_minor = 0;
-    }
-  } else if (_gl_version_major >= 2) {
+  // OpenGL 2.0 introduces GLSL in the core.  In 1.x, it is an extension.
+  if (_gl_version_major >= 2 || has_extension("GL_ARB_shading_language_100")) {
+    string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
     _gl_shadlang_ver_major = 1;
-    _gl_shadlang_ver_minor = 1;
-    const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    if (verstr == NULL ||
-        sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
-                                &_gl_shadlang_ver_minor) != 2) {
+    _gl_shadlang_ver_minor = (_gl_version_major >= 2) ? 1 : 0;
+    if (ver.empty() ||
+        sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
+                                     &_gl_shadlang_ver_minor) != 2) {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
   }
-#elif defined(OPENGLES_2)
+#elif !defined(OPENGLES_1)
+  // OpenGL ES 2.0 and above has shader support built-in.
+  string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
   _gl_shadlang_ver_major = 1;
   _gl_shadlang_ver_minor = 0;
-  const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-  if (verstr == NULL ||
-      sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
-                                             &_gl_shadlang_ver_minor) != 2) {
+  if (ver.empty() ||
+      sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                                  &_gl_shadlang_ver_minor) != 2) {
     GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+  }
+#endif
+
+#ifndef OPENGLES_1
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Detected GLSL version: "
+      << _gl_shadlang_ver_major << "." << _gl_shadlang_ver_minor << "\n";
   }
 #endif
 }
@@ -6990,11 +7000,25 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "GL Extensions:\n";
+    ostream &out = GLCAT.debug();
+    out << "GL Extensions:\n";
+
+    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
-      GLCAT.debug() << (*ei) << "\n";
+      size_t len = (*ei).size();
+      out << "  " << (*ei);
+
+      // Display a second column.
+      if (len <= 38) {
+        if (++ei != _extensions.end()) {
+          for (int i = len; i < 38; ++i) {
+            out.put(' ');
+          }
+          out << ' ' << (*ei);
+        }
+      }
+      out.put('\n');
     }
   }
 }
@@ -8743,6 +8767,125 @@ get_usage(Geom::UsageHint usage_hint) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_compressed_format_string
+//       Access: Public, Static
+//  Description: Returns a string describing an compression format.
+////////////////////////////////////////////////////////////////////
+const char *CLP(GraphicsStateGuardian)::
+get_compressed_format_string(GLenum format) {
+  switch (format) {
+  case 0x83F0: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
+  case 0x83F1: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
+  case 0x83F2: return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
+  case 0x83F3: return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
+  case 0x86B0: return "GL_COMPRESSED_RGB_FXT1_3DFX";
+  case 0x86B1: return "GL_COMPRESSED_RGBA_FXT1_3DFX";
+  case 0x8A54: return "GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT";
+  case 0x8A55: return "GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT";
+  case 0x8A56: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT";
+  case 0x8A57: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT";
+  case 0x8B90: return "GL_PALETTE4_RGB8_OES";
+  case 0x8B91: return "GL_PALETTE4_RGBA8_OES";
+  case 0x8B92: return "GL_PALETTE4_R5_G6_B5_OES";
+  case 0x8B93: return "GL_PALETTE4_RGBA4_OES";
+  case 0x8B94: return "GL_PALETTE4_RGB5_A1_OES";
+  case 0x8B95: return "GL_PALETTE8_RGB8_OES";
+  case 0x8B96: return "GL_PALETTE8_RGBA8_OES";
+  case 0x8B97: return "GL_PALETTE8_R5_G6_B5_OES";
+  case 0x8B98: return "GL_PALETTE8_RGBA4_OES";
+  case 0x8B99: return "GL_PALETTE8_RGB5_A1_OES";
+  case 0x8C00: return "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG";
+  case 0x8C01: return "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG";
+  case 0x8C02: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG";
+  case 0x8C03: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG";
+  case 0x8C48: return "GL_COMPRESSED_SRGB_EXT";
+  case 0x8C49: return "GL_COMPRESSED_SRGB_ALPHA_EXT";
+  case 0x8C4A: return "GL_COMPRESSED_SLUMINANCE_EXT";
+  case 0x8C4B: return "GL_COMPRESSED_SLUMINANCE_ALPHA_EXT";
+  case 0x8C4C: return "GL_COMPRESSED_SRGB_S3TC_DXT1_EXT";
+  case 0x8C4D: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT";
+  case 0x8C4E: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT";
+  case 0x8C4F: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT";
+  case 0x8C70: return "GL_COMPRESSED_LUMINANCE_LATC1_EXT";
+  case 0x8C71: return "GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT";
+  case 0x8C72: return "GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8C73: return "GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8DBB: return "GL_COMPRESSED_RED_RGTC1";
+  case 0x8DBC: return "GL_COMPRESSED_SIGNED_RED_RGTC1";
+  case 0x8DBD: return "GL_COMPRESSED_RG_RGTC2";
+  case 0x8DBE: return "GL_COMPRESSED_SIGNED_RG_RGTC2";
+  case 0x8E8C: return "GL_COMPRESSED_RGBA_BPTC_UNORM";
+  case 0x8E8D: return "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM";
+  case 0x8E8E: return "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT";
+  case 0x8E8F: return "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT";
+  case 0x9137: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG";
+  case 0x9138: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG";
+  case 0x9270: return "GL_COMPRESSED_R11_EAC";
+  case 0x9271: return "GL_COMPRESSED_SIGNED_R11_EAC";
+  case 0x9272: return "GL_COMPRESSED_RG11_EAC";
+  case 0x9273: return "GL_COMPRESSED_SIGNED_RG11_EAC";
+  case 0x9274: return "GL_COMPRESSED_RGB8_ETC2";
+  case 0x9275: return "GL_COMPRESSED_SRGB8_ETC2";
+  case 0x9276: return "GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9277: return "GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9278: return "GL_COMPRESSED_RGBA8_ETC2_EAC";
+  case 0x9279: return "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
+  case 0x93B0: return "GL_COMPRESSED_RGBA_ASTC_4x4_KHR";
+  case 0x93B1: return "GL_COMPRESSED_RGBA_ASTC_5x4_KHR";
+  case 0x93B2: return "GL_COMPRESSED_RGBA_ASTC_5x5_KHR";
+  case 0x93B3: return "GL_COMPRESSED_RGBA_ASTC_6x5_KHR";
+  case 0x93B4: return "GL_COMPRESSED_RGBA_ASTC_6x6_KHR";
+  case 0x93B5: return "GL_COMPRESSED_RGBA_ASTC_8x5_KHR";
+  case 0x93B6: return "GL_COMPRESSED_RGBA_ASTC_8x6_KHR";
+  case 0x93B7: return "GL_COMPRESSED_RGBA_ASTC_8x8_KHR";
+  case 0x93B8: return "GL_COMPRESSED_RGBA_ASTC_10x5_KHR";
+  case 0x93B9: return "GL_COMPRESSED_RGBA_ASTC_10x6_KHR";
+  case 0x93BA: return "GL_COMPRESSED_RGBA_ASTC_10x8_KHR";
+  case 0x93BB: return "GL_COMPRESSED_RGBA_ASTC_10x10_KHR";
+  case 0x93BC: return "GL_COMPRESSED_RGBA_ASTC_12x10_KHR";
+  case 0x93BD: return "GL_COMPRESSED_RGBA_ASTC_12x12_KHR";
+  case 0x93C0: return "GL_COMPRESSED_RGBA_ASTC_3x3x3_OES";
+  case 0x93C1: return "GL_COMPRESSED_RGBA_ASTC_4x3x3_OES";
+  case 0x93C2: return "GL_COMPRESSED_RGBA_ASTC_4x4x3_OES";
+  case 0x93C3: return "GL_COMPRESSED_RGBA_ASTC_4x4x4_OES";
+  case 0x93C4: return "GL_COMPRESSED_RGBA_ASTC_5x4x4_OES";
+  case 0x93C5: return "GL_COMPRESSED_RGBA_ASTC_5x5x4_OES";
+  case 0x93C6: return "GL_COMPRESSED_RGBA_ASTC_5x5x5_OES";
+  case 0x93C7: return "GL_COMPRESSED_RGBA_ASTC_6x5x5_OES";
+  case 0x93C8: return "GL_COMPRESSED_RGBA_ASTC_6x6x5_OES";
+  case 0x93C9: return "GL_COMPRESSED_RGBA_ASTC_6x6x6_OES";
+  case 0x93D0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR";
+  case 0x93D1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR";
+  case 0x93D2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR";
+  case 0x93D3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR";
+  case 0x93D4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR";
+  case 0x93D5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR";
+  case 0x93D6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR";
+  case 0x93D7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR";
+  case 0x93D8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR";
+  case 0x93D9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR";
+  case 0x93DA: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR";
+  case 0x93DB: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR";
+  case 0x93DC: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR";
+  case 0x93DD: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR";
+  case 0x93E0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_3x3x3_OES";
+  case 0x93E1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x3x3_OES";
+  case 0x93E2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x3_OES";
+  case 0x93E3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x4_OES";
+  case 0x93E4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4x4_OES";
+  case 0x93E5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x4_OES";
+  case 0x93E6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x5_OES";
+  case 0x93E7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5x5_OES";
+  case 0x93E8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x5_OES";
+  case 0x93E9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x6_OES";
+  case 0x93F0: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG";
+  case 0x93F1: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG";
+  default:
+    return NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
 //       Access: Public
 //  Description: Returns the value that that should be issued as the
@@ -9217,7 +9360,6 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-#ifdef SUPPORT_FIXED_FUNCTION
   if (_tex_gen_modifies_mat) {
     int tex_gen_slot = TexGenAttrib::get_class_slot();
     int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
@@ -9234,10 +9376,16 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
       !_state_mask.get_bit(tex_matrix_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_tex_matrix_pcollector);
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_tex_matrix();
-    _state_mask.set_bit(tex_matrix_slot);
-  }
 #endif
+    _state_mask.set_bit(tex_matrix_slot);
+#ifndef OPENGLES_1
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
+    }
+#endif
+  }
 
 #ifdef SUPPORT_FIXED_FUNCTION
   int tex_gen_slot = TexGenAttrib::get_class_slot();

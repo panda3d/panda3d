@@ -511,6 +511,10 @@ protected:
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
   static GLenum get_usage(Geom::UsageHint usage_hint);
 
+#ifndef NDEBUG
+  static const char *get_compressed_format_string(GLenum format);
+#endif
+
   void unbind_buffers();
 #ifdef SUPPORT_FIXED_FUNCTION
   void disable_standard_vertex_arrays();

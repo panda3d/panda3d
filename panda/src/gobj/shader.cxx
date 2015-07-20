@@ -452,6 +452,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiview_clipplane_i)) {
     dep |= SSD_clip_planes;
   }
+  if (inp == SMO_texmat_i || inp == SMO_inv_texmat_i) {
+    dep |= SSD_tex_matrix;
+  }
 
   return dep;
 }
@@ -1040,10 +1043,11 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id = p._id;
     bind._piece = SMP_whole;
     bind._func = SMF_first;
-    bind._part[0] = SMO_texmat_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[0] = SMO_texmat_i;
+    bind._arg[0] = NULL;
     bind._part[1] = SMO_identity;
     bind._arg[1] = NULL;
+    bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);

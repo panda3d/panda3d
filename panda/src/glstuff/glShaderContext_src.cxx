@@ -266,6 +266,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
+  _frame_number_loc = -1;
+  _frame_number = -1;
   _validated = !gl_validate_shaders;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
@@ -278,18 +280,29 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     return;
   }
 
-  // Create a buffer the size of the longest uniform name.
+  // Create a buffer the size of the longest uniform name.  Note
+  // that Intel HD drivers report values that are too low.
   GLint name_buflen = 0;
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buflen);
-  char* name_buffer = (char *)alloca(max(64, name_buflen));
+  name_buflen = max(64, name_buflen);
+  char *name_buffer = (char *)alloca(name_buflen);
 
 #ifndef OPENGLES
   // Get the used uniform blocks.
   if (_glgsg->_supports_uniform_buffers) {
-    GLint block_count, block_maxlength;
+    GLint block_count = 0, block_maxlength = 0;
     _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
-    _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &block_maxlength);
-    char *block_name_cstr = (char *)alloca(max(64, block_maxlength));
+
+    // Intel HD drivers report GL_INVALID_ENUM here.  They reportedly
+    // fixed it, but I don't know in which driver version the fix is.
+    if (_glgsg->_gl_vendor != "Intel") {
+      _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &block_maxlength);
+      block_maxlength = max(64, block_maxlength);
+    } else {
+      block_maxlength = 1024;
+    }
+
+    char *block_name_cstr = (char *)alloca(block_maxlength);
 
     for (int i = 0; i < block_count; ++i) {
       block_name_cstr[0] = 0;
@@ -317,7 +330,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   // Now we've processed the uniforms, we'll process the attribs.
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_buflen);
-  name_buffer = (char *)alloca(max(64, name_buflen));
+  name_buflen = max(64, name_buflen);
+  name_buffer = (char *)alloca(name_buflen);
 
   _shader->_var_spec.clear();
   for (int i = 0; i < param_count; ++i) {
@@ -688,12 +702,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         } else {
           bind._piece = Shader::SMP_transpose3x3;
         }
-      } else {
+      } else if (param_type == GL_FLOAT_MAT4) {
         if (transpose) {
           bind._piece = Shader::SMP_transpose;
         } else {
           bind._piece = Shader::SMP_whole;
         }
+      } else {
+        GLCAT.error()
+          << "Matrix input p3d_" << matrix_name << " should be mat3 or mat4\n";
+        return;
       }
       bind._arg[0] = NULL;
       bind._arg[1] = NULL;
@@ -729,7 +747,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[1] = Shader::SMO_identity;
 
         if (param_type != GL_FLOAT_MAT3) {
-          GLCAT.error() << "p3d_NormalMatrix input should be mat3, not mat4!\n";
+          GLCAT.warning() << "p3d_NormalMatrix input should be mat3, not mat4!\n";
         }
 
       } else if (matrix_name == "ModelMatrix") {
@@ -758,6 +776,27 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_world_to_view;
           bind._part[1] = Shader::SMO_view_to_apiclip;
         }
+
+      } else if (matrix_name == "TextureMatrix") {
+        // We may support 2-D texmats later, but let's make sure that people
+        // don't think they can just use a mat3 to get the 2-D version.
+        if (param_type != GL_FLOAT_MAT4) {
+          GLCAT.error() << "p3d_TextureMatrix should be mat4[], not mat3[]!\n";
+          return;
+        }
+
+        bind._func = Shader::SMF_first;
+        bind._part[0] = inverse ? Shader::SMO_inv_texmat_i
+                                : Shader::SMO_texmat_i;
+        bind._part[1] = Shader::SMO_identity;
+        bind._dep[0] = Shader::SSD_general | Shader::SSD_tex_matrix;
+        bind._dep[1] = 0;
+
+        // Add it once for each index.
+        for (bind._index = 0; bind._index < param_size; ++bind._index) {
+          _shader->_mat_spec.push_back(bind);
+        }
+        return;
 
       } else {
         GLCAT.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
@@ -941,7 +980,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     if (noprefix == "TransformTable") {
       if (param_type != GL_FLOAT_MAT4) {
         GLCAT.error()
-          << "p3d_TransformTable should be uniform mat4\n";
+          << "p3d_TransformTable should be uniform mat4[]\n";
         return;
       }
       _transform_table_index = p;
@@ -951,7 +990,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     if (noprefix == "SliderTable") {
       if (param_type != GL_FLOAT) {
         GLCAT.error()
-          << "p3d_SliderTable should be uniform float\n";
+          << "p3d_SliderTable should be uniform float[]\n";
         return;
       }
       _slider_table_index = p;
@@ -965,8 +1004,6 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     string noprefix(name_buffer + 4);
     // These inputs are supported by OpenSceneGraph.  We can support
     // them as well, to increase compatibility.
-    // Other inputs we may support in the future:
-    // int osg_FrameNumber
 
     Shader::ShaderMatSpec bind;
     bind._id = arg_id;
@@ -983,7 +1020,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->_mat_spec.push_back(bind);
       return;
 
-    } else if (noprefix == "InverseViewMatrix") {
+    } else if (noprefix == "InverseViewMatrix" || noprefix == "ViewMatrixInverse") {
       bind._piece = Shader::SMP_whole;
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_apiview_to_view;
@@ -1011,6 +1048,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._dep[0] = Shader::SSD_general;
       bind._dep[1] = Shader::SSD_NONE;
       _shader->_mat_spec.push_back(bind);
+      return;
+
+    } else if (noprefix == "FrameNumber") {
+      // We don't currently support ints with this mechanism,
+      // so we special-case this one.
+      if (param_type != GL_INT) {
+        GLCAT.error() << "osg_FrameNumber should be uniform int\n";
+      } else {
+        _frame_number_loc = p;
+      }
       return;
     }
 
@@ -1514,6 +1561,14 @@ issue_parameters(int altered) {
     return;
   }
 
+  if (_frame_number_loc != -1) {
+    int current_frame = ClockObject::get_global_clock()->get_frame_count();
+    if (current_frame != _frame_number) {
+      _glgsg->_glUniform1i(_frame_number_loc, current_frame);
+      _frame_number = current_frame;
+    }
+  }
+
   // Iterate through _ptr parameters
   for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
     Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
@@ -1526,6 +1581,7 @@ issue_parameters(int altered) {
       }
 
       GLint p = spec._id._seqno;
+      int array_size = min(spec._dim[0], (int)ptr_data->_size / spec._dim[1]);
       switch (spec._type) {
       case Shader::SPT_float:
         {
@@ -1534,16 +1590,16 @@ issue_parameters(int altered) {
           switch (ptr_data->_type) {
           case Shader::SPT_int:
             // Convert int data to float data.
-            data = (float*) alloca(sizeof(float) * spec._dim[0] * spec._dim[1]);
-            for (int i = 0; i < (spec._dim[0] * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((int*)ptr_data->_ptr)[i]);
             }
             break;
 
           case Shader::SPT_double:
             // Downgrade double data to float data.
-            data = (float*) alloca(sizeof(float) * spec._dim[0] * spec._dim[1]);
-            for (int i = 0; i < (spec._dim[0] * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((double*)ptr_data->_ptr)[i]);
             }
             break;
@@ -1557,12 +1613,12 @@ issue_parameters(int altered) {
           }
 
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1fv(p, spec._dim[0], (float*)data); continue;
-          case 2: _glgsg->_glUniform2fv(p, spec._dim[0], (float*)data); continue;
-          case 3: _glgsg->_glUniform3fv(p, spec._dim[0], (float*)data); continue;
-          case 4: _glgsg->_glUniform4fv(p, spec._dim[0], (float*)data); continue;
-          case 9: _glgsg->_glUniformMatrix3fv(p, spec._dim[0], GL_FALSE, (float*)data); continue;
-          case 16: _glgsg->_glUniformMatrix4fv(p, spec._dim[0], GL_FALSE, (float*)data); continue;
+          case 1: _glgsg->_glUniform1fv(p, array_size, (float*)data); continue;
+          case 2: _glgsg->_glUniform2fv(p, array_size, (float*)data); continue;
+          case 3: _glgsg->_glUniform3fv(p, array_size, (float*)data); continue;
+          case 4: _glgsg->_glUniform4fv(p, array_size, (float*)data); continue;
+          case 9: _glgsg->_glUniformMatrix3fv(p, array_size, GL_FALSE, (float*)data); continue;
+          case 16: _glgsg->_glUniformMatrix4fv(p, array_size, GL_FALSE, (float*)data); continue;
           }
           nassertd(false) continue;
         }
@@ -1579,10 +1635,10 @@ issue_parameters(int altered) {
 
         } else {
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
+          case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data->_ptr); continue;
           }
           nassertd(false) continue;
         }
@@ -2398,13 +2454,13 @@ glsl_compile_and_link() {
   if (!_shader->get_text(Shader::ST_geometry).empty()) {
     valid &= glsl_compile_shader(Shader::ST_geometry);
 
-    // Set the vertex output limit to the maximum.
-    // This is slow, but it is probably reasonable to require
-    // the user to override this in his shader using layout().
-    nassertr(_glgsg->_glProgramParameteri != NULL, false);
-    GLint max_vertices;
-    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
-    _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
+    //XXX Actually, it turns out that this is unavailable in the core
+    // version of geometry shaders.  Probably no need to bother with it.
+
+    //nassertr(_glgsg->_glProgramParameteri != NULL, false);
+    //GLint max_vertices;
+    //glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
+    //_glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
   }
 #endif
 

@@ -15,6 +15,7 @@
 #include "winGraphicsPipe.h"
 #include "config_windisplay.h"
 #include "displaySearchParameters.h"
+#include "displayInformation.h"
 #include "dtool_config.h"
 #include "pbitops.h"
 
@@ -52,49 +53,47 @@ static GetProcessMemoryInfoType GetProcessMemoryInfoFunction = 0;
 static GlobalMemoryStatusExType GlobalMemoryStatusExFunction = 0;
 static CallNtPowerInformationType CallNtPowerInformationFunction = 0;
 
-void get_memory_information (DisplayInformation *display_information)
-{
+void get_memory_information (DisplayInformation *display_information) {
   if (initialize == false) {
-    psapi_dll = LoadLibrary ("psapi.dll");
+    psapi_dll = LoadLibrary("psapi.dll");
     if (psapi_dll) {
-      GetProcessMemoryInfoFunction = (GetProcessMemoryInfoType) GetProcAddress (psapi_dll, "GetProcessMemoryInfo");
+      GetProcessMemoryInfoFunction = (GetProcessMemoryInfoType) GetProcAddress(psapi_dll, "GetProcessMemoryInfo");
     }
 
-    kernel32_dll = LoadLibrary ("kernel32.dll");
+    kernel32_dll = LoadLibrary("kernel32.dll");
     if (kernel32_dll) {
-      GlobalMemoryStatusExFunction = (GlobalMemoryStatusExType) GetProcAddress (kernel32_dll, "GlobalMemoryStatusEx");
+      GlobalMemoryStatusExFunction = (GlobalMemoryStatusExType) GetProcAddress(kernel32_dll, "GlobalMemoryStatusEx");
     }
-  
+
     initialize = true;
   }
 
   if (GlobalMemoryStatusExFunction) {
     MEMORYSTATUSEX memory_status;
 
-    memory_status.dwLength = sizeof (MEMORYSTATUSEX);
-    if (GlobalMemoryStatusExFunction (&memory_status)) {
-      display_information -> _physical_memory = memory_status.ullTotalPhys;
-      display_information -> _available_physical_memory = memory_status.ullAvailPhys;
-      display_information -> _page_file_size = memory_status.ullTotalPageFile;
-      display_information -> _available_page_file_size = memory_status.ullAvailPageFile;
-      display_information -> _process_virtual_memory = memory_status.ullTotalVirtual;
-      display_information -> _available_process_virtual_memory = memory_status.ullAvailVirtual;
-      display_information -> _memory_load = memory_status.dwMemoryLoad;
-    }    
-  }
-  else {
+    memory_status.dwLength = sizeof(MEMORYSTATUSEX);
+    if (GlobalMemoryStatusExFunction(&memory_status)) {
+      display_information->_physical_memory = memory_status.ullTotalPhys;
+      display_information->_available_physical_memory = memory_status.ullAvailPhys;
+      display_information->_page_file_size = memory_status.ullTotalPageFile;
+      display_information->_available_page_file_size = memory_status.ullAvailPageFile;
+      display_information->_process_virtual_memory = memory_status.ullTotalVirtual;
+      display_information->_available_process_virtual_memory = memory_status.ullAvailVirtual;
+      display_information->_memory_load = memory_status.dwMemoryLoad;
+    }
+  } else {
     MEMORYSTATUS memory_status;
 
-    memory_status.dwLength = sizeof (MEMORYSTATUS);
+    memory_status.dwLength = sizeof(MEMORYSTATUS);
     GlobalMemoryStatus (&memory_status);
 
-    display_information -> _physical_memory = memory_status.dwTotalPhys;
-    display_information -> _available_physical_memory = memory_status.dwAvailPhys;
-    display_information -> _page_file_size = memory_status.dwTotalPageFile;
-    display_information -> _available_page_file_size = memory_status.dwAvailPageFile;
-    display_information -> _process_virtual_memory = memory_status.dwTotalVirtual;
-    display_information -> _available_process_virtual_memory = memory_status.dwAvailVirtual;
-    display_information -> _memory_load = memory_status.dwMemoryLoad;
+    display_information->_physical_memory = memory_status.dwTotalPhys;
+    display_information->_available_physical_memory = memory_status.dwAvailPhys;
+    display_information->_page_file_size = memory_status.dwTotalPageFile;
+    display_information->_available_page_file_size = memory_status.dwAvailPageFile;
+    display_information->_process_virtual_memory = memory_status.dwTotalVirtual;
+    display_information->_available_process_virtual_memory = memory_status.dwAvailVirtual;
+    display_information->_memory_load = memory_status.dwMemoryLoad;
   }
 
   if (GetProcessMemoryInfoFunction) {
@@ -105,21 +104,20 @@ void get_memory_information (DisplayInformation *display_information)
     process_id = GetCurrentProcessId();
     process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
     if (process) {
-      if (GetProcessMemoryInfoFunction (process, &process_memory_counters, sizeof (PROCESS_MEMORY_COUNTERS))) {
-        display_information -> _page_fault_count =  process_memory_counters.PageFaultCount;
-        display_information -> _process_memory =  process_memory_counters.WorkingSetSize;
-        display_information -> _peak_process_memory = process_memory_counters.PeakWorkingSetSize;
-        display_information -> _page_file_usage = process_memory_counters.PagefileUsage;
-        display_information -> _peak_page_file_usage = process_memory_counters.PeakPagefileUsage;
+      if (GetProcessMemoryInfoFunction (process, &process_memory_counters, sizeof(PROCESS_MEMORY_COUNTERS))) {
+        display_information->_page_fault_count =  process_memory_counters.PageFaultCount;
+        display_information->_process_memory =  process_memory_counters.WorkingSetSize;
+        display_information->_peak_process_memory = process_memory_counters.PeakWorkingSetSize;
+        display_information->_page_file_usage = process_memory_counters.PagefileUsage;
+        display_information->_peak_page_file_usage = process_memory_counters.PeakPagefileUsage;
       }
 
       CloseHandle(process);
     }
-  }  
+  }
 }
 
-typedef union
-{
+typedef union {
   PN_uint64 long_integer;
 }
 LONG_INTEGER;
@@ -130,11 +128,10 @@ PN_uint64 cpu_time_function (void) {
 #else
   LONG_INTEGER long_integer;
   LONG_INTEGER *long_integer_pointer;
-  
+
   long_integer_pointer = &long_integer;
-  
-  __asm
-  {
+
+  __asm {
       mov   ebx,[long_integer_pointer]
       rdtsc
       mov   [ebx + 0], eax
@@ -145,14 +142,10 @@ PN_uint64 cpu_time_function (void) {
 #endif
 }
 
-typedef union
-{
-  struct
-  {
-    union
-    {
-      struct
-      {
+typedef union {
+  struct {
+    union {
+      struct {
         unsigned char al;
         unsigned char ah;
       };
@@ -162,15 +155,11 @@ typedef union
     unsigned int ecx;
     unsigned int edx;
   };
-}
-CPU_ID_REGISTERS;
+} CPU_ID_REGISTERS;
 
-typedef struct
-{
-  union
-  {
-    struct
-    {
+typedef struct {
+  union {
+    struct {
       int maximum_cpu_id_input;
       char cpu_vendor [16];
     };
@@ -178,19 +167,15 @@ typedef struct
     CPU_ID_REGISTERS cpu_id_registers_0;
   };
 
-  union
-  {
+  union {
     CPU_ID_REGISTERS cpu_id_registers_1;
 
-    struct
-    {
+    struct {
       // eax
-      union
-      {
+      union {
         unsigned int eax;
         unsigned int version_information;
-        struct
-        {
+        struct {
           unsigned int stepping_id : 4;
           unsigned int model : 4;
           unsigned int family : 4;
@@ -203,11 +188,9 @@ typedef struct
       };
 
       // ebx
-      union
-      {
+      union {
         unsigned int ebx;
-        struct
-        {
+        struct {
           unsigned int brand_index : 8;
           unsigned int clflush : 8;
           unsigned int maximum_logical_processors : 8;
@@ -216,11 +199,9 @@ typedef struct
       };
 
       // ecx
-      union
-      {
+      union {
         unsigned int ecx;
-        struct
-        {
+        struct {
           unsigned int sse3 : 1;
           unsigned int reserved_1_to_2 : 2;
           unsigned int monitor : 1;
@@ -239,11 +220,9 @@ typedef struct
       };
 
       // edx
-      union
-      {
+      union {
         unsigned int edx;
-        struct
-        {
+        struct {
           unsigned int fpu : 1;
           unsigned int vme : 1;
           unsigned int de : 1;
@@ -282,71 +261,47 @@ typedef struct
   };
 
   #define MAXIMUM_2 8
-  #define MAXIMUM_CHARACTERS (MAXIMUM_2 * sizeof (CPU_ID_REGISTERS))
+  #define MAXIMUM_CHARACTERS (MAXIMUM_2 * sizeof(CPU_ID_REGISTERS))
 
-  union
-  {
+  union {
     CPU_ID_REGISTERS cpu_id_registers_2;
     unsigned char character_array_2 [MAXIMUM_CHARACTERS];
     CPU_ID_REGISTERS cpu_id_registers_2_array [MAXIMUM_2];
   };
 
-  union
-  {
+  union {
     CPU_ID_REGISTERS cpu_id_registers_0x80000000;
   };
 
-  union
-  {
+  union {
     CPU_ID_REGISTERS cpu_id_registers_0x80000001;
   };
 
-  union
-  {
-    char cpu_brand_string [sizeof (CPU_ID_REGISTERS) * 3];
-    struct 
-    {
+  union {
+    char cpu_brand_string [sizeof(CPU_ID_REGISTERS) * 3];
+    struct {
       CPU_ID_REGISTERS cpu_id_registers_0x80000002;
       CPU_ID_REGISTERS cpu_id_registers_0x80000003;
       CPU_ID_REGISTERS cpu_id_registers_0x80000004;
     };
   };
 
-  union
-  {
-    struct
-    {
-      // eax
-      union
-      {
-        unsigned int eax;
-      };
-
-      // ebx
-      union
-      {
-        unsigned int ebx;
-      };
-
-      // ecx
-      union
-      {
+  union {
+    struct {
+      unsigned int eax;
+      unsigned int ebx;
+      union {
         unsigned int ecx;
-        struct
-        {
+        struct {
           unsigned int l1_data_cache_line_size : 8;
           unsigned int l1_data_reserved_8_to_15 : 8;
           unsigned int l1_data_associativity : 8;
           unsigned int l1_data_cache_size : 8;
         };
       };
-
-      // edx
-      union
-      {
+      union {
         unsigned int edx;
-        struct
-        {
+        struct {
           unsigned int l1_code_cache_line_size : 8;
           unsigned int l1_code_reserved_8_to_15 : 8;
           unsigned int l1_code_associativity : 8;
@@ -357,82 +312,31 @@ typedef struct
     CPU_ID_REGISTERS cpu_id_registers_0x80000005;
   };
 
-  union
-  {
-    struct
-    {
-      // eax
-      union
-      {
-        unsigned int eax;
-      };
-
-      // ebx
-      union
-      {
-        unsigned int ebx;
-      };
-
-      // ecx
-      union
-      {
+  union {
+    struct {
+      unsigned int eax;
+      unsigned int ebx;
+      union {
         unsigned int ecx;
-        struct
-        {
+        struct {
           unsigned int l2_cache_line_size : 8;
           unsigned int l2_reserved_8_to_11 : 4;
           unsigned int l2_associativity : 4;
           unsigned int l2_cache_size : 16;
         };
       };
-
-      // edx
-      union
-      {
-        unsigned int edx;
-      };
+      unsigned int edx;
     };
     CPU_ID_REGISTERS cpu_id_registers_0x80000006;
   };
 
-  union
-  {
-    struct
-    {
-      // eax
-      union
-      {
-        unsigned int eax;
-      };
+  CPU_ID_REGISTERS cpu_id_registers_0x80000008;
 
-      // ebx
-      union
-      {
-        unsigned int ebx;
-      };
-
-      // ecx
-      union
-      {
-        unsigned int ecx;
-      };
-
-      // edx
-      union
-      {
-        unsigned int edx;
-      };
-    };
-    CPU_ID_REGISTERS cpu_id_registers_0x80000008;
-  };
-  
   unsigned int cache_line_size;
   unsigned int log_base_2_cache_line_size;
-}
-CPU_ID;
+} CPU_ID;
 
-typedef struct
-{
+typedef struct {
   CPU_ID_REGISTERS cpu_id_registers_0;
   CPU_ID_REGISTERS cpu_id_registers_1;
 
@@ -445,63 +349,48 @@ typedef struct
   CPU_ID_REGISTERS cpu_id_registers_0x80000006;
 
   CPU_ID_REGISTERS cpu_id_registers_0x80000008;
-}
-CPU_ID_BINARY_DATA;
-
-typedef struct
-{
-  union
-  {
-    CPU_ID_BINARY_DATA cpu_binary_data;
-    unsigned int data_array [sizeof (CPU_ID_BINARY_DATA) / 4];
-  };
-}
-CPU_ID_BINARY_DATA_ARRAY;
+} CPU_ID_BINARY_DATA;
 
 void cpu_id_to_cpu_id_binary_data (CPU_ID *cpu_id, CPU_ID_BINARY_DATA *cpu_id_binary_data) {
-
-  cpu_id_binary_data -> cpu_id_registers_0 = cpu_id -> cpu_id_registers_0;
-  cpu_id_binary_data -> cpu_id_registers_1 = cpu_id -> cpu_id_registers_1;
-  cpu_id_binary_data -> cpu_id_registers_0x80000000 = cpu_id -> cpu_id_registers_0x80000000;
-  cpu_id_binary_data -> cpu_id_registers_0x80000001 = cpu_id -> cpu_id_registers_0x80000001;
-  cpu_id_binary_data -> cpu_id_registers_0x80000002 = cpu_id -> cpu_id_registers_0x80000002;
-  cpu_id_binary_data -> cpu_id_registers_0x80000003 = cpu_id -> cpu_id_registers_0x80000003;
-  cpu_id_binary_data -> cpu_id_registers_0x80000004 = cpu_id -> cpu_id_registers_0x80000004;
-  cpu_id_binary_data -> cpu_id_registers_0x80000006 = cpu_id -> cpu_id_registers_0x80000006;
-  cpu_id_binary_data -> cpu_id_registers_0x80000008 = cpu_id -> cpu_id_registers_0x80000008;
+  cpu_id_binary_data->cpu_id_registers_0 = cpu_id->cpu_id_registers_0;
+  cpu_id_binary_data->cpu_id_registers_1 = cpu_id->cpu_id_registers_1;
+  cpu_id_binary_data->cpu_id_registers_0x80000000 = cpu_id->cpu_id_registers_0x80000000;
+  cpu_id_binary_data->cpu_id_registers_0x80000001 = cpu_id->cpu_id_registers_0x80000001;
+  cpu_id_binary_data->cpu_id_registers_0x80000002 = cpu_id->cpu_id_registers_0x80000002;
+  cpu_id_binary_data->cpu_id_registers_0x80000003 = cpu_id->cpu_id_registers_0x80000003;
+  cpu_id_binary_data->cpu_id_registers_0x80000004 = cpu_id->cpu_id_registers_0x80000004;
+  cpu_id_binary_data->cpu_id_registers_0x80000006 = cpu_id->cpu_id_registers_0x80000006;
+  cpu_id_binary_data->cpu_id_registers_0x80000008 = cpu_id->cpu_id_registers_0x80000008;
 }
 
 void cpu_id_binary_data_to_cpu_id (CPU_ID_BINARY_DATA *cpu_id_binary_data, CPU_ID *cpu_id) {
+  memset (cpu_id, 0, sizeof(CPU_ID));
 
-  memset (cpu_id, 0, sizeof (CPU_ID));
-
-  cpu_id -> cpu_id_registers_0 = cpu_id_binary_data -> cpu_id_registers_0;
-  cpu_id -> cpu_id_registers_1 = cpu_id_binary_data -> cpu_id_registers_1;
-  cpu_id -> cpu_id_registers_0x80000000 = cpu_id_binary_data -> cpu_id_registers_0x80000000;
-  cpu_id -> cpu_id_registers_0x80000001 = cpu_id_binary_data -> cpu_id_registers_0x80000001;
-  cpu_id -> cpu_id_registers_0x80000002 = cpu_id_binary_data -> cpu_id_registers_0x80000002;
-  cpu_id -> cpu_id_registers_0x80000003 = cpu_id_binary_data -> cpu_id_registers_0x80000003;
-  cpu_id -> cpu_id_registers_0x80000004 = cpu_id_binary_data -> cpu_id_registers_0x80000004;
-  cpu_id -> cpu_id_registers_0x80000006 = cpu_id_binary_data -> cpu_id_registers_0x80000006;
-  cpu_id -> cpu_id_registers_0x80000008 = cpu_id_binary_data -> cpu_id_registers_0x80000008;
+  cpu_id->cpu_id_registers_0 = cpu_id_binary_data->cpu_id_registers_0;
+  cpu_id->cpu_id_registers_1 = cpu_id_binary_data->cpu_id_registers_1;
+  cpu_id->cpu_id_registers_0x80000000 = cpu_id_binary_data->cpu_id_registers_0x80000000;
+  cpu_id->cpu_id_registers_0x80000001 = cpu_id_binary_data->cpu_id_registers_0x80000001;
+  cpu_id->cpu_id_registers_0x80000002 = cpu_id_binary_data->cpu_id_registers_0x80000002;
+  cpu_id->cpu_id_registers_0x80000003 = cpu_id_binary_data->cpu_id_registers_0x80000003;
+  cpu_id->cpu_id_registers_0x80000004 = cpu_id_binary_data->cpu_id_registers_0x80000004;
+  cpu_id->cpu_id_registers_0x80000006 = cpu_id_binary_data->cpu_id_registers_0x80000006;
+  cpu_id->cpu_id_registers_0x80000008 = cpu_id_binary_data->cpu_id_registers_0x80000008;
 }
 
-int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
+int cpuid(int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
   int state;
 
-  state = false;   
-  __try
-  {
+  state = false;
+  __try {
     if (input_eax == 0) {
       // the order of ecx and edx is swapped when saved to make a proper vendor string
 #ifdef _WIN64
-        __cpuid((int*)cpu_id_registers, input_eax);
-        unsigned int tmp = cpu_id_registers->edx;
-        cpu_id_registers->edx = cpu_id_registers->ecx;
-        cpu_id_registers->ecx = tmp;
+      __cpuid((int*)cpu_id_registers, input_eax);
+      unsigned int tmp = cpu_id_registers->edx;
+      cpu_id_registers->edx = cpu_id_registers->ecx;
+      cpu_id_registers->ecx = tmp;
 #else
-      __asm
-      {
+      __asm {
           mov   eax, [input_eax]
           mov   edi, [cpu_id_registers]
 
@@ -513,13 +402,11 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
           mov   [edi + 12], ecx
       }
 #endif
-    }
-    else {
+    } else {
 #ifdef _WIN64
-        __cpuid((int*)cpu_id_registers, input_eax);
+      __cpuid((int*)cpu_id_registers, input_eax);
 #else
-      __asm
-      {
+      __asm {
           mov   eax, [input_eax]
           mov   edi, [cpu_id_registers]
 
@@ -535,153 +422,144 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
 
     state = true;
   }
-  __except (1)
-  {
+  __except (1) {
     state = false;
   }
 
   return state;
 }
 
-void parse_cpu_id (CPU_ID *cpu_id) {
+void parse_cpu_id(CPU_ID *cpu_id) {
+  printf("CPUID\n");
+  printf("  vendor = %s\n", cpu_id->cpu_vendor);
+  printf("  brand string %s\n", cpu_id->cpu_brand_string);
+  printf("  maximum_cpu_id_input = %u\n", cpu_id->maximum_cpu_id_input);
+  printf("  maximum extended information = 0x%X\n", cpu_id->cpu_id_registers_0x80000000.eax);
 
-  printf ("CPUID\n");
-  printf ("  vendor = %s \n", cpu_id -> cpu_vendor);
-  printf ("  brand string %s \n", cpu_id -> cpu_brand_string);
-  printf ("  maximum_cpu_id_input = %u \n", cpu_id -> maximum_cpu_id_input);
-  printf ("  maximum extended information = 0x%X \n", cpu_id -> cpu_id_registers_0x80000000.eax);  
+  printf("  MMX  = %u\n", cpu_id->mmx);
+  printf("  SSE  = %u\n", cpu_id->sse);
+  printf("  SSE2 = %u\n", cpu_id->sse2);
+  printf("  SSE3 = %u\n", cpu_id->sse3);
 
-  printf ("  MMX  = %u \n", cpu_id -> mmx);
-  printf ("  SSE  = %u \n", cpu_id -> sse);
-  printf ("  SSE2 = %u \n", cpu_id -> sse2);
-  printf ("  SSE3 = %u \n", cpu_id -> sse3);
+  printf("  EST  = %u\n", cpu_id->est);
 
-  printf ("  EST  = %u \n", cpu_id -> est);
+  if (cpu_id->maximum_cpu_id_input >= 1) {
+    printf("  version_information\n");
+    printf("    stepping_id %u\n", cpu_id->stepping_id);
+    printf("    model %u\n", cpu_id->model);
+    printf("    family %u\n", cpu_id->family);
+    printf("    processor_type %u\n", cpu_id->processor_type);
+    printf("    extended_model_id %u\n", cpu_id->extended_model_id);
+    printf("    extended_family_id %u\n", cpu_id->extended_family_id);
 
-  if (cpu_id -> maximum_cpu_id_input >= 1) {
-    printf ("  version_information \n");
-    printf ("    stepping_id %u \n", cpu_id -> stepping_id);
-    printf ("    model %u \n", cpu_id -> model);
-    printf ("    family %u \n", cpu_id -> family);
-    printf ("    processor_type %u \n", cpu_id -> processor_type);
-    printf ("    extended_model_id %u \n", cpu_id -> extended_model_id);
-    printf ("    extended_family_id %u \n", cpu_id -> extended_family_id);
+    printf("    brand_index %u\n", cpu_id->brand_index);
+    printf("    clflush %u\n", cpu_id->clflush);
+    printf("    maximum_logical_processors %u\n", cpu_id->maximum_logical_processors);
+    printf("    initial_apic_id %u\n", cpu_id->initial_apic_id);
 
-    printf ("    brand_index %u \n", cpu_id -> brand_index);
-    printf ("    clflush %u \n", cpu_id -> clflush);
-    printf ("    maximum_logical_processors %u \n", cpu_id -> maximum_logical_processors);
-    printf ("    initial_apic_id %u \n", cpu_id -> initial_apic_id);
-
-//    printf ("  cache_line_size %u \n", cpu_id -> cache_line_size);
-//    printf ("  log_base_2_cache_line_size %u \n", cpu_id -> log_base_2_cache_line_size);
+//    printf("  cache_line_size %u\n", cpu_id->cache_line_size);
+//    printf("  log_base_2_cache_line_size %u\n", cpu_id->log_base_2_cache_line_size);
   }
 
-  if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000005) {
-    printf ("  l1_data_cache_line_size %d \n", cpu_id -> l1_data_cache_line_size);
-    printf ("  l1_data_associativity %d \n", cpu_id -> l1_data_associativity);
-    printf ("  l1_data_cache_size %dK \n", cpu_id -> l1_data_cache_size);       
+  if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000005) {
+    printf("  l1_data_cache_line_size %d\n", cpu_id->l1_data_cache_line_size);
+    printf("  l1_data_associativity %d\n", cpu_id->l1_data_associativity);
+    printf("  l1_data_cache_size %dK\n", cpu_id->l1_data_cache_size);
 
-    printf ("  l1_code_cache_line_size %d \n", cpu_id -> l1_code_cache_line_size);
-    printf ("  l1_code_associativity %d \n", cpu_id -> l1_code_associativity);
-    printf ("  l1_code_cache_size %dK \n", cpu_id -> l1_code_cache_size);
+    printf("  l1_code_cache_line_size %d\n", cpu_id->l1_code_cache_line_size);
+    printf("  l1_code_associativity %d\n", cpu_id->l1_code_associativity);
+    printf("  l1_code_cache_size %dK\n", cpu_id->l1_code_cache_size);
   }
 
-  if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000006) {
-    printf ("  l2_cache_line_size %d \n", cpu_id -> l2_cache_line_size);
-    printf ("  l2_associativity %d \n", cpu_id -> l2_associativity);
-    printf ("  l2_cache_size %dK \n", cpu_id -> l2_cache_size);       
+  if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000006) {
+    printf("  l2_cache_line_size %d\n", cpu_id->l2_cache_line_size);
+    printf("  l2_associativity %d\n", cpu_id->l2_associativity);
+    printf("  l2_cache_size %dK\n", cpu_id->l2_cache_size);
   }
 }
 
-int initialize_cpu_id (CPU_ID *cpu_id) {
+int initialize_cpu_id(CPU_ID *cpu_id) {
+  int debug = false;
+  memset(cpu_id, 0, sizeof(CPU_ID));
 
-  int state;
-  int debug;
-  
-  state = false;
-  debug = false;
-  memset (cpu_id, 0, sizeof (CPU_ID));
-
-  if (cpuid (0, &cpu_id -> cpu_id_registers_0)) {
-    if (cpu_id -> maximum_cpu_id_input >= 1) {
-      cpuid (1, &cpu_id -> cpu_id_registers_1);
+  if (cpuid(0, &cpu_id->cpu_id_registers_0)) {
+    if (cpu_id->maximum_cpu_id_input >= 1) {
+      cpuid(1, &cpu_id->cpu_id_registers_1);
     }
-    if (cpu_id -> maximum_cpu_id_input >= 2) {
+    if (cpu_id->maximum_cpu_id_input >= 2) {
       unsigned int index;
 
-      cpuid (2, &cpu_id -> cpu_id_registers_2);
+      cpuid(2, &cpu_id->cpu_id_registers_2);
       if (debug) {
-        printf ("  al = %u \n", cpu_id -> cpu_id_registers_2.al);
+        printf("  al = %u\n", cpu_id->cpu_id_registers_2.al);
       }
-      
-      for (index = 1; index < cpu_id -> cpu_id_registers_2.al && index < MAXIMUM_2; index++) {
-        cpuid (2, &cpu_id -> cpu_id_registers_2_array [index]);
+
+      for (index = 1; index < cpu_id->cpu_id_registers_2.al && index < MAXIMUM_2; index++) {
+        cpuid(2, &cpu_id->cpu_id_registers_2_array [index]);
       }
 
       for (index = 1; index < MAXIMUM_CHARACTERS; index++) {
-        if (cpu_id -> character_array_2 [index]) {
+        if (cpu_id->character_array_2 [index]) {
           if (debug) {
-            printf ("  cache/TLB byte = %X \n", cpu_id -> character_array_2 [index]);
+            printf("  cache/TLB byte = %X\n", cpu_id->character_array_2 [index]);
           }
-          switch (cpu_id -> character_array_2 [index])
-          {
-            case 0x0A:
-            case 0x0C:
-              cpu_id -> cache_line_size = 32;
-              cpu_id -> log_base_2_cache_line_size = 5;
-              break;
+          switch (cpu_id->character_array_2 [index]) {
+          case 0x0A:
+          case 0x0C:
+            cpu_id->cache_line_size = 32;
+            cpu_id->log_base_2_cache_line_size = 5;
+            break;
 
-            case 0x2C:
-            case 0x60:
-            case 0x66:
-            case 0x67:
-            case 0x68:
-              cpu_id -> cache_line_size = 64;
-              cpu_id -> log_base_2_cache_line_size = 6;
-              break;
+          case 0x2C:
+          case 0x60:
+          case 0x66:
+          case 0x67:
+          case 0x68:
+            cpu_id->cache_line_size = 64;
+            cpu_id->log_base_2_cache_line_size = 6;
+            break;
           }
         }
       }
     }
 
-    cpuid (0x80000000, &cpu_id -> cpu_id_registers_0x80000000);  
+    cpuid(0x80000000, &cpu_id->cpu_id_registers_0x80000000);
 
-    if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000001) {
-      cpuid (0x80000001, &cpu_id -> cpu_id_registers_0x80000001);  
-    }
-    
-    if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000004) {
-      cpuid (0x80000002, &cpu_id -> cpu_id_registers_0x80000002);  
-      cpuid (0x80000003, &cpu_id -> cpu_id_registers_0x80000003);  
-      cpuid (0x80000004, &cpu_id -> cpu_id_registers_0x80000004);  
+    if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000001) {
+      cpuid(0x80000001, &cpu_id->cpu_id_registers_0x80000001);
     }
 
-    if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000005) {
-      cpuid (0x80000005, &cpu_id -> cpu_id_registers_0x80000005);  
+    if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000004) {
+      cpuid(0x80000002, &cpu_id->cpu_id_registers_0x80000002);
+      cpuid(0x80000003, &cpu_id->cpu_id_registers_0x80000003);
+      cpuid(0x80000004, &cpu_id->cpu_id_registers_0x80000004);
     }
 
-    if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000006) {
-      cpuid (0x80000006, &cpu_id -> cpu_id_registers_0x80000006);  
+    if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000005) {
+      cpuid(0x80000005, &cpu_id->cpu_id_registers_0x80000005);
     }
 
-    if (cpu_id -> cpu_id_registers_0x80000000.eax >= 0x80000008) {
-      cpuid (0x80000008, &cpu_id -> cpu_id_registers_0x80000008);  
-    }    
+    if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000006) {
+      cpuid(0x80000006, &cpu_id->cpu_id_registers_0x80000006);
+    }
 
-    state = true;
+    if (cpu_id->cpu_id_registers_0x80000000.eax >= 0x80000008) {
+      cpuid(0x80000008, &cpu_id->cpu_id_registers_0x80000008);
+    }
+
+    return true;
   }
-  
-  return state;
+
+  return false;
 }
 
-int update_cpu_frequency_function (int processor_number, DisplayInformation *display_information)
-{
+int update_cpu_frequency_function(int processor_number, DisplayInformation *display_information) {
   int update;
-  
+
   update = false;
-  display_information -> _maximum_cpu_frequency = 0;
-  display_information -> _current_cpu_frequency = 0;
-  
+  display_information->_maximum_cpu_frequency = 0;
+  display_information->_current_cpu_frequency = 0;
+
   if (CallNtPowerInformationFunction) {
 
     int i;
@@ -692,38 +570,38 @@ int update_cpu_frequency_function (int processor_number, DisplayInformation *dis
     POWER_INFORMATION_LEVEL information_level;
     PROCESSOR_POWER_INFORMATION *processor_power_information;
     PROCESSOR_POWER_INFORMATION processor_power_information_array [MAXIMUM_PROCESSORS];
- 
-    memset (processor_power_information_array, 0, sizeof (PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS);
+
+    memset(processor_power_information_array, 0, sizeof(PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS);
 
     processor_power_information = processor_power_information_array;
     for (i = 0; i < MAXIMUM_PROCESSORS; i++) {
-      processor_power_information -> Number = 0xFFFFFFFF;
+      processor_power_information->Number = 0xFFFFFFFF;
       processor_power_information++;
     }
-    
+
     information_level = ProcessorInformation;
     input_buffer = NULL;
     output_buffer = processor_power_information_array;
     input_buffer_size = 0;
-    output_buffer_size = sizeof (PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS;
-    if (CallNtPowerInformationFunction (information_level, input_buffer, input_buffer_size, output_buffer, output_buffer_size) == 0) {
+    output_buffer_size = sizeof(PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS;
+    if (CallNtPowerInformationFunction(information_level, input_buffer, input_buffer_size, output_buffer, output_buffer_size) == 0) {
       processor_power_information = processor_power_information_array;
       for (i = 0; i < MAXIMUM_PROCESSORS; i++) {
-        if (processor_power_information -> Number == processor_number) {
+        if (processor_power_information->Number == processor_number) {
           PN_uint64 value;
 
-          value = processor_power_information -> MaxMhz;
-          display_information -> _maximum_cpu_frequency = value * 1000000;
+          value = processor_power_information->MaxMhz;
+          display_information->_maximum_cpu_frequency = value * 1000000;
 
-          value = processor_power_information -> CurrentMhz;     
-          display_information -> _current_cpu_frequency = value * 1000000;
+          value = processor_power_information->CurrentMhz;
+          display_information->_current_cpu_frequency = value * 1000000;
           update = true;
 
           break;
         }
 
         processor_power_information++;
-      }      
+      }
     }
   }
 
@@ -736,7 +614,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
   int num_logical_cpus = 0;
 
   // Get a pointer to the GetLogicalProcessorInformation function.
-  typedef BOOL (WINAPI *LPFN_GLPI)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, 
+  typedef BOOL (WINAPI *LPFN_GLPI)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
                                    PDWORD);
   LPFN_GLPI glpi;
   glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
@@ -801,11 +679,8 @@ count_number_of_cpus(DisplayInformation *display_information) {
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 WinGraphicsPipe() {
-
-  bool state;
   char string [512];
 
-  state = false;
   _supported_types = OT_window | OT_fullscreen_window;
 
   // these fns arent defined on win95, so get dynamic ptrs to them
@@ -819,15 +694,38 @@ WinGraphicsPipe() {
   }
 
 #ifdef HAVE_DX9
-  if (request_dxdisplay_information){
+  // Use D3D to get display info.  This is disabled by default as it is slow.
+  if (request_dxdisplay_information) {
     DisplaySearchParameters display_search_parameters_dx9;
     int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
+    dx9_display_information(display_search_parameters_dx9, _display_information);
+  } else
+#endif
+  {
+    // Use the Win32 API to query the available display modes.
+    pvector<DisplayMode> display_modes;
+    DEVMODE dm = {0};
+    dm.dmSize = sizeof(dm);
+    for (int i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; ++i) {
+      DisplayMode mode;
+      mode.width = dm.dmPelsWidth;
+      mode.height = dm.dmPelsHeight;
+      mode.bits_per_pixel = dm.dmBitsPerPel;
+      mode.refresh_rate = dm.dmDisplayFrequency;
+      mode.fullscreen_only = 0;
+      if (i == 0 || mode != display_modes.back()) {
+        display_modes.push_back(mode);
+      }
+    }
 
-    if (state == false && dx9_display_information (display_search_parameters_dx9, _display_information)) {
-      state = true;
+    // Copy this information to the DisplayInformation object.
+    _display_information->_total_display_modes = display_modes.size();
+    if (!display_modes.empty()) {
+      _display_information->_display_mode_array = new DisplayMode[display_modes.size()];
+      std::copy(display_modes.begin(), display_modes.end(),
+                _display_information->_display_mode_array);
     }
   }
-#endif
 
   if (auto_cpu_data) {
     lookup_cpu_data();
@@ -836,15 +734,17 @@ WinGraphicsPipe() {
   OSVERSIONINFO version_info;
 
   version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  if (GetVersionEx (&version_info)) {
-    sprintf (string, "OS version: %d.%d.%d.%d \n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
-    windisplay_cat.info() << string;
-    windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
+  if (GetVersionEx(&version_info)) {
+    if (windisplay_cat.is_info()) {
+      sprintf(string, "OS version: %d.%d.%d.%d\n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
+      windisplay_cat.info() << string;
+      windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
+    }
 
-    _display_information -> _os_version_major = version_info.dwMajorVersion;
-    _display_information -> _os_version_minor = version_info.dwMinorVersion;
-    _display_information -> _os_version_build = version_info.dwBuildNumber;
-    _display_information -> _os_platform_id = version_info.dwPlatformId;
+    _display_information->_os_version_major = version_info.dwMajorVersion;
+    _display_information->_os_version_minor = version_info.dwMinorVersion;
+    _display_information->_os_version_build = version_info.dwBuildNumber;
+    _display_information->_os_platform_id = version_info.dwPlatformId;
   }
   // Screen size
   _display_width = GetSystemMetrics(SM_CXSCREEN);
@@ -852,22 +752,18 @@ WinGraphicsPipe() {
 
   HMODULE power_dll;
 
-  power_dll = LoadLibrary ("PowrProf.dll");
+  power_dll = LoadLibrary("PowrProf.dll");
   if (power_dll) {
-    CallNtPowerInformationFunction = (CallNtPowerInformationType) GetProcAddress (power_dll, "CallNtPowerInformation");
+    CallNtPowerInformationFunction = (CallNtPowerInformationType) GetProcAddress(power_dll, "CallNtPowerInformation");
     if (CallNtPowerInformationFunction) {
 
-      _display_information -> _update_cpu_frequency_function = update_cpu_frequency_function;
+      _display_information->_update_cpu_frequency_function = update_cpu_frequency_function;
       update_cpu_frequency_function(0, _display_information);
 
-      sprintf (string, "max Mhz %I64d, current Mhz %I64d \n", _display_information -> _maximum_cpu_frequency, _display_information -> _current_cpu_frequency);
+      sprintf(string, "max Mhz %I64d, current Mhz %I64d\n", _display_information->_maximum_cpu_frequency, _display_information->_current_cpu_frequency);
 
       windisplay_cat.info() << string;
     }
-  }
-
-  if (state) {
-
   }
 }
 
@@ -883,10 +779,10 @@ lookup_cpu_data() {
   char string [512];
 
   // set callback for memory function
-  _display_information -> _get_memory_information_function = get_memory_information;
+  _display_information->_get_memory_information_function = get_memory_information;
 
   // set callback for cpu time function
-  _display_information -> _cpu_time_function = cpu_time_function;
+  _display_information->_cpu_time_function = cpu_time_function;
 
   // determine CPU frequency
   PN_uint64 time;
@@ -900,7 +796,7 @@ lookup_cpu_data() {
   counter.QuadPart = 0;
   end.QuadPart = 0;
   frequency.QuadPart = 0;
-  
+
   int priority;
   HANDLE thread;
 
@@ -908,8 +804,8 @@ lookup_cpu_data() {
   thread = GetCurrentThread();
   priority = GetThreadPriority (thread);
   SetThreadPriority(thread, THREAD_PRIORITY_TIME_CRITICAL);
-  
-  if (QueryPerformanceFrequency(&frequency)) {    
+
+  if (QueryPerformanceFrequency(&frequency)) {
     if (frequency.QuadPart > 0) {
       if (QueryPerformanceCounter (&counter)) {
         time = cpu_time_function();
@@ -919,15 +815,15 @@ lookup_cpu_data() {
         }
         end_time = cpu_time_function();
 
-        _display_information -> _cpu_frequency = end_time - time;
+        _display_information->_cpu_frequency = end_time - time;
       }
     }
   }
 
   SetThreadPriority(thread, priority);
-  sprintf (string, "QueryPerformanceFrequency: %I64d\n", frequency.QuadPart);    
+  sprintf(string, "QueryPerformanceFrequency: %I64d\n", frequency.QuadPart);
   windisplay_cat.info() << string;
-  sprintf (string, "CPU frequency: %I64d\n", _display_information -> _cpu_frequency);
+  sprintf(string, "CPU frequency: %I64d\n", _display_information->_cpu_frequency);
   windisplay_cat.info() << string;
 
 
@@ -935,34 +831,33 @@ lookup_cpu_data() {
   CPU_ID cpu_id;
 
   windisplay_cat.info() << "start CPU ID\n";
-  
-  if (initialize_cpu_id (&cpu_id)) {  
-    CPU_ID_BINARY_DATA *cpu_id_binary_data;
-    
-    cpu_id_binary_data = new (CPU_ID_BINARY_DATA);    
-    if (cpu_id_binary_data) {  
-      cpu_id_to_cpu_id_binary_data (&cpu_id, cpu_id_binary_data);
-      _display_information -> _cpu_id_size = sizeof (CPU_ID_BINARY_DATA) / sizeof (unsigned int);
-      _display_information -> _cpu_id_data = (unsigned int *) cpu_id_binary_data;
 
-      _display_information -> _cpu_vendor_string = strdup(cpu_id.cpu_vendor);
-      _display_information -> _cpu_brand_string = strdup(cpu_id.cpu_brand_string);
-      _display_information -> _cpu_version_information = cpu_id.version_information;
-      _display_information -> _cpu_brand_index = cpu_id.brand_index;
+  if (initialize_cpu_id(&cpu_id)) {
+    CPU_ID_BINARY_DATA *cpu_id_binary_data;
+
+    cpu_id_binary_data = new (CPU_ID_BINARY_DATA);
+    if (cpu_id_binary_data) {
+      cpu_id_to_cpu_id_binary_data(&cpu_id, cpu_id_binary_data);
+      _display_information->_cpu_id_size = sizeof(CPU_ID_BINARY_DATA) / sizeof(unsigned int);
+      _display_information->_cpu_id_data = (unsigned int *) cpu_id_binary_data;
+
+      _display_information->_cpu_vendor_string = strdup(cpu_id.cpu_vendor);
+      _display_information->_cpu_brand_string = strdup(cpu_id.cpu_brand_string);
+      _display_information->_cpu_version_information = cpu_id.version_information;
+      _display_information->_cpu_brand_index = cpu_id.brand_index;
 
       if (windisplay_cat.is_debug()) {
         windisplay_cat.debug()
-          << hex << _display_information -> _cpu_id_version << dec << "|";
+          << hex << _display_information->_cpu_id_version << dec << "|";
 
         int index;
-        for (index = 0; index < _display_information -> _cpu_id_size; index++) {
+        for (index = 0; index < _display_information->_cpu_id_size; ++index) {
           unsigned int data;
-
-          data = _display_information -> _cpu_id_data [index];
+          data = _display_information->_cpu_id_data[index];
 
           windisplay_cat.debug(false)
             << hex << data << dec;
-          if (index < (_display_information -> _cpu_id_size - 1)) {
+          if (index < _display_information->_cpu_id_size - 1) {
             windisplay_cat.debug(false)
               << "|";
           }
@@ -973,7 +868,7 @@ lookup_cpu_data() {
     }
 
     if (windisplay_cat.is_debug()) {
-      parse_cpu_id (&cpu_id);
+      parse_cpu_id(&cpu_id);
     }
   }
 
@@ -986,7 +881,7 @@ lookup_cpu_data() {
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsPipe::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 ~WinGraphicsPipe() {

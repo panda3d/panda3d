@@ -1190,14 +1190,26 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
     return &t;
   }
-  case Shader::SMO_texmat_x: {
-    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
-    const TextureAttrib *ta = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-    int stagenr = atoi(name->get_name().c_str());
-    if (stagenr >= ta->get_num_on_stages()) {
+  case Shader::SMO_texmat_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      return &tma->get_mat(ta->get_on_stage(index));
+    } else {
       return &LMatrix4::ident_mat();
     }
-    return &tma->get_mat(ta->get_on_stage(stagenr));
+  }
+  case Shader::SMO_inv_texmat_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      t = tma->get_transform(ta->get_on_stage(index))->get_inverse()->get_mat();
+      return &t;
+    } else {
+      return &LMatrix4::ident_mat();
+    }
   }
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
@@ -3331,4 +3343,12 @@ get_driver_shader_version_major() {
 int GraphicsStateGuardian::
 get_driver_shader_version_minor() {
   return -1;
+}
+
+ostream &
+operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm) {
+  static const char *sm_strings[] = {"none", "1.1", "2.0", "2.x", "3.0", "4.0", "5.0", "5.1"};
+  nassertr(sm >= 0 && sm <= GraphicsStateGuardian::SM_51, out);
+  out << sm_strings[sm];
+  return out;
 }
