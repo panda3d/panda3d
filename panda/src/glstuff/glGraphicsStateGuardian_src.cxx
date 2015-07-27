@@ -7045,6 +7045,9 @@ report_extensions() const {
             out.put(' ');
           }
           out << ' ' << (*ei);
+        } else {
+          out.put('\n');
+          break;
         }
       }
       out.put('\n');

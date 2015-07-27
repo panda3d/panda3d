@@ -155,7 +155,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
         CLP(TextureContext) *gtc = *it;
 
-        if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+        if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
           glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
           // If we've done it for one, we've done it for all.
           break;
@@ -1656,7 +1656,7 @@ resolve_multisamples() {
     for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
       CLP(TextureContext) *gtc = *it;
 
-      if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+      if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
         glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
         // If we've done it for one, we've done it for all.
         break;
