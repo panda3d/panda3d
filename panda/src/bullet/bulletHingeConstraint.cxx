@@ -211,10 +211,12 @@ get_hinge_angle() {
 //     Function: BulletHingeConstraint::enable_angular_motor
 //       Access: Published
 //  Description: Applies an impulse to the constraint so that the
-//               angle changes at target_velocity (probably
-//               degrees/second) where max_impulse is the maximum
-//               impulse that is used for achieving the specified
-//               velocity.
+//               angle changes at target_velocity where max_impulse
+//               is the maximum impulse that is used for achieving
+//               the specified velocity.
+//
+//               Note that the target_velocity is in radians/second,
+//               not degrees.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
 enable_angular_motor(bool enable, PN_stdfloat target_velocity, PN_stdfloat max_impulse) {
