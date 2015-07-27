@@ -58,33 +58,7 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) RenderState::
 make_empty() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_empty_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    _empty_state = return_unique(state);
-  }
-
   return _empty_state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make_full_default
-//       Access: Published, Static
-//  Description: Returns a RenderState with all possible attributes
-//               set to their default value.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderState) RenderState::
-make_full_default() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_full_default_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    state->fill_default();
-    _full_default_state = return_unique(state);
-  }
-
-  return _full_default_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +118,7 @@ get_attrib(TypeHandle type) const {
 //               index, or NULL if there is no such RenderAttrib in
 //               the state.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderAttrib *RenderState::
+ALWAYS_INLINE const RenderAttrib *RenderState::
 get_attrib(int slot) const {
   return _attributes[slot]._attrib;
 }
@@ -161,7 +135,8 @@ get_attrib_def(int slot) const {
   if (_attributes[slot]._attrib != (RenderAttrib *)NULL) {
     return _attributes[slot]._attrib;
   }
-  return make_full_default()->get_attrib(slot);
+  RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
+  return reg->get_slot_default(slot);
 }
 
 ////////////////////////////////////////////////////////////////////

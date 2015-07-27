@@ -19,7 +19,19 @@ TypeHandle GeometricBoundingVolume::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeometricBoundingVolume::as_geometric_bounding_volume
-//       Access: Public, Virtual
+//       Access: Public, Virtual, Final
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+GeometricBoundingVolume *GeometricBoundingVolume::
+as_geometric_bounding_volume() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeometricBoundingVolume::as_geometric_bounding_volume
+//       Access: Public, Virtual, Final
 //  Description: Virtual downcast method.  Returns this object as a
 //               pointer of the indicated type, if it is in fact that
 //               type.  Returns NULL if it is not that type.

@@ -991,8 +991,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   // We get the TextureAttrib directly from the _target_rs, not the
   // filtered TextureAttrib in _target_texture.
-  const TextureAttrib *texattrib = DCAST(TextureAttrib, _glgsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-  nassertv(texattrib != (TextureAttrib *)NULL);
+  const TextureAttrib *texattrib;
+  _glgsg->_target_rs->get_attrib_def(texattrib);
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
@@ -1053,8 +1053,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    _glgsg->apply_texture(tc);
-    _glgsg->apply_sampler(texunit, sampler, tc);
+    CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
+    _glgsg->apply_texture(gtc);
+    _glgsg->apply_sampler(texunit, sampler, gtc);
   }
 
   cg_report_errors();

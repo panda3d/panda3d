@@ -15,7 +15,6 @@
 #include "standardMunger.h"
 #include "renderState.h"
 #include "graphicsStateGuardian.h"
-#include "dcast.h"
 #include "config_gobj.h"
 #include "displayRegion.h"
 
@@ -43,16 +42,15 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _auto_shader(false),
   _shader_skinning(false)
 {
-  _render_mode = DCAST(RenderModeAttrib, state->get_attrib(RenderModeAttrib::get_class_slot()));
+  _render_mode = (const RenderModeAttrib *)
+    state->get_attrib(RenderModeAttrib::get_class_slot());
 
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
-    const ColorAttrib *color_attrib = (const ColorAttrib *)
-      state->get_attrib(ColorAttrib::get_class_slot());
-    const ColorScaleAttrib *color_scale_attrib = (const ColorScaleAttrib *)
-      state->get_attrib(ColorScaleAttrib::get_class_slot());
+    const ColorAttrib *color_attrib;
+    const ColorScaleAttrib *color_scale_attrib;
 
-    if (color_attrib != (ColorAttrib *)NULL && 
+    if (state->get_attrib(color_attrib) &&
         color_attrib->get_color_type() == ColorAttrib::T_flat) {
 
       if (!get_gsg()->get_color_scale_via_lighting()) {
@@ -60,7 +58,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
         // can't cheat the color via lighting (presumably, in this case,
         // by applying a material).
         _color = color_attrib->get_color();
-        if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+        if (state->get_attrib(color_scale_attrib) &&
             color_scale_attrib->has_scale()) {
           const LVecBase4 &cs = color_scale_attrib->get_scale();
           _color.set(_color[0] * cs[0],
@@ -70,11 +68,11 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
         }
         _munge_color = true;
       }
-      
-    } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+
+    } else if (state->get_attrib(color_scale_attrib) &&
                color_scale_attrib->has_scale()) {
       _color_scale = color_scale_attrib->get_scale();
-      
+
       const TextureAttrib *tex_attrib = (const TextureAttrib *)
         state->get_attrib(TextureAttrib::get_class_slot());
 
@@ -106,7 +104,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 //     Function: StandardMunger::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 StandardMunger::
 ~StandardMunger() {
@@ -126,7 +124,7 @@ munge_data_impl(const GeomVertexData *data) {
     new_data = new_data->set_color(_color, _num_components, _numeric_type,
                                    _contents);
   } else if (_munge_color_scale) {
-    new_data = new_data->scale_color(_color_scale, _num_components, 
+    new_data = new_data->scale_color(_color_scale, _num_components,
                                      _numeric_type, _contents);
   }
 
@@ -142,9 +140,9 @@ munge_data_impl(const GeomVertexData *data) {
     const TransformBlendTable *table = new_data->get_transform_blend_table();
     if (table != (TransformBlendTable *)NULL &&
         table->get_num_transforms() != 0 &&
-        table->get_max_simultaneous_transforms() <= 
+        table->get_max_simultaneous_transforms() <=
         get_gsg()->get_max_vertex_transforms()) {
-      if (matrix_palette && 
+      if (matrix_palette &&
           table->get_num_transforms() <= get_gsg()->get_max_vertex_transform_indices()) {
 
         if (table->get_num_transforms() == table->get_max_simultaneous_transforms()) {
@@ -186,7 +184,7 @@ munge_data_impl(const GeomVertexData *data) {
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 void StandardMunger::
-munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, 
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
                 Thread *) {
   int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
 
@@ -289,7 +287,7 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
 ////////////////////////////////////////////////////////////////////
 int StandardMunger::
 compare_to_impl(const GeomMunger *other) const {
-  const StandardMunger *om = DCAST(StandardMunger, other);
+  const StandardMunger *om = (const StandardMunger *)other;
 
   if (_render_mode != om->_render_mode) {
     return _render_mode < om->_render_mode ? -1 : 1;
@@ -335,7 +333,8 @@ compare_to_impl(const GeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int StandardMunger::
 geom_compare_to_impl(const GeomMunger *other) const {
-  const StandardMunger *om = DCAST(StandardMunger, other);
+  const StandardMunger *om = (const StandardMunger *)other;
+
   if (_munge_color != om->_munge_color) {
     return (int)_munge_color - (int)om->_munge_color;
   }

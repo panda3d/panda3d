@@ -4512,13 +4512,14 @@ prepare_texture(Texture *tex, int view) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 update_texture(TextureContext *tc, bool force) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  CLP(TextureContext) *gtc;
+  DCAST_INTO_R(gtc, tc, false);
 
   if (gtc->was_image_modified() || !gtc->_has_storage) {
     PStatGPUTimer timer(this, _texture_update_pcollector);
 
     // If the texture image was modified, reload the texture.
-    apply_texture(tc);
+    apply_texture(gtc);
 
     Texture *tex = tc->get_texture();
     if (gtc->was_properties_modified()) {
@@ -4536,7 +4537,7 @@ update_texture(TextureContext *tc, bool force) {
 
     // If only the properties have been modified, we don't necessarily
     // need to reload the texture.
-    apply_texture(tc);
+    apply_texture(gtc);
 
     Texture *tex = tc->get_texture();
     if (specify_texture(gtc, tex->get_default_sampler())) {
@@ -9649,8 +9650,10 @@ update_standard_texture_bindings() {
       glDisable(target);
       continue;
     }
-    apply_texture(tc);
-    apply_sampler(i, _target_texture->get_on_sampler(stage), tc);
+    // Don't DCAST(); we already did the verification in update_texture.
+    CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
+    apply_texture(gtc);
+    apply_sampler(i, _target_texture->get_on_sampler(stage), gtc);
 
     if (stage->involves_color_scale() && _color_scale_enabled) {
       LColor color = stage->get_color();
@@ -10487,9 +10490,7 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 //               for rendering.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_texture(TextureContext *tc) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
+apply_texture(CLP(TextureContext) *gtc) {
   gtc->set_active(true);
   GLenum target = get_texture_target(gtc->get_texture()->get_texture_type());
   if (target == GL_NONE) {
@@ -10520,9 +10521,7 @@ apply_texture(TextureContext *tc) {
 //               context instead.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
+apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
   if (_supports_sampler_objects) {
     // We support sampler objects.  Prepare the sampler object and
@@ -10547,7 +10546,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
     // texture and change the texture parameters if they don't match.
     if (gtc->_active_sampler != sampler) {
       _glActiveTexture(GL_TEXTURE0 + unit);
-      apply_texture(tc);
+      apply_texture(gtc);
       specify_texture(gtc, sampler);
     }
   }
@@ -10555,7 +10554,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
   if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying
     // to sample it with mipmaps.  We will need to reload it.
-    apply_texture(tc);
+    apply_texture(gtc);
     gtc->mark_needs_reload();
     bool okflag = upload_texture(gtc, false, true);
     if (!okflag) {

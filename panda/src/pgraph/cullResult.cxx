@@ -237,9 +237,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   }
 
   // Check for a special wireframe setting.
-  const RenderModeAttrib *rmode = (const RenderModeAttrib *)
-    object->_state->get_attrib(RenderModeAttrib::get_class_slot());
-  if (rmode != (const RenderModeAttrib *)NULL) {
+  const RenderModeAttrib *rmode;
+  if (object->_state->get_attrib(rmode)) {
     if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
       CullableObject *wireframe_part = new CullableObject(*object);
       wireframe_part->_state = get_wireframe_overlay_state(rmode);

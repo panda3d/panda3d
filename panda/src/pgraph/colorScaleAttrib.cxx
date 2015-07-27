@@ -186,8 +186,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int ColorScaleAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const ColorScaleAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ColorScaleAttrib *ta = (const ColorScaleAttrib *)other;
 
   if (is_off() != ta->is_off()) {
     return (int)is_off() - (int)ta->is_off();
@@ -233,8 +232,7 @@ get_hash_impl() const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
 compose_impl(const RenderAttrib *other) const {
-  const ColorScaleAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ColorScaleAttrib *ta = (const ColorScaleAttrib *)other;
 
   if (ta->is_off()) {
     return ta;
@@ -263,8 +261,8 @@ invert_compose_impl(const RenderAttrib *other) const {
   if (is_off()) {
     return other;
   }
-  const ColorScaleAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ColorScaleAttrib *ta = (const ColorScaleAttrib *)other;
+
   LVecBase4 new_scale(_scale[0] == 0.0f ? 1.0f : ta->_scale[0] / _scale[0],
                        _scale[1] == 0.0f ? 1.0f : ta->_scale[1] / _scale[1],
                        _scale[2] == 0.0f ? 1.0f : ta->_scale[2] / _scale[2],

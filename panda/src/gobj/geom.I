@@ -832,7 +832,7 @@ get_modified() const {
 INLINE GeomContext *GeomPipelineReader::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) const {
-  return ((Geom *)_object.p())->prepare_now(prepared_objects, gsg);
+  return ((Geom *)_object)->prepare_now(prepared_objects, gsg);
 }
 
 INLINE ostream &

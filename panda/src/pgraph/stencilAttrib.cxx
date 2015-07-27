@@ -311,8 +311,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int StencilAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const StencilAttrib *sa;
-  DCAST_INTO_R(sa, other, 0);
+  const StencilAttrib *sa = (const StencilAttrib *)other;
 
   int a;
   int b;

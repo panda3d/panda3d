@@ -40,6 +40,7 @@
 #include "graphicsOutput.h"
 #include "texturePool.h"
 #include "geomMunger.h"
+#include "stateMunger.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -814,38 +815,42 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
-  // Before we even look up the map, see if the _last_mi value points
-  // to this GSG.  This is likely because we tend to visit the same
-  // state multiple times during a frame.  Also, this might well be
-  // the only GSG in the world anyway.
-  if (!state->_mungers.empty()) {
-    RenderState::Mungers::const_iterator mi = state->_last_mi;
-    if (!(*mi).first.was_deleted() && (*mi).first == this) {
-      if ((*mi).second->is_registered()) {
-        return (*mi).second;
+  RenderState::Mungers &mungers = state->_mungers;
+
+  if (mungers.is_empty()) {
+    // Before we even look up the map, see if the _last_mi value points
+    // to this GSG.  This is likely because we tend to visit the same
+    // state multiple times during a frame.  Also, this might well be
+    // the only GSG in the world anyway.
+    int mi = state->_last_mi;
+    if (mi >= 0 && mungers.has_element(mi) && mungers.get_key(mi) == this) {
+      PT(GeomMunger) munger = mungers.get_data(mi);
+      if (munger->is_registered()) {
+        return munger;
       }
     }
-  }
 
-  // Nope, we have to look it up in the map.
-  RenderState::Mungers::iterator mi = state->_mungers.find(this);
-  if (mi != state->_mungers.end() && !(*mi).first.was_deleted()) {
-    if ((*mi).second->is_registered()) {
-      state->_last_mi = mi;
-      return (*mi).second;
+    // Nope, we have to look it up in the map.
+    mi = mungers.find(this);
+    if (mi >= 0) {
+      PT(GeomMunger) munger = mungers.get_data(mi);
+      if (munger->is_registered()) {
+        state->_last_mi = mi;
+        return munger;
+      } else {
+        // This GeomMunger is no longer registered.  Remove it from
+        // the map.
+        mungers.remove_element(mi);
+      }
     }
-    // This GeomMunger is no longer registered.  Remove it from the
-    // map.
-    state->_mungers.erase(mi);
   }
 
   // Nothing in the map; create a new entry.
   PT(GeomMunger) munger = make_geom_munger(state, current_thread);
   nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
+  nassertr(munger->is_of_type(StateMunger::get_class_type()), munger);
 
-  mi = state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
-  state->_last_mi = mi;
-
+  state->_last_mi = mungers.store(this, munger);
   return munger;
 }
 

@@ -531,8 +531,8 @@ protected:
 #endif  // NDEBUG
 
   bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
-  bool apply_texture(TextureContext *tc);
-  bool apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc);
+  bool apply_texture(CLP(TextureContext) *gtc);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc);
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,

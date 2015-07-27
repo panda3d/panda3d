@@ -140,8 +140,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       }
     }
 
-    StateMunger *state_munger;
-    DCAST_INTO_R(state_munger, munger, false);
+    StateMunger *state_munger = (StateMunger *)munger;
     _state = state_munger->munge_state(_state);
 
     // If there is any animation left in the vertex data after it

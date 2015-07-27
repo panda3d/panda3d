@@ -113,8 +113,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int ScissorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const ScissorAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ScissorAttrib *ta = (const ScissorAttrib *)other;
 
   if (!_off && !ta->_off) {
     return 0;
@@ -173,8 +172,7 @@ compose_impl(const RenderAttrib *other) const {
     return other;
   }
 
-  const ScissorAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ScissorAttrib *ta = (const ScissorAttrib *)other;
 
   if (ta->_off) {
     return this;
