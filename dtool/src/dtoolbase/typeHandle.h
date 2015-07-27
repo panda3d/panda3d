@@ -123,7 +123,7 @@ PUBLISHED:
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = (TypedObject *)NULL) const;
 
-  INLINE int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
+  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
 #ifdef DO_MEMORY_USAGE
   int get_memory_usage(MemoryClass memory_class) const;
