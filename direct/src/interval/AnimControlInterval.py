@@ -153,7 +153,7 @@ class AnimControlInterval(Interval.Interval):
         else:
             frame = max(min(absFrame, numFrames - 1), 0)
             
-        self.controls.poseAll(int(frame))
+        self.controls.poseAll(frame)
 
         self.state = CInterval.SStarted
         self.currT = t
@@ -169,9 +169,9 @@ class AnimControlInterval(Interval.Interval):
             # a hitch in the animation when it plays back-to-back with
             # the next cycle.
             if self.reverse:
-                self.controls.poseAll(int(self.startFrame))
+                self.controls.poseAll(self.startFrame)
             else:
-                self.controls.poseAll(int(self.endFrame))
+                self.controls.poseAll(self.endFrame)
 
         else:
             # Otherwise, the user-specified duration determines which

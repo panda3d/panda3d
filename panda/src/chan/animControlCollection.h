@@ -55,19 +55,19 @@ PUBLISHED:
   // directly into the AnimControl's functionality by anim name.
 
   INLINE bool play(const string &anim_name);
-  INLINE bool play(const string &anim_name, int from, int to);
+  INLINE bool play(const string &anim_name, double from, double to);
   INLINE bool loop(const string &anim_name, bool restart);
-  INLINE bool loop(const string &anim_name, bool restart, int from, int to);
+  INLINE bool loop(const string &anim_name, bool restart, double from, double to);
   INLINE bool stop(const string &anim_name);
-  INLINE bool pose(const string &anim_name, int frame);
+  INLINE bool pose(const string &anim_name, double frame);
 
   // These functions operate on all anims at once.
   void play_all();
-  void play_all(int from, int to);
+  void play_all(double from, double to);
   void loop_all(bool restart);
-  void loop_all(bool restart, int from, int to);
+  void loop_all(bool restart, double from, double to);
   bool stop_all();
-  void pose_all(int frame);
+  void pose_all(double frame);
 
   INLINE int get_frame(const string &anim_name) const;
   INLINE int get_frame() const;
