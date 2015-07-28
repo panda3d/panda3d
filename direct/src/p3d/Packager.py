@@ -375,6 +375,9 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
+            
+            # Map of extensions to files to number (ignored by dir)
+            self.ignoredDirFiles = {}
 
         def close(self):
             """ Writes out the contents of the current package.  Returns True
@@ -385,6 +388,13 @@ class Packager:
                 message = 'Cannot generate packages without an installDir; use -i'
                 raise PackagerError, message
 
+            if self.ignoredDirFiles:
+                exts = list(self.ignoredDirFiles.keys())
+                exts.sort()
+                total = sum([x for x in self.ignoredDirFiles.values()])
+                self.notify.warning("excluded %s files not marked for inclusion: %s" \
+                                    % (total, ", ".join(["'" + ext + "'" for ext in exts])))
+                
             if not self.host:
                 self.host = self.packager.host
 
@@ -2185,6 +2195,9 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
+        
+        # Set this to true to verbosely log files ignored by dir().
+        self.verbosePrint = False
 
         # This will be appended to the basename of any .p3d package,
         # before the .p3d extension.
@@ -2390,6 +2403,14 @@ class Packager:
         # should be added exactly byte-for-byte as they are.
         self.unprocessedExtensions = []
 
+        # Files for which warnings should be suppressed when they are
+        # not handled by dir()
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
+                                             'p3d', 'pdef', 
+                                             'c', 'C', 'cxx', 'cpp', 'h', 'H',
+                                             'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
+                                             'o', 'obj', 'a', 'lib', 'bc', 'll']
+         
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -2617,12 +2638,20 @@ class Packager:
             if dirname.makeTrueCase():
                 searchPath.appendDirectory(dirname)
 
+    def _ensureExtensions(self):
+        self.knownExtensions = \
+            self.imageExtensions + \
+            self.modelExtensions + \
+            self.textExtensions + \
+            self.binaryExtensions + \
+            self.uncompressibleExtensions + \
+            self.unprocessedExtensions
 
     def setup(self):
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
 
-        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions + self.unprocessedExtensions
+        self._ensureExtensions()
 
         self.currentPackage = None
 
@@ -3604,6 +3633,43 @@ class Packager:
         filename = Filename(filename)
         self.currentPackage.excludeFile(filename)
 
+
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
+                         imageExtensions = None, textExtensions = None, 
+                         uncompressibleExtensions = None, unprocessedExtensions = None,
+                         suppressWarningForExtensions = None):
+        """ Ensure that dir() will include files with the given extensions.
+        The extensions should not have '.' prefixes.
+        
+        All except 'suppressWarningForExtensions' allow the given kinds of files
+        to be packaged with their respective semantics (read the source).
+        
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+        so no warnings will be emitted for them.
+        """
+        if executableExtensions:
+            self.executableExtensions += executableExtensions
+
+        if extractExtensions:
+            self.extractExtensions += extractExtensions
+
+        if imageExtensions:
+            self.imageExtensions += imageExtensions
+
+        if textExtensions:
+            self.textExtensions += textExtensions
+
+        if uncompressibleExtensions:
+            self.uncompressibleExtensions += uncompressibleExtensions
+
+        if unprocessedExtensions:
+            self.unprocessedExtensions += unprocessedExtensions
+
+        if suppressWarningForExtensions:
+            self.suppressWarningForExtensions += suppressWarningForExtensions
+
+        self._ensureExtensions()
+
     def do_dir(self, dirname, newDir = None, unprocessed = None):
 
         """ Adds the indicated directory hierarchy to the current
@@ -3676,7 +3742,12 @@ class Packager:
                     filename.setBinary()
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False, unprocessed = unprocessed)
-
+            elif not ext in self.suppressWarningForExtensions:
+                newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
+                self.currentPackage.ignoredDirFiles[ext] = newCount
+                
+                if self.verbosePrint:
+                    self.notify.warning("ignoring file %s" % filename) 
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of
