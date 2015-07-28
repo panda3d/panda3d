@@ -236,29 +236,37 @@ run_python() {
   }
   Py_DECREF(app_runner_class);
 
+  // Import the JavaScript module.
+  PyObject *javascript_module = PyImport_ImportModule("direct.p3d.JavaScript");
+  if (javascript_module == NULL) {
+    nout << "Failed to import direct.p3d.JavaScript\n";
+    PyErr_Print();
+    return false;
+  }
+
   // Get the UndefinedObject class.
-  _undefined_object_class = PyObject_GetAttrString(app_runner_module, "UndefinedObject");
+  _undefined_object_class = PyObject_GetAttrString(javascript_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // And the "Undefined" instance.
-  _undefined = PyObject_GetAttrString(app_runner_module, "Undefined");
+  _undefined = PyObject_GetAttrString(javascript_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the ConcreteStruct class.
-  _concrete_struct_class = PyObject_GetAttrString(app_runner_module, "ConcreteStruct");
+  _concrete_struct_class = PyObject_GetAttrString(javascript_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the BrowserObject class.
-  _browser_object_class = PyObject_GetAttrString(app_runner_module, "BrowserObject");
+  _browser_object_class = PyObject_GetAttrString(javascript_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
     return false;
@@ -272,7 +280,7 @@ run_python() {
   }
 
   Py_DECREF(app_runner_module);
-
+  Py_DECREF(javascript_module);
 
   // Construct a Python wrapper around our methods we need to expose to Python.
   static PyMethodDef p3dpython_methods[] = {

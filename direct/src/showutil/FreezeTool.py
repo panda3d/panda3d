@@ -17,7 +17,6 @@ except ImportError:
     p3extend_frozen = None
 
 from panda3d.core import *
-from pandac.extension_native_helpers import dll_suffix, dll_ext
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -1393,15 +1392,6 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
-
-        # Look for a dtool extension.  This loop is roughly lifted
-        # from extension_native_helpers.Dtool_PreloadDLL().
-        filename = name + dll_suffix + dll_ext
-        for dir in sys.path + [sys.prefix]:
-            lib = os.path.join(dir, filename)
-            if os.path.exists(lib):
-                file = open(lib, 'rb')
-                return (file, lib, (dll_ext, 'rb', imp.C_EXTENSION))
 
         message = "DLL loader cannot find %s." % (name)
         raise ImportError, message

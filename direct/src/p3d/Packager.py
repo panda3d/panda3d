@@ -3341,7 +3341,7 @@ class Packager:
         self.do_module('VFSImporter', filename = filename)
         self.do_freeze('_vfsimporter', compileToExe = False)
 
-        self.do_file('panda3d/core.pyd');
+        self.do_file('panda3d/_core.pyd');
 
         # Now that we're done freezing, explicitly add 'direct' to
         # counteract the previous explicit excludeModule().

@@ -8799,6 +8799,7 @@ get_usage(Geom::UsageHint usage_hint) {
   return GL_STATIC_DRAW;
 }
 
+#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_compressed_format_string
 //       Access: Public, Static
@@ -8917,6 +8918,7 @@ get_compressed_format_string(GLenum format) {
     return NULL;
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
