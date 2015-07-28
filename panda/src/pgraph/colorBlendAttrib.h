@@ -141,10 +141,9 @@ private:
   static int _attrib_slot;
 };
 
-ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
-ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
+EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
+EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
 
 #include "colorBlendAttrib.I"
 
 #endif
-

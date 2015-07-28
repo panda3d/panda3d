@@ -1527,11 +1527,15 @@ reset() {
   _glVertexAttribLPointer = NULL;
 #endif
 
-#ifndef OPENGLES_1
   // We need to have a default shader to apply in case
   // something didn't happen to have a shader applied, or
   // if it failed to compile. This default shader just outputs
   // a red color, indicating that something went wrong.
+#ifndef SUPPORT_FIXED_FUNCTION
+  if (_default_shader == NULL) {
+    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+  }
+#elif !defined(OPENGLES)
   if (_default_shader == NULL && core_profile) {
     _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
   }
@@ -2926,6 +2930,11 @@ clear_before_callback() {
 #ifndef OPENGLES
   if (_supports_sampler_objects) {
     _glBindSampler(0, 0);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindSampler(0, 0)\n";
+    }
   }
 #endif
 }
@@ -5548,6 +5557,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   if (new_image && gtc->_immutable) {
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+    }
   }
 
 #ifndef OPENGLES
@@ -5844,12 +5858,6 @@ do_issue_transform() {
 #endif
   _transform_stale = false;
 
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
-  }
-#endif
-
   report_my_gl_errors();
 }
 
@@ -5885,9 +5893,9 @@ do_issue_shade_model() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-do_issue_shader(bool state_has_changed) {
+do_issue_shader() {
   ShaderContext *context = 0;
-  Shader *shader = (Shader *)(_target_shader->get_shader());
+  Shader *shader = (Shader *)_target_shader->get_shader();
 
 #ifndef SUPPORT_FIXED_FUNCTION
   // If we don't have a shader, apply the default shader.
@@ -5919,18 +5927,13 @@ do_issue_shader(bool state_has_changed) {
     if (context != _current_shader_context) {
       // Use a completely different shader than before.
       // Unbind old shader, bind the new one.
-      if (_current_shader_context != 0) {
+      if (_current_shader_context != NULL &&
+          _current_shader->get_language() != shader->get_language()) {
         _current_shader_context->unbind();
       }
       context->bind();
       _current_shader = shader;
       _current_shader_context = context;
-      context->issue_parameters(Shader::SSD_shaderinputs);
-    } else {
-      if (state_has_changed) {
-        // Use the same shader as before, but with new input arguments.
-        context->issue_parameters(Shader::SSD_shaderinputs);
-      }
     }
   }
 
@@ -6410,6 +6413,11 @@ do_issue_blending() {
       _glBlendEquation(GL_FUNC_ADD);
       glBlendFunc(GL_ZERO, GL_ONE);
     }
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_ZERO, GL_ONE)\n";
+    }
     return;
   } else {
     set_color_write_mask(color_channels);
@@ -6433,16 +6441,23 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(get_blend_equation_type(color_blend_mode));
     glBlendFunc(get_blend_func(color_blend->get_operand_a()),
-                   get_blend_func(color_blend->get_operand_b()));
+                get_blend_func(color_blend->get_operand_b()));
 
+    LColor c;
     if (_color_blend_involves_color_scale) {
       // Apply the current color scale to the blend mode.
-      _glBlendColor(_current_color_scale[0], _current_color_scale[1],
-                    _current_color_scale[2], _current_color_scale[3]);
-
+      c = _current_color_scale;
     } else {
-      LColor c = color_blend->get_color();
-      _glBlendColor(c[0], c[1], c[2], c[3]);
+      c = color_blend->get_color();
+    }
+
+    _glBlendColor(c[0], c[1], c[2], c[3]);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(" << color_blend_mode << ")\n";
+      GLCAT.spam() << "glBlendFunc(" << color_blend->get_operand_a()
+                                     << color_blend->get_operand_b() << ")\n";
+      GLCAT.spam() << "glBlendColor(" << c << ")\n";
     }
     return;
   }
@@ -6460,6 +6475,11 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
     return;
 
   case TransparencyAttrib::M_multisample:
@@ -6489,6 +6509,11 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
     return;
   }
 
@@ -9224,10 +9249,27 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
+#ifndef OPENGLES_1
   _target_shader = (const ShaderAttrib *)
     _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
-#ifndef OPENGLES_1
   _instance_count = _target_shader->get_instance_count();
+
+  if (_target_shader != _state_shader) {
+    //PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
+    do_issue_shader();
+    _state_shader = _target_shader;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+  }
+#ifndef SUPPORT_FIXED_FUNCTION
+  else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+    do_issue_shader();
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+  }
+#endif
+
+  if (_current_shader_context != NULL) {
+    _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
+  }
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -9256,11 +9298,6 @@ set_state_and_transform(const RenderState *target,
     //PStatGPUTimer timer(this, _draw_set_state_clip_plane_pcollector);
     do_issue_clip_plane();
     _state_mask.set_bit(clip_plane_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_clip_planes);
-    }
-#endif
   }
 
   int color_slot = ColorAttrib::get_class_slot();
@@ -9274,12 +9311,6 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_color);
-      _current_shader_context->issue_parameters(Shader::SSD_colorscale);
-    }
-#endif
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -9360,20 +9391,6 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
-    //PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
-#ifndef OPENGLES_1
-    do_issue_shader(true);
-#endif
-    _state_shader = _target_shader;
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
-  }
-#ifndef SUPPORT_FIXED_FUNCTION
-  else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
-    do_issue_shader(false);
-  }
-#endif
-
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
@@ -9441,11 +9458,6 @@ set_state_and_transform(const RenderState *target,
     do_issue_material();
 #endif
     _state_mask.set_bit(material_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_material);
-    }
-#endif
   }
 
   int light_slot = LightAttrib::get_class_slot();
@@ -9456,11 +9468,6 @@ set_state_and_transform(const RenderState *target,
     do_issue_light();
 #endif
     _state_mask.set_bit(light_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_light);
-    }
-#endif
   }
 
   int stencil_slot = StencilAttrib::get_class_slot();
@@ -9479,11 +9486,6 @@ set_state_and_transform(const RenderState *target,
     do_issue_fog();
 #endif
     _state_mask.set_bit(fog_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_fog);
-    }
-#endif
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
@@ -9528,7 +9530,7 @@ do_issue_texture() {
 #ifdef OPENGLES_1
   update_standard_texture_bindings();
 #else
-  if (_current_shader_context == 0 || !_current_shader_context->uses_custom_texture_bindings()) {
+  if (_current_shader_context == 0) {
     // No shader, or a non-Cg shader.
     if (_texture_binding_shader_context != 0) {
       _texture_binding_shader_context->disable_shader_texture_bindings();
@@ -9909,9 +9911,9 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     UsageTextureKey key(texture->get_x_size(), texture->get_y_size());
     UsageTextures::iterator ui = _usage_textures.find(key);
+    GLuint index;
     if (ui == _usage_textures.end()) {
       // Need to create a new texture for this size.
-      GLuint index;
       glGenTextures(1, &index);
       glBindTexture(GL_TEXTURE_2D, index);
       //TODO: this could be a lot simpler with glTexStorage2D
@@ -9921,8 +9923,13 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     } else {
       // Just bind the previously-created texture.
-      GLuint index = (*ui).second;
+      index = (*ui).second;
       glBindTexture(GL_TEXTURE_2D, index);
+    }
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(GL_TEXTURE_2D, " << index << ")\n";
     }
 
     //TODO: glBindSampler(0) ?
@@ -10468,9 +10475,14 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 #endif
 
 #ifndef OPENGLES
-  glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
-  glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
-  glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  if (is_at_least_gl_version(1, 2)) {
+    glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+    glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+
+    if (is_at_least_gl_version(1, 4)) {
+      glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+    }
+  }
 #endif
 
   report_my_gl_errors();
@@ -10505,7 +10517,12 @@ apply_texture(CLP(TextureContext) *gtc) {
     gtc->reset_data();
     gtc->_target = target;
   }
+
   glBindTexture(target, gtc->_index);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+  }
 
   report_my_gl_errors();
   return true;
@@ -10537,8 +10554,8 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     _glBindSampler(unit, gsc->_index);
 
     if (GLCAT.is_spam()) {
-      GLCAT.spam()
-        << "bind " << unit << " " << sampler << "\n";
+      GLCAT.spam() << "glBindSampler(" << unit << ", "
+                   << gsc->_index << "): " << sampler << "\n";
     }
 
   } else
@@ -10791,6 +10808,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+    }
   }
 
 #ifndef OPENGLES
@@ -11044,6 +11066,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
       gtc->update_data_size_bytes(get_texture_memory_size(tex));
     }
+
+    nassertr(gtc->_has_storage, false);
 
     if (tex->get_post_load_store_cache()) {
       tex->set_post_load_store_cache(false);
@@ -11752,6 +11776,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #endif
 
   glBindTexture(target, gtc->_index);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+  }
 
   Texture *tex = gtc->get_texture();
 

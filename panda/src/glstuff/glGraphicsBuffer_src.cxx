@@ -307,7 +307,7 @@ rebuild_bitplanes() {
       RenderTexturePlane plane = rt._plane;
       Texture *tex = rt._texture;
 
-      if (rtm_mode == RTM_bind_layered) {
+      if (rtm_mode == RTM_bind_layered && glgsg->_supports_geometry_shaders) {
         if (tex->get_z_size() != _rb_size_z) {
           GLCAT.warning()
            << "All textures attached to layered FBO should have the same layer count!\n";

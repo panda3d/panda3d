@@ -399,7 +399,7 @@ protected:
   void do_issue_depth_offset();
   void do_issue_shade_model();
 #ifndef OPENGLES_1
-  void do_issue_shader(bool state_has_changed = false);
+  void do_issue_shader();
 #endif
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_material();
@@ -462,8 +462,10 @@ protected:
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_blend(bool val);
   INLINE void enable_depth_test(bool val);
+#ifdef SUPPORT_FIXED_FUNCTION
   INLINE void enable_fog(bool val);
   INLINE void enable_alpha_test(bool val);
+#endif
   INLINE void enable_polygon_offset(bool val);
 
   INLINE void set_color_write_mask(int mask);

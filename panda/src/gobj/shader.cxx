@@ -416,7 +416,17 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
       (inp == SMO_model_to_apiview) ||
-      (inp == SMO_apiview_to_model)) {
+      (inp == SMO_apiview_to_model) ||
+      (inp == SMO_view_to_world) ||
+      (inp == SMO_world_to_view) ||
+      (inp == SMO_view_x_to_view) ||
+      (inp == SMO_view_to_view_x) ||
+      (inp == SMO_apiview_x_to_view) ||
+      (inp == SMO_view_to_apiview_x) ||
+      (inp == SMO_clip_x_to_view) ||
+      (inp == SMO_view_to_clip_x) ||
+      (inp == SMO_apiclip_x_to_view) ||
+      (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
@@ -438,6 +448,25 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiclip_x_to_view) ||
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
+
+    if ((inp == SMO_alight_x) ||
+        (inp == SMO_dlight_x) ||
+        (inp == SMO_plight_x) ||
+        (inp == SMO_slight_x) ||
+        (inp == SMO_satten_x) ||
+        (inp == SMO_vec_constant_x_attrib) ||
+        (inp == SMO_view_x_to_view) ||
+        (inp == SMO_view_to_view_x) ||
+        (inp == SMO_apiview_x_to_view) ||
+        (inp == SMO_view_to_apiview_x) ||
+        (inp == SMO_clip_x_to_view) ||
+        (inp == SMO_view_to_clip_x) ||
+        (inp == SMO_apiclip_x_to_view) ||
+        (inp == SMO_view_to_apiclip_x)) {
+      // We can't track changes to these yet, so we have to assume that
+      // they are modified every frame.
+      dep |= SSD_frame;
+    }
   }
   if ((inp == SMO_light_ambient) ||
       (inp == SMO_light_source_i_attrib)) {
@@ -454,6 +483,21 @@ cp_dependency(ShaderMatInput inp) {
   }
   if (inp == SMO_texmat_i || inp == SMO_inv_texmat_i) {
     dep |= SSD_tex_matrix;
+  }
+  if ((inp == SMO_window_size) ||
+      (inp == SMO_pixel_size) ||
+      (inp == SMO_frame_number) ||
+      (inp == SMO_frame_time) ||
+      (inp == SMO_frame_delta)) {
+    dep |= SSD_frame;
+  }
+  if ((inp == SMO_clip_to_view) ||
+      (inp == SMO_view_to_clip) ||
+      (inp == SMO_apiclip_to_view) ||
+      (inp == SMO_view_to_apiclip) ||
+      (inp == SMO_apiview_to_apiclip) ||
+      (inp == SMO_apiclip_to_apiview)) {
+    dep |= SSD_projection;
   }
 
   return dep;
@@ -857,6 +901,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -931,6 +976,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -944,6 +990,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -967,6 +1014,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -988,6 +1036,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1029,6 +1078,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1051,6 +1101,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1072,6 +1123,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1093,6 +1145,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1139,6 +1192,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1195,6 +1249,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = NULL;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1215,6 +1270,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = NULL;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1261,8 +1317,12 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id      = p._id;
     bind._arg     = kinputname;
     bind._info    = p;
-    bind._dep[0]  = SSD_general | SSD_shaderinputs;
-    bind._dep[1]  = SSD_general | SSD_NONE;
+
+    // We specify SSD_frame because a PTA may be modified by the app
+    // from frame to frame, and we have no way to know.  So, we must
+    // respecify a PTA at least once every frame.
+    bind._dep[0]  = SSD_general | SSD_shaderinputs | SSD_frame;
+    bind._dep[1]  = SSD_NONE;
 
     memcpy(bind._dim,arg_dim,sizeof(int)*3);
 
@@ -2050,7 +2110,8 @@ Shader(ShaderLanguage lang) :
   _parse(0),
   _loaded(false),
   _language(lang),
-  _last_modified(0)
+  _last_modified(0),
+  _mat_deps(0)
 {
 #ifdef HAVE_CG
   _cg_vprogram = 0;
