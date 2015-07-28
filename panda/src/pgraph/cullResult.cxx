@@ -123,12 +123,9 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   Thread *current_thread = traverser->get_current_thread();
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
 
-  const RenderState *state = object->_state;
-  nassertv(state != (const RenderState *)NULL);
-
   // This is probably a good time to check for an auto rescale setting.
   const RescaleNormalAttrib *rescale;
-  state->get_attrib_def(rescale);
+  object->_state->get_attrib_def(rescale);
   if (rescale->get_mode() == RescaleNormalAttrib::M_auto) {
     RescaleNormalAttrib::Mode mode;
 
@@ -140,24 +137,23 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       mode = RescaleNormalAttrib::M_normalize;
     }
 
-    state = state->set_attrib(RescaleNormalAttrib::make(mode));
-    object->_state = state;
+    object->_state = object->_state->compose(get_rescale_normal_state(mode));
   }
 
   // Check to see if there's a special transparency setting.
   const TransparencyAttrib *trans;
-  if (state->get_attrib(trans)) {
+  if (object->_state->get_attrib(trans)) {
     switch (trans->get_mode()) {
     case TransparencyAttrib::M_alpha:
       // M_alpha implies an alpha-write test, so we don't waste time
       // writing 0-valued pixels.
-      object->_state = state->compose(get_alpha_state());
+      object->_state = object->_state->compose(get_alpha_state());
       check_flash_transparency(object->_state, flash_alpha_color);
       break;
 
     case TransparencyAttrib::M_binary:
       // M_binary is implemented by explicitly setting the alpha test.
-      object->_state = state->compose(get_binary_state());
+      object->_state = object->_state->compose(get_binary_state());
       check_flash_transparency(object->_state, flash_binary_color);
       break;
 
@@ -166,7 +162,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // The multisample modes are implemented using M_binary if the
       // GSG in use doesn't support multisample.
       if (!_gsg->get_supports_multisample()) {
-        object->_state = state->compose(get_binary_state());
+        object->_state = object->_state->compose(get_binary_state());
       }
       check_flash_transparency(object->_state, flash_multisample_color);
       break;
@@ -174,7 +170,6 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
     case TransparencyAttrib::M_dual:
 #ifndef NDEBUG
       check_flash_transparency(object->_state, flash_dual_color);
-      state = object->_state;
 #endif
       if (!m_dual) {
         // If m_dual is configured off, it becomes M_alpha.
@@ -188,10 +183,8 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // explicit bin already applied; otherwise, M_dual falls back
       // to M_alpha.
       {
-        const CullBinAttrib *bin_attrib = (const CullBinAttrib *)
-          state->get_attrib(CullBinAttrib::get_class_slot());
-
-        if (bin_attrib == (CullBinAttrib *)NULL ||
+        const CullBinAttrib *bin_attrib;
+        if (!object->_state->get_attrib(bin_attrib) ||
             bin_attrib->get_bin_name().empty()) {
           // We make a copy of the object to draw the transparent part;
           // this gets placed in the transparent bin.
@@ -201,7 +194,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
             {
               CullableObject *transparent_part = new CullableObject(*object);
               CPT(RenderState) transparent_state = get_dual_transparent_state();
-              transparent_part->_state = state->compose(transparent_state);
+              transparent_part->_state = object->_state->compose(transparent_state);
               if (transparent_part->munge_geom
                   (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
                    traverser, force)) {
@@ -217,7 +210,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
           // Now we can draw the opaque part.  This will end up in
           // the opaque bin.
-          object->_state = state->compose(get_dual_opaque_state());
+          object->_state = object->_state->compose(get_dual_opaque_state());
 #ifndef NDEBUG
           if (!m_dual_opaque) {
             delete object;
@@ -255,7 +248,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
         delete wireframe_part;
       }
 
-      object->_state = object->_state->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled));
+      object->_state = object->_state->compose(get_wireframe_filled_state());
     }
   }
 
@@ -405,12 +398,28 @@ make_new_bin(int bin_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_rescale_normal_state
+//       Access: Private
+//  Description: Returns a RenderState containing the given rescale
+//               normal attribute.
+////////////////////////////////////////////////////////////////////
+const RenderState *CullResult::
+get_rescale_normal_state(RescaleNormalAttrib::Mode mode) {
+  static CPT(RenderState) states[RescaleNormalAttrib::M_auto + 1];
+  if (states[mode].is_null()) {
+    states[mode] = RenderState::make(RescaleNormalAttrib::make(mode),
+                                     RenderState::get_max_priority());
+  }
+  return states[mode].p();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullResult::get_alpha_state
 //       Access: Private
 //  Description: Returns a RenderState that changes the alpha test to
 //               > 0, for implementing M_alpha.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) CullResult::
+const RenderState *CullResult::
 get_alpha_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
@@ -418,7 +427,7 @@ get_alpha_state() {
     // user to override this if he desires.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f));
   }
-  return state;
+  return state.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -427,7 +436,7 @@ get_alpha_state() {
 //  Description: Returns a RenderState that applies the effects of
 //               M_binary.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) CullResult::
+const RenderState *CullResult::
 get_binary_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
@@ -435,7 +444,7 @@ get_binary_state() {
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
   }
-  return state;
+  return state.p();
 }
 
 #ifndef NDEBUG
@@ -465,7 +474,7 @@ apply_flash_color(CPT(RenderState) &state, const LColor &flash_color) {
 //  Description: Returns a RenderState that renders only the
 //               transparent parts of an object, in support of M_dual.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) CullResult::
+const RenderState *CullResult::
 get_dual_transparent_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
@@ -495,12 +504,12 @@ get_dual_transparent_state() {
         flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
                                               RenderState::get_max_priority());
       }
-      return flash_state;
+      return flash_state.p();
     }
   }
 #endif  // NDEBUG
 
-  return state;
+  return state.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -509,7 +518,7 @@ get_dual_transparent_state() {
 //  Description: Returns a RenderState that renders only the
 //               opaque parts of an object, in support of M_dual.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) CullResult::
+const RenderState *CullResult::
 get_dual_opaque_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
@@ -530,12 +539,26 @@ get_dual_opaque_state() {
                                               RenderState::get_max_priority());
 
       }
-      return flash_state;
+      return flash_state.p();
     }
   }
 #endif  // NDEBUG
 
-  return state;
+  return state.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_wireframe_filled_state
+//       Access: Private
+//  Description: Returns a RenderState that is composed with the
+//               filled part of an M_filled_wireframe model.
+////////////////////////////////////////////////////////////////////
+const RenderState *CullResult::
+get_wireframe_filled_state() {
+  static CPT(RenderState) state = RenderState::make(
+    RenderModeAttrib::make(RenderModeAttrib::M_filled),
+    RenderState::get_max_priority());
+  return state.p();
 }
 
 ////////////////////////////////////////////////////////////////////
