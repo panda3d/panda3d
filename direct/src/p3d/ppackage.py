@@ -123,6 +123,10 @@ Options:
      as such.  This only applies to .p3d packages, not to other types
      of packages!
 
+  -v
+     Emit a warning for any file not recognized by the dir() command
+     (indicating there may be a need for addExtensions(...)).
+     
   -h
      Display this help
 """
@@ -151,11 +155,12 @@ allowPythonDev = False
 universalBinaries = False
 systemRoot = None
 ignoreSetHost = False
+verbosePrint = False
 p3dSuffix = ''
 platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:hv')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -188,6 +193,9 @@ for opt, arg in opts:
     elif opt == '-a':
         p3dSuffix = arg
 
+    elif opt == '-v':
+        verbosePrint = True
+        
     elif opt == '-h':
         usage(0)
     else:
@@ -230,6 +238,7 @@ for platform in platforms:
     packager.allowPythonDev = allowPythonDev
     packager.systemRoot = systemRoot
     packager.ignoreSetHost = ignoreSetHost
+    packager.verbosePrint = verbosePrint
     packager.p3dSuffix = p3dSuffix
 
     try:

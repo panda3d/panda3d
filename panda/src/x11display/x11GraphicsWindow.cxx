@@ -1643,6 +1643,7 @@ map_button(KeySym key) const {
   case XK_ampersand:
     return KeyboardButton::ascii_key('&');
   case XK_apostrophe: // == XK_quoteright
+  case XK_dead_acute: // on int'l keyboards
     return KeyboardButton::ascii_key('\'');
   case XK_parenleft:
     return KeyboardButton::ascii_key('(');
@@ -1774,6 +1775,7 @@ map_button(KeySym key) const {
   case XK_underscore:
     return KeyboardButton::ascii_key('_');
   case XK_grave: // == XK_quoteleft
+  case XK_dead_grave: // on int'l keyboards
     return KeyboardButton::ascii_key('`');
   case XK_a:
     return KeyboardButton::ascii_key('a');
@@ -1916,15 +1918,20 @@ map_button(KeySym key) const {
   case XK_Alt_R:
     return KeyboardButton::ralt();
   case XK_Meta_L:
+  case XK_Super_L:
     return KeyboardButton::lmeta();
   case XK_Meta_R:
+  case XK_Super_R:
     return KeyboardButton::rmeta();
   case XK_Caps_Lock:
     return KeyboardButton::caps_lock();
   case XK_Shift_Lock:
     return KeyboardButton::shift_lock();
   }
-
+  if (x11display_cat.is_debug()) {
+    x11display_cat.debug()
+      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+  }
   return ButtonHandle::none();
 }
 

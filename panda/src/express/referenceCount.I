@@ -319,6 +319,9 @@ get_weak_list() const {
 INLINE void ReferenceCount::
 weak_ref(WeakPointerToVoid *ptv) {
   TAU_PROFILE("void ReferenceCount::weak_ref()", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
   get_weak_list()->add_reference(ptv);
 }
 
@@ -332,6 +335,9 @@ weak_ref(WeakPointerToVoid *ptv) {
 INLINE void ReferenceCount::
 weak_unref(WeakPointerToVoid *ptv) {
   TAU_PROFILE("void ReferenceCount::weak_unref()", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
   nassertv(has_weak_list());
   ((WeakReferenceList *)_weak_list)->clear_reference(ptv);
 }
