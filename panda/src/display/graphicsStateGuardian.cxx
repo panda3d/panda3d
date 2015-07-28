@@ -817,7 +817,7 @@ PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
   RenderState::Mungers &mungers = state->_mungers;
 
-  if (mungers.is_empty()) {
+  if (!mungers.is_empty()) {
     // Before we even look up the map, see if the _last_mi value points
     // to this GSG.  This is likely because we tend to visit the same
     // state multiple times during a frame.  Also, this might well be
