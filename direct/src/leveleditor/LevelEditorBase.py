@@ -111,7 +111,7 @@ class LevelEditorBase(DirectObject):
         base.direct.deselect(nodePath)
         self.objectMgr.removeObjectByNodePath(nodePath)
 
-        if (base.direct.selected.last != None and nodePath.compareTo(base.direct.selected.last)==0):
+        if base.direct.selected.last is not None and nodePath == base.direct.selected.last:
             # if base.direct.selected.last is refering to this
             # removed obj, clear the reference
             if (hasattr(__builtins__,'last')):

@@ -12,7 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #ifndef GRAPHICSWINDOWPROC_H
 #define GRAPHICSWINDOWPROC_H
 
@@ -25,18 +24,21 @@
 #include <windows.h>
 #endif
 
+class GraphicsWindow;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindowProc
 // Description : Defines an interface for storing platform-specific
 //               window processor methods.
 ////////////////////////////////////////////////////////////////////
-class GraphicsWindowProc{
+class EXPCL_PANDA_DISPLAY GraphicsWindowProc {
 public:
   GraphicsWindowProc();
 #if defined(__WIN32__) || defined(_WIN32)
-  virtual LONG wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual LONG wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd,
+                        UINT msg, WPARAM wparam, LPARAM lparam);
 #endif
   //purely virtual class
 };
 
-#endif //GRAPHICSWINDOWPROC_H
+#endif  // GRAPHICSWINDOWPROC_H

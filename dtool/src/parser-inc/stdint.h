@@ -15,7 +15,7 @@
 #ifndef _STDINT_H
 #define _STDINT_H
 
-#ifdef _LP64
+#if defined(_LP64) || defined(_WIN64)
 #define __WORDSIZE 64
 #else
 #define __WORDSIZE 32

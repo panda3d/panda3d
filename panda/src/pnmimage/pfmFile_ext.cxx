@@ -17,9 +17,9 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint2f;
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint3f;
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint4f;
+extern struct Dtool_PyTypedObject Dtool_LPoint2f;
+extern struct Dtool_PyTypedObject Dtool_LPoint3f;
+extern struct Dtool_PyTypedObject Dtool_LPoint4f;
 #endif
 
 ////////////////////////////////////////////////////////////////////

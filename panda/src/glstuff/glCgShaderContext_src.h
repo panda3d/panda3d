@@ -38,25 +38,54 @@ public:
   ALLOC_DELETED_CHAIN(CLP(CgShaderContext));
 
   INLINE bool valid(void);
-  void bind(bool reissue_parameters = true);
-  void unbind();
-  void issue_parameters(int altered);
-  void disable_shader_vertex_arrays();
-  bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
-  void disable_shader_texture_bindings();
-  void update_shader_texture_bindings(ShaderContext *prev);
+  void bind() OVERRIDE;
+  void unbind() OVERRIDE;
+
+  void set_state_and_transform(const RenderState *state,
+                               const TransformState *modelview_transform,
+                               const TransformState *projection_transform);
+
+  void issue_parameters(int altered) OVERRIDE;
+  void update_transform_table(const TransformTable *table);
+  void update_slider_table(const SliderTable *table);
+  void disable_shader_vertex_arrays() OVERRIDE;
+  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) OVERRIDE;
+  void disable_shader_texture_bindings() OVERRIDE;
+  void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
 
   INLINE bool uses_standard_vertex_arrays(void);
   INLINE bool uses_custom_vertex_arrays(void);
-  INLINE bool uses_custom_texture_bindings(void);
+
+  // Special values for location to indicate conventional attrib slots.
+  enum ConventionalAttrib {
+    CA_unknown = -1,
+    CA_vertex = -2,
+    CA_normal = -3,
+    CA_color = -4,
+    CA_secondary_color = -5,
+    CA_texcoord = -32,
+  };
 
 private:
   CGprogram _cg_program;
-  bool _glsl_profile;
+  GLuint _glsl_program;
+
+  GLint _color_attrib_index;
+  CGparameter _transform_table_param;
+  CGparameter _slider_table_param;
+  long _transform_table_size;
+  long _slider_table_size;
 
   pvector<CGparameter> _cg_parameter_map;
 
+  CPT(RenderState) _state_rs;
+  CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _projection_transform;
+  GLint _frame_number;
+
   CLP(GraphicsStateGuardian) *_glgsg;
+
+  bool _has_divisor;
 
   void release_resources();
 

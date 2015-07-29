@@ -35,7 +35,6 @@ __all__ = ['indent',
 
 import types
 import string
-import re
 import math
 import operator
 import inspect
@@ -49,12 +48,9 @@ import traceback
 import __builtin__
 from StringIO import StringIO
 import marshal
-import unicodedata
-import bisect
 
 __report_indent = 3
 
-from direct.directutil import Verify
 from panda3d.core import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
@@ -1429,11 +1425,12 @@ dtoolSuperBase = None
 
 def _getDtoolSuperBase():
     global dtoolSuperBase
-    from panda3d.core import PandaNode
-    dtoolSuperBase = PandaNode('').__class__.__bases__[0].__bases__[0].__bases__[0]
+    from panda3d.core import TypedObject
+    dtoolSuperBase = TypedObject.__bases__[0]
     assert repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPER_BASE111'>" \
         or repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE111'>"
+        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE111'>" \
+        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE'>"
 
 safeReprNotify = None
 

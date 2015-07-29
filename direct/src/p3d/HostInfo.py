@@ -1,3 +1,5 @@
+__all__ = ["HostInfo"]
+
 from panda3d.core import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
 from panda3d.core import HTTPChannel, ConfigVariableInt
 from panda3d import core
@@ -646,7 +648,7 @@ class HostInfo:
         if hostDirBasename:
             # If the contents.xml specified a host_dir parameter, use
             # it.
-            hostDir = self.rootDir.cStr() + '/hosts'
+            hostDir = str(self.rootDir) + '/hosts'
             for component in hostDirBasename.split('/'):
                 if component:
                     if component[0] == '.':

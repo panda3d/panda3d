@@ -9,9 +9,10 @@ runp3d.py for a command-line tool to invoke this module.
 
 """
 
+__all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]
+
 import sys
 import os
-import types
 import __builtin__
 
 if 'VFSImporter' in sys.modules:
@@ -29,7 +30,7 @@ else:
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, ConfigPageManager
+from panda3d.core import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, ConfigPageManager
 from panda3d.direct import init_app_for_gui
 from panda3d import core
 from direct.stdpy import file, glob
@@ -43,7 +44,7 @@ from direct.p3d.InstalledHostData import InstalledHostData
 from direct.p3d.InstalledPackageData import InstalledPackageData
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
-from direct.p3d.JavaScript import UndefinedObject, Undefined, ConcreteStruct, BrowserObject
+from direct.p3d.JavaScript import Undefined, ConcreteStruct
 
 class ArgumentError(AttributeError):
     pass
@@ -175,7 +176,7 @@ class AppRunner(DirectObject):
         # the current working directory, for convenience; but when we
         # move to multiple-instance sessions, it may have to be
         # different for each instance.
-        self.multifileRoot = ExecutionEnvironment.getCwd().cStr()
+        self.multifileRoot = str(ExecutionEnvironment.getCwd())
 
         # The "main" object will be exposed to the DOM as a property
         # of the plugin object; that is, document.pluginobject.main in
@@ -554,7 +555,7 @@ class AppRunner(DirectObject):
         # Write the file to a temporary filename, then atomically move
         # it to its actual filename, to avoid race conditions when
         # updating this file.
-        tfile = Filename.temporary(self.rootDir.cStr(), '.xml')
+        tfile = Filename.temporary(str(self.rootDir), '.xml')
         if doc.SaveFile(tfile.toOsSpecific()):
             tfile.renameTo(filename)
 

@@ -879,6 +879,10 @@ stop(int collector_index, int thread_index, double as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 clear_level(int collector_index, int thread_index) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -903,6 +907,10 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, double level) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -936,6 +944,10 @@ set_level(int collector_index, int thread_index, double level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, double increment) {
+  if (!client_is_connected()) {
+    return;
+  }
+
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -955,12 +967,17 @@ add_level(int collector_index, int thread_index, double increment) {
 //     Function: PStatClient::get_level
 //       Access: Private
 //  Description: Returns the current level value of the given collector.
+//               Returns 0.0 if the pstats client is not connected.
 //
 //               Normally you would not use this interface directly;
 //               instead, call PStatCollector::get_level().
 ////////////////////////////////////////////////////////////////////
 double PStatClient::
 get_level(int collector_index, int thread_index) const {
+  if (!client_is_connected()) {
+    return 0.0;
+  }
+
 #ifdef _DEBUG
   nassertr(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors), 0.0f);
   nassertr(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads), 0.0f);

@@ -43,7 +43,7 @@ public:
 
   int _grid_size;
   NodePath _path_find_target;
-  LVecBase3f _prev_position;
+  LVecBase3 _prev_position;
   PT(GeomNode) _parent;
   LineSegs *_pen;
   vector<int> _previous_obstacles;
@@ -62,7 +62,7 @@ public:
   void clear_previous_obstacles();
 
   void set_path_find(const char* navmesh_filename);
-  void path_find(LVecBase3f pos, string type = "normal");
+  void path_find(LVecBase3 pos, string type = "normal");
   void path_find(NodePath target, string type = "normal");
   void add_obstacle_to_mesh(NodePath obstacle);
   void dynamic_avoid(NodePath obstacle);

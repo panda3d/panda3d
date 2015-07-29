@@ -23,6 +23,7 @@
 #include "updateSeq.h"
 #include "ordered_vector.h"
 #include "vector_int.h"
+#include "epvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureAttrib
@@ -109,9 +110,9 @@ private:
                      unsigned int implicit_sort = 0,
                      int override = 0);
 
+    SamplerState _sampler;
     PT(TextureStage) _stage;
     PT(Texture) _texture;
-    SamplerState _sampler;
     bool _has_sampler;
     int _ff_tc_index;
     unsigned int _implicit_sort;
@@ -133,7 +134,7 @@ private:
     INLINE bool operator () (const TextureAttrib::StageNode &a, const TextureAttrib::StageNode &b) const;
   };
 
-  typedef ov_set<StageNode, CompareTextureStagePointer> Stages;
+  typedef ov_set<StageNode, CompareTextureStagePointer, epvector<StageNode> > Stages;
   Stages _on_stages;  // set of all "on" stages, indexed by pointer.
 
   typedef pvector<StageNode *> RenderStages;
@@ -178,7 +179,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TextureAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 30, make_default);
+    _attrib_slot = register_slot(_type_handle, 30, new TextureAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -163,14 +163,14 @@ open_buffer() {
 
   if (_pbuffer == NULL) {
     GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-    if (_x_size == Texture::up_to_power_2(_x_size) && 
-        _y_size == Texture::up_to_power_2(_x_size)) {
+    if (_size[0] == Texture::up_to_power_2(_size[0]) &&
+        _size[1] == Texture::up_to_power_2(_size[1])) {
       // It's a power-of-two size, so we can use GL_TEXTURE_2D as the
       // target.  Dunno, but maybe this will be more likely to work on
       // some hardware.
       target = GL_TEXTURE_2D;
     }
-    if (!aglCreatePBuffer(_x_size, _y_size, target, GL_RGBA, 0, &_pbuffer)) {
+    if (!aglCreatePBuffer(_size.get_x(), _size.get_y(), target, GL_RGBA, 0, &_pbuffer)) {
       report_agl_error("aglCreatePBuffer");
       close_buffer();
       return false;

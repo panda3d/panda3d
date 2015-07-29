@@ -75,7 +75,7 @@ typedef unsigned int ZPOINT;
   ((((unsigned int)(a) << 24) & 0xff000000) | (((unsigned int)(r) << 16) & 0xff0000) | (((unsigned int)(g) << 8) & 0xff00) | (unsigned int)(b))
 
 #define SRGB_TO_PIXEL(r,g,b) \
-  ((encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB10[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
+  ((encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
 #define SRGBA_TO_PIXEL(r,g,b,a) \
   ((((unsigned int)(a) << 16) & 0xff000000) | (encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
 

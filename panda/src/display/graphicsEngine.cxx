@@ -41,7 +41,6 @@
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"
-#include "omniBoundingVolume.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
 #include "vertexDataPage.h"
@@ -1248,12 +1247,12 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     // from the lens.
     PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
-    if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
-        !bv->is_of_type(OmniBoundingVolume::get_class_type())) {
+    if (bv != (BoundingVolume *)NULL && !bv->is_infinite() &&
+        bv->as_geometric_bounding_volume() != NULL) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
-      local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
+      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
+      nassertv(!local_frustum.is_null());
 
       NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
       CPT(TransformState) cull_center_transform =
@@ -1580,7 +1579,7 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   }
 
   // Save the results for next frame.
-  dr->set_cull_result(cull_result, scene_setup, current_thread);
+  dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2001,9 +2000,11 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   // to use.  We have to do this here because the ShaderGenerator
   // needs a host window pointer.  Hopefully we'll be able to
   // eliminate that requirement in the future.
+#ifdef HAVE_CG
   if (gsg->get_shader_generator() == NULL) {
     gsg->set_shader_generator(new ShaderGenerator(gsg, window));
   }
+#endif
 
   return scene_setup;
 }

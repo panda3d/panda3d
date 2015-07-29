@@ -25,7 +25,7 @@ PStatGPUTimer(GraphicsStateGuardian *gsg, PStatCollector &collector) :
   PStatTimer(collector),
   _gsg(gsg)
 {
-  if (gsg->get_timer_queries_active()) {
+  if (gsg->get_timer_queries_active() && collector.is_active()) {
     gsg->issue_timer_query(collector.get_index());
     //cerr << "issuing " << collector << " active " << collector.is_active() << "\n";
   }
@@ -41,7 +41,7 @@ PStatGPUTimer(GraphicsStateGuardian *gsg, PStatCollector &collector, Thread *cur
   PStatTimer(collector, current_thread),
   _gsg(gsg)
 {
-  if (gsg->get_timer_queries_active()) {
+  if (gsg->get_timer_queries_active() && collector.is_active()) {
     gsg->issue_timer_query(collector.get_index());
   }
 }
@@ -53,7 +53,7 @@ PStatGPUTimer(GraphicsStateGuardian *gsg, PStatCollector &collector, Thread *cur
 ////////////////////////////////////////////////////////////////////
 INLINE PStatGPUTimer::
 ~PStatGPUTimer() {
-  if (_gsg->get_timer_queries_active()) {
+  if (_gsg->get_timer_queries_active() && _collector.is_active()) {
     _gsg->issue_timer_query(_collector.get_index() | 0x8000);
   }
 }

@@ -56,12 +56,14 @@ PUBLISHED:
 
   INLINE_MATHUTIL bool extend_by(const BoundingVolume *vol);
 
+public:
   // It might be nice to make these template member functions so we
   // could have true STL-style first/last iterators, but that's
   // impossible for virtual functions.
   bool around(const BoundingVolume **first,
               const BoundingVolume **last);
 
+PUBLISHED:
   // The contains() functions return the union of one or more of these
   // bits.
   enum IntersectionFlags {
@@ -110,6 +112,7 @@ PUBLISHED:
   };
 
 public:
+  virtual GeometricBoundingVolume *as_geometric_bounding_volume();
   virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const;
   virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;
   virtual const BoundingSphere *as_bounding_sphere() const;

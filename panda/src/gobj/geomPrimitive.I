@@ -107,8 +107,8 @@ is_composite() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitive::
 is_indexed() const {
-  GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
-  return reader.is_indexed();
+  CDReader cdata(_cycler);
+  return (!cdata->_vertices.is_null());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -512,7 +512,7 @@ CData(const GeomPrimitive::CData &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitivePipelineReader::
-GeomPrimitivePipelineReader(const GeomPrimitive *object, 
+GeomPrimitivePipelineReader(const GeomPrimitive *object,
                             Thread *current_thread) :
   _object(object),
   _current_thread(current_thread),
@@ -594,7 +594,7 @@ get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_shade_model
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitivePipelineReader::ShadeModel GeomPrimitivePipelineReader::
 get_shade_model() const {
@@ -604,7 +604,7 @@ get_shade_model() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_usage_hint
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitivePipelineReader::UsageHint GeomPrimitivePipelineReader::
 get_usage_hint() const {
@@ -614,7 +614,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_index_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitivePipelineReader::NumericType GeomPrimitivePipelineReader::
 get_index_type() const {
@@ -624,7 +624,7 @@ get_index_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::is_indexed
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitivePipelineReader::
 is_indexed() const {
@@ -634,7 +634,7 @@ is_indexed() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_num_vertices
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitivePipelineReader::
 get_num_vertices() const {
@@ -649,7 +649,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_min_vertex
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitivePipelineReader::
 get_min_vertex() const {
@@ -660,7 +660,7 @@ get_min_vertex() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_max_vertex
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitivePipelineReader::
 get_max_vertex() const {
@@ -682,7 +682,7 @@ get_data_size_bytes() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_modified
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomPrimitivePipelineReader::
 get_modified() const {
@@ -692,7 +692,7 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_index_stride
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitivePipelineReader::
 get_index_stride() const {
@@ -703,7 +703,7 @@ get_index_stride() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_vertices_reader
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayDataHandle *GeomPrimitivePipelineReader::
 get_vertices_reader() const {
@@ -713,7 +713,7 @@ get_vertices_reader() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_read_pointer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomPrimitivePipelineReader::
 get_read_pointer(bool force) const {
@@ -733,7 +733,7 @@ get_strip_cut_index() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_ends
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CPTA_int GeomPrimitivePipelineReader::
 get_ends() const {
@@ -743,7 +743,7 @@ get_ends() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_mins
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_mins() const {
@@ -755,13 +755,24 @@ get_mins() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_maxs
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_maxs() const {
   nassertr(is_indexed(), NULL);
   nassertr(_cdata->_got_minmax, NULL);
   return _cdata->_maxs.get_read_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::prepare_now
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE IndexBufferContext *GeomPrimitivePipelineReader::
+prepare_now(PreparedGraphicsObjects *prepared_objects,
+            GraphicsStateGuardianBase *gsg) const {
+  return ((GeomPrimitive *)_object.p())->prepare_now(prepared_objects, gsg);
 }
 
 INLINE ostream &

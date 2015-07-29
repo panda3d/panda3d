@@ -187,7 +187,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   }
 #endif
 
-  int browser_major = (browser->version >> 8) && 0xff;
+  int browser_major = (browser->version >> 8) & 0xff;
   int browser_minor = browser->version & 0xff;
   nout << "Browser NPAPI version " << browser_major << "." << browser_minor << "\n";
 
@@ -233,7 +233,7 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   if (pluginFuncs->size == 0) {
     pluginFuncs->size = sizeof(*pluginFuncs);
   }
-  if (pluginFuncs->size < sizeof(*pluginFuncs)) {
+  if (pluginFuncs->size < offsetof(NPPluginFuncs, gotfocus)) {
     nout << "Invalid NPPPluginFuncs size\n";
     return NPERR_INVALID_FUNCTABLE_ERROR;
   }

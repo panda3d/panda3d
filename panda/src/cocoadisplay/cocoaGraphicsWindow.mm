@@ -159,7 +159,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // Set the drawable.
   if (_properties.get_fullscreen()) {
     // Fullscreen.
-    [cocoagsg->_context setFullScreen];
+    CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
   } else {
     // Although not recommended, it is technically possible to
     // use the same context with multiple different-sized windows.
@@ -182,7 +182,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Lock the view for drawing.
   if (!_properties.get_fullscreen()) {
-    nassertr([_view lockFocusIfCanDraw], false);
+    nassertr_always([_view lockFocusIfCanDraw], false);
   }
 
   // Make the context current.
@@ -1592,7 +1592,8 @@ handle_key_event(NSEvent *event) {
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       str = [str lowercaseString];
-      button = KeyboardButton::ascii_key([str cStringUsingEncoding: NSASCIIStringEncoding]);
+      const char *c_str = [str cStringUsingEncoding: NSASCIIStringEncoding];
+      button = KeyboardButton::ascii_key(c_str[0]);
     }
   }
 

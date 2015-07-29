@@ -18,7 +18,7 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_Texture;
+extern struct Dtool_PyTypedObject Dtool_Texture;
 #endif
 
 static bool traverse_callback(TextureContext *tc, void *data) {

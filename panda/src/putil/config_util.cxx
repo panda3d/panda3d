@@ -36,7 +36,6 @@
 #include "nodeCachedReferenceCount.h"
 #include "parameter.h"
 #include "paramValue.h"
-#include "pythonCallbackObject.h"
 #include "referenceCount.h"
 #include "sparseArray.h"
 #include "typedObject.h"
@@ -183,9 +182,9 @@ init_libputil() {
   BamReaderAuxData::init_type();
   BamReaderParam::init_type();
   BitArray::init_type();
-  BitMask16::init_type();
-  BitMask32::init_type();
-  BitMask64::init_type();
+  BitMask16::init_type("BitMask16");
+  BitMask32::init_type("BitMask32");
+  BitMask64::init_type("BitMask64");
   ButtonHandle::init_type();
   ButtonMap::init_type();
   CPointerCallbackObject::init_type();
@@ -217,9 +216,6 @@ init_libputil() {
   ParamVecBase4d::init_type("ParamVecBase4d");
   ParamVecBase4i::init_type("ParamVecBase4i");
   ParamWstring::init_type("ParamWstring");
-#ifdef HAVE_PYTHON
-  PythonCallbackObject::init_type();
-#endif
   QuadBitMaskNative::init_type();
   ReferenceCount::init_type();
   SparseArray::init_type();

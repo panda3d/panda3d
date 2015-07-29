@@ -1088,36 +1088,38 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     tex->set_compression(convert_compression_mode(egg_tex->get_compression_mode()));
   }
 
+  SamplerState sampler;
+
   EggTexture::WrapMode wrap_u = egg_tex->determine_wrap_u();
   EggTexture::WrapMode wrap_v = egg_tex->determine_wrap_v();
   EggTexture::WrapMode wrap_w = egg_tex->determine_wrap_w();
 
   if (wrap_u != EggTexture::WM_unspecified) {
-    tex->set_wrap_u(convert_wrap_mode(wrap_u));
+    sampler.set_wrap_u(convert_wrap_mode(wrap_u));
   }
   if (wrap_v != EggTexture::WM_unspecified) {
-    tex->set_wrap_v(convert_wrap_mode(wrap_v));
+    sampler.set_wrap_v(convert_wrap_mode(wrap_v));
   }
   if (wrap_w != EggTexture::WM_unspecified) {
-    tex->set_wrap_w(convert_wrap_mode(wrap_w));
+    sampler.set_wrap_w(convert_wrap_mode(wrap_w));
   }
 
   if (egg_tex->has_border_color()) {
-    tex->set_border_color(egg_tex->get_border_color());
+    sampler.set_border_color(egg_tex->get_border_color());
   }
 
   switch (egg_tex->get_minfilter()) {
   case EggTexture::FT_nearest:
-    tex->set_minfilter(SamplerState::FT_nearest);
+    sampler.set_minfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1125,13 +1127,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest_mipmap_nearest);
     }
     break;
 
@@ -1139,13 +1141,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear_mipmap_nearest);
+      sampler.set_minfilter(SamplerState::FT_linear_mipmap_nearest);
     }
     break;
 
@@ -1153,13 +1155,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_minfilter(SamplerState::FT_nearest_mipmap_linear);
+      sampler.set_minfilter(SamplerState::FT_nearest_mipmap_linear);
     }
     break;
 
@@ -1167,13 +1169,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring minfilter request\n";
-      tex->set_minfilter(SamplerState::FT_nearest);
+      sampler.set_minfilter(SamplerState::FT_nearest);
     } else if (egg_ignore_mipmaps) {
       egg2pg_cat.warning()
         << "Ignoring mipmap request\n";
-      tex->set_minfilter(SamplerState::FT_linear);
+      sampler.set_minfilter(SamplerState::FT_linear);
     } else {
-      tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
+      sampler.set_minfilter(SamplerState::FT_linear_mipmap_linear);
     }
     break;
 
@@ -1185,7 +1187,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest:
   case EggTexture::FT_nearest_mipmap_nearest:
   case EggTexture::FT_nearest_mipmap_linear:
-    tex->set_magfilter(SamplerState::FT_nearest);
+    sampler.set_magfilter(SamplerState::FT_nearest);
     break;
 
   case EggTexture::FT_linear:
@@ -1194,9 +1196,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     if (egg_ignore_filters) {
       egg2pg_cat.warning()
         << "Ignoring magfilter request\n";
-      tex->set_magfilter(SamplerState::FT_nearest);
+      sampler.set_magfilter(SamplerState::FT_nearest);
     } else {
-      tex->set_magfilter(SamplerState::FT_linear);
+      sampler.set_magfilter(SamplerState::FT_linear);
     }
     break;
 
@@ -1205,8 +1207,22 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   }
 
   if (egg_tex->has_anisotropic_degree()) {
-    tex->set_anisotropic_degree(egg_tex->get_anisotropic_degree());
+    sampler.set_anisotropic_degree(egg_tex->get_anisotropic_degree());
   }
+
+  if (egg_tex->has_min_lod()) {
+    sampler.set_min_lod(egg_tex->get_min_lod());
+  }
+
+  if (egg_tex->has_max_lod()) {
+    sampler.set_max_lod(egg_tex->get_max_lod());
+  }
+
+  if (egg_tex->has_lod_bias()) {
+    sampler.set_lod_bias(egg_tex->get_lod_bias());
+  }
+
+  tex->set_default_sampler(sampler);
 
   if (tex->get_num_components() == 1) {
     switch (egg_tex->get_format()) {
@@ -1865,6 +1881,10 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     node = new CollisionNode(egg_group->get_name());
 
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
+
+    // Transform all of the collision solids into local space.
+    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the
       // traversal.  In this case, we create a new PandaNode to be the
@@ -1925,8 +1945,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     pnode->set_pos(center);
     pnode->set_color(color);
     pnode->set_radius(radius);
+
+    pnode->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+
     node = pnode;
-    
+
   } else if (egg_group->get_switch_flag()) {
     if (egg_group->get_switch_fps() != 0.0) {
       // Create a sequence node.
@@ -2209,7 +2232,7 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 //               transform, just returns it.
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) EggLoader::
-make_vertex_data(const EggRenderState *render_state, 
+make_vertex_data(const EggRenderState *render_state,
                  EggVertexPool *vertex_pool, EggNode *primitive_home,
                  const LMatrix4d &transform, TransformBlendTable *blend_table,
                  bool is_dynamic, CharacterMaker *character_maker,
@@ -2224,7 +2247,7 @@ make_vertex_data(const EggRenderState *render_state,
   if (di != _vertex_pool_data.end()) {
     return (*di).second;
   }
-  
+
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
@@ -2233,13 +2256,19 @@ make_vertex_data(const EggRenderState *render_state,
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3,
-       Geom::NT_stdfloat, Geom::C_vector);
+       Geom::NT_stdfloat, Geom::C_normal);
   }
 
   if (!ignore_color) {
-    array_format->add_column
-      (InternalName::get_color(), 1, 
-       Geom::NT_packed_dabc, Geom::C_color);
+    // Let's not use Direct3D-style colors on platforms where we only
+    // have OpenGL anyway.
+#ifdef _WIN32
+    array_format->add_column(InternalName::get_color(), 1,
+                             Geom::NT_packed_dabc, Geom::C_color);
+#else
+    array_format->add_column(InternalName::get_color(), 4,
+                             Geom::NT_uint8, Geom::C_color);
+#endif
   }
 
   vector_string uv_names, uvw_names, tbn_names;
@@ -2790,7 +2819,6 @@ find_first_polygon(EggGroup *egg_group) {
 bool EggLoader::
 make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags, 
             LPoint3 &center, PN_stdfloat &radius, LColor &color) {
-  bool success=false;
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -2822,15 +2850,12 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       d_center /= (double)num_vertices;
       //egg2pg_cat.debug() << "make_sphere d_center: " << d_center << "\n";
 
-      LMatrix4d mat = egg_group->get_vertex_to_node();
-      d_center = d_center * mat;
-
       // And the furthest vertex determines the radius.
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
         LPoint3d p3 = vtx->get_pos3();
-                LVector3d v = p3 * mat - d_center;
+                LVector3d v = p3 - d_center;
         radius2 = max(radius2, v.length_squared());
       }
 
@@ -2841,10 +2866,10 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       vi = vertices.begin();
       EggVertex *clr_vtx = (*vi);
       color = clr_vtx->get_color();
-      success = true;
+      return true;
     }
   }
-  return success;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2855,9 +2880,8 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
 //               This box is used by make_collision_box.
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
-make_box(EggGroup *egg_group, EggGroup::CollideFlags flags, 
-            LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
-  bool success = false;
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
+         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -2875,36 +2899,37 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
     }
 
     // Now find the min/max points
-    int num_vertices = 0;
-    bool first = true;
     pset<EggVertex *>::const_iterator vi;
-    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
-      EggVertex *vtx = (*vi);
-      LVertex pos = LCAST(PN_stdfloat, vtx->get_pos3());
+    vi = vertices.begin();
 
-      if (first) {
-        min_p.set(pos[0], pos[1], pos[2]);
-        max_p.set(pos[0], pos[1], pos[2]);
-        first = false;
-      } else {
-        min_p.set(min(min_p[0], pos[0]),
-                  min(min_p[1], pos[1]),
-                  min(min_p[2], pos[2]));
-        max_p.set(max(max_p[0], pos[0]),
-                  max(max_p[1], pos[1]),
-                  max(max_p[2], pos[2]));
-      }
-      num_vertices++;
+    if (vi == vertices.end()) {
+      // No vertices, no bounding box.
+      min_p.set(0, 0, 0);
+      max_p.set(0, 0, 0);
+      return false;
     }
 
-    if (num_vertices > 1) {
-      vi = vertices.begin();
-      EggVertex *clr_vtx = (*vi);
-      color = clr_vtx->get_color();
-      success = true;
+    EggVertex *vertex = (*vi);
+    LVertexd min_pd = vertex->get_pos3();
+    LVertexd max_pd = min_pd;
+    color = vertex->get_color();
+
+    for (++vi; vi != vertices.end(); ++vi) {
+      vertex = (*vi);
+      const LVertexd &pos = vertex->get_pos3();
+      min_pd.set(min(min_pd[0], pos[0]),
+                 min(min_pd[1], pos[1]),
+                 min(min_pd[2], pos[2]));
+      max_pd.set(max(max_pd[0], pos[0]),
+                 max(max_pd[1], pos[1]),
+                 max(max_pd[2], pos[2]));
     }
+
+    min_p = LCAST(PN_stdfloat, min_pd);
+    max_p = LCAST(PN_stdfloat, max_pd);
+    return (min_pd != max_pd);
   }
-  return success;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2967,6 +2992,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
         make_collision_solids(start_group, DCAST(EggGroup, *ci), cnode);
       }
     }
+  } else {
+    egg2pg_cat.warning()
+      << "Using <Collide> without 'descend' is deprecated.  'descend' "
+      << "will become the default in a future version of Panda3D.\n";
   }
 }
 
@@ -3169,7 +3198,6 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
     // also determine the centroid).  We compute this in node space.
     size_t num_vertices = vertices.size();
     if (num_vertices != 0) {
-      LMatrix4d mat = egg_group->get_vertex_to_node();
       pvector<LPoint3d> vpos;
       vpos.reserve(num_vertices);
       
@@ -3177,7 +3205,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
       pset<EggVertex *>::const_iterator vi;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
-        LPoint3d pos = vtx->get_pos3() * mat;
+        const LPoint3d &pos = vtx->get_pos3();
         vpos.push_back(pos);
         center += pos;
       }
@@ -3419,20 +3447,18 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
       << "\n";
   }
 
-  LMatrix4d mat = egg_poly->get_vertex_to_node();
-
   pvector<LVertex> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
 
-    LVertexd vert = (*vi)->get_pos3() * mat;
+    LVertexd vert = (*vi)->get_pos3();
     vertices.push_back(LCAST(PN_stdfloat, vert));
 
     LVertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
-      vert = (*vi)->get_pos3() * mat;
+      vert = (*vi)->get_pos3();
       if (!vert.almost_equal(last_vert)) {
         vertices.push_back(LCAST(PN_stdfloat, vert));
       }
@@ -3460,7 +3486,6 @@ void EggLoader::
 create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
                           EggGroup *parent_group,
                           EggGroup::CollideFlags flags) {
-  LMatrix4d mat = egg_poly->get_vertex_to_node();
 
   PT(EggGroup) group = new EggGroup;
 
@@ -3488,13 +3513,13 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       EggPolygon::const_iterator vi;
       vi = poly->begin();
 
-      LVertexd vert = (*vi)->get_pos3() * mat;
+      LVertexd vert = (*vi)->get_pos3();
       vertices.push_back(LCAST(PN_stdfloat, vert));
 
       LVertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
-        vert = (*vi)->get_pos3() * mat;
+        vert = (*vi)->get_pos3();
         if (!vert.almost_equal(last_vert)) {
           vertices.push_back(LCAST(PN_stdfloat, vert));
         }
@@ -3512,11 +3537,10 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
         cnode->add_solid(cspoly);
-      }        
+      }
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::create_collision_floor_mesh

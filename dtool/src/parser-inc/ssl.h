@@ -10,6 +10,6 @@ struct X509;
 struct X509_STORE;
 struct X509_NAME;
 struct SSL;
-#define STACK_OF(num) STACK
+#define STACK_OF(type) struct stack_st_##type
 
 #endif

@@ -102,12 +102,15 @@ CopyOnWritePointer(CopyOnWritePointer &&move) NOEXCEPT :
 ////////////////////////////////////////////////////////////////////
 INLINE void CopyOnWritePointer::
 operator = (CopyOnWritePointer &&move) NOEXCEPT {
-  CopyOnWriteObject *old_object = _cow_object;
-  _cow_object = move._cow_object;
-  move._cow_object = NULL;
+  // Protect against self-move-assignment.
+  if (move._cow_object != _cow_object) {
+    CopyOnWriteObject *old_object = _cow_object;
+    _cow_object = move._cow_object;
+    move._cow_object = NULL;
 
-  if (old_object != (CopyOnWriteObject *)NULL) {
-    cache_unref_delete(old_object);
+    if (old_object != (CopyOnWriteObject *)NULL) {
+      cache_unref_delete(old_object);
+    }
   }
 }
 #endif  // USE_MOVE_SEMANTICS

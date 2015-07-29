@@ -73,12 +73,13 @@
     nodePath.I nodePath.h nodePath.cxx \
     nodePath_ext.I nodePath_ext.h \
     nodePathCollection.I nodePathCollection.h \
-    nodePathCollection_ext.I nodePathCollection_ext.h \
+    nodePathCollection_ext.h \
     nodePathComponent.I nodePathComponent.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
     pandaNodeChain.I pandaNodeChain.h \
+    paramNodePath.I paramNodePath.h \
     planeNode.I planeNode.h \
     polylightEffect.I polylightEffect.h \
     polylightNode.I polylightNode.h \
@@ -112,7 +113,7 @@
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h \
     nodePath_ext.h nodePath_ext.I \
-    nodePathCollection_ext.h nodePathCollection_ext.I \
+    nodePathCollection_ext.h \
     pandaNode_ext.h \
     renderState_ext.h \
     transformState_ext.h
@@ -184,6 +185,7 @@
     occluderNode.cxx \
     pandaNode.cxx \
     pandaNodeChain.cxx \
+    paramNodePath.cxx \
     planeNode.cxx \
     polylightEffect.cxx \
     polylightNode.cxx \
@@ -286,6 +288,7 @@
     pandaNode.I pandaNode.h \
     pandaNode_ext.h pandaNode_ext.cxx \
     pandaNodeChain.I pandaNodeChain.h \
+    paramNodePath.I paramNodePath.h \
     planeNode.I planeNode.h \
     polylightEffect.I polylightEffect.h \
     polylightNode.I polylightNode.h \

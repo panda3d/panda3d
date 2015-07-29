@@ -575,14 +575,14 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
 
   // Read matching files
   vector<string> all_logs;
-  int log_matches_found = 0; 
+  int log_matches_found = 0;
   string log_matching_pathname;
   inst_mgr->scan_directory(log_directory, all_logs);
-  for (int i=(int)all_logs.size()-1; i>=0; --i) {
-    if ((all_logs[i] == log_leafname_primary) ||
-        (all_logs[i].find(log_basename) == 0) &&
-        (all_logs[i].size() > 4) &&
-        (all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
+  for (int i = (int)all_logs.size() - 1; i >= 0; --i) {
+    if (all_logs[i] == log_leafname_primary ||
+        (all_logs[i].find(log_basename) == 0 &&
+         all_logs[i].size() > 4 &&
+         all_logs[i].substr(all_logs[i].size() - 4) == string(".log"))) {
       log_matches_found++;
       log_matching_pathname = (log_directory + all_logs[i]);
       read_log_file(log_matching_pathname, tail_bytes, head_bytes, log_data);
@@ -606,10 +606,10 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
 //  Description: The generic log-reader function.
 ////////////////////////////////////////////////////////////////////
 void P3DMainObject::
-read_log_file(const string &log_pathname, 
-              size_t tail_bytes, size_t head_bytes, 
+read_log_file(const string &log_pathname,
+              size_t tail_bytes, size_t head_bytes,
               ostringstream &log_data) {
-  
+
   // Get leaf name
   string log_leafname = log_pathname;
   size_t slash = log_leafname.rfind('/');

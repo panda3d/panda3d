@@ -32,6 +32,7 @@ InterrogateType(InterrogateModuleDef *def) :
   _outer_class = 0;
   _atomic_token = AT_not_atomic;
   _wrapped_type = 0;
+  _array_size = 1;
   _destructor = 0;
 
   _cpptype = (CPPType *)NULL;
@@ -111,6 +112,7 @@ operator = (const InterrogateType &copy) {
   _outer_class = copy._outer_class;
   _atomic_token = copy._atomic_token;
   _wrapped_type = copy._wrapped_type;
+  _array_size = copy._array_size;
   _constructors = copy._constructors;
   _destructor = copy._destructor;
   _elements = copy._elements;
@@ -165,6 +167,11 @@ output(ostream &out) const {
   out << _outer_class << " "
       << (int)_atomic_token << " "
       << _wrapped_type << " ";
+
+  if (is_array()) {
+    out << _array_size << " ";
+  }
+
   idf_output_vector(out, _constructors);
   out << _destructor << " ";
   idf_output_vector(out, _elements);
@@ -196,6 +203,10 @@ input(istream &in) {
   in >> token;
   _atomic_token = (AtomicToken)token;
   in >> _wrapped_type;
+
+  if (is_array()) {
+    in >> _array_size;
+  }
 
   idf_input_vector(in, _constructors);
   in >> _destructor;
@@ -258,23 +269,3 @@ remap_indices(const IndexRemapper &remap) {
   }
 
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: GetRunTimeDictionary
-////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG RunTimeTypeDictionary & GetRunTimeDictionary()
-{
-    static RunTimeTypeDictionary dict;
-    return dict;
-};
-
-////////////////////////////////////////////////////////////////////
-//     Function: GetRunTimeTypeList
-////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG RunTimeTypeList & GetRunTimeTypeList()
-{
-    static RunTimeTypeList list;
-    return list;
-};
-

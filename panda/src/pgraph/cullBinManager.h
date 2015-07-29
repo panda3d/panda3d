@@ -20,6 +20,7 @@
 #include "cullBinEnums.h"
 #include "pointerTo.h"
 #include "pvector.h"
+#include "epvector.h"
 #include "pmap.h"
 #include "vector_int.h"
 #include "pStatCollector.h"
@@ -97,17 +98,17 @@ private:
 
   class EXPCL_PANDA_PGRAPH BinDefinition {
   public:
+#ifndef NDEBUG
+    LColor _flash_color;
+    bool _flash_active;
+#endif
     bool _in_use;
     string _name;
     BinType _type;
     int _sort;
     bool _active;
-#ifndef NDEBUG
-    bool _flash_active;
-    LColorf _flash_color;
-#endif
   };
-  typedef pvector<BinDefinition> BinDefinitions;
+  typedef epvector<BinDefinition> BinDefinitions;
   BinDefinitions _bin_definitions;
 
   class SortBins {

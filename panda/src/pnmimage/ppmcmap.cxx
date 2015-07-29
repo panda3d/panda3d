@@ -83,7 +83,7 @@ ppm_computecolorhash(pixel** pixels,
                      int* colorsP)
     {
     colorhash_table cht;
-    register pixel* pP;
+    pixel* pP;
     colorhist_list chl;
     int col, row, hash;
 
@@ -141,8 +141,8 @@ ppm_addtocolorhash(colorhash_table cht,
                    pixel* colorP,
                    int value)
     {
-    register int hash;
-    register colorhist_list chl;
+    int hash;
+    colorhist_list chl;
 
     chl = (colorhist_list) malloc( sizeof(struct colorhist_list_item) );
     if ( chl == 0 )

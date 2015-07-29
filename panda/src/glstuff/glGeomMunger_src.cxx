@@ -26,8 +26,8 @@ ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
-  _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
+  _texture((const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot())),
+  _tex_gen((const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot()))
 {
   // Set a callback to unregister ourselves when either the Texture or
   // the TexGen object gets deleted.
@@ -87,6 +87,46 @@ munge_format_impl(const GeomVertexFormat *orig,
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
 
+#ifndef OPENGLES
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
+  // and texture coordinates.
+  const GeomVertexColumn *vertex_type = orig->get_vertex_column();
+  if (vertex_type != (GeomVertexColumn *)NULL &&
+      (vertex_type->get_numeric_type() == NT_int8 ||
+       vertex_type->get_numeric_type() == NT_uint8)) {
+    int vertex_array = orig->get_array_with(InternalName::get_vertex());
+
+    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
+
+    // Replace the existing vertex format with the new format.
+    new_array_format->add_column
+      (InternalName::get_vertex(), 3, NT_int16,
+       C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
+  }
+
+  // Convert packed formats that OpenGL may not understand.
+  for (int i = 0; i < orig->get_num_columns(); ++i) {
+    const GeomVertexColumn *column = orig->get_column(i);
+    int array = orig->get_array_with(column->get_name());
+
+    if (column->get_numeric_type() == NT_packed_dabc &&
+        !glgsg->_supports_packed_dabc) {
+      // Unpack the packed ARGB color into its four byte components.
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 4, NT_uint8, C_color,
+                               column->get_start(), column->get_column_alignment());
+
+    } else if (column->get_numeric_type() == NT_packed_ufloat &&
+               !glgsg->_supports_packed_ufloat) {
+      // Unpack to three 32-bit floats.  (In future, should try 16-bit float)
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 3, NT_float32,
+                               column->get_contents(), column->get_start(),
+                               column->get_column_alignment());
+    }
+  }
+#endif  // !OPENGLES
+
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
       color_type->get_numeric_type() == NT_packed_dabc &&
@@ -99,8 +139,8 @@ munge_format_impl(const GeomVertexFormat *orig,
 
     // Replace the existing color format with the new format.
     new_array_format->add_column
-      (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start(), color_type->get_column_alignment());
+      (InternalName::get_color(), 4, NT_uint8, C_color,
+       color_type->get_start(), color_type->get_column_alignment());
   }
 
   if (animation.get_animation_type() == AT_hardware) {
@@ -118,7 +158,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (animation.get_num_transforms() > 1) {
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column
-        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+        (InternalName::get_transform_weight(), animation.get_num_transforms(),
          NT_stdfloat, C_other);
 
       if (animation.get_indexed_transforms()) {
@@ -237,21 +277,45 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
 
-  const GeomVertexColumn *color_type = orig->get_color_column();
-  if (color_type != (GeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == NT_packed_dabc &&
-      !glgsg->_supports_packed_dabc) {
-    // We need to convert the color format; OpenGL doesn't support the
-    // byte order of DirectX's packed ARGB format.
-    int color_array = orig->get_array_with(InternalName::get_color());
+#ifndef OPENGLES
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
+  // and texture coordinates.
+  const GeomVertexColumn *vertex_type = orig->get_vertex_column();
+  if (vertex_type != (GeomVertexColumn *)NULL &&
+      (vertex_type->get_numeric_type() == NT_int8 ||
+       vertex_type->get_numeric_type() == NT_uint8)) {
+    int vertex_array = orig->get_array_with(InternalName::get_vertex());
 
-    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
+    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(vertex_array);
 
-    // Replace the existing color format with the new format.
+    // Replace the existing vertex format with the new format.
     new_array_format->add_column
-      (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start(), color_type->get_column_alignment());
+      (InternalName::get_vertex(), 3, NT_int16,
+       C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
+
+  // Convert packed formats that OpenGL may not understand.
+  for (int i = 0; i < orig->get_num_columns(); ++i) {
+    const GeomVertexColumn *column = orig->get_column(i);
+    int array = orig->get_array_with(column->get_name());
+
+    if (column->get_numeric_type() == NT_packed_dabc &&
+        !glgsg->_supports_packed_dabc) {
+      // Unpack the packed ARGB color into its four byte components.
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 4, NT_uint8, C_color,
+                               column->get_start(), column->get_column_alignment());
+
+    } else if (column->get_numeric_type() == NT_packed_ufloat &&
+               !glgsg->_supports_packed_ufloat) {
+      // Unpack to three 32-bit floats.  (In future, should try 16-bit float)
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), 3, NT_float32,
+                               column->get_contents(), column->get_start(),
+                               column->get_column_alignment());
+    }
+  }
+#endif  // !OPENGLES
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
 
@@ -362,6 +426,45 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   return format;
 }
 
+#ifdef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::munge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+void CLP(GeomMunger)::
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
+                Thread *current_thread) {
+  StandardMunger::munge_geom_impl(geom, vertex_data, current_thread);
+
+  // OpenGL ES has no polygon mode, so we have to emulate it.
+  RenderModeAttrib::Mode render_mode = get_render_mode();
+  if (render_mode == RenderModeAttrib::M_point) {
+    geom = geom->make_points();
+  } else if (render_mode == RenderModeAttrib::M_wireframe) {
+    geom = geom->make_lines();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::premunge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+void CLP(GeomMunger)::
+premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
+  StandardMunger::premunge_geom_impl(geom, vertex_data);
+
+  // OpenGL ES has no polygon mode, so we have to emulate it.
+  RenderModeAttrib::Mode render_mode = get_render_mode();
+  if (render_mode == RenderModeAttrib::M_point) {
+    geom = geom->make_points();
+  } else if (render_mode == RenderModeAttrib::M_wireframe) {
+    geom = geom->make_lines();
+  }
+}
+#endif  // OPENGLES
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::compare_to_impl
 //       Access: Protected, Virtual
@@ -372,7 +475,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
-  const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
+  const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
   }
@@ -396,7 +499,12 @@ compare_to_impl(const GeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
-  const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
+  const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
+#ifdef OPENGLES
+  if (get_render_mode() != om->get_render_mode()) {
+    return get_render_mode() < om->get_render_mode() ? -1 : 1;
+  }
+#endif
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
   }

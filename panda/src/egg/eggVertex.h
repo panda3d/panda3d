@@ -109,6 +109,9 @@ PUBLISHED:
   void set_aux_obj(EggVertexAux *vertex_aux);
   void clear_aux(const string &name);
 
+  static PT(EggVertex) make_average(const EggVertex *first,
+                                    const EggVertex *second);
+
 public:
   INLINE const_uv_iterator uv_begin() const;
   INLINE const_uv_iterator uv_end() const;

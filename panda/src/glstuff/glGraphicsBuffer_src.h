@@ -57,7 +57,6 @@
 //               the buffer will render as if multisamples is 0.
 //
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
   CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -124,6 +123,10 @@ private:
   // _rbm stores the multisample renderbuffers.
   GLuint      _rb[RTP_COUNT];
   GLuint      _rbm[RTP_COUNT];
+
+  // For memory tracking of renderbuffers.
+  BufferContext *_rb_context;
+  size_t _rb_data_size_bytes;
 
   // List of textures for which we might have to generate mipmaps
   // after rendering one frame.

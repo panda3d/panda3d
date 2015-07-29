@@ -33,8 +33,7 @@ TypedWritableReferenceCount() {
 INLINE TypedWritableReferenceCount::
 TypedWritableReferenceCount(const TypedWritableReferenceCount &copy) :
   TypedWritable(copy),
-  ReferenceCount(copy)
-{
+  ReferenceCount(copy) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif

@@ -59,14 +59,11 @@ PUBLISHED:
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                          const string &name,
-                          Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
-                          const InternalName *name,
+                          CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data, 
+  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 
@@ -90,8 +87,7 @@ PUBLISHED:
   INLINE bool get_force() const;
 
   INLINE bool set_column(int column);
-  INLINE bool set_column(const string &name);
-  INLINE bool set_column(const InternalName *name);
+  INLINE bool set_column(CPT_InternalName name);
   bool set_column(int array, const GeomVertexColumn *column);
 
   INLINE void clear();

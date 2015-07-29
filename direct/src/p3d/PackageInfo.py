@@ -1,4 +1,6 @@
-from panda3d.core import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
+__all__ = ["PackageInfo"]
+
+from panda3d.core import Filename, DocumentSpec, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
 import panda3d.core as core
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
@@ -1066,7 +1068,7 @@ class PackageInfo:
             return False
 
         # We mount it under its actual location on disk.
-        root = self.getPackageDir().cStr()
+        root = self.getPackageDir()
 
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.mount(mf, root, vfs.MFReadOnly)
@@ -1210,7 +1212,7 @@ class PackageInfo:
         # Write the file to a temporary filename, then atomically move
         # it to its actual filename, to avoid race conditions when
         # updating this file.
-        tfile = Filename.temporary(self.getPackageDir().cStr(), '.xml')
+        tfile = Filename.temporary(str(self.getPackageDir()), '.xml')
         if doc.SaveFile(tfile.toOsSpecific()):
             tfile.renameTo(filename)
 

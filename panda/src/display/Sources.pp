@@ -14,6 +14,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.h] \
+    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.I callbackGraphicsWindow.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
@@ -36,7 +37,6 @@
     graphicsWindowInputDevice.h \
     graphicsWindowProc.h \
     graphicsWindowProcCallbackData.I graphicsWindowProcCallbackData.h \
-    lru.h \
     nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     pStatGPUTimer.I pStatGPUTimer.h \
@@ -54,7 +54,6 @@
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
     config_display.cxx \
-    $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
     callbackGraphicsWindow.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \
@@ -74,7 +73,6 @@
     graphicsWindowProc.cxx \
     graphicsWindowProcCallbackData.cxx \
     graphicsDevice.cxx \
-    lru.cxx \
     nativeWindowHandle.cxx \
     parasiteBuffer.cxx \
     windowHandle.cxx \
@@ -109,7 +107,6 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     graphicsDevice.I graphicsDevice.h \
-    lru.h \
     nativeWindowHandle.I nativeWindowHandle.h \
     parasiteBuffer.I parasiteBuffer.h \
     pStatGPUTimer.I pStatGPUTimer.h \

@@ -43,7 +43,14 @@ ParameterRemapConcreteToPointer(CPPType *orig_type) :
 ////////////////////////////////////////////////////////////////////
 void ParameterRemapConcreteToPointer::
 pass_parameter(ostream &out, const string &variable_name) {
-  out << "*" << variable_name;
+  if (variable_name.size() > 1 && variable_name[0] == '&') {
+    // Prevent generating something like *&param
+    // Also, if this is really some local type, we can presumably
+    // just move it?
+    out << "MOVE(" << variable_name.substr(1) << ")";
+  } else {
+    out << "*" << variable_name;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -57,16 +57,7 @@ prepare_node(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 int EggBinner::
 get_bin_number(const EggNode *node) {
-  if (node->is_of_type(EggNurbsSurface::get_class_type())) {
-    return (int)BN_nurbs_surface;
-
-  } else if (node->is_of_type(EggNurbsCurve::get_class_type())) {
-    return (int)BN_nurbs_curve;
-
-  } else if (node->is_of_type(EggPatch::get_class_type())) {
-    return (int)BN_patches;
-
-  } else if (node->is_of_type(EggPrimitive::get_class_type())) {
+  if (node->is_of_type(EggPrimitive::get_class_type())) {
     return (int)BN_polyset;
 
   } else if (node->is_of_type(EggGroup::get_class_type())) {
@@ -74,6 +65,15 @@ get_bin_number(const EggNode *node) {
     if (group->has_lod()) {
       return (int)BN_lod;
     }
+
+  } else if (node->is_of_type(EggNurbsSurface::get_class_type())) {
+    return (int)BN_nurbs_surface;
+
+  } else if (node->is_of_type(EggNurbsCurve::get_class_type())) {
+    return (int)BN_nurbs_curve;
+
+  } else if (node->is_of_type(EggPatch::get_class_type())) {
+    return (int)BN_patches;
   }
 
   return (int)BN_none;

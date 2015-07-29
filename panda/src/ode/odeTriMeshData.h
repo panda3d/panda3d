@@ -28,9 +28,11 @@
 #include "geomTriangles.h"
 #include "geomTristrips.h"
 
+#include "config_ode.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeTriMeshData
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeTriMeshData : public TypedReferenceCount {
 public:
@@ -54,16 +56,17 @@ PUBLISHED:
   virtual ~OdeTriMeshData();
 
   void destroy();
-  
+
   // INLINE void set(int data_id, void* in_data);
   // INLINE void* get(int data_id);
   // INLINE void get_buffer(unsigned char** buf, int* buf_len) const;
   // INLINE void set_buffer(unsigned char* buf);
   // INLINE void update();
+
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   void write_faces(ostream &out) const;
 
-public: 
+public:
   INLINE void build_single(const void* vertices, int vertex_stride, int vertex_count, \
                            const void* indices, int index_count, int tri_stride);
   INLINE void build_single1(const void* vertices, int vertex_stride, int vertex_count, \
@@ -88,6 +91,7 @@ public:
                             const int* indices, int index_count, \
                             const int* normals);
   */
+
   INLINE void preprocess();
 
   INLINE dTriMeshDataID get_id() const;
@@ -96,7 +100,7 @@ private:
   void process_model(const NodePath& model, bool &use_normals);
   void process_geom_node(const GeomNode *geomNode);
   void process_geom(const Geom *geom);
-  void process_primitive(const GeomPrimitive *primitive, 
+  void process_primitive(const GeomPrimitive *primitive,
                          CPT(GeomVertexData) vData);
   void analyze(const GeomNode *geomNode);
   void analyze(const Geom *geom);
@@ -104,15 +108,15 @@ private:
 
   OdeTriMeshData(const OdeTriMeshData &other);
   void operator = (const OdeTriMeshData &other);
-  
+
 protected:
-  struct StridedVertex{
+  struct StridedVertex {
     dReal Vertex[3];
-  };  
-  struct StridedTri{
+  };
+  struct StridedTri {
     int Indices[3];
   };
-  struct FaceNormal{
+  struct FaceNormal {
     dVector3 Normal;
   };
 

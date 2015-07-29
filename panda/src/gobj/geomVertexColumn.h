@@ -38,18 +38,18 @@ class GeomVertexWriter;
 //               to completely define a particular array structure.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
-PUBLISHED:
 private:
   INLINE GeomVertexColumn();
 PUBLISHED:
-  INLINE GeomVertexColumn(InternalName *name, int num_components,
+  INLINE GeomVertexColumn(CPT_InternalName name, int num_components,
                           NumericType numeric_type, Contents contents,
-                          int start, int column_alignment = 0);
+                          int start, int column_alignment = 0,
+                          int num_elements = 0, int element_stride = 0);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();
 
-  INLINE InternalName *get_name() const;
+  INLINE const InternalName *get_name() const;
   INLINE int get_num_components() const;
   INLINE int get_num_values() const;
   INLINE int get_num_elements() const;
@@ -95,7 +95,7 @@ public:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  PT(InternalName) _name;
+  CPT_InternalName _name;
   int _num_components;
   int _num_values;
   int _num_elements;
@@ -141,7 +141,7 @@ private:
     virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
     virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
     virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
-    
+
     virtual void set_data1i(unsigned char *pointer, int data);
     virtual void set_data2i(unsigned char *pointer, const LVecBase2i &data);
     virtual void set_data3i(unsigned char *pointer, const LVecBase3i &data);
@@ -150,30 +150,6 @@ private:
     virtual const char *get_name() const {
       return "Packer";
     }
-
-    INLINE float maybe_scale_color_f(unsigned int value);
-    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b);
-    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b,
-                                    unsigned int c);
-    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b,
-                                    unsigned int c, unsigned int d);
-
-    INLINE unsigned int maybe_unscale_color_f(float data);
-    INLINE void maybe_unscale_color_f(const LVecBase2f &data);
-    INLINE void maybe_unscale_color_f(const LVecBase3f &data);
-    INLINE void maybe_unscale_color_f(const LVecBase4f &data);
-
-    INLINE double maybe_scale_color_d(unsigned int value);
-    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b);
-    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b,
-                                    unsigned int c);
-    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b,
-                                    unsigned int c, unsigned int d);
-
-    INLINE unsigned int maybe_unscale_color_d(double data);
-    INLINE void maybe_unscale_color_d(const LVecBase2d &data);
-    INLINE void maybe_unscale_color_d(const LVecBase3d &data);
-    INLINE void maybe_unscale_color_d(const LVecBase4d &data);
 
     const GeomVertexColumn *_column;
     LVecBase2f _v2;
@@ -192,7 +168,7 @@ private:
   // This is a specialization on the generic Packer that handles
   // points, which are special because the fourth component, if not
   // present in the data, is implicitly 1.0; and if it is present,
-  // than any three-component or smaller return is implicitly divided
+  // then any three-component or smaller return is implicitly divided
   // by the fourth component.
   class Packer_point : public Packer {
   public:
@@ -200,14 +176,17 @@ private:
     virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+
     virtual double get_data1d(const unsigned char *pointer);
     virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
     virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
     virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
+
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
+
     virtual void set_data1d(unsigned char *pointer, double data);
     virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
     virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
@@ -220,17 +199,28 @@ private:
 
   // This is similar to Packer_point, in that the fourth component is
   // implicitly 1.0 if it is not present in the data, but we never
-  // divide by alpha.
+  // divide by alpha.  It also transforms integer colors to the 0-1 range.
   class Packer_color : public Packer {
   public:
+    virtual float get_data1f(const unsigned char *pointer);
+    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+
+    virtual double get_data1d(const unsigned char *pointer);
+    virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
+    virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
     virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
+
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
     virtual void set_data3f(unsigned char *pointer, const LVecBase3f &data);
+    virtual void set_data4f(unsigned char *pointer, const LVecBase4f &data);
+
     virtual void set_data1d(unsigned char *pointer, double data);
     virtual void set_data2d(unsigned char *pointer, const LVecBase2d &data);
     virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
 
     virtual const char *get_name() const {
       return "Packer_color";
@@ -357,7 +347,7 @@ private:
     }
   };
 
-  class Packer_nativedouble_3 : public Packer_float64_3 {
+  class Packer_nativedouble_3 FINAL : public Packer_float64_3 {
   public:
     virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
 
@@ -366,7 +356,7 @@ private:
     }
   };
 
-  class Packer_point_nativedouble_2 : public Packer_point_float64_2 {
+  class Packer_point_nativedouble_2 FINAL : public Packer_point_float64_2 {
   public:
     virtual const LVecBase2d &get_data2d(const unsigned char *pointer);
 
@@ -375,7 +365,7 @@ private:
     }
   };
 
-  class Packer_point_nativedouble_3 : public Packer_point_float64_3 {
+  class Packer_point_nativedouble_3 FINAL : public Packer_point_float64_3 {
   public:
     virtual const LVecBase3d &get_data3d(const unsigned char *pointer);
 
@@ -393,7 +383,7 @@ private:
     }
   };
 
-  class Packer_argb_packed : public Packer_color {
+  class Packer_argb_packed FINAL : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
@@ -403,7 +393,7 @@ private:
     }
   };
 
-  class Packer_rgba_uint8_4 : public Packer_color {
+  class Packer_rgba_uint8_4 FINAL : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
@@ -423,7 +413,7 @@ private:
     }
   };
 
-  class Packer_rgba_nativefloat_4 : public Packer_rgba_float32_4 {
+  class Packer_rgba_nativefloat_4 FINAL : public Packer_rgba_float32_4 {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
 
@@ -432,7 +422,7 @@ private:
     }
   };
 
-  class Packer_uint16_1 : public Packer {
+  class Packer_uint16_1 FINAL : public Packer {
   public:
     virtual int get_data1i(const unsigned char *pointer);
     virtual void set_data1i(unsigned char *pointer, int value);

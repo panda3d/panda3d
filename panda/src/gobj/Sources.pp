@@ -8,7 +8,8 @@
   #define LOCAL_LIBS \
     p3pstatclient p3event p3linmath p3mathutil p3pnmimage p3gsgbase p3putil
 
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
+                           $[TARGET]_ext_composite.cxx
 
   #define SOURCES \
     adaptiveLru.I adaptiveLru.h \
@@ -30,7 +31,7 @@
     geomLinestrips.h \
     geomPoints.h \
     geomVertexArrayData.h geomVertexArrayData.I \
-    geomVertexArrayData_ext.h geomVertexArrayData_ext.cxx \
+    geomVertexArrayData_ext.h \
     geomVertexArrayFormat.h geomVertexArrayFormat.I \
     geomCacheEntry.h geomCacheEntry.I \
     geomCacheManager.h geomCacheManager.I \
@@ -43,15 +44,17 @@
     geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
-    internalName_ext.h internalName_ext.cxx \
+    internalName_ext.h \
     lens.h lens.I \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
+    paramTexture.I paramTexture.h \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     queryContext.I queryContext.h \
+    samplerState.I samplerState.h \
     savedContext.I savedContext.h \
     shader.I shader.h \
     shaderContext.h shaderContext.I \
@@ -60,6 +63,7 @@
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureCollection.I textureCollection.h \
+    textureCollection_ext.h \
     textureContext.I textureContext.h \
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
@@ -82,7 +86,7 @@
     vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h \
     videoTexture.I videoTexture.h
-    
+
   #define INCLUDED_SOURCES \
     adaptiveLru.cxx \
     animateVerticesRequest.cxx \
@@ -103,6 +107,7 @@
     geomLinestrips.cxx \
     geomPoints.cxx \
     geomVertexArrayData.cxx \
+    geomVertexArrayData_ext.cxx \
     geomVertexArrayFormat.cxx \
     geomCacheEntry.cxx \
     geomCacheManager.cxx \
@@ -116,13 +121,16 @@
     indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
+    internalName_ext.cxx \
     lens.cxx  \
     materialPool.cxx matrixLens.cxx \
     occlusionQueryContext.cxx \
     orthographicLens.cxx  \
+    paramTexture.cxx \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     queryContext.cxx \
+    samplerState.cxx \
     savedContext.cxx \
     shader.cxx \
     shaderContext.cxx \
@@ -131,6 +139,7 @@
     sliderTable.cxx \
     texture.cxx \
     textureCollection.cxx \
+    textureCollection_ext.cxx \
     textureContext.cxx \
     texturePeeker.cxx \
     texturePool.cxx \
@@ -192,10 +201,12 @@
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
-    orthographicLens.I orthographicLens.h perspectiveLens.I \
-    perspectiveLens.h \
+    orthographicLens.I orthographicLens.h \
+    paramTexture.I paramTexture.h \
+    perspectiveLens.I perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     queryContext.I queryContext.h \
+    samplerState.I samplerState.h \
     savedContext.I savedContext.h \
     shader.I shader.h \
     shaderContext.h shaderContext.I \

@@ -70,49 +70,47 @@
 
 #define EXPCL_EMPTY
 
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
-
 #ifdef BUILDING_DTOOL
-  #define EXPCL_DTOOL __declspec(dllexport)
-  #define EXPTP_DTOOL
+  #define EXPCL_DTOOL EXPORT_CLASS
+  #define EXPTP_DTOOL EXPORT_TEMPL
 #else
-  #define EXPCL_DTOOL __declspec(dllimport)
-  #define EXPTP_DTOOL extern
+  #define EXPCL_DTOOL IMPORT_CLASS
+  #define EXPTP_DTOOL IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_DTOOLCONFIG
-  #define EXPCL_DTOOLCONFIG __declspec(dllexport)
-  #define EXPTP_DTOOLCONFIG
+  #define EXPCL_DTOOLCONFIG EXPORT_CLASS
+  #define EXPTP_DTOOLCONFIG EXPORT_TEMPL
 #else
-  #define EXPCL_DTOOLCONFIG __declspec(dllimport)
-  #define EXPTP_DTOOLCONFIG extern
+  #define EXPCL_DTOOLCONFIG IMPORT_CLASS
+  #define EXPTP_DTOOLCONFIG IMPORT_TEMPL
+#endif
+
+#ifdef BUILDING_INTERROGATEDB
+  #define EXPCL_INTERROGATEDB EXPORT_CLASS
+  #define EXPTP_INTERROGATEDB EXPORT_TEMPL
+#else
+  #define EXPCL_INTERROGATEDB IMPORT_CLASS
+  #define EXPTP_INTERROGATEDB IMPORT_TEMPL
 #endif
 
 #ifdef BUILDING_MISC
-  #define EXPCL_MISC __declspec(dllexport)
-  #define EXPTP_MISC
+  #define EXPCL_MISC EXPORT_CLASS
+  #define EXPTP_MISC EXPORT_TEMPL
 #else /* BUILDING_MISC */
-  #define EXPCL_MISC __declspec(dllimport)
-  #define EXPTP_MISC extern
+  #define EXPCL_MISC IMPORT_CLASS
+  #define EXPTP_MISC IMPORT_TEMPL
 #endif /* BUILDING_MISC */
-
-#else   /* !WIN32_VC */
-
-#define EXPCL_DTOOL
-#define EXPTP_DTOOL
-
-#define EXPCL_DTOOLCONFIG
-#define EXPTP_DTOOLCONFIG
-
-#define EXPCL_MISC
-#define EXPTP_MISC
-
-#endif  /* WIN32_VC */
 
 /* These two are always defined empty, because pystub is statically
    built.  But we leave the symbol around in case we change our minds
    to make pystub once again be a dynamic library. */
+#if __GNUC__ >= 4
+/* In GCC, though, we still need to mark the symbols as visible. */
+#define EXPCL_PYSTUB __attribute__((visibility("default")))
+#else
 #define EXPCL_PYSTUB
+#endif
 #define EXPTP_PYSTUB
 
 #endif

@@ -18,8 +18,13 @@
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamReader;
+extern struct Dtool_PyTypedObject Dtool_BamWriter;
+extern struct Dtool_PyTypedObject Dtool_BamReader;
+#ifdef STDFLOAT_DOUBLE
+extern struct Dtool_PyTypedObject Dtool_LPoint3d;
+#else
+extern struct Dtool_PyTypedObject Dtool_LPoint3f;
+#endif
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +58,7 @@ __copy__() const {
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<NodePath>::
 __deepcopy__(PyObject *self, PyObject *memo) const {
-  IMPORT_THIS struct Dtool_PyTypedObject Dtool_NodePath;
+  extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   // Borrowed reference.
   PyObject *dupe = PyDict_GetItem(memo, self);
@@ -228,5 +233,35 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
   return NodePath::decode_from_bam_stream(data, reader);
 }
 
-#endif  // HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Extension<NodePath>::get_tight_bounds
+//       Access: Published
+//  Description: Returns the tight bounds as a 2-tuple of LPoint3
+//               objects.  This is a convenience function for Python
+//               users, among which the use of calc_tight_bounds
+//               may be confusing.
+//
+//               Returns None if calc_tight_bounds returned false.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<NodePath>::
+get_tight_bounds(const NodePath &other) const {
+  LPoint3 *min_point = new LPoint3;
+  LPoint3 *max_point = new LPoint3;
 
+  if (_this->calc_tight_bounds(*min_point, *max_point, other)) {
+#ifdef STDFLOAT_DOUBLE
+    PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3d, true, false);
+    PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3d, true, false);
+#else
+    PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3f, true, false);
+    PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3f, true, false);
+#endif
+    return Py_BuildValue("NN", min_inst, max_inst);
+
+  } else {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+}
+
+#endif  // HAVE_PYTHON

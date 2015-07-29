@@ -77,7 +77,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ShadeModelAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, make_default);
+    _attrib_slot = register_slot(_type_handle, 100, new ShadeModelAttrib(M_smooth));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

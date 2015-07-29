@@ -67,9 +67,6 @@
 #include "pandabase.h"
 
 #include "pointerToArrayBase.h"
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
 
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
@@ -112,17 +109,15 @@ PUBLISHED:
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
-#ifdef HAVE_PYTHON
-  PointerToArray(PyObject *self, PyObject *source);
-#endif
+  EXTENSION(PointerToArray(PyObject *self, PyObject *source));
 
   INLINE size_type size() const;
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
-  INLINE const Element &__getitem__(size_type n) const;
-  INLINE void __setitem__(size_type n, const Element &value);
+  EXTENSION(const Element &__getitem__(size_type n) const);
+  EXTENSION(void __setitem__(size_type n, const Element &value));
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
   INLINE string get_subdata(size_type n, size_type count) const;
@@ -132,8 +127,8 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
 #if PY_VERSION_HEX >= 0x02060000
-  int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
-  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
+  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
 #endif
 
@@ -156,8 +151,8 @@ public:
   INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
-#ifdef HAVE_PYTHON
-  PointerToArray(PyObject *self, PyObject *source);
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
 #endif
 
 public:
@@ -213,8 +208,6 @@ public:
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
-  INLINE const Element &__getitem__(size_type n) const;
-  INLINE void __setitem__(size_type n, const Element &value);
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
   INLINE string get_subdata(size_type n, size_type count) const;
@@ -237,18 +230,17 @@ public:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
-#ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
-  int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
-  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
-#endif
-#endif
-
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE PointerToArray<Element> &
+  operator = (PointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
   INLINE void clear();
 
 private:
@@ -283,14 +275,12 @@ PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
-#ifdef HAVE_PYTHON
-  INLINE ConstPointerToArray(PyObject *self, PyObject *source);
-#endif
+  EXTENSION(ConstPointerToArray(PyObject *self, PyObject *source));
 
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
-  INLINE const Element &__getitem__(size_type n) const;
+  EXTENSION(const Element &__getitem__(size_type n) const);
   INLINE string get_data() const;
   INLINE string get_subdata(size_type n, size_type count) const;
   INLINE int get_ref_count() const;
@@ -298,8 +288,8 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
 #if PY_VERSION_HEX >= 0x02060000
-  int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
-  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
 #endif
 
@@ -325,8 +315,9 @@ PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
-#ifdef HAVE_PYTHON
-  INLINE ConstPointerToArray(PyObject *self, PyObject *source);
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerToArray(PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE ConstPointerToArray(ConstPointerToArray<Element> &&from) NOEXCEPT;
 #endif
 
   // Duplicating the interface of vector.
@@ -361,7 +352,6 @@ PUBLISHED:
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
-  INLINE const Element &__getitem__(size_type n) const;
   INLINE string get_data() const;
   INLINE string get_subdata(size_type n, size_type count) const;
 
@@ -373,13 +363,6 @@ PUBLISHED:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
-#ifdef HAVE_PYTHON
-#if PY_VERSION_HEX >= 0x02060000
-  int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
-  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
-#endif
-#endif
-
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
   operator = (ReferenceCountedVector<Element> *ptr);
@@ -387,6 +370,14 @@ PUBLISHED:
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &
   operator = (const ConstPointerToArray<Element> &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+  INLINE ConstPointerToArray<Element> &
+  operator = (PointerToArray<Element> &&from) NOEXCEPT;
+  INLINE ConstPointerToArray<Element> &
+  operator = (ConstPointerToArray<Element> &&from) NOEXCEPT;
+#endif
+
   INLINE void clear();
 
 private:
@@ -407,36 +398,6 @@ private:
 // And the brevity macros.
 #define PTA(type) PointerToArray< type >
 #define CPTA(type) ConstPointerToArray< type >
-
-#ifdef HAVE_PYTHON
-// This macro is used to map a data type to a format code
-// as used in the Python 'struct' and 'array' modules.
-#define get_format_code(type) _get_format_code((const type *)0)
-#define define_format_code(code, type) template<> \
-  INLINE const char *_get_format_code(const type *) { \
-    return code; \
-  }
-
-template<class T>
-INLINE const char *_get_format_code(const T *) {
-  return NULL;
-}
-
-define_format_code("c", char);
-define_format_code("b", signed char);
-define_format_code("B", unsigned char);
-define_format_code("h", short);
-define_format_code("H", unsigned short);
-define_format_code("i", int);
-define_format_code("I", unsigned int);
-define_format_code("l", long);
-define_format_code("L", unsigned long);
-define_format_code("q", long long);
-define_format_code("Q", unsigned long long);
-define_format_code("f", float);
-define_format_code("d", double);
-
-#endif  // HAVE_PYTHON
 
 #include "pointerToArray.I"
 

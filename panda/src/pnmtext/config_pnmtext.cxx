@@ -25,11 +25,11 @@ ConfigureFn(config_pnmtext) {
 }
 
 ConfigVariableDouble text_point_size
-("text-point-size", 10.0f);
+("text-point-size", 10.0);
 ConfigVariableDouble text_pixels_per_unit
-("text-pixels-per-unit", 40.0f);
+("text-pixels-per-unit", 40.0);
 ConfigVariableDouble text_scale_factor
-("text-scale-factor", 2.0f);
+("text-scale-factor", 2.0);
 ConfigVariableBool text_native_antialias
 ("text-native-antialias", true);
 

@@ -73,13 +73,15 @@ PUBLISHED:
   INLINE void set_read_only(bool ro);
   INLINE bool get_read_only() const;
 
-  PT(BamCacheRecord) lookup(const Filename &source_filename, 
+  PT(BamCacheRecord) lookup(const Filename &source_filename,
                             const string &cache_extension);
   bool store(BamCacheRecord *record);
 
   void consider_flush_index();
   void flush_index();
-  
+
+  void list_index(ostream &out, int indent_level = 0) const;
+
   INLINE static BamCache *get_global_ptr();
 
 private:
@@ -96,7 +98,7 @@ private:
   void check_cache_size();
 
   void emergency_read_only();
-  
+
   static BamCacheIndex *do_read_index(const Filename &index_pathname);
   static bool do_write_index(const Filename &index_pathname, const BamCacheIndex *index);
 
@@ -105,7 +107,7 @@ private:
   PT(BamCacheRecord) read_record(const Filename &source_pathname,
                                  const Filename &cache_filename,
                                  int pass);
-  static PT(BamCacheRecord) do_read_record(const Filename &cache_pathname, 
+  static PT(BamCacheRecord) do_read_record(const Filename &cache_pathname,
                                            bool read_data);
 
   static string hash_filename(const string &filename);

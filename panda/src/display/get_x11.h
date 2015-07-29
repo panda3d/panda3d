@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_X11 
+#ifdef HAVE_X11
 // This header file is designed to help work around some of the
 // namespace spamming that X11 causes, by renaming the symbols that
 // X11 declares that are known to conflict with other library names
@@ -30,14 +30,21 @@
 #ifdef CPPPARSER
 // A simple hack so interrogate can get all of the necessary
 // typenames.
-typedef int X11_Display;
-typedef int X11_Window;
-typedef int X11_Cursor;
-typedef int XErrorEvent;
-typedef int XVisualInfo;
-typedef int Atom;
-typedef int XIM;
-typedef int XIC;
+typedef struct _XDisplay X11_Display;
+typedef unsigned int XID;
+typedef unsigned int Atom;
+typedef unsigned int Cardinal;
+typedef XID Colormap;
+typedef XID X11_Window;
+typedef XID X11_Cursor;
+typedef struct _XIM *XIM;
+typedef struct _XIC *XIC;
+struct XErrorEvent;
+struct XVisualInfo;
+#define Bool int
+#define Status int
+#define True 1
+#define False 0
 #else
 
 #include "pre_x11_include.h"
@@ -55,7 +62,7 @@ typedef int XIC;
 #endif
 
 #ifdef HAVE_XF86DGA
-#include <X11/extensions/xf86dga.h>
+#include <X11/extensions/Xxf86dga.h>
 #endif
 
 #include "post_x11_include.h"

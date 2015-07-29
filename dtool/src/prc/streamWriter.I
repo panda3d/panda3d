@@ -16,10 +16,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
-StreamWriter(ostream &out) : 
+StreamWriter(ostream &out) :
+#ifdef HAVE_PYTHON
+  softspace(0),
+#endif
   _out(&out),
   _owns_stream(false)
 {
@@ -28,10 +31,13 @@ StreamWriter(ostream &out) :
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
-StreamWriter(ostream *out, bool owns_stream) : 
+StreamWriter(ostream *out, bool owns_stream) :
+#ifdef HAVE_PYTHON
+  softspace(0),
+#endif
   _out(out),
   _owns_stream(owns_stream)
 {
@@ -45,6 +51,9 @@ StreamWriter(ostream *out, bool owns_stream) :
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
 StreamWriter(const StreamWriter &copy) :
+#ifdef HAVE_PYTHON
+  softspace(0),
+#endif
   _out(copy._out),
   _owns_stream(false)
 {

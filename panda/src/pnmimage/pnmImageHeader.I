@@ -23,6 +23,7 @@ PNMImageHeader() {
   _y_size = 0;
   _num_channels = 0;
   _maxval = 255;
+  _color_space = CS_unspecified;
   _type = (PNMFileType *)NULL;
 }
 
@@ -37,6 +38,7 @@ PNMImageHeader(const PNMImageHeader &copy) :
   _y_size(copy._y_size),
   _num_channels(copy._num_channels),
   _maxval(copy._maxval),
+  _color_space(copy._color_space),
   _type(copy._type)
 {
 }
@@ -52,6 +54,7 @@ operator = (const PNMImageHeader &copy) {
   _y_size = copy._y_size;
   _num_channels = copy._num_channels;
   _maxval = copy._maxval;
+  _color_space = copy._color_space;
   _comment = copy._comment;
   _type = copy._type;
 }
@@ -154,6 +157,17 @@ get_maxval() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_color_space
+//       Access: Published
+//  Description: Returns the color space that the image is encoded
+//               in, or CS_unspecified if unknown.
+////////////////////////////////////////////////////////////////////
+INLINE ColorSpace PNMImageHeader::
+get_color_space() const {
+  return _color_space;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_x_size
 //       Access: Published
 //  Description: Returns the number of pixels in the X direction.
@@ -241,7 +255,7 @@ set_type(PNMFileType *type) {
 //  Description: Records the indicated color in the histogram.
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::
-record_color(PNMImageHeader::HistMap &hist, 
+record_color(PNMImageHeader::HistMap &hist,
              const PNMImageHeader::PixelSpec &color) {
   // First, try to add the color with a count of 0, in case it does
   // not already exist in the table.
@@ -256,7 +270,7 @@ record_color(PNMImageHeader::HistMap &hist,
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(xelval gray_value) :
@@ -270,7 +284,7 @@ PixelSpec(xelval gray_value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(xelval gray_value, xelval alpha) :
@@ -284,7 +298,7 @@ PixelSpec(xelval gray_value, xelval alpha) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(xelval red, xelval green, xelval blue) :
@@ -298,7 +312,7 @@ PixelSpec(xelval red, xelval green, xelval blue) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(xelval red, xelval green, xelval blue, xelval alpha) :
@@ -312,7 +326,7 @@ PixelSpec(xelval red, xelval green, xelval blue, xelval alpha) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(const xel &rgb) :
@@ -326,7 +340,7 @@ PixelSpec(const xel &rgb) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(const xel &rgb, xelval alpha) :
@@ -340,7 +354,7 @@ PixelSpec(const xel &rgb, xelval alpha) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
 PixelSpec(const PixelSpec &copy) :
@@ -354,7 +368,7 @@ PixelSpec(const PixelSpec &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
 operator = (const PixelSpec &copy) {
@@ -367,7 +381,7 @@ operator = (const PixelSpec &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::operator <
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool PNMImageHeader::PixelSpec::
 operator < (const PixelSpec &other) const {
@@ -377,7 +391,7 @@ operator < (const PixelSpec &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::operator ==
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool PNMImageHeader::PixelSpec::
 operator == (const PixelSpec &other) const {
@@ -387,7 +401,7 @@ operator == (const PixelSpec &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::operator !=
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool PNMImageHeader::PixelSpec::
 operator != (const PixelSpec &other) const {
@@ -397,7 +411,7 @@ operator != (const PixelSpec &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::compare_to
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PNMImageHeader::PixelSpec::
 compare_to(const PixelSpec &other) const {
@@ -419,7 +433,7 @@ compare_to(const PixelSpec &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::get_red
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImageHeader::PixelSpec::
 get_red() const {
@@ -429,7 +443,7 @@ get_red() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::get_green
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImageHeader::PixelSpec::
 get_green() const {
@@ -439,7 +453,7 @@ get_green() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::get_blue
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImageHeader::PixelSpec::
 get_blue() const {
@@ -449,7 +463,7 @@ get_blue() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::get_alpha
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE xelval PNMImageHeader::PixelSpec::
 get_alpha() const {
@@ -459,7 +473,7 @@ get_alpha() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::set_red
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
 set_red(xelval red) {
@@ -469,7 +483,7 @@ set_red(xelval red) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::set_green
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
 set_green(xelval green) {
@@ -479,7 +493,7 @@ set_green(xelval green) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::set_blue
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
 set_blue(xelval blue) {
@@ -489,7 +503,7 @@ set_blue(xelval blue) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpec::set_alpha
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::PixelSpec::
 set_alpha(xelval alpha) {
@@ -527,7 +541,7 @@ size() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::PixelSpecCount::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpecCount::
 PixelSpecCount(const PNMImageHeader::PixelSpec &pixel, int count) :
@@ -551,7 +565,7 @@ operator < (const PNMImageHeader::PixelSpecCount &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Histogram::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::Histogram::
 Histogram() {

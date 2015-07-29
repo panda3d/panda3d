@@ -287,7 +287,7 @@ cleanup_polygon_indices(vector_int &polygon) {
   // First, check for index bounds.
   size_t pi = 0;
   while (pi < polygon.size()) {
-    if (polygon[pi] >= 0 && polygon[pi] < _vertices.size()) {
+    if (polygon[pi] >= 0 && (size_t)polygon[pi] < _vertices.size()) {
       // This vertex is OK.
       ++pi;
     } else {

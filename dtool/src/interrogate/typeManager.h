@@ -50,6 +50,7 @@ public:
   static bool is_ref_to_anything(CPPType *type);
   static bool is_const_ref_to_anything(CPPType *type);
   static bool is_const_pointer_to_anything(CPPType *type);
+  static bool is_const_pointer_or_ref(CPPType *type);
   static bool is_non_const_pointer_or_ref(CPPType *type);
   static bool is_pointer(CPPType *type);
   static bool is_const(CPPType *type);
@@ -61,9 +62,16 @@ public:
   static bool is_const_simple(CPPType *type);
   static bool is_const_ref_to_simple(CPPType *type);
   static bool is_ref_to_simple(CPPType *type);
+  static bool is_simple_array(CPPType *type);
+  static bool is_pointer_to_simple(CPPType *type);
   static bool is_pointable(CPPType *type);
   static bool is_char(CPPType *type);
+  static bool is_unsigned_char(CPPType *type);
+  static bool is_signed_char(CPPType *type);
   static bool is_char_pointer(CPPType *type);
+  static bool is_const_char_pointer(CPPType *type);
+  static bool is_unsigned_char_pointer(CPPType *type);
+  static bool is_const_unsigned_char_pointer(CPPType *type);
   static bool is_basic_string_char(CPPType *type);
   static bool is_const_basic_string_char(CPPType *type);
   static bool is_const_ref_to_basic_string_char(CPPType *type);
@@ -80,6 +88,8 @@ public:
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
   static bool is_unsigned_integer(CPPType *type);
+  static bool is_size(CPPType *type);
+  static bool is_ssize(CPPType *type);
   static bool is_short(CPPType *type);
   static bool is_unsigned_short(CPPType *type);
   static bool is_longlong(CPPType *type);
@@ -94,6 +104,8 @@ public:
   static bool is_const_ref_to_pointer_to_base(CPPType *type);
   static bool is_pointer_to_PyObject(CPPType *type);
   static bool is_PyObject(CPPType *type);
+  static bool is_pointer_to_PyTypeObject(CPPType *type);
+  static bool is_PyTypeObject(CPPType *type);
   static bool is_pointer_to_PyStringObject(CPPType *type);
   static bool is_PyStringObject(CPPType *type);
   static bool is_pointer_to_PyUnicodeObject(CPPType *type);
@@ -133,9 +145,9 @@ public:
   static bool has_protected_destructor(CPPType *type);
 
 
-  static bool IsExported(CPPType *type);
-  static bool IsLocal(CPPType *type);
-
+  static bool is_exported(CPPType *type);
+  static bool is_local(CPPType *type);
+  static bool is_trivial(CPPType *type);
 };
 
 #endif

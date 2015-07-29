@@ -60,7 +60,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  Geom(const GeomVertexData *data);
+  explicit Geom(const GeomVertexData *data);
 
 protected:
   Geom(const Geom &copy);
@@ -102,6 +102,7 @@ PUBLISHED:
   INLINE PT(Geom) rotate() const;
   INLINE PT(Geom) unify(int max_indices, bool preserve_order) const;
   INLINE PT(Geom) make_points() const;
+  INLINE PT(Geom) make_lines() const;
   INLINE PT(Geom) make_patches() const;
 
   void decompose_in_place();
@@ -110,6 +111,7 @@ PUBLISHED:
   void rotate_in_place();
   void unify_in_place(int max_indices, bool preserve_order);
   void make_points_in_place();
+  void make_lines_in_place();
   void make_patches_in_place();
 
   virtual bool copy_primitives_from(const Geom *other);
@@ -395,6 +397,10 @@ private:
 //       Class : GeomPipelineReader
 // Description : Encapsulates the data from a Geom,
 //               pre-fetched for one stage of the pipeline.
+//
+//               Does not hold a reference to the Geom.  The caller
+//               must ensure that the Geom persists for at least the
+//               lifetime of the GeomPipelineReader.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
@@ -424,12 +430,15 @@ public:
 
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
+  INLINE GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
+                                  GraphicsStateGuardianBase *gsg) const;
+
   bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
             const GeomVertexDataPipelineReader *data_reader,
             bool force) const;
 
 private:
-  CPT(Geom) _object;
+  const Geom *_object;
   Thread *_current_thread;
   const Geom::CData *_cdata;
 

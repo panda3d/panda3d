@@ -47,6 +47,7 @@ static int xcursor_read(XcursorFile *file, unsigned char *buf, int len) {
 static int xcursor_write(XcursorFile *file, unsigned char *buf, int len) {
   // Not implemented, we don't need it.
   nassertr_always(false, 0);
+  return 0;
 }
 
 static int xcursor_seek(XcursorFile *file, long offset, int whence) {
@@ -103,16 +104,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
+  _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
-  _net_wm_window_type = x11_pipe->_net_wm_window_type;
-  _net_wm_window_type_splash = x11_pipe->_net_wm_window_type_splash;
-  _net_wm_window_type_fullscreen = x11_pipe->_net_wm_window_type_fullscreen;
-  _net_wm_state = x11_pipe->_net_wm_state;
-  _net_wm_state_fullscreen = x11_pipe->_net_wm_state_fullscreen;
-  _net_wm_state_above = x11_pipe->_net_wm_state_above;
-  _net_wm_state_below = x11_pipe->_net_wm_state_below;
-  _net_wm_state_add = x11_pipe->_net_wm_state_add;
-  _net_wm_state_remove = x11_pipe->_net_wm_state_remove;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
@@ -173,7 +166,6 @@ move_pointer(int device, int x, int y) {
     return true;
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: x11GraphicsWindow::begin_frame
@@ -710,6 +702,88 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_foreground();
   }
 
+  if (properties.has_mouse_mode()) {
+    switch (properties.get_mouse_mode()) {
+    case WindowProperties::M_absolute:
+      XUngrabPointer(_display, CurrentTime);
+#ifdef HAVE_XF86DGA
+      if (_dga_mouse_enabled) {
+        x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
+        XF86DGADirectVideo(_display, _screen, 0);
+        _dga_mouse_enabled = false;
+      }
+#endif
+      _properties.set_mouse_mode(WindowProperties::M_absolute);
+      properties.clear_mouse_mode();
+      break;
+
+    case WindowProperties::M_relative:
+#ifdef HAVE_XF86DGA
+      if (!_dga_mouse_enabled) {
+        int major_ver, minor_ver;
+        if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
+
+          X11_Cursor cursor = None;
+          if (_properties.get_cursor_hidden()) {
+            x11GraphicsPipe *x11_pipe;
+            DCAST_INTO_V(x11_pipe, _pipe);
+            cursor = x11_pipe->get_hidden_cursor();
+          }
+
+          if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+              GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+            x11display_cat.error() << "Failed to grab pointer!\n";
+          } else {
+            x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
+            XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
+
+            _properties.set_mouse_mode(WindowProperties::M_relative);
+            properties.clear_mouse_mode();
+            _dga_mouse_enabled = true;
+
+            // Get the real mouse position, so we can add/subtract
+            // our relative coordinates later.
+            XEvent event;
+            XQueryPointer(_display, _xwindow, &event.xbutton.root,
+              &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+              &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
+            _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+          }
+        } else {
+          x11display_cat.info() << "XF86DGA extension not available\n";
+          _dga_mouse_enabled = false;
+        }
+      }
+#endif
+      break;
+
+    case WindowProperties::M_confined:
+      {
+#ifdef HAVE_XF86DGA
+        if (_dga_mouse_enabled) {
+          XF86DGADirectVideo(_display, _screen, 0);
+          _dga_mouse_enabled = false;
+        }
+#endif
+        X11_Cursor cursor = None;
+        if (_properties.get_cursor_hidden()) {
+          x11GraphicsPipe *x11_pipe;
+          DCAST_INTO_V(x11_pipe, _pipe);
+          cursor = x11_pipe->get_hidden_cursor();
+        }
+
+        if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+            GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+          x11display_cat.error() << "Failed to grab pointer!\n";
+        } else {
+          _properties.set_mouse_mode(WindowProperties::M_confined);
+          properties.clear_mouse_mode();
+        }
+      }
+      break;
+    }
+  }
+
   set_wm_properties(wm_properties, true);
 }
 
@@ -720,14 +794,7 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 mouse_mode_absolute() {
-#ifdef HAVE_XF86DGA
-  if (!_dga_mouse_enabled) return;
-
-  XUngrabPointer(_display, CurrentTime);
-  x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
-  XF86DGADirectVideo(_display, _screen, 0);
-  _dga_mouse_enabled = false;
-#endif
+  // unused: remove in 1.10!
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -737,42 +804,7 @@ mouse_mode_absolute() {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 mouse_mode_relative() {
-#ifdef HAVE_XF86DGA
-  if (_dga_mouse_enabled) return;
-
-  int major_ver, minor_ver;
-  if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
-
-    X11_Cursor cursor = None;
-    if (_properties.get_cursor_hidden()) {
-      x11GraphicsPipe *x11_pipe;
-      DCAST_INTO_V(x11_pipe, _pipe);
-      cursor = x11_pipe->get_hidden_cursor();
-    }
-
-    if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
-        GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
-      x11display_cat.error() << "Failed to grab pointer!\n";
-      return;
-    }
-
-    x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
-    XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
-
-    _dga_mouse_enabled = true;
-  } else {
-    x11display_cat.info() << "XF86DGA extension not available\n";
-    _dga_mouse_enabled = false;
-  }
-
-  // Get the real mouse position, so we can add/subtract
-  // our relative coordinates later.
-  XEvent event;
-  XQueryPointer(_display, _xwindow, &event.xbutton.root,
-    &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
-    &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
-  _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-#endif
+  // unused: remove in 1.10!
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -915,9 +947,10 @@ open_window() {
   wa.border_pixel = 0;
   wa.colormap = _colormap;
   wa.event_mask = _event_mask;
+  wa.override_redirect = _override_redirect;
 
   unsigned long attrib_mask =
-    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+    CWBackPixel | CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect;
 
   _xwindow = XCreateWindow
     (_display, parent_window,
@@ -996,6 +1029,9 @@ open_window() {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
+  x11GraphicsPipe *x11_pipe;
+  DCAST_INTO_V(x11_pipe, _pipe);
+
   // Name the window if there is a name
   XTextProperty window_name;
   XTextProperty *window_name_p = (XTextProperty *)NULL;
@@ -1076,15 +1112,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   if (properties.get_fullscreen()) {
     // For a "fullscreen" request, we pass this through, hoping the
     // window manager will support EWMH.
-    type_data[next_type_data++] = _net_wm_window_type_fullscreen;
+    type_data[next_type_data++] = x11_pipe->_net_wm_window_type_fullscreen;
 
     // We also request it as a state.
-    state_data[next_state_data++] = _net_wm_state_fullscreen;
+    state_data[next_state_data++] = x11_pipe->_net_wm_state_fullscreen;
     // Don't ask me why this has to be 1/0 and not _net_wm_state_add.
     // It doesn't seem to work otherwise.
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 1);
+    set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_fullscreen, 1);
   } else {
-    set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, 0);
+    set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_fullscreen, 0);
   }
 
   // If we asked for a window without a border, there's no excellent
@@ -1111,26 +1147,32 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   }
 
   if (properties.get_undecorated() && !properties.get_fullscreen()) {
-    type_data[next_type_data++] = _net_wm_window_type_splash;
+    type_data[next_type_data++] = x11_pipe->_net_wm_window_type_splash;
   }
 
   if (properties.has_z_order()) {
     switch (properties.get_z_order()) {
     case WindowProperties::Z_bottom:
-      state_data[next_state_data++] = _net_wm_state_below;
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_add);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_below;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_add);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_remove);
       break;
 
     case WindowProperties::Z_normal:
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_remove);
       break;
 
     case WindowProperties::Z_top:
-      state_data[next_state_data++] = _net_wm_state_above;
-      set_data[next_set_data++] = SetAction(_net_wm_state_below, _net_wm_state_remove);
-      set_data[next_set_data++] = SetAction(_net_wm_state_above, _net_wm_state_add);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_above;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_below,
+                                            x11_pipe->_net_wm_state_remove);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_above,
+                                            x11_pipe->_net_wm_state_add);
       break;
     }
   }
@@ -1139,12 +1181,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   nassertv(next_state_data < max_state_data);
   nassertv(next_set_data < max_set_data);
 
-  XChangeProperty(_display, _xwindow, _net_wm_window_type,
+  // Add the process ID as a convenience for other applications.
+  PN_int32 pid = getpid();
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_pid,
+                  XA_CARDINAL, 32, PropModeReplace,
+                  (unsigned char *)&pid, 1);
+
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_window_type,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)type_data, next_type_data);
 
   // Request the state properties all at once.
-  XChangeProperty(_display, _xwindow, _net_wm_state,
+  XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_state,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)state_data, next_state_data);
 
@@ -1163,7 +1211,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
       event.send_event = True;
       event.display = _display;
       event.window = _xwindow;
-      event.message_type = _net_wm_state;
+      event.message_type = x11_pipe->_net_wm_state;
       event.format = 32;
       event.data.l[0] = set_data[i]._action;
       event.data.l[1] = set_data[i]._state;
@@ -1595,6 +1643,7 @@ map_button(KeySym key) const {
   case XK_ampersand:
     return KeyboardButton::ascii_key('&');
   case XK_apostrophe: // == XK_quoteright
+  case XK_dead_acute: // on int'l keyboards
     return KeyboardButton::ascii_key('\'');
   case XK_parenleft:
     return KeyboardButton::ascii_key('(');
@@ -1726,6 +1775,7 @@ map_button(KeySym key) const {
   case XK_underscore:
     return KeyboardButton::ascii_key('_');
   case XK_grave: // == XK_quoteleft
+  case XK_dead_grave: // on int'l keyboards
     return KeyboardButton::ascii_key('`');
   case XK_a:
     return KeyboardButton::ascii_key('a');
@@ -1868,15 +1918,20 @@ map_button(KeySym key) const {
   case XK_Alt_R:
     return KeyboardButton::ralt();
   case XK_Meta_L:
+  case XK_Super_L:
     return KeyboardButton::lmeta();
   case XK_Meta_R:
+  case XK_Super_R:
     return KeyboardButton::rmeta();
   case XK_Caps_Lock:
     return KeyboardButton::caps_lock();
   case XK_Shift_Lock:
     return KeyboardButton::shift_lock();
   }
-
+  if (x11display_cat.is_debug()) {
+    x11display_cat.debug()
+      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+  }
   return ButtonHandle::none();
 }
 
@@ -2100,7 +2155,6 @@ get_cursor(const Filename &filename) {
   }
   fi = _cursor_filenames.find(resolved);
   if (fi != _cursor_filenames.end()) {
-    _cursor_filenames[filename] = (*fi).second;
     return fi->second;
   }
 

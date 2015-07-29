@@ -58,33 +58,7 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) RenderState::
 make_empty() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_empty_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    _empty_state = return_unique(state);
-  }
-
   return _empty_state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make_full_default
-//       Access: Published, Static
-//  Description: Returns a RenderState with all possible attributes
-//               set to their default value.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderState) RenderState::
-make_full_default() {
-  // The empty state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
-  if (_full_default_state == (RenderState *)NULL) {
-    RenderState *state = new RenderState;
-    state->fill_default();
-    _full_default_state = return_unique(state);
-  }
-
-  return _full_default_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +118,7 @@ get_attrib(TypeHandle type) const {
 //               index, or NULL if there is no such RenderAttrib in
 //               the state.
 ////////////////////////////////////////////////////////////////////
-INLINE const RenderAttrib *RenderState::
+ALWAYS_INLINE const RenderAttrib *RenderState::
 get_attrib(int slot) const {
   return _attributes[slot]._attrib;
 }
@@ -161,7 +135,8 @@ get_attrib_def(int slot) const {
   if (_attributes[slot]._attrib != (RenderAttrib *)NULL) {
     return _attributes[slot]._attrib;
   }
-  return make_full_default()->get_attrib(slot);
+  RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
+  return reg->get_slot_default(slot);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,7 +488,7 @@ consider_update_pstats(int old_referenced_bits) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::Composition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE RenderState::Composition::
 Composition() {
@@ -522,7 +497,7 @@ Composition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::Composition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE RenderState::Composition::
 Composition(const RenderState::Composition &copy) :
@@ -545,7 +520,7 @@ Attribute(const RenderAttrib *attrib, int override) :
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::Attribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE RenderState::Attribute::
 Attribute(int override) :
@@ -624,6 +599,34 @@ flush_level() {
   _cache_counter.flush_level();
 }
 
+#ifndef CPPPARSER
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_attrib
+//       Access: Public
+//  Description: Handy templated version of get_attrib that
+//               costs to the right type.  Returns true if the
+//               attribute was present, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class AttribType>
+INLINE bool RenderState::
+get_attrib(const AttribType *&attrib) const {
+  attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
+  return (attrib != (const AttribType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_attrib_def
+//       Access: Public
+//  Description: Handy templated version of get_attrib_def that
+//               costs to the right type.
+////////////////////////////////////////////////////////////////////
+template<class AttribType>
+INLINE void RenderState::
+get_attrib_def(const AttribType *&attrib) const {
+  attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
+}
+#endif  // CPPPARSER
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::check_hash
 //       Access: Private
@@ -677,7 +680,7 @@ calc_hash() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::CompositionCycleDescEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE RenderState::CompositionCycleDescEntry::
 CompositionCycleDescEntry(const RenderState *obj,

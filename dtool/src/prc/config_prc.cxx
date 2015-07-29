@@ -19,6 +19,6 @@
 
 NotifyCategoryDef(prc, "");
 
-ConfigVariableBool assert_abort
+ALIGN_16BYTE ConfigVariableBool assert_abort
 ("assert-abort", false,
  PRC_DESC("Set this true to trigger a core dump and/or stack trace when the first assertion fails"));

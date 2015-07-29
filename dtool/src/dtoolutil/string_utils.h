@@ -19,6 +19,7 @@
 
 #include <string>
 #include "vector_string.h"
+#include "pdtoa.h"
 
 // Case-insensitive string comparison, from Stroustrup's C++ third edition.
 // Works like strcmp().
@@ -66,7 +67,15 @@ EXPCL_DTOOL bool string_to_stdfloat(const string &str, PN_stdfloat &result);
 template<class Thing>
 INLINE string format_string(const Thing &thing);
 
+// Fast specializations for some primitive types.
+INLINE string format_string(const string &value);
+INLINE string format_string(bool value);
+INLINE string format_string(float value);
+INLINE string format_string(double value);
+INLINE string format_string(unsigned int value);
+INLINE string format_string(int value);
+INLINE string format_string(PN_int64 value);
+
 #include "string_utils.I"
 
 #endif
-

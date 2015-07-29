@@ -140,12 +140,6 @@ open_framework(int &argc, char **&argv) {
     _task_mgr.add(task);
   }
 
-  _highlight_wireframe = NodePath("wireframe");
-  _highlight_wireframe.set_render_mode_wireframe(1);
-  _highlight_wireframe.set_texture_off(1);
-  _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
-  _highlight_wireframe.set_attrib(DepthOffsetAttrib::make());
-
   if (!playback_session.empty()) {
     // If the config file so indicates, create a recorder and start it
     // playing.
@@ -784,13 +778,7 @@ set_highlight(const NodePath &node) {
   if (!_highlight.is_empty()) {
     framework_cat.info(false) << _highlight << "\n";
     _highlight.show_bounds();
-
-    // Also create a new instance of the highlighted geometry, as a
-    // sibling of itself, under the special highlight property.
-    if (_highlight.has_parent()) {
-      _highlight_wireframe.reparent_to(_highlight.get_parent());
-      _highlight.instance_to(_highlight_wireframe);
-    }
+    _highlight.set_render_mode_filled_wireframe(LColor(1.0f, 0.0f, 0.0f, 1.0f), 200);
   }
 }
 
@@ -803,11 +791,8 @@ void PandaFramework::
 clear_highlight() {
   if (!_highlight.is_empty()) {
     _highlight.hide_bounds();
+    _highlight.clear_render_mode();
     _highlight = NodePath();
-
-    // Clean up the special highlight instance.
-    _highlight_wireframe.detach_node();
-    _highlight_wireframe.get_children().detach();
   }
 }
 
@@ -1012,7 +997,13 @@ event_w(const Event *event, void *) {
     WindowFramework *wf;
     DCAST_INTO_V(wf, param.get_typed_object());
 
-    wf->set_wireframe(!wf->get_wireframe());
+    if (!wf->get_wireframe()) {
+      wf->set_wireframe(true, true);
+    } else if (wf->get_wireframe_filled()) {
+      wf->set_wireframe(true, false);
+    } else {
+      wf->set_wireframe(false, false);
+    }
   }
 }
 
@@ -1286,13 +1277,6 @@ event_arrow_left(const Event *, void *data) {
       int index = parent.node()->find_child(node.node());
       nassertv(index >= 0);
       int sibling = index - 1;
-
-      if (sibling >= 0 &&
-          parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
-        // Skip over the special highlight node.
-        sibling--;
-      }
-
       if (sibling >= 0) {
         self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
       }
@@ -1319,13 +1303,6 @@ event_arrow_right(const Event *, void *data) {
       nassertv(index >= 0);
       int num_children = parent.node()->get_num_children();
       int sibling = index + 1;
-
-      if (sibling < num_children &&
-          parent.node()->get_child(sibling) == self->_highlight_wireframe.node()) {
-        // Skip over the special highlight node.
-        sibling++;
-      }
-
       if (sibling < num_children) {
         self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
       }

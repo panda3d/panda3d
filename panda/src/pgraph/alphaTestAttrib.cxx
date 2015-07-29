@@ -76,13 +76,13 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int AlphaTestAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const AlphaTestAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const AlphaTestAttrib *ta = (const AlphaTestAttrib *)other;
+
   int compare_result = ((int)_mode - (int)ta->_mode) ;
   if (compare_result != 0) {
     return compare_result;
   }
-   
+
   if (_reference_alpha != ta->_reference_alpha) {
     return _reference_alpha < ta->_reference_alpha ? -1 : 1;
   }

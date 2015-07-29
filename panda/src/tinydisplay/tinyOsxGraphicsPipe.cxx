@@ -14,7 +14,7 @@
 
 #include "pandabase.h"
 
-#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON)
+#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON) && !__LP64__
 
 #include "tinyOsxGraphicsPipe.h"
 #include "config_tinydisplay.h"

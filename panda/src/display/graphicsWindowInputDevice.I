@@ -84,7 +84,7 @@ get_raw_pointer() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_device_index
 //       Access: Public
-//  Description: Set the device index.  This is reported in pointer 
+//  Description: Set the device index.  This is reported in pointer
 //               events.  The device index will be equal to the position
 //               of the GraphicsWindowInputDevice in the window's list.
 ////////////////////////////////////////////////////////////////////
@@ -118,8 +118,115 @@ disable_pointer_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::button_down
+//       Access: Published
+//  Description: Records that the indicated button has been depressed.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+button_down(ButtonHandle button) {
+  button_down(button, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::button_resume_down
+//       Access: Published
+//  Description: Records that the indicated button was depressed
+//               earlier, and we only just detected the event after
+//               the fact.  This is mainly useful for tracking the
+//               state of modifier keys.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+button_resume_down(ButtonHandle button) {
+  button_resume_down(button, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::button_up
+//       Access: Published
+//  Description: Records that the indicated button has been released.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+button_up(ButtonHandle button) {
+  button_up(button, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::keystroke
+//       Access: Published
+//  Description: Records that the indicated keystroke has been
+//               generated.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+keystroke(int keycode) {
+  keystroke(keycode, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::focus_lost
+//       Access: Published
+//  Description: This should be called when the window focus is lost,
+//               so that we may miss upcoming button events
+//               (especially "up" events) for the next period of time.
+//               It generates keyboard and mouse "up" events for those
+//               buttons that we previously sent unpaired "down"
+//               events, so that the Panda application will believe
+//               all buttons are now released.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+focus_lost() {
+  focus_lost(ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::raw_button_down
+//       Access: Published
+//  Description: Records that the indicated button has been depressed.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+raw_button_down(ButtonHandle button) {
+  raw_button_down(button, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::raw_button_up
+//       Access: Published
+//  Description: Records that the indicated button has been released.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+raw_button_up(ButtonHandle button) {
+  raw_button_up(button, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_pointer_in_window
-//       Access: Public
+//       Access: Published
+//  Description: To be called by a particular kind of GraphicsWindow
+//               to indicate that the pointer is within the window, at
+//               the given pixel coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+set_pointer_in_window(double x, double y) {
+  // mutex is handled in set pointer .. convience function
+  set_pointer(true, x, y, ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::set_pointer_out_of_window
+//       Access: Published
+//  Description: To be called by a particular kind of GraphicsWindow
+//               to indicate that the pointer is no longer within the
+//               window.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+set_pointer_out_of_window() {
+ // mutex is handled in set pointer .. convience function
+  set_pointer(false, _mouse_data._xpos, _mouse_data._ypos,
+              ClockObject::get_global_clock()->get_frame_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::set_pointer_in_window
+//       Access: Published
 //  Description: To be called by a particular kind of GraphicsWindow
 //               to indicate that the pointer is within the window, at
 //               the given pixel coordinates.
@@ -132,7 +239,7 @@ set_pointer_in_window(double x, double y, double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_pointer_out_of_window
-//       Access: Public
+//       Access: Published
 //  Description: To be called by a particular kind of GraphicsWindow
 //               to indicate that the pointer is no longer within the
 //               window.

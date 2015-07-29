@@ -226,8 +226,8 @@ run_command_line(int argc, char *argv[]) {
       // The user asked for an embedded window.  Create a toplevel
       // window to be its parent, of the requested size.
       if (_win_width == 0 && _win_height == 0) {
-        _win_width = 640;
-        _win_height = 480;
+        _win_width = 800;
+        _win_height = 600;
       }
       
       make_parent_window();

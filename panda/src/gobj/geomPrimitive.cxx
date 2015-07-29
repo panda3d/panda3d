@@ -22,6 +22,8 @@
 #include "geomVertexWriter.h"
 #include "geomVertexRewriter.h"
 #include "geomPoints.h"
+#include "geomLines.h"
+#include "geomTriangles.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
 #include "bamReader.h"
@@ -1042,6 +1044,66 @@ make_points() const {
   points->set_vertices(new_vertices);
 
   return points;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::make_lines
+//       Access: Published
+//  Description: Returns a new GeomLines primitive that represents
+//               each of the edges in the original primitive rendered
+//               as a line.  If the original primitive is already a
+//               GeomLines primitive, returns the original primitive
+//               unchanged.
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+make_lines() const {
+  if (is_exact_type(GeomLines::get_class_type())) {
+    return this;
+  }
+
+  PrimitiveType prim_type = get_primitive_type();
+  if (prim_type == PT_lines) {
+    // It's a line strip, just decompose it.
+    return decompose();
+
+  } else if (prim_type != PT_polygons && prim_type != PT_patches) {
+    // Don't know how to represent this in wireframe.
+    return this;
+  }
+
+  if (prim_type == PT_polygons && !is_exact_type(GeomTriangles::get_class_type())) {
+    // Decompose tristrips.  We could probably make this more efficient
+    // by making a specific implementation of make_lines for GeomTristrips.
+    return decompose()->make_lines();
+  }
+
+  // Iterate through the primitives.
+  int num_primitives = get_num_primitives();
+  int verts_per_prim = get_num_vertices_per_primitive();
+
+  PT(GeomVertexArrayData) new_vertices = make_index_data();
+  new_vertices->unclean_set_num_rows(num_primitives * verts_per_prim * 2);
+
+  GeomVertexWriter new_index(new_vertices, 0);
+
+  for (int i = 0; i < num_primitives; ++i) {
+    int begin = get_primitive_start(i);
+    int end = get_primitive_end(i);
+    if (begin == end) {
+      continue;
+    }
+    for (int vi = begin; vi < end - 1; vi++) {
+      new_index.set_data1i(get_vertex(vi));
+      new_index.set_data1i(get_vertex(vi + 1));
+    }
+    new_index.set_data1i(get_vertex(end - 1));
+    new_index.set_data1i(get_vertex(begin));
+  }
+
+  PT(GeomPrimitive) lines = new GeomLines(UH_dynamic);
+  lines->set_vertices(new_vertices);
+
+  return lines;
 }
 
 ////////////////////////////////////////////////////////////////////

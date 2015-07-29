@@ -17,6 +17,11 @@ from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
 
+def python_sitepackages_path():
+    from distutils.sysconfig import get_python_lib
+    return get_python_lib(1)
+PYTHON_SITEPACKAGES=python_sitepackages_path()
+
 MIME_INFO = (
   ("egg", "model/x-egg", "EGG model file", "pview"),
   ("bam", "model/x-bam", "Panda3D binary model file", "pview"),
@@ -121,6 +126,9 @@ def GetLibDir():
     libraries in, relative to the prefix directory.  This may be
     something like "lib" or "lib64" or in some cases, something
     similar to "lib/x86_64-linux-gnu". """
+
+    if sys.platform in ("darwin", "win32"):
+        return "lib"
 
     # This one's a bit tricky.  Some systems require us to install
     # 64-bits libraries into /usr/lib64, some into /usr/lib.

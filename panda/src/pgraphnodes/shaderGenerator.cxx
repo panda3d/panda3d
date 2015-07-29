@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "shaderGenerator.h"
+
 #include "renderState.h"
 #include "shaderAttrib.h"
 #include "auxBitplaneAttrib.h"
@@ -36,6 +37,7 @@
 #include "texture.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
+#include "rescaleNormalAttrib.h"
 #include "pointLight.h"
 #include "spotlight.h"
 #include "lightLensNode.h"
@@ -43,6 +45,8 @@
 #include "config_pgraphnodes.h"
 
 TypeHandle ShaderGenerator::_type_handle;
+
+#ifdef HAVE_CG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGenerator::Constructor
@@ -86,35 +90,41 @@ reset_register_allocator() {
 //       Access: Protected
 //  Description: Allocate a vreg.
 ////////////////////////////////////////////////////////////////////
-INLINE char *ShaderGenerator::
+const char *ShaderGenerator::
 alloc_vreg() {
+  // The ATTR# input sseem to map to generic vertex attributes in
+  // both arbvp1 and glslv, which behave more consistently.
   switch (_vtregs_used) {
-  case  0: _vtregs_used += 1; return (char*)"TEXCOORD0";
-  case  1: _vtregs_used += 1; return (char*)"TEXCOORD1";
-  case  2: _vtregs_used += 1; return (char*)"TEXCOORD2";
-  case  3: _vtregs_used += 1; return (char*)"TEXCOORD3";
-  case  4: _vtregs_used += 1; return (char*)"TEXCOORD4";
-  case  5: _vtregs_used += 1; return (char*)"TEXCOORD5";
-  case  6: _vtregs_used += 1; return (char*)"TEXCOORD6";
-  case  7: _vtregs_used += 1; return (char*)"TEXCOORD7";
+  case  0: _vtregs_used += 1; return "ATTR8";
+  case  1: _vtregs_used += 1; return "ATTR9";
+  case  2: _vtregs_used += 1; return "ATTR10";
+  case  3: _vtregs_used += 1; return "ATTR11";
+  case  4: _vtregs_used += 1; return "ATTR12";
+  case  5: _vtregs_used += 1; return "ATTR13";
+  case  6: _vtregs_used += 1; return "ATTR14";
+  case  7: _vtregs_used += 1; return "ATTR15";
   }
   switch (_vcregs_used) {
-  case  0: _vcregs_used += 1; return (char*)"COLOR0";
-  case  1: _vcregs_used += 1; return (char*)"COLOR1";
+  case  0: _vcregs_used += 1; return "ATTR3";
+  case  1: _vcregs_used += 1; return "ATTR4";
+  case  2: _vcregs_used += 1; return "ATTR5";
+  case  3: _vcregs_used += 1; return "ATTR6";
+  case  4: _vcregs_used += 1; return "ATTR7";
+  case  5: _vcregs_used += 1; return "ATTR1";
   }
   // These don't exist in arbvp1, though they're reportedly
   // supported by other profiles.
   switch (_vtregs_used) {
-  case  8: _vtregs_used += 1; return (char*)"TEXCOORD8";
-  case  9: _vtregs_used += 1; return (char*)"TEXCOORD9";
-  case 10: _vtregs_used += 1; return (char*)"TEXCOORD10";
-  case 11: _vtregs_used += 1; return (char*)"TEXCOORD11";
-  case 12: _vtregs_used += 1; return (char*)"TEXCOORD12";
-  case 13: _vtregs_used += 1; return (char*)"TEXCOORD13";
-  case 14: _vtregs_used += 1; return (char*)"TEXCOORD14";
-  case 15: _vtregs_used += 1; return (char*)"TEXCOORD15";
+  case  8: _vtregs_used += 1; return "TEXCOORD8";
+  case  9: _vtregs_used += 1; return "TEXCOORD9";
+  case 10: _vtregs_used += 1; return "TEXCOORD10";
+  case 11: _vtregs_used += 1; return "TEXCOORD11";
+  case 12: _vtregs_used += 1; return "TEXCOORD12";
+  case 13: _vtregs_used += 1; return "TEXCOORD13";
+  case 14: _vtregs_used += 1; return "TEXCOORD14";
+  case 15: _vtregs_used += 1; return "TEXCOORD15";
   }
-  return (char*)"UNKNOWN";
+  return "UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,37 +132,37 @@ alloc_vreg() {
 //       Access: Protected
 //  Description: Allocate a freg.
 ////////////////////////////////////////////////////////////////////
-INLINE char *ShaderGenerator::
+const char *ShaderGenerator::
 alloc_freg() {
   switch (_ftregs_used) {
-  case  0: _ftregs_used += 1; return (char*)"TEXCOORD0";
-  case  1: _ftregs_used += 1; return (char*)"TEXCOORD1";
-  case  2: _ftregs_used += 1; return (char*)"TEXCOORD2";
-  case  3: _ftregs_used += 1; return (char*)"TEXCOORD3";
-  case  4: _ftregs_used += 1; return (char*)"TEXCOORD4";
-  case  5: _ftregs_used += 1; return (char*)"TEXCOORD5";
-  case  6: _ftregs_used += 1; return (char*)"TEXCOORD6";
-  case  7: _ftregs_used += 1; return (char*)"TEXCOORD7";
+  case  0: _ftregs_used += 1; return "TEXCOORD0";
+  case  1: _ftregs_used += 1; return "TEXCOORD1";
+  case  2: _ftregs_used += 1; return "TEXCOORD2";
+  case  3: _ftregs_used += 1; return "TEXCOORD3";
+  case  4: _ftregs_used += 1; return "TEXCOORD4";
+  case  5: _ftregs_used += 1; return "TEXCOORD5";
+  case  6: _ftregs_used += 1; return "TEXCOORD6";
+  case  7: _ftregs_used += 1; return "TEXCOORD7";
   }
   // We really shouldn't rely on COLOR fregs,
   // since the clamping can have unexpected side-effects.
   //switch (_fcregs_used) {
-  //case  0: _fcregs_used += 1; return (char*)"COLOR0";
-  //case  1: _fcregs_used += 1; return (char*)"COLOR1";
+  //case  0: _fcregs_used += 1; return "COLOR0";
+  //case  1: _fcregs_used += 1; return "COLOR1";
   //}
   // These don't exist in arbvp1/arbfp1, though they're
   // reportedly supported by other profiles.
   switch (_ftregs_used) {
-  case  8: _ftregs_used += 1; return (char*)"TEXCOORD8";
-  case  9: _ftregs_used += 1; return (char*)"TEXCOORD9";
-  case 10: _ftregs_used += 1; return (char*)"TEXCOORD10";
-  case 11: _ftregs_used += 1; return (char*)"TEXCOORD11";
-  case 12: _ftregs_used += 1; return (char*)"TEXCOORD12";
-  case 13: _ftregs_used += 1; return (char*)"TEXCOORD13";
-  case 14: _ftregs_used += 1; return (char*)"TEXCOORD14";
-  case 15: _ftregs_used += 1; return (char*)"TEXCOORD15";
+  case  8: _ftregs_used += 1; return "TEXCOORD8";
+  case  9: _ftregs_used += 1; return "TEXCOORD9";
+  case 10: _ftregs_used += 1; return "TEXCOORD10";
+  case 11: _ftregs_used += 1; return "TEXCOORD11";
+  case 12: _ftregs_used += 1; return "TEXCOORD12";
+  case 13: _ftregs_used += 1; return "TEXCOORD13";
+  case 14: _ftregs_used += 1; return "TEXCOORD14";
+  case 15: _ftregs_used += 1; return "TEXCOORD15";
   }
-  return (char*)"UNKNOWN";
+  return "UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -323,6 +333,12 @@ analyze_renderstate(const RenderState *rs) {
     _need_eye_normal = true;
   }
 
+  // Determine whether we should normalize the normals.
+  const RescaleNormalAttrib *rescale;
+  rs->get_attrib_def(rescale);
+
+  _normalize_normals = (rescale->get_mode() != RescaleNormalAttrib::M_none);
+
   // Find the material.
 
   const MaterialAttrib *material = DCAST(MaterialAttrib, rs->get_attrib_def(MaterialAttrib::get_class_slot()));
@@ -484,6 +500,7 @@ clear_analysis() {
   _need_world_normal = false;
   _need_eye_position = false;
   _need_eye_normal = false;
+  _normalize_normals = false;
   _auto_normal_on = false;
   _auto_glow_on   = false;
   _auto_gloss_on  = false;
@@ -521,7 +538,7 @@ create_shader_attrib(const string &txt) {
       if (_shadows && _dlights[i]->_shadow_caster) {
         PT(Texture) tex = update_shadow_buffer(_dlights_np[i]);
         if (tex == NULL) {
-          pgraph_cat.error() << "Failed to create shadow buffer for DirectionalLight '" << _dlights[i]->get_name() << "'!\n";
+          pgraphnodes_cat.error() << "Failed to create shadow buffer for DirectionalLight '" << _dlights[i]->get_name() << "'!\n";
         }
         shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlighttex", i), tex);
       } else {
@@ -536,7 +553,7 @@ create_shader_attrib(const string &txt) {
       if (_shadows && _slights[i]->_shadow_caster) {
         PT(Texture) tex = update_shadow_buffer(_slights_np[i]);
         if (tex == NULL) {
-          pgraph_cat.error() << "Failed to create shadow buffer for Spotlight '" << _slights[i]->get_name() << "'!\n";
+          pgraphnodes_cat.error() << "Failed to create shadow buffer for Spotlight '" << _slights[i]->get_name() << "'!\n";
         }
         shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slighttex", i), tex);
       } else {
@@ -604,6 +621,7 @@ update_shadow_buffer(NodePath light_np) {
 //               - texmatrix
 //               - 1D/2D/3D textures, cube textures, 2D tex arrays
 //               - linear/exp/exp2 fog
+//               - animation
 //
 //               Not yet supported:
 //               - dot3_rgb and dot3_rgba combine modes
@@ -613,29 +631,30 @@ update_shadow_buffer(NodePath light_np) {
 //
 ////////////////////////////////////////////////////////////////////
 CPT(ShaderAttrib) ShaderGenerator::
-synthesize_shader(const RenderState *rs) {
+synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   analyze_renderstate(rs);
   reset_register_allocator();
 
-  if (pgraph_cat.is_debug()) {
-    pgraph_cat.debug()
-      << "Generating shader for render state " << *rs << "\n";
+  if (pgraphnodes_cat.is_debug()) {
+    pgraphnodes_cat.debug()
+      << "Generating shader for render state " << rs << ":\n";
+    rs->write(pgraphnodes_cat.debug(false), 2);
   }
 
   // These variables will hold the results of register allocation.
 
-  char *tangent_freg = 0;
-  char *binormal_freg = 0;
+  const char *tangent_freg = 0;
+  const char *binormal_freg = 0;
   string tangent_input;
   string binormal_input;
-  pmap<const InternalName *, char *> texcoord_fregs;
-  pvector<char *> dlightcoord_fregs;
-  pvector<char *> slightcoord_fregs;
-  char *world_position_freg = 0;
-  char *world_normal_freg = 0;
-  char *eye_position_freg = 0;
-  char *eye_normal_freg = 0;
-  char *hpos_freg = 0;
+  pmap<const InternalName *, const char *> texcoord_fregs;
+  pvector<const char *> dlightcoord_fregs;
+  pvector<const char *> slightcoord_fregs;
+  const char *world_position_freg = 0;
+  const char *world_normal_freg = 0;
+  const char *eye_position_freg = 0;
+  const char *eye_normal_freg = 0;
+  const char *hpos_freg = 0;
 
   if (_vertex_colors) {
     // Reserve COLOR0
@@ -649,7 +668,7 @@ synthesize_shader(const RenderState *rs) {
 
   text << "//Cg\n";
 
-  text << "/* Generated shader for render state " << rs << ":\n";
+  text << "/* Generated shader for render state:\n";
   rs->write(text, 2);
   text << "*/\n";
 
@@ -662,7 +681,7 @@ synthesize_shader(const RenderState *rs) {
       const InternalName *texcoord_name = stage->get_texcoord_name();
 
       if (texcoord_fregs.count(texcoord_name) == 0) {
-        char *freg = alloc_freg();
+        const char *freg = alloc_freg();
         string tcname = texcoord_name->join("_");
         texcoord_fregs[texcoord_name] = freg;
 
@@ -695,7 +714,7 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   if (_vertex_colors) {
-    text << "\t in float4 vtx_color : COLOR0,\n";
+    text << "\t in float4 vtx_color : ATTR3,\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
   if (_need_world_position || _need_world_normal) {
@@ -713,6 +732,8 @@ synthesize_shader(const RenderState *rs) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
+  } else if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
+    text << "\t uniform float4x4 trans_model_to_view,\n";
   }
   if (_need_eye_normal) {
     eye_normal_freg = alloc_freg();
@@ -720,7 +741,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
-    text << "\t in float3 vtx_normal : NORMAL,\n";
+    text << "\t in float3 vtx_normal : ATTR2,\n";
   }
   if (_map_index_height >= 0) {
     text << "\t uniform float4 mspos_view,\n";
@@ -752,10 +773,49 @@ synthesize_shader(const RenderState *rs) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
   }
-  text << "\t float4 vtx_position : POSITION,\n";
+  if (anim.get_animation_type() == GeomEnums::AT_hardware &&
+      anim.get_num_transforms() > 0) {
+    int num_transforms;
+    if (anim.get_indexed_transforms()) {
+      num_transforms = 120;
+    } else {
+      num_transforms = anim.get_num_transforms();
+    }
+    text << "\t uniform float4x4 tbl_transforms[" << num_transforms << "],\n";
+    text << "\t in float4 vtx_transform_weight : ATTR1,\n";
+    if (anim.get_indexed_transforms()) {
+      text << "\t in uint4 vtx_transform_index : ATTR7,\n";
+    }
+  }
+  text << "\t in float4 vtx_position : ATTR0,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
+
+  if (anim.get_animation_type() == GeomEnums::AT_hardware &&
+      anim.get_num_transforms() > 0) {
+
+    if (!anim.get_indexed_transforms()) {
+      text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
+    }
+
+    text << "\t float4x4 matrix = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
+    if (anim.get_num_transforms() > 1) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
+    }
+    if (anim.get_num_transforms() > 2) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.z] * vtx_transform_weight.z";
+    }
+    if (anim.get_num_transforms() > 3) {
+      text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
+    }
+    text << ";\n";
+
+    text << "\t vtx_position = mul(matrix, vtx_position);\n";
+    if (_need_world_normal || _need_eye_normal) {
+      text << "\t vtx_normal = mul((float3x3)matrix, vtx_normal);\n";
+    }
+  }
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
   if (_fog) {
@@ -771,10 +831,14 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
   if (_need_eye_normal) {
-    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
+    if (_normalize_normals) {
+      text << "\t l_eye_normal.xyz = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+    } else {
+      text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
+    }
     text << "\t l_eye_normal.w = 0;\n";
   }
-  pmap<const InternalName *, char *>::const_iterator it;
+  pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
     // Pass through all texcoord inputs as-is.
     string tcname = it->first->join("_");
@@ -784,9 +848,9 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_color = vtx_color;\n";
   }
   if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
-    text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_" << tangent_input << ".xyz);\n";
+    text << "\t l_tangent.xyz = normalize(mul((float3x3)trans_model_to_view, vtx_" << tangent_input << ".xyz));\n";
     text << "\t l_tangent.w = 0;\n";
-    text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_" << binormal_input << ".xyz);\n";
+    text << "\t l_binormal.xyz = normalize(mul((float3x3)trans_model_to_view, -vtx_" << binormal_input << ".xyz));\n";
     text << "\t l_binormal.w = 0;\n";
   }
   if (_shadows && _auto_shadow_on) {
@@ -936,7 +1000,7 @@ synthesize_shader(const RenderState *rs) {
           text << "\t texcoord" << i << ".w = 1.0f;\n";
           break;
         default:
-          pgraph_cat.error() << "Unsupported TexGenAttrib mode\n";
+          pgraphnodes_cat.error() << "Unsupported TexGenAttrib mode\n";
           text << "\t float4 texcoord" << i << " = float4(0, 0, 0, 0);\n";
       }
     } else {
@@ -1509,10 +1573,10 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
       text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
       break;
     case TextureStage::CM_dot3_rgb:
-      pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
+      pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
       break;
     case TextureStage::CM_dot3_rgba:
-      pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
+      pgraphnodes_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
       break;
     case TextureStage::CM_replace:
     default: // Not sure if this is correct as default value.
@@ -1632,7 +1696,9 @@ texture_type_as_string(Texture::TextureType ttype) {
       return "2DARRAY";
       break;
     default:
-      pgraph_cat.error() << "Unsupported texture type!\n";
+      pgraphnodes_cat.error() << "Unsupported texture type!\n";
       return "2D";
   }
 }
+
+#endif  // HAVE_CG

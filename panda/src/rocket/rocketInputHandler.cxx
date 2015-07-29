@@ -113,6 +113,22 @@ get_rocket_key(const ButtonHandle handle) {
   keymap[KeyboardButton::rshift().get_index()]       = KI_RSHIFT;
   keymap[KeyboardButton::scroll_lock().get_index()]  = KI_SCROLL;
 
+  // these "OEM" keys have standard mappings in Panda3D
+  keymap[KeyboardButton::ascii_key(';').get_index()]  = KI_OEM_1;
+  keymap[KeyboardButton::ascii_key('=').get_index()]  = KI_OEM_PLUS;
+  keymap[KeyboardButton::ascii_key(',').get_index()]  = KI_OEM_COMMA;
+  keymap[KeyboardButton::ascii_key('-').get_index()]  = KI_OEM_MINUS;
+  keymap[KeyboardButton::ascii_key('.').get_index()]  = KI_OEM_PERIOD;
+  keymap[KeyboardButton::ascii_key('/').get_index()]  = KI_OEM_2;
+  keymap[KeyboardButton::ascii_key('`').get_index()]  = KI_OEM_3;
+  keymap[KeyboardButton::ascii_key('[').get_index()]  = KI_OEM_4;
+  keymap[KeyboardButton::ascii_key('\\').get_index()] = KI_OEM_5;
+  keymap[KeyboardButton::ascii_key(']').get_index()]  = KI_OEM_6;
+
+  // comment says this may either be "<>" or "\|", but "\" (unshifted) is handled already,
+  // and "<" is only available "shifted" on 101-keyboards, so assume it's this one...
+  keymap[KeyboardButton::ascii_key('<').get_index()]  = KI_OEM_102;
+
   for (char c = 'a'; c <= 'z'; ++c) {
     keymap[KeyboardButton::ascii_key(c).get_index()] = (c - 'a') + KI_A;
   }
@@ -258,6 +274,15 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_move:
+        break;
+
+      case ButtonEvent::T_candidate:
+        break;
+
+      case ButtonEvent::T_raw_down:
+        break;
+
+      case ButtonEvent::T_raw_up:
         break;
       }
     }

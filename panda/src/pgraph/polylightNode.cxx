@@ -66,6 +66,30 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PolylightNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PolylightNode::
+xform(const LMatrix4 &mat) {
+  nassertv(!mat.is_nan());
+
+  if (mat.almost_equal(LMatrix4::ident_mat())) {
+    return;
+  }
+
+  _position = _position * mat;
+
+  // This is a little cheesy and fails miserably in the presence of a
+  // non-uniform scale.
+  LVector3 radius_v = LVector3(_radius, 0.0f, 0.0f) * mat;
+  _radius = length(radius_v);
+  mark_internal_bounds_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::Constructor
 //       Access: Public
 //  Description: If flickering is on, the do_poly_light function

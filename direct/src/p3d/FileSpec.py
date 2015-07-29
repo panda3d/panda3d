@@ -1,3 +1,5 @@
+__all__ = ["FileSpec"]
+
 import os
 import time
 from panda3d.core import Filename, HashVal, VirtualFileSystem
@@ -25,7 +27,7 @@ class FileSpec:
         if pathname is None:
             pathname = Filename(packageDir, filename)
 
-        self.filename = filename.cStr()
+        self.filename = str(filename)
         self.basename = filename.getBasename()
 
         if st is None:

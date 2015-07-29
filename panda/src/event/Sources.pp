@@ -20,7 +20,7 @@
     genericAsyncTask.h genericAsyncTask.I \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
-    pythonTask.h pythonTask.I \
+    pythonTask.h pythonTask.I pythonTask.cxx \
     event.I event.h eventHandler.h eventHandler.I \
     eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
@@ -38,7 +38,6 @@
     genericAsyncTask.cxx \
     pointerEvent.cxx \
     pointerEventList.cxx \
-    pythonTask.cxx \
     config_event.cxx event.cxx eventHandler.cxx \ 
     eventQueue.cxx eventReceiver.cxx \
     pt_Event.cxx

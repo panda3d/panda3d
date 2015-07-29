@@ -385,8 +385,11 @@ get_flatten_mode() {
 ////////////////////////////////////////////////////////////////////
 INLINE const NodePath GeoMipTerrain::
 get_block_node_path(unsigned short mx, unsigned short my) {
+  nassertr(mx < _blocks.size(), NodePath::fail());
+  nassertr(my < _blocks[mx].size(), NodePath::fail());
   return _blocks[mx][my];
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_block_from_pos
 //       Access: Published
@@ -455,22 +458,27 @@ lod_decide(unsigned short mx, unsigned short my) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeoMipTerrain::
 set_heightfield(const PNMImage &image) {
+  if (image.get_color_space() == CS_sRGB) {
+    // Probably a mistaken metadata setting on the file.
+    grutil_cat.warning()
+      << "Heightfield image is specified to have sRGB color space!\n"
+         "Panda applies gamma correction, which will probably cause "
+         "it to produce incorrect results.\n";
+  }
+
   // Before we apply anything, validate the size.
-  if(is_power_of_two(image.get_x_size() - 1) && is_power_of_two(image.get_y_size() - 1)) {
+  if (is_power_of_two(image.get_x_size() - 1) &&
+      is_power_of_two(image.get_y_size() - 1)) {
     _heightfield = image;
     _is_dirty = true;
     _xsize = _heightfield.get_x_size();
     _ysize = _heightfield.get_y_size();
     return true;
   } else {
-    grutil_cat.error() << "Specified image does not have a power-of-two-plus-one size!\n";
+    grutil_cat.error()
+      << "Specified image does not have a power-of-two-plus-one size!\n";
   }
   return false;
-}
-
-INLINE bool GeoMipTerrain::
-set_heightfield(const string &path) {
-  return set_heightfield(Filename(path));
 }
 
 ////////////////////////////////////////////////////////////////////

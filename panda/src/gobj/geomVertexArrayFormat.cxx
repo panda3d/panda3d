@@ -47,7 +47,7 @@ GeomVertexArrayFormat() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0) :
   _is_registered(false),
@@ -57,7 +57,7 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,10 +66,10 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1) :
   _is_registered(false),
@@ -79,8 +79,8 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,13 +89,13 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      InternalName *name2, int num_components2,
+                      CPT_InternalName name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2) :
   _is_registered(false),
@@ -105,9 +105,9 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
-  add_column(name2, num_components2, numeric_type2, contents2);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
+  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,16 +116,16 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
-GeomVertexArrayFormat(InternalName *name0, int num_components0,
+GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
                       GeomVertexArrayFormat::NumericType numeric_type0,
                       GeomVertexArrayFormat::Contents contents0,
-                      InternalName *name1, int num_components1,
+                      CPT_InternalName name1, int num_components1,
                       GeomVertexArrayFormat::NumericType numeric_type1,
                       GeomVertexArrayFormat::Contents contents1,
-                      InternalName *name2, int num_components2,
+                      CPT_InternalName name2, int num_components2,
                       GeomVertexArrayFormat::NumericType numeric_type2,
                       GeomVertexArrayFormat::Contents contents2,
-                      InternalName *name3, int num_components3,
+                      CPT_InternalName name3, int num_components3,
                       GeomVertexArrayFormat::NumericType numeric_type3,
                       GeomVertexArrayFormat::Contents contents3) :
   _is_registered(false),
@@ -135,10 +135,10 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(name0, num_components0, numeric_type0, contents0);
-  add_column(name1, num_components1, numeric_type1, contents1);
-  add_column(name2, num_components2, numeric_type2, contents2);
-  add_column(name3, num_components3, numeric_type3, contents3);
+  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
+  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
+  add_column(MOVE(name3), num_components3, numeric_type3, contents3);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ unref() const {
 //               type.
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayFormat::
-add_column(InternalName *name, int num_components,
+add_column(CPT_InternalName name, int num_components,
            GeomVertexArrayFormat::NumericType numeric_type,
            GeomVertexArrayFormat::Contents contents, int start,
            int column_alignment) {
@@ -243,7 +243,7 @@ add_column(InternalName *name, int num_components,
     start = _total_bytes;
   }
 
-  return add_column(GeomVertexColumn(name, num_components, numeric_type, contents,
+  return add_column(GeomVertexColumn(MOVE(name), num_components, numeric_type, contents,
                                      start, column_alignment));
 }
 
@@ -394,8 +394,11 @@ align_columns_for_animation() {
   Columns::const_iterator ci;
   for (ci = orig_columns.begin(); ci != orig_columns.end(); ++ci) {
     GeomVertexColumn *column = (*ci);
-    if ((column->get_contents() == C_point || column->get_contents() == C_vector) &&
-        (column->get_numeric_type() == NT_float32 || column->get_numeric_type() == NT_float64) &&
+    if ((column->get_contents() == C_point ||
+         column->get_contents() == C_vector ||
+         column->get_contents() == C_normal) &&
+        (column->get_numeric_type() == NT_float32 ||
+         column->get_numeric_type() == NT_float64) &&
         column->get_num_components() >= 3) {
       add_column(column->get_name(), 4, column->get_numeric_type(), column->get_contents(), -1, 16);
     } else {
@@ -627,20 +630,37 @@ get_format_string(bool pad) const {
     case NT_uint8:
       fmt_code = 'B';
       break;
+
     case NT_uint16:
       fmt_code = 'H';
       break;
+
     case NT_uint32:
     case NT_packed_dcba:
     case NT_packed_dabc:
       fmt_code = 'I';
       break;
+
     case NT_float32:
       fmt_code = 'f';
       break;
+
     case NT_float64:
       fmt_code = 'd';
       break;
+
+    case NT_int8:
+      fmt_code = 'b';
+      break;
+
+    case NT_int16:
+      fmt_code = 'h';
+      break;
+
+    case NT_int32:
+      fmt_code = 'i';
+      break;
+
     default:
       gobj_cat.error()
         << "Unknown numeric type " << column->get_numeric_type() << "!\n";

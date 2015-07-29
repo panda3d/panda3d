@@ -29,7 +29,7 @@ Flee::Flee(AICharacter *ai_ch, NodePath target_object, double panic_distance,
   _flee_activate_done = false;
 }
 
-Flee::Flee(AICharacter *ai_ch, LVecBase3f pos, double panic_distance,
+Flee::Flee(AICharacter *ai_ch, LVecBase3 pos, double panic_distance,
                                 double relax_distance, float flee_wt){
 
     _ai_char = ai_ch;
@@ -57,10 +57,10 @@ Flee::~Flee() {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-LVecBase3f Flee::do_flee() {
-  LVecBase3f dirn;
+LVecBase3 Flee::do_flee() {
+  LVecBase3 dirn;
   double distance;
-  LVecBase3f desired_force;
+  LVecBase3 desired_force;
 
   dirn = _ai_char->_ai_char_np.get_pos(_ai_char->_window_render) - _flee_present_pos;
   distance = dirn.length();
@@ -68,12 +68,12 @@ LVecBase3f Flee::do_flee() {
 
   if(distance > (_flee_distance + _flee_relax_distance)) {
     if((_ai_char->_steering->_behaviors_flags | _ai_char->_steering->_flee) == _ai_char->_steering->_flee) {
-        _ai_char->_steering->_steering_force = LVecBase3f(0.0, 0.0, 0.0);
+        _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
     }
     _flee_done = true;
     _ai_char->_steering->turn_off("flee");
     _ai_char->_steering->turn_on("flee_activate");
-    return(LVecBase3f(0.0, 0.0, 0.0));
+    return(LVecBase3(0.0, 0.0, 0.0));
   }
   else {
       return(desired_force);
@@ -90,7 +90,7 @@ LVecBase3f Flee::do_flee() {
 /////////////////////////////////////////////////////////////////////////////////
 
 void Flee::flee_activate() {
-  LVecBase3f dirn;
+  LVecBase3 dirn;
   double distance;
 
   _flee_activate_done = false;

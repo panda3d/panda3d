@@ -40,6 +40,7 @@ class GeomVertexData;
 class GeomPrimitive;
 class PandaNode;
 class RenderState;
+class Material;
 class Texture;
 class CharacterJoint;
 class EggVertex;
@@ -92,6 +93,7 @@ private:
   bool apply_tags(EggGroup *egg_group, PandaNode *node);
   bool apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag);
 
+  EggMaterial *get_egg_material(Material *tex);
   EggTexture *get_egg_texture(Texture *tex);
 
   static EggPrimitive *make_egg_polygon();
@@ -102,8 +104,8 @@ private:
   PT(EggData) _data;
 
   PT(EggVertexPool) _vpool;
-  EggTextureCollection _textures;
   EggMaterialCollection _materials;
+  EggTextureCollection _textures;
 };
 
 #include "eggSaver.I"

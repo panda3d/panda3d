@@ -14,6 +14,16 @@
 
 #include "pandaSystem.h"
 
+ConfigVariableInt gl_version
+  ("gl-version", "",
+   PRC_DESC("Set this to get an OpenGL context with a specific version."));
+
+ConfigVariableBool gl_support_fbo
+  ("gl-support-fbo", true,
+   PRC_DESC("Configure this false if your GL's implementation of "
+            "EXT_framebuffer_object is broken.  The system might still be "
+            "able to create buffers using pbuffers or the like."));
+
 ConfigVariableBool gl_cheap_textures
   ("gl-cheap-textures", false,
    PRC_DESC("Configure this true to glHint the textures into the cheapest "
@@ -177,10 +187,6 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
-ConfigVariableBool gl_matrix_palette
-  ("gl-matrix-palette", false,
-   PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
-
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,
    PRC_DESC("Regularly call glGetError() to check for OpenGL errors.  "
@@ -215,6 +221,12 @@ ConfigVariableBool gl_dump_compiled_shaders
    PRC_DESC("This configures Panda to dump the binary content of GLSL "
             "programs to disk with a filename like glsl_program0.dump "
             "into the current directory."));
+
+ConfigVariableBool gl_validate_shaders
+  ("gl-validate-shaders", true,
+   PRC_DESC("Set this to true to enable glValidateShader the first time "
+            "a shader is bound.  This may cause helpful information about "
+            "shaders to be printed."));
 
 ConfigVariableBool gl_immutable_texture_storage
   ("gl-immutable-texture-storage", false,
@@ -272,6 +284,15 @@ ConfigVariableBool gl_support_shadow_filter
             "cards suffered from a broken implementation of the "
             "shadow map filtering features."));
 
+ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
+  ("gl-coordinate-system", CS_yup_right,
+   PRC_DESC("Which coordinate system to use as the internal "
+            "coordinate system for OpenGL operations.  If you are "
+            "using features like fixed-function sphere mapping, it is "
+            "best to leave this to yup-right.  However, if you are "
+            "creating a shader-only application, it may be easier and "
+            "more efficient to set this to default."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {
@@ -283,7 +304,9 @@ void CLP(init_classes)() {
   CLP(ShaderContext)::init_type();
 #endif
   CLP(TextureContext)::init_type();
+#ifndef OPENGLES
   CLP(SamplerContext)::init_type();
+#endif
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
 

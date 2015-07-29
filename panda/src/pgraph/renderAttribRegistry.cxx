@@ -26,37 +26,12 @@ RenderAttribRegistry *RenderAttribRegistry::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 RenderAttribRegistry::
 RenderAttribRegistry() {
-  ConfigVariableInt max_attribs
-    ("max-attribs", SlotMask::get_max_num_bits(),
-     PRC_DESC("This specifies the maximum number of different RenderAttrib "
-              "types that may be defined at runtime.  Normally you should "
-              "never need to change this, but if the default value is too "
-              "low for the number of attribs that Panda actually defines, "
-              "you may need to raise this number."));
-
-  // Assign this number once, at startup, and never change it again.
-  _max_slots = max((int)max_attribs, 1);
-  if (_max_slots > SlotMask::get_max_num_bits()) {
-    pgraph_cat->warning()
-      << "Value for max-attribs too large: cannot exceed " 
-      << SlotMask::get_max_num_bits()
-      << " in this build.  To raise this limit, change the typedef "
-      << "for SlotMask in renderAttribRegistry.h and recompile.\n";
-      
-    _max_slots = SlotMask::get_max_num_bits();
-  }
-
-  // Get a DeletedBufferChain to manage the arrays of RenderAttribs that are
-  // allocated within each RenderState object.
-  init_memory_hook();
-  _array_chain = memory_hook->get_deleted_chain(_max_slots * sizeof(RenderState::Attribute));
+  _registry.reserve(_max_slots);
+  _sorted_slots.reserve(_max_slots);
 
   // Reserve slot 0 for TypeHandle::none(), and for types that exceed
   // max_slots.
-  RegistryNode node;
-  node._sort = 0;
-  node._make_default_func = NULL;
-  _registry.push_back(node);
+  _registry.push_back(RegistryNode(TypeHandle::none(), 0, NULL));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,9 +61,9 @@ RenderAttribRegistry::
 //               RenderAttribs (that is, those which are more
 //               expensive to change) have lower sort values.
 //
-//               The make_default_func pointer is a function that may
-//               be called to generate a default RenderAttrib to apply
-//               in the absence of any other attrib of this type.
+//               The default_attrib pointer should be a newly
+//               created instance of this attribute that represents
+//               the default state for this attribute.
 //
 //               register_slot() is intended to be called at
 //               application start for each different RenderAttrib
@@ -96,8 +71,11 @@ RenderAttribRegistry::
 //               slot number to each one.
 ////////////////////////////////////////////////////////////////////
 int RenderAttribRegistry::
-register_slot(TypeHandle type_handle, int sort,
-              RenderAttribRegistry::MakeDefaultFunc *make_default_func) {
+register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
+  // Sanity check; if this triggers, you either passed a wrong argument,
+  // or you didn't use the type system correctly.
+  nassertr(default_attrib->get_type() == type_handle, 0);
+
   int type_index = type_handle.get_index();
   while (type_index >= (int)_slots_by_type.size()) {
     _slots_by_type.push_back(0);
@@ -111,19 +89,33 @@ register_slot(TypeHandle type_handle, int sort,
   int slot = (int)_registry.size();
   if (slot >= _max_slots) {
     pgraph_cat->error()
-      << "Too many registered RenderAttribs; not registering " 
+      << "Too many registered RenderAttribs; not registering "
       << type_handle << "\n";
     nassertr(false, 0);
     return 0;
   }
 
+  // Register the default attribute.  We don't use return_unique and
+  // register it even if the state cache is disabled, because we can't read
+  // the state_cache config variable yet at this time.  It probably doesn't
+  // hurt to have these 32 entries around in the attrib cache.
+  if (default_attrib != (RenderAttrib *)NULL) {
+    default_attrib->calc_hash();
+
+    if (default_attrib->_saved_entry == -1) {
+      // If this attribute was already registered, something odd is going on.
+      nassertr(RenderAttrib::_attribs->find(default_attrib) == -1, 0);
+      default_attrib->_saved_entry =
+        RenderAttrib::_attribs->store(default_attrib, RenderAttrib::Empty());
+    }
+
+    // It effectively lives forever.  Might as well make it official.
+    default_attrib->local_object();
+  }
+
   _slots_by_type[type_index] = slot;
 
-  RegistryNode node;
-  node._type = type_handle;
-  node._sort = sort;
-  node._make_default_func = make_default_func;
-  _registry.push_back(node);
+  _registry.push_back(RegistryNode(type_handle, sort, default_attrib));
 
   _sorted_slots.push_back(slot);
   ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
@@ -143,25 +135,10 @@ set_slot_sort(int slot, int sort) {
 
   // Re-sort the slot list.
   _sorted_slots.clear();
-  _sorted_slots.reserve(_registry.size() - 1);
   for (int i = 1; i < (int)_registry.size(); ++i) {
     _sorted_slots.push_back(i);
   }
   ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::get_slot_default
-//       Access: Published
-//  Description: Returns the default RenderAttrib object associated
-//               with slot n.  This is the attrib that should be
-//               applied in the absence of any other attrib of this
-//               type.
-////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) RenderAttribRegistry::
-get_slot_default(int slot) const {
-  nassertr(slot >= 0 && slot < (int)_registry.size(), 0);
-  return (*_registry[slot]._make_default_func)();
 }
 
 ////////////////////////////////////////////////////////////////////

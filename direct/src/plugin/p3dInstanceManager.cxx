@@ -45,6 +45,10 @@
 #include <dirent.h>
 #endif
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#endif
+
 #include <stdio.h>
 
 static ofstream logfile;
@@ -230,9 +234,29 @@ initialize(int api_version, const string &contents_filename,
       _supported_platforms.push_back("win_i386");
       _supported_platforms.push_back("win32");
     }
+#elif defined(__APPLE__)
+    if (_platform == "osx_amd64") {
+      _supported_platforms.push_back("osx_amd64");
+      _supported_platforms.push_back("osx_i386");
+
+    } else if (_platform == "osx_i386") {
+      // This is a 32-bit process, but determine if the underlying OS
+      // supports 64-bit.
+
+      int mib[2] = { CTL_HW, HW_MACHINE };
+      char machine[512];
+      size_t len = 511;
+      if (sysctl(mib, 2, (void *)machine, &len, NULL, 0) == 0) {
+        if (strcmp(machine, "x86_64") == 0) {
+          _supported_platforms.push_back("osx_amd64");
+        }
+      }
+
+      _supported_platforms.push_back("osx_i386");
+    }
 #endif  // _WIN32
 
-    // TODO: OSX, Linux multiplatform support.  Just add the
+    // TODO: Linux multiplatform support.  Just add the
     // appropriate platform strings to _supported_platforms.
   }
 

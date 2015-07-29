@@ -22,21 +22,12 @@
    C++-style comments, since this file is occasionally included by a C
    file. */
 
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
-
 #ifdef BUILDING_PANDAAI
-  #define EXPCL_PANDAAI __declspec(dllexport)
-  #define EXPTP_PANDAAI
+  #define EXPCL_PANDAAI EXPORT_CLASS
+  #define EXPTP_PANDAAI EXPORT_TEMPL
 #else
-  #define EXPCL_PANDAAI __declspec(dllimport)
-  #define EXPTP_PANDAAI extern
+  #define EXPCL_PANDAAI IMPORT_CLASS
+  #define EXPTP_PANDAAI IMPORT_TEMPL
 #endif
-
-#else   /* !WIN32_VC */
-
-#define EXPCL_PANDAAI
-#define EXPTP_PANDAAI
-
-#endif  /* WIN32_VC */
 
 #endif

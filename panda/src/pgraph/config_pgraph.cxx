@@ -60,6 +60,7 @@
 #include "nodePath.h"
 #include "nodePathComponent.h"
 #include "pandaNode.h"
+#include "paramNodePath.h"
 #include "planeNode.h"
 #include "polylightEffect.h"
 #include "polylightNode.h"
@@ -309,11 +310,6 @@ ConfigVariableInt max_lenses
           "this can be used as a simple sanity check.  Set it larger or "
           "smaller to suit your needs."));
 
-ConfigVariableBool default_antialias_enable
-("default-antialias-enable", false,
- PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
-          "nodes by default."));
-
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "
@@ -436,6 +432,7 @@ init_libpgraph() {
   NodePathComponent::init_type();
   PandaNode::init_type();
   PandaNodePipelineReader::init_type();
+  ParamNodePath::init_type();
   PlaneNode::init_type();
   PolylightNode::init_type();
   PolylightEffect::init_type();

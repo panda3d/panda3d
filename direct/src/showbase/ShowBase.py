@@ -11,31 +11,27 @@ from panda3d.core import *
 from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
 
 # This needs to be available early for DirectGUI imports
-import __builtin__
-__builtin__.config = get_config_showbase()
+import __builtin__ as builtins
+builtins.config = get_config_showbase()
 
-from direct.directnotify.DirectNotifyGlobal import *
-from MessengerGlobal import *
-from BulletinBoardGlobal import *
-from direct.task.TaskManagerGlobal import *
-from JobManagerGlobal import *
-from EventManagerGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
+from MessengerGlobal import messenger
+from BulletinBoardGlobal import bulletinBoard
+from direct.task.TaskManagerGlobal import taskMgr
+from JobManagerGlobal import jobMgr
+from EventManagerGlobal import eventMgr
 from PythonUtil import *
 from direct.showbase import PythonUtil
 #from direct.interval.IntervalManager import ivalMgr
 from direct.interval import IntervalManager
-from InputStateGlobal import inputState
 from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
 from direct.directutil import Verify
 from direct.showbase import GarbageReport
-import EventManager
-import math,sys,os
+import sys
 import Loader
 import time
-import gc
-from direct.fsm import ClassicFSM
-from direct.fsm import State
+import atexit
 from direct.showbase import ExceptionVarDump
 import DirectObject
 import SfxPlayer
@@ -44,39 +40,47 @@ if __debug__:
 import OnScreenDebug
 import AppRunnerGlobal
 
-__builtin__.FADE_SORT_INDEX = 1000
-__builtin__.NO_FADE_SORT_INDEX = 2000
+builtins.FADE_SORT_INDEX = 1000
+builtins.NO_FADE_SORT_INDEX = 2000
 
+def legacyRun():
+    builtins.base.notify.warning("run() is deprecated, use base.run() instead")
+    builtins.base.run()
+
+@atexit.register
+def exitfunc():
+    if getattr(builtins, 'base', None) is not None:
+        builtins.base.destroy()
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
 # *seem* to cause anyone any problems.
 class ShowBase(DirectObject.DirectObject):
 
+    config = get_config_showbase()
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self, fStartDirect = True, windowType = None):
-        self.__dev__ = config.GetBool('want-dev', __debug__)
-        __builtin__.__dev__ = self.__dev__
+        self.__dev__ = self.config.GetBool('want-dev', __debug__)
+        builtins.__dev__ = self.__dev__
 
-        logStackDump = (config.GetBool('log-stack-dump', False) or
-                        config.GetBool('client-log-stack-dump', False))
-        uploadStackDump = config.GetBool('upload-stack-dump', False)
+        logStackDump = (self.config.GetBool('log-stack-dump', False) or
+                        self.config.GetBool('client-log-stack-dump', False))
+        uploadStackDump = self.config.GetBool('upload-stack-dump', False)
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
-        # Locate the directory containing the main program
+        ## The directory containing the main Python file of this application.
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
 
-        # The appRunner should have been created by the time ShowBase
-        # has been.
+        ## This contains the global appRunner instance, as imported from
+        ## AppRunnerGlobal.  This will be None if we are not running in the
+        ## runtime environment (ie. from a .p3d file).
         self.appRunner = AppRunnerGlobal.appRunner
 
         #debug running multiplier
         self.debugRunningMultiplier = 4
 
-        # Get the dconfig object
-        self.config = config
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
 
@@ -108,13 +112,13 @@ class ShowBase(DirectObject.DirectObject):
         self.wantTk = False
         self.wantWx = False
 
-        # Fill this in with a function to invoke when the user "exits"
-        # the program by closing the main window.
+        ## Fill this in with a function to invoke when the user "exits"
+        ## the program by closing the main window.
         self.exitFunc = None
 
-        # Add final-exit callbacks to this list.  These will be called
-        # when sys.exit() is called, after Panda has unloaded, and
-        # just before Python is about to shut down.
+        ## Add final-exit callbacks to this list.  These will be called
+        ## when sys.exit() is called, after Panda has unloaded, and
+        ## just before Python is about to shut down.
         self.finalExitCallbacks = []
 
         Task.TaskManager.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
@@ -139,13 +143,15 @@ class ShowBase(DirectObject.DirectObject):
         # we get a window-event.
         self.__oldAspectRatio = None
 
+        ## This is set to the value of the window-type config variable, but may
+        ## optionally be overridden in the Showbase constructor.  Should either be
+        ## 'onscreen' (the default), 'offscreen' or 'none'.
         self.windowType = windowType
         if self.windowType is None:
             self.windowType = self.config.GetString('window-type', 'onscreen')
         self.requireWindow = self.config.GetBool('require-window', 1)
 
-        # base.win is the main, or only window; base.winList is a list of
-        # *all* windows.  Similarly with base.camList.
+        ## This is the main, or only window; see winList for a list of *all* windows.
         self.win = None
         self.frameRateMeter = None
         self.sceneGraphAnalyzerMeter = None
@@ -165,17 +171,29 @@ class ShowBase(DirectObject.DirectObject):
         self.trackball = None
         self.texmem = None
         self.showVertices = None
+
+        ## This is a NodePath pointing to the Camera object set up for the 3D scene.
+        ## This is usually a child of self.camera.
         self.cam = None
         self.cam2d = None
         self.cam2dp = None
+
+        ## This is the NodePath that should be used to manipulate the camera.  This
+        ## is the node to which the default camera is attached.
         self.camera = None
         self.camera2d = None
         self.camera2dp = None
+
+        ## This is a list of all cameras created with makeCamera, including base.cam.
         self.camList = []
+        ## Convenience accessor for base.cam.node()
         self.camNode = None
+        ## Convenience accessor for base.camNode.get_lens()
         self.camLens = None
         self.camFrustumVis = None
         self.direct = None
+        ## This is used to store the wx.Application object used when want-wx is
+        ## set or base.startWx() is called.
         self.wxApp = None
         self.tkRoot = None
 
@@ -189,6 +207,7 @@ class ShowBase(DirectObject.DirectObject):
 
         self.hidden = NodePath('hidden')
 
+        ## The global graphics engine, ie. GraphicsEngine.getGlobalPtr()
         self.graphicsEngine = GraphicsEngine.getGlobalPtr()
         self.setupRender()
         self.setupRender2d()
@@ -198,11 +217,11 @@ class ShowBase(DirectObject.DirectObject):
             self.setupRender2dp()
 
 
-        # This is a placeholder for a CollisionTraverser.  If someone
-        # stores a CollisionTraverser pointer here, we'll traverse it
-        # in the collisionLoop task.
-        self.shadowTrav = 0
+        ## This is a placeholder for a CollisionTraverser.  If someone
+        ## stores a CollisionTraverser pointer here, we'll traverse it
+        ## in the collisionLoop task.
         self.cTrav = 0
+        self.shadowTrav = 0
         self.cTravStack = Stack()
         # Ditto for an AppTraverser.
         self.appTrav = 0
@@ -233,10 +252,6 @@ class ShowBase(DirectObject.DirectObject):
             random.seed(seed)
             #whrandom.seed(seed & 0xff, (seed >> 8) & 0xff, (seed >> 16) & 0xff)
 
-        # Now that we've set up the window structures, assign an exitfunc.
-        self.oldexitfunc = getattr(sys, 'exitfunc', None)
-        sys.exitfunc = self.exitfunc
-
         # Open the default rendering window.
         if self.windowType != 'none':
             props = WindowProperties.getDefault()
@@ -254,17 +269,22 @@ class ShowBase(DirectObject.DirectObject):
         self.loader = Loader.Loader(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
 
+        ## The global event manager, as imported from EventManagerGlobal.
         self.eventMgr = eventMgr
+        ## The global messenger, as imported from MessengerGlobal.
         self.messenger = messenger
+        ## The global bulletin board, as imported from BulletinBoardGlobal.
         self.bboard = bulletinBoard
+        ## The global task manager, as imported from TaskManagerGlobal.
         self.taskMgr = taskMgr
+        ## The global job manager, as imported from JobManagerGlobal.
         self.jobMgr = jobMgr
 
-        # Particle manager
+        ## Particle manager
         self.particleMgr = None
         self.particleMgrEnabled = 0
 
-        # Physics manager
+        ## Physics manager
         self.physicsMgr = None
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
@@ -302,8 +322,8 @@ class ShowBase(DirectObject.DirectObject):
             # assigned to a single CPU
             autoAffinity = self.config.GetBool('auto-single-cpu-affinity', 0)
             affinity = None
-            if autoAffinity and ('clientIndex' in __builtin__.__dict__):
-                affinity = abs(int(__builtin__.clientIndex))
+            if autoAffinity and ('clientIndex' in builtins.__dict__):
+                affinity = abs(int(builtins.clientIndex))
             else:
                 affinity = self.config.GetInt('client-cpu-affinity', -1)
             if (affinity in (None, -1)) and autoAffinity:
@@ -313,42 +333,44 @@ class ShowBase(DirectObject.DirectObject):
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
         # Make sure we're not making more than one ShowBase.
-        if 'base' in __builtin__.__dict__:
+        if 'base' in builtins.__dict__:
             raise StandardError, "Attempt to spawn multiple ShowBase instances!"
 
-        __builtin__.base = self
-        __builtin__.render2d = self.render2d
-        __builtin__.aspect2d = self.aspect2d
-        __builtin__.pixel2d = self.pixel2d
-        __builtin__.render = self.render
-        __builtin__.hidden = self.hidden
-        __builtin__.camera = self.camera
-        __builtin__.loader = self.loader
-        __builtin__.taskMgr = self.taskMgr
-        __builtin__.jobMgr = self.jobMgr
-        __builtin__.eventMgr = self.eventMgr
-        __builtin__.messenger = self.messenger
-        __builtin__.bboard = self.bboard
+        # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
+        # built-in variables by ShowBase.  Use a Global module if necessary.
+        builtins.base = self
+        builtins.render2d = self.render2d
+        builtins.aspect2d = self.aspect2d
+        builtins.pixel2d = self.pixel2d
+        builtins.render = self.render
+        builtins.hidden = self.hidden
+        builtins.camera = self.camera
+        builtins.loader = self.loader
+        builtins.taskMgr = self.taskMgr
+        builtins.jobMgr = self.jobMgr
+        builtins.eventMgr = self.eventMgr
+        builtins.messenger = self.messenger
+        builtins.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
-        #__builtin__.config = self.config
-        __builtin__.run = self.run
-        __builtin__.ostream = Notify.out()
-        __builtin__.directNotify = directNotify
-        __builtin__.giveNotify = giveNotify
-        __builtin__.globalClock = globalClock
-        __builtin__.vfs = vfs
-        __builtin__.cpMgr = ConfigPageManager.getGlobalPtr()
-        __builtin__.cvMgr = ConfigVariableManager.getGlobalPtr()
-        __builtin__.pandaSystem = PandaSystem.getGlobalPtr()
-        __builtin__.wantUberdog = base.config.GetBool('want-uberdog', 1)
+        #builtins.config = self.config
+        builtins.run = legacyRun
+        builtins.ostream = Notify.out()
+        builtins.directNotify = directNotify
+        builtins.giveNotify = giveNotify
+        builtins.globalClock = globalClock
+        builtins.vfs = vfs
+        builtins.cpMgr = ConfigPageManager.getGlobalPtr()
+        builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
+        builtins.pandaSystem = PandaSystem.getGlobalPtr()
+        builtins.wantUberdog = self.config.GetBool('want-uberdog', 1)
         if __debug__:
-            __builtin__.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
-        __builtin__.onScreenDebug = OnScreenDebug.OnScreenDebug()
+            builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
+        builtins.onScreenDebug = OnScreenDebug.OnScreenDebug()
 
         if self.wantRender2dp:
-            __builtin__.render2dp = self.render2dp
-            __builtin__.aspect2dp = self.aspect2dp
-            __builtin__.pixel2dp = self.pixel2dp
+            builtins.render2dp = self.render2dp
+            builtins.aspect2dp = self.aspect2dp
+            builtins.pixel2dp = self.pixel2dp
 
         if __dev__:
             ShowBase.notify.debug('__dev__ == %s' % __dev__)
@@ -392,7 +414,7 @@ class ShowBase(DirectObject.DirectObject):
         # adds a sleep right after the main render in igloop
         # tends to even out the frame rate and keeps it from going
         # to zero in the out of focus windows
-        if base.config.GetBool('multi-sleep', 0):
+        if self.config.GetBool('multi-sleep', 0):
             self.multiClientSleep = 1
         else:
             self.multiClientSleep = 0
@@ -426,7 +448,7 @@ class ShowBase(DirectObject.DirectObject):
         self.cTrav = self.cTravStack.pop()
 
     def __setupProfile(self):
-        """ Sets up the Python profiler, if avaialable, according to
+        """ Sets up the Python profiler, if available, according to
         some Panda config settings. """
 
         try:
@@ -437,16 +459,15 @@ class ShowBase(DirectObject.DirectObject):
         profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
 
         def f8(x):
-            return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
-        pstats.f8=f8
+            return ("%" + "8.%df" % self.config.GetInt("profile-decimals", 3)) % x
+        pstats.f8 = f8
 
     # temp; see ToonBase.py
     def getExitErrorCode(self):
         return 0
 
     def printEnvDebugInfo(self):
-        """
-        Print some information about the environment that we are running
+        """Print some information about the environment that we are running
         in.  Stuff like the model paths and other paths.  Feel free to
         add stuff to this.
         """
@@ -470,11 +491,18 @@ class ShowBase(DirectObject.DirectObject):
         for cb in self.finalExitCallbacks[:]:
             cb()
 
+        # Remove the built-in base reference
+        if getattr(builtins, 'base', None) is self:
+            del builtins.base
+            del builtins.loader
+            del builtins.taskMgr
+
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
             allowAccessibilityShortcutKeys(True)
 
-        taskMgr.destroy()
+        self.ignoreAll()
+        self.shutdown()
 
         if getattr(self, 'musicManager', None):
             self.musicManager.shutdown()
@@ -500,19 +528,6 @@ class ShowBase(DirectObject.DirectObject):
 
         vfs = VirtualFileSystem.getGlobalPtr()
         vfs.unmountAll()
-
-
-    def exitfunc(self):
-        """
-        This should be assigned to sys.exitfunc to be called just
-        before Python shutdown.  It guarantees that the Panda window
-        is closed cleanly, so that we free system resources, restore
-        the desktop and keyboard functionality, etc.
-        """
-        self.destroy()
-
-        if self.oldexitfunc:
-            self.oldexitfunc()
 
     def makeDefaultPipe(self, printPipeTypes = True):
         """
@@ -787,7 +802,7 @@ class ShowBase(DirectObject.DirectObject):
         # Set up a 3-d camera for the window by default.
         if keepCamera:
             self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
-                            stereo = stereo, useCamera = base.cam)
+                            stereo = stereo, useCamera = self.cam)
         elif makeCamera:
             self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
                             stereo = stereo)
@@ -812,10 +827,10 @@ class ShowBase(DirectObject.DirectObject):
         for i in range(numRegions):
             dr = win.getDisplayRegion(i)
             # [gjeon] remove drc in base.direct.drList
-            if base.direct is not None:
-                for drc in base.direct.drList:
+            if self.direct is not None:
+                for drc in self.direct.drList:
                     if drc.cam == dr.getCamera():
-                        base.direct.drList.displayRegionList.remove(drc)
+                        self.direct.drList.displayRegionList.remove(drc)
                         break
 
             cam = NodePath(dr.getCamera())
@@ -868,7 +883,7 @@ class ShowBase(DirectObject.DirectObject):
         if not self.winList:
             # Give the window(s) a chance to actually close before we
             # continue.
-            base.graphicsEngine.renderFrame()
+            self.graphicsEngine.renderFrame()
 
     def openDefaultWindow(self, *args, **kw):
         # Creates the main window for the first time, without being
@@ -1022,6 +1037,7 @@ class ShowBase(DirectObject.DirectObject):
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
         """
+        ## This is the root of the 3-D scene graph.
         self.render = NodePath('render')
         self.render.setAttrib(RescaleNormalAttrib.makeDefault())
 
@@ -1037,6 +1053,7 @@ class ShowBase(DirectObject.DirectObject):
         2-d objects and gui elements that are superimposed over the
         3-d geometry in the window.
         """
+        ## This is the root of the 2-D scene graph.
         self.render2d = NodePath('render2d')
 
         # Set up some overrides to turn off certain properties which
@@ -1057,22 +1074,26 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
-        # The normal 2-d DisplayRegion has an aspect ratio that
-        # matches the window, but its coordinate system is square.
-        # This means anything we parent to render2d gets stretched.
-        # For things where that makes a difference, we set up
-        # aspect2d, which scales things back to the right aspect
-        # ratio.
-        aspectRatio = self.getAspectRatio()
+        ## The normal 2-d DisplayRegion has an aspect ratio that
+        ## matches the window, but its coordinate system is square.
+        ## This means anything we parent to render2d gets stretched.
+        ## For things where that makes a difference, we set up
+        ## aspect2d, which scales things back to the right aspect
+        ## ratio along the X axis (Z is still from -1 to 1)
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
+
+        aspectRatio = self.getAspectRatio()
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
         self.a2dBackground = self.aspect2d.attachNewNode("a2dBackground")
 
-        # It's important to know the bounds of the aspect2d screen.
+        ## The Z position of the top border of the aspect2d screen.
         self.a2dTop = 1.0
+        ## The Z position of the bottom border of the aspect2d screen.
         self.a2dBottom = -1.0
+        ## The X position of the left border of the aspect2d screen.
         self.a2dLeft = -aspectRatio
+        ## The X position of the right border of the aspect2d screen.
         self.a2dRight = aspectRatio
 
         self.a2dTopCenter = self.aspect2d.attachNewNode("a2dTopCenter")
@@ -1112,12 +1133,12 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
         self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)
 
-        # This special root, pixel2d, uses units in pixels that are relative
-        # to the window. The upperleft corner of the window is (0, 0),
-        # the lowerleft corner is (xsize, -ysize), in this coordinate system.
-        xsize, ysize = self.getSize()
+        ## This special root, pixel2d, uses units in pixels that are relative
+        ## to the window. The upperleft corner of the window is (0, 0),
+        ## the lowerleft corner is (xsize, -ysize), in this coordinate system.
         self.pixel2d = self.render2d.attachNewNode(PGTop("pixel2d"))
         self.pixel2d.setPos(-1, 0, 1)
+        xsize, ysize = self.getSize()
         if xsize > 0 and ysize > 0:
             self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
@@ -1144,24 +1165,26 @@ class ShowBase(DirectObject.DirectObject):
         self.render2dp.setMaterialOff(1)
         self.render2dp.setTwoSided(1)
 
-        # The normal 2-d DisplayRegion has an aspect ratio that
-        # matches the window, but its coordinate system is square.
-        # This means anything we parent to render2d gets stretched.
-        # For things where that makes a difference, we set up
-        # aspect2d, which scales things back to the right aspect
-        # ratio.
-
-        aspectRatio = self.getAspectRatio()
+        ## The normal 2-d DisplayRegion has an aspect ratio that
+        ## matches the window, but its coordinate system is square.
+        ## This means anything we parent to render2dp gets stretched.
+        ## For things where that makes a difference, we set up
+        ## aspect2dp, which scales things back to the right aspect
+        ## ratio along the X axis (Z is still from -1 to 1)
         self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2dp"))
         self.aspect2dp.node().setStartSort(16384)
+
+        aspectRatio = self.getAspectRatio()
         self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
-        # It's important to know the bounds of the aspect2d screen.
+        ## The Z position of the top border of the aspect2dp screen.
         self.a2dpTop = 1.0
+        ## The Z position of the bottom border of the aspect2dp screen.
         self.a2dpBottom = -1.0
+        ## The X position of the left border of the aspect2dp screen.
         self.a2dpLeft = -aspectRatio
+        ## The X position of the right border of the aspect2dp screen.
         self.a2dpRight = aspectRatio
-
 
         self.a2dpTopCenter = self.aspect2dp.attachNewNode("a2dpTopCenter")
         self.a2dpBottomCenter = self.aspect2dp.attachNewNode("a2dpBottomCenter")
@@ -1184,13 +1207,13 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
         self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
 
-        # This special root, pixel2d, uses units in pixels that are relative
-        # to the window. The upperleft corner of the window is (0, 0),
-        # the lowerleft corner is (xsize, -ysize), in this coordinate system.
-        xsize, ysize = self.getSize()
+        ## This special root, pixel2d, uses units in pixels that are relative
+        ## to the window. The upperleft corner of the window is (0, 0),
+        ## the lowerleft corner is (xsize, -ysize), in this coordinate system.
         self.pixel2dp = self.render2dp.attachNewNode(PGTop("pixel2dp"))
         self.pixel2dp.node().setStartSort(16384)
         self.pixel2dp.setPos(-1, 0, 1)
+        xsize, ysize = self.getSize()
         if xsize > 0 and ysize > 0:
             self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
@@ -1280,7 +1303,7 @@ class ShowBase(DirectObject.DirectObject):
             # camera.
             self.camera = self.render.attachNewNode(ModelNode('camera'))
             self.camera.node().setPreserveTransform(ModelNode.PTLocal)
-            __builtin__.camera = self.camera
+            builtins.camera = self.camera
 
             self.mouse2cam.node().setNode(self.camera.node())
 
@@ -1502,12 +1525,14 @@ class ShowBase(DirectObject.DirectObject):
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
 
-        # A special ButtonThrower to generate keyboard events and
-        # include the time from the OS.  This is separate only to
-        # support legacy code that did not expect a time parameter; it
-        # will eventually be folded into the normal ButtonThrower,
-        # above.
+
         mw = self.buttonThrowers[0].getParent()
+
+        ## A special ButtonThrower to generate keyboard events and
+        ## include the time from the OS.  This is separate only to
+        ## support legacy code that did not expect a time parameter; it
+        ## will eventually be folded into the normal ButtonThrower,
+        ## above.
         self.timeButtonThrower = mw.attachNewNode(ButtonThrower('timeButtons'))
         self.timeButtonThrower.node().setPrefix('time-')
         self.timeButtonThrower.node().setTimeFlag(1)
@@ -1931,7 +1956,7 @@ class ShowBase(DirectObject.DirectObject):
         throw_new_frame()
         return Task.cont
 
-    def restart(self,clusterSync=False,cluster=None):
+    def restart(self, clusterSync=False, cluster=None):
         self.shutdown()
         # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
@@ -1970,7 +1995,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.remove('dataLoop')
         self.taskMgr.remove('resetPrevTransform')
         self.taskMgr.remove('ivalLoop')
-        self.taskMgr.remove('garbage_collect')
+        self.taskMgr.remove('garbageCollectStates')
         self.eventMgr.shutdown()
 
     def getBackgroundColor(self, win = None):
@@ -2091,7 +2116,7 @@ class ShowBase(DirectObject.DirectObject):
         """
         if self.__deadInputs:
             self.eventMgr.doEvents()
-            self.dgTrav.traverse(base.dataRootNode)
+            self.dgTrav.traverse(self.dataRootNode)
             self.eventMgr.eventQueue.clear()
             self.taskMgr.add(self.__dataLoop, 'dataLoop', sort = -50)
             self.__deadInputs = 0
@@ -2152,15 +2177,15 @@ class ShowBase(DirectObject.DirectObject):
             # Clean up the old mode.
             self.showVertices.node().setActive(0)
             dr = self.showVertices.node().getDisplayRegion(0)
-            base.win.removeDisplayRegion(dr)
+            self.win.removeDisplayRegion(dr)
             self.showVertices.removeNode()
             self.showVertices = None
             return
 
-        dr = base.win.makeDisplayRegion()
+        dr = self.win.makeDisplayRegion()
         dr.setSort(1000)
         cam = Camera('showVertices')
-        cam.setLens(base.camLens)
+        cam.setLens(self.camLens)
 
         # Set up a funny state to render only vertices.
         override = 100000
@@ -2351,7 +2376,7 @@ class ShowBase(DirectObject.DirectObject):
 
             # Tell the camera to cull from here instead of its own
             # origin.
-            for c in base.camList:
+            for c in self.camList:
                 c.node().setCullCenter(self.oobeCullFrustum)
             if cam.node().isOfType(Camera):
                 cam.node().setCullCenter(self.oobeCullFrustum)
@@ -2360,7 +2385,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             # Disable OOBE culling.
 
-            for c in base.camList:
+            for c in self.camList:
                 c.node().setCullCenter(NodePath())
             if cam.node().isOfType(Camera):
                 cam.node().setCullCenter(self.oobeCullFrustum)
@@ -2436,7 +2461,8 @@ class ShowBase(DirectObject.DirectObject):
     def saveCubeMap(self, namePrefix = 'cube_map_#.png',
                     defaultFilename = 0, source = None,
                     camera = None, size = 128,
-                    cameraMask = PandaNode.getAllCameraMask()):
+                    cameraMask = PandaNode.getAllCameraMask(),
+                    sourceLens = None):
 
         """
         Similar to screenshot(), this sets up a temporary cube map
@@ -2456,13 +2482,16 @@ class ShowBase(DirectObject.DirectObject):
         """
 
         if source == None:
-            source = base.win
+            source = self.win
 
         if camera == None:
             if hasattr(source, "getCamera"):
                 camera = source.getCamera()
             if camera == None:
-                camera = base.camera
+                camera = self.camera
+
+        if sourceLens == None:
+            sourceLens = self.camLens
 
         if hasattr(source, "getWindow"):
             source = source.getWindow()
@@ -2474,19 +2503,20 @@ class ShowBase(DirectObject.DirectObject):
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
-        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
+
+        lens.setNearFar(sourceLens.getNear(), sourceLens.getFar())
 
         # Now render a frame to fill up the texture.
         rig.reparentTo(camera)
-        base.graphicsEngine.openWindows()
-        base.graphicsEngine.renderFrame()
+        self.graphicsEngine.openWindows()
+        self.graphicsEngine.renderFrame()
 
         tex = buffer.getTexture()
         saved = self.screenshot(namePrefix = namePrefix,
                                 defaultFilename = defaultFilename,
                                 source = tex)
 
-        base.graphicsEngine.removeWindow(buffer)
+        self.graphicsEngine.removeWindow(buffer)
         rig.removeNode()
 
         return saved
@@ -2495,7 +2525,7 @@ class ShowBase(DirectObject.DirectObject):
                       defaultFilename = 0, source = None,
                       camera = None, size = 256,
                       cameraMask = PandaNode.getAllCameraMask(),
-                      numVertices = 1000):
+                      numVertices = 1000, sourceLens = None):
         """
         This works much like saveCubeMap(), and uses the graphics
         API's hardware cube-mapping ability to get a 360-degree view
@@ -2512,13 +2542,16 @@ class ShowBase(DirectObject.DirectObject):
         there is a problem.
         """
         if source == None:
-            source = base.win
+            source = self.win
 
         if camera == None:
             if hasattr(source, "getCamera"):
                 camera = source.getCamera()
             if camera == None:
-                camera = base.camera
+                camera = self.camera
+
+        if sourceLens == None:
+            sourceLens = self.camLens
 
         if hasattr(source, "getWindow"):
             source = source.getWindow()
@@ -2533,12 +2566,12 @@ class ShowBase(DirectObject.DirectObject):
         rig = NodePath(namePrefix)
         buffer = toSphere.makeCubeMap(namePrefix, size, rig, cameraMask, 0)
         if buffer == None:
-            base.graphicsEngine.removeWindow(toSphere)
+            self.graphicsEngine.removeWindow(toSphere)
             raise StandardError, "Could not make cube map."
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
-        lens.setNearFar(base.camLens.getNear(), base.camLens.getFar())
+        lens.setNearFar(sourceLens.getNear(), sourceLens.getFar())
 
         # Set up the scene to convert the cube map.  It's just a
         # simple scene, with only the FisheyeMaker object in it.
@@ -2562,18 +2595,18 @@ class ShowBase(DirectObject.DirectObject):
         # Now render a frame.  This will render out the cube map and
         # then apply it to the the card in the toSphere buffer.
         rig.reparentTo(camera)
-        base.graphicsEngine.openWindows()
-        base.graphicsEngine.renderFrame()
+        self.graphicsEngine.openWindows()
+        self.graphicsEngine.renderFrame()
 
         # One more frame for luck.
-        base.graphicsEngine.renderFrame()
+        self.graphicsEngine.renderFrame()
 
         saved = self.screenshot(namePrefix = namePrefix,
                                 defaultFilename = defaultFilename,
                                 source = toSphere.getTexture())
 
-        base.graphicsEngine.removeWindow(buffer)
-        base.graphicsEngine.removeWindow(toSphere)
+        self.graphicsEngine.removeWindow(buffer)
+        self.graphicsEngine.removeWindow(toSphere)
         rig.removeNode()
 
         return saved
@@ -2784,7 +2817,7 @@ class ShowBase(DirectObject.DirectObject):
             # wx is now the main loop, not us any more.
             self.run = self.wxRun
             self.taskMgr.run = self.wxRun
-            __builtin__.run = self.wxRun
+            builtins.run = self.wxRun
             if self.appRunner:
                 self.appRunner.run = self.wxRun
 
@@ -2794,11 +2827,11 @@ class ShowBase(DirectObject.DirectObject):
             def wxLoop(task):
                 # First we need to ensure that the OS message queue is
                 # processed.
-                base.wxApp.Yield()
+                self.wxApp.Yield()
 
                 # Now do all the wxPython events waiting on this frame.
-                while base.wxApp.Pending():
-                    base.wxApp.Dispatch()
+                while self.wxApp.Pending():
+                    self.wxApp.Dispatch()
 
                 return task.again
 
@@ -2846,7 +2879,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Create a new Tk root.
         self.tkRoot = Pmw.initialise()
-        __builtin__.tkroot = self.tkRoot
+        builtins.tkroot = self.tkRoot
 
         init_app_for_gui()
 
@@ -2863,7 +2896,7 @@ class ShowBase(DirectObject.DirectObject):
             # wx is now the main loop, not us any more.
             self.run = self.tkRun
             self.taskMgr.run = self.tkRun
-            __builtin__.run = self.tkRun
+            builtins.run = self.tkRun
             if self.appRunner:
                 self.appRunner.run = self.tkRun
 
@@ -2905,10 +2938,12 @@ class ShowBase(DirectObject.DirectObject):
         self.startWx(fWantWx)
         self.wantDirect = fWantDirect
         if self.wantDirect:
-            from direct.directtools import DirectSession
-            base.direct.enable()
+            from direct.directtools.DirectSession import DirectSession
+            self.direct = DirectSession()
+            self.direct.enable()
+            builtins.direct = self.direct
         else:
-            __builtin__.direct = self.direct = None
+            builtins.direct = self.direct = None
 
     def getRepository(self):
         return None
@@ -2931,11 +2966,12 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        # This method runs the TaskManager when self.appRunner is
-        # None, which is to say, when we are not running from within a
-        # p3d file.  When we *are* within a p3d file, the Panda
-        # runtime has to be responsible for running the main loop, so
-        # we can't allow the application to do it.
+        """ This method runs the TaskManager when self.appRunner is
+        None, which is to say, when we are not running from within a
+        p3d file.  When we *are* within a p3d file, the Panda
+        runtime has to be responsible for running the main loop, so
+        we can't allow the application to do it. """
+
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()

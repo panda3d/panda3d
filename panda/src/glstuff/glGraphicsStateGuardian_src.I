@@ -354,7 +354,7 @@ enable_line_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
@@ -532,6 +532,7 @@ enable_depth_test(bool val) {
   }
 }
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_fog
 //       Access:
@@ -539,7 +540,6 @@ enable_depth_test(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_fog(bool val) {
-#ifndef OPENGLES_2
   if (_fog_enabled != val) {
     _fog_enabled = val;
     if (val) {
@@ -556,9 +556,10 @@ enable_fog(bool val) {
       glDisable(GL_FOG);
     }
   }
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_alpha_test
 //       Access:
@@ -566,7 +567,6 @@ enable_fog(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_alpha_test(bool val) {
-#ifndef OPENGLES_2
   if (_alpha_test_enabled != val) {
     _alpha_test_enabled = val;
     if (val) {
@@ -583,9 +583,8 @@ enable_alpha_test(bool val) {
       glDisable(GL_ALPHA_TEST);
     }
   }
-#endif // OPENGLES_2
 }
-
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_polygon_offset
@@ -617,6 +616,36 @@ enable_polygon_offset(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_color_write_mask
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_color_write_mask(int mask) {
+  if (gl_color_mask && _active_color_write_mask != mask) {
+    _active_color_write_mask = mask;
+    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
+                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::clear_color_write_mask
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+clear_color_write_mask() {
+  if (gl_color_mask && _active_color_write_mask != ColorWriteAttrib::C_all) {
+    _active_color_write_mask = ColorWriteAttrib::C_all;
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
+}
+
+#ifdef SUPPORT_FIXED_FUNCTION
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogfv
 //       Access: Public
 //  Description: This method is necessary because there is no
@@ -624,16 +653,16 @@ enable_polygon_offset(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glFogfv(GLenum pname, const LColor &color) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glFogfv(pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
   glFogfv(pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glMaterialfv
 //       Access: Public
@@ -642,16 +671,16 @@ call_glFogfv(GLenum pname, const LColor &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glMaterialfv(face, pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
   glMaterialfv(face, pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -660,16 +689,16 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
   glLightfv(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -678,16 +707,16 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase3f fvalue = LCAST(float, value);
   glLightfv(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightModelfv
 //       Access: Public
@@ -696,16 +725,16 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glLightModelfv(pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
   glLightModelfv(pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif  // OPENGLES_2
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glTexEnvfv
 //       Access: Public
@@ -714,15 +743,14 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
-#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   glTexEnvfv(target, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
   glTexEnvfv(target, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glTexParameterfv
@@ -740,17 +768,19 @@ call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #endif  //  STDFLOAT_DOUBLE
 }
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
 //  Description: Convert index to gl light id
 ////////////////////////////////////////////////////////////////////
-INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
-#ifndef OPENGLES_2
+INLINE GLenum CLP(GraphicsStateGuardian)::
+get_light_id(int index) const {
   return GL_LIGHT0 + index;
-#endif
 }
+#endif
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_clip_plane_id
 //       Access: Public
@@ -758,10 +788,9 @@ INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum CLP(GraphicsStateGuardian)::
 get_clip_plane_id(int index) const {
-#ifndef OPENGLES_2
   return GL_CLIP_PLANE0 + index;
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
@@ -771,7 +800,7 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_multisample() {
-    return _supports_framebuffer_multisample;
+  return _supports_framebuffer_multisample;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -782,7 +811,7 @@ get_supports_framebuffer_multisample() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_multisample_coverage_nv() {
-    return _supports_framebuffer_multisample_coverage_nv;
+  return _supports_framebuffer_multisample_coverage_nv;
 }
 
 
@@ -794,7 +823,7 @@ get_supports_framebuffer_multisample_coverage_nv() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_blit() {
-    return _supports_framebuffer_blit;
+  return _supports_framebuffer_blit;
 }
 
 #ifndef NDEBUG

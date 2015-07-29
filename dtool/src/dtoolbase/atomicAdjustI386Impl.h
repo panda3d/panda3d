@@ -18,7 +18,7 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#if defined(__i386__) || defined(_M_IX86)
+#if (defined(__i386__) || defined(_M_IX86)) && !defined(__APPLE__)
 
 #include "numeric_types.h"
 

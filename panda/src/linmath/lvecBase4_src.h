@@ -14,6 +14,8 @@
 
 class FLOATNAME(LVecBase2);
 class FLOATNAME(LVecBase3);
+class FLOATNAME(LPoint3);
+class FLOATNAME(LVector3);
 class FLOATNAME(UnalignedLVecBase4);
 
 ////////////////////////////////////////////////////////////////////
@@ -23,8 +25,19 @@ class FLOATNAME(UnalignedLVecBase4);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
 PUBLISHED:
+  typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
+
+  enum {
+    num_components = 4,
+
+#ifdef FLOATTYPE_IS_INT
+    is_int = 1
+#else
+    is_int = 0
+#endif
+  };
 
   INLINE_LINMATH FLOATNAME(LVecBase4)();
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy);
@@ -48,12 +61,11 @@ PUBLISHED:
   INLINE_LINMATH ~FLOATNAME(LVecBase4)();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
@@ -82,6 +94,7 @@ PUBLISHED:
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   INLINE_LINMATH int get_num_components() const;
+  INLINE_LINMATH void extract_data(float*){};
 
 public:
   INLINE_LINMATH iterator begin();
@@ -146,11 +159,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase4) fmin(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other,
-                           FLOATTYPE threshold) const;
+                                   FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
@@ -200,6 +213,16 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase4) {
 PUBLISHED:
+  enum {
+    num_components = 4,
+
+#ifdef FLOATTYPE_IS_INT
+    is_int = 1
+#else
+    is_int = 0
+#endif
+  };
+
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)();
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
@@ -211,14 +234,13 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-
-  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
   INLINE_LINMATH static int size();
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
   INLINE_LINMATH int get_num_components() const;
 
 public:
+  typedef FLOATTYPE numeric_type;
   typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 4) UVector4;
   UVector4 _v;
 

@@ -57,11 +57,11 @@ void PfmVizzer::
 project(const Lens *lens, const PfmFile *undist_lut) {
   nassertv(_pfm.is_valid());
 
-  static LMatrix4f to_uv(0.5f, 0.0f, 0.0f, 0.0f,
-                         0.0f, 0.5f, 0.0f, 0.0f, 
-                         0.0f, 0.0f, 0.5f, 0.0f, 
-                         0.5f, 0.5f, 0.5f, 1.0f);
-  
+  static LMatrix4 to_uv(0.5f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 0.5f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 0.5f, 0.0f,
+                        0.5f, 0.5f, 0.5f, 1.0f);
+
   for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
     for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
       if (!_pfm.has_point(xi, yi)) {
@@ -79,8 +79,8 @@ project(const Lens *lens, const PfmFile *undist_lut) {
       } else {
         // Now the lens gives us coordinates in the range [-1, 1].
         // Rescale these to [0, 1].
-        LPoint3f uvw = film * to_uv;
-        
+        LPoint3f uvw = LCAST(float, film * to_uv);
+
         if (undist_lut != NULL) {
           // Apply the undistortion map, if given.
           LPoint3f p2;
@@ -88,7 +88,7 @@ project(const Lens *lens, const PfmFile *undist_lut) {
           uvw = p2;
           uvw[1] = 1.0 - uvw[1];
         }
-        
+
         p = uvw;
       }
     }
@@ -1062,7 +1062,7 @@ make_array_format(const VisColumns &vis_columns) const {
     case CT_normal3:
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;
-      contents = GeomEnums::C_vector;
+      contents = GeomEnums::C_normal;
       break;
 
     case CT_blend1:
@@ -1072,7 +1072,7 @@ make_array_format(const VisColumns &vis_columns) const {
       break;
     }
     nassertr(num_components != 0, NULL);
-    
+
     array_format->add_column(name, num_components, numeric_type, contents);
   }
 

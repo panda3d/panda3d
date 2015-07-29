@@ -52,7 +52,7 @@ __all__ = ['usage', 'Squeezer', 'Loader', 'boot', 'open', 'explode', 'getloader'
 VERSION = "1.6/98-05-04"
 MAGIC   = "[PANDASQUEEZE]"
 
-import base64, imp, marshal, os, string, sys, md5
+import base64, imp, marshal, os, string, sys
 
 # --------------------------------------------------------------------
 # usage
@@ -246,7 +246,7 @@ def getloader(data, package):
 #
 # parse options
 
-import getopt, glob, sys
+import sys
 import zlib
 
 embed = 0
@@ -340,23 +340,23 @@ exec "import %(start)s"
 #%(localMagic)s %(archiveid)s
 import ihooks, zlib, marshal, os, sys
 
-import pandac
-
 def searchPath(filename):
-  # Look along pandac.__path__ for the indicated filename.  Returns
+  # Look along panda3d.__path__ for the indicated filename.  Returns
   # the located pathname, or None if the filename is not found.
-  for dir in pandac.__path__:
+  import panda3d
+
+  for dir in panda3d.__path__:
     pathname = os.path.join(dir, filename)
     if os.path.exists(pathname):
       return pathname
 
   return None
 
-# Look for %(archiveBase)s along pandac.__path__.
+# Look for %(archiveBase)s along panda3d.__path__.
 archiveName = "%(archiveBase)s"
 archivePath = searchPath(archiveName)
 if archivePath == None:
-  raise ImportError, "Could not locate pandac.%%s." %% (archiveName)
+  raise ImportError, "Could not locate panda3d.%%s." %% (archiveName)
 
 f=open(archivePath,"rb")
 exec marshal.loads(%(zbegin)sf.read(%(loaderlen)d)%(zend)s)

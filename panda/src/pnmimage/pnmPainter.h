@@ -41,17 +41,17 @@ PUBLISHED:
   INLINE void set_fill(PNMBrush *fill);
   INLINE PNMBrush *get_fill() const;
 
-  INLINE void draw_point(double x, double y);
-  void draw_line(double xa, double ya, double xb, double yb);
-  void draw_rectangle(double xa, double ya, double xb, double yb);
+  INLINE void draw_point(float x, float y);
+  void draw_line(float xa, float ya, float xb, float yb);
+  void draw_rectangle(float xa, float ya, float xb, float yb);
 
 private:
-  INLINE void draw_hline_point(int x, double xa, double ya, 
-                               double xd, double yd,
-                               double pixel_scale);
-  INLINE void draw_vline_point(int y, double xa, double ya, 
-                               double xd, double yd,
-                               double pixel_scale);
+  INLINE void draw_hline_point(int x, float xa, float ya,
+                               float xd, float yd,
+                               float pixel_scale);
+  INLINE void draw_vline_point(int y, float xa, float ya,
+                               float xd, float yd,
+                               float pixel_scale);
 
 private:
   PNMImage &_image;

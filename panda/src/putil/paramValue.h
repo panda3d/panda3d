@@ -41,9 +41,9 @@ PUBLISHED:
   virtual void output(ostream &out) const=0;
 
 public:
-  INLINE virtual bool extract_data(int *data, int width, size_t count) const;
-  INLINE virtual bool extract_data(float *data, int width, size_t count) const;
-  INLINE virtual bool extract_data(double *data, int width, size_t count) const;
+  virtual bool extract_data(int *data, int width, size_t count) const;
+  virtual bool extract_data(float *data, int width, size_t count) const;
+  virtual bool extract_data(double *data, int width, size_t count) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -89,9 +89,9 @@ PUBLISHED:
   INLINE virtual void output(ostream &out) const;
 
 public:
-  INLINE virtual bool extract_data(int *data, int width, size_t count) const;
-  INLINE virtual bool extract_data(float *data, int width, size_t count) const;
-  INLINE virtual bool extract_data(double *data, int width, size_t count) const;
+  virtual bool extract_data(int *data, int width, size_t count) const;
+  virtual bool extract_data(float *data, int width, size_t count) const;
+  virtual bool extract_data(double *data, int width, size_t count) const;
 
 private:
   Type _value;

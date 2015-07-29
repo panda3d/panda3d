@@ -2,10 +2,8 @@
 
 __all__ = ['Transitions']
 
-
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.gui.DirectGui import *
-from direct.task import Task
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
 from direct.interval.MetaInterval import Sequence, Parallel
 from direct.interval.FunctionInterval import Func
@@ -59,15 +57,12 @@ class Transitions:
 
         # Reload fade if its already been created
         if self.fade:
-            del self.fade
+            self.fade.destroy()
             self.fade = None
             self.loadFade()
 
     def loadFade(self):
-        if not self.fadeModel:
-            self.fadeModel = loader.loadModel(self.FadeModelName)
-
-        if self.fade == None:
+        if self.fade is None:
             # We create a DirectFrame for the fade polygon, instead of
             # simply loading the polygon model and using it directly,
             # so that it will also obscure mouse events for objects
@@ -80,10 +75,15 @@ class Transitions:
                 image_scale = (4, 2, 2),
                 state = DGG.NORMAL,
                 )
+            if not self.fadeModel:
+                # No fade model was given, so we make this the fade model.
+                self.fade["relief"] = DGG.FLAT
+                self.fade["frameSize"] = (-2, 2, -1, 1)
+                self.fade["frameColor"] = (0, 0, 0, 1)
+                self.fade.setTransparency(TransparencyAttrib.MAlpha)
             self.fade.setBin('unsorted', 0)
             self.fade.setColor(0,0,0,0)
 
-    
     def getFadeInIval(self, t=0.5, finishIval=None):
         """
         Returns an interval without starting it.  This is particularly useful in

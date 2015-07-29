@@ -39,7 +39,9 @@ protected:
     CPT(RenderState) _state;
   };
 
-  PT(Geom) make_geom(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, GeomEnums::UsageHint uh);
+  PT(Geom) make_geom(Rocket::Core::Vertex* vertices,
+                     int num_vertices, int* indices, int num_indices,
+                     GeomEnums::UsageHint uh, const LVecBase2 &tex_scale);
   void render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vector2f& translation);
 
   void RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation);
@@ -63,13 +65,14 @@ private:
 
   // Hold the scissor settings and whether or not to enable scissoring.
   bool _enable_scissor;
-  LVecBase4f _scissor;
+  LVecBase4 _scissor;
 
   // These are temporarily filled in by render().
   CullTraverser *_trav;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _net_state;
   Rocket::Core::Vector2i _dimensions;
+
 };
 
 #endif

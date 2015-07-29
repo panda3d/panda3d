@@ -22,6 +22,7 @@
 #include "configVariableString.h"
 #include "configVariableInt.h"
 #include "configVariableFilename.h"
+#include "configVariableColor.h"
 
 NotifyCategoryDecl(speedtree, EXPCL_PANDASPEEDTREE, EXPTP_PANDASPEEDTREE);
 
@@ -43,16 +44,16 @@ extern ConfigVariableBool speedtree_detail_normal_mapping;
 extern ConfigVariableBool speedtree_ambient_contrast;
 extern ConfigVariableDouble speedtree_transmission_scalar;
 extern ConfigVariableDouble speedtree_fog_distance;
-extern ConfigVariableDouble speedtree_fog_color;
-extern ConfigVariableDouble speedtree_sky_color;
+extern ConfigVariableColor speedtree_fog_color;
+extern ConfigVariableColor speedtree_sky_color;
 extern ConfigVariableDouble speedtree_sky_fog_min;
 extern ConfigVariableDouble speedtree_sky_fog_max;
-extern ConfigVariableDouble speedtree_sun_color;
+extern ConfigVariableColor speedtree_sun_color;
 extern ConfigVariableDouble speedtree_sun_size;
 extern ConfigVariableDouble speedtree_sun_spread_exponent;
 extern ConfigVariableDouble speedtree_sun_fog_bloom;
-extern ConfigVariableDouble speedtree_specular_color;
-extern ConfigVariableDouble speedtree_emissive_color;
+extern ConfigVariableColor speedtree_specular_color;
+extern ConfigVariableColor speedtree_emissive_color;
 extern ConfigVariableInt speedtree_shadow_map_resolution;
 extern ConfigVariableDouble speedtree_cascading_shadow_splits;
 extern ConfigVariableBool speedtree_smooth_shadows;

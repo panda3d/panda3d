@@ -97,7 +97,7 @@ public:
                    const pvector<Filename> &files);
   NodePath load_model(const NodePath &parent, Filename filename);
   NodePath load_default_model(const NodePath &parent);
-  void loop_animations(int hierarchy_match_flags = 
+  void loop_animations(int hierarchy_match_flags =
                        PartGroup::HMF_ok_part_extra |
                        PartGroup::HMF_ok_anim_extra);
   void stagger_animations();
@@ -122,7 +122,7 @@ public:
   };
   WindowFramework *split_window(SplitType split_type = ST_default);
 
-  void set_wireframe(bool enable);
+  void set_wireframe(bool enable, bool filled=false);
   void set_texture(bool enable);
   void set_two_sided(bool enable);
   void set_one_sided_reverse(bool enable);
@@ -131,6 +131,7 @@ public:
   void set_background_type(BackgroundType type);
 
   INLINE bool get_wireframe() const;
+  INLINE bool get_wireframe_filled() const;
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
   INLINE bool get_one_sided_reverse() const;
@@ -150,7 +151,7 @@ private:
   void destroy_anim_controls();
   void update_anim_controls();
 
-  void setup_shuttle_button(const string &label, int index, 
+  void setup_shuttle_button(const string &label, int index,
                             EventHandler::EventCallbackFunction *func);
   void back_button();
   void pause_button();
@@ -200,6 +201,7 @@ private:
   bool _got_lights;
 
   bool _wireframe_enabled;
+  bool _wireframe_filled;
   bool _texture_enabled;
   bool _two_sided_enabled;
   bool _one_sided_reverse_enabled;

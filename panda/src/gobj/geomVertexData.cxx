@@ -369,7 +369,7 @@ unclean_set_format(const GeomVertexFormat *format) {
   // Assign the new format.
   cdataw->_format = format;
 
-  for (int ai = 0; ai < cdataw->_arrays.size(); ++ai) {
+  for (size_t ai = 0; ai < cdataw->_arrays.size(); ++ai) {
     PT(GeomVertexArrayData) array_obj = cdataw->_arrays[ai].get_write_pointer();
     array_obj->_array_format = format->get_array(ai);
   }
@@ -1915,9 +1915,36 @@ do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &da
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
-                          const LMatrix4 &mat, int begin_row, int end_row) {
+                           const LMatrix4 &mat, int begin_row, int end_row) {
   const GeomVertexColumn *data_column = data.get_column();
   int num_values = data_column->get_num_values();
+
+  LMatrix4 xform;
+  bool normalize = false;
+  if (data_column->get_contents() == C_normal) {
+    // This is to preserve perpendicularity to the surface.
+    LVecBase3 scale, shear, hpr;
+    if (decompose_matrix(mat.get_upper_3(), scale, shear, hpr) &&
+        IS_NEARLY_EQUAL(scale[0], scale[1]) &&
+        IS_NEARLY_EQUAL(scale[0], scale[2])) {
+      if (scale[0] == 1) {
+        // No scale to worry about.
+        xform = mat;
+      } else {
+        // Simply take the uniform scale out of the transformation.
+        // Not sure if it might be better to just normalize?
+        compose_matrix(xform, LVecBase3(1, 1, 1), shear, hpr, LVecBase3::zero());
+      }
+    } else {
+      // There is a non-uniform scale, so we need to do all this to
+      // preserve orthogonality to the surface.
+      xform.invert_from(mat);
+      xform.transpose_in_place();
+      normalize = true;
+    }
+  } else {
+    xform = mat;
+  }
 
   if ((num_values == 3 || num_values == 4) &&
       data_column->get_numeric_type() == NT_float32) {
@@ -1929,9 +1956,11 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
     size_t num_rows = end_row - begin_row;
     unsigned char *datat = data_handle->get_write_pointer();
     datat += data_column->get_start() + begin_row * stride;
-    LMatrix4f matf = LCAST(float, mat);
+    LMatrix4f matf = LCAST(float, xform);
 
-    if (num_values == 3) {
+    if (normalize) {
+      table_xform_normal3f(datat, num_rows, stride, matf);
+    } else if (num_values == 3) {
       table_xform_vector3f(datat, num_rows, stride, matf);
     } else {
       table_xform_vecbase4f(datat, num_rows, stride, matf);
@@ -1939,11 +1968,20 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
 
   } else {
     // Use the GeomVertexRewriter to transform the vectors.
-
     data.set_row_unsafe(begin_row);
-    for (int j = begin_row; j < end_row; ++j) {
-      LVector3 vertex = data.get_data3();
-      data.set_data3(vertex * mat);
+
+    if (normalize) {
+      for (int j = begin_row; j < end_row; ++j) {
+        LVector3 vector = data.get_data3();
+        vector *= xform;
+        vector.normalize();
+        data.set_data3(vector);
+      }
+    } else {
+      for (int j = begin_row; j < end_row; ++j) {
+        LVector3 vector = data.get_data3();
+        data.set_data3(vector * xform);
+      }
     }
   }
 }
@@ -1962,6 +2000,25 @@ table_xform_point3f(unsigned char *datat, size_t num_rows, size_t stride,
   for (size_t i = 0; i < num_rows; ++i) {
     LPoint3f &vertex = *(LPoint3f *)(&datat[i * stride]);
     vertex *= matf;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::table_xform_normal3f
+//       Access: Private, Static
+//  Description: Transforms each of the LVector3f objects in the
+//               indicated table by the indicated matrix, and also
+//               normalizes them.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+table_xform_normal3f(unsigned char *datat, size_t num_rows, size_t stride,
+                     const LMatrix4f &matf) {
+  // We don't bother checking for the unaligned case here, because in
+  // practice it doesn't matter with a 3-component vector.
+  for (size_t i = 0; i < num_rows; ++i) {
+    LNormalf &vertex = *(LNormalf *)(&datat[i * stride]);
+    vertex *= matf;
+    vertex.normalize();
   }
 }
 
@@ -2368,7 +2425,7 @@ get_array_info(const InternalName *name,
                const GeomVertexArrayDataHandle *&array_reader,
                int &num_values,
                GeomVertexDataPipelineReader::NumericType &numeric_type,
-               int &start, int &stride, int &divisor,
+               bool &normalized, int &start, int &stride, int &divisor,
                int &num_elements, int &element_stride) const {
   nassertr(_got_array_readers, false);
   int array_index;
@@ -2377,6 +2434,7 @@ get_array_info(const InternalName *name,
     array_reader = _array_readers[array_index];
     num_values = column->get_num_values();
     numeric_type = column->get_numeric_type();
+    normalized = (column->get_contents() == GeomEnums::C_color);
     start = column->get_start();
     stride = _cdata->_format->get_array(array_index)->get_stride();
     divisor = _cdata->_format->get_array(array_index)->get_divisor();
@@ -2553,11 +2611,11 @@ set_num_rows(int n) {
     int num_values = column->get_num_values();
 
     switch (column->get_numeric_type()) {
-    case NT_packed_dcba:
-    case NT_packed_dabc:
     case NT_uint8:
     case NT_uint16:
     case NT_uint32:
+    case NT_packed_dcba:
+    case NT_packed_dabc:
       while (pointer < stop) {
         memset(pointer, 0xff, column->get_total_bytes());
         pointer += stride;
@@ -2578,15 +2636,26 @@ set_num_rows(int n) {
       while (pointer < stop) {
         PN_float64 *pi = (PN_float64 *)pointer;
         for (int i = 0; i < num_values; i++) {
-          pi[i] = 1.0f;
+          pi[i] = 1.0;
         }
         pointer += stride;
       }
       break;
 
     case NT_stdfloat:
+    case NT_int8:
+    case NT_int16:
+    case NT_int32:
       // Shouldn't have this type in the format.
       nassertr(false, false);
+      break;
+
+    case NT_packed_ufloat:
+      while (pointer < stop) {
+        *(PN_int32 *)pointer = 0x781e03c0;
+        pointer += stride;
+      }
+      break;
     }
   }
 

@@ -719,8 +719,8 @@ reload_config() {
   render_info.m_nMaxBillboardImagesByBase = speedtree_max_billboard_images_by_base;
   render_info.m_fVisibility = speedtree_visibility;
   render_info.m_fGlobalLightScalar = speedtree_global_light_scalar;
-  render_info.m_sLightMaterial.m_vSpecular = SpeedTree::Vec4(speedtree_specular_color[0], speedtree_specular_color[1], speedtree_specular_color[2], 1.0f);
-  render_info.m_sLightMaterial.m_vEmissive = SpeedTree::Vec4(speedtree_emissive_color[0], speedtree_emissive_color[1], speedtree_emissive_color[2], 1.0f);
+  render_info.m_sLightMaterial.m_vSpecular = SpeedTree::Vec4(speedtree_specular_color[0], speedtree_specular_color[1], speedtree_specular_color[2], speedtree_specular_color[3]);
+  render_info.m_sLightMaterial.m_vEmissive = SpeedTree::Vec4(speedtree_emissive_color[0], speedtree_emissive_color[1], speedtree_emissive_color[2], speedtree_emissive_color[3]);
   render_info.m_bSpecularLighting = speedtree_specular_lighting;
   render_info.m_bTransmissionLighting = speedtree_transmission_lighting;
   render_info.m_bDetailLayer = speedtree_detail_layer;

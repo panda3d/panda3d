@@ -3,17 +3,17 @@ within a Panda3D Multifile, which can be easily be downloaded and/or
 patched onto a client machine, for the purpose of running a large
 application. """
 
+__all__ = ["Packager", "PackagerError", "OutsideOfPackageError", "ArgumentError"]
+
 # Important to import panda3d first, to avoid naming conflicts with
 # Python's "string" and "Loader" names that are imported later.
 from panda3d.core import *
 import sys
 import os
 import glob
-import marshal
 import string
 import types
 import getpass
-import platform
 import struct
 import subprocess
 from direct.p3d.FileSpec import FileSpec
@@ -375,6 +375,9 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
+            
+            # Map of extensions to files to number (ignored by dir)
+            self.ignoredDirFiles = {}
 
         def close(self):
             """ Writes out the contents of the current package.  Returns True
@@ -385,6 +388,13 @@ class Packager:
                 message = 'Cannot generate packages without an installDir; use -i'
                 raise PackagerError, message
 
+            if self.ignoredDirFiles:
+                exts = list(self.ignoredDirFiles.keys())
+                exts.sort()
+                total = sum([x for x in self.ignoredDirFiles.values()])
+                self.notify.warning("excluded %s files not marked for inclusion: %s" \
+                                    % (total, ", ".join(["'" + ext + "'" for ext in exts])))
+                
             if not self.host:
                 self.host = self.packager.host
 
@@ -1119,14 +1129,19 @@ class Packager:
                     # Skip this file.
                     continue
 
+                origFilename = Filename(file.filename)
+
                 tempFile = Filename.temporary('', 'p3d_', '.txt')
                 command = '/usr/bin/otool -arch all -L "%s" >"%s"' % (
-                    file.filename.toOsSpecific(),
+                    origFilename.toOsSpecific(),
                     tempFile.toOsSpecific())
                 if self.arch:
+                    arch = self.arch
+                    if arch == "amd64":
+                        arch = "x86_64"
                     command = '/usr/bin/otool -arch %s -L "%s" >"%s"' % (
-                        self.arch,
-                        file.filename.toOsSpecific(),
+                        arch,
+                        origFilename.toOsSpecific(),
                         tempFile.toOsSpecific())
                 exitStatus = os.system(command)
                 if exitStatus != 0:
@@ -1137,13 +1152,13 @@ class Packager:
                     filenames = self.__parseDependenciesOSX(tempFile)
                     tempFile.unlink()
                 if filenames is None:
-                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
+                    self.notify.warning("Unable to determine dependencies from %s" % (origFilename))
                     continue
 
                 # Attempt to resolve the dependent filename relative
                 # to the original filename, before we resolve it along
                 # the PATH.
-                path = DSearchPath(Filename(file.filename.getDirname()))
+                path = DSearchPath(Filename(origFilename.getDirname()))
 
                 # Find the dependencies that are referencing a framework
                 framework_deps = []
@@ -1156,7 +1171,10 @@ class Packager:
                     self.__alterFrameworkDependencies(file, framework_deps)
 
                 for filename in filenames:
-                    if '.framework/' in filename:
+                    if '@loader_path' in filename:
+                        filename = filename.replace('@loader_path', origFilename.getDirname())
+
+                    if False and '.framework/' in filename:
                         # It references a framework, and besides the fact
                         # that those often contain absolute paths, they
                         # aren't commonly on the library path either.
@@ -2082,6 +2100,10 @@ class Packager:
             # particular architecture, use lipo to strip out the
             # part of the file for that architecture.
 
+            arch = self.arch
+            if arch == "amd64":
+                arch = "x86_64"
+
             # First, we need to verify that it is in fact a
             # universal binary.
             tfile = Filename.temporary('', 'p3d_')
@@ -2107,25 +2129,24 @@ class Packager:
                 arches = lipoData.rsplit(':', 1)[1]
                 arches = arches.split()
 
-            if arches == [self.arch]:
+            if arches == [arch]:
                 # The file only contains the one architecture that
                 # we want anyway.
                 file.filename.setBinary()
                 self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
                 return True
 
-            if self.arch not in arches:
+            if arch not in arches:
                 # The file doesn't support the architecture that we
                 # want at all.  Omit the file.
                 self.notify.warning("%s doesn't support architecture %s" % (
                     file.filename, self.arch))
                 return False
 
-
             # The file contains multiple architectures.  Get
             # out just the one we want.
             command = '/usr/bin/lipo -thin %s -output "%s" "%s"' % (
-                self.arch, tfile.toOsSpecific(),
+                arch, tfile.toOsSpecific(),
                 file.filename.toOsSpecific())
             exitStatus = os.system(command)
             if exitStatus != 0:
@@ -2174,6 +2195,9 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
+        
+        # Set this to true to verbosely log files ignored by dir().
+        self.verbosePrint = False
 
         # This will be appended to the basename of any .p3d package,
         # before the .p3d extension.
@@ -2263,7 +2287,7 @@ class Packager:
                 self.executablePath.appendDirectory('/usr/lib')
                 self.executablePath.appendDirectory('/usr/local/lib')
 
-        if os.uname()[1] == "pcbsd":
+        if self.platform.startswith('freebsd') and os.uname()[1] == "pcbsd":
             self.executablePath.appendDirectory('/usr/PCBSD/local/lib')
 
         # Set this flag true to automatically add allow_python_dev to
@@ -2379,6 +2403,14 @@ class Packager:
         # should be added exactly byte-for-byte as they are.
         self.unprocessedExtensions = []
 
+        # Files for which warnings should be suppressed when they are
+        # not handled by dir()
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
+                                             'p3d', 'pdef', 
+                                             'c', 'C', 'cxx', 'cpp', 'h', 'H',
+                                             'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
+                                             'o', 'obj', 'a', 'lib', 'bc', 'll']
+         
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -2389,7 +2421,8 @@ class Packager:
             'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
             'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
-            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
+            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
+            'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
@@ -2399,6 +2432,7 @@ class Packager:
         # filenames.
         self.excludeSystemGlobs = [
             GlobPattern('d3dx9_*.dll'),
+            GlobPattern('api-ms-win-*.dll'),
 
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
@@ -2604,12 +2638,20 @@ class Packager:
             if dirname.makeTrueCase():
                 searchPath.appendDirectory(dirname)
 
+    def _ensureExtensions(self):
+        self.knownExtensions = \
+            self.imageExtensions + \
+            self.modelExtensions + \
+            self.textExtensions + \
+            self.binaryExtensions + \
+            self.uncompressibleExtensions + \
+            self.unprocessedExtensions
 
     def setup(self):
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
 
-        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions + self.unprocessedExtensions
+        self._ensureExtensions()
 
         self.currentPackage = None
 
@@ -3299,7 +3341,7 @@ class Packager:
         self.do_module('VFSImporter', filename = filename)
         self.do_freeze('_vfsimporter', compileToExe = False)
 
-        self.do_file('panda3d/core.pyd');
+        self.do_file('panda3d/_core.pyd');
 
         # Now that we're done freezing, explicitly add 'direct' to
         # counteract the previous explicit excludeModule().
@@ -3591,6 +3633,43 @@ class Packager:
         filename = Filename(filename)
         self.currentPackage.excludeFile(filename)
 
+
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
+                         imageExtensions = None, textExtensions = None, 
+                         uncompressibleExtensions = None, unprocessedExtensions = None,
+                         suppressWarningForExtensions = None):
+        """ Ensure that dir() will include files with the given extensions.
+        The extensions should not have '.' prefixes.
+        
+        All except 'suppressWarningForExtensions' allow the given kinds of files
+        to be packaged with their respective semantics (read the source).
+        
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+        so no warnings will be emitted for them.
+        """
+        if executableExtensions:
+            self.executableExtensions += executableExtensions
+
+        if extractExtensions:
+            self.extractExtensions += extractExtensions
+
+        if imageExtensions:
+            self.imageExtensions += imageExtensions
+
+        if textExtensions:
+            self.textExtensions += textExtensions
+
+        if uncompressibleExtensions:
+            self.uncompressibleExtensions += uncompressibleExtensions
+
+        if unprocessedExtensions:
+            self.unprocessedExtensions += unprocessedExtensions
+
+        if suppressWarningForExtensions:
+            self.suppressWarningForExtensions += suppressWarningForExtensions
+
+        self._ensureExtensions()
+
     def do_dir(self, dirname, newDir = None, unprocessed = None):
 
         """ Adds the indicated directory hierarchy to the current
@@ -3663,7 +3742,12 @@ class Packager:
                     filename.setBinary()
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False, unprocessed = unprocessed)
-
+            elif not ext in self.suppressWarningForExtensions:
+                newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
+                self.currentPackage.ignoredDirFiles[ext] = newCount
+                
+                if self.verbosePrint:
+                    self.notify.warning("ignoring file %s" % filename) 
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of

@@ -17,9 +17,10 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(cocoadisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
-  
+
 extern EXPCL_PANDAGL void init_libcocoadisplay();
 
 #endif

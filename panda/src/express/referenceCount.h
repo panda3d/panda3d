@@ -94,7 +94,7 @@ private:
     deleted_ref_count = -100,
   };
 
-  AtomicAdjust::Integer _ref_count;
+  mutable AtomicAdjust::Integer _ref_count;
   AtomicAdjust::Pointer _weak_list;  // WeakReferenceList *
 
 public:

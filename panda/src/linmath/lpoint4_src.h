@@ -26,7 +26,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LPoint4) &zero();
@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

@@ -19,13 +19,13 @@
 
 #include "pnmImageHeader.h"
 #include "pnmBrush.h"
-
+#include "stackedPerlinNoise2.h"
+#include "convert_srgb.h"
 #include "luse.h"
 
 class PNMReader;
 class PNMWriter;
 class PNMFileType;
-class StackedPerlinNoise2;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMImage
@@ -47,44 +47,60 @@ class StackedPerlinNoise2;
 //               xels manipulated, and written out again, or a black
 //               image may be constructed from scratch.
 //
+//               A PNMImage has a color space and a maxval, the
+//               combination of which defines how a floating-point
+//               linear color value is encoded as an integer value in
+//               memory.  The functions ending in _val operate on
+//               encoded colors, whereas the regular ones work with
+//               linear floating-point values.  All operations are
+//               color space correct unless otherwise specified.
+//
 //               The image is of size XSize() by YSize() xels,
 //               numbered from top to bottom, left to right, beginning
 //               at zero.
 //
 //               Files can be specified by filename, or by an iostream
 //               pointer.  The filename "-" refers to stdin or stdout.
+//
+//               This class is not inherently thread-safe; use it
+//               from a single thread or protect access using a mutex.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
-  PNMImage(const Filename &filename, PNMFileType *type = NULL);
-  INLINE PNMImage(int x_size, int y_size, int num_channels = 3,
-                  xelval maxval = 255, PNMFileType *type = NULL);
+  explicit PNMImage(const Filename &filename, PNMFileType *type = NULL);
+  INLINE explicit PNMImage(int x_size, int y_size, int num_channels = 3,
+                           xelval maxval = 255, PNMFileType *type = NULL,
+                           ColorSpace color_space = CS_linear);
   INLINE PNMImage(const PNMImage &copy);
   INLINE void operator = (const PNMImage &copy);
 
   INLINE ~PNMImage();
 
   INLINE xelval clamp_val(int input_value) const;
-  INLINE xelval to_val(double input_value) const;
-  INLINE double from_val(xelval input_value) const;
+  INLINE xelval to_val(float input_value) const;
+  INLINE xelval to_alpha_val(float input_value) const;
+  INLINE float from_val(xelval input_value) const;
+  INLINE float from_alpha_val(xelval input_value) const;
 
   void clear();
   void clear(int x_size, int y_size, int num_channels = 3,
-             xelval maxval = 255, PNMFileType *type = NULL);
+             xelval maxval = 255, PNMFileType *type = NULL,
+             ColorSpace color_space = CS_linear);
 
   void copy_from(const PNMImage &copy);
   void copy_channel(const PNMImage &copy, int src_channel, int dest_channel);
+  void copy_channel_bits(const PNMImage &copy, int src_channel, int dest_channel, xelval src_mask, int right_shift);
   void copy_header_from(const PNMImageHeader &header);
   void take_from(PNMImage &orig);
 
-  INLINE void fill(double red, double green, double blue);
-  INLINE void fill(double gray = 0.0);
+  INLINE void fill(float red, float green, float blue);
+  INLINE void fill(float gray = 0.0);
 
   void fill_val(xelval red, xelval green, xelval blue);
   INLINE void fill_val(xelval gray = 0);
 
-  INLINE void alpha_fill(double alpha = 0.0);
+  INLINE void alpha_fill(float alpha = 0.0);
   void alpha_fill_val(xelval alpha = 0);
 
   INLINE void set_read_size(int x_size, int y_size);
@@ -92,6 +108,7 @@ PUBLISHED:
   INLINE bool has_read_size() const;
   INLINE int get_read_x_size() const;
   INLINE int get_read_y_size() const;
+  INLINE ColorSpace get_color_space() const;
 
   BLOCKING bool read(const Filename &filename, PNMFileType *type = NULL,
                      bool report_unknown_type = true);
@@ -109,12 +126,16 @@ PUBLISHED:
 
   INLINE void set_num_channels(int num_channels);
   void set_color_type(ColorType color_type);
+  void set_color_space(ColorSpace color_space);
 
   INLINE void add_alpha();
   INLINE void remove_alpha();
   INLINE void make_grayscale();
-  void make_grayscale(double rc, double gc, double bc);
+  void make_grayscale(float rc, float gc, float bc);
   INLINE void make_rgb();
+
+  void premultiply_alpha();
+  void unpremultiply_alpha();
 
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
@@ -124,9 +145,11 @@ PUBLISHED:
   // The *_val() functions return or set the color values in the range
   // [0..get_maxval()].  This range may be different for different
   // images!  Use the corresponding functions (without _val()) to work
-  // in the normalized range [0..1].
+  // in the normalized range [0..1].  These return values in the
+  // image's stored color space.
 
-  INLINE const xel &get_xel_val(int x, int y) const;
+  INLINE xel &get_xel_val(int x, int y);
+  INLINE xel get_xel_val(int x, int y) const;
   INLINE void set_xel_val(int x, int y, const xel &value);
   INLINE void set_xel_val(int x, int y, xelval r, xelval g, xelval b);
   INLINE void set_xel_val(int x, int y, xelval gray);
@@ -145,53 +168,45 @@ PUBLISHED:
 
   xelval get_channel_val(int x, int y, int channel) const;
   void set_channel_val(int x, int y, int channel, xelval value);
+  float get_channel(int x, int y, int channel) const;
+  void set_channel(int x, int y, int channel, float value);
 
   PixelSpec get_pixel(int x, int y) const;
   void set_pixel(int x, int y, const PixelSpec &pixel);
 
   // The corresponding get_xel(), set_xel(), get_red(), etc. functions
   // automatically scale their values by get_maxval() into the range
-  // [0..1].
+  // [0..1], and into the linear color space.
 
-  INLINE LRGBColord get_xel(int x, int y) const;
-  INLINE void set_xel(int x, int y, const LRGBColord &value);
-  INLINE void set_xel(int x, int y, double r, double g, double b);
-  INLINE void set_xel(int x, int y, double gray);
+  INLINE LRGBColorf get_xel(int x, int y) const;
+  INLINE void set_xel(int x, int y, const LRGBColorf &value);
+  INLINE void set_xel(int x, int y, float r, float g, float b);
+  INLINE void set_xel(int x, int y, float gray);
 
-  INLINE LColord get_xel_a(int x, int y) const;
-  INLINE void set_xel_a(int x, int y, const LColord &value);
-  INLINE void set_xel_a(int x, int y, double r, double g, double b, double a);
+  INLINE LColorf get_xel_a(int x, int y) const;
+  INLINE void set_xel_a(int x, int y, const LColorf &value);
+  INLINE void set_xel_a(int x, int y, float r, float g, float b, float a);
 
-  INLINE double get_red(int x, int y) const;
-  INLINE double get_green(int x, int y) const;
-  INLINE double get_blue(int x, int y) const;
-  INLINE double get_gray(int x, int y) const;
-  INLINE double get_alpha(int x, int y) const;
+  INLINE float get_red(int x, int y) const;
+  INLINE float get_green(int x, int y) const;
+  INLINE float get_blue(int x, int y) const;
+  INLINE float get_gray(int x, int y) const;
+  INLINE float get_alpha(int x, int y) const;
 
-  INLINE void set_red(int x, int y, double r);
-  INLINE void set_green(int x, int y, double g);
-  INLINE void set_blue(int x, int y, double b);
-  INLINE void set_gray(int x, int y, double gray);
-  INLINE void set_alpha(int x, int y, double a);
+  INLINE void set_red(int x, int y, float r);
+  INLINE void set_green(int x, int y, float g);
+  INLINE void set_blue(int x, int y, float b);
+  INLINE void set_gray(int x, int y, float gray);
+  INLINE void set_alpha(int x, int y, float a);
 
-  INLINE double get_channel(int x, int y, int channel) const;
-  INLINE void set_channel(int x, int y, int channel, double value);
+  INLINE float get_bright(int x, int y) const;
+  INLINE float get_bright(int x, int y, float rc, float gc,
+                           float bc) const;
+  INLINE float get_bright(int x, int y, float rc, float gc,
+                           float bc, float ac) const;
 
-  INLINE double get_bright(int x, int y) const;
-  INLINE double get_bright(int x, int y, double rc, double gc,
-                           double bc) const;
-  INLINE double get_bright(int x, int y, double rc, double gc,
-                           double bc, double ac) const;
-
-  INLINE void blend(int x, int y, const LRGBColord &val, double alpha);
-  void blend(int x, int y, double r, double g, double b, double alpha);
-
-  // If you're used to the NetPBM library and like working with a 2-d
-  // array of xels, and using the PNM macros to access their components,
-  // you may treat the PNMImage as such directly.
-
-  INLINE xel *operator [] (int y);
-  INLINE const xel *operator [] (int y) const;
+  INLINE void blend(int x, int y, const LRGBColorf &val, float alpha);
+  void blend(int x, int y, float r, float g, float b, float alpha);
 
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
@@ -199,70 +214,113 @@ PUBLISHED:
   void blend_sub_image(const PNMImage &copy, int xto, int yto,
                        int xfrom = 0, int yfrom = 0,
                        int x_size = -1, int y_size = -1,
-                       double pixel_scale = 1.0);
+                       float pixel_scale = 1.0);
   void add_sub_image(const PNMImage &copy, int xto, int yto,
                      int xfrom = 0, int yfrom = 0,
                      int x_size = -1, int y_size = -1,
-                     double pixel_scale = 1.0);
+                     float pixel_scale = 1.0);
   void mult_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1,
-                      double pixel_scale = 1.0);
+                      float pixel_scale = 1.0);
   void darken_sub_image(const PNMImage &copy, int xto, int yto,
                         int xfrom = 0, int yfrom = 0,
                         int x_size = -1, int y_size = -1,
-                        double pixel_scale = 1.0);
+                        float pixel_scale = 1.0);
   void lighten_sub_image(const PNMImage &copy, int xto, int yto,
                          int xfrom = 0, int yfrom = 0,
                          int x_size = -1, int y_size = -1,
-                         double pixel_scale = 1.0);
-  void threshold(const PNMImage &select_image, int channel, double threshold,
+                         float pixel_scale = 1.0);
+  void threshold(const PNMImage &select_image, int channel, float threshold,
                  const PNMImage &lt, const PNMImage &ge);
-  BLOCKING void fill_distance_inside(const PNMImage &mask, double threshold, int radius, bool shrink_from_border);
-  BLOCKING void fill_distance_outside(const PNMImage &mask, double threshold, int radius);
+  BLOCKING void fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border);
+  BLOCKING void fill_distance_outside(const PNMImage &mask, float threshold, int radius);
 
-  void rescale(double min_val, double max_val);
+  void rescale(float min_val, float max_val);
 
   void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
                     int xfrom = 0, int yfrom = 0, int cfrom = 0,
                     int x_size = -1, int y_size = -1);
 
-  void render_spot(const LColord &fg, const LColord &bg,
-                   double min_radius, double max_radius);
+  void render_spot(const LColorf &fg, const LColorf &bg,
+                   float min_radius, float max_radius);
 
   void expand_border(int left, int right, int bottom, int top,
-                     const LColord &color);
+                     const LColorf &color);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.
 
-  INLINE void box_filter(double radius = 1.0);
-  INLINE void gaussian_filter(double radius = 1.0);
+  INLINE void box_filter(float radius = 1.0);
+  INLINE void gaussian_filter(float radius = 1.0);
 
   void unfiltered_stretch_from(const PNMImage &copy);
-  void box_filter_from(double radius, const PNMImage &copy);
-  void gaussian_filter_from(double radius, const PNMImage &copy);
+  void box_filter_from(float radius, const PNMImage &copy);
+  void gaussian_filter_from(float radius, const PNMImage &copy);
   void quick_filter_from(const PNMImage &copy,
                          int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
-  void perlin_noise_fill(double sx, double sy, int table_size = 256,
+  void perlin_noise_fill(float sx, float sy, int table_size = 256,
                          unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
   void remix_channels(const LMatrix4 &conv);
-  INLINE void gamma_correct(double from_gamma, double to_gamma);
-  INLINE void gamma_correct_alpha(double from_gamma, double to_gamma);
-  INLINE void apply_exponent(double gray_exponent);
-  INLINE void apply_exponent(double gray_exponent, double alpha_exponent);
-  INLINE void apply_exponent(double red_exponent, double green_exponent, double blue_exponent);
-  void apply_exponent(double red_exponent, double green_exponent, double blue_exponent, double alpha_exponent);
+  INLINE void gamma_correct(float from_gamma, float to_gamma);
+  INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
+  INLINE void apply_exponent(float gray_exponent);
+  INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
+  INLINE void apply_exponent(float red_exponent, float green_exponent, float blue_exponent);
+  void apply_exponent(float red_exponent, float green_exponent, float blue_exponent, float alpha_exponent);
 
-  LRGBColord get_average_xel() const;
-  LColord get_average_xel_a() const;
-  double get_average_gray() const;
+  LRGBColorf get_average_xel() const;
+  LColorf get_average_xel_a() const;
+  float get_average_gray() const;
 
   void do_fill_distance(int xi, int yi, int d);
+
+PUBLISHED:
+  // Provides an accessor for reading or writing the contents of one row
+  // of the image in-place.
+  class EXPCL_PANDA_PNMIMAGE Row {
+  PUBLISHED:
+    INLINE size_t size() const;
+    INLINE LColorf operator[](int x) const;
+#ifdef HAVE_PYTHON
+    INLINE void __setitem__(int x, const LColorf &v);
+#endif
+    INLINE xel &get_xel_val(int x);
+    INLINE void set_xel_val(int x, const xel &v);
+    INLINE xelval get_alpha_val(int x) const;
+    INLINE void set_alpha_val(int x, xelval v);
+
+  public:
+    INLINE Row(PNMImage &image, int y);
+
+  private:
+    PNMImage &_image;
+    int _y;
+  };
+
+  // Provides an accessor for reading the contents of one row of the
+  // image in-place.
+  class EXPCL_PANDA_PNMIMAGE CRow {
+  PUBLISHED:
+    INLINE size_t size() const;
+    INLINE LColorf operator[](int x) const;
+    INLINE xel get_xel_val(int x) const;
+    INLINE xelval get_alpha_val(int x) const;
+
+  public:
+    INLINE CRow(const PNMImage &image, int y);
+
+  private:
+    const PNMImage &_image;
+    int _y;
+  };
+
+  INLINE Row operator [] (int y);
+  INLINE CRow operator [] (int y) const;
 
 public:
   // Know what you are doing if you access the underlying data arrays
@@ -288,37 +346,62 @@ private:
                               int &xfrom, int &yfrom, int &x_size, int &y_size,
                               int &xmin, int &ymin, int &xmax, int &ymax);
 
-  INLINE static void compute_spot_pixel(LColord &c, double d2,
-                                        double min_radius, double max_radius,
-                                        const LColord &fg, const LColord &bg);
+  INLINE static void compute_spot_pixel(LColorf &c, float d2,
+                                        float min_radius, float max_radius,
+                                        const LColorf &fg, const LColorf &bg);
 
   void setup_rc();
+  void setup_encoding();
 
 PUBLISHED:
   PNMImage operator ~() const;
 
   INLINE PNMImage operator + (const PNMImage &other) const;
-  INLINE PNMImage operator + (const LColord &other) const;
+  INLINE PNMImage operator + (const LColorf &other) const;
   INLINE PNMImage operator - (const PNMImage &other) const;
-  INLINE PNMImage operator - (const LColord &other) const;
+  INLINE PNMImage operator - (const LColorf &other) const;
   INLINE PNMImage operator * (const PNMImage &other) const;
-  INLINE PNMImage operator * (double multiplier) const;
-  INLINE PNMImage operator * (const LColord &other) const;
+  INLINE PNMImage operator * (float multiplier) const;
+  INLINE PNMImage operator * (const LColorf &other) const;
   void operator += (const PNMImage &other);
-  void operator += (const LColord &other);
+  void operator += (const LColorf &other);
   void operator -= (const PNMImage &other);
-  void operator -= (const LColord &other);
+  void operator -= (const LColorf &other);
   void operator *= (const PNMImage &other);
-  void operator *= (double multiplier);
-  void operator *= (const LColord &other);
+  void operator *= (float multiplier);
+  void operator *= (const LColorf &other);
 
 private:
+  friend class Row;
+
   xel *_array;
   xelval *_alpha;
-  double _default_rc, _default_gc, _default_bc;
+  float _default_rc, _default_gc, _default_bc;
 
   int _read_x_size, _read_y_size;
   bool _has_read_size;
+
+  // The reciprocal of _maxval, as an optimization for from_val.
+  float _inv_maxval;
+
+  // These method pointers contain the implementation for to_val and
+  // from_val, respectively, dependent on the maxval and color space.
+  ColorSpace _color_space;
+
+  // The following enum determines which code path we should take in
+  // the set_xel and get_xel methods.
+  enum XelEncoding {
+    XE_generic,
+    XE_generic_alpha,
+    XE_generic_sRGB,
+    XE_generic_sRGB_alpha,
+    XE_uchar_sRGB,
+    XE_uchar_sRGB_alpha,
+    XE_uchar_sRGB_sse2,
+    XE_uchar_sRGB_alpha_sse2,
+    XE_scRGB,
+    XE_scRGB_alpha
+  } _xel_encoding;
 };
 
 #include "pnmImage.I"

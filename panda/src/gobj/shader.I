@@ -49,7 +49,7 @@ get_filename(const ShaderType &type) const {
 
   } else {
     // Um, better than nothing?
-    return _filename._vertex;
+    return _filename._fragment;
   }
 }
 
@@ -865,8 +865,8 @@ get_filename_from_index(int index, ShaderType type) const {
     if (!fn.empty()) {
       return fn;
     }
-  } else if (glsl_preprocess && index > 2048 &&
-             (index - 2048) < _included_files.size()) {
+  } else if (glsl_preprocess && index >= 2048 &&
+             (index - 2048) < (int)_included_files.size()) {
     return _included_files[index - 2048];
   }
   // Must be a mistake.  Quietly put back the integer.

@@ -23,7 +23,7 @@
 #include "typedWritableReferenceCount.h"
 #include "paramValue.h"
 #include "pointerTo.h"
-#include "py_panda.h"
+#include "extension.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Parameter
@@ -41,6 +41,8 @@ class EXPCL_PANDA_EVENT Parameter {
 PUBLISHED:
   INLINE Parameter();
   //EXTENSION(INLINE Parameter(PyObject *value));
+
+  friend class Extension<Parameter>;
 
 public:
   INLINE Parameter(const TypedWritableReferenceCount *ptr);
@@ -93,8 +95,8 @@ public:
   INLINE void set_value(const LVecBase3f &value);
 
 PUBLISHED:
-  void set_value(PyObject *value);
-  PyObject *get_value() const;
+  EXTENSION(void set_value(PyObject *value));
+  EXTENSION(PyObject *get_value() const);
 
   MAKE_PROPERTY(value, get_value, set_value);
 
@@ -222,10 +224,5 @@ INLINE void swap(Parameter &one, Parameter &two) NOEXCEPT;
 INLINE ostream &operator << (ostream &out, const Parameter &param);
 
 #include "parameter.I"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

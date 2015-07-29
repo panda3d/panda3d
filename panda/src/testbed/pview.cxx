@@ -26,6 +26,7 @@
 #include "virtualFileSystem.h"
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
+#include "graphicsPipeSelection.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -209,6 +210,15 @@ help() {
     "      Delete the model files after loading them (presumably this option\n"
     "      will only be used when loading a temporary model file).\n\n"
 
+    "  -L\n"
+    "      Enable lighting in the scene.  This can also be achieved with\n"
+    "      the 'l' hotkey at runtime.\n\n"
+
+    "  -P <pipe>\n"
+    "      Select the given graphics pipe for the window, rather than using\n"
+    "      the platform default.  The allowed values for <pipe> are those\n"
+    "      from the Config.prc variables 'load-display' and 'aux-display'.\n\n"
+
     "  -V\n"
     "      Report the current version of Panda, and exit.\n\n"
     
@@ -241,10 +251,12 @@ main(int argc, char **argv) {
                               PartGroup::HMF_ok_anim_extra;
   Filename screenshotfn;
   bool delete_models = false;
+  bool apply_lighting = false;
+  PointerTo<GraphicsPipe> pipe = NULL;
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "acls:DVhi";
+  static const char *optflags = "acls:DVhiLP:";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -275,6 +287,19 @@ main(int argc, char **argv) {
       delete_models = true;
       break;
 
+    case 'L':
+      apply_lighting = true;
+      break;
+
+    case 'P': {
+      pipe = GraphicsPipeSelection::get_global_ptr()->make_module_pipe(optarg);
+      if (!pipe) {
+        cerr << "No such pipe '" << optarg << "' available." << endl;
+        return 1;
+      }
+      break;
+    }
+
     case 'V':
       report_version();
       return 1;
@@ -296,7 +321,7 @@ main(int argc, char **argv) {
   argc -= (optind - 1);
   argv += (optind - 1);
 
-  WindowFramework *window = framework.open_window();
+  WindowFramework *window = framework.open_window(pipe, NULL);
   if (window != (WindowFramework *)NULL) {
     // We've successfully opened a window.
 
@@ -347,6 +372,10 @@ main(int argc, char **argv) {
     framework.get_models().prepare_scene(window->get_graphics_output()->get_gsg());
     
     loading_np.remove_node();
+
+    if (apply_lighting) {
+      window->set_lighting(true);
+    }
 
     if (auto_center) {
       window->center_trackball(framework.get_models());

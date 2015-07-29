@@ -41,7 +41,7 @@
 #include "pnotify.h"
 
 InterrogateType dummy_type;
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Function::Constructor
 //       Access: Public
@@ -59,7 +59,7 @@ Function(const string &name,
   _flags = 0;
   _args_type = AT_unknown;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Function::Destructor
 //       Access: Public
@@ -72,7 +72,7 @@ InterfaceMaker::Function::
     delete (*ri);
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::MakeSeq::Constructor
 //       Access: Public
@@ -141,9 +141,15 @@ check_protocols() {
   for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
     Function *func = (*fi);
     flags |= func->_flags;
+
+    if (func->_ifunc.get_name() == "__traverse__") {
+      // If we have a method named __traverse__, we implement Python's
+      // cyclic garbage collection protocol.
+      _protocol_types |= PT_python_gc;
+    }
   }
 
-  if ((flags & (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) == 
+  if ((flags & (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) ==
       (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) {
     // If we have both a getitem that receives an int, and a size,
     // then we implement the sequence protocol: you can iterate
@@ -168,8 +174,6 @@ check_protocols() {
   if (flags & FunctionRemap::F_iter) {
     _protocol_types |= PT_iter;
   }
-
-  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   // Now are there any make_seq requests within this class?
   if (_itype._cpptype != NULL) {
@@ -269,18 +273,8 @@ generate_wrappers() {
   // traversal.
   int ti = 0;
   while (ti < idb->get_num_all_types()) {
-    TypeIndex type_index = idb->get_all_type(ti);
+    TypeIndex type_index = idb->get_all_type(ti++);
     record_object(type_index);
-
-    if (interrogate_type_is_enum(ti)) {
-      int enum_count = interrogate_type_number_of_enum_values(ti);
-      for (int xx = 0; xx < enum_count; ++xx) {
-//        printf("   PyModule_AddIntConstant(module,\"%s\",%d)\n",interrogate_type_enum_value_name(ti,xx),interrogate_type_enum_value(ti,xx));
-      }
-    }
-
-    ++ti;
-//    printf(" New Type %d\n",ti);
   }
 
   int num_global_elements = idb->get_num_global_elements();
@@ -321,7 +315,7 @@ generate_wrappers() {
       FunctionIndex func_index = ielement.get_setter();
       record_function(dummy_type, func_index);
     }
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -396,7 +390,7 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     // convert basic_string<char>'s to atomic strings.
 
     if (struct_type == (CPPType *)NULL ||
-        !(TypeManager::is_basic_string_char(struct_type) || 
+        !(TypeManager::is_basic_string_char(struct_type) ||
           TypeManager::is_basic_string_wchar(struct_type))) {
       if (TypeManager::is_basic_string_char(param_type)) {
         return new ParameterRemapBasicStringToString(param_type);
@@ -448,13 +442,16 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     return new ParameterRemapEnumToInt(param_type);
     */
 
-  } else if (TypeManager::is_const_simple(param_type)) {
-    return new ParameterRemapConstToNonConst(param_type);
+  //} else if (TypeManager::is_const_simple(param_type)) {
+  //  return new ParameterRemapConstToNonConst(param_type);
 
   } else if (TypeManager::is_const_ref_to_simple(param_type)) {
     return new ParameterRemapReferenceToConcrete(param_type);
 
-  } else if (TypeManager::is_pointer(param_type) || TypeManager::is_simple(param_type)) {
+  } else if (TypeManager::is_pointer(param_type) ||
+             TypeManager::is_void(param_type) ||
+             TypeManager::is_simple(param_type) ||
+             TypeManager::is_simple_array(param_type)) {
     return new ParameterRemapUnchanged(param_type);
 
   } else {
@@ -550,21 +547,19 @@ FunctionRemap *InterfaceMaker::
 make_function_remap(const InterrogateType &itype,
                     const InterrogateFunction &ifunc,
                     CPPInstance *cppfunc, int num_default_parameters) {
-  FunctionRemap *remap = 
+  FunctionRemap *remap =
     new FunctionRemap(itype, ifunc, cppfunc, num_default_parameters, this);
-  if (remap->_is_valid) 
-  {
-    if (separate_overloading()) 
-    {
+  if (remap->_is_valid) {
+    if (separate_overloading()) {
       hash_function_signature(remap);
       remap->_unique_name =
         get_unique_prefix() + _def->library_hash_name + remap->_hash;
-      remap->_wrapper_name = 
+      remap->_wrapper_name =
         get_wrapper_prefix() + _def->library_hash_name + remap->_hash;
       remap->_reported_name = remap->_wrapper_name;
-      if (true_wrapper_names) 
-      {
-        remap->_reported_name = 
+
+      if (true_wrapper_names) {
+        remap->_reported_name =
           InterrogateBuilder::clean_identifier(remap->_cppfunc->get_local_name(&parser));
       }
     }
@@ -589,7 +584,7 @@ make_function_remap(const InterrogateType &itype,
 //               an overloaded function) need not define a name here.
 ////////////////////////////////////////////////////////////////////
 string InterfaceMaker::
-get_wrapper_name(const InterrogateType &itype, 
+get_wrapper_name(const InterrogateType &itype,
                  const InterrogateFunction &ifunc,
                  FunctionIndex func_index) {
   string func_name = ifunc.get_scoped_name();
@@ -677,12 +672,13 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
       // parameters.  This will happen only if separate_overloading(),
       // tested above, returned true; otherwise, max_default_parameters
       // will be 0 and the loop will only be traversed once.
-      for (int num_default_parameters = 0; 
+      for (int num_default_parameters = 0;
            num_default_parameters <= max_default_parameters;
            num_default_parameters++) {
-        FunctionRemap *remap = 
+        FunctionRemap *remap =
           make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
         if (remap != (FunctionRemap *)NULL) {
+
           func->_remaps.push_back(remap);
 
           // If *any* of the variants of this function has a "this"
@@ -741,7 +737,8 @@ record_object(TypeIndex type_index) {
   }
 
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-  const InterrogateType &itype = idb->get_type(type_index);    
+  const InterrogateType &itype = idb->get_type(type_index);
+  assert(&itype != NULL);
 
   Object *object = new Object(itype);
   bool inserted = _objects.insert(Objects::value_type(type_index, object)).second;
@@ -754,29 +751,26 @@ record_object(TypeIndex type_index) {
     function = record_function(itype, itype.get_constructor(ci));
     object->_constructors.push_back(function);
   }
-  
+
   int num_methods = itype.number_of_methods();
   int mi;
   for (mi = 0; mi < num_methods; mi++) {
     function = record_function(itype, itype.get_method(mi));
     object->_methods.push_back(function);
   }
-  
+
   int num_casts = itype.number_of_casts();
   for (mi = 0; mi < num_casts; mi++) {
     function = record_function(itype, itype.get_cast(mi));
     object->_methods.push_back(function);
   }
-  
+
   int num_derivations = itype.number_of_derivations();
-  for (int di = 0; di < num_derivations; di++) 
-  {
-    if (itype.derivation_has_upcast(di)) 
-    {
+  for (int di = 0; di < num_derivations; di++) {
+    if (itype.derivation_has_upcast(di)) {
       record_function(itype, itype.derivation_get_upcast(di));
     }
-    if (itype.derivation_has_downcast(di)) 
-    {
+    if (itype.derivation_has_downcast(di)) {
       // Downcasts are methods of the base class, not the child class.
       TypeIndex base_type_index = itype.get_derivation(di);
       const InterrogateType &base_type = idb->get_type(base_type_index);
@@ -785,27 +779,23 @@ record_object(TypeIndex type_index) {
   }
 
   int num_elements = itype.number_of_elements();
-  for (int ei = 0; ei < num_elements; ei++)
-  {
+  for (int ei = 0; ei < num_elements; ei++) {
     ElementIndex element_index = itype.get_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) 
-    {
+    if (ielement.has_getter()) {
       FunctionIndex func_index = ielement.get_getter();
       record_function(itype, func_index);
     }
-    if (ielement.has_setter()) 
-    {
+    if (ielement.has_setter()) {
       FunctionIndex func_index = ielement.get_setter();
       record_function(itype, func_index);
     }
-  }    
+  }
 
   object->check_protocols();
 
   int num_nested = itype.number_of_nested_types();
-  for (int ni = 0; ni < num_nested; ni++) 
-  {
+  for (int ni = 0; ni < num_nested; ni++) {
     TypeIndex nested_index = itype.get_nested_type(ni);
     record_object(nested_index);
   }
@@ -843,9 +833,9 @@ manage_return_value(ostream &out, int indent_level,
 
       indent(out, indent_level)
         << "if (" << return_expr << " != ("
-        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
       indent(out, indent_level + 2)
-        << return_expr << "->ref();\n";
+        << "(" << return_expr << ")->ref();\n";
       indent(out, indent_level)
         << "}\n";
       output_ref(out, indent_level, remap, "refcount");
@@ -885,8 +875,14 @@ delete_return_value(ostream &out, int indent_level,
 //               the indicated variable name.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
-output_ref(ostream &out, int indent_level, FunctionRemap *remap, 
+output_ref(ostream &out, int indent_level, FunctionRemap *remap,
            const string &varname) const {
+
+  if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
+    // Actually, we have it stored in a PointerTo.  No need to do anything.
+    return;
+  }
+
   if (remap->_type == FunctionRemap::T_constructor ||
       remap->_type == FunctionRemap::T_typecast) {
     // In either of these cases, we can safely assume the pointer will
@@ -915,8 +911,14 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
 //               the indicated variable name.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
-output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+output_unref(ostream &out, int indent_level, FunctionRemap *remap,
              const string &varname) const {
+
+  if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
+    // Actually, we have it stored in a PointerTo.  No need to do anything.
+    return;
+  }
+
   if (remap->_type == FunctionRemap::T_constructor ||
       remap->_type == FunctionRemap::T_typecast) {
     // In either of these cases, we can safely assume the pointer will
@@ -931,8 +933,17 @@ output_unref(ostream &out, int indent_level, FunctionRemap *remap,
     indent(out, indent_level)
       << "if (" << varname << " != ("
       << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
-    indent(out, indent_level + 2)
-      << "unref_delete(" << varname << ");\n";
+
+    if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
+      // We're sure the reference count won't reach zero since we have it
+      // stored in a PointerTo, so call the unref() method directly.
+      indent(out, indent_level + 2)
+        << varname << "->unref();\n";
+    } else {
+      indent(out, indent_level + 2)
+        << "unref_delete(" << varname << ");\n";
+    }
+
     indent(out, indent_level)
       << "}\n";
   }
@@ -967,7 +978,7 @@ hash_function_signature(FunctionRemap *remap) {
     nout << "Internal error!  Function signature "
          << remap->_function_signature << " repeated!\n";
     remap->_hash = hash;
-    abort(); 
+    abort();
     return;
   }
 

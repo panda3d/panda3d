@@ -16,9 +16,7 @@ try:
 except ImportError:
     p3extend_frozen = None
 
-import direct
 from panda3d.core import *
-from pandac.extension_native_helpers import dll_suffix, dll_ext
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -143,8 +141,8 @@ class CompilationEnvironment:
                 self.arch = '-arch i386'
             elif proc == 'ppc':
                 self.arch = '-arch ppc'
-            elif proc == 'x86_64':
-                self.arch = '-arch x86_x64'
+            elif proc == 'amd64':
+                self.arch = '-arch x86_64'
             self.compileObj = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
             self.linkDll = "gcc %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
@@ -1174,7 +1172,7 @@ class Freezer:
                 source = open(sourceFilename.toOsSpecific(), 'r').read()
                 if source and source[-1] != '\n':
                     source = source + '\n'
-                code = compile(source, sourceFilename.cStr(), 'exec')
+                code = compile(source, str(sourceFilename), 'exec')
 
         self.__addPyc(multifile, filename, code, compressionLevel)
 
@@ -1394,15 +1392,6 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
-
-        # Look for a dtool extension.  This loop is roughly lifted
-        # from extension_native_helpers.Dtool_PreloadDLL().
-        filename = name + dll_suffix + dll_ext
-        for dir in sys.path + [sys.prefix]:
-            lib = os.path.join(dir, filename)
-            if os.path.exists(lib):
-                file = open(lib, 'rb')
-                return (file, lib, (dll_ext, 'rb', imp.C_EXTENSION))
 
         message = "DLL loader cannot find %s." % (name)
         raise ImportError, message

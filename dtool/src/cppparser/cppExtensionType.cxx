@@ -14,7 +14,7 @@
 
 
 #include "cppExtensionType.h"
-#include "cppTypedef.h"
+#include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppParser.h"
 #include "indent.h"
@@ -103,6 +103,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_trivial() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::substitute_decl
 //       Access: Public, Virtual
 //  Description:
@@ -130,6 +141,29 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::resolve_type
+//       Access: Public, Virtual
+//  Description: If this CPPType object is a forward reference or
+//               other nonspecified reference to a type that might now
+//               be known a real type, returns the real type.
+//               Otherwise returns the type itself.
+////////////////////////////////////////////////////////////////////
+CPPType *CPPExtensionType::
+resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
+  if (_ident == NULL) {
+    // We can't resolve anonymous types.  But that's OK, since they
+    // can't be forward declared anyway.
+    return this;
+  }
+
+  // Maybe it has been defined by now.
+  CPPType *type = _ident->find_type(current_scope, global_scope);
+  if (type != NULL) {
+    return type;
+  }
+  return this;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::is_equivalent_type

@@ -33,7 +33,7 @@ get_panda_framework() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindow *WindowFramework::
 get_graphics_window() const {
-  if (_window != (GraphicsOutput *)NULL && 
+  if (_window != (GraphicsOutput *)NULL &&
       _window->is_of_type(GraphicsWindow::get_class_type())) {
     return DCAST(GraphicsWindow, _window);
   }
@@ -115,6 +115,17 @@ get_anim_controls() const {
 INLINE bool WindowFramework::
 get_wireframe() const {
   return _wireframe_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_wireframe_filled
+//       Access: Public
+//  Description: Returns the current state of the wireframe_filled
+//               flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowFramework::
+get_wireframe_filled() const {
+  return _wireframe_filled;
 }
 
 ////////////////////////////////////////////////////////////////////

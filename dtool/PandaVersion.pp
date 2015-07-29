@@ -3,7 +3,7 @@
 // ppremake scripts for Panda.
 
 // Use spaces to separate the major, minor, and sequence numbers here.
-#define PANDA_VERSION 1 9 0
+#define PANDA_VERSION 1 10 0
 
 // This variable will be defined to false in the CVS repository, but
 // scripts that generate source tarballs and/or binary releases for
@@ -44,5 +44,4 @@
 // integers, but by convention it will consist of four integers, with
 // the first three matching the plugin version, and the fourth integer
 // being incremented with each new Core API revision.
-#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 1
-
+#define P3D_COREAPI_VERSION $[P3D_PLUGIN_VERSION] 2

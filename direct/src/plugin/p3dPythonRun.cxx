@@ -19,10 +19,7 @@
 #include "virtualFileSystem.h"
 #include "nativeWindowHandle.h"
 
-#ifndef CPPPARSER
 #include "py_panda.h"
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_WindowHandle;
-#endif
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
@@ -239,29 +236,37 @@ run_python() {
   }
   Py_DECREF(app_runner_class);
 
+  // Import the JavaScript module.
+  PyObject *javascript_module = PyImport_ImportModule("direct.p3d.JavaScript");
+  if (javascript_module == NULL) {
+    nout << "Failed to import direct.p3d.JavaScript\n";
+    PyErr_Print();
+    return false;
+  }
+
   // Get the UndefinedObject class.
-  _undefined_object_class = PyObject_GetAttrString(app_runner_module, "UndefinedObject");
+  _undefined_object_class = PyObject_GetAttrString(javascript_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // And the "Undefined" instance.
-  _undefined = PyObject_GetAttrString(app_runner_module, "Undefined");
+  _undefined = PyObject_GetAttrString(javascript_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the ConcreteStruct class.
-  _concrete_struct_class = PyObject_GetAttrString(app_runner_module, "ConcreteStruct");
+  _concrete_struct_class = PyObject_GetAttrString(javascript_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the BrowserObject class.
-  _browser_object_class = PyObject_GetAttrString(app_runner_module, "BrowserObject");
+  _browser_object_class = PyObject_GetAttrString(javascript_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
     return false;
@@ -275,7 +280,7 @@ run_python() {
   }
 
   Py_DECREF(app_runner_module);
-
+  Py_DECREF(javascript_module);
 
   // Construct a Python wrapper around our methods we need to expose to Python.
   static PyMethodDef p3dpython_methods[] = {
@@ -298,14 +303,12 @@ run_python() {
 
   // Now pass that func pointer back to our AppRunner instance, so it
   // can call up to us.
-  result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"O", request_func);
+  result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"N", request_func);
   if (result == NULL) {
     PyErr_Print();
     return false;
   }
   Py_DECREF(result);
-  Py_DECREF(request_func);
-
 
   // Now add check_comm() as a task.  It can be a threaded task, but
   // this does mean that application programmers will have to be alert
@@ -326,14 +329,14 @@ run_python() {
     return false;
   }
 
-  // We have to make it a PythonTask, not just a GenericAsyncTask,
-  // because we need the code in PythonTask that supports calling into
-  // Python from a separate thread.
-  _check_comm_task = new PythonTask(check_comm, "check_comm");
-  _check_comm_task->set_task_chain("JavaScript");
-  task_mgr->add(_check_comm_task);
-
-  Py_DECREF(check_comm);
+  // Add it to the task manager.  We do this instead of constructing a
+  // PythonTask because linking p3dpython with core.pyd is problematic.
+  result = PyObject_CallMethod(_taskMgr, (char *)"add", (char *)"Ns", check_comm, "check_comm");
+  if (result == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  Py_DECREF(result);
 
   // Finally, get lost in AppRunner.run() (which is really a call to
   // taskMgr.run()).
@@ -603,10 +606,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         Py_INCREF(obj);
       }
 
-      PyObject *result = PyObject_CallMethod
-        (_runner, (char *)"setBrowserScriptObject", (char *)"O", obj);
-      Py_DECREF(obj);
-      Py_XDECREF(result);
+      Py_XDECREF(PyObject_CallMethod
+        (_runner, (char *)"setBrowserScriptObject", (char *)"N", obj));
 
     } else if (strcmp(op, "call") == 0) {
       // Call the named method on the indicated object, or the object
@@ -1215,9 +1216,8 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   xinstance->Attribute("respect_per_platform", &respect_per_platform);
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setInstanceInfo", (char *)"sssiOi", root_dir,
+    (_runner, (char *)"setInstanceInfo", (char *)"sssiNi", root_dir,
      log_directory, super_mirror, verify_contents, main, respect_per_platform);
-  Py_DECREF(main);
 
   if (result == NULL) {
     PyErr_Print();
@@ -1331,11 +1331,9 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setP3DFilename", (char *)"sOOiiis", p3d_filename.c_str(),
+    (_runner, (char *)"setP3DFilename", (char *)"sNNiiis", p3d_filename.c_str(),
      token_list, arg_list, inst->get_instance_id(), _interactive_console, p3d_offset,
      p3d_url.c_str());
-  Py_DECREF(token_list);
-  Py_DECREF(arg_list);
 
   if (result == NULL) {
     PyErr_Print();
@@ -1425,17 +1423,15 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
     // setupWindow() call.  For this, we need to create a Python
     // wrapper objcet.
     parent_window_handle->ref();
-    py_handle = DTool_CreatePyInstanceTyped(parent_window_handle, Dtool_WindowHandle, true, false, parent_window_handle->get_type_index());
+    py_handle = DTool_CreatePyInstanceTyped(parent_window_handle.p(), true);
   }
   Py_INCREF(py_handle);
 
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setupWindow", (char *)"siiiiO", window_type.c_str(),
+    (_runner, (char *)"setupWindow", (char *)"siiiiN", window_type.c_str(),
      win_x, win_y, win_width, win_height, py_handle);
-
-  Py_DECREF(py_handle);
 
   if (result == NULL) {
     PyErr_Print();

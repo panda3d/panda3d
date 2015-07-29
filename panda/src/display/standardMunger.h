@@ -49,6 +49,8 @@ protected:
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
+  INLINE RenderModeAttrib::Mode get_render_mode() const;
+
 private:
   int _num_components;
   NumericType _numeric_type;
@@ -58,6 +60,7 @@ private:
   bool _munge_color;
   bool _munge_color_scale;
   bool _auto_shader;
+  bool _shader_skinning;
 
   LColor _color;
   LVecBase4 _color_scale;

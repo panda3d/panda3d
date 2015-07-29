@@ -132,7 +132,7 @@ public:
     SMO_plight_x,
     SMO_slight_x,
     SMO_satten_x,
-    SMO_texmat_x,
+    SMO_texmat_i,
     SMO_plane_x,
     SMO_clipplane_x,
 
@@ -172,6 +172,26 @@ public:
     SMO_frame_number,
     SMO_frame_time,
     SMO_frame_delta,
+
+    SMO_mat_constant_x_attrib,
+    SMO_vec_constant_x_attrib,
+
+    SMO_light_ambient,
+    SMO_light_source_i_attrib,
+
+    SMO_light_product_i_ambient,
+    SMO_light_product_i_diffuse,
+    SMO_light_product_i_specular,
+
+    // SMO_clipplane_x is world coords, GLSL needs eye coords
+    SMO_apiview_clipplane_i,
+
+    SMO_model_to_apiview,
+    SMO_apiview_to_model,
+    SMO_apiview_to_apiclip,
+    SMO_apiclip_to_apiview,
+
+    SMO_inv_texmat_i,
 
     SMO_INVALID
   };
@@ -250,6 +270,11 @@ public:
     SSD_material      = 0x010,
     SSD_shaderinputs  = 0x020,
     SSD_fog           = 0x040,
+    SSD_light         = 0x080,
+    SSD_clip_planes   = 0x100,
+    SSD_tex_matrix    = 0x200,
+    SSD_frame         = 0x400,
+    SSD_projection    = 0x800,
   };
 
   enum ShaderBug {
@@ -277,6 +302,7 @@ public:
     ShaderArgType     _type;
     ShaderArgDir      _direction;
     bool              _varying;
+    bool              _integer;
     NotifyCategory   *_cat;
   };
 
@@ -296,7 +322,7 @@ public:
     void *_ptr;
     ShaderPtrType _type;
     bool _updated;
-    int _size; //number of elements vec3[4]=12
+    size_t _size; //number of elements vec3[4]=12
 
   public:
     INLINE ShaderPtrData();
@@ -337,13 +363,14 @@ public:
   };
 
   struct ShaderMatSpec {
+    LMatrix4          _cache[2];
+    LMatrix4          _value;
     ShaderArgId       _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
     int               _dep[2];
-    LMatrix4          _cache[2];
-    LMatrix4          _value;
+    int               _index;
     ShaderMatPiece    _piece;
   };
 
@@ -359,6 +386,7 @@ public:
     ShaderArgId       _id;
     PT(InternalName)  _name;
     int               _append_uv;
+    int               _elements;
     bool              _integer;
   };
 
@@ -456,14 +484,7 @@ public:
                           bool &success);
 #endif
 
-  bool compile_parameter(const ShaderArgId        &arg_id,
-                         const ShaderArgClass     &arg_class,
-                         const ShaderArgClass     &arg_subclass,
-                         const ShaderArgType      &arg_type,
-                         const ShaderArgDir       &arg_direction,
-                         bool                      arg_varying,
-                         int                      *arg_dim,
-                         NotifyCategory           *arg_cat);
+  bool compile_parameter(ShaderArgInfo &p, int *arg_dim);
 
   void clear_parameters();
 
@@ -510,6 +531,7 @@ public:
   epvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
+  int _mat_deps;
 
   bool _error_flag;
   ShaderFile _text;

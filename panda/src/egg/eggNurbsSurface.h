@@ -77,6 +77,7 @@ PUBLISHED:
 
   virtual void write(ostream &out, int indent_level) const;
 
+public:
   Curves _curves_on_surface;
   Trims _trims;
 

@@ -35,9 +35,10 @@ template<class WType, int nbits>
 class BitMask {
 public:
   typedef WType WordType;
-  enum { num_bits = nbits };
 
 PUBLISHED:
+  enum { num_bits = nbits };
+
   INLINE BitMask();
   INLINE BitMask(WordType init_value);
   INLINE BitMask(const BitMask<WType, nbits> &copy);
@@ -51,10 +52,10 @@ PUBLISHED:
 
   INLINE ~BitMask();
 
-  INLINE static bool has_max_num_bits();
-  INLINE static int get_max_num_bits();
+  CONSTEXPR static bool has_max_num_bits();
+  CONSTEXPR static int get_max_num_bits();
 
-  INLINE static int get_num_bits();
+  CONSTEXPR static int get_num_bits();
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
@@ -143,7 +144,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type();
+  static void init_type(const string &name);
 
 private:
   static TypeHandle _type_handle;
@@ -159,8 +160,12 @@ INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask)
 
 // We need to define this temporary macro so we can pass a parameter
 // containing a comma through the macro.
+#define BITMASK16_DEF BitMask<PN_uint16, 16>
 #define BITMASK32_DEF BitMask<PN_uint32, 32>
+#define BITMASK64_DEF BitMask<PN_uint64, 64>
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK16_DEF);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK32_DEF);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK64_DEF);
 
 typedef BitMask<PN_uint16, 16> BitMask16;
 typedef BitMask<PN_uint32, 32> BitMask32;

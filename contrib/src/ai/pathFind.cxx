@@ -29,7 +29,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
   // Stage variables.
   int grid_x, grid_y;
   float l, w, h;
-  LVecBase3f position;
+  LVecBase3 position;
 
   // Variable to hold line data read from file.
   string line;
@@ -75,7 +75,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
         l = atof(fields[4].c_str());
         w = atof(fields[5].c_str());
         h = atof(fields[6].c_str());
-        position = LVecBase3f(atof(fields[7].c_str()), atof(fields[8].c_str()), atof(fields[9].c_str()));
+        position = LVecBase3(atof(fields[7].c_str()), atof(fields[8].c_str()), atof(fields[9].c_str()));
 
         Node *stage_node = new Node(grid_x, grid_y, position, w, l, h);
 
@@ -197,7 +197,7 @@ void PathFind::set_path_find(const char* navmesh_filename) {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-void PathFind::path_find(LVecBase3f pos, string type) {
+void PathFind::path_find(LVecBase3 pos, string type) {
   if(type == "addPath") {
     if(_ai_char->_steering->_path_follow_obj) {
       _ai_char->_steering->remove_ai("pathfollow");

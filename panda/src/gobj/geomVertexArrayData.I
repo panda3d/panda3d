@@ -183,7 +183,7 @@ request_resident() const {
 INLINE CPT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 get_handle(Thread *current_thread) const {
   const CData *cdata = _cycler.read_unlocked(current_thread);
-  return new GeomVertexArrayDataHandle(this, current_thread, 
+  return new GeomVertexArrayDataHandle(this, current_thread,
                                        cdata, false);
 }
 
@@ -199,7 +199,7 @@ get_handle(Thread *current_thread) const {
 INLINE PT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 modify_handle(Thread *current_thread) {
   CData *cdata = _cycler.write_upstream(true, current_thread);
-  return new GeomVertexArrayDataHandle(this, current_thread, 
+  return new GeomVertexArrayDataHandle(this, current_thread,
                                        cdata, true);
 }
 
@@ -298,7 +298,7 @@ operator = (const GeomVertexArrayData::CData &copy) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayData *object, 
+GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
                           Thread *current_thread,
                           const GeomVertexArrayData::CData *cdata,
                           bool writable) :
@@ -421,7 +421,7 @@ get_object() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_array_format
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayFormat *GeomVertexArrayDataHandle::
 get_array_format() const {
@@ -431,7 +431,7 @@ get_array_format() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_usage_hint
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataHandle::UsageHint GeomVertexArrayDataHandle::
 get_usage_hint() const {
@@ -441,7 +441,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_num_rows
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayDataHandle::
 get_num_rows() const {
@@ -452,7 +452,7 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::clear_rows
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayDataHandle::
 clear_rows() {
@@ -462,7 +462,7 @@ clear_rows() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_data_size_bytes
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayDataHandle::
 get_data_size_bytes() const {
@@ -472,7 +472,7 @@ get_data_size_bytes() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_modified
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq GeomVertexArrayDataHandle::
 get_modified() const {
@@ -491,6 +491,28 @@ get_modified() const {
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
   return (get_read_pointer(false) != (const unsigned char *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::prepare_now
+//       Access: Public
+//  Description: Creates a context for the data on the particular
+//               GSG, if it does not already exist.  Returns the new
+//               (or old) VertexBufferContext.  This assumes that the
+//               GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               datas.  If this is not necessarily the case, you
+//               should use prepare() instead.
+//
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian; a data does not need to be
+//               explicitly prepared by the user before it may be
+//               rendered.
+////////////////////////////////////////////////////////////////////
+INLINE VertexBufferContext *GeomVertexArrayDataHandle::
+prepare_now(PreparedGraphicsObjects *prepared_objects,
+            GraphicsStateGuardianBase *gsg) const {
+  return _object->prepare_now(prepared_objects, gsg);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,18 +29,25 @@ need Microsoft Visual Studio to build Panda3D, though - the relevant compilers
 are included as part of the Windows 7.1 SDK.
 
 You will also need to have the third-party dependency libraries available for
-the build scripts to use.  These are available from here:
-https://www.panda3d.org/forums/viewtopic.php?f=9&t=16346
+the build scripts to use.  These are available from one of these two URLs,
+depending on whether you are on a 32-bit or 64-bit system:
+https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-win64.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command:
 
 ```bash
-makepanda\makepanda.bat --everything --installer
+makepanda\makepanda.bat --everything --installer --no-eigen
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
 install Panda3D on your system.
+
+Note: you may choose to remove --no-eigen and build with Eigen support in
+order to improve runtime performance.  However, this will cause the build to
+take hours to complete, as Eigen is a heavily template-based library, and the
+the MSVC compiler does not perform well under these circumstances.
 
 Linux
 -----
@@ -70,7 +77,7 @@ If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install python-dev libpng-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libjpeg-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit
+sudo apt-get install build-essential pkg-config python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -81,3 +88,25 @@ your system.  Careful: it is not easy to uninstall Panda3D in this way!
 ```bash
 python2.7 makepanda/installpanda.py --prefix=/usr/local
 ```
+
+Mac OS X
+--------
+
+On Mac OS X, all you need to compile Panda3D is a set of precompiled
+thirdparty packages, which can be acquired from here:
+https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-mac.tar.gz
+
+After placing the thirdparty directory inside the panda3d source directory,
+you may build Panda3D using a command like the following:
+
+```bash
+python makepanda/makepanda.py --everything --installer
+```
+
+In order to make a universal build, pass the --universal flag.  You may also
+target a specific minimum Mac OS X version using the --osxtarget flag followed
+by the release number, eg. 10.6 or 10.7.
+
+If the build was successful, makepanda will have generated a .dmg file in
+the source directory containing the installer.  Simply open it and run the
+package file in order to install the SDK onto your system.

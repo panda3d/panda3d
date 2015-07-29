@@ -2,7 +2,7 @@
 
 __all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
@@ -94,8 +94,9 @@ class DirectDialog(DirectFrame):
             ('text',              '',            None),
             ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
-            ('image',  DGG.getDefaultDialogGeom(),   None),
-            ('relief',            None,          None),
+            ('image',             None,          None),
+            ('relief',            DGG.RAISED,     None),
+            ('borderWidth',       (0.01, 0.01),  None),
             ('buttonTextList',    [],            DGG.INITOPT),
             ('buttonGeomList',    [],            DGG.INITOPT),
             ('buttonImageList',   [],            DGG.INITOPT),
@@ -210,10 +211,16 @@ class DirectDialog(DirectFrame):
         bounds = self.stateNodePath[0].getTightBounds()
         if image:
             image.reparentTo(self.stateNodePath[0])
-        l = bounds[0][0]
-        r = bounds[1][0]
-        b = bounds[0][2]
-        t = bounds[1][2]
+        if bounds is None:
+            l = 0
+            r = 0
+            b = 0
+            t = 0
+        else:
+            l = bounds[0][0]
+            r = bounds[1][0]
+            b = bounds[0][2]
+            t = bounds[1][2]
         # Center text and geom around origin
         # How far is center of text from origin?
         xOffset = -(l+r)*0.5
@@ -246,10 +253,16 @@ class DirectDialog(DirectFrame):
                 bl = br = bb = bt = 0
                 for button in self.buttonList:
                     bounds = button.stateNodePath[0].getTightBounds()
-                    bl = min(bl, bounds[0][0])
-                    br = max(br, bounds[1][0])
-                    bb = min(bb, bounds[0][2])
-                    bt = max(bt, bounds[1][2])
+                    if bounds is None:
+                        bl = 0
+                        br = 0
+                        bb = 0
+                        bt = 0
+                    else:
+                        bl = min(bl, bounds[0][0])
+                        br = max(br, bounds[1][0])
+                        bb = min(bb, bounds[0][2])
+                        bt = max(bt, bounds[1][2])
                 bl -= bpad[0]
                 br += bpad[0]
                 bb -= bpad[1]
@@ -303,6 +316,7 @@ class DirectDialog(DirectFrame):
         # reduce bottom by pad, button height and 2*button pad
         b = min(b - self['midPad'] - bpad[1] - bHeight - bpad[1], b) - pad[1]
         t = t + self['topPad'] + pad[1]
+        self['frameSize'] = (l, r, b, t)
         self['image_scale'] = (r - l, 1, t - b)
         # Center frame about text and buttons
         self['image_pos'] = ((l+r)*0.5, 0.0, (b+t)*0.5)

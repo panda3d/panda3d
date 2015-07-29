@@ -12,13 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-#ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
-IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
-#endif
-
 #ifdef FLOATTYPE_IS_INT
 #if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
@@ -36,28 +29,19 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::python_repr
+//     Function: LVecBase4::__repr__
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(LVecBase4)>::
-python_repr(ostream &out, const string &class_name) const {
-  out << class_name << "("
+INLINE_LINMATH string Extension<FLOATNAME(LVecBase4)>::
+__repr__() const {
+  ostringstream out;
+  out << "LVecBase4" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ", "
       << MAYBE_ZERO(_this->_v(2)) << ", "
       << MAYBE_ZERO(_this->_v(3)) << ")";
+  return out.str();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,11 +82,17 @@ __reduce__(PyObject *self) const {
 //  Description: This is used to implement swizzle masks.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
-__getattr__(const string &attr_name) const {
+__getattr__(PyObject *self, const string &attr_name) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
+#endif
+
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'w' || *it > 'z') {
-      return NULL;
+      return Dtool_Raise_AttributeError(self, attr_name.c_str());
     }
   }
 
@@ -137,7 +127,7 @@ __getattr__(const string &attr_name) const {
     }
   }
 
-  return NULL;
+  return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,10 +141,7 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'w' || *it > 'z') {
-      PyTypeObject *tp = self->ob_type;
-      PyErr_Format(PyExc_AttributeError,
-                   "'%.100s' object has no attribute '%.200s'",
-                   tp->tp_name, attr_name.c_str());
+      Dtool_Raise_AttributeError(self, attr_name.c_str());
       return -1;
     }
   }
@@ -257,17 +244,6 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(3) = cpow(_this->_v(3), exponent);
   Py_INCREF(self);
   return self;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::__setitem__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void Extension<FLOATNAME(UnalignedLVecBase4)>::
-__setitem__(int i, FLOATTYPE v) {
-  nassertv(i >= 0 && i < 4);
-  _this->_v(i) = v;
 }
 
 #undef PYNUMBER_FLOATTYPE

@@ -41,6 +41,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPSimpleType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPSimpleType::
+is_trivial() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter
@@ -99,6 +110,10 @@ output(ostream &out, int, CPPScope *, bool) const {
   }
 
   switch (_type) {
+  case T_unknown:
+    out << "unknown";
+    break;
+
   case T_bool:
     out << "bool";
     break;
@@ -109,6 +124,14 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   case T_wchar_t:
     out << "wchar_t";
+    break;
+
+  case T_char16_t:
+    out << "char16_t";
+    break;
+
+  case T_char32_t:
+    out << "char32_t";
     break;
 
   case T_int:
@@ -125,10 +148,6 @@ output(ostream &out, int, CPPScope *, bool) const {
 
   case T_void:
     out << "void";
-    break;
-
-  case T_unknown:
-    out << "unknown";
     break;
 
   case T_parameter:

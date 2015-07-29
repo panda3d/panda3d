@@ -11,7 +11,7 @@
 
 #include "pandabase.h"
 
-#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON)
+#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON) && !__LP64__
 
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
@@ -1192,7 +1192,7 @@ OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, E
 
   if (keyDown) {
     if ((newModifiers & cmdKey) != 0) {
-      if (button == KeyboardButton::ascii_key("q") || button == KeyboardButton::ascii_key("w")) {
+      if (button == KeyboardButton::ascii_key('q') || button == KeyboardButton::ascii_key('w')) {
         // Command-Q or Command-W: quit the application or close the
         // window, respectively.  For now, we treat them both the
         // same: close the window.

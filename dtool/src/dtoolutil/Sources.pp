@@ -17,6 +17,8 @@
     filename.h \
     $[if $[IS_OSX],filename_assist.mm filename_assist.h,] \
     globPattern.I globPattern.h \
+    lineStream.I lineStream.h \
+    lineStreamBuf.I lineStreamBuf.h \
     load_dso.h \
     pandaFileStream.h pandaFileStream.I \
     pandaFileStreamBuf.h \
@@ -38,6 +40,7 @@
     dSearchPath.cxx \
     executionEnvironment.cxx filename.cxx \
     globPattern.cxx \
+    lineStream.cxx lineStreamBuf.cxx \
     load_dso.cxx  \
     pandaFileStream.cxx pandaFileStreamBuf.cxx \
     pandaSystem.cxx \
@@ -58,6 +61,8 @@
     executionEnvironment.I executionEnvironment.h filename.I \
     filename.h \
     globPattern.I globPattern.h \
+    lineStream.I lineStream.h \
+    lineStreamBuf.I lineStreamBuf.h \
     load_dso.h \
     pandaFileStream.h pandaFileStream.I \
     pandaFileStreamBuf.h \

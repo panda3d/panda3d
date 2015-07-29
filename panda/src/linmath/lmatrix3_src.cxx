@@ -353,7 +353,7 @@ bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LMatrix3::almost_equal(const LMatrix3 &, FLOATTYPE)", " ", TAU_USER);
 #ifdef HAVE_EIGEN
-  return ((_m - other._m).cwiseAbs().maxCoeff() < NEARLY_ZERO(FLOATTYPE));
+  return ((_m - other._m).cwiseAbs().maxCoeff() < threshold);
 #else
   return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
           IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
@@ -512,8 +512,6 @@ void FLOATNAME(LMatrix3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
-    string name = "LMatrix3";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name);
+    register_type(_type_handle, FLOATNAME_STR(LMatrix3));
   }
 }

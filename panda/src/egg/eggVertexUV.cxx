@@ -22,7 +22,7 @@ TypeHandle EggVertexUV::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
 EggVertexUV(const string &name, const LTexCoordd &uv) :
@@ -38,7 +38,7 @@ EggVertexUV(const string &name, const LTexCoordd &uv) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
 EggVertexUV(const string &name, const LTexCoord3d &uvw) :
@@ -54,7 +54,7 @@ EggVertexUV(const string &name, const LTexCoord3d &uvw) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
 EggVertexUV(const EggVertexUV &copy) :
@@ -70,7 +70,7 @@ EggVertexUV(const EggVertexUV &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexUV &EggVertexUV::
 operator = (const EggVertexUV &copy) {
@@ -87,10 +87,35 @@ operator = (const EggVertexUV &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
 ~EggVertexUV() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::make_average
+//       Access: Published, Static
+//  Description: Creates a new EggVertexUV that contains the
+//               averaged values of the two given objects.  It is
+//               an error if they don't have the same name.
+///////////////////////////////////////////////////////////////////
+PT(EggVertexUV) EggVertexUV::
+make_average(const EggVertexUV *first, const EggVertexUV *second) {
+  nassertr(first->get_name() == second->get_name(), NULL);
+  int flags = first->_flags & second->_flags;
+
+  LTexCoord3d uvw = (first->_uvw + second->_uvw) / 2;
+
+  PT(EggVertexUV) new_obj = new EggVertexUV(first->get_name(), uvw);
+  new_obj->_flags = flags;
+  new_obj->_tangent = (first->_tangent + second->_tangent) / 2;
+  new_obj->_binormal = (first->_binormal + second->_binormal) / 2;
+
+  // Normalize because we're polite.
+  new_obj->_tangent.normalize();
+  new_obj->_binormal.normalize();
+  return new_obj;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +140,7 @@ transform(const LMatrix4d &mat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggVertexUV::
 write(ostream &out, int indent_level) const {

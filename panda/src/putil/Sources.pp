@@ -27,8 +27,9 @@
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
+    callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
-    collideMask.h \
+    colorSpace.h collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \
     copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \
@@ -49,8 +50,7 @@
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
-    ioPtaDatagramShort.h keyboardButton.h lineStream.I \
-    lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    ioPtaDatagramShort.h keyboardButton.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     loaderOptions.I loaderOptions.h \
@@ -61,6 +61,7 @@
     pbitops.I pbitops.h \
     portalMask.h \
     pta_ushort.h \
+    pythonCallbackObject.cxx \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
@@ -90,9 +91,10 @@
     callbackData.cxx \
     callbackObject.cxx \
     clockObject.cxx \
+    colorSpace.cxx \
+    config_util.cxx configurable.cxx \
     copyOnWriteObject.cxx \
     copyOnWritePointer.cxx \
-    config_util.cxx configurable.cxx \
     cPointerCallbackObject.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     doubleBitMask.cxx \
@@ -101,7 +103,7 @@
     globalPointerRegistry.cxx \
     ioPtaDatagramFloat.cxx \
     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
-    keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
+    keyboardButton.cxx \
     linkedListNode.cxx \
     load_prc_file.cxx \
     loaderOptions.cxx \
@@ -111,7 +113,6 @@
     paramValue.cxx \
     pbitops.cxx \
     pta_ushort.cxx \
-    pythonCallbackObject.cxx \
     simpleHashMap.cxx \
     sparseArray.cxx \
     timedCycle.cxx typedWritable.cxx \
@@ -139,8 +140,9 @@
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
+    callbackObject_ext.h callbackObject_ext.I \
     clockObject.h clockObject.I \
-    collideMask.h \
+    colorSpace.h collideMask.h \
     copyOnWriteObject.h copyOnWriteObject.I \
     copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \
@@ -160,8 +162,7 @@
     indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
-    ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
-    lineStream.h lineStreamBuf.I lineStreamBuf.h \
+    ioPtaDatagramShort.h iterator_types.h keyboardButton.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
     loaderOptions.I loaderOptions.h \

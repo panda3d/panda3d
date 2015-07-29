@@ -398,6 +398,125 @@ clear_aux(const string &name) {
   _aux_map.erase(name);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::make_average
+//       Access: Published, Static
+//  Description: Creates a new vertex that lies in between the two
+//               given vertices.  The attributes for the UV sets
+//               they have in common are averaged.
+//
+//               Both vertices need to be either in no pool, or in
+//               the same pool.  In the latter case, the new vertex
+//               will be placed in that pool.
+///////////////////////////////////////////////////////////////////
+PT(EggVertex) EggVertex::
+make_average(const EggVertex *first, const EggVertex *second) {
+  PT(EggVertexPool) pool = first->get_pool();
+  nassertr(pool == second->get_pool(), NULL);
+
+  // If both vertices are in a pool, the new vertex will be part of
+  // the pool as well.
+  PT(EggVertex) middle;
+  if (pool == NULL) {
+    middle = new EggVertex;
+  } else {
+    middle = pool->make_new_vertex();
+  }
+
+  middle->set_pos4((first->get_pos4() + second->get_pos4()) / 2);
+
+  if (first->has_normal() && second->has_normal()) {
+    LNormald normal = (first->get_normal() + second->get_normal()) / 2;
+    normal.normalize();
+    middle->set_normal(normal);
+  }
+  if (first->has_color() && second->has_color()) {
+    middle->set_color((first->get_color() + second->get_color()) / 2);
+  }
+
+  // Average out the EggVertexUV objects, but only for the UV sets
+  // that they have in common.
+  const_uv_iterator it;
+  for (it = first->uv_begin(); it != first->uv_end(); ++it) {
+    const EggVertexUV *first_uv = it->second;
+    const EggVertexUV *second_uv = second->get_uv_obj(it->first);
+
+    if (first_uv != NULL && second_uv != NULL) {
+      middle->set_uv_obj(EggVertexUV::make_average(first_uv, second_uv));
+    }
+  }
+
+  // Same for EggVertexAux.
+  const_aux_iterator ai;
+  for (ai = first->aux_begin(); ai != first->aux_end(); ++ai) {
+    const EggVertexAux *first_aux = ai->second;
+    const EggVertexAux *second_aux = second->get_aux_obj(ai->first);
+
+    if (first_aux != NULL && second_aux != NULL) {
+      middle->set_aux_obj(EggVertexAux::make_average(first_aux, second_aux));
+    }
+  }
+
+  // Now process the morph targets.
+  EggMorphVertexList::const_iterator vi, vi2;
+  for (vi = first->_dxyzs.begin(); vi != first->_dxyzs.end(); ++vi) {
+    for (vi2 = second->_dxyzs.begin(); vi2 != second->_dxyzs.end(); ++vi2) {
+      if (vi->get_name() == vi2->get_name()) {
+        middle->_dxyzs.insert(EggMorphVertex(vi->get_name(),
+                              (vi->get_offset() + vi2->get_offset()) / 2));
+        break;
+      }
+    }
+  }
+
+  EggMorphNormalList::const_iterator ni, ni2;
+  for (ni = first->_dxyzs.begin(); ni != first->_dxyzs.end(); ++ni) {
+    for (ni2 = second->_dxyzs.begin(); ni2 != second->_dxyzs.end(); ++ni2) {
+      if (ni->get_name() == ni2->get_name()) {
+        middle->_dnormals.insert(EggMorphNormal(ni->get_name(),
+                                 (ni->get_offset() + ni2->get_offset()) / 2));
+        break;
+      }
+    }
+  }
+
+  EggMorphColorList::const_iterator ci, ci2;
+  for (ci = first->_drgbas.begin(); ci != first->_drgbas.end(); ++ci) {
+    for (ci2 = second->_drgbas.begin(); ci2 != second->_drgbas.end(); ++ci2) {
+      if (ci->get_name() == ci2->get_name()) {
+        middle->_drgbas.insert(EggMorphColor(ci->get_name(),
+                               (ci->get_offset() + ci2->get_offset()) / 2));
+        break;
+      }
+    }
+  }
+
+  // Now merge the vertex memberships.
+  GroupRef::iterator gi;
+  for (gi = first->_gref.begin(); gi != first->_gref.end(); ++gi) {
+    EggGroup *group = *gi;
+    if (second->_gref.count(group)) {
+      group->set_vertex_membership(middle,
+        (group->get_vertex_membership(first) +
+         group->get_vertex_membership(second)) / 2.);
+    } else {
+      // Hmm, unfortunate, only one of the vertices is member of this
+      // group, so we can't make an average.  We'll have to assign the
+      // only group membership we have.
+      group->set_vertex_membership(middle, group->get_vertex_membership(first));
+    }
+  }
+  // Also assign memberships to the grefs in the second vertex that
+  // aren't part of the first vertex.
+  for (gi = second->_gref.begin(); gi != second->_gref.end(); ++gi) {
+    EggGroup *group = *gi;
+    if (second->_gref.count(group) == 0) {
+      group->set_vertex_membership(middle, group->get_vertex_membership(second));
+    }
+  }
+
+  return middle;
+}
 
 ///////////////////////////////////////////////////////////////////
 //       Class : GroupRefEntry

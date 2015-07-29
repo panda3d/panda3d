@@ -18,25 +18,23 @@
     boundingSphere.I boundingSphere.h  \
     boundingVolume.I boundingVolume.h config_mathutil.h  \
     fftCompressor.h finiteBoundingVolume.h frustum.h  \
-    frustum_src.I frustum_src.h geometricBoundingVolume.I  \
-    geometricBoundingVolume.h \
+    geometricBoundingVolume.I geometricBoundingVolume.h \
     intersectionBoundingVolume.h intersectionBoundingVolume.I \
     linmath_events.h \
-    look_at.h look_at_src.I  \
-    look_at_src.cxx look_at_src.h \
+    look_at.h \
     linmath_events.h \
     mersenne.h \
     omniBoundingVolume.I  \
     omniBoundingVolume.h \
-    parabola.h parabola_src.I parabola_src.cxx parabola_src.h \
+    parabola.h \
     perlinNoise.h perlinNoise.I \
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
-    plane.h plane_src.I plane_src.cxx plane_src.h \
+    plane.h \
     pta_LMatrix4.h pta_LMatrix3.h pta_LVecBase3.h \
     pta_LVecBase4.h pta_LVecBase2.h \
     randomizer.h randomizer.I \
-    rotate_to.h rotate_to_src.cxx \
+    rotate_to.h \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
     stackedPerlinNoise3.h stackedPerlinNoise3.I \
     triangulator.h triangulator.I \

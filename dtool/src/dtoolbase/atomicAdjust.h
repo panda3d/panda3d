@@ -18,12 +18,20 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#if defined(THREAD_DUMMY_IMPL)||defined(THREAD_SIMPLE_IMPL)
+#if defined(CPPPARSER)
+
+struct AtomicAdjust {
+  typedef long Integer;
+  typedef void *UnalignedPointer;
+  typedef UnalignedPointer Pointer;
+};
+
+#elif defined(THREAD_DUMMY_IMPL) || defined(THREAD_SIMPLE_IMPL)
 
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;
 
-#elif defined(__i386__) || defined(_M_IX86)
+#elif (defined(__i386__) || defined(_M_IX86)) && !defined(__APPLE__)
 // For an i386 architecture, we'll always use the i386 implementation.
 // It should be safe for any OS, and it might be a bit faster than
 // any OS-provided calls.

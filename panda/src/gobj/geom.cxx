@@ -751,6 +751,44 @@ unify_in_place(int max_indices, bool preserve_order) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_lines_in_place
+//       Access: Published
+//  Description: Replaces the GeomPrimitives within this Geom with
+//               corresponding GeomLines, representing a wireframe
+//               of the primitives.  See GeomPrimitive::make_lines().
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+void Geom::
+make_lines_in_place() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->make_lines();
+    (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+  clear_cache_stage(current_thread);
+
+  nassertv(all_is_valid);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_points_in_place
 //       Access: Published
 //  Description: Replaces the GeomPrimitives within this Geom with
@@ -1859,7 +1897,7 @@ check_usage_hint() const {
 #ifdef DO_PIPELINING
       unref_delete((CycleData *)_cdata);
 #endif
-      Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler,
+      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler,
                                  false, _current_thread);
       ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
 #ifdef DO_PIPELINING
@@ -1868,7 +1906,7 @@ check_usage_hint() const {
       if (!fresh_cdata->_got_usage_hint) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
-        ((Geom *)_object.p())->reset_usage_hint(fresh_cdata);
+        ((Geom *)_object)->reset_usage_hint(fresh_cdata);
         nassertv(fresh_cdata->_got_usage_hint);
       }
 

@@ -163,29 +163,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   set_clear_color_active(true);
   set_clear_depth_active(true);
   set_clear_stencil_active(true);
-
-  switch (background_color.get_num_words()) {
-  case 1:
-    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], 0.0f));
-    break;
-
-  case 2:
-    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], background_color[1]));
-    break;
-
-  case 3:
-    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], 0.0f));
-    break;
-
-  case 4:
-    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], background_color[3]));
-    break;
-
-  default:
-    display_cat.warning()
-      << "Invalid background-color specification: "
-      << background_color.get_string_value() << "\n";
-  }
+  set_clear_color(background_color.get_value());
 }
 
 ////////////////////////////////////////////////////////////////////

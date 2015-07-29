@@ -301,7 +301,7 @@ ConfigVariableBool allow_incomplete_render
           "the frame render if necessary."));
 
 ConfigVariableInt win_size
-("win-size", "640 480",
+("win-size", "800 600",
  PRC_DESC("This is the default size at which to open a new window.  This "
           "replaces the deprecated win-width and win-height variables."));
 
@@ -418,19 +418,13 @@ ConfigVariableInt depth_bits
 ("depth-bits", 0,
  PRC_DESC("The minimum number of depth buffer bits requested."));
 ConfigVariableInt color_bits
-("color-bits", 0,
- PRC_DESC("The minimum number of total color buffer bits requested.  This "
-          "value is like red-bits + blue-bits + green-bits except Panda "
-          "won't care how the bits are divided up."));
-ConfigVariableInt red_bits
-("red-bits", 0,
- PRC_DESC("The minimum number of red color buffer bits requested."));
-ConfigVariableInt green_bits
-("green-bits", 0,
- PRC_DESC("The minimum number of green color buffer bits requested."));
-ConfigVariableInt blue_bits
-("blue-bits", 0,
- PRC_DESC("The minimum number of blue color buffer bits requested."));
+("color-bits", "",
+ PRC_DESC("The minimum number of total color buffer bits requested.  If you "
+          "specify only one value, it will represent the total value for the "
+          "red, green and blue channels, and indicates you don't care how the "
+          "bits are divided up among the red, green and blue channels.  If "
+          "you specify three values, it represents three separate red, green "
+          "and blue bit requirements."));
 ConfigVariableInt alpha_bits
 ("alpha-bits", 0,
  PRC_DESC("The minimum number of alpha buffer bits requested."));
@@ -451,8 +445,8 @@ ConfigVariableDouble pixel_zoom
 ("pixel-zoom", 1.0,
  PRC_DESC("The default pixel_zoom factor for new windows."));
 
-ConfigVariableDouble background_color
-("background-color", "0.41 0.41 0.41",
+ConfigVariableColor background_color
+("background-color", "0.41 0.41 0.41 0.0",
  PRC_DESC("Specifies the rgb(a) value of the default background color for a "
           "new window or offscreen buffer."));
 

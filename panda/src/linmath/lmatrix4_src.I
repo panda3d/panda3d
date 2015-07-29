@@ -166,7 +166,7 @@ INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
   TAU_PROFILE("void LMatrix4::operator = (const UnalignedLMatrix4 &)", " ", TAU_USER);
 
-  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * get_num_components());
+  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
   return *this;
 }
 
@@ -1848,7 +1848,7 @@ FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
-  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * get_num_components());
+  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
   return *this;
 }
 

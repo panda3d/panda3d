@@ -1018,7 +1018,7 @@ tag_end() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::tag_size
-//       Access: Published
+//       Access: Public
 //  Description: Returns the number of elements between tag_begin()
 //               and tag_end().
 //

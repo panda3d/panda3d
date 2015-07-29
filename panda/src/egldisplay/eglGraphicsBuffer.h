@@ -1,5 +1,5 @@
 // Filename: eglGraphicsBuffer.h
-// Created by:  pro-rsoft (13Jun09)
+// Created by:  rdb (13Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //

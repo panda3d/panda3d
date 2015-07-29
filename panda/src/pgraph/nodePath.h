@@ -38,6 +38,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
+#include "shaderInput.h"
+#include "textureCollection.h"
+#include "textureStageCollection.h"
 
 class NodePathCollection;
 class FindApproxPath;
@@ -171,14 +174,15 @@ PUBLISHED:
   };
 
   INLINE NodePath();
-  INLINE NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
-  INLINE NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
+  INLINE explicit NodePath(const string &top_node_name, Thread *current_thread = Thread::get_current_thread());
+  INLINE explicit NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
-  NodePath(const NodePath &parent, PandaNode *child_node,
-           Thread *current_thread = Thread::get_current_thread());
+  explicit NodePath(const NodePath &parent, PandaNode *child_node,
+                    Thread *current_thread = Thread::get_current_thread());
 
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
+  INLINE void clear();
 
 #ifdef USE_MOVE_SEMANTICS
   INLINE NodePath(NodePath &&from) NOEXCEPT;
@@ -274,8 +278,7 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
   INLINE void reverse_ls() const;
-  INLINE int reverse_ls(ostream &out, int indent_level = 0) const;
-
+  int reverse_ls(ostream &out, int indent_level = 0) const;
 
   // Aggregate transform and state information.
   const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;
@@ -624,39 +627,39 @@ PUBLISHED:
   void clear_shader();
 
   void set_shader_input(const ShaderInput *inp);
-  void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
-  void set_shader_input(const InternalName *id, Texture *tex, const SamplerState &sampler, int priority=0);
-  void set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
-  void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_int &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const PTA_LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase4i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase3i &v, int priority=0);
-  void set_shader_input(const InternalName *id, const LVecBase2i &v, int priority=0);
-  void set_shader_input(const InternalName *id, int n1, int n2=0, int n3=0,
-                                                int n4=0, int priority=0);
-  void set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2=0,
-                        PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const NodePath &np, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_float &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_double &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_int &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, int n1, int n2=0, int n3=0,
+                                                    int n4=0, int priority=0);
+  INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2=0,
+                               PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-  void clear_shader_input(const InternalName *id);
+  void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(const InternalName *id) const;
+  const ShaderInput *get_shader_input(CPT_InternalName id) const;
   int get_instance_count() const;
 
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
@@ -766,6 +769,7 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
+  void set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority = 0);
   void set_render_mode_thickness(PN_stdfloat thickness, int priority = 0);
   void set_render_mode_perspective(bool perspective, int priority = 0);
   void set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority = 0);
@@ -871,9 +875,10 @@ PUBLISHED:
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                         const NodePath &other = NodePath(),
                          Thread *current_thread = Thread::get_current_thread()) const;
 
-  EXTENSION(PyObject *get_tight_bounds() const);
+  EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
 
   //  void analyze() const;
 
@@ -953,7 +958,7 @@ private:
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
-  typedef phash_set<InternalName *, pointer_hash> InternalNames;
+  typedef phash_set<const InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
   void r_find_all_vertex_columns(PandaNode *node,
                                  InternalNames &vertex_columns) const;

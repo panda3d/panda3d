@@ -89,7 +89,7 @@ operator = (const ReferenceCount &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ReferenceCount::
 ~ReferenceCount() {
@@ -182,7 +182,7 @@ ref() const {
   nassertv(test_ref_count_integrity());
 #endif
 
-  AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
+  AtomicAdjust::inc(_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,9 +221,8 @@ unref() const {
   // directly?  Are you sure you can't use PointerTo's?
   nassertr(_ref_count > 0, 0);
 #endif
-  return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
+  return AtomicAdjust::dec(_ref_count);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::test_ref_count_integrity
@@ -320,6 +319,9 @@ get_weak_list() const {
 INLINE void ReferenceCount::
 weak_ref(WeakPointerToVoid *ptv) {
   TAU_PROFILE("void ReferenceCount::weak_ref()", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
   get_weak_list()->add_reference(ptv);
 }
 
@@ -333,6 +335,9 @@ weak_ref(WeakPointerToVoid *ptv) {
 INLINE void ReferenceCount::
 weak_unref(WeakPointerToVoid *ptv) {
   TAU_PROFILE("void ReferenceCount::weak_unref()", " ", TAU_USER);
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
   nassertv(has_weak_list());
   ((WeakReferenceList *)_weak_list)->clear_reference(ptv);
 }

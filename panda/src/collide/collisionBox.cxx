@@ -29,7 +29,7 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 #include "geom.h"
-#include "geomTrifans.h"
+#include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "config_mathutil.h"
 #include "dcast.h"
@@ -80,7 +80,7 @@ setup_box(){
 //     Function: CollisionBox::setup_points
 //       Access: Private
 //  Description: Computes the plane and 2d projection of points that
-//               make up this side          
+//               make up this side.
 ////////////////////////////////////////////////////////////////////
 void CollisionBox::
 setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
@@ -144,15 +144,19 @@ test_intersection(const CollisionEntry &entry) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionBox::
 xform(const LMatrix4 &mat) {
+  _min = _min * mat;
+  _max = _max * mat;
   _center = _center * mat;
-  for(int v = 0; v < 8; v++)
+  for(int v = 0; v < 8; v++) {
     _vertex[v] = _vertex[v] * mat;
-  for(int p = 0; p < 6 ; p++)
+  }
+  for(int p = 0; p < 6 ; p++) {
     _planes[p] = set_plane(p);
-  _x = _vertex[0].get_x()-_center.get_x(); 
-  _y = _vertex[0].get_y()-_center.get_y();
-  _z = _vertex[0].get_z()-_center.get_z();
-  _radius = sqrt( _x*_x + _y*_y + _z*_z );
+  }
+  _x = _vertex[0].get_x() - _center.get_x();
+  _y = _vertex[0].get_y() - _center.get_y();
+  _z = _vertex[0].get_z() - _center.get_z();
+  _radius = sqrt(_x * _x + _y * _y + _z * _z);
   setup_box();
   mark_viz_stale();
   mark_internal_bounds_stale();
@@ -552,7 +556,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   PN_stdfloat near_t = 0.0;
   bool intersect;
   LPlane plane;
-  LPlane near_plane; 
+  LPlane near_plane;
 
   //Returns the details about the first plane of the box that the
   //segment intersects.
@@ -589,7 +593,6 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     }
     ++j;
   }
-   
 
   if(!intersect) {
     //No intersection with ANY of the box's planes has been detected
@@ -645,22 +648,50 @@ fill_viz_geom() {
   PT(GeomVertexData) vdata = new GeomVertexData
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
-  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
-  for(int i = 0; i < 6; i++) {
-    for(int j = 0; j < 4; j++)
-      vertex.add_data3(get_point(plane_def[i][j]));
 
-    PT(GeomTrifans) body = new GeomTrifans(Geom::UH_static);
-    body->add_consecutive_vertices(i*4, 4);
-    body->close_primitive();
+  vdata->unclean_set_num_rows(8);
 
-    PT(Geom) geom = new Geom(vdata);
-    geom->add_primitive(body);
+  {
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    vertex.set_data3(_min[0], _min[1], _min[2]);
+    vertex.set_data3(_min[0], _max[1], _min[2]);
+    vertex.set_data3(_max[0], _max[1], _min[2]);
+    vertex.set_data3(_max[0], _min[1], _min[2]);
 
-    _viz_geom->add_geom(geom, get_solid_viz_state());
-    _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+    vertex.set_data3(_min[0], _min[1], _max[2]);
+    vertex.set_data3(_min[0], _max[1], _max[2]);
+    vertex.set_data3(_max[0], _max[1], _max[2]);
+    vertex.set_data3(_max[0], _min[1], _max[2]);
   }
+
+  PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+
+  // Bottom
+  tris->add_vertices(0, 1, 2);
+  tris->add_vertices(2, 3, 0);
+
+  // Top
+  tris->add_vertices(4, 7, 6);
+  tris->add_vertices(6, 5, 4);
+
+  // Sides
+  tris->add_vertices(0, 4, 1);
+  tris->add_vertices(1, 4, 5);
+
+  tris->add_vertices(1, 5, 2);
+  tris->add_vertices(2, 5, 6);
+
+  tris->add_vertices(2, 6, 3);
+  tris->add_vertices(3, 6, 7);
+
+  tris->add_vertices(3, 7, 0);
+  tris->add_vertices(0, 7, 4);
+
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(tris);
+
+  _viz_geom->add_geom(geom, get_solid_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -675,7 +706,7 @@ fill_viz_geom() {
 //               planes), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionBox::
-apply_clip_plane(CollisionBox::Points &new_points, 
+apply_clip_plane(CollisionBox::Points &new_points,
                  const ClipPlaneAttrib *cpa,
                  const TransformState *net_transform, int plane_no) const {
   bool all_in = true;
@@ -687,9 +718,9 @@ apply_clip_plane(CollisionBox::Points &new_points,
     NodePath plane_path = cpa->get_on_plane(i);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
-      CPT(TransformState) new_transform = 
+      CPT(TransformState) new_transform =
         net_transform->invert_compose(plane_path.get_net_transform());
-      
+
       LPlane plane = plane_node->get_plane() * new_transform->get_mat();
       if (first_plane) {
         first_plane = false;

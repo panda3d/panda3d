@@ -177,3 +177,8 @@ class EventManager:
 
     def shutdown(self):
         taskMgr.remove('eventManager')
+
+        # Flush the event queue.  We do this after removing the task
+        # since the task removal itself might also fire off an event.
+        if self.eventQueue is not None:
+            self.eventQueue.clear()

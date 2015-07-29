@@ -23,10 +23,9 @@ template<>
 class Extension<FLOATNAME(LVecBase3)> : public ExtensionBase<FLOATNAME(LVecBase3)> {
 public:
   INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
-  INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const;
+  INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const;
   INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
-  INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+  INLINE_LINMATH string __repr__() const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3) __pow__(FLOATTYPE exponent) const;
   INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent);

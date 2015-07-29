@@ -80,12 +80,12 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomVertexData(const string &name,
-                 const GeomVertexFormat *format,
-                 UsageHint usage_hint);
+  explicit GeomVertexData(const string &name,
+                          const GeomVertexFormat *format,
+                          UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
-  GeomVertexData(const GeomVertexData &copy,
-                 const GeomVertexFormat *format);
+  explicit GeomVertexData(const GeomVertexData &copy,
+                          const GeomVertexFormat *format);
   void operator = (const GeomVertexData &copy);
   virtual ~GeomVertexData();
   ALLOC_DELETED_CHAIN(GeomVertexData);
@@ -175,6 +175,11 @@ public:
   static INLINE unsigned int unpack_abcd_b(PN_uint32 data);
   static INLINE unsigned int unpack_abcd_c(PN_uint32 data);
   static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
+
+  static INLINE PN_uint32 pack_ufloat(float a, float b, float c);
+  static INLINE float unpack_ufloat_a(PN_uint32 data);
+  static INLINE float unpack_ufloat_b(PN_uint32 data);
+  static INLINE float unpack_ufloat_c(PN_uint32 data);
 
 private:
   static void bytewise_copy(unsigned char *to, int to_stride,
@@ -334,6 +339,8 @@ private:
                                   const LMatrix4 &mat, int begin_row, int end_row);
   static void table_xform_point3f(unsigned char *datat, size_t num_rows,
                                   size_t stride, const LMatrix4f &matf);
+  static void table_xform_normal3f(unsigned char *datat, size_t num_rows,
+                                   size_t stride, const LMatrix4f &matf);
   static void table_xform_vector3f(unsigned char *datat, size_t num_rows,
                                    size_t stride, const LMatrix4f &matf);
   static void table_xform_vecbase4f(unsigned char *datat, size_t num_rows,
@@ -453,7 +460,7 @@ public:
   bool get_array_info(const InternalName *name,
                       const GeomVertexArrayDataHandle *&array_reader,
                       int &num_values, NumericType &numeric_type,
-                      int &start, int &stride, int &divisor,
+                      bool &normalized, int &start, int &stride, int &divisor,
                       int &num_elements, int &element_stride) const;
 
   INLINE bool has_vertex() const;

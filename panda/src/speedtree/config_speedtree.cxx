@@ -116,11 +116,11 @@ ConfigVariableDouble speedtree_fog_distance
  PRC_DESC("Specifies the nearest and farthest distance of the fog on trees "
           "and terrain."));
 
-ConfigVariableDouble speedtree_fog_color
+ConfigVariableColor speedtree_fog_color
 ("speedtree-fog-color", "1.0 1.0 1.0",
  PRC_DESC("Specifies the r g b color of SpeedTree fog."));
 
-ConfigVariableDouble speedtree_sky_color
+ConfigVariableColor speedtree_sky_color
 ("speedtree-sky-color", "0.2 0.3 0.5",
  PRC_DESC("Specifies the r g b color of the SpeedTree sky, when the sky "
           "is enabled.  Currently unused."));
@@ -129,7 +129,7 @@ ConfigVariableDouble speedtree_sky_fog
 ("speedtree-sky-fog", "-0.5 1.0",
  PRC_DESC("Specifies the range of fog in the sky.  -1 is down, 1 is up."));
 
-ConfigVariableDouble speedtree_sun_color
+ConfigVariableColor speedtree_sun_color
 ("speedtree-sun-color", "1.0 1.0 0.85",
  PRC_DESC("Specifies the r g b color of the SpeedTree sun, when the sun "
           "is enabled.  Currently unused."));
@@ -146,12 +146,12 @@ ConfigVariableDouble speedtree_sun_fog_bloom
 ("speedtree-sun-fog-bloom", 0.0,
  PRC_DESC("Undocumented SpeedTree parameter."));
 
-ConfigVariableDouble speedtree_specular_color
+ConfigVariableColor speedtree_specular_color
 ("speedtree-specular-color", "1 1 1",
  PRC_DESC("Specifies the r g b color of the specular reflections on SpeedTree "
           "surfaces."));
 
-ConfigVariableDouble speedtree_emissive_color
+ConfigVariableColor speedtree_emissive_color
 ("speedtree-emissive-color", "0 0 0",
  PRC_DESC("Specifies the r g b color of the emissive light effect on SpeedTree "
           "surfaces."));

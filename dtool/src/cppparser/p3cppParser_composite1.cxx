@@ -18,13 +18,8 @@
 #include "cppTypeDeclaration.cxx"
 #include "cppTypeParser.cxx"
 #include "cppTypeProxy.cxx"
+#include "cppTypedefType.cxx"
 #include "cppSimpleType.cxx"
 #include "cppTBDType.cxx"
-#include "cppTypedef.cxx"
 #include "cppUsing.cxx"
 #include "cppVisibility.cxx"
-
-
-
-
-

@@ -77,6 +77,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPArrayType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPArrayType::
+is_trivial() const {
+  return _element_type->is_trivial();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it
@@ -206,11 +217,11 @@ is_equal(const CPPDeclaration *other) const {
     if (*_bounds != *ot->_bounds) {
       return false;
     }
-  } else if (_bounds == NULL || ot->_bounds == NULL) {
+  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
     return false;
   }
 
-  return _element_type == ot->_element_type;
+  return *_element_type == *ot->_element_type;
 }
 
 
@@ -230,10 +241,13 @@ is_less(const CPPDeclaration *other) const {
     if (*_bounds != *ot->_bounds) {
       return *_bounds < *ot->_bounds;
     }
-  } else if (_bounds == NULL || ot->_bounds == NULL) {
+  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
     return _bounds < ot->_bounds;
   }
 
-  return _element_type < ot->_element_type;
+  if (*_element_type != *ot->_element_type) {
+    return *_element_type < *ot->_element_type;
+  }
+  return false;
 }
 

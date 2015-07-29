@@ -363,8 +363,29 @@ cpow(int x, int y) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool
+cnan(float v) {
+#if __FINITE_MATH_ONLY__
+  // GCC's isnan breaks when using -ffast-math.
+  union { float f; uint32_t x; } u = { v };
+  return ((u.x << 1) > 0xff000000u);
+#elif !defined(_WIN32)
+  return std::isnan(v);
+#else
+  return (_isnan(v) != 0);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cnan
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool
 cnan(double v) {
-#ifndef _WIN32
+#if __FINITE_MATH_ONLY__
+  // GCC's isnan breaks when using -ffast-math.
+  union { double d; uint64_t x; } u = { v };
+  return ((u.x << 1) > 0xff70000000000000ull);
+#elif !defined(_WIN32)
   return std::isnan(v);
 #else
   return (_isnan(v) != 0);
@@ -376,8 +397,29 @@ cnan(double v) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool
+cinf(float v) {
+#if __FINITE_MATH_ONLY__
+  // GCC's isinf breaks when using -ffast-math.
+  union { float f; uint32_t x; } u = { v };
+  return ((u.x << 1) == 0xff000000u);
+#elif !defined(_WIN32)
+  return std::isinf(v);
+#else
+  return (_isnan(v) == 0 && _finite(v) == 0);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: cinf
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool
 cinf(double v) {
-#ifndef _WIN32
+#if __FINITE_MATH_ONLY__
+  // GCC's isinf breaks when using -ffast-math.
+  union { double d; uint64_t x; } u = { v };
+  return ((u.x << 1) == 0xff70000000000000ull);
+#elif !defined(_WIN32)
   return std::isinf(v);
 #else
   return (_isnan(v) == 0 && _finite(v) == 0);

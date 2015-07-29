@@ -200,6 +200,7 @@ CPPPreprocessor() {
 
   _warning_count = 0;
   _error_count = 0;
+  _error_abort = false;
 #ifdef CPP_VERBOSE_LEX
   _token_index = 0;
 #endif
@@ -404,8 +405,7 @@ get_next_token0() {
 
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
-    if (decl != NULL &&
-        (decl->as_typedef() != NULL || decl->as_type() != NULL)) {
+    if (decl != NULL && decl->as_type() != NULL) {
       token_type = TYPENAME_IDENTIFIER;
     }
 
@@ -432,10 +432,14 @@ warning(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Warning in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
   }
   _warning_count++;
@@ -452,7 +456,7 @@ error(const string &message, int line, int col, CPPFile file) {
     // Don't report or log errors in the nested state.  These will be
     // reported when the nesting level collapses.
     return;
-  };
+  }
 
   if (_verbose >= 1) {
     if (line == 0) {
@@ -462,11 +466,20 @@ error(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    indent(cerr, _files.size() * 2)
+    int indent_level = 0;
+    if (_verbose >= 3) {
+      indent_level = _files.size() * 2;
+    }
+    indent(cerr, indent_level)
       << "*** Error in " << file
       << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, _files.size() * 2)
+    indent(cerr, indent_level)
       << message << "\n";
+
+    if (_error_abort) {
+      cerr << "Aborting.\n";
+      abort();
+    }
   }
   _error_count++;
 }
@@ -603,10 +616,11 @@ init_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
-  if (_verbose >= 2) {
+  if (_verbose >= 3) {
     indent(cerr, _files.size() * 2)
       << "Reading " << file << "\n";
   }
+
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
 
@@ -673,7 +687,7 @@ push_string(const string &input, bool lock_position) {
 //               string and return the new string.
 ////////////////////////////////////////////////////////////////////
 string CPPPreprocessor::
-expand_manifests(const string &input_expr) {
+expand_manifests(const string &input_expr, bool expand_undefined) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
@@ -708,6 +722,10 @@ expand_manifests(const string &input_expr) {
               expand_manifest_inline(expr, q, p, (*mi).second);
               manifest_found = true;
             }
+          } else if (expand_undefined && ident != "true" && ident != "false") {
+            // It is not found.  Expand it to 0.
+            expr = expr.substr(0, q) + "0" + expr.substr(p);
+            p = q + 1;
           }
         }
       } else {
@@ -737,7 +755,7 @@ expand_manifests(const string &input_expr) {
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope) {
-  string expr = expand_manifests(input_expr);
+  string expr = expand_manifests(input_expr, true);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1145,7 +1163,7 @@ process_directive(int c) {
   } else if (command == "include") {
     handle_include_directive(args, first_line, first_col, first_file);
   } else if (command == "pragma") {
-    // Quietly ignore pragmas.
+    handle_pragma_directive(args, first_line, first_col, first_file);
   } else if (command == "ident") {
     // Quietly ignore idents.
   } else if (command == "error") {
@@ -1366,7 +1384,7 @@ handle_include_directive(const string &args, int first_line,
   // might not filter out quotes and angle brackets properly, we'll
   // only expand manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expr = expand_manifests(expr);
+    expr = expand_manifests(expr, false);
   }
 
   if (!expr.empty()) {
@@ -1449,7 +1467,16 @@ handle_include_directive(const string &args, int first_line,
               first_line, first_col, first_file);
     } else {
       _last_c = '\0';
-      if (!push_file(CPPFile(filename, filename_as_referenced, source))) {
+
+      CPPFile file(filename, filename_as_referenced, source);
+
+      // Don't include it if we included it before and it had #pragma once.
+      ParsedFiles::const_iterator it = _parsed_files.find(file);
+      if (it->_pragma_once) {
+        return;
+      }
+
+      if (!push_file(file)) {
         warning("Unable to read " + filename.get_fullpath(),
                 first_line, first_col, first_file);
       }
@@ -1457,6 +1484,21 @@ handle_include_directive(const string &args, int first_line,
   } else {
     warning("Ignoring invalid #include directive",
             first_line, first_col, first_file);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::handle_pragma_directive
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPPreprocessor::
+handle_pragma_directive(const string &args, int first_line,
+                        int first_col, const CPPFile &first_file) {
+  if (args == "once") {
+    ParsedFiles::iterator it = _parsed_files.find(first_file);
+    assert(it != _parsed_files.end());
+    it->_pragma_once = true;
   }
 }
 
@@ -2009,7 +2051,8 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
-  if (name == "wchar_t") return KW_WCHAR_T;
+  if (name == "char16_t") return KW_CHAR16_T;
+  if (name == "char32_t") return KW_CHAR32_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
   if (name == "delete") return KW_DELETE;
@@ -2061,6 +2104,7 @@ check_keyword(const string &name) {
   if (name == "virtual") return KW_VIRTUAL;
   if (name == "void") return KW_VOID;
   if (name == "volatile") return KW_VOLATILE;
+  if (name == "wchar_t") return KW_WCHAR_T;
   if (name == "while") return KW_WHILE;
 
   // These are alternative ways to refer to built-in operators.
@@ -2286,7 +2330,6 @@ unget(int c) {
   assert(_unget == '\0');
   _unget = c;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::nested_parse_template_instantiation

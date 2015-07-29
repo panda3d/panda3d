@@ -90,7 +90,7 @@ Options:
      each supported architecture).  On other platforms, this option
      does nothing.  This is therefore safe to apply in all cases, if
      you wish to take advantage of universal binaries.  This is
-     equivalent to "-P osx_ppc -P osx_i386" on Mac platforms.
+     equivalent to "-P osx_i386 -P osx_amd64" on Mac platforms.
 
   -P platform
      Specify the platform to masquerade as.  The default is whatever
@@ -123,6 +123,10 @@ Options:
      as such.  This only applies to .p3d packages, not to other types
      of packages!
 
+  -v
+     Emit a warning for any file not recognized by the dir() command
+     (indicating there may be a need for addExtensions(...)).
+     
   -h
      Display this help
 """
@@ -151,11 +155,12 @@ allowPythonDev = False
 universalBinaries = False
 systemRoot = None
 ignoreSetHost = False
+verbosePrint = False
 p3dSuffix = ''
 platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:hv')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -188,6 +193,9 @@ for opt, arg in opts:
     elif opt == '-a':
         p3dSuffix = arg
 
+    elif opt == '-v':
+        verbosePrint = True
+        
     elif opt == '-h':
         usage(0)
     else:
@@ -215,8 +223,7 @@ if universalBinaries:
         print '\nYou may not specify both -u and -P.\n'
         sys.exit(1)
     if PandaSystem.getPlatform().startswith('osx_'):
-        # Maybe soon we'll add osx_x86_64 to this default list.
-        platforms = ['osx_i386', 'osx_ppc']
+        platforms = ['osx_i386', 'osx_amd64']
 
 if not platforms:
     platforms = [PandaSystem.getPlatform()]
@@ -231,6 +238,7 @@ for platform in platforms:
     packager.allowPythonDev = allowPythonDev
     packager.systemRoot = systemRoot
     packager.ignoreSetHost = ignoreSetHost
+    packager.verbosePrint = verbosePrint
     packager.p3dSuffix = p3dSuffix
 
     try:

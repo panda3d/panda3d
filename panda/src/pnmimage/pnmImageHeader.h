@@ -24,6 +24,7 @@
 #include "pnotify.h"
 #include "pmap.h"
 #include "pvector.h"
+#include "colorSpace.h"
 
 class PNMFileType;
 class PNMReader;
@@ -67,6 +68,7 @@ PUBLISHED:
   INLINE bool has_alpha() const;
 
   INLINE xelval get_maxval() const;
+  INLINE ColorSpace get_color_space() const;
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -106,7 +108,7 @@ PUBLISHED:
   // Contains a single pixel specification used in compute_histogram()
   // and make_histogram().  Note that pixels are stored by integer
   // value, not by floating-point scaled value.
-  class PixelSpec {
+  class EXPCL_PANDA_PNMIMAGE PixelSpec {
   PUBLISHED:
     INLINE PixelSpec(xelval gray_value);
     INLINE PixelSpec(xelval gray_value, xelval alpha);
@@ -134,7 +136,7 @@ PUBLISHED:
 
     INLINE xelval operator [](int n) const;
     INLINE static int size();
-    
+
     void output(ostream &out) const;
 
   public:
@@ -143,7 +145,7 @@ PUBLISHED:
 
   // Associates a pixel specification with an appearance count, for
   // use in Histogram, below.
-  class PixelSpecCount {
+  class EXPCL_PANDA_PNMIMAGE PixelSpecCount {
   public:
     INLINE PixelSpecCount(const PixelSpec &pixel, int count);
     INLINE bool operator < (const PixelSpecCount &other) const;
@@ -157,7 +159,7 @@ PUBLISHED:
   typedef pvector<PixelSpec> Palette;
 
   // Used to return a pixel histogram in PNMImage::get_histogram().
-  class Histogram {
+  class EXPCL_PANDA_PNMIMAGE Histogram {
   PUBLISHED:
     INLINE Histogram();
 
@@ -175,7 +177,7 @@ PUBLISHED:
   private:
     PixelCount _pixels;
     HistMap _hist_map;
-  };    
+  };
 
 protected:
   bool compute_histogram(HistMap &hist, xel *array, xelval *alpha,
@@ -187,6 +189,7 @@ protected:
   int _x_size, _y_size;
   int _num_channels;
   xelval _maxval;
+  ColorSpace _color_space;
   string _comment;
   PNMFileType *_type;
 };

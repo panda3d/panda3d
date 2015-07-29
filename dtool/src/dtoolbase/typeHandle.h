@@ -64,13 +64,6 @@
 
 class TypedObject;
 
-#ifdef HAVE_PYTHON
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : TypeHandle
 // Description : TypeHandle is the identifier used to differentiate
@@ -101,12 +94,12 @@ PUBLISHED:
               // enum value.
   };
 
-  INLINE TypeHandle();
-  INLINE TypeHandle(const TypeHandle &copy);
+  // The default constructor must do nothing, because we can't
+  // guarantee ordering of static initializers.  If the constructor
+  // tried to initialize its value, it  might happen after the value
+  // had already been set previously by another static initializer!
 
-#ifdef HAVE_PYTHON
-  static PyObject *make(PyObject *classobj);
-#endif  // HAVE_PYTHON
+  EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;
@@ -130,16 +123,16 @@ PUBLISHED:
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = (TypedObject *)NULL) const;
 
-  INLINE int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
+  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
 #ifdef DO_MEMORY_USAGE
   int get_memory_usage(MemoryClass memory_class) const;
-  void inc_memory_usage(MemoryClass memory_class, int size);
-  void dec_memory_usage(MemoryClass memory_class, int size);
+  void inc_memory_usage(MemoryClass memory_class, size_t size);
+  void dec_memory_usage(MemoryClass memory_class, size_t size);
 #else
   static CONSTEXPR int get_memory_usage(MemoryClass) { return 0; }
-  INLINE void inc_memory_usage(MemoryClass, int) { }
-  INLINE void dec_memory_usage(MemoryClass, int) { }
+  INLINE void inc_memory_usage(MemoryClass, size_t) { }
+  INLINE void dec_memory_usage(MemoryClass, size_t) { }
 #endif  // DO_MEMORY_USAGE
 
   INLINE int get_index() const;

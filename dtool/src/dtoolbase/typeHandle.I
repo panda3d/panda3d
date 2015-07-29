@@ -14,28 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::Constructor
-//       Access: Published
-//  Description: The default constructor must do nothing, because we
-//               can't guarantee ordering of static initializers.  If
-//               the constructor tried to initialize its value, it
-//               might happen after the value had already been set
-//               previously by another static initializer!
-////////////////////////////////////////////////////////////////////
-INLINE TypeHandle::
-TypeHandle() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE TypeHandle::
-TypeHandle(const TypeHandle &copy) : _index(copy._index) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Equality Operator
 //       Access: Published
 //  Description:
@@ -284,25 +262,4 @@ none() {
 INLINE TypeHandle::
 operator bool () const {
   return (_index != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: get_best_parent_from_Set
-//       Access: Published
-//  Description: Return the Index of the BEst fit Classs from a set
-////////////////////////////////////////////////////////////////////
-INLINE  int TypeHandle::get_best_parent_from_Set(const std::set< int > &legal_vals) const
-{
-    if(legal_vals.find(_index) != legal_vals.end())
-        return _index;
-        
-    for(int pi = 0; pi < get_num_parent_classes() ; pi++)
-    {
-        TypeHandle ph = get_parent_class(pi);
-        int val = ph.get_best_parent_from_Set(legal_vals);
-        if(val > 0)
-            return val;
-    
-    }
-    return -1;
 }

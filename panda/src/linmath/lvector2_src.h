@@ -25,7 +25,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE x, FLOATTYPE y);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LVector2) &zero();
@@ -49,7 +49,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector2) &other) const;
 #endif
 
-  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

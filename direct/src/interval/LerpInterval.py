@@ -12,7 +12,8 @@ __all__ = [
     'LerpFunctionInterval', 'LerpFunc','LerpFunctionNoStateInterval','LerpFuncNS'
     ]
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 import LerpBlendHelpers

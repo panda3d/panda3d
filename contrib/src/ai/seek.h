@@ -26,16 +26,16 @@ class EXPCL_PANDAAI Seek {
 public:
   AICharacter *_ai_char;
 
-  LVecBase3f _seek_position;
+  LVecBase3 _seek_position;
   float _seek_weight;
-  LVecBase3f _seek_direction;
+  LVecBase3 _seek_direction;
   bool _seek_done;
-  LVecBase3f _seek_accum_force;
+  LVecBase3 _seek_accum_force;
 
   Seek(AICharacter *ai_ch, NodePath target_object, float seek_wt = 1.0);
-  Seek(AICharacter *ai_ch, LVecBase3f pos, float seek_wt = 1.0);
+  Seek(AICharacter *ai_ch, LVecBase3 pos, float seek_wt = 1.0);
   ~Seek();
-  LVecBase3f do_seek();
+  LVecBase3 do_seek();
 };
 
 #endif

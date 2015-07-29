@@ -30,7 +30,7 @@ class EXPCL_PANDAAI ObstacleAvoidance {
     float _feeler;
 
     ObstacleAvoidance(AICharacter *ai_char, float feeler_length);
-    LVecBase3f do_obstacle_avoidance();
+    LVecBase3 do_obstacle_avoidance();
     ~ObstacleAvoidance();
     void obstacle_avoidance_activate();
     bool obstacle_detection();

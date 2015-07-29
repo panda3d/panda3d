@@ -129,10 +129,13 @@ PUBLISHED:
   INLINE const LVecBase2i &get_size() const;
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
+  INLINE LVecBase2i get_fb_size() const;
   INLINE int get_fb_x_size() const;
   INLINE int get_fb_y_size() const;
+  INLINE LVecBase2i get_sbs_left_size() const;
   INLINE int get_sbs_left_x_size() const;
   INLINE int get_sbs_left_y_size() const;
+  INLINE LVecBase2i get_sbs_right_size() const;
   INLINE int get_sbs_right_x_size() const;
   INLINE int get_sbs_right_y_size() const;
   INLINE bool has_size() const;

@@ -18,7 +18,7 @@
 //       Access: Public, Static
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
-INLINE void AtomicAdjustWin32Impl::
+ALWAYS_INLINE void AtomicAdjustWin32Impl::
 inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
 #ifdef _WIN64
@@ -35,7 +35,7 @@ inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
 //               returns true if the new value is nonzero, false if it
 //               is zero.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AtomicAdjustWin32Impl::
+ALWAYS_INLINE bool AtomicAdjustWin32Impl::
 dec(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
 #ifdef _WIN64
@@ -70,7 +70,7 @@ add(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Intege
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
+ALWAYS_INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
 set(TVOLATILE AtomicAdjustWin32Impl::Integer &var, 
     AtomicAdjustWin32Impl::Integer new_value) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
@@ -90,7 +90,7 @@ set(TVOLATILE AtomicAdjustWin32Impl::Integer &var,
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
+ALWAYS_INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
 get(const TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
   // On Intel platforms, word-aligned loads are atomic (if performed
   // in a single instruction).  We can't guarantee the compiler will
@@ -107,7 +107,7 @@ get(const TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE AtomicAdjustWin32Impl::Pointer AtomicAdjustWin32Impl::
+ALWAYS_INLINE AtomicAdjustWin32Impl::Pointer AtomicAdjustWin32Impl::
 set_ptr(TVOLATILE AtomicAdjustWin32Impl::Pointer &var, 
         AtomicAdjustWin32Impl::Pointer new_value) {
   assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
@@ -123,7 +123,7 @@ set_ptr(TVOLATILE AtomicAdjustWin32Impl::Pointer &var,
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE AtomicAdjustWin32Impl::Pointer AtomicAdjustWin32Impl::
+ALWAYS_INLINE AtomicAdjustWin32Impl::Pointer AtomicAdjustWin32Impl::
 get_ptr(const TVOLATILE AtomicAdjustWin32Impl::Pointer &var) {
   // As in get(), make sure the address is word-aligned.
   assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);

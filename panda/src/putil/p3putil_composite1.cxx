@@ -16,6 +16,7 @@
 #include "callbackData.cxx"
 #include "callbackObject.cxx"
 #include "clockObject.cxx"
+#include "colorSpace.cxx"
 #include "config_util.cxx"
 #include "configurable.cxx"
 #include "copyOnWriteObject.cxx"

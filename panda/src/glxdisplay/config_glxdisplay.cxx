@@ -45,12 +45,6 @@ ConfigVariableBool glx_get_os_address
           "addresses of extension functions.  This will be done only "
           "if glxGetProcAddress() cannot be used for some reason."));
 
-ConfigVariableBool gl_support_fbo
-("gl-support-fbo", true,
- PRC_DESC("Configure this false if your GL's implementation of "
-          "EXT_framebuffer_object is broken.  The system might still be "
-          "able to create buffers using pbuffers or the like."));
-
 ConfigVariableBool glx_support_fbconfig
 ("glx-support-fbconfig", true,
  PRC_DESC("Set this true to enable the use of the advanced FBConfig "

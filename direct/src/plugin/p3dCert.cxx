@@ -16,10 +16,10 @@
 #include "wstring_encode.h"
 #include "mkdir_complete.h"
 
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Return_Button.H>
-#include <Fl/Fl_Text_Display.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Text_Display.H>
 
 #include <cassert>
 #include <sys/types.h>
@@ -156,6 +156,10 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
   _cert = NULL;
   _stack = NULL;
   _verify_result = -1;
+
+  // Center the window on the screen.
+  position((Fl::w() - w()) / 2, (Fl::h() - h()) / 2);
+  set_modal();
 
   read_cert_file(cert_filename);
   get_friendly_name();
@@ -557,7 +561,7 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
 
   case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
     strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, unknown_auth_cert_text, _friendly_name.c_str());
+    snprintf(text, tlen, unknown_auth_cert_text);
     break;
 
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
@@ -583,6 +587,10 @@ ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
   _auth_dialog(auth_dialog),
   _cert(cert)
 {
+  // Center the window on the screen.
+  position((Fl::w() - w()) / 2, (Fl::h() - h()) / 2);
+  set_modal();
+
   layout();
 }
 

@@ -1,7 +1,7 @@
 __all__ = ['register', 'sharedPackages',
            'reloadSharedPackage', 'reloadSharedPackages']
 
-from panda3d.core import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
+from panda3d._core import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
 import sys
 import marshal
 import imp
@@ -408,7 +408,7 @@ class VFSSharedImporter:
             path = sys.path
 
         for dir in path:
-            pdir = Filename.fromOsSpecific(dir).cStr()
+            pdir = str(Filename.fromOsSpecific(dir))
             if pdir + '/' + basename == dirname:
                 # We found it!
                 return dir

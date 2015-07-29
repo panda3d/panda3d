@@ -461,7 +461,10 @@ def makeInstaller():
 
         infoFilename = None
         descriptionFilename = None
-        packagemaker = "/Developer/usr/bin/packagemaker"
+        packagemaker = "/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"
+        if not os.path.exists(packagemaker):
+            packagemaker = "/Developer/usr/bin/packagemaker"
+
         if os.path.exists(packagemaker):
             # PackageMaker 3.0 or better, e.g. OSX 10.5.
             CMD = packagemaker
@@ -469,7 +472,7 @@ def makeInstaller():
             CMD += ' --version "%s"' % options.version
             CMD += ' --title "%s"' % options.long_name
             CMD += ' --out "%s"' % (pkgname)
-            CMD += ' --target 10.4' # The earliest version of OSX supported by Panda
+            CMD += ' --target 10.5' # The earliest version of OSX supported by Panda
             CMD += ' --domain system'
             CMD += ' --root "%s"' % tmproot
             CMD += ' --resources "%s"' % tmpresdir
@@ -520,7 +523,11 @@ def makeInstaller():
         
         # Pack the .pkg into a .dmg
         if not os.path.exists(tmproot): os.makedirs(tmproot)
-        shutil.copytree(pkgname, os.path.join(tmproot, pkgname))
+        if os.path.isdir(pkgname):
+            shutil.copytree(pkgname, os.path.join(tmproot, pkgname))
+        else:
+            shutil.copyfile(pkgname, os.path.join(tmproot, pkgname))
+
         tmpdmg = tempfile.mktemp('', 'p3d-setup') + ".dmg"
         CMD = 'hdiutil create "%s" -srcfolder "%s"' % (tmpdmg, tmproot)
         print ""

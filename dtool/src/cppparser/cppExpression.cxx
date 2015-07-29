@@ -26,6 +26,7 @@
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
 #include "cppBison.h"
+#include "pdtoa.h"
 
 #include <assert.h>
 
@@ -148,6 +149,30 @@ as_pointer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::Result::as_boolean
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool CPPExpression::Result::
+as_boolean() const {
+  switch (_type) {
+  case RT_integer:
+    return (_u._integer != 0);
+
+  case RT_real:
+    return (_u._real != 0.0);
+
+  case RT_pointer:
+    return (_u._pointer != NULL);
+
+  default:
+    cerr << "Invalid type\n";
+    assert(false);
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Result::output
 //       Access: Public
 //  Description:
@@ -226,7 +251,7 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
   CPPDeclaration(CPPFile())
 {
   CPPDeclaration *decl =
-    ident->find_symbol(current_scope, global_scope, error_sink);
+    ident->find_symbol(current_scope, global_scope);
 
   if (decl != NULL) {
     CPPInstance *inst = decl->as_instance();
@@ -245,6 +270,7 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
 
   _type = T_unknown_ident;
   _u._ident = ident;
+  _u._ident->_native_scope = current_scope;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -802,6 +828,66 @@ determine_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::is_fully_specified
+//       Access: Public, Virtual
+//  Description: Returns true if this declaration is an actual,
+//               factual declaration, or false if some part of the
+//               declaration depends on a template parameter which has
+//               not yet been instantiated.
+////////////////////////////////////////////////////////////////////
+bool CPPExpression::
+is_fully_specified() const {
+  if (!CPPDeclaration::is_fully_specified()) {
+    return false;
+  }
+
+  switch (_type) {
+  case T_integer:
+  case T_real:
+  case T_string:
+    return false;
+
+  case T_variable:
+    return _u._variable->is_fully_specified();
+
+  case T_function:
+    return _u._fgroup->is_fully_specified();
+
+  case T_unknown_ident:
+    return _u._ident->is_fully_specified();
+
+  case T_typecast:
+  case T_construct:
+  case T_new:
+    return (_u._typecast._to->is_fully_specified() &&
+            _u._typecast._op1->is_fully_specified());
+
+  case T_default_construct:
+  case T_default_new:
+  case T_sizeof:
+    return _u._typecast._to->is_fully_specified();
+
+  case T_trinary_operation:
+    if (!_u._op._op3->is_fully_specified()) {
+      return false;
+    }
+    // Fall through
+
+  case T_binary_operation:
+    if (!_u._op._op2->is_fully_specified()) {
+      return false;
+    }
+    // Fall through
+
+  case T_unary_operation:
+    return _u._op._op1->is_fully_specified();
+
+  default:
+    return true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::substitute_decl
 //       Access: Public, Virtual
 //  Description:
@@ -827,6 +913,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
         // Replacing the variable reference with another variable reference.
         rep->_u._variable = decl->as_instance();
         any_changed = true;
+
       } else if (decl->as_expression()) {
         // Replacing the variable reference with an expression.
         delete rep;
@@ -834,6 +921,43 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
         any_changed = true;
       }
     }
+    break;
+
+  case T_unknown_ident:
+    rep->_u._ident = _u._ident->substitute_decl(subst, current_scope, global_scope);
+    any_changed = any_changed || (rep->_u._ident != _u._ident);
+
+    // See if we can define it now.
+    decl = rep->_u._ident->find_symbol(current_scope, global_scope, subst);
+    if (decl != NULL) {
+      CPPInstance *inst = decl->as_instance();
+      if (inst != NULL) {
+        rep->_type = T_variable;
+        rep->_u._variable = inst;
+        any_changed = true;
+
+        decl = inst->substitute_decl(subst, current_scope, global_scope);
+        if (decl != inst) {
+          if (decl->as_instance()) {
+            // Replacing the variable reference with another variable reference.
+            rep->_u._variable = decl->as_instance();
+
+          } else if (decl->as_expression()) {
+            // Replacing the variable reference with an expression.
+            delete rep;
+            rep = decl->as_expression();
+          }
+        }
+        break;
+      }
+      CPPFunctionGroup *fgroup = decl->as_function_group();
+      if (fgroup != NULL) {
+        rep->_type = T_function;
+        rep->_u._fgroup = fgroup;
+        any_changed = true;
+      }
+    }
+
     break;
 
   case T_typecast:
@@ -909,6 +1033,9 @@ is_tbd() const {
 
     return true;
 
+  case T_unknown_ident:
+    return true;
+
   case T_typecast:
   case T_construct:
   case T_new:
@@ -953,7 +1080,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_real:
-    out << _u._real;
+    {
+      // We use our own dtoa implementation here because it guarantees
+      // to never format the number as an integer.
+      char buffer[32];
+      pdtoa(_u._real, buffer);
+      out << buffer;
+    }
     break;
 
   case T_string:
@@ -996,8 +1129,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_variable:
+    // We can just refer to the variable by name, except if it's a
+    // private constant, in which case we have to compute the value,
+    // since we may have to use it in generated code.
     if (_u._variable->_type != NULL &&
-        _u._variable->_initializer != NULL) {
+        _u._variable->_initializer != NULL &&
+        _u._variable->_vis > V_public) {
       // A const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
       if (const_type != NULL) {
@@ -1025,14 +1162,15 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_construct:
-    out << "(" << _u._typecast._to->get_typedef_name(scope)
-        << "(";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "(";
     _u._typecast._op1->output(out, indent_level, scope, false);
-    out << "))";
+    out << ")";
     break;
 
   case T_default_construct:
-    out << "(" << _u._typecast._to->get_typedef_name(scope) << "())";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "()";
     break;
 
   case T_new:
@@ -1434,4 +1572,3 @@ is_less(const CPPDeclaration *other) const {
 
   return false;
 }
-
