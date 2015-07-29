@@ -472,6 +472,7 @@ protected:
   INLINE void clear_color_write_mask();
 
 #ifdef SUPPORT_FIXED_FUNCTION
+  INLINE void call_glLoadMatrix(const LMatrix4 &mat);
   INLINE void call_glFogfv(GLenum pname, const LColor &color);
   INLINE void call_glMaterialfv(GLenum face, GLenum pname, const LColor &color);
   INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value);

@@ -112,6 +112,14 @@ null_glDrawRangeElements(GLenum mode, GLuint start, GLuint end,
 }
 #endif
 
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+static void APIENTRY
+null_glVertexAttrib4dv(GLuint index, const GLdouble *v) {
+  GLfloat vf[4] = {(GLfloat)v[0], (GLfloat)v[1], (GLfloat)v[2], (GLfloat)v[3]};
+  glVertexAttrib4fv(index, vf);
+}
+#endif
+
 static void APIENTRY
 null_glActiveTexture(GLenum gl_texture_stage) {
   // If we don't support multitexture, we'd better not try to request
@@ -1521,7 +1529,7 @@ reset() {
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
   _glVertexAttrib4fv = glVertexAttrib4fv;
-  _glVertexAttrib4dv = NULL;
+  _glVertexAttrib4dv = null_glVertexAttrib4dv;
   _glVertexAttribPointer = glVertexAttribPointer;
   _glVertexAttribIPointer = NULL;
   _glVertexAttribLPointer = NULL;
@@ -3003,7 +3011,7 @@ prepare_lens() {
   }
 
   glMatrixMode(GL_PROJECTION);
-  GLPf(LoadMatrix)(_projection_mat->get_mat().get_data());
+  call_glLoadMatrix(_projection_mat->get_mat());
   report_my_gl_errors();
 
   do_point_size();
@@ -4373,7 +4381,7 @@ end_draw_primitives() {
 #ifdef SUPPORT_FIXED_FUNCTION
   if (_transform_stale) {
     glMatrixMode(GL_MODELVIEW);
-    GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
+    call_glLoadMatrix(_internal_transform->get_mat());
   }
 
   if (_data_reader->is_vertex_transformed()) {
@@ -5854,7 +5862,7 @@ do_issue_transform() {
 
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   glMatrixMode(GL_MODELVIEW);
-  GLPf(LoadMatrix)(transform->get_mat().get_data());
+  call_glLoadMatrix(transform->get_mat());
 #endif
   _transform_stale = false;
 
@@ -9083,7 +9091,7 @@ begin_bind_lights() {
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
+  call_glLoadMatrix(render_transform->get_mat());
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
@@ -9153,7 +9161,7 @@ begin_bind_clip_planes() {
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
+  call_glLoadMatrix(render_transform->get_mat());
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
@@ -10062,7 +10070,7 @@ do_issue_tex_matrix() {
     _target_rs->get_attrib_def(target_tex_matrix);
 
     if (target_tex_matrix->has_stage(stage)) {
-      GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
+      call_glLoadMatrix(target_tex_matrix->get_mat(stage));
     } else {
       glLoadIdentity();
 
@@ -10072,7 +10080,7 @@ do_issue_tex_matrix() {
       // an identity matrix does work.  But this buggy-driver
       // workaround might have other performance implications, so I
       // leave it out.
-      // GLPf(LoadMatrix)(LMatrix4::ident_mat().get_data());
+      // call_glLoadMatrix(LMatrix4::ident_mat());
     }
   }
   report_my_gl_errors();
@@ -10247,7 +10255,7 @@ do_issue_tex_gen() {
       // load the coordinate-system transform.
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-      GLPf(LoadMatrix)(_cs_transform->get_mat().get_data());
+      call_glLoadMatrix(_cs_transform->get_mat());
 
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -10276,7 +10284,7 @@ do_issue_tex_gen() {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
-        GLPf(LoadMatrix)(root_transform->get_mat().get_data());
+        call_glLoadMatrix(root_transform->get_mat());
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);

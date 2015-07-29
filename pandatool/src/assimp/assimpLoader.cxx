@@ -230,7 +230,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
-  PN_stdfloat blend;
+  float blend;
   aiTextureOp op;
   aiTextureMapMode mapmode;
 
