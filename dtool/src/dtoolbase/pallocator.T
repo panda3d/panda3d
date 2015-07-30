@@ -56,7 +56,7 @@ allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>:
   *((size_t *)ptr) = alloc_size;
   return (TYPENAME pallocator_array<Type>::pointer)(((char *)ptr) + header_reserved_bytes);
 #else
-  return (TYPENAME pallocator_array<Type>::pointer)malloc(n * sizeof(Type));
+  return (TYPENAME pallocator_array<Type>::pointer)PANDA_MALLOC_ARRAY(n * sizeof(Type));
 #endif  // DO_MEMORY_USAGE
 }
 
@@ -72,6 +72,6 @@ deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array
   _type_handle.dec_memory_usage(TypeHandle::MC_array, (int)alloc_size);
   PANDA_FREE_ARRAY(ptr);
 #else
-  free(p);
+  PANDA_FREE_ARRAY(p);
 #endif  // DO_MEMORY_USAGE
 }
