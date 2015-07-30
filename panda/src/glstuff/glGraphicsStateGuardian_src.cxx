@@ -522,17 +522,15 @@ reset() {
   query_glsl_version();
 
 #ifndef OPENGLES
-  bool core_profile;
-  if (_gl_version_major < 3 || has_extension("GL_ARB_compatibility")) {
-    core_profile = false;
-  } else {
-    core_profile = true;
-  }
+  bool core_profile = is_at_least_gl_version(3, 2) &&
+                      !has_extension("GL_ARB_compatibility");
 
-  if (core_profile) {
-    GLCAT.debug() << "Using core profile\n";
-  } else {
-    GLCAT.debug() << "Using compatibility profile\n";
+  if (GLCAT.is_debug()) {
+    if (core_profile) {
+      GLCAT.debug() << "Using core profile\n";
+    } else {
+      GLCAT.debug() << "Using compatibility profile\n";
+    }
   }
 #elif defined(OPENGLES_1)
   static const bool core_profile = false;
