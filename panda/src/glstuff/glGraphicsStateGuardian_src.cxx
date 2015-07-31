@@ -6036,9 +6036,13 @@ do_issue_render_mode() {
 
   // The thickness affects both the line width and the point size.
   if (thickness != _point_size) {
-    glLineWidth(_point_size);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "setting thickness to " << thickness << "\n";
+    }
+
+    glLineWidth(thickness);
 #ifndef OPENGLES_2
-    glPointSize(_point_size);
+    glPointSize(thickness);
 #endif
     _point_size = thickness;
   }
