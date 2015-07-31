@@ -58,8 +58,8 @@ typedef double GLdouble;
 // declare these typedefs.
 #if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
 typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
-typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
-typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC) (GLDEBUGPROC callback, const void *userParam);
+typedef void (APIENTRY *GLDEBUGPROC_P)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC_P) (GLDEBUGPROC_P callback, const void *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECONTROLPROC) (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (APIENTRYP PFNGLOBJECTLABELPROC) (GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
 typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
@@ -640,7 +640,6 @@ protected:
   GLint _max_image_units;
   bool _supports_multi_bind;
   bool _supports_get_program_binary;
-  bool _supports_uniform_buffers;
 
 #ifdef OPENGLES
   bool _supports_depth24;
@@ -733,6 +732,18 @@ public:
   PFNGLBUFFERDATAPROC _glBufferData;
   PFNGLBUFFERSUBDATAPROC _glBufferSubData;
   PFNGLDELETEBUFFERSPROC _glDeleteBuffers;
+
+#ifndef OPENGLES
+  PFNGLMAPBUFFERPROC _glMapBuffer;
+  PFNGLUNMAPBUFFERPROC _glUnmapBuffer;
+  PFNGLMAPBUFFERRANGEPROC _glMapBufferRange;
+
+  bool _supports_uniform_buffers;
+  PFNGLBINDBUFFERBASEPROC _glBindBufferBase;
+
+  bool _supports_buffer_storage;
+  PFNGLBUFFERSTORAGEPROC _glBufferStorage;
+#endif
 
   PFNGLBLENDEQUATIONPROC _glBlendEquation;
   PFNGLBLENDCOLORPROC _glBlendColor;

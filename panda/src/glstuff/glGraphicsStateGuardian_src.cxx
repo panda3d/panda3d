@@ -546,19 +546,19 @@ reset() {
   _use_object_labels = false;
 #ifndef OPENGLES_1
   if (gl_debug) {
-    PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback;
+    PFNGLDEBUGMESSAGECALLBACKPROC_P _glDebugMessageCallback;
     PFNGLDEBUGMESSAGECONTROLPROC _glDebugMessageControl;
 
     if (is_at_least_gl_version(4, 3) || has_extension("GL_KHR_debug")) {
 #ifdef OPENGLES
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallbackKHR");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControlKHR");
       _glObjectLabel = (PFNGLOBJECTLABELPROC)
         get_extension_func("glObjectLabelKHR");
 #else
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallback");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControl");
@@ -571,7 +571,7 @@ reset() {
 
 #ifndef OPENGLES
     } else if (has_extension("GL_ARB_debug_output")) {
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallbackARB");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControlARB");
@@ -591,7 +591,7 @@ reset() {
                              0, NULL, GLCAT.is_debug());
 
       // Enable the callback.
-      _glDebugMessageCallback((GLDEBUGPROC) &debug_callback, (void*)this);
+      _glDebugMessageCallback((GLDEBUGPROC_P) &debug_callback, (void*)this);
       if (gl_debug_synchronous) {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       }
@@ -1214,6 +1214,13 @@ reset() {
       get_extension_func("glBufferSubData");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func("glDeleteBuffers");
+
+#ifndef OPENGLES
+    _glMapBuffer = (PFNGLMAPBUFFERPROC)
+      get_extension_func("glMapBuffer");
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBuffer");
+#endif
   }
 #ifndef OPENGLES_1
   else if (has_extension("GL_ARB_vertex_buffer_object")) {
@@ -1229,6 +1236,10 @@ reset() {
       get_extension_func("glBufferSubDataARB");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func("glDeleteBuffersARB");
+    _glMapBuffer = (PFNGLMAPBUFFERPROC)
+      get_extension_func("glMapBufferARB");
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBufferARB");
   }
 #endif  // OPENGLES_1
 
@@ -1240,6 +1251,31 @@ reset() {
         << "Buffers advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_buffers = false;
     }
+  }
+#endif
+
+#ifndef OPENGLES
+  // Check for various advanced buffer management features.
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_map_buffer_range")) {
+    _glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)
+      get_extension_func("glMapBufferRange");
+  } else {
+    _glMapBufferRange = NULL;
+  }
+
+  if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_buffer_storage")) {
+    _glBufferStorage = (PFNGLBUFFERSTORAGEPROC)
+      get_extension_func("glBufferStorage");
+
+    if (_glBufferStorage != NULL) {
+      _supports_buffer_storage = true;
+    } else {
+      GLCAT.warning()
+        << "Buffer storage advertised as supported by OpenGL runtime, but "
+           "could not get pointers to extension function.\n";
+    }
+  } else {
+    _supports_buffer_storage = false;
   }
 #endif
 
@@ -1557,11 +1593,12 @@ reset() {
        get_extension_func("glGetActiveUniformBlockiv");
     _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
        get_extension_func("glGetActiveUniformBlockName");
+
+    _glBindBufferBase = (PFNGLBINDBUFFERBASEPROC)
+      get_extension_func("glBindBufferBase");
   } else {
     _supports_uniform_buffers = false;
   }
-#else
-  _supports_uniform_buffers = false;
 #endif
 
   // Check whether we support geometry instancing and instanced vertex attribs.
