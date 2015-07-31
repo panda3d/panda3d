@@ -2770,22 +2770,22 @@ clear(DrawableRegion *clearable) {
   glClear(mask);
 
   if (GLCAT.is_spam()) {
-    GLCAT.spam() << "glClear(";
+    string clear_flags;
     if (mask & GL_COLOR_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_COLOR_BUFFER_BIT|";
+      clear_flags += " | GL_COLOR_BUFFER_BIT";
     }
     if (mask & GL_DEPTH_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_DEPTH_BUFFER_BIT|";
+      clear_flags += " | GL_DEPTH_BUFFER_BIT";
     }
     if (mask & GL_STENCIL_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
+      clear_flags += " | GL_STENCIL_BUFFER_BIT";
     }
 #ifndef OPENGLES
     if (mask & GL_ACCUM_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
+      clear_flags += " | GL_ACCUM_BUFFER_BIT";
     }
 #endif
-    GLCAT.spam(false) << ")" << endl;
+    GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
   }
 
   report_my_gl_errors();
@@ -2865,21 +2865,21 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glViewportArrayv(0, " << count << ", [\n";
+        << "glViewportArrayv(0, " << count << ",";
       for (int i = 0; i < count; ++i) {
         GLfloat *vr = viewports + i * 4;
-        GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
+        GLCAT.spam(false) << " [" << vr[0] << " " << vr[1] << " " << vr[2] << " " << vr[3] << "]";
       }
-      GLCAT.spam(false) << "])\n";
+      GLCAT.spam(false) << ")\n";
       if (_scissor_enabled) {
         GLCAT.spam()
-          << "glScissorArrayv(0, " << count << ", [\n";
+          << "glScissorArrayv(0, " << count << ",";
         for (int i = 0; i < count; ++i) {
           const LVecBase4i &sr = _scissor_array[i];
-          GLCAT.spam(false) << sr << ",\n";
+          GLCAT.spam(false) << " [" << sr << "]";
         }
+        GLCAT.spam(false) << ")\n";
       }
-      GLCAT.spam(false) << "])\n";
     }
 
   } else
@@ -3296,6 +3296,11 @@ end_frame(Thread *current_thread) {
     }
   }
 #endif
+
+  // Add in a newline to the spam output for improved legibility.
+  if (GLCAT.is_spam()) {
+    GLCAT.spam(false) << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
