@@ -122,6 +122,144 @@ get_sampler() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParamValue::extract_data
+//       Access: Public, Virtual
+//  Description: This is a convenience function for the graphics
+//               backend.  It can be used for numeric types to
+//               convert this value to an array of ints matching
+//               the given description.  If this is not possible,
+//               returns false (after which the array may or may not
+//               contain meaningful data).
+////////////////////////////////////////////////////////////////////
+bool ShaderInput::
+extract_data(PN_int32 *data, int width, size_t count) const {
+  switch (_type) {
+  case M_numeric:
+    if (_stored_ptr._type == Shader::SPT_int) {
+      int size = min(count * width, _stored_ptr._size);
+
+      for (int i = 0; i < size; ++i) {
+        data[i] = ((int *)_stored_ptr._ptr)[i];
+      }
+      return true;
+    }
+    return false;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParamValue::extract_data
+//       Access: Public, Virtual
+//  Description: This is a convenience function for the graphics
+//               backend.  It can be used for numeric types to
+//               convert this value to an array of floats matching
+//               the given description.  If this is not possible,
+//               returns false (after which the array may or may not
+//               contain meaningful data).
+////////////////////////////////////////////////////////////////////
+bool ShaderInput::
+extract_data(PN_float32 *data, int width, size_t count) const {
+  int size;
+
+  switch (_type) {
+  case M_vector:
+    nassertr(width > 0 && width < 4, false);
+    for (int i = 0; i < width; ++i) {
+      data[i] = (float)_stored_vector[i];
+    }
+    return (count == 1);
+
+  case M_numeric:
+    size = min(count * width, _stored_ptr._size);
+
+    switch (_stored_ptr._type) {
+    case Shader::SPT_int:
+      for (int i = 0; i < size; ++i) {
+        int value = ((int *)_stored_ptr._ptr)[i];
+        data[i] = (float)value;
+      }
+      return true;
+
+    case Shader::SPT_float:
+      for (int i = 0; i < size; ++i) {
+        float value = ((float *)_stored_ptr._ptr)[i];
+        data[i] = (float)value;
+      }
+      return true;
+
+    case Shader::SPT_double:
+      for (int i = 0; i < size; ++i) {
+        double value = ((double *)_stored_ptr._ptr)[i];
+        data[i] = (float)value;
+      }
+      return true;
+
+    default:
+      return false;
+    }
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParamValue::extract_data
+//       Access: Public, Virtual
+//  Description: This is a convenience function for the graphics
+//               backend.  It can be used for numeric types to
+//               convert this value to an array of doubles matching
+//               the given description.  If this is not possible,
+//               returns false (after which the array may or may not
+//               contain meaningful data).
+////////////////////////////////////////////////////////////////////
+bool ShaderInput::
+extract_data(PN_float64 *data, int width, size_t count) const {
+  int size;
+
+  switch (_type) {
+  case M_vector:
+    nassertr(width > 0 && width < 4, false);
+    for (int i = 0; i < width; ++i) {
+      data[i] = (double)_stored_vector[i];
+    }
+    return (count == 1);
+
+  case M_numeric:
+    size = min(count * width, _stored_ptr._size);
+
+    switch (_stored_ptr._type) {
+    case Shader::SPT_int:
+      for (int i = 0; i < size; ++i) {
+        data[i] = (double)(((int *)_stored_ptr._ptr)[i]);
+      }
+      return true;
+
+    case Shader::SPT_float:
+      for (int i = 0; i < size; ++i) {
+        data[i] = (double)(((float *)_stored_ptr._ptr)[i]);
+      }
+      return true;
+
+    case Shader::SPT_double:
+      for (int i = 0; i < size; ++i) {
+        data[i] = (double)(((double *)_stored_ptr._ptr)[i]);
+      }
+      return true;
+
+    default:
+      return false;
+    }
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderInput::register_with_read_factory
 //       Access: Public, Static
 //  Description:

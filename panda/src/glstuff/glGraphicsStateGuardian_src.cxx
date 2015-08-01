@@ -346,7 +346,8 @@ int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_s
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   GraphicsStateGuardian(gl_coordinate_system, engine, pipe),
-  _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
+  _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer"),
+  _ubuffer_residency(get_prepared_objects()->get_name(), "ubuffer")
 {
   _error_count = 0;
   _gl_shadlang_ver_major = 0;
@@ -2473,6 +2474,8 @@ reset() {
 
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
+  _current_ubuffer_index = 0;
+  _current_ubuffer_base.clear();
   _current_vao_index = 0;
   _current_fbo = 0;
   _auto_antialias_mode = false;
@@ -4872,6 +4875,88 @@ void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
   delete sc;
 }
+
+#ifndef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_uniform_buffer
+//       Access: Public, Virtual
+//  Description: Returns a uniform buffer matching the given buffer
+//               layout.  This is done so that we can can share
+//               similar buffers between different shaders that use
+//               them.
+////////////////////////////////////////////////////////////////////
+PT(CLP(UniformBufferContext)) CLP(GraphicsStateGuardian)::
+get_uniform_buffer(const GeomVertexArrayFormat *layout) {
+  nassertr(_supports_uniform_buffers, NULL);
+
+  UniformBuffers::const_iterator it = _uniform_buffers.find(layout);
+  if (it != _uniform_buffers.end()) {
+    // We already have an existing uniform buffer with the same layout.
+    return (*it).second;
+  }
+
+  // Create a new uniform buffer.
+  PT(CLP(UniformBufferContext)) ubc = new CLP(UniformBufferContext)(this, layout);
+  _glGenBuffers(1, &ubc->_index);
+  GLsizeiptr size = layout->get_pad_to();
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug() << "creating new uniform buffer " << ubc->_index
+                  << " with size " << size << "\n";
+  }
+
+  // Create the buffer and initialize its storage, but don't put
+  // anything in it just yet.
+  _glBindBuffer(GL_UNIFORM_BUFFER, ubc->_index);
+  _current_ubuffer_index = ubc->_index;
+
+  // Get immutable buffer storage if we support it, but onl if we
+  // can efficiently invalidate it before mapping it.
+  if (_supports_buffer_storage && _glMapBufferRange != NULL) {
+    _glBufferStorage(GL_UNIFORM_BUFFER, size, NULL, GL_MAP_WRITE_BIT);
+  } else {
+    _glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STREAM_DRAW);
+  }
+
+  ubc->update_data_size_bytes(size);
+  _uniform_buffers[layout] = ubc;
+  return ubc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::apply_uniform_buffer
+//       Access: Public
+//  Description: Makes the data the currently available data for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+apply_uniform_buffer(int index, CLP(UniformBufferContext) *gubc,
+                     const ShaderAttrib *attrib) {
+  nassertr(_supports_uniform_buffers, false);
+
+  if (index >= _current_ubuffer_base.size()) {
+    _current_ubuffer_base.resize(index + 1, 0);
+  }
+
+  if (_current_ubuffer_base[index] != gubc->_index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding uniform buffer " << (int)gubc->_index
+        << " to index " << index << "\n";
+    }
+    _glBindBufferBase(GL_UNIFORM_BUFFER, index, gubc->_index);
+    _current_ubuffer_base[index] = gubc->_index;
+    _current_ubuffer_index = gubc->_index;
+  }
+
+  gubc->set_active(true);
+  gubc->update_data(attrib);
+
+  report_my_gl_errors();
+  return true;
+}
+
+#endif  // !OPENGLES
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::record_deleted_display_list

@@ -301,6 +301,12 @@ public:
   virtual ShaderContext *prepare_shader(Shader *shader);
   virtual void release_shader(ShaderContext *sc);
 
+#ifndef OPENGLES
+  PT(CLP(UniformBufferContext)) get_uniform_buffer(const GeomVertexArrayFormat *layout);
+  bool apply_uniform_buffer(int index, CLP(UniformBufferContext) *gubc,
+                            const ShaderAttrib *attrib);
+#endif
+
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -633,6 +639,8 @@ protected:
   GLuint _geom_display_list;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
+  GLuint _current_ubuffer_index;
+  pvector<GLuint> _current_ubuffer_base;
   GLuint _current_fbo;
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
@@ -911,6 +919,10 @@ public:
   TextureSet _textures_needing_image_access_barrier;
   TextureSet _textures_needing_update_barrier;
   TextureSet _textures_needing_framebuffer_barrier;
+
+  // Store uniform buffers.
+  typedef pmap<CPT(GeomVertexArrayFormat), CLP(UniformBufferContext)*> UniformBuffers;
+  UniformBuffers _uniform_buffers;
 #endif
 
   //RenderState::SlotMask _inv_state_mask;
@@ -942,6 +954,7 @@ public:
 #endif  // NDEBUG
 
   BufferResidencyTracker _renderbuffer_residency;
+  BufferResidencyTracker _ubuffer_residency;
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
@@ -975,6 +988,7 @@ private:
 
   friend class CLP(VertexBufferContext);
   friend class CLP(IndexBufferContext);
+  friend class CLP(UniformBufferContext);
   friend class CLP(ShaderContext);
   friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);

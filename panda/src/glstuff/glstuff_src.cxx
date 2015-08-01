@@ -27,6 +27,7 @@
 #include "glLatencyQueryContext_src.cxx"
 #include "glGeomContext_src.cxx"
 #include "glGeomMunger_src.cxx"
+#include "glUniformBufferContext_src.cxx"
 #include "glShaderContext_src.cxx"
 #include "glCgShaderContext_src.cxx"
 #include "glImmediateModeSender_src.cxx"

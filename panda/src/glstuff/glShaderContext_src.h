@@ -90,7 +90,16 @@ private:
   GLsizei _slider_table_size;
   GLint _frame_number_loc;
   GLint _frame_number;
+
+#ifndef OPENGLES
   pmap<GLint, GLuint64> _glsl_uniform_handles;
+
+  struct UniformBlock {
+    CPT(InternalName) _name;
+    PT(CLP(UniformBufferContext)) _buffer;
+  };
+  typedef pvector<UniformBlock> UniformBlocks;
+  UniformBlocks _uniform_blocks;
 
   struct ImageInput {
     CPT(InternalName) _name;
@@ -98,6 +107,7 @@ private:
     bool _writable;
   };
   pvector<ImageInput> _glsl_img_inputs;
+#endif
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

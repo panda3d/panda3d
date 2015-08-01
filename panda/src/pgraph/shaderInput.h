@@ -112,6 +112,10 @@ PUBLISHED:
   Texture *get_texture() const;
   const SamplerState &get_sampler() const;
 
+  bool extract_data(PN_int32 *data, int width, size_t count) const;
+  bool extract_data(PN_float32 *data, int width, size_t count) const;
+  bool extract_data(PN_float64 *data, int width, size_t count) const;
+
 public:
   INLINE ParamValueBase *get_param() const;
 

@@ -481,21 +481,14 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_buflen) {
- //GLint offset = 0;
-
   GLint data_size = 0;
   GLint param_count = 0;
-  GLsizei param_size;
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
 
-  if (param_count <= 0) {
-    return;
-  }
-
   // We use a GeomVertexArrayFormat to describe the uniform buffer layout.
-  //GeomVertexArrayFormat block_format;
-  //block_format.set_pad_to(data_size);
+  GeomVertexArrayFormat *block_format = new GeomVertexArrayFormat;
+  block_format->set_pad_to(data_size);
 
   // Get an array containing the indices of all the uniforms in this block.
   GLuint *indices = (GLuint *)alloca(param_count * sizeof(GLint));
@@ -612,23 +605,26 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       break;
     }
 
-    //GeomVertexColumn column(InternalName::make(name_buffer),
-    //                        num_components, numeric_type, contents,
-    //                        offsets[ui], 4, param_size, astrides[ui]);
-    //block_format.add_column(column);
+    GeomVertexColumn column(InternalName::make(name_buffer),
+                            num_components, numeric_type, contents,
+                            offsets[ui], 4, param_size, astrides[ui]);
+    block_format->add_column(column);
+    cerr << ui << " = " << column << "\n";
   }
 
-  //if (GLCAT.is_debug()) {
-  //  GLCAT.debug() << "Active uniform block " << name << " has format:\n";
-  //  block_format.write(GLCAT.debug(false), 2);
-  //}
+  if (GLCAT.is_debug()) {
+    GLCAT.debug() << "Active uniform block " << name << " has layout:\n";
+    block_format->write(GLCAT.debug(false), 2);
+  }
 
-  //UniformBlock block;
-  //block._name = InternalName::make(name);
-  //block._format = GeomVertexArrayFormat::register_format(&block_format);
-  //block._buffer = 0;
+  CPT(GeomVertexArrayFormat) layout = GeomVertexArrayFormat::register_format(block_format);
 
-  //_uniform_blocks.push_back(block);
+  UniformBlock block;
+  block._name = InternalName::make(name);
+  block._buffer = _glgsg->get_uniform_buffer(layout);
+
+  nassertv(i == _uniform_blocks.size());
+  _uniform_blocks.push_back(block);
 }
 #endif  // !OPENGLES
 
@@ -1657,6 +1653,19 @@ issue_parameters(int altered) {
       << "Setting uniforms for " << _shader->get_filename()
       << " (altered 0x" << hex << altered << dec << ")\n";
   }
+
+#ifndef OPENGLES
+  // Update uniform buffers.  No modification tracking is currently done.
+  if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
+    const ShaderAttrib *attrib;
+    _state_rs->get_attrib_def(attrib);
+
+    for (int i = 0; i < _uniform_blocks.size(); ++i) {
+      UniformBlock &block = _uniform_blocks[i];
+      _glgsg->apply_uniform_buffer(i, block._buffer, attrib);
+    }
+  }
+#endif
 
   // We have no way to track modifications to PTAs, so we assume that
   // they are modified every frame and when we switch ShaderAttribs.
