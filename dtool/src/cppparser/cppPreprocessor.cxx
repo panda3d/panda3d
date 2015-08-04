@@ -979,13 +979,14 @@ skip_whitespace(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_comment(int c) {
-  if (c == '/') {
+  while (c == '/') {
     int next_c = get();
     if (next_c == '*') {
       _last_cpp_comment = false;
       c = skip_c_comment(get());
     } else if (next_c == '/') {
       c = skip_cpp_comment(get());
+      break;
     } else {
       _last_cpp_comment = false;
       unget(next_c);
