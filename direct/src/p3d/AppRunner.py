@@ -472,7 +472,7 @@ class AppRunner(DirectObject):
             file.unlink()
             return False
 
-        if not fileSpec.fullVerify(pathname = localPathname):
+        if not fileSpec.fullVerify(pathname = localPathname, notify = self.notify):
             # No good after download.
             self.notify.info("%s is still no good after downloading." % (url))
             return False

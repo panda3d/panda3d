@@ -170,19 +170,20 @@ def makePackedApp(args):
       appDir = Filename('.')
     appBase = appFilename.getBasenameWoExtension()
 
-    if not main:
+    if main:
+        main = Filename.fromOsSpecific(main)
+        main.makeAbsolute(root)
+    else:
         main = Filename(root, 'main.py')
-        if main.exists():
-            main = 'main.py'
-        else:
+        if not main.exists():
             main = glob.glob(os.path.join(root.toOsSpecific(), '*.py'))
             if len(main) == 0:
                 raise ArgumentError, 'No Python files in root directory.'
             elif len(main) > 1:
                 raise ArgumentError, 'Multiple Python files in root directory; specify the main application with -m "main".'
-            main = os.path.split(main[0])[1]
 
-    main = Filename.fromOsSpecific(main)
+            main = Filename.fromOsSpecific(os.path.split(main[0])[1])
+            main.makeAbsolute(root)
 
     packager.installDir = appDir
     packager.allowPythonDev = allowPythonDev
