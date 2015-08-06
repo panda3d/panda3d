@@ -3008,10 +3008,10 @@ class Packager:
             # environment.
             return None
 
+        # Make sure we have a fresh version of the contents file.
         host = appRunner.getHost(hostUrl)
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(appRunner.http):
-                return None
+        if not host.downloadContentsFile(appRunner.http):
+            return None
 
         packageInfos = []
         packageInfo = host.getPackage(packageName, version, platform = platform)
