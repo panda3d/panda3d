@@ -372,6 +372,9 @@ class Packager:
             self.requiredFilenames = []
             self.requiredModules = []
 
+            # A list of required packages that were missing.
+            self.missingPackages = []
+
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
@@ -494,6 +497,12 @@ class Packager:
             """ Installs the package, either as a p3d application, or
             as a true package.  Either is implemented with a
             Multifile. """
+
+            if self.missingPackages:
+                missing = ', '.join([name for name, version in self.missingPackages])
+                self.notify.warning("Cannot build package %s due to missing dependencies: %s" % (self.packageName, missing))
+                self.cleanup()
+                return False
 
             self.multifile = Multifile()
 
@@ -3217,7 +3226,9 @@ class Packager:
                                        requires = self.currentPackage.requires)
             if not package:
                 message = 'Unknown package %s, version "%s"' % (packageName, version)
-                raise PackagerError, message
+                self.notify.warning(message)
+                self.currentPackage.missingPackages.append((packageName, pversion))
+                continue
 
             self.requirePackage(package)
 
