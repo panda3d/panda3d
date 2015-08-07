@@ -222,6 +222,8 @@ typedef GLboolean (APIENTRYP PFNGLISIMAGEHANDLERESIDENTPROC) (GLuint64 handle);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64PROC) (GLuint index, GLuint64EXT x);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VPROC) (GLuint index, const GLuint64EXT *v);
 typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
+typedef void *(APIENTRYP PFNGLMAPBUFFERPROC) (GLenum target, GLenum access);
+typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 #endif  // OPENGLES
 #endif  // __EDG__
 
