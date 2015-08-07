@@ -210,7 +210,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(CGDisplayIDToOpenGLDisplayMask(display));
 
   // End of the array
-  attribs.push_back((NSOpenGLPixelFormatAttribute) nil);
+  attribs.push_back((NSOpenGLPixelFormatAttribute)0);
 
   // Create the format.
   NSOpenGLPixelFormat* format = [[NSOpenGLPixelFormat alloc] initWithAttributes:&attribs[0]];
