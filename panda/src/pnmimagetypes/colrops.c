@@ -47,7 +47,7 @@ int setcolrcor(double (*f)(double, double), double a2)
                 /* set brightness correction */
 {
         double  mult;
-        register int    i, j;
+        int    i, j;
                                         /* allocate tables */
         if (g_bval == NULL && (g_bval =
                         (BYTE (*)[256])bmalloc((MAXGSHIFT+1)*256)) == NULL)
@@ -67,7 +67,7 @@ int setcolrinv(double (*f)(double, double), double a2)
                 /* set inverse brightness correction */
 {
         double  mult;
-        register int    i, j;
+        int    i, j;
                                         /* allocate tables */
         if (g_mant == NULL && (g_mant = (BYTE *)bmalloc(256)) == NULL)
                 return(-1);
@@ -97,10 +97,10 @@ int setcolrgam(double g)                        /* set gamma conversion */
 }
 
 
-int colrs_gambs(register COLR *scan, int len)
+int colrs_gambs(COLR *scan, int len)
                 /* convert scanline of colrs to gamma bytes */
 {
-        register int    i, expo;
+        int    i, expo;
 
         if (g_bval == NULL)
                 return(-1);
@@ -145,10 +145,10 @@ int colrs_gambs(register COLR *scan, int len)
 }
 
 
-int gambs_colrs(register COLR *scan, int len)
+int gambs_colrs(COLR *scan, int len)
         /* convert gamma bytes to colr scanline */
 {
-        register int    nexpo;
+        int    nexpo;
 
         if (g_mant == NULL || g_nexp == NULL)
                 return(-1);
@@ -181,7 +181,7 @@ int gambs_colrs(register COLR *scan, int len)
 
 
 void
-shiftcolrs(register COLR *scan, register int len, register int adjust)
+shiftcolrs(COLR *scan, int len, int adjust)
         /* shift a scanline of colors by 2^adjust */
 {
         int     minexp;
@@ -201,11 +201,11 @@ shiftcolrs(register COLR *scan, register int len, register int adjust)
 
 
 void
-normcolrs(register COLR *scan, int len, int adjust)
+normcolrs(COLR *scan, int len, int adjust)
 /* normalize a scanline of colrs */
 {
-        register int  c;
-        register int  shift;
+        int  c;
+        int  shift;
 
         while (len-- > 0) {
                 shift = scan[0][EXP] + adjust - COLXS;

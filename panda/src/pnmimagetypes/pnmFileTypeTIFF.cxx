@@ -1033,7 +1033,7 @@ write_data(xel *array, xelval *alpha) {
     grn[TIFF_COLORMAP_MAXCOLORS],
     blu[TIFF_COLORMAP_MAXCOLORS];
   int row, colors, i;
-  register int col;
+  int col;
   int grayscale = false;
   struct tiff * tif;
   short photometric = 0;
@@ -1064,7 +1064,7 @@ write_data(xel *array, xelval *alpha) {
         << colors << " colors found; writing an 8-bit palette file.\n";
       grayscale = true;
       for ( i = 0; i < colors; ++i ) {
-        register xelval r, g, b;
+        xelval r, g, b;
 
         r = PPM_GETR( chv[i].color );
         g = PPM_GETG( chv[i].color );
@@ -1203,7 +1203,7 @@ write_data(xel *array, xelval *alpha) {
       } else {
         tP = buf;
         for ( col = 0; col < _x_size; ++col ) {
-          register int s;
+          int s;
 
           s = ppm_lookupcolor( cht, (pixel *)(&row_data[col]) );
           if ( s == -1 ) {
@@ -1219,10 +1219,10 @@ write_data(xel *array, xelval *alpha) {
         }
       }
     } else {
-      register xelval bigger_maxval;
-      register int bitshift;
-      register unsigned char byte;
-      register xelval s;
+      xelval bigger_maxval;
+      int bitshift;
+      unsigned char byte;
+      xelval s;
 
       bigger_maxval = pm_bitstomaxval( bitspersample );
       bitshift = 8 - bitspersample;
