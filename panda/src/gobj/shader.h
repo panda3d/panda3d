@@ -97,8 +97,8 @@ PUBLISHED:
                          const string &tess_evaluation = "");
   static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
 
-  INLINE Filename get_filename(const ShaderType &type = ST_none) const;
-  INLINE const string &get_text(const ShaderType &type = ST_none) const;
+  INLINE Filename get_filename(ShaderType type = ST_none) const;
+  INLINE const string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
