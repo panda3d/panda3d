@@ -8,7 +8,7 @@ import marshal
 import imp
 import platform
 import types
-from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
+from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -63,7 +63,7 @@ class CompilationEnvironment:
         # Paths to Python stuff.
         self.Python = None
         self.PythonIPath = get_python_inc()
-        self.PythonVersion = get_python_version()
+        self.PythonVersion = get_config_var("LDVERSION") or get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -970,7 +970,7 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                fp = open(pathname, modulefinder.READ_MODE)
+                fp = open(pathname, 'U')
                 stuff = ("", "r", imp.PY_SOURCE)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
@@ -1062,7 +1062,7 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + '\0\0\0\0' + \
+            data = imp.get_magic() + b'\0\0\0\0' + \
                    marshal.dumps(code)
 
             stream = StringStream(data)
@@ -1341,7 +1341,10 @@ class Freezer:
         for i in range(0, len(code), 16):
             result += '\n  '
             for c in code[i:i+16]:
-                result += ('%d,' % ord(c))
+                if isinstance(c, int): # Python 3
+                    result += ('%d,' % c)
+                else: # Python 2
+                    result += ('%d,' % ord(c))
         result += '\n};\n'
         return result
 

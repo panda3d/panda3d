@@ -467,7 +467,7 @@ class Packager:
             if self.p3dApplication:
                 allowPythonDev = self.configs.get('allow_python_dev', 0)
                 if int(allowPythonDev):
-                    print "\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName)
+                    print("\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName))
 
             return result
 
@@ -721,7 +721,7 @@ class Packager:
             self.packageDesc = packageDir + self.packageDesc
             self.packageImportDesc = packageDir + self.packageImportDesc
 
-            print "Generating %s" % (self.packageFilename)
+            print("Generating %s" % (self.packageFilename))
 
             if self.p3dApplication:
                 self.packageFullpath = Filename(self.packager.p3dInstallDir, self.packageFilename)
@@ -1251,13 +1251,13 @@ class Packager:
                 elf.close()
                 return None
 
-            if not ident.startswith("\177ELF"):
+            if not ident.startswith(b"\177ELF"):
                 # No elf magic!  Beware of orcs.
                 return None
 
             # Make sure we read in the correct endianness and integer size
-            byteOrder = "<>"[ord(ident[5]) - 1]
-            elfClass = ord(ident[4]) - 1 # 0 = 32-bits, 1 = 64-bits
+            byteOrder = "<>"[ord(ident[5:6]) - 1]
+            elfClass = ord(ident[4:5]) - 1 # 0 = 32-bits, 1 = 64-bits
             headerStruct = byteOrder + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[elfClass]
             sectionStruct = byteOrder + ("4xI8xIII8xI", "4xI16xQQI12xQ")[elfClass]
             dynamicStruct = byteOrder + ("iI", "qQ")[elfClass]
@@ -1291,17 +1291,17 @@ class Packager:
                 elf.seek(offset)
                 data = elf.read(entsize)
                 tag, val = struct.unpack_from(dynamicStruct, data)
-                newSectionData = ""
+                newSectionData = b""
                 startReplace = None
                 pad = 0
 
                 # Read tags until we find a NULL tag.
                 while tag != 0:
                     if tag == 1: # A NEEDED entry.  Read it from the string table.
-                        filenames.append(stringTables[link][val : stringTables[link].find('\0', val)])
+                        filenames.append(stringTables[link][val : stringTables[link].find(b'\0', val)])
 
                     elif tag == 15 or tag == 29:
-                        rpath += stringTables[link][val : stringTables[link].find('\0', val)].split(':')
+                        rpath += stringTables[link][val : stringTables[link].find(b'\0', val)].split(b':')
                         # An RPATH or RUNPATH entry.
                         if not startReplace:
                             startReplace = elf.tell() - entsize
@@ -1315,7 +1315,7 @@ class Packager:
                     tag, val = struct.unpack_from(dynamicStruct, data)
 
                 if startReplace is not None:
-                    newSectionData += data + ("\0" * pad)
+                    newSectionData += data + (b"\0" * pad)
                     rewriteSections.append((startReplace, newSectionData))
             elf.close()
 
@@ -1348,7 +1348,7 @@ class Packager:
             for offset, data in rewriteSections:
                 elf.seek(offset)
                 elf.write(data)
-            elf.write("\0" * pad)
+            elf.write(b"\0" * pad)
             elf.close()
             return filenames
 
@@ -2486,7 +2486,7 @@ class Packager:
         if not os.path.isfile('/sbin/ldconfig'):
             return False
 
-        handle = subprocess.Popen(['/sbin/ldconfig', '-p'], stdout=subprocess.PIPE)
+        handle = subprocess.Popen(['/sbin/ldconfig', '-p'], stdout=subprocess.PIPE, universal_newlines=True)
         out, err = handle.communicate()
 
         if handle.returncode != 0:
@@ -3069,7 +3069,7 @@ class Packager:
         tuples = []
         for package in packages:
             version = self.__makeVersionTuple(package.version)
-            tuples.append((version, file))
+            tuples.append((version, package))
         tuples.sort(reverse = True)
 
         return [t[1] for t in tuples]
@@ -3082,7 +3082,7 @@ class Packager:
         tuples = []
         for package in packages:
             version = self.__makeVersionTuple(package.packageVersion)
-            tuples.append((version, file))
+            tuples.append((version, package))
         tuples.sort(reverse = True)
 
         return [t[1] for t in tuples]
@@ -3141,9 +3141,9 @@ class Packager:
         if panda1.version == panda2.version:
             return True
 
-        print 'Rejecting package %s, version "%s": depends on %s, version "%s" instead of version "%s"' % (
+        print('Rejecting package %s, version "%s": depends on %s, version "%s" instead of version "%s"' % (
             package.packageName, package.version,
-            panda1.packageName, panda1.version, panda2.version)
+            panda1.packageName, panda1.version, panda2.version))
         return False
 
     def __findPackageInRequires(self, packageName, list):

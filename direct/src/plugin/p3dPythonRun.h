@@ -159,10 +159,15 @@ private:
 
   int _session_id;
 
-  string _program_name;
   Filename _archive_file;
   int _py_argc;
-  char **_py_argv;
+#if PY_MAJOR_VERSION >= 3
+  wchar_t *_py_argv[2];
+  wstring _program_name;
+#else
+  char *_py_argv[2];
+  string _program_name;
+#endif
   bool _interactive_console;
 
   PyObject *_runner;
