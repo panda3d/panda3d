@@ -258,14 +258,22 @@ initialize(int api_version, const string &contents_filename,
 
     // TODO: Linux multiplatform support.  Just add the
     // appropriate platform strings to _supported_platforms.
+  } else {
+    nout << "Platform string was set by plugin to " << _platform << "\n";
   }
 
   if (_supported_platforms.empty()) {
+    // Hack for older plug-ins, which should still remain compatible with
+    // newer versions of the runtime distribution.
+    if (_platform == "win32") {
+      _supported_platforms.push_back("win_i386");
+    }
+
     // We always support at least the specific platform on which we're
     // running.
     _supported_platforms.push_back(_platform);
   }
-      
+
 #ifdef P3D_PLUGIN_LOG_DIRECTORY
   if (_log_directory.empty()) {
     _log_directory = P3D_PLUGIN_LOG_DIRECTORY;
