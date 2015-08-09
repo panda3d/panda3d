@@ -1841,7 +1841,10 @@ class Packager:
                         self.notify.warning(message)
                     return
 
-            self.freezer.addModule(moduleName, filename = file.filename)
+            if file.text:
+                self.freezer.addModule(moduleName, filename = file.filename, text = file.text)
+            else:
+                self.freezer.addModule(moduleName, filename = file.filename)
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
