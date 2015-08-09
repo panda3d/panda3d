@@ -46,6 +46,7 @@ public:
 #ifndef CPPPARSER
   INLINE string get_data();
   INLINE void set_data(const string &data);
+  void set_data(const unsigned char *data, size_t size);
 #endif
 
   INLINE void swap_data(pvector<unsigned char> &data);
@@ -59,4 +60,3 @@ private:
 #include "stringStream.I"
 
 #endif
-

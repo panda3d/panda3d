@@ -71,9 +71,7 @@ set_data(PyObject *data) {
                       "StringStream requires a contiguous buffer");
       return;
     }
-    pvector<unsigned char> pv;
-    pv.insert(pv.end(), (const unsigned char *)view.buf, (const unsigned char *)view.buf + view.len);
-    _this->_buf.swap_data(pv);
+    _this->set_data((const unsigned char *)view.buf, view.len);
     PyBuffer_Release(&view);
     return;
   }
@@ -84,9 +82,7 @@ set_data(PyObject *data) {
     char *buffer;
     Py_ssize_t length;
     if (PyString_AsStringAndSize(data, &buffer, &length) != -1) {
-      pvector<unsigned char> pv;
-      pv.insert(pv.end(), (const unsigned char *)buffer, (const unsigned char *)buffer + length);
-      _this->_buf.swap_data(pv);
+      _this->set_data((const unsigned char *)buffer, (size_t)length);
     }
     return;
   }
