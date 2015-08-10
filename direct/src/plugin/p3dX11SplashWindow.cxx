@@ -681,10 +681,13 @@ subprocess_run() {
       }
     }
 
-    if (input_ready) {
+    while (input_ready) {
+      // Empty the pipe of whatever is in it.
       receive_command();
+      input_ready = _pipe_read.has_gdata();
     }
 
+    // Sleep a good amount in order not to lock up the system.
     struct timespec req;
     req.tv_sec = 0;
     req.tv_nsec = 50000000;  // 50 ms

@@ -362,8 +362,16 @@ class rocket(package):
     config(display_name = "Panda3D libRocket support")
     require('panda3d')
 
-    module('panda3d.rocket', required = True)
-    module('_rocketcore', '_rocketcontrols')
+    file('rocket.py', extract = True, text = """
+from _rocketcore import *
+try:
+    from _rocketcontrols import *
+except ImportError:
+    pass
+""")
+
+    module('panda3d.rocket', '_rocketcore', required = True)
+    module('_rocketcontrols')
     file('libp3rocket.dll', required = True)
 
 class vrpn(package):

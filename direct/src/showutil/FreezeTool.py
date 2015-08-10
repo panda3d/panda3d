@@ -8,6 +8,7 @@ import marshal
 import imp
 import platform
 import types
+from StringIO import StringIO
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
@@ -497,7 +498,8 @@ class Freezer:
         def __init__(self, moduleName, filename = None,
                      implicit = False, guess = False,
                      exclude = False, forbid = False,
-                     allowChildren = False, fromSource = None):
+                     allowChildren = False, fromSource = None,
+                     text = None):
             # The Python module name.
             self.moduleName = moduleName
 
@@ -531,6 +533,9 @@ class Freezer:
             # Additional black-box information about where this module
             # record came from, supplied by the caller.
             self.fromSource = fromSource
+
+            # If this is set, it contains Python code of the module.
+            self.text = text
 
             # Some sanity checks.
             if not self.exclude:
@@ -748,7 +753,8 @@ class Freezer:
         return modules
 
     def addModule(self, moduleName, implicit = False, newName = None,
-                  filename = None, guess = False, fromSource = None):
+                  filename = None, guess = False, fromSource = None,
+                  text = None):
         """ Adds a module to the list of modules to be exported by
         this tool.  If implicit is true, it is OK if the module does
         not actually exist.
@@ -804,7 +810,7 @@ class Freezer:
                     # It's actually a regular module.
                     self.modules[newParentName] = self.ModuleDef(
                         parentName, implicit = implicit, guess = guess,
-                        fromSource = fromSource)
+                        fromSource = fromSource, text = text)
 
                 else:
                     # Now get all the py files in the parent directory.
@@ -819,7 +825,7 @@ class Freezer:
             # A normal, explicit module name.
             self.modules[newName] = self.ModuleDef(
                 moduleName, filename = filename, implicit = implicit,
-                guess = guess, fromSource = fromSource)
+                guess = guess, fromSource = fromSource, text = text)
 
     def done(self, compileToExe = False):
         """ Call this method after you have added all modules with
@@ -970,7 +976,10 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                fp = open(pathname, 'U')
+                if mdef.text:
+                    fp = StringIO(mdef.text)
+                else:
+                    fp = open(pathname, 'U')
                 stuff = ("", "r", imp.PY_SOURCE)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 

@@ -34,6 +34,8 @@ TypeHandle RocketInputHandler::_type_handle;
 RocketInputHandler::
 RocketInputHandler(const string &name) :
   DataNode(name),
+  _mouse_xy(-1),
+  _mouse_xy_changed(false),
   _modifiers(0),
   _wheel_delta(0)
 {

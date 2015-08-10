@@ -16,6 +16,7 @@ import types
 import getpass
 import struct
 import subprocess
+import copy
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
 from direct.showbase import Loader
@@ -838,6 +839,14 @@ class Packager:
 
             self.packager.contents[pe.getKey()] = pe
             self.packager.contentsChanged = True
+
+            # Hack for coreapi package, to preserve backward compatibility
+            # with old versions of the runtime, which still called the
+            # 32-bit Windows platform "win32".
+            if self.packageName == "coreapi" and self.platform == "win_i386":
+                pe2 = copy.copy(pe)
+                pe2.platform = "win32"
+                self.packager.contents[pe2.getKey()] = pe2
 
             self.cleanup()
             return True
@@ -1832,7 +1841,10 @@ class Packager:
                         self.notify.warning(message)
                     return
 
-            self.freezer.addModule(moduleName, filename = file.filename)
+            if file.text:
+                self.freezer.addModule(moduleName, filename = file.filename, text = file.text)
+            else:
+                self.freezer.addModule(moduleName, filename = file.filename)
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
