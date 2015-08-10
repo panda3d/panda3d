@@ -978,11 +978,10 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                fp = open(pathname, 'U')
                 if mdef.text:
                     fp = StringIO(mdef.text)
                 else:
-                    fp = open(pathname, modulefinder.READ_MODE)
+                    fp = open(pathname, 'U')
                 stuff = ("", "r", imp.PY_SOURCE)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
