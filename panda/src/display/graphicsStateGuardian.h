@@ -132,6 +132,7 @@ PUBLISHED:
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_buffer_texture() const;
+  INLINE bool get_supports_cube_map_array() const;
   INLINE bool get_supports_tex_non_pow2() const;
   INLINE bool get_supports_texture_srgb() const;
 
@@ -489,6 +490,7 @@ protected:
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
   bool _supports_buffer_texture;
+  bool _supports_cube_map_array;
   bool _supports_tex_non_pow2;
   bool _supports_texture_srgb;
 

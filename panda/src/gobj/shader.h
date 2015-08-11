@@ -230,8 +230,10 @@ public:
     SAT_sampler1d,
     SAT_sampler2d,
     SAT_sampler3d,
-    SAT_sampler2dArray,
-    SAT_samplercube,
+    SAT_sampler2d_array,
+    SAT_sampler_cube,
+    SAT_sampler_buffer,
+    SAT_sampler_cube_array,
     SAT_unknown
 };
 

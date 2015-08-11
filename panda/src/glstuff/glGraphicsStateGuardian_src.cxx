@@ -857,6 +857,11 @@ reset() {
 #endif
 
 #ifndef OPENGLES
+  _supports_cube_map_array = is_at_least_gl_version(4, 0) ||
+                             has_extension("GL_ARB_texture_cube_map_array");
+#endif
+
+#ifndef OPENGLES
   if (is_at_least_gl_version(3, 0)) {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBuffer");
     _supports_buffer_texture = true;
@@ -4541,6 +4546,14 @@ prepare_texture(Texture *tex, int view) {
     }
     break;
 
+  case Texture::TT_cube_map_array:
+    if (!_supports_cube_map_array) {
+      GLCAT.warning()
+        << "Cube map arrays are not supported by this OpenGL driver.\n";
+      return NULL;
+    }
+    break;
+
   default:
     break;
   }
@@ -5747,7 +5760,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   Texture::TextureType texture_type;
   int z_size;
-  //TODO: should be extended to support 3D textures and 2D arrays.
+  //TODO: should be extended to support 3D textures, 2D arrays and cube map arrays.
   if (z >= 0) {
     texture_type = Texture::TT_cube_map;
     z_size = 6;
@@ -7512,7 +7525,7 @@ get_texture_target(Texture::TextureType texture_type) const {
   case Texture::TT_2d_texture_array:
 #ifndef OPENGLES
     if (_supports_2d_texture_array) {
-      return GL_TEXTURE_2D_ARRAY_EXT;
+      return GL_TEXTURE_2D_ARRAY;
     }
 #endif
     return GL_NONE;
@@ -7523,6 +7536,14 @@ get_texture_target(Texture::TextureType texture_type) const {
     } else {
       return GL_NONE;
     }
+
+  case Texture::TT_cube_map_array:
+#ifndef OPENGLES
+    if (_supports_cube_map_array) {
+      return GL_TEXTURE_CUBE_MAP_ARRAY;
+    }
+#endif
+    return GL_NONE;
 
   case Texture::TT_buffer_texture:
 #ifndef OPENGLES
@@ -9695,7 +9716,7 @@ update_standard_texture_bindings() {
       continue;
     }
 #ifndef OPENGLES
-    if (target == GL_TEXTURE_2D_ARRAY_EXT) {
+    if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
       // Cannot be applied via the FFP.
       continue;
     }
@@ -10748,6 +10769,12 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     max_dimension_z = _max_2d_texture_array_layers;
     break;
 
+  case Texture::TT_cube_map_array:
+    max_dimension_x = _max_texture_dimension;
+    max_dimension_y = _max_texture_dimension;
+    max_dimension_z = int(_max_2d_texture_array_layers / 6) * 6;
+    break;
+
   case Texture::TT_buffer_texture:
     max_dimension_x = _max_buffer_texture_size;
     max_dimension_y = 1;
@@ -11009,6 +11036,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         break;
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
+      case Texture::TT_cube_map_array:
         _glTexStorage3D(target, num_levels, internal_format, width, height, depth);
         break;
       }
@@ -11343,7 +11371,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #endif  // OPENGLES
 
 #ifndef OPENGLES
-      case GL_TEXTURE_2D_ARRAY_EXT:
+      case GL_TEXTURE_2D_ARRAY:
+      case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
             _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
@@ -11525,7 +11554,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #endif
 
 #ifndef OPENGLES
-      case GL_TEXTURE_2D_ARRAY_EXT:
+      case GL_TEXTURE_2D_ARRAY:
+      case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
             _glTexImage3D(page_target, n - mipmap_bias, internal_format,
@@ -11876,7 +11906,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
 #ifndef OPENGLES
-  else if (_supports_2d_texture_array && target == GL_TEXTURE_2D_ARRAY_EXT) {
+  else if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
 #endif

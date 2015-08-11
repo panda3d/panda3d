@@ -198,6 +198,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_2d_texture_array = false;
   _supports_cube_map = false;
   _supports_buffer_texture = false;
+  _supports_cube_map_array = false;
   _supports_tex_non_pow2 = false;
   _supports_texture_srgb = false;
   _supports_compressed_texture = false;

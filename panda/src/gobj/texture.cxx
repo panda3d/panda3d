@@ -1525,6 +1525,10 @@ write(ostream &out, int indent_level) const {
     out << "cube map, " << cdata->_x_size << " x " << cdata->_y_size;
     break;
 
+  case TT_cube_map_array:
+    out << "cube map array, " << cdata->_x_size << " x " << cdata->_y_size << " x " << cdata->_z_size;
+    break;
+
   case TT_buffer_texture:
     out << "buffer, " << cdata->_x_size;
     break;
@@ -1928,6 +1932,8 @@ format_texture_type(TextureType tt) {
     return "2d_texture_array";
   case TT_cube_map:
     return "cube_map";
+  case TT_cube_map_array:
+    return "cube_map_array";
   case TT_buffer_texture:
     return "buffer_texture";
   }
@@ -1952,6 +1958,8 @@ string_texture_type(const string &str) {
     return TT_2d_texture_array;
   } else if (cmp_nocase(str, "cube_map") == 0) {
     return TT_cube_map;
+  } else if (cmp_nocase(str, "cube_map_array") == 0) {
+    return TT_cube_map_array;
   } else if (cmp_nocase(str, "buffer_texture") == 0) {
     return TT_buffer_texture;
   }
@@ -4875,11 +4883,17 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     }
 
 #ifndef NDEBUG
-    if (cdata->_texture_type == TT_1d_texture ||
-        cdata->_texture_type == TT_buffer_texture) {
+    switch (cdata->_texture_type) {
+    case TT_1d_texture:
+    case TT_buffer_texture:
       nassertr(y_size == 1, false);
-    } else if (cdata->_texture_type == TT_cube_map) {
+      break;
+    case TT_cube_map:
+    case TT_cube_map_array:
       nassertr(x_size == y_size, false);
+      break;
+    default:
+      break;
     }
 #endif
     if ((cdata->_x_size != x_size)||(cdata->_y_size != y_size)) {
@@ -5074,6 +5088,15 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
     cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
 
+  case TT_cube_map_array:
+    // Cube maps array z_size needs to be a multiple of 6.
+    nassertv(x_size == y_size && z_size % 6 == 0);
+
+    cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
+    break;
+
   case TT_buffer_texture:
     nassertv(y_size == 1 && z_size == 1);
     break;
@@ -5246,6 +5269,7 @@ do_set_z_size(CData *cdata, int z_size) {
   if (cdata->_z_size != z_size) {
     nassertv((cdata->_texture_type == Texture::TT_3d_texture) ||
              (cdata->_texture_type == Texture::TT_cube_map && z_size == 6) ||
+             (cdata->_texture_type == Texture::TT_cube_map_array && z_size % 6 == 0) ||
              (cdata->_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     cdata->_z_size = z_size;
     cdata->inc_image_modified();
@@ -8113,6 +8137,7 @@ make_this_from_bam(const FactoryParams &params) {
         break;
 
       case TT_2d_texture_array:
+      case TT_cube_map_array:
         me = TexturePool::load_2d_texture_array(filename, has_read_mipmaps, options);
         break;
 

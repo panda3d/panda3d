@@ -1096,18 +1096,22 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_INT_SAMPLER_2D_ARRAY:
       case GL_INT_SAMPLER_CUBE:
       case GL_INT_SAMPLER_BUFFER:
+      case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_1D:
       case GL_UNSIGNED_INT_SAMPLER_2D:
       case GL_UNSIGNED_INT_SAMPLER_3D:
       case GL_UNSIGNED_INT_SAMPLER_CUBE:
       case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+      case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_1D:
       case GL_SAMPLER_CUBE_SHADOW:
       case GL_SAMPLER_2D_ARRAY:
       case GL_SAMPLER_2D_ARRAY_SHADOW:
       case GL_SAMPLER_BUFFER:
+      case GL_SAMPLER_CUBE_MAP_ARRAY:
+      case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
 #endif  // !OPENGLES
       case GL_SAMPLER_2D:
       case GL_SAMPLER_2D_SHADOW:
@@ -1458,6 +1462,26 @@ get_sampler_texture_type(int &out, GLenum param_type) {
       GLCAT.error()
         << "GLSL shader uses 2D texture array, which is unsupported by the driver.\n";
       return false;
+    }
+
+  case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+    if (!_glgsg->_supports_shadow_filter) {
+      GLCAT.error()
+        << "GLSL shader uses shadow sampler, which is unsupported by the driver.\n";
+      return false;
+    }
+    // Fall through
+  case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+  case GL_SAMPLER_CUBE_MAP_ARRAY:
+    out = Texture::TT_cube_map_array;
+    if (_glgsg->_supports_cube_map_array) {
+      return true;
+    } else {
+      GLCAT.error()
+        << "GLSL shader uses cube map array, which is unsupported by the driver.\n";
+      return false;
+
     }
 
   case GL_INT_SAMPLER_BUFFER:

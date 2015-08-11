@@ -496,6 +496,16 @@ get_supports_buffer_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_cube_map_array
+//       Access: Published
+//  Description: Returns true if this GSG can render cube map arrays.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_cube_map_array() const {
+  return _supports_cube_map_array;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_tex_non_pow2
 //       Access: Published
 //  Description: Returns true if this GSG can handle non power of two

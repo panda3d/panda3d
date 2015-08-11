@@ -84,6 +84,7 @@ PUBLISHED:
     TT_2d_texture_array,
     TT_cube_map,
     TT_buffer_texture,
+    TT_cube_map_array,
   };
 
   enum ComponentType {
@@ -242,6 +243,9 @@ PUBLISHED:
   INLINE void setup_2d_texture_array(int z_size = 1);
   INLINE void setup_2d_texture_array(int x_size, int y_size, int z_size,
                                      ComponentType component_type, Format format);
+  INLINE void setup_cube_map_array(int num_cube_maps);
+  INLINE void setup_cube_map_array(int size, int num_cube_maps,
+                                   ComponentType component_type, Format format);
   INLINE void setup_buffer_texture(int size, ComponentType component_type,
                                    Format format, GeomEnums::UsageHint usage);
   void generate_normalization_cube_map(int size);

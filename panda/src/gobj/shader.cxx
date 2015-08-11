@@ -82,12 +82,14 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
   case SAT_mat4x2:    tstr = "mat4x2 "; break;
   case SAT_mat4x3:    tstr = "mat4x3 "; break;
   case SAT_mat4x4:    tstr = "mat4x4 "; break;
-  case SAT_sampler1d: tstr = "sampler1d "; break;
-  case SAT_sampler2d: tstr = "sampler2d "; break;
-  case SAT_sampler3d: tstr = "sampler3d "; break;
-  case SAT_sampler2dArray: tstr = "sampler2dArray "; break;
-  case SAT_samplercube:    tstr = "samplercube "; break;
-  default:                 tstr = "unknown "; break;
+  case SAT_sampler1d: tstr = "sampler1D "; break;
+  case SAT_sampler2d: tstr = "sampler2D "; break;
+  case SAT_sampler3d: tstr = "sampler3D "; break;
+  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
+  case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
+  case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
+  case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
+  default:                    tstr = "unknown "; break;
   }
 
   string cstr = "invalid";
@@ -244,8 +246,10 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
   if ((p._type!=SAT_sampler1d)&&
       (p._type!=SAT_sampler2d)&&
       (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2dArray)&&
-      (p._type!=SAT_samplercube)) {
+      (p._type!=SAT_sampler2d_array)&&
+      (p._type!=SAT_sampler_cube)&&
+      (p._type!=SAT_sampler_buffer)&&
+      (p._type!=SAT_sampler_cube_array)) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -1215,8 +1219,10 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
     case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
     case SAT_sampler3d:      bind._desired_type = Texture::TT_3d_texture; break;
-    case SAT_sampler2dArray: bind._desired_type = Texture::TT_2d_texture_array; break;
-    case SAT_samplercube:    bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler2d_array:bind._desired_type = Texture::TT_2d_texture_array; break;
+    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
+    case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1358,7 +1364,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_sampler2dArray: {
+    case SAT_sampler2d_array: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
@@ -1366,11 +1372,27 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_samplercube: {
+    case SAT_sampler_cube: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_cube_map;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_buffer: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_buffer_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_cube_array: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_cube_map_array;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1460,8 +1482,10 @@ cg_parameter_type(CGparameter p) {
     case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
     case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
     case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
-    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2dArray;
-    case CG_SAMPLERCUBE:    return Shader::SAT_samplercube;
+    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2d_array;
+    case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
+    case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
+    case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
     // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
     case 1313:              return Shader::SAT_sampler1d;
     case 1314:              return Shader::SAT_sampler2d;
