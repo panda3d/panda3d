@@ -11,6 +11,7 @@ __all__ = [
     ]
 
 from panda3d import core
+import sys
 import types
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
@@ -65,12 +66,27 @@ class file:
             self.filename = filename
             self.name = filename.toOsSpecific()
 
+            if sys.version_info >= (3, 0):
+                # Python 3 is much stricter than Python 2, which lets
+                # unknown flags fall through.
+                for ch in mode:
+                    if not ch in 'rwxabt+U':
+                        raise IOError("invalid mode: " + mode)
+
             binary = False
+            if 'b' in mode and 't' in mode:
+                raise IOError("can't have text and binary mode at once")
+            
             if 'b' in mode:
                 # Strip 'b'.  This means a binary file.
                 i = mode.index('b')
                 mode = mode[:i] + mode[i + 1:]
                 binary = True
+            elif 't' in mode:
+                # Strip 't'.  This means a text file (redundant, yes).
+                i = mode.index('t')
+                mode = mode[:i] + mode[i + 1:]
+                binary = False
 
             if 'U' in mode:
                 # Strip 'U'.  We don't use it; universal-newline support
@@ -83,61 +99,69 @@ class file:
                 mode = 'r'
 
             # Per Python docs, we insist this is true.
-            assert mode[0] in 'rwa'
+            modeType = mode[0]
+            assert modeType in 'rwa'
 
             if binary:
                 filename.setBinary()
             else:
                 filename.setText()
-
-            # Actually open the streams.
-            if mode == 'w':
-                self.__stream = _vfs.openWriteFile(filename, autoUnwrap, True)
-                if not self.__stream:
-                    message = 'Could not open %s for writing' % (filename)
-                    raise IOError, message
-                writeMode = True
-
-            elif mode == 'a':
-                self.__stream = _vfs.openAppendFile(filename)
-                if not self.__stream:
-                    message = 'Could not open %s for writing' % (filename)
-                    raise IOError, message
-                writeMode = True
-
-            elif mode == 'w+':
+            
+            # Actually open the streams, taking care to 
+            # ignore unknown chars in the mode string.
+            # We already asserted that it starts with a mode
+            # char above, so locate the '+'  
+            if modeType == 'w' and '+' in mode:
                 self.__stream = _vfs.openReadWriteFile(filename, True)
                 if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
-                    raise IOError, message
+                    raise IOError(message)
                 readMode = True
                 writeMode = True
 
-            elif mode == 'a+':
+            elif modeType == 'a' and '+' in mode:
                 self.__stream = _vfs.openReadAppendFile(filename)
                 if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
-                    raise IOError, message
+                    raise IOError(message)
                 readMode = True
                 writeMode = True
 
-            elif mode == 'r+':
+            elif modeType == 'r' and '+' in mode:
                 self.__stream = _vfs.openReadWriteFile(filename, False)
                 if not self.__stream:
                     message = 'Could not open %s for writing' % (filename)
-                    raise IOError, message
+                    raise IOError(message)
                 readMode = True
                 writeMode = True
+                
+            elif modeType == 'w':
+                self.__stream = _vfs.openWriteFile(filename, autoUnwrap, True)
+                if not self.__stream:
+                    message = 'Could not open %s for writing' % (filename)
+                    raise IOError(message)
+                writeMode = True
 
-            elif mode == 'r':
+            elif modeType == 'a':
+                self.__stream = _vfs.openAppendFile(filename)
+                if not self.__stream:
+                    message = 'Could not open %s for writing' % (filename)
+                    raise IOError(message)
+                writeMode = True
+
+            elif modeType == 'r':
                 self.__stream = _vfs.openReadFile(filename, autoUnwrap)
                 if not self.__stream:
                     if not _vfs.exists(filename):
                         message = 'No such file: %s' % (filename)
                     else:
                         message = 'Could not open %s for reading' % (filename)
-                    raise IOError, message
+                    raise IOError(message)
                 readMode = True
+                
+            else:
+                # should not get here unless there's a bug above
+                raise IOError("Unhandled mode flags: " + mode)
 
             self.__needsVfsClose = True
 
