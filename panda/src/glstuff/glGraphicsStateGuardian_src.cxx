@@ -170,6 +170,7 @@ static const string default_fshader =
   "#version 130\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
+  "out vec4 p3d_FragColor;"
 #else
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
@@ -178,11 +179,12 @@ static const string default_fshader =
   "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
 #ifndef OPENGLES
-  "  gl_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor *= color;\n"
 #else
   "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
-#endif
   "  gl_FragColor *= color;\n"
+#endif
   "}\n";
 #endif
 
