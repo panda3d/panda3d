@@ -351,6 +351,12 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
 {
   _error_count = 0;
+  _last_error_check = -1.0;
+
+  // calling glGetError() forces a sync, this turns it on if you want to.
+  _check_errors = gl_check_errors;
+  _force_flush = gl_force_flush;
+
   _gl_shadlang_ver_major = 0;
   _gl_shadlang_ver_minor = 0;
 
@@ -362,10 +368,6 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // Assume that we will get a hardware-accelerated context, unless
   // the window tells us otherwise.
   _is_hardware = true;
-
-  // calling glGetError() forces a sync, this turns it on if you want to.
-  _check_errors = gl_check_errors;
-  _force_flush = gl_force_flush;
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
@@ -452,6 +454,8 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 reset() {
+  _last_error_check = -1.0;
+
   free_pointers();
   GraphicsStateGuardian::reset();
 
@@ -3300,12 +3304,12 @@ end_frame(Thread *current_thread) {
   if (_check_errors || (_supports_debug && gl_debug)) {
     report_my_gl_errors();
   } else {
-    static int frame_counter = -1;
-
     // If _check_errors is false, we still want to check for errors
-    // the first few frames and once every N frames, so that we know if
-    // anything went wrong at all.
-    if (frame_counter++ <= 0) {
+    // once every second, so that we know if anything went wrong at all.
+    double current = ClockObject::get_global_clock()->get_frame_time();
+
+    if (current - _last_error_check >= 1.0) {
+      _last_error_check = current;
       PStatTimer timer(_check_error_pcollector);
 
       GLenum error_code = glGetError();
@@ -3334,9 +3338,6 @@ end_frame(Thread *current_thread) {
           panic_deactivate();
         }
       }
-    } else if (frame_counter > 100) {
-      // 100 frames have passed.  Check next frame.
-      frame_counter = 0;
     }
   }
 #endif

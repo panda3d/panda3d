@@ -648,8 +648,6 @@ protected:
   bool _supports_depth32;
 #endif
 
-  int _error_count;
-
   string _gl_vendor;
   string _gl_renderer;
   string _gl_version;
@@ -917,6 +915,8 @@ public:
 
   //RenderState::SlotMask _inv_state_mask;
 
+  int _error_count;
+  double _last_error_check;
   bool _check_errors;
   bool _force_flush;
   bool _supports_debug;
