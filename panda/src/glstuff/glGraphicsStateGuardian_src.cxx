@@ -11116,7 +11116,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_height = height;
       gtc->_depth = depth;
 
-      gtc->update_data_size_bytes(get_texture_memory_size(tex));
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
     }
 
     nassertr(gtc->_has_storage, false);
@@ -11665,7 +11665,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 //               currently-selected texture).
 ////////////////////////////////////////////////////////////////////
 size_t CLP(GraphicsStateGuardian)::
-get_texture_memory_size(Texture *tex) {
+get_texture_memory_size(CLP(TextureContext) *gtc) {
+  Texture *tex = gtc->get_texture();
 #ifdef OPENGLES  // Texture querying not supported on OpenGL ES.
   int width = tex->get_x_size();
   int height = tex->get_y_size();
@@ -11691,10 +11692,6 @@ get_texture_memory_size(Texture *tex) {
     // supported for buffer textures.
     return tex->get_expected_ram_image_size();
   }
-
-  GLint minfilter;
-  glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-  bool has_mipmaps = is_mipmap_filter(minfilter);
 
   clear_my_gl_errors();
 
@@ -11755,7 +11752,7 @@ get_texture_memory_size(Texture *tex) {
 #endif  // OPENGLES
 
   size_t result = num_bytes * width * height * depth * scale;
-  if (has_mipmaps) {
+  if (gtc->_uses_mipmaps) {
     result = (result * 4) / 3;
   }
 
@@ -11770,7 +11767,7 @@ get_texture_memory_size(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
-#ifndef OPENGLES  // Residency queries not supported by OpenGL ES.
+#if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)  // Residency queries not supported by OpenGL ES.
   size_t num_textures = chain.get_count();
   if (num_textures == 0) {
     return;

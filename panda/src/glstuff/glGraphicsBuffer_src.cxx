@@ -1277,7 +1277,7 @@ open_buffer() {
 
   // Actually, let's always get a colour buffer for now until we
   // figure out why Intel HD Graphics cards complain otherwise.
-  if (_fb_properties.get_color_bits() == 0) {
+  if (gl_force_fbo_color && _fb_properties.get_color_bits() == 0) {
     _fb_properties.set_color_bits(1);
   }
 

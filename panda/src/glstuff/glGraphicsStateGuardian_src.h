@@ -548,7 +548,7 @@ protected:
                             Texture::CompressionMode image_compression);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
-  size_t get_texture_memory_size(Texture *tex);
+  size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
