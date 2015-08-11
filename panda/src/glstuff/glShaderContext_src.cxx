@@ -1977,7 +1977,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                            normalized, stride, client_pointer);
           }
 
-          if (_glgsg->_supports_vertex_attrib_divisor) {
+          if (_glgsg->_supports_vertex_attrib_divisor && divisor > 0) {
             _glgsg->_glVertexAttribDivisor(p, divisor);
             _has_divisor = true;
           }
