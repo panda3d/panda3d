@@ -26,7 +26,7 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
   _num_rows = image.get_x_size();
   _num_cols = image.get_y_size();
 
-  _data = new float[_num_rows * _num_cols];
+  _data = new btScalar[_num_rows * _num_cols];
 
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
@@ -75,10 +75,10 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
 
   _num_rows = tex->get_x_size() + 1;
   _num_cols = tex->get_y_size() + 1;
-  _data = new float[_num_rows * _num_cols];
+  _data = new btScalar[_num_rows * _num_cols];
 
-  PN_stdfloat step_x = 1.0 / (PN_stdfloat)tex->get_x_size();
-  PN_stdfloat step_y = 1.0 / (PN_stdfloat)tex->get_y_size();
+  btScalar step_x = 1.0 / (btScalar)tex->get_x_size();
+  btScalar step_y = 1.0 / (btScalar)tex->get_y_size();
 
   PT(TexturePeeker) peeker = tex->peek();
   LColor sample;

@@ -30,8 +30,8 @@ BulletHeightfieldShape(const BulletHeightfieldShape &copy) :
   _num_rows(copy._num_rows),
   _num_cols(copy._num_cols) {
 
-  _data = new float[_num_rows * _num_cols];
-  memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));
+  _data = new btScalar[_num_rows * _num_cols];
+  memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(btScalar));
 }
 
 /**
@@ -44,6 +44,6 @@ operator = (const BulletHeightfieldShape &copy) {
   _num_rows = copy._num_rows;
   _num_cols = copy._num_cols;
 
-  _data = new float[_num_rows * _num_cols];
-  memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));
+  _data = new btScalar[_num_rows * _num_cols];
+  memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(btScalar));
 }

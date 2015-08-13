@@ -44,7 +44,7 @@ public:
 private:
   int _num_rows;
   int _num_cols;
-  float *_data;
+  btScalar *_data;
   btHeightfieldTerrainShape *_shape;
 
 public:
