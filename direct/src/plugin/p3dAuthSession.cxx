@@ -163,7 +163,7 @@ start_p3dcert() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _start_dir = inst_mgr->get_root_dir() + "/start";
+  _start_dir = inst_mgr->get_start_dir();
 
   string root_dir = _inst->_p3dcert_package->get_package_dir();
   mkdir_complete(_start_dir, nout);

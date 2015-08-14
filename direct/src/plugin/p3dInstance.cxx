@@ -1564,7 +1564,7 @@ uninstall_packages() {
   if (inst_mgr->get_verify_contents() != P3D_VC_never) {
     string start_dir_suffix = get_start_dir_suffix();
     if (!start_dir_suffix.empty()) {
-      string start_dir = inst_mgr->get_root_dir() + "/start" + start_dir_suffix;
+      string start_dir = inst_mgr->get_start_dir() + start_dir_suffix;
       nout << "Cleaning up start directory " << start_dir << "\n";
       inst_mgr->delete_directory_recursively(start_dir);
     }

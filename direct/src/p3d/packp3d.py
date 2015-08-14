@@ -57,6 +57,14 @@ Options:
      instead of -e for files that are uncompressible by their nature
      (e.g. mpg files).  This option may be repeated as necessary.
 
+  -x ext
+     Marks files with the given extensions of needing to be physically
+     extracted to disk before they can be loaded.  This is used for
+     file types that cannot be loaded via the virtual file system,
+     such as .ico files on Windows.
+     This option is currently only implemented when deploying the
+     application with pdeploy.
+
   -p python_lib_dir
      Adds a directory to search for additional Python modules.  You
      can use this to add your system's Python path, to allow packp3d
@@ -134,6 +142,8 @@ def makePackedApp(args):
             packager.binaryExtensions.append(value)
         elif option == '-n':
             packager.uncompressibleExtensions.append(value)
+        elif option == '-x':
+            packager.extractExtensions.append(value)
         elif option == '-p':
             sys.path.append(value)
         elif option == '-c':
