@@ -577,6 +577,10 @@ estimate_texture_memory() const {
     bpp = 12;
     break;
 
+  case Texture::F_r11_g11_b10:
+    bpp = 4;
+    break;
+
   default:
     break;
   }
@@ -1701,6 +1705,9 @@ write(ostream &out, int indent_level) const {
   case F_rgba8i:
     out << "rgba8i";
     break;
+  case F_r11_g11_b10:
+    out << "r11_g11_b10";
+    break;
   }
 
   if (cdata->_compression != CM_default) {
@@ -2115,6 +2122,8 @@ format_format(Format format) {
     return "rgb8i";
   case F_rgba8i:
     return "rgba8i";
+  case F_r11_g11_b10:
+    return "r11g11b10";
   }
   return "**invalid**";
 }
@@ -2201,6 +2210,8 @@ string_format(const string &str) {
     return F_rg32;
   } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
     return F_rgb32;
+  } else if (cmp_nocase(str, "r11g11b10") == 0) {
+    return F_r11_g11_b10;
   }
 
   gobj_cat->error()
@@ -5181,6 +5192,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_srgb:
   case F_rgb32:
   case F_rgb8i:
+  case F_r11_g11_b10:
     cdata->_num_components = 3;
     break;
 

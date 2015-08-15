@@ -156,6 +156,9 @@ PUBLISHED:
     F_rg8i, // 8 integer bits per R,G channel
     F_rgb8i, // 8 integer bits per R,G,B channel
     F_rgba8i, // 8 integer bits per R,G,B,A channel
+
+    F_r11_g11_b10, // unsigned floating-point, 11 Red, 11 Green, 10 Blue Bits
+
   };
 
   // Deprecated.  See SamplerState.FilterType.

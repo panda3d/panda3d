@@ -7763,6 +7763,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_depth_component24:
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r11_g11_b10:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
         break;
@@ -7946,6 +7947,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb16:
   case Texture::F_rgb32:
   case Texture::F_srgb:
+  case Texture::F_r11_g11_b10:
 #ifdef OPENGLES
     return GL_RGB;
 #else
@@ -8044,6 +8046,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r32i:
+      case Texture::F_r11_g11_b10:
         // Unsupported; fall through to below.
         break;
 
@@ -8534,6 +8537,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifndef OPENGLES
   case Texture::F_r32i:
     return GL_R32I;
+#endif
+
+#ifndef OPENGLES
+  case Texture::F_r11_g11_b10:
+    return GL_R11F_G11F_B10F;
 #endif
 
   default:
@@ -12102,6 +12110,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R16:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16;
+    break;
+#endif
+
+#ifndef OPENGLES
+  case GL_R11F_G11F_B10F:
+    type = Texture::T_float;
+    format = Texture::F_r11_g11_b10;
     break;
 #endif
 
