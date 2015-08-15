@@ -696,8 +696,18 @@ compose_impl(const RenderAttrib *other) const {
       }
     }
   }
-  // Just copy the instance count.
-  attr->_instance_count = over->_instance_count;
+
+  // In case no instance count is set, just copy it.
+  if (attr->_instance_count == 0) {
+    attr->_instance_count = over->_instance_count;
+  } else {
+    // If an instance count is set, check if the other attrib has an instance count set,
+    // if so, override it, otherwise just keep the current instance count
+    if (over->_instance_count > 0) {
+      attr->_instance_count = over->_instance_count;
+    }
+  }
+
   // Update the flags.
   attr->_flags &= ~(over->_has_flags);
   attr->_flags |= over->_flags;
