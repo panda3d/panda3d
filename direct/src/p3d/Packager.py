@@ -1496,6 +1496,10 @@ class Packager:
                     xhost = he.makeXml(packager = self.packager)
                     xpackage.InsertEndChild(xhost)
 
+            self.extracts.sort()
+            for name, xextract in self.extracts:
+                xpackage.InsertEndChild(xextract)
+
             doc.InsertEndChild(xpackage)
 
             # Write the xml file to a temporary file on disk, so we

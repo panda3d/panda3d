@@ -444,6 +444,7 @@ class Installer:
     notify = directNotify.newCategory("Installer")
 
     def __init__(self, p3dfile, shortname, fullname, version, tokens = {}):
+        self.p3dFilename = p3dfile
         if not shortname:
             shortname = p3dfile.getBasenameWoExtension()
         self.shortname = shortname
@@ -477,22 +478,16 @@ class Installer:
         if not self.authoremail and ' ' not in uname:
             self.authoremail = "%s@%s" % (uname, socket.gethostname())
 
-        self.standalone = Standalone(p3dfile, tokens)
-        self.tempDir = Filename.temporary("", self.shortname, "") + "/"
-        self.tempDir.makeDir()
-        self.__tempRoots = {}
-
         # Load the p3d file to read out the required packages
         mf = Multifile()
-        if not mf.openRead(p3dfile):
+        if not mf.openRead(self.p3dFilename):
             Installer.notify.error("Not a Panda3D application: %s" % (p3dfile))
             return
 
         # Now load the p3dInfo file.
-        self.hostUrl = PandaSystem.getPackageHostUrl()
-        if not self.hostUrl:
-            self.hostUrl = self.standalone.host.hostUrl
+        self.hostUrl = None
         self.requires = []
+        self.extracts = []
         i = mf.findSubfile('p3d_info.xml')
         if i >= 0:
             stream = mf.openReadSubfile(i)
@@ -511,13 +506,53 @@ class Installer:
                         p3dRequires.Attribute('host')))
                     p3dRequires = p3dRequires.NextSiblingElement('requires')
 
+                p3dExtract = p3dPackage.FirstChildElement('extract')
+                while p3dExtract:
+                    filename = p3dExtract.Attribute('filename')
+                    self.extracts.append(filename)
+                    p3dExtract = p3dExtract.NextSiblingElement('extract')
+
                 if not self.fullname:
                     p3dConfig = p3dPackage.FirstChildElement('config')
                     if p3dConfig:
                         self.fullname = p3dConfig.Attribute('display_name')
+        else:
+            Installer.notify.warning("No p3d_info.xml was found in .p3d archive.")
+
+        mf.close()
+
+        if not self.hostUrl:
+            self.hostUrl = PandaSystem.getPackageHostUrl()
+            if not self.hostUrl:
+                self.hostUrl = self.standalone.host.hostUrl
+            Installer.notify.warning("No host URL was specified by .p3d archive.  Falling back to %s" % (self.hostUrl))
 
         if not self.fullname:
             self.fullname = self.shortname
+
+        self.tempDir = Filename.temporary("", self.shortname, "") + "/"
+        self.tempDir.makeDir()
+        self.__tempRoots = {}
+
+        if self.extracts:
+            # Copy .p3d to a temporary file so we can remove the extracts.
+            p3dfile = Filename(self.tempDir, self.p3dFilename.getBasename())
+            shutil.copyfile(self.p3dFilename.toOsSpecific(), p3dfile.toOsSpecific())
+            mf = Multifile()
+            if not mf.openReadWrite(p3dfile):
+                Installer.notify.error("Failure to open %s for writing." % (p3dfile))
+
+            # We don't really need this silly thing when embedding, anyway.
+            mf.setHeaderPrefix("")
+
+            for fn in self.extracts:
+                if not mf.removeSubfile(fn):
+                    Installer.notify.error("Failure to remove %s from multifile." % (p3dfile))
+
+            mf.repack()
+            mf.close()
+
+        self.standalone = Standalone(p3dfile, tokens)
 
     def __del__(self):
         try:
@@ -532,6 +567,22 @@ class Installer:
 
         if not self.includeRequires:
             return
+
+        # Write out the extracts from the original .p3d.
+        if self.extracts:
+            mf = Multifile()
+            if not mf.openRead(self.p3dFilename):
+                Installer.notify.error("Failed to open .p3d archive: %s" % (filename))
+
+            for filename in self.extracts:
+                i = mf.findSubfile(filename)
+                if i < 0:
+                    Installer.notify.error("Cannot find extract in .p3d archive: %s" % (filename))
+                    continue
+
+                if not mf.extractSubfile(i, Filename(hostDir, filename)):
+                    Installer.notify.error("Failed to extract file from .p3d archive: %s" % (filename))
+            mf.close()
 
         pkgTree = PackageTree(platform, hostDir, self.hostUrl)
         pkgTree.installPackage("images", None, self.standalone.host.hostUrl)
@@ -660,7 +711,8 @@ class Installer:
 
         Filename(tempdir, "usr/bin/").makeDir()
         if self.includeRequires:
-            extraTokens = {"host_dir" : "/usr/lib/" + self.shortname.lower()}
+            extraTokens = {"host_dir" : "/usr/lib/" + self.shortname.lower(),
+                           "start_dir" : "/usr/lib/" + self.shortname.lower()}
         else:
             extraTokens = {}
         self.standalone.build(Filename(tempdir, "usr/bin/" + self.shortname.lower()), platform, extraTokens)
@@ -712,7 +764,7 @@ class Installer:
         print >>desktop, "Type=Application"
         desktop.close()
 
-        if self.includeRequires:
+        if self.includeRequires or self.extracts:
             hostDir = Filename(tempdir, "usr/lib/%s/" % self.shortname.lower())
             hostDir.makeDir()
             self.installPackagesInto(hostDir, platform)
@@ -853,7 +905,7 @@ class Installer:
         exefile = Filename(output, "Contents/MacOS/" + self.shortname)
         exefile.makeDir()
         if self.includeRequires:
-            extraTokens = {"host_dir" : "../Resources"}
+            extraTokens = {"host_dir": "../Resources", "start_dir": "../Resources"}
         else:
             extraTokens = {}
         self.standalone.build(exefile, platform, extraTokens)
@@ -1064,7 +1116,7 @@ class Installer:
         exefile = Filename(Filename.getTempDirectory(), self.shortname + ".exe")
         exefile.unlink()
         if self.includeRequires:
-            extraTokens = {"host_dir" : "."}
+            extraTokens = {"host_dir": ".", "start_dir": "."}
         else:
             extraTokens = {}
         self.standalone.build(exefile, platform, extraTokens)

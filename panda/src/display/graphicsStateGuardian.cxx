@@ -1975,7 +1975,7 @@ flush_timer_queries() {
 
       if (_pending_timer_queries[i]->is_answer_ready()) {
         first = count;
-        while (i < count) {
+        while (i < count - 1) {
           if (!_pending_timer_queries[++i]->is_answer_ready()) {
             first = i;
             break;

@@ -502,11 +502,14 @@ estimate_texture_memory() const {
   case Texture::F_green:
   case Texture::F_blue:
   case Texture::F_luminance:
+  case Texture::F_sluminance:
+    bpp = 1;
+    break;
+
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-  case Texture::F_sluminance:
   case Texture::F_sluminance_alpha:
-    bpp = 4;
+    bpp = 2;
     break;
 
   case Texture::F_rgba:
@@ -529,13 +532,16 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_depth_stencil:
+    bpp = 4;
+    break;
+
   case Texture::F_depth_component:
-    bpp = 32;
+    bpp = 2;
     break;
 
   case Texture::F_rgba12:
   case Texture::F_rgb12:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_rgba16:
@@ -554,7 +560,7 @@ estimate_texture_memory() const {
     bpp = 4;
     break;
   case Texture::F_rgb16:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_r32i:

@@ -2301,6 +2301,9 @@ def SetupBuildEnvironment(compiler):
         print("Target OS: %s" % GetTarget())
     print("Target arch: %s" % GetTargetArch())
 
+    # Set to English so we can safely parse the result of gcc commands.
+    os.environ["LC_ALL"] = "C"
+
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
         SetupVisualStudioEnviron()

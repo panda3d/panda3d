@@ -690,7 +690,6 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::get_core_api
 //       Access: Protected
@@ -700,78 +699,12 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 get_core_api() {
+  bool is_fresh = false;
   if (!_coreapi_dll.quick_verify(_root_dir)) {
-    // The DLL file needs to be downloaded.  Build up our list of
-    // URL's to attempt to download it from, in reverse order.
-    string url;
-    vector_string core_urls;
-
-    // Our last act of desperation: hit the original host, with a
-    // query uniquifier, to break through any caches.
-    ostringstream strm;
-    strm << _download_url_prefix << _coreapi_dll.get_filename()
-         << "?" << time(NULL);
-    url = strm.str();
-    core_urls.push_back(url);
-
-    // Before we try that, we'll hit the original host, without a
-    // uniquifier.
-    url = _download_url_prefix;
-    url += _coreapi_dll.get_filename();
-    core_urls.push_back(url);
-
-    // And before we try that, we'll try two mirrors, at random.
-    vector_string mirrors;
-    choose_random_mirrors(mirrors, 2);
-    for (vector_string::iterator si = mirrors.begin();
-         si != mirrors.end(); 
-         ++si) {
-      url = (*si) + _coreapi_dll.get_filename();
-      core_urls.push_back(url);
-    }
-
-    // The very first thing we'll try is the super_mirror, if we have
-    // one.
-    if (!_super_mirror_url_prefix.empty()) {
-      url = _super_mirror_url_prefix + _coreapi_dll.get_filename();
-      core_urls.push_back(url);
-    }
-
-    // Now pick URL's off the list, and try them, until we have
-    // success.
-    Filename pathname = Filename::from_os_specific(_coreapi_dll.get_pathname(_root_dir));
-    pathname.make_dir();
-    HTTPClient *http = HTTPClient::get_global_ptr();
-
-    bool success = false;
-    while (!core_urls.empty()) {
-      url = core_urls.back();
-      core_urls.pop_back();
-    
-      PT(HTTPChannel) channel = http->get_document(url);
-      if (!channel->download_to_file(pathname)) {
-        cerr << "Unable to download " << url << "\n";
-
-      } else if (!_coreapi_dll.full_verify(_root_dir)) {
-        cerr << "Mismatched download for " << url << "\n";
-
-      } else {
-        // successfully downloaded!
-        success = true;
-        break;
-      }
-    }
-
-    if (!success) {
-      cerr << "Couldn't download core API.\n";
+    if (!download_core_api()) {
       return false;
     }
-
-    // Since we had to download some of it, might as well ask the core
-    // API to check all of it.
-    if (_verify_contents == P3D_VC_none) {
-      _verify_contents = P3D_VC_normal;
-    }
+    is_fresh = true;
   }
 
   // Now we've got the DLL.  Load it.
@@ -795,9 +728,19 @@ get_core_api() {
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    _host_url, _verify_contents, _this_platform, _log_dirname,
                    _log_basename, trusted_environment, _console_environment,
-                   _root_dir, "", cerr)) {
-    cerr << "Unable to launch core API in " << pathname << "\n";
-    return false;
+                   _root_dir, _host_dir, _start_dir, cerr)) {
+
+    // If we're not sure this is the latest version, make sure it is
+    // up-to-date, and then try again.
+    if (is_fresh || !download_core_api() ||
+        !load_plugin(pathname, contents_filename.to_os_specific(),
+                     _host_url, _verify_contents, _this_platform, _log_dirname,
+                     _log_basename, trusted_environment, _console_environment,
+                     _root_dir, _host_dir, _start_dir, cerr)) {
+
+      cerr << "Unable to launch core API in " << pathname << "\n";
+      return false;
+    }
   }
 
   // Successfully loaded.
@@ -819,6 +762,88 @@ get_core_api() {
                              _host_url.c_str(), coreapi_timestamp.c_str(),
                              _coreapi_set_ver.c_str());
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::download_core_api
+//       Access: Protected
+//  Description: Downloads the latest version of the core API from
+//               the plug-in server.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+download_core_api() {
+  // The DLL file needs to be downloaded.  Build up our list of
+  // URL's to attempt to download it from, in reverse order.
+  string url;
+  vector_string core_urls;
+
+  // Our last act of desperation: hit the original host, with a
+  // query uniquifier, to break through any caches.
+  ostringstream strm;
+  strm << _download_url_prefix << _coreapi_dll.get_filename()
+       << "?" << time(NULL);
+  url = strm.str();
+  core_urls.push_back(url);
+
+  // Before we try that, we'll hit the original host, without a
+  // uniquifier.
+  url = _download_url_prefix;
+  url += _coreapi_dll.get_filename();
+  core_urls.push_back(url);
+
+  // And before we try that, we'll try two mirrors, at random.
+  vector_string mirrors;
+  choose_random_mirrors(mirrors, 2);
+  for (vector_string::iterator si = mirrors.begin();
+       si != mirrors.end();
+       ++si) {
+    url = (*si) + _coreapi_dll.get_filename();
+    core_urls.push_back(url);
+  }
+
+  // The very first thing we'll try is the super_mirror, if we have
+  // one.
+  if (!_super_mirror_url_prefix.empty()) {
+    url = _super_mirror_url_prefix + _coreapi_dll.get_filename();
+    core_urls.push_back(url);
+  }
+
+  // Now pick URL's off the list, and try them, until we have
+  // success.
+  Filename pathname = Filename::from_os_specific(_coreapi_dll.get_pathname(_root_dir));
+  pathname.make_dir();
+  HTTPClient *http = HTTPClient::get_global_ptr();
+
+  bool success = false;
+  while (!core_urls.empty()) {
+    url = core_urls.back();
+    core_urls.pop_back();
+
+    PT(HTTPChannel) channel = http->get_document(url);
+    if (!channel->download_to_file(pathname)) {
+      cerr << "Unable to download " << url << "\n";
+
+    } else if (!_coreapi_dll.full_verify(_root_dir)) {
+      cerr << "Mismatched download for " << url << "\n";
+
+    } else {
+      // successfully downloaded!
+      success = true;
+      break;
+    }
+  }
+
+  if (!success) {
+    cerr << "Couldn't download core API.\n";
+    return false;
+  }
+
+  // Since we had to download some of it, might as well ask the core
+  // API to check all of it.
+  if (_verify_contents == P3D_VC_none) {
+    _verify_contents = P3D_VC_normal;
+  }
   return true;
 }
 

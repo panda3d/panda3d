@@ -48,6 +48,7 @@ protected:
   void add_mirror(string mirror_url);
   void choose_random_mirrors(vector_string &result, int num_mirrors);
   bool get_core_api();
+  bool download_core_api();
 
   void usage();
 

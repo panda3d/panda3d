@@ -201,7 +201,8 @@ initialize(int api_version, const string &contents_filename,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
            bool console_environment,
-           const string &root_dir, const string &host_dir) {
+           const string &root_dir, const string &host_dir,
+           const string &start_dir) {
   _api_version = api_version;
   _host_url = host_url;
   _verify_contents = verify_contents;
@@ -298,12 +299,18 @@ initialize(int api_version, const string &contents_filename,
   } else {
     _root_dir = root_dir;
   }
-  
+
   _host_dir = host_dir;
+
+  if (start_dir.empty()) {
+    _start_dir = _root_dir + "/start";
+  } else {
+    _start_dir = start_dir;
+  }
 
   // Allow the caller (e.g. panda3d.exe) to specify a log directory.
   // Or, allow the developer to compile one in.
-  
+  //
   // Failing that, we write logfiles to Panda3D/log.
   if (_log_directory.empty()) {
     _log_directory = _root_dir + "/log";
@@ -1515,8 +1522,10 @@ create_runtime_environment() {
 
   // Make the certificate directory.
   _certs_dir = _root_dir + "/certs";
-  if (!mkdir_complete(_certs_dir, nout)) {
-    nout << "Couldn't mkdir " << _certs_dir << "\n";
+  if (!get_trusted_environment()) {
+    if (!mkdir_complete(_certs_dir, nout)) {
+      nout << "Couldn't mkdir " << _certs_dir << "\n";
+    }
   }
 
   _created_runtime_environment = true;

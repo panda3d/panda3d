@@ -717,7 +717,7 @@ start_p3dpython(P3DInstance *inst) {
     _keep_user_env = true;
   }
   if (!_keep_user_env) {
-    _start_dir = inst_mgr->get_root_dir() + "/start" + inst->get_start_dir_suffix();
+    _start_dir = inst_mgr->get_start_dir() + inst->get_start_dir_suffix();
     mkdir_complete(_start_dir, nout);
   }
   replace_slashes(_start_dir);
