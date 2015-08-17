@@ -928,7 +928,11 @@ start_p3dpython(P3DInstance *inst) {
         const char *varc = var.c_str();
         bool found = false;
         for (int i = 0; dont_keep[i] != NULL && !found; ++i) {
+#ifdef _WIN32
+          found = (_stricmp(dont_keep[i], varc) == 0);
+#else
           found = (strcmp(dont_keep[i], varc) == 0);
+#endif
         }
         if (!found) {
           // This variable is OK, keep it.
