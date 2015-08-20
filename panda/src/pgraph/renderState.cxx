@@ -355,6 +355,31 @@ make(const RenderAttrib *attrib1,
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::make
 //       Access: Published, Static
+//  Description: Returns a RenderState with five attributes set.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+make(const RenderAttrib *attrib1,
+     const RenderAttrib *attrib2,
+     const RenderAttrib *attrib3,
+     const RenderAttrib *attrib4,
+     const RenderAttrib *attrib5, int override) {
+  RenderState *state = new RenderState;
+  state->_attributes[attrib1->get_slot()].set(attrib1, override);
+  state->_attributes[attrib2->get_slot()].set(attrib2, override);
+  state->_attributes[attrib3->get_slot()].set(attrib3, override);
+  state->_attributes[attrib4->get_slot()].set(attrib4, override);
+  state->_attributes[attrib5->get_slot()].set(attrib5, override);
+  state->_filled_slots.set_bit(attrib1->get_slot());
+  state->_filled_slots.set_bit(attrib2->get_slot());
+  state->_filled_slots.set_bit(attrib3->get_slot());
+  state->_filled_slots.set_bit(attrib4->get_slot());
+  state->_filled_slots.set_bit(attrib5->get_slot());
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::make
+//       Access: Published, Static
 //  Description: Returns a RenderState with n attributes set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::

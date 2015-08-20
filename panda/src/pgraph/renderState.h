@@ -87,6 +87,11 @@ PUBLISHED:
                                const RenderAttrib *attrib2,
                                const RenderAttrib *attrib3,
                                const RenderAttrib *attrib4, int override = 0);
+  static CPT(RenderState) make(const RenderAttrib *attrib1,
+                               const RenderAttrib *attrib2,
+                               const RenderAttrib *attrib3,
+                               const RenderAttrib *attrib4,
+                               const RenderAttrib *attrib5, int override = 0);
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
 
