@@ -635,13 +635,13 @@ class AppRunner(DirectObject):
         try:
             taskMgr.run()
 
-        except SystemExit:
+        except SystemExit as err:
             # Presumably the window has already been shut down here, but shut
             # it down again for good measure.
             if hasattr(__builtin__, "base"):
                 base.destroy()
 
-            self.notify.info("Normal exit.")
+            self.notify.info("Normal exit with status %d." % err.code)
             raise
 
         except:

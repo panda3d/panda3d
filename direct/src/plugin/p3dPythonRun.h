@@ -71,7 +71,7 @@ public:
                const char *log_pathname, bool interactive_console);
   ~P3DPythonRun();
 
-  bool run_python();
+  int run_python();
 
   void set_window_open(P3DCInstance *inst, bool is_open);
   void request_keyboard_focus(P3DCInstance *inst);

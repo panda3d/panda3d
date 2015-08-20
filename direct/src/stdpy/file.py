@@ -13,6 +13,7 @@ __all__ = [
 from panda3d import core
 import sys
 import types
+import os
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
 

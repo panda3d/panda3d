@@ -515,8 +515,8 @@ set_properties_now(WindowProperties &properties) {
         XRRScreenSize *xrrs;
         xrrs = XRRSizes(_display, 0, &num_sizes);
         for (int i = 0; i < num_sizes; ++i) {
-          if (xrrs[i].width == properties.get_x_size() &&
-              xrrs[i].height == properties.get_y_size()) {
+          if (xrrs[i].width == reqsizex &&
+              xrrs[i].height == reqsizey) {
             new_size_id = i;
           }
         }
