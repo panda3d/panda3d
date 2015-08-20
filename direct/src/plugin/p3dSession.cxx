@@ -179,18 +179,27 @@ shutdown() {
         result = waitpid(_p3dpython_pid, &status, WNOHANG);
       }
       _p3dpython_pid = -1;
-      
+
       nout << "Python process has successfully stopped.\n";
       if (WIFEXITED(status)) {
-        nout << "  exited normally, status = "
-             << WEXITSTATUS(status) << "\n";
+        int code = WEXITSTATUS(status);
+
+        nout << "  exited normally, status = " << code << "\n";
+        if (code != 0) {
+          _exit(code);
+        }
+
       } else if (WIFSIGNALED(status)) {
-        nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+        nout << "  signalled by " << WTERMSIG(status) << ", core = "
              << WCOREDUMP(status) << "\n";
+
+        // This seems to be a popular shell convention.
+        _exit(128 + WTERMSIG(status));
+
       } else if (WIFSTOPPED(status)) {
         nout << "  stopped by " << WSTOPSIG(status) << "\n";
       }
-      
+
 #endif  // _WIN32
     }
 
@@ -1708,15 +1717,24 @@ posix_create_process() {
   // its process.  Report an error condition.
   nout << "Python process stopped immediately.\n";
   if (WIFEXITED(status)) {
-    nout << "  exited normally, status = "
-         << WEXITSTATUS(status) << "\n";
+    int code = WEXITSTATUS(status);
+
+    nout << "  exited normally, status = " << code << "\n";
+    if (code != 0) {
+      _exit(code);
+    }
+
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
+
+    // This seems to be a popular shell convention.
+    _exit(128 + WTERMSIG(status));
+
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
   }
-  
+
   return -1;
 }
 #endif  // _WIN32
@@ -1798,10 +1816,12 @@ p3dpython_thread_run() {
     return;
   }
 
-  if (!run_p3dpython(libp3dpython.c_str(), _mf_filename.c_str(),
-                     _input_handle, _output_handle, _log_pathname.c_str(),
-                     _interactive_console)) {
+  int status = run_p3dpython(libp3dpython.c_str(), _mf_filename.c_str(),
+                             _input_handle, _output_handle, _log_pathname.c_str(),
+                             _interactive_console);
+  if (status != 0) {
     nout << "Failure on startup.\n";
+    _exit(status);
   }
 }
 

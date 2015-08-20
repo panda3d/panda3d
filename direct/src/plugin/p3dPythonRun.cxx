@@ -137,8 +137,10 @@ P3DPythonRun::
 //       Access: Public
 //  Description: Runs the embedded Python process.  This method does
 //               not return until the plugin is ready to exit.
+//
+//               Returns the exit status, which will be 0 on success.
 ////////////////////////////////////////////////////////////////////
-bool P3DPythonRun::
+int P3DPythonRun::
 run_python() {
 #if defined(_WIN32) && defined(USE_DEBUG_PYTHON)
   // On Windows, in a debug build, we have to preload sys.dll_suffix =
@@ -156,7 +158,7 @@ run_python() {
   if (panda3d_module == NULL) {
     nout << "Failed to create panda3d module:\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Set the __path__ such that it can find panda3d/core.pyd, etc.
@@ -174,7 +176,7 @@ run_python() {
   if (vfsimporter == NULL) {
     nout << "Failed to import _vfsimporter:\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(vfsimporter);
 
@@ -183,7 +185,7 @@ run_python() {
   if (vfsimporter_module == NULL) {
     nout << "Failed to import VFSImporter:\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // And register the VFSImporter.
@@ -191,7 +193,7 @@ run_python() {
   if (result == NULL) {
     nout << "Failed to call VFSImporter.register():\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
   Py_DECREF(vfsimporter_module);
@@ -203,12 +205,12 @@ run_python() {
   PT(Multifile) mf = new Multifile;
   if (!mf->open_read(_archive_file)) {
     nout << "Could not read " << _archive_file << "\n";
-    return false;
+    return 1;
   }
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vfs->mount(mf, dir, VirtualFileSystem::MF_read_only)) {
     nout << "Could not mount " << _archive_file << "\n";
-    return false;
+    return 1;
   }
 
   // And finally, we can import the startup module.
@@ -216,7 +218,7 @@ run_python() {
   if (app_runner_module == NULL) {
     nout << "Failed to import direct.p3d.AppRunner\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the pointers to the objects needed within the module.
@@ -224,7 +226,7 @@ run_python() {
   if (app_runner_class == NULL) {
     nout << "Failed to get AppRunner class\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Construct an instance of AppRunner.
@@ -232,7 +234,7 @@ run_python() {
   if (_runner == NULL) {
     nout << "Failed to construct AppRunner instance\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(app_runner_class);
 
@@ -240,35 +242,35 @@ run_python() {
   _undefined_object_class = PyObject_GetAttrString(app_runner_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // And the "Undefined" instance.
   _undefined = PyObject_GetAttrString(app_runner_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the ConcreteStruct class.
   _concrete_struct_class = PyObject_GetAttrString(app_runner_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the BrowserObject class.
   _browser_object_class = PyObject_GetAttrString(app_runner_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the global TaskManager.
   _taskMgr = PyObject_GetAttrString(app_runner_module, "taskMgr");
   if (_taskMgr == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   Py_DECREF(app_runner_module);
@@ -285,12 +287,12 @@ run_python() {
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
   if (p3dpython == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   PyObject *request_func = PyObject_GetAttrString(p3dpython, "request_func");
   if (request_func == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Now pass that func pointer back to our AppRunner instance, so it
@@ -298,7 +300,7 @@ run_python() {
   result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"N", request_func);
   if (result == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
 
@@ -318,7 +320,7 @@ run_python() {
   PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
   if (check_comm == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Add it to the task manager.  We do this instead of constructing a
@@ -326,7 +328,7 @@ run_python() {
   result = PyObject_CallMethod(_taskMgr, (char *)"add", (char *)"Ns", check_comm, "check_comm");
   if (result == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
 
@@ -334,18 +336,30 @@ run_python() {
   // taskMgr.run()).
   PyObject *done = PyObject_CallMethod(_runner, (char *)"run", (char *)"");
   if (done == NULL) {
+    int status = 1;
+
     // An uncaught application exception, and not handled by
-    // appRunner.exceptionHandler.
-    PyErr_Print();
+    // appRunner.exceptionHandler.  If it is a SystemExit, extract
+    // the exit status that we should return.
+    if (PyErr_Occurred() == PyExc_SystemExit) {
+      PyObject *ptype, *ptraceback;
+      PySystemExitObject *value = NULL;
+      PyErr_Fetch(&ptype, (PyObject **)&value, &ptraceback);
+      if (value != NULL) {
+        status = (int)PyInt_AsLong(value->code);
+      }
+    } else {
+      PyErr_Print();
+    }
 
     if (_interactive_console) {
       // Give an interactive user a chance to explore the exception.
       run_interactive_console();
-      return true;
+      return 0;
     }
 
     // We're done.
-    return false;
+    return status;
   }
 
   // A normal exit from the taskManager.  We're presumably done.
@@ -355,7 +369,7 @@ run_python() {
     run_interactive_console();
   }
 
-  return true;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
