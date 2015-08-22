@@ -99,6 +99,7 @@ protected:
   long _event_mask;
   bool _awaiting_configure;
   bool _dga_mouse_enabled;
+  int _expected_fixed_size_x, _expected_fixed_size_y;
   Atom _wm_delete_window;
 
   struct MouseDeviceInfo {
