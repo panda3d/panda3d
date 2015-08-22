@@ -341,12 +341,30 @@ run_python() {
     // An uncaught application exception, and not handled by
     // appRunner.exceptionHandler.  If it is a SystemExit, extract
     // the exit status that we should return.
-    if (PyErr_Occurred() == PyExc_SystemExit) {
+    if (PyErr_ExceptionMatches(PyExc_SystemExit)) {
       PyObject *ptype, *ptraceback;
-      PySystemExitObject *value = NULL;
-      PyErr_Fetch(&ptype, (PyObject **)&value, &ptraceback);
-      if (value != NULL) {
-        status = (int)PyInt_AsLong(value->code);
+      PyObject *value = NULL;
+      PyErr_Fetch(&ptype, &value, &ptraceback);
+
+      if (value != NULL && PyExceptionInstance_Check(value)) {
+        PyObject *code = PyObject_GetAttrString(value, "code");
+        if (code) {
+          Py_DECREF(value);
+          value = code;
+        }
+      }
+
+      if (value == NULL || value == Py_None) {
+        status = 0;
+#if PY_MAJOR_VERSION >= 3
+      } else if (PyLong_Check(value)) {
+        status = (int)PyLong_AsLong(value);
+#else
+      } else if (PyInt_Check(value)) {
+        status = (int)PyInt_AsLong(value);
+#endif
+      } else {
+        status = 1;
       }
     } else {
       PyErr_Print();
