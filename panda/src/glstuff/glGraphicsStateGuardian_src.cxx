@@ -818,9 +818,24 @@ reset() {
 
     if (_glClearTexImage == NULL) {
       GLCAT.warning()
-        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
       _supports_clear_texture = true;
+    }
+  }
+#endif
+
+  _supports_clear_buffer = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_clear_buffer_object")) {
+    _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
+      get_extension_func("glClearBufferData");
+
+    if (_glClearBufferData == NULL) {
+      GLCAT.warning()
+        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    } else {
+      _supports_clear_buffer = true;
     }
   }
 #endif
@@ -11303,13 +11318,25 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // The texture has a clear color, so we should fill this mipmap
             // level to a solid color.
 #ifndef OPENGLES
-            if (_supports_clear_texture) {
-              // We can do that with the convenient glClearTexImage function.
-              string clear_data = tex->get_clear_data();
+            if (texture_target != GL_TEXTURE_BUFFER) {
+              if (_supports_clear_texture) {
+                // We can do that with the convenient glClearTexImage function.
+                string clear_data = tex->get_clear_data();
 
-              _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                               component_type, (void *)clear_data.data());
-              continue;
+                _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                                 component_type, (void *)clear_data.data());
+                continue;
+              }
+            } else {
+              if (_supports_clear_buffer) {
+                // For buffer textures we need to clear the underlying storage.
+                string clear_data = tex->get_clear_data();
+                cerr << "clearing buffer data\n";
+
+                _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
+                                   component_type, (const void *)clear_data.data());
+                continue;
+              }
             }
 #endif  // OPENGLES
             // Ask the Texture class to create the mipmap level in RAM.

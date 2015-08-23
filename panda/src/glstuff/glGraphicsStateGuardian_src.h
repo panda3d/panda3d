@@ -695,6 +695,11 @@ public:
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
 #endif
 
+  bool _supports_clear_buffer;
+#ifndef OPENGLES
+  PFNGLCLEARBUFFERDATAPROC _glClearBufferData;
+#endif
+
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
   PFNGLCOMPRESSEDTEXIMAGE3DPROC _glCompressedTexImage3D;
