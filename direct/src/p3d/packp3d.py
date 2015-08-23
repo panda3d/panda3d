@@ -111,7 +111,7 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:p:c:r:s:Dh')
+    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:x:p:c:r:s:Dh')
 
     packager = Packager.Packager()
 
