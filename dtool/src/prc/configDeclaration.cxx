@@ -163,9 +163,9 @@ output(ostream &out) const {
 void ConfigDeclaration::
 write(ostream &out) const {
   out << get_variable()->get_name() << " " << get_string_value();
-  if (!get_variable()->is_used()) {
-    out << "  (not used)";
-  }
+  //if (!get_variable()->is_used()) {
+  //  out << "  (not used)";
+  //}
   out << "\n";
 }
 
