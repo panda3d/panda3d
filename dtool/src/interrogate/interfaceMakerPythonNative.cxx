@@ -2237,8 +2237,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
           out << "  if (local_this == NULL) {\n";
-          out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-          out << "    return -1;\n";
+          out << "    return 0;\n";
           out << "  }\n\n";
 
           // Find the remap.  There should be only one.
