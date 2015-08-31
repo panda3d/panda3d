@@ -356,6 +356,7 @@ bool Panda3D::
 get_plugin() {
   // First, look for the existing contents.xml file.
   bool success = false;
+  bool is_fresh = false;
 
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
   if (_verify_contents != P3D_VC_force) {
@@ -370,75 +371,100 @@ get_plugin() {
   if (!success) {
     // Couldn't read it (or it wasn't current enough), so go get a new
     // one.
-    HTTPClient *http = HTTPClient::get_global_ptr();
-    
-    // Try the super_mirror first.
-    if (!_super_mirror_url_prefix.empty()) {
-      // We don't bother putting a uniquifying query string when we're
-      // downloading this file from the super_mirror.  The super_mirror
-      // is by definition a cache, so it doesn't make sense to bust
-      // caches here.
-      string url = _super_mirror_url_prefix + "contents.xml";
-      PT(HTTPChannel) channel = http->make_channel(false);
-      channel->get_document(url);
-      
-      Filename tempfile = Filename::temporary("", "p3d_");
-      if (!channel->download_to_file(tempfile)) {
-        cerr << "Unable to download " << url << "\n";
-        tempfile.unlink();
-      } else {
-        // Successfully downloaded from the super_mirror; try to read it.
-        success = read_contents_file(tempfile, true);
-        tempfile.unlink();
-      }
+    if (!download_contents_file(contents_filename)) {
+      // We don't have a usable contents.xml file.
+      return false;
     }
+    is_fresh = true;
+  }
 
-    if (!success) {
-      // Go download contents.xml from the actual host.
-      ostringstream strm;
-      strm << _host_url_prefix << "contents.xml";
-      // Append a uniquifying query string to the URL to force the
-      // download to go all the way through any caches.  We use the time
-      // in seconds; that's unique enough.
-      strm << "?" << time(NULL);
-      string url = strm.str();
-      
-      // We might as well explicitly request the cache to be disabled too,
-      // since we have an interface for that via HTTPChannel.
-      DocumentSpec request(url);
-      request.set_cache_control(DocumentSpec::CC_no_cache);
-      
-      PT(HTTPChannel) channel = http->make_channel(false);
-      channel->get_document(request);
-      
-      // Since we have to download some of it, might as well ask the core
-      // API to check all of it.
-      if (_verify_contents == P3D_VC_none) {
-        _verify_contents = P3D_VC_normal;
-      }
-      
-      // First, download it to a temporary file.
-      Filename tempfile = Filename::temporary("", "p3d_");
-      if (!channel->download_to_file(tempfile)) {
-        cerr << "Unable to download " << url << "\n";
-        
-        // Couldn't download, but try to read the existing contents.xml
-        // file anyway.  Maybe it's good enough.
-        success = read_contents_file(contents_filename, false);
-        
-      } else {
-        // Successfully downloaded; read it and move it into place.
-        success = read_contents_file(tempfile, true);
-      }
+  // Now that we've downloaded the contents file successfully, start
+  // the Core API.
+  if (!get_core_api()) {
+      // We failed.  Make sure contents.xml is up-to-date and try again.
+    if (!is_fresh && download_contents_file(contents_filename) && get_core_api()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::download_contents_file
+//       Access: Protected
+//  Description: Redownloads the contents.xml file from the named
+//               URL without first checking if it is up to date.
+//               Returns true if we have a contents.xml file that
+//               might be usable, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+download_contents_file(const Filename &contents_filename) {
+  bool success = false;
+  HTTPClient *http = HTTPClient::get_global_ptr();
+
+  // Try the super_mirror first.
+  if (!_super_mirror_url_prefix.empty()) {
+    // We don't bother putting a uniquifying query string when we're
+    // downloading this file from the super_mirror.  The super_mirror
+    // is by definition a cache, so it doesn't make sense to bust
+    // caches here.
+    string url = _super_mirror_url_prefix + "contents.xml";
+    PT(HTTPChannel) channel = http->make_channel(false);
+    channel->get_document(url);
+
+    Filename tempfile = Filename::temporary("", "p3d_");
+    if (!channel->download_to_file(tempfile)) {
+      cerr << "Unable to download " << url << "\n";
+      tempfile.unlink();
+    } else {
+      // Successfully downloaded from the super_mirror; try to read it.
+      success = read_contents_file(tempfile, true);
       tempfile.unlink();
     }
   }
 
-  if (success) {
-    // Now that we've downloaded the contents file successfully, start
-    // the Core API.
-    success = get_core_api();
+  if (!success) {
+    // Go download contents.xml from the actual host.
+    ostringstream strm;
+    strm << _host_url_prefix << "contents.xml";
+    // Append a uniquifying query string to the URL to force the
+    // download to go all the way through any caches.  We use the time
+    // in seconds; that's unique enough.
+    strm << "?" << time(NULL);
+    string url = strm.str();
+
+    // We might as well explicitly request the cache to be disabled too,
+    // since we have an interface for that via HTTPChannel.
+    DocumentSpec request(url);
+    request.set_cache_control(DocumentSpec::CC_no_cache);
+
+    PT(HTTPChannel) channel = http->make_channel(false);
+    channel->get_document(request);
+
+    // Since we have to download some of it, might as well ask the core
+    // API to check all of it.
+    if (_verify_contents == P3D_VC_none) {
+      _verify_contents = P3D_VC_normal;
+    }
+
+    // First, download it to a temporary file.
+    Filename tempfile = Filename::temporary("", "p3d_");
+    if (!channel->download_to_file(tempfile)) {
+      cerr << "Unable to download " << url << "\n";
+
+      // Couldn't download, but try to read the existing contents.xml
+      // file anyway.  Maybe it's good enough.
+      success = read_contents_file(contents_filename, false);
+
+    } else {
+      // Successfully downloaded; read it and move it into place.
+      success = read_contents_file(tempfile, true);
+    }
+
+    tempfile.unlink();
   }
 
   return success;
@@ -835,7 +861,6 @@ download_core_api() {
   }
 
   if (!success) {
-    cerr << "Couldn't download core API.\n";
     return false;
   }
 
