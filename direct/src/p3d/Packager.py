@@ -2196,8 +2196,10 @@ class Packager:
                     ext = Filename(lowerName).getExtension()
                     if ext not in self.packager.nonuniqueExtensions:
                         self.skipFilenames[lowerName] = True
+
                 for moduleName, mdef in package.moduleNames.items():
-                    self.skipModules[moduleName] = mdef
+                    if not mdef.exclude:
+                        self.skipModules[moduleName] = mdef
 
     # Packager constructor
     def __init__(self, platform = None):
