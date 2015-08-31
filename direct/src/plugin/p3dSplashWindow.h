@@ -54,9 +54,14 @@ public:
 
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
-  virtual void set_fgcolor(int r, int g, int b);
-  virtual void set_bgcolor(int r, int g, int b);
-  virtual void set_barcolor(int r, int g, int b);
+  void set_fgcolor(int r, int g, int b);
+  void set_bgcolor(int r, int g, int b);
+  void set_barcolor(int r, int g, int b);
+  void set_bar_bgcolor(int r, int g, int b);
+  void set_bar_border(int border);
+  void set_bar_bottom(int bottom);
+  void set_bar_width(int width, bool percent=false);
+  void set_bar_height(int height, bool percent=false);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
@@ -105,7 +110,15 @@ protected:
   int _fgcolor_r, _fgcolor_g, _fgcolor_b;
   int _bgcolor_r, _bgcolor_g, _bgcolor_b;
   int _barcolor_r, _barcolor_g, _barcolor_b;
+  int _bar_bgcolor_r, _bar_bgcolor_g, _bar_bgcolor_b;
+  int _bar_border;
 
+private:
+  int _bar_bottom;
+  int _bar_width, _bar_height;
+  double _bar_width_ratio, _bar_height_ratio;
+
+protected:
   // The region of the window for accepting button clicks.
   int _button_width, _button_height;
   int _button_x, _button_y;

@@ -48,6 +48,15 @@ P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _barcolor_r = 0x6c;
   _barcolor_g = 0xa5;
   _barcolor_b = 0xe0;
+  _bar_bgcolor_r = _bgcolor_r;
+  _bar_bgcolor_g = _bgcolor_g;
+  _bar_bgcolor_b = _bgcolor_b;
+  _bar_border = 1;
+  _bar_bottom = 24;
+  _bar_width = 398;
+  _bar_height = 22;
+  _bar_width_ratio = 0.6;
+  _bar_height_ratio = 0.1;
   _button_width = 0;
   _button_height = 0;
   _button_x = 0;
@@ -113,7 +122,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_fgcolor
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Specifies the color that is used to display the text
 //               above the loading bar.
 //
@@ -129,7 +138,7 @@ set_fgcolor(int r, int g, int b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_bgcolor
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Specifies the solid color that is displayed behind
 //               the splash image, if any, or before the splash image
 //               is loaded.
@@ -146,7 +155,7 @@ set_bgcolor(int r, int g, int b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_barcolor
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Specifies the color that is used to fill the
 //               loading bar.
 //
@@ -158,6 +167,105 @@ set_barcolor(int r, int g, int b) {
   _barcolor_r = r;
   _barcolor_g = g;
   _barcolor_b = b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bar_bgcolor
+//       Access: Public
+//  Description: Specifies the solid color that is displayed behind
+//               the loading bar.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bar_bgcolor(int r, int g, int b) {
+  nout << "bar_bgcolor " << r << ", " << g << ", " << b << "\n";
+  _bar_bgcolor_r = r;
+  _bar_bgcolor_g = g;
+  _bar_bgcolor_b = b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bar_border
+//       Access: Public
+//  Description: Sets the width in pixels of the border around the
+//               loading bar, or 0 not to draw a bar at all.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bar_border(int border) {
+  nout << "bar_border " << border << "\n";
+  _bar_border = border;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bar_bottom
+//       Access: Public
+//  Description: Sets the amount of background pixels between the
+//               bottom edge of the window and the bottom edge of
+//               the loading bar border.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bar_bottom(int bottom) {
+  nout << "bar_bottom " << bottom << "\n";
+  _bar_bottom = bottom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bar_width
+//       Access: Public
+//  Description: Sets the width of the loading bar.  If percent is
+//               true, it is interpreted as a percentage of the
+//               window width.  If false, it is interpreted as an
+//               absolute width in pixels.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bar_width(int width, bool percent) {
+  nout << "bar_width " << width;
+  if (percent) {
+    nout << '%';
+  }
+  nout << '\n';
+
+  if (percent) {
+    _bar_width = -1;
+    _bar_width_ratio = abs(width) / 100.0;
+  } else {
+    _bar_width = abs(width);
+    _bar_width_ratio = 1.0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_bar_height
+//       Access: Public
+//  Description: Sets the height of the loading bar.  If percent is
+//               true, it is interpreted as a percentage of the
+//               window height.  If false, it is interpreted as an
+//               absolute height in pixels.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_bar_height(int height, bool percent) {
+  nout << "bar_height " << height;
+  if (percent) {
+    nout << '%';
+  }
+  nout << '\n';
+
+  if (percent) {
+    _bar_height = -1;
+    _bar_height_ratio = abs(height) / 100.0;
+  } else {
+    _bar_height = abs(height);
+    _bar_height_ratio = 1.0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,10 +379,21 @@ read_image_data(ImageData &image, string &data,
 void P3DSplashWindow::
 get_bar_placement(int &bar_x, int &bar_y,
                   int &bar_width, int &bar_height) {
-  bar_width = min((int)(_win_width * 0.6), 400);
-  bar_height = min((int)(_win_height * 0.1), 24);
+
+  bar_width = (int)(_win_width * _bar_width_ratio);
+  bar_height = (int)(_win_height * _bar_height_ratio);
+
+  if (_bar_width >= 0) {
+    bar_width = min(bar_width, _bar_width);
+  }
+  if (_bar_height >= 0) {
+    bar_height = min(bar_height, _bar_height);
+  }
+
+  // Horizontally center the bar, and set it at a fixed distance
+  // from the bottom edge of the splash window.
   bar_x = (_win_width - bar_width) / 2;
-  bar_y = (_win_height - bar_height * 2);
+  bar_y = _win_height - _bar_bottom - _bar_border - bar_height;
 }
 
 ////////////////////////////////////////////////////////////////////

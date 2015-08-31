@@ -42,6 +42,7 @@ public:
 protected:
   bool post_arg_processing();
   bool get_plugin();
+  bool download_contents_file(const Filename &contents_filename);
   bool read_contents_file(const Filename &contents_filename, bool fresh_download);
   void find_host(TiXmlElement *xcontents);
   void read_xhost(TiXmlElement *xhost);

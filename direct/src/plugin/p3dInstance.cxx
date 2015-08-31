@@ -2769,6 +2769,7 @@ make_splash_window() {
     int r, g, b;
     if (parse_color(r, g, b, _fparams.lookup_token("bgcolor"))) {
       _splash_window->set_bgcolor(r, g, b);
+      _splash_window->set_bar_bgcolor(r, g, b);
     } else {
       nout << "parse failure on bgcolor " << _fparams.lookup_token("bgcolor") << "\n";
     }
@@ -2781,11 +2782,58 @@ make_splash_window() {
       nout << "parse failure on barcolor " << _fparams.lookup_token("barcolor") << "\n";
     }
   }
+  if (_fparams.has_token("bar_bgcolor")) {
+    int r, g, b;
+    if (parse_color(r, g, b, _fparams.lookup_token("bar_bgcolor"))) {
+      _splash_window->set_bar_bgcolor(r, g, b);
+    } else {
+      nout << "parse failure on bar_bgcolor " << _fparams.lookup_token("bar_bgcolor") << "\n";
+    }
+  }
+  if (_fparams.has_token("bar_border")) {
+    int border = _fparams.lookup_token_int("bar_border");
+    _splash_window->set_bar_border(border);
+  }
+  if (_fparams.has_token("bar_bottom")) {
+    int bottom = _fparams.lookup_token_int("bar_bottom");
+    _splash_window->set_bar_bottom(bottom);
+  }
+  if (_fparams.has_token("bar_width")) {
+    string bar_width = _fparams.lookup_token("bar_width");
+    char *endptr;
+    long width = strtol(bar_width.c_str(), &endptr, 10);
+    bool percent = false;
+
+    if (*endptr == '%') {
+      percent = true;
+      ++endptr;
+    }
+    if (*endptr == '\0' && width >= 0 && width < 65536) {
+      _splash_window->set_bar_width((int)width, percent);
+    } else {
+      nout << "parse failure on bar_width " << bar_width << "\n";
+    }
+  }
+  if (_fparams.has_token("bar_height")) {
+    string bar_height = _fparams.lookup_token("bar_height");
+    char *endptr;
+    long height = strtol(bar_height.c_str(), &endptr, 10);
+    bool percent = false;
+
+    if (*endptr == '%') {
+      percent = true;
+      ++endptr;
+    }
+    if (*endptr == '\0' && height >= 0 && height < 65536) {
+      _splash_window->set_bar_height((int)height, percent);
+    } else {
+      nout << "parse failure on bar_height " << bar_height << "\n";
+    }
+  }
 
   _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
-  
-    
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   // Go get the required images.
