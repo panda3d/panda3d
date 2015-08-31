@@ -25,6 +25,8 @@
 #include <signal.h>
 #include <stdint.h>
 
+static const char *xfont_name = "-*-helvetica-medium-r-normal--12-120-*-*-p-*-iso8859-1";
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
@@ -47,11 +49,14 @@ P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   _display = None;
   _window = None;
   _screen = 0;
+  _font = NULL;
   _graphics_context = None;
   _bar_context = None;
+  _bar_bg_context = None;
   _fg_pixel = -1;
   _bg_pixel = -1;
   _bar_pixel = -1;
+  _bar_bg_pixel = -1;
   _own_display = false;
   _install_progress = 0.0;
   _progress_known = true;
@@ -609,10 +614,15 @@ subprocess_run() {
       get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
       if (needs_draw_label) {
-        int text_width = _install_label.size() * 6;
-        int text_height = 10;
+        int direction, ascent, descent;
+        XCharStruct extents;
+        XTextExtents(_font, _install_label.c_str(), _install_label.size(),
+                     &direction, &ascent, &descent, &extents);
+
+        int text_width = extents.width;
+        int text_height = extents.ascent + extents.descent;
         int text_x = (_win_width - text_width) / 2;
-        int text_y = bar_y - 4;
+        int text_y = bar_y - descent - _bar_border - 4;
 
         XClearArea(_display, _window,
                    text_x - 2, text_y - text_height - 2,
@@ -624,25 +634,44 @@ subprocess_run() {
       }
 
       if (needs_redraw_progress) {
-        XClearArea(_display, _window,
-                   bar_x, bar_y, bar_width, bar_height, false);
-        XDrawRectangle(_display, _window, _graphics_context,
-                       bar_x, bar_y, bar_width, bar_height);
+        // Draw the bar background.
+        if (_bar_bg_context != None) {
+          XFillRectangle(_display, _window, _bar_bg_context,
+                         bar_x, bar_y, bar_width, bar_height);
+        } else {
+          XClearArea(_display, _window,
+                     bar_x, bar_y, bar_width, bar_height, false);
+        }
+
+        // Draw the border around the bar.
+        int border_x = bar_x - 1;
+        int border_y = bar_y - 1;
+        int border_width = bar_width + 1;
+        int border_height = bar_height + 1;
+
+        for (int i = 0; i < _bar_border; ++i) {
+          XDrawRectangle(_display, _window, _graphics_context,
+                         border_x, border_y, border_width, border_height);
+          border_x -= 1;
+          border_y -= 1;
+          border_width += 2;
+          border_height += 2;
+        }
         needs_update_progress = true;
         needs_redraw_progress = false;
       }
 
       if (needs_update_progress) {
         if (_progress_known) {
-          int progress_width = (int)((bar_width - 2) * _install_progress + 0.5);
+          int progress_width = (int)((bar_width - 1) * _install_progress + 0.5);
           XFillRectangle(_display, _window, _bar_context,
-                         bar_x + 1, bar_y + 1,
-                         progress_width + 1, bar_height - 1);
+                         bar_x, bar_y,
+                         progress_width + 1, bar_height);
         } else {
           // Progress is unknown.  Draw a moving block, not a progress bar
           // filling up.
           int block_width = (int)(bar_width * 0.1 + 0.5);
-          int block_travel = (bar_width - 2) - block_width;
+          int block_travel = (bar_width - 1) - block_width;
           int progress = (int)(_received_data * _unknown_progress_rate);
           progress = progress % (block_travel * 2);
           if (progress > block_travel) {
@@ -650,8 +679,8 @@ subprocess_run() {
           }
 
           XFillRectangle(_display, _window, _bar_context,
-                         bar_x + 1 + progress, bar_y + 1,
-                         block_width + 1, bar_height - 1);
+                         bar_x + progress, bar_y,
+                         block_width + 1, bar_height);
         }
         needs_update_progress = false;
       }
@@ -958,10 +987,17 @@ setup_gc() {
     return;
   }
 
-  XFontStruct* fs = XLoadQueryFont(_display, "6x13");
+  _font = XLoadQueryFont(_display, xfont_name);
+
+  if (_font != NULL) {
+    nout << "Loaded font " << xfont_name << "\n";
+  } else {
+    nout << "Font " << xfont_name << " unavailable.\n";
+    _font = XLoadQueryFont(_display, "6x13");
+  }
 
   XGCValues gcval;
-  gcval.font = fs->fid;
+  gcval.font = _font->fid;
   gcval.function = GXcopy;
   gcval.plane_mask = AllPlanes;
   gcval.foreground = BlackPixel(_display, _screen);
@@ -991,6 +1027,24 @@ setup_gc() {
 
   _bar_context = XCreateGC(_display, _window,
     GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
+
+  // And another for the background color of the bar.
+  if (_bar_bgcolor_r != _bgcolor_r || _bar_bgcolor_g != _bgcolor_g ||
+      _bar_bgcolor_b != _bgcolor_b) {
+    XColor bar_bg;
+    bar_bg.red = _bar_bgcolor_r * 0x101;
+    bar_bg.green = _bar_bgcolor_g * 0x101;
+    bar_bg.blue = _bar_bgcolor_b * 0x101;
+    bar_bg.flags = DoRed | DoGreen | DoBlue;
+
+    if (XAllocColor(_display, colormap, &bar_bg)) {
+      _bar_bg_pixel = bar_bg.pixel;
+      gcval.foreground = bar_bg.pixel;
+    }
+
+    _bar_bg_context = XCreateGC(_display, _window,
+      GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1014,6 +1068,17 @@ close_window() {
     // Also free the color we allocated.
     Colormap colormap = DefaultColormap(_display, _screen);
     XFreeColors(_display, colormap, &_bar_pixel, 1, 0);
+  }
+
+  if (_bar_bg_context != None) {
+    if (_bar_bg_context != _graphics_context) {
+      XFreeGC(_display, _bar_bg_context);
+    }
+    _bar_bg_context = None;
+
+    // Also free the color we allocated.
+    Colormap colormap = DefaultColormap(_display, _screen);
+    XFreeColors(_display, colormap, &_bar_bg_pixel, 1, 0);
   }
 
   if (_fg_pixel != -1) {
