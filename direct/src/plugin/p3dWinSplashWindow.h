@@ -109,6 +109,7 @@ private:
   HANDLE _thread;
   DWORD _thread_id;
   HWND _hwnd;
+  HFONT _font;
   HBRUSH _fg_brush;
   HBRUSH _bg_brush;
   HBRUSH _bar_brush;

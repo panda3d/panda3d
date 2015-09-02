@@ -34,6 +34,7 @@ P3DWinSplashWindow(P3DInstance *inst, bool make_visible) :
   _thread = NULL;
   _thread_id = 0;
   _hwnd = NULL;
+  _font = NULL;
   _fg_brush = NULL;
   _bg_brush = NULL;
   _bar_brush = NULL;
@@ -498,6 +499,17 @@ make_window() {
     ShowWindow(_hwnd, SW_HIDE);
   }
 
+  // Load the requested font.
+  _font = CreateFontA(-_font_size, 0, 0, 0, _font_weight,
+                      (_font_style != FS_normal), FALSE, FALSE,
+                      ANSI_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
+                      CLEARTYPE_QUALITY, VARIABLE_PITCH, _font_family.c_str());
+
+  if (_font == NULL) {
+    nout << "CreateFont failed: " << GetLastError() << "\n";
+    _font = (HFONT)GetStockObject(ANSI_VAR_FONT);
+  }
+
   _fg_brush = CreateSolidBrush(RGB(_fgcolor_r, _fgcolor_g, _fgcolor_b));
   _bg_brush = CreateSolidBrush(RGB(_bgcolor_r, _bgcolor_g, _bgcolor_b));
   _bar_brush = CreateSolidBrush(RGB(_barcolor_r, _barcolor_g, _barcolor_b));
@@ -840,12 +852,10 @@ paint_progress_bar(HDC dc) {
 
   if (!_drawn_label.empty()) {
     // Now draw the install_label right above it.
-
     const char *text = _drawn_label.c_str();
-    HFONT font = (HFONT)GetStockObject(ANSI_VAR_FONT); 
 
     // Measure the text, for centering.
-    SelectObject(dc, font);
+    SelectObject(dc, _font);
     SIZE text_size;
     GetTextExtentPoint32(dc, text, strlen(text), &text_size);
 
