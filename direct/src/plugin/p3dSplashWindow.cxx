@@ -57,6 +57,10 @@ P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _bar_height = 22;
   _bar_width_ratio = 0.6;
   _bar_height_ratio = 0.1;
+  _font_family = "Helvetica";
+  _font_size = 12;
+  _font_style = FS_normal;
+  _font_weight = FW_normal;
   _button_width = 0;
   _button_height = 0;
   _button_x = 0;
@@ -266,6 +270,63 @@ set_bar_height(int height, bool percent) {
     _bar_height = abs(height);
     _bar_height_ratio = 1.0;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_font_family
+//       Access: Public
+//  Description: Sets the font family of the text above the loading
+//               bar.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_font_family(const string &family) {
+  nout << "font_family " << family << "\n";
+  _font_family = family;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_font_size
+//       Access: Public
+//  Description: Sets the font size in pixels of the text above the
+//               loading bar.  The default value is 12.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_font_size(int size) {
+  nout << "font_size " << size << "\n";
+  _font_size = size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_font_style
+//       Access: Public
+//  Description: Sets the font style of the text above the loading
+//               bar.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_font_style(FontStyle style) {
+  nout << "font_style " << style << "\n";
+  _font_style = style;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_font_weight
+//       Access: Public
+//  Description: Sets the font weight of the text above the loading
+//               bar.  The default is FW_normal.  It should be
+//               a multiple of 100 in the range 100-900.
+//
+//               This may only be set before wparams is set.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_font_weight(int weight) {
+  nout << "font_weight " << weight << "\n";
+  _font_weight = weight;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,8 +25,6 @@
 #include <signal.h>
 #include <stdint.h>
 
-static const char *xfont_name = "-*-helvetica-medium-r-normal--12-120-*-*-p-*-iso8859-1";
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
@@ -987,12 +985,77 @@ setup_gc() {
     return;
   }
 
-  _font = XLoadQueryFont(_display, xfont_name);
+  char style = 'r';
+  if (_font_style == FS_oblique) {
+    style = 'o';
+  } else if (_font_style == FS_italic) {
+    style = 'i';
+  }
+
+  // Determine the order at which to try the various weights.  From:
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
+  const char *const *try_weights;
+  const int num_weights = 7;
+
+  if (_font_weight > 700) {
+    static const char *const weights[] = {"black", "bold", "demibold", "semibold", "medium", "regular", "extralight"};
+    try_weights = weights;
+
+  } else if (_font_weight > 600) {
+    static const char *const weights[] = {"bold", "black", "demibold", "semibold", "medium", "regular", "extralight"};
+    try_weights = weights;
+
+  } else if (_font_weight > 500) {
+    static const char *const weights[] = {"demibold", "semibold", "bold", "black", "medium", "regular", "extralight"};
+    try_weights = weights;
+
+  } else if (_font_weight == 500) {
+    static const char *const weights[] = {"medium", "regular", "extralight", "demibold", "semibold", "bold", "black"};
+    try_weights = weights;
+
+  } else if (_font_weight >= 400) {
+    static const char *const weights[] = {"regular", "medium", "extralight", "demibold", "semibold", "bold", "black"};
+    try_weights = weights;
+
+  } else {
+    static const char *const weights[] = {"extralight", "regular", "medium", "demibold", "semibold", "bold", "black"};
+    try_weights = weights;
+  }
+
+  char font_name[1024];
+
+  // Go through the weights array to find the best matching font.
+  for (int i = 0; i < num_weights; ++i) {
+    const char *weight_name = try_weights[i];
+
+    // Compose the proper pattern for finding the desired font face.
+    snprintf(font_name, 1024, "-*-%s-%s-%c-normal--%d-*-*-*-*-*-iso8859-1",
+             _font_family.c_str(), weight_name, style, _font_size);
+
+    _font = XLoadQueryFont(_display, font_name);
+    if (_font != NULL) {
+      break;
+    }
+    nout << "Font " << font_name << " unavailable.\n";
+
+    if (style == 'i' || style == 'o') {
+      // If oblique is not found, try italic, and vice versa.
+      char style2 = 216 - style;
+      snprintf(font_name, 1024, "-*-%s-%s-%c-normal--%d-*-*-*-*-*-iso8859-1",
+               _font_family.c_str(), weight_name, style2, _font_size);
+
+      _font = XLoadQueryFont(_display, font_name);
+      if (_font != NULL) {
+        break;
+      }
+      nout << "Font " << font_name << " unavailable.\n";
+    }
+  }
 
   if (_font != NULL) {
-    nout << "Loaded font " << xfont_name << "\n";
+    nout << "Loaded font " << font_name << "\n";
   } else {
-    nout << "Font " << xfont_name << " unavailable.\n";
+    nout << "Using fallback font 6x13.\n";
     _font = XLoadQueryFont(_display, "6x13");
   }
 

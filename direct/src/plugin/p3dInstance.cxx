@@ -2830,6 +2830,46 @@ make_splash_window() {
       nout << "parse failure on bar_height " << bar_height << "\n";
     }
   }
+  if (_fparams.has_token("font_family")) {
+    string family = _fparams.lookup_token("font_family");
+    _splash_window->set_font_family(family);
+  }
+  if (_fparams.has_token("font_size")) {
+    int size = _fparams.lookup_token_int("font_size");
+    _splash_window->set_font_size(size);
+  }
+  if (_fparams.has_token("font_style")) {
+    string style = _fparams.lookup_token("font_style");
+
+    if (style == "normal") {
+      _splash_window->set_font_style(P3DSplashWindow::FS_normal);
+    } else if (style == "oblique") {
+      _splash_window->set_font_style(P3DSplashWindow::FS_oblique);
+    } else if (style == "italic") {
+      _splash_window->set_font_style(P3DSplashWindow::FS_italic);
+    } else {
+      nout << "parse_failure on font_style " << style << "\n";
+    }
+  }
+  if (_fparams.has_token("font_weight")) {
+    string weight = _fparams.lookup_token("font_weight");
+
+    if (weight == "normal") {
+      _splash_window->set_font_weight(400);
+    } else if (weight == "bold") {
+      _splash_window->set_font_weight(700);
+    } else if (weight == "bolder") {
+      _splash_window->set_font_weight(700);
+    } else if (weight == "lighter") {
+      _splash_window->set_font_weight(100);
+    } else if (weight.size() == 3 &&
+               weight[0] >= '1' && weight[0] <= '9' &&
+               weight[1] == '0' && weight[2] == '0') {
+      _splash_window->set_font_weight(((int)weight[0] - 48) * 100);
+    } else {
+      nout << "parse_failure on font_weight " << weight << "\n";
+    }
+  }
 
   _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
