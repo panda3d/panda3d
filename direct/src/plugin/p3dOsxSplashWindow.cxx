@@ -683,7 +683,7 @@ paint_progress_bar(CGContextRef context) {
 
     // Choose a suitable font.
     float text_height = 15.0;
-    CGContextSelectFont(context, "Helvetica", text_height, kCGEncodingMacRoman);
+    CGContextSelectFont(context, _font_family.c_str(), text_height, kCGEncodingMacRoman);
 
     // Measure the text, for centering.
     CGContextSetTextPosition(context, 0, 0);

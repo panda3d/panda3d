@@ -51,6 +51,17 @@ public:
     IP_button_click,
     IP_none
   };
+  enum FontStyle {
+    FS_normal,
+    FS_italic,
+    FS_oblique
+  };
+  enum FontWeight {
+    FW_normal = 400,
+    FW_medium = 500,
+    FW_bold = 700,
+    FW_black = 900
+  };
 
   virtual void set_image_filename(const string &image_filename,
                                   ImagePlacement image_placement);
@@ -62,6 +73,10 @@ public:
   void set_bar_bottom(int bottom);
   void set_bar_width(int width, bool percent=false);
   void set_bar_height(int height, bool percent=false);
+  void set_font_family(const string &family);
+  void set_font_size(int size);
+  void set_font_style(FontStyle style);
+  void set_font_weight(int weight);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
@@ -119,6 +134,11 @@ private:
   double _bar_width_ratio, _bar_height_ratio;
 
 protected:
+  string _font_family;
+  int _font_size;
+  FontStyle _font_style;
+  int _font_weight;
+
   // The region of the window for accepting button clicks.
   int _button_width, _button_height;
   int _button_x, _button_y;

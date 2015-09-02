@@ -100,6 +100,8 @@ void P3DSession::
 shutdown() {
   set_failed();
 
+  int exit_code = 0;
+
   if (_p3dpython_started) {
     // Tell the process we're going away.
     TiXmlDocument doc;
@@ -139,7 +141,14 @@ shutdown() {
         nout << "Force-killing python process.\n";
         TerminateProcess(_p3dpython_handle, 2);
       }
-      
+
+      DWORD dw_exit_code = 0;
+      if (!GetExitCodeProcess(_p3dpython_handle, &dw_exit_code)) {
+        nout << "GetExitCodeProcess failed, error: " << GetLastError() << "\n";
+      } else {
+        exit_code = (int)dw_exit_code;
+      }
+
       CloseHandle(_p3dpython_handle);
       _p3dpython_handle = INVALID_HANDLE_VALUE;
 
@@ -182,19 +191,15 @@ shutdown() {
 
       nout << "Python process has successfully stopped.\n";
       if (WIFEXITED(status)) {
-        int code = WEXITSTATUS(status);
-
-        nout << "  exited normally, status = " << code << "\n";
-        if (code != 0) {
-          _exit(code);
-        }
+        exit_code = WEXITSTATUS(status);
+        nout << "  exited normally, status = " << exit_code << "\n";
 
       } else if (WIFSIGNALED(status)) {
         nout << "  signalled by " << WTERMSIG(status) << ", core = "
              << WCOREDUMP(status) << "\n";
 
         // This seems to be a popular shell convention.
-        _exit(128 + WTERMSIG(status));
+        exit_code = 128 + WTERMSIG(status);
 
       } else if (WIFSTOPPED(status)) {
         nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -220,6 +225,11 @@ shutdown() {
 
   // Close the pipe now.
   _pipe_read.close();
+
+  // If we had an exit status, pass it on to the runtime process.
+  if (exit_code != 0) {
+    _exit(exit_code);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
