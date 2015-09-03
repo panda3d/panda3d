@@ -137,7 +137,7 @@ class pyopengl(package):
     module('OpenGL.GLU', 'OpenGL.GLUT', 'OpenGL.GLE', 'OpenGL.GLX')
 
 class httplib2(package):
-    config(display_name = "httplib2")
+    config(display_name = "httplib2", platform_specific = False)
     require('panda3d')
 
     module('httplib2', required = True)
@@ -149,7 +149,7 @@ class box2d(package):
     module('Box2D', required = True)
 
 class pyglet(package):
-    config(display_name = "pyglet")
-    require('panda3d')
+    config(display_name = "pyglet", platform_specific = False)
+    require('panda3d', 'morepy')
 
     module('pyglet', required = True)
