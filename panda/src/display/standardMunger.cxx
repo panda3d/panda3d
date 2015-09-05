@@ -37,13 +37,12 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   StateMunger(gsg),
   _num_components(num_components),
   _numeric_type(numeric_type),
-  _contents(contents)
+  _contents(contents),
+  _munge_color(false),
+  _munge_color_scale(false),
+  _auto_shader(false)
 {
   _render_mode = DCAST(RenderModeAttrib, state->get_attrib(RenderModeAttrib::get_class_slot()));
-
-  _munge_color = false;
-  _munge_color_scale = false;
-  _auto_shader = false;
 
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
@@ -98,6 +97,11 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   if (shader_attrib->auto_shader()) {
     _auto_shader = true;
   }
+  if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
+    // Hijack this field, such as not to break ABI compatibility.
+    // This hack is not present in 1.10.
+    _num_components |= 0x10000;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,17 +124,20 @@ munge_data_impl(const GeomVertexData *data) {
   CPT(GeomVertexData) new_data = data;
 
   if (_munge_color) {
-    new_data = new_data->set_color(_color, _num_components, _numeric_type,
-                                   _contents);
+    new_data = new_data->set_color(_color, _num_components & 0xffff,
+                                   _numeric_type, _contents);
   } else if (_munge_color_scale) {
-    new_data = new_data->scale_color(_color_scale, _num_components, 
+    new_data = new_data->scale_color(_color_scale, _num_components & 0xffff,
                                      _numeric_type, _contents);
   }
 
   GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
-  if (hardware_animated_vertices &&
-      animation.get_animation_type() == AT_panda &&
-      new_data->get_slider_table() == (SliderTable *)NULL) {
+  if (_num_components & 0x10000) {
+    animation.set_hardware(4, true);
+
+  } else if (hardware_animated_vertices &&
+             animation.get_animation_type() == AT_panda &&
+             new_data->get_slider_table() == (SliderTable *)NULL) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
     if (table != (TransformBlendTable *)NULL &&
@@ -306,7 +313,11 @@ compare_to_impl(const GeomMunger *other) const {
       return compare;
     }
   }
-
+  bool shader_skinning = ((_num_components & 0x10000) != 0);
+  bool om_shader_skinning = ((om->_num_components & 0x10000) != 0);
+  if (shader_skinning != om_shader_skinning) {
+    return (int)shader_skinning - (int)om_shader_skinning;
+  }
   if (_auto_shader != om->_auto_shader) {
     return (int)_auto_shader - (int)om->_auto_shader;
   }
@@ -344,6 +355,11 @@ geom_compare_to_impl(const GeomMunger *other) const {
     if (compare != 0) {
       return compare;
     }
+  }
+  bool shader_skinning = ((_num_components & 0x10000) != 0);
+  bool om_shader_skinning = ((om->_num_components & 0x10000) != 0);
+  if (shader_skinning != om_shader_skinning) {
+    return (int)shader_skinning - (int)om_shader_skinning;
   }
 
   return StateMunger::geom_compare_to_impl(other);

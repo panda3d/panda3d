@@ -41,6 +41,8 @@ public:
   void bind(bool reissue_parameters = true);
   void unbind();
   void issue_parameters(int altered);
+  void update_transform_table(const TransformTable *table);
+  void update_slider_table(const SliderTable *table);
   void disable_shader_vertex_arrays();
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
   void disable_shader_texture_bindings();
@@ -64,6 +66,11 @@ private:
   //};
   //typedef pvector<ParamContext> ParamContexts;
   //ParamContexts _params;
+
+  GLint _transform_table_index;
+  GLint _slider_table_index;
+  GLsizei _transform_table_size;
+  GLsizei _slider_table_size;
 
   pvector<GLint> _glsl_parameter_map;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
