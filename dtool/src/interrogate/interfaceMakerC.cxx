@@ -53,6 +53,14 @@ InterfaceMakerC::
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerC::
 write_prototypes(ostream &out,ostream *out_h) {
+  // The 'used' attribute prevents emscripten from optimizing it out.
+  out <<
+    "#if __GNUC__ >= 4\n"
+    "#define EXPORT_FUNC extern \"C\" __attribute__((used, visibility(\"default\")))\n"
+    "#else\n"
+    "#define EXPORT_FUNC extern \"C\"\n"
+    "#endif\n\n";
+
   FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi).second;
@@ -140,8 +148,13 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
 
   for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
+
+    if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
+      continue;
+    }
+
     if (output_function_names) {
-      out << "extern \"C\" ";
+      out << "EXPORT_FUNC ";
     }
     write_function_header(out, func, remap, false);
     out << ";\n";
@@ -216,10 +229,6 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
 void InterfaceMakerC::
 write_function_header(ostream &out, InterfaceMaker::Function *func,
                       FunctionRemap *remap, bool newline) {
-  if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
-    return;
-  }
-
   if (remap->_void_return) {
     out << "void";
   } else {
