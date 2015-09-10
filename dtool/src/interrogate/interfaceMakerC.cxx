@@ -16,6 +16,7 @@
 #include "interrogateBuilder.h"
 #include "interrogate.h"
 #include "functionRemap.h"
+#include "parameterRemapHandleToInt.h"
 #include "parameterRemapUnchanged.h"
 #include "typeManager.h"
 
@@ -87,6 +88,32 @@ write_functions(ostream &out) {
   }
 
   InterfaceMaker::write_functions(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerC::remap_parameter
+//       Access: Public, Virtual
+//  Description: Allocates a new ParameterRemap object suitable to the
+//               indicated parameter type.  If struct_type is
+//               non-NULL, it is the type of the enclosing class for
+//               the function (method) in question.
+//
+//               The return value is a newly-allocated ParameterRemap
+//               object, if the parameter type is acceptable, or NULL
+//               if the parameter type cannot be handled.
+////////////////////////////////////////////////////////////////////
+ParameterRemap *InterfaceMakerC::
+remap_parameter(CPPType *struct_type, CPPType *param_type) {
+  // Wrap TypeHandle and ButtonHandle, which are practically just
+  // ints, as an integer instead of a pointer.  It makes things easier
+  // on the scripting language, especially if there has to be a
+  // dynamic downcasting system on the scripting language side.
+   if (TypeManager::is_handle(param_type)) {
+    return new ParameterRemapHandleToInt(param_type);
+
+  } else {
+    return InterfaceMaker::remap_parameter(struct_type, param_type);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

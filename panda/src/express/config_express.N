@@ -1,4 +1,4 @@
-defconstruct TypeHandle new TypeHandle(TypeHandle::none())
+defconstruct TypeHandle TypeHandle(TypeHandle::none())
 
 forcetype PandaSystem
 forcetype DSearchPath

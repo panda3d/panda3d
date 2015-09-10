@@ -17,6 +17,7 @@
 #include "interrogate.h"
 #include "parameterRemap.h"
 #include "parameterRemapThis.h"
+#include "parameterRemapHandleToInt.h"
 #include "parameterRemapUnchanged.h"
 #include "interfaceMaker.h"
 #include "interrogateBuilder.h"
@@ -146,8 +147,13 @@ call_function(ostream &out, int indent_level, bool convert_result,
   } else if (_type == T_typecast_method) {
     // A typecast method can be invoked implicitly.
     string cast_expr =
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) +
-      ")(*" + container + ")";
+      "(" + _return_type->get_orig_type()->get_local_name(&parser) + ")";
+
+    if (TypeManager::is_handle(_cpptype)) {
+      cast_expr += "(" + container + ")";
+    } else {
+      cast_expr += "(*" + container + ")";
+    }
 
     if (!convert_result) {
       return_expr = cast_expr;
@@ -177,10 +183,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
 
   } else if (_type == T_constructor) {
     // A special case for constructors.
-    string defconstruct = builder.in_defconstruct(_cpptype->get_local_name(&parser));
-    if (pexprs.empty() && !defconstruct.empty()) {
-      return_expr = defconstruct;
-    } else if (_extension) {
+    if (_extension) {
       // Extension constructors are a special case.  We assume there is a
       // default constructor for the class, and the actual construction is
       // done by an __init__ method.
@@ -192,8 +195,22 @@ call_function(ostream &out, int indent_level, bool convert_result,
         << get_call_str("result", pexprs) << ";\n";
 
       return_expr = "result";
+
     } else {
-      return_expr = "new " + get_call_str(container, pexprs);
+      string defconstruct = builder.in_defconstruct(_cpptype->get_local_name(&parser));
+      string call_expr;
+
+      if (pexprs.empty() && !defconstruct.empty()) {
+        call_expr = defconstruct;
+      } else {
+        call_expr = get_call_str(container, pexprs);
+      }
+
+      if (!_return_type->return_value_needs_management()) {
+        return_expr = _return_type->get_return_expr(call_expr);
+      } else {
+        return_expr = "new " + call_expr;
+      }
     }
     if (_void_return) {
       nout << "Error, constructor for " << *_cpptype << " returning void.\n";
@@ -448,12 +465,9 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       } else if (_has_this && !container.empty()) {
         // If we have a "this" parameter, the calling convention is also
         // a bit different.
-        if (container == "local_this") {
-          // This isn't important, it just looks a bit prettier.
-          call << container << "->" << _cppfunc->get_local_name();
-        } else {
-          call << "(" << container << ")->" << _cppfunc->get_local_name();
-        }
+        call << "(";
+        _parameters[0]._remap->pass_parameter(call, container);
+        call << ")." << _cppfunc->get_local_name();
 
       } else {
         call << _cppfunc->get_local_name(&parser);
@@ -569,7 +583,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       Parameter param;
       param._name = "this";
       param._has_name = true;
-      param._remap = new ParameterRemapThis(_cpptype, _const_method);
+      if (_const_method) {
+        CPPType *const_type = CPPType::new_type(new CPPConstType(_cpptype));
+        param._remap = interface_maker->remap_parameter(_cpptype, const_type);
+      } else {
+        param._remap = interface_maker->remap_parameter(_cpptype, _cpptype);
+      }
+      //  param._remap = new ParameterRemapThis(_cpptype, _const_method);
       _parameters.push_back(param);
       _first_true_parameter = 1;
     }
