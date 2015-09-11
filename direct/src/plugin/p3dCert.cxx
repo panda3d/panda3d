@@ -42,8 +42,51 @@
 #define snprintf sprintf_s
 #endif
 
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 static LanguageIndex li = LI_default;
 
+#ifdef __APPLE__
+static LanguageIndex detect_language() {
+  // Get and iterate through the list of preferred languages.
+  CFArrayRef langs = CFLocaleCopyPreferredLanguages();
+  CFIndex num_langs = CFArrayGetCount(langs);
+
+  for (long i = 0; i < num_langs; ++i) {
+    CFStringRef lang = (CFStringRef)CFArrayGetValueAtIndex(langs, i);
+
+    CFIndex length = CFStringGetLength(lang);
+    if (length < 2) {
+      continue;
+    }
+
+    CFIndex max_size = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+    char *buffer = (char *)alloca(max_size);
+    if (!CFStringGetCString(lang, buffer, max_size, kCFStringEncodingUTF8)) {
+      continue;
+    }
+
+    if (isalnum(buffer[2])) {
+      // It's not a two-letter code.
+      continue;
+    }
+
+    // See if we support this language.
+    for (int j = 0; j < LI_COUNT; ++j) {
+      const char *lang_code = language_codes[j];
+      if (lang_code != NULL && strncasecmp(buffer, lang_code, 2) == 0) {
+        CFRelease(langs);
+        return (LanguageIndex)j;
+      }
+    }
+  }
+
+  CFRelease(langs);
+  return LI_default;
+}
+#else
 static LanguageIndex detect_language() {
   // First consult the LANGUAGE variable, which is a GNU extension that can
   // contain multiple languages in order of preference.
@@ -94,6 +137,7 @@ static LanguageIndex detect_language() {
   }
   return LI_default;
 }
+#endif
 
 #ifdef _WIN32
 int WINAPI
@@ -153,7 +197,7 @@ AuthDialog(const wstring &cert_filename, const wstring &cert_dir) :
 AuthDialog::
 AuthDialog(const string &cert_filename, const string &cert_dir) :
 #endif
-  Fl_Window(435, 242, "New Panda3D Application"),
+  Fl_Window(435, 242, new_application_title[li]),
   _cert_dir(cert_dir)
 {
   _view_cert_dialog = NULL;

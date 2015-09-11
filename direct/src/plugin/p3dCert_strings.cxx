@@ -323,8 +323,9 @@ verified_cert_text[LI_COUNT] = {
   // epo
   "\304\210i tiu aplika\304\265o estas subskribita de %s.  "
   "Se %s estas fidinda la\305\255 vi, premu la butonon 'Lan\304\211i' sube por "
-  "lan\304\211i \304\211i tiun aplika\304\265on per via komputilo. Anka\305\255 tio a\305\255tomate estonece "
-  "aprobos \304\211i tiun kaj alian ajn aplika\304\265on, kiu estas subskribita de %s.\n"
+  "lan\304\211i \304\211i tiun aplika\304\265on per via komputilo.  Anka\305\255 "
+  "tio a\305\255tomate estonece aprobos \304\211i tiun kaj alian ajn "
+  "aplika\304\265on, kiu estas subskribita de %s.\n"
   "\n"
   "Se vi ne estas certa pri \304\211i tiu aplika\304\265o, "
   "vi anstata\305\255e povus premi la butonon 'Nuligi'.",
@@ -546,7 +547,7 @@ no_cert_text[LI_COUNT] = {
 
   // epo
   "\304\210i tiu aplika\304\265o de Panda3D ne estas subskribita.  Tio "
-  "signifas ke vi ne  havas certan scimanieron pri la vera verkanto de "
+  "signifas ke vi ne havas certan scimanieron pri la vera verkanto de "
   "la aplika\304\265o.\n"
   "\n"
   "Premu la butonon 'Nuligi' por eviti lan\304\211on de \304\211i tiu "
