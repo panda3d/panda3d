@@ -99,6 +99,9 @@ class Standalone:
         if len(platforms) == 0:
             Standalone.notify.warning("No platforms found to build for!")
 
+        if 'win32' in platforms and 'win_i386' in platforms:
+            platforms.remove('win32')
+
         outputDir = Filename(outputDir + "/")
         outputDir.makeDir()
         for platform in platforms:
@@ -668,6 +671,9 @@ class Installer:
             platforms.add(package.platform)
         if len(platforms) == 0:
             Installer.notify.warning("No platforms found to build for!")
+
+        if 'win32' in platforms and 'win_i386' in platforms:
+            platforms.remove('win32')
 
         outputDir = Filename(outputDir + "/")
         outputDir.makeDir()
