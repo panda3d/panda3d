@@ -38,6 +38,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
+#include <malloc.h>
 
 #define snprintf sprintf_s
 #endif
@@ -48,7 +49,51 @@
 
 static LanguageIndex li = LI_default;
 
-#ifdef __APPLE__
+#if defined(_WIN32)
+static LanguageIndex detect_language() {
+  // This function was introduced in Windows Vista; it may not be available
+  // on older systems.
+  typedef BOOL (*GUPL)(DWORD, PULONG, PZZWSTR, PULONG);
+  GUPL pGetUserPreferredUILanguages = (GUPL)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+                                                           TEXT("GetUserPreferredUILanguages"));
+  if (pGetUserPreferredUILanguages != NULL) {
+    ULONG num_langs = 0;
+    ULONG buffer_size = 0;
+    pGetUserPreferredUILanguages(8, &num_langs, NULL, &buffer_size);
+    PZZWSTR buffer = (PZZWSTR)_alloca(buffer_size);
+    if (pGetUserPreferredUILanguages(8, &num_langs, buffer, &buffer_size)) {
+      for (ULONG i = 0; i < num_langs; ++i) {
+        size_t len = wcslen(buffer);
+        if (len >= 2 && (buffer[2] == 0 || buffer[2] == L'-')) {
+          // It may be a two-letter code; match it in our list.
+          for (int j = 0; j < LI_COUNT; ++j) {
+            const char *lang_code = language_codes[j];
+            if (lang_code != NULL && lang_code[0] == buffer[0] &&
+                                     lang_code[1] == buffer[1]) {
+              return (LanguageIndex)j;
+            }
+          }
+        }
+        buffer += len + 1;
+      }
+    }
+  }
+
+  // Fall back to the old Windows XP function.
+  LANGID lang = GetUserDefaultUILanguage() & 0x3ff;
+  if (lang == 0) {
+    return LI_default;
+  }
+
+  for (int i = 0; i < LI_COUNT; ++i) {
+    if (language_ids[i] != 0 && language_ids[i] == lang) {
+      return (LanguageIndex)i;
+    }
+  }
+  return LI_default;
+}
+
+#elif defined(__APPLE__)
 static LanguageIndex detect_language() {
   // Get and iterate through the list of preferred languages.
   CFArrayRef langs = CFLocaleCopyPreferredLanguages();
@@ -86,6 +131,7 @@ static LanguageIndex detect_language() {
   CFRelease(langs);
   return LI_default;
 }
+
 #else
 static LanguageIndex detect_language() {
   // First consult the LANGUAGE variable, which is a GNU extension that can
@@ -364,12 +410,20 @@ read_cert_file(const string &cert_filename) {
 #endif  // _WIN32
 
   if (fp == NULL) {
+#ifdef _WIN32
+    wcerr << L"Couldn't read " << cert_filename.c_str() << L"\n";
+#else
     cerr << "Couldn't read " << cert_filename.c_str() << "\n";
+#endif
     return;
   }
   _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
   if (_cert == NULL) {
+#ifdef _WIN32
+    wcerr << L"Could not read certificate in " << cert_filename.c_str() << L".\n";
+#else
     cerr << "Could not read certificate in " << cert_filename.c_str() << ".\n";
+#endif
     fclose(fp);
     return;
   }

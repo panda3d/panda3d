@@ -27,7 +27,7 @@ const char *language_codes[LI_COUNT] =
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/dd318693%28v=vs.85%29.aspx
 const unsigned char language_ids[LI_COUNT] =
-  {0x09, 0x13, 0x07, 0x0A, 0x10, 0, 0x19};
+  {0x09, 0x13, 0x07, 0x0A, 0x10, 0x8F, 0x19};
 
 const char *
 run_title[LI_COUNT] = {
