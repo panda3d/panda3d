@@ -891,11 +891,13 @@ start_p3dpython(P3DInstance *inst) {
     // These are the enviroment variables we forward from the current
     // environment, if they are set.
     const char *keep[] = {
-      "HOME", "USER", 
+      "HOME", "USER",
 #ifdef _WIN32
       "SYSTEMROOT", "USERPROFILE", "COMSPEC",
       "SYSTEMDRIVE", "ALLUSERSPROFILE", "APPDATA", "COMMONPROGRAMFILES",
       "PROGRAMFILES", "WINDIR", "PROGRAMDATA", "USERDOMAIN",
+#else
+      "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG",
 #endif
 #ifdef HAVE_X11
       "DISPLAY", "XAUTHORITY",
