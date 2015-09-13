@@ -11331,7 +11331,6 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               if (_supports_clear_buffer) {
                 // For buffer textures we need to clear the underlying storage.
                 string clear_data = tex->get_clear_data();
-                cerr << "clearing buffer data\n";
 
                 _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
                                    component_type, (const void *)clear_data.data());

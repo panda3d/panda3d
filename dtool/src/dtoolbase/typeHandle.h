@@ -82,7 +82,7 @@ class TypedObject;
 //               ancestry of a particular type may be queried, and the
 //               type name may be retrieved for run-time display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL TypeHandle {
+class EXPCL_DTOOL TypeHandle FINAL {
 PUBLISHED:
   enum MemoryClass {
     MC_singleton,
@@ -139,6 +139,9 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
   INLINE static TypeHandle none();
   INLINE operator bool () const;
+
+public:
+  INLINE static TypeHandle from_index(int index);
 
 private:
   int _index;

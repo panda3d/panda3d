@@ -1821,6 +1821,31 @@ is_Py_buffer(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_handle
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is TypeHandle
+//               or a class with identical semantics like ButtonHandle.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_handle(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_handle(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "TypeHandle" ||
+            type->get_local_name(&parser) == "ButtonHandle");
+
+  case CPPDeclaration::ST_typedef:
+    return is_handle(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_ostream
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is PyObject.
@@ -2631,7 +2656,7 @@ is_trivial(CPPType *source_type) {
     return is_trivial(source_type->as_typedef_type()->_type);
 
   default:
-    if (source_type->is_trivial()) {
+    if (source_type->is_trivial() || is_handle(source_type)) {
       return true;
     } else {
       // This is a bit of a hack.  is_trivial() returns false for types that

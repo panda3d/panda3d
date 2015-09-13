@@ -1,5 +1,5 @@
-// Filename: parameterRemapThis.cxx
-// Created by:  drose (02Aug00)
+// Filename: parameterRemapHandleToInt.cxx
+// Created by:  rdb (08Sep15)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,61 +12,54 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "parameterRemapThis.h"
+#include "parameterRemapHandleToInt.h"
+#include "interrogate.h"
+#include "interrogateBuilder.h"
 #include "typeManager.h"
 
 #include "cppType.h"
-#include "cppSimpleType.h"
-#include "cppPointerType.h"
+#include "cppDeclaration.h"
 #include "cppConstType.h"
+#include "cppPointerType.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::Constructor
+//     Function: ParameterRemapHandleToInt::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ParameterRemapThis::
-ParameterRemapThis(CPPType *type, bool is_const) :
-  ParameterRemap(TypeManager::get_void_type())
+ParameterRemapHandleToInt::
+ParameterRemapHandleToInt(CPPType *orig_type) :
+  ParameterRemap(orig_type)
 {
-  if (is_const) {
-    _new_type = TypeManager::wrap_const_pointer(type);
-  } else {
-    _new_type = TypeManager::wrap_pointer(type);
-  }
-  _orig_type = _new_type;
+  _new_type = TypeManager::get_int_type();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::pass_parameter
+//     Function: ParameterRemapHandleToInt::pass_parameter
 //       Access: Public, Virtual
 //  Description: Outputs an expression that converts the indicated
 //               variable from the new type to the original type, for
 //               passing into the actual C++ function.
 ////////////////////////////////////////////////////////////////////
-void ParameterRemapThis::
+void ParameterRemapHandleToInt::
 pass_parameter(ostream &out, const string &variable_name) {
-  out << "(*" << variable_name << ")";
+  CPPType *unwrapped = TypeManager::unwrap_const(_orig_type);
+
+  if (unwrapped->get_local_name(&parser) == "TypeHandle") {
+    out << "TypeHandle::from_index(" << variable_name << ")";
+  } else {
+    out << unwrapped->get_local_name(&parser) << "(" << variable_name << ")";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::get_return_expr
+//     Function: ParameterRemapHandleToInt::get_return_expr
 //       Access: Public, Virtual
 //  Description: Returns an expression that evalutes to the
 //               appropriate value type for returning from the
 //               function, given an expression of the original type.
 ////////////////////////////////////////////////////////////////////
-string ParameterRemapThis::
-get_return_expr(const string &) {
-  return "**invalid**";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::is_this
-//       Access: Public, Virtual
-//  Description: Returns true if this is the "this" parameter.
-////////////////////////////////////////////////////////////////////
-bool ParameterRemapThis::
-is_this() {
-  return true;
+string ParameterRemapHandleToInt::
+get_return_expr(const string &expression) {
+  return "(" + expression + ").get_index()";
 }
