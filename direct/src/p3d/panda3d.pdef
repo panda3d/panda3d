@@ -195,7 +195,7 @@ class morepy(package):
            'termios', 'tty', 'pty', 'fcntl', 'pipes', 'posixfile',
            'resource', 'nis', 'syslog', 'commands', 'ic', 'MacOS',
            'macostools', 'findertools', 'EasyDialogs', 'FrameWork',
-           'autoGIL', 'ColorPicker')
+           'autoGIL', 'ColorPicker', 'ast')
 
     # To add the multitude of standard Python string encodings.
     module('encodings', 'encodings.*')
