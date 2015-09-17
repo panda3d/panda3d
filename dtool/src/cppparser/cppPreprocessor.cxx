@@ -687,7 +687,7 @@ push_string(const string &input, bool lock_position) {
 //               string and return the new string.
 ////////////////////////////////////////////////////////////////////
 string CPPPreprocessor::
-expand_manifests(const string &input_expr) {
+expand_manifests(const string &input_expr, bool expand_undefined) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
@@ -722,6 +722,10 @@ expand_manifests(const string &input_expr) {
               expand_manifest_inline(expr, q, p, (*mi).second);
               manifest_found = true;
             }
+          } else if (expand_undefined && ident != "true" && ident != "false") {
+            // It is not found.  Expand it to 0.
+            expr = expr.substr(0, q) + "0" + expr.substr(p);
+            p = q + 1;
           }
         }
       } else {
@@ -751,7 +755,7 @@ expand_manifests(const string &input_expr) {
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope) {
-  string expr = expand_manifests(input_expr);
+  string expr = expand_manifests(input_expr, true);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1381,7 +1385,7 @@ handle_include_directive(const string &args, int first_line,
   // might not filter out quotes and angle brackets properly, we'll
   // only expand manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expr = expand_manifests(expr);
+    expr = expand_manifests(expr, false);
   }
 
   if (!expr.empty()) {

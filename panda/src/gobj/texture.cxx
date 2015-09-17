@@ -577,6 +577,10 @@ estimate_texture_memory() const {
     bpp = 12;
     break;
 
+  case Texture::F_r11_g11_b10:
+    bpp = 4;
+    break;
+
   default:
     break;
   }
@@ -1530,6 +1534,14 @@ write(ostream &out, int indent_level) const {
   case TT_cube_map:
     out << "cube map, " << cdata->_x_size << " x " << cdata->_y_size;
     break;
+
+  case TT_cube_map_array:
+    out << "cube map array, " << cdata->_x_size << " x " << cdata->_y_size << " x " << cdata->_z_size;
+    break;
+
+  case TT_buffer_texture:
+    out << "buffer, " << cdata->_x_size;
+    break;
   }
 
   if (cdata->_num_views > 1) {
@@ -1692,6 +1704,9 @@ write(ostream &out, int indent_level) const {
     break;
   case F_rgba8i:
     out << "rgba8i";
+    break;
+  case F_r11_g11_b10:
+    out << "r11_g11_b10";
     break;
   }
 
@@ -1930,6 +1945,10 @@ format_texture_type(TextureType tt) {
     return "2d_texture_array";
   case TT_cube_map:
     return "cube_map";
+  case TT_cube_map_array:
+    return "cube_map_array";
+  case TT_buffer_texture:
+    return "buffer_texture";
   }
   return "**invalid**";
 }
@@ -1952,6 +1971,10 @@ string_texture_type(const string &str) {
     return TT_2d_texture_array;
   } else if (cmp_nocase(str, "cube_map") == 0) {
     return TT_cube_map;
+  } else if (cmp_nocase(str, "cube_map_array") == 0) {
+    return TT_cube_map_array;
+  } else if (cmp_nocase(str, "buffer_texture") == 0) {
+    return TT_buffer_texture;
   }
 
   gobj_cat->error()
@@ -2099,6 +2122,8 @@ format_format(Format format) {
     return "rgb8i";
   case F_rgba8i:
     return "rgba8i";
+  case F_r11_g11_b10:
+    return "r11g11b10";
   }
   return "**invalid**";
 }
@@ -2185,6 +2210,8 @@ string_format(const string &str) {
     return F_rg32;
   } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
     return F_rgb32;
+  } else if (cmp_nocase(str, "r11g11b10") == 0) {
+    return F_r11_g11_b10;
   }
 
   gobj_cat->error()
@@ -2679,6 +2706,7 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
     switch (cdata->_texture_type) {
     case TT_1d_texture:
     case TT_2d_texture:
+    case TT_buffer_texture:
       z_size = 1;
       break;
 
@@ -4872,10 +4900,17 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     }
 
 #ifndef NDEBUG
-    if (cdata->_texture_type == TT_1d_texture) {
+    switch (cdata->_texture_type) {
+    case TT_1d_texture:
+    case TT_buffer_texture:
       nassertr(y_size == 1, false);
-    } else if (cdata->_texture_type == TT_cube_map) {
+      break;
+    case TT_cube_map:
+    case TT_cube_map_array:
       nassertr(x_size == y_size, false);
+      break;
+    default:
+      break;
     }
 #endif
     if ((cdata->_x_size != x_size)||(cdata->_y_size != y_size)) {
@@ -5069,6 +5104,19 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
     cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
     cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
+
+  case TT_cube_map_array:
+    // Cube maps array z_size needs to be a multiple of 6.
+    nassertv(x_size == y_size && z_size % 6 == 0);
+
+    cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
+    break;
+
+  case TT_buffer_texture:
+    nassertv(y_size == 1 && z_size == 1);
+    break;
   }
 
   if (texture_type != TT_2d_texture) {
@@ -5144,6 +5192,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_srgb:
   case F_rgb32:
   case F_rgb8i:
+  case F_r11_g11_b10:
     cdata->_num_components = 3;
     break;
 
@@ -5217,7 +5266,8 @@ do_set_x_size(CData *cdata, int x_size) {
 void Texture::
 do_set_y_size(CData *cdata, int y_size) {
   if (cdata->_y_size != y_size) {
-    nassertv(cdata->_texture_type != Texture::TT_1d_texture || y_size == 1);
+    nassertv((cdata->_texture_type != Texture::TT_buffer_texture &&
+              cdata->_texture_type != Texture::TT_1d_texture) || y_size == 1);
     cdata->_y_size = y_size;
     cdata->inc_image_modified();
     do_clear_ram_image(cdata);
@@ -5237,6 +5287,7 @@ do_set_z_size(CData *cdata, int z_size) {
   if (cdata->_z_size != z_size) {
     nassertv((cdata->_texture_type == Texture::TT_3d_texture) ||
              (cdata->_texture_type == Texture::TT_cube_map && z_size == 6) ||
+             (cdata->_texture_type == Texture::TT_cube_map_array && z_size % 6 == 0) ||
              (cdata->_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     cdata->_z_size = z_size;
     cdata->inc_image_modified();
@@ -7915,6 +7966,10 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_format);
   me.add_uint8(cdata->_num_components);
 
+  if (cdata->_texture_type == TT_buffer_texture) {
+    me.add_uint8(cdata->_usage_hint);
+  }
+
   me.add_uint8(cdata->_auto_texture_scale);
   me.add_uint32(cdata->_orig_file_x_size);
   me.add_uint32(cdata->_orig_file_y_size);
@@ -8081,6 +8136,7 @@ make_this_from_bam(const FactoryParams &params) {
       options.set_auto_texture_scale(auto_texture_scale);
 
       switch (texture_type) {
+      case TT_buffer_texture:
       case TT_1d_texture:
       case TT_2d_texture:
         if (alpha_filename.empty()) {
@@ -8099,6 +8155,7 @@ make_this_from_bam(const FactoryParams &params) {
         break;
 
       case TT_2d_texture_array:
+      case TT_cube_map_array:
         me = TexturePool::load_2d_texture_array(filename, has_read_mipmaps, options);
         break;
 
@@ -8142,12 +8199,8 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   cdata->_format = (Format)scan.get_uint8();
   cdata->_num_components = scan.get_uint8();
 
-  if ((int)cdata->_texture_type == 5) {
-    // As a kind little gesture to the people who try to load a Panda 1.10
-    // bam in Panda 1.9.
-    scan.get_uint8();
-    gobj_cat.error()
-      << "Buffer textures are not supported in this version of Panda3D.\n";
+  if (cdata->_texture_type == TT_buffer_texture) {
+    cdata->_usage_hint = (GeomEnums::UsageHint)scan.get_uint8();
   }
 
   cdata->inc_properties_modified();
@@ -8329,6 +8382,9 @@ CData() {
   // constructor), but set it to something else first to avoid the
   // check in do_set_format depending on an uninitialized value.
   _format = F_rgba;
+
+  // Only used for buffer textures.
+  _usage_hint = GeomEnums::UH_unspecified;
 
   _pad_x_size = 0;
   _pad_y_size = 0;

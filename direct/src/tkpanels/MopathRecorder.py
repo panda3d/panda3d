@@ -3,7 +3,7 @@
 __all__ = ['MopathRecorder']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *

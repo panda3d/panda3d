@@ -1058,6 +1058,142 @@ get_read_mipmaps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_min_lod
+//       Access: Published
+//  Description: Sets the minimum mipmap level that may be sampled.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_min_lod(double min_lod) {
+  _min_lod = min_lod;
+  _flags |= F_has_min_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_min_lod
+//       Access: Published
+//  Description: Removes the specification of a minimum mipmap level
+//               from the texture.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_min_lod() {
+  _min_lod = -1000;
+  _flags &= ~F_has_min_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_min_lod
+//       Access: Published
+//  Description: Returns true if a value for the minimum mipmap level
+//               has been specified for this texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_min_lod() const {
+  return (_flags & F_has_min_lod) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_min_lod
+//       Access: Published
+//  Description: Returns the minimum mipmap level that has been
+//               specified for this texture.
+////////////////////////////////////////////////////////////////////
+INLINE double EggTexture::
+get_min_lod() const {
+  return _min_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_max_lod
+//       Access: Published
+//  Description: Sets the maximum mipmap level that may be sampled.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_max_lod(double max_lod) {
+  _max_lod = max_lod;
+  _flags |= F_has_max_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_max_lod
+//       Access: Published
+//  Description: Removes the specification of a maximum mipmap level
+//               from the texture.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_max_lod() {
+  _max_lod = 1000;
+  _flags &= ~F_has_max_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_max_lod
+//       Access: Published
+//  Description: Returns true if a value for the maximum mipmap level
+//               has been specified for this texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_max_lod() const {
+  return (_flags & F_has_max_lod) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_max_lod
+//       Access: Published
+//  Description: Returns the maximum mipmap level that has been
+//               specified for this texture.
+////////////////////////////////////////////////////////////////////
+INLINE double EggTexture::
+get_max_lod() const {
+  return _max_lod;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_lod_bias
+//       Access: Published
+//  Description: Sets the mipmap level bias that is added to the
+//               mipmap level to be sampled.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_lod_bias(double lod_bias) {
+  _lod_bias = lod_bias;
+  _flags |= F_has_lod_bias;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_lod_bias
+//       Access: Published
+//  Description: Removes the specification of a maximum mipmap level
+//               from the texture.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_lod_bias() {
+  _lod_bias = 1000;
+  _flags &= ~F_has_lod_bias;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_lod_bias
+//       Access: Published
+//  Description: Returns true if a value for the maximum mipmap level
+//               has been specified for this texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_lod_bias() const {
+  return (_flags & F_has_lod_bias) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_lod_bias
+//       Access: Published
+//  Description: Returns the maximum mipmap level that has been
+//               specified for this texture.
+////////////////////////////////////////////////////////////////////
+INLINE double EggTexture::
+get_lod_bias() const {
+  return _lod_bias;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_multitexture_sort
 //       Access: Published
 //  Description: Returns an integer that represents the depth to which

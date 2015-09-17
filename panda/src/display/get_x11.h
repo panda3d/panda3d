@@ -62,7 +62,7 @@ struct XVisualInfo;
 #endif
 
 #ifdef HAVE_XF86DGA
-#include <X11/extensions/xf86dga.h>
+#include <X11/extensions/Xxf86dga.h>
 #endif
 
 #include "post_x11_include.h"

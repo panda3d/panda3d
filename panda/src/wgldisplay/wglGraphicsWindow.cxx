@@ -304,8 +304,18 @@ open_window() {
   // Initializes _colormap
   setup_colormap(pixelformat);
 
+  // Make sure we have a context created.
+  HGLRC context = wglgsg->get_context(_hdc);
+  if (!context) {
+    // The context failed to create for some reason.
+    wgldisplay_cat.error()
+      << "Closing window because no valid context is available.\n";
+    close_window();
+    return false;
+  }
+
   // Initialize the gsg.
-  wglGraphicsPipe::wgl_make_current(_hdc, wglgsg->get_context(_hdc), &_make_current_pcollector);
+  wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
   wglgsg->reset_if_new();
   wglgsg->report_my_gl_errors();
   if (!wglgsg->get_fb_properties().verify_hardware_software

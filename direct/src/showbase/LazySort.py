@@ -109,7 +109,6 @@ if __debug__:
             print x
 
     def test():
-        import random
         from itertools import islice
 
         control = sorted(data, key = lambda x: x[0])

@@ -208,8 +208,6 @@ protected:
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  void do_auto_rescale_normal();
-
   void disable_standard_vertex_arrays();
   bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
@@ -277,7 +275,6 @@ protected:
   bool _supports_render_texture;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
-  bool _auto_rescale_normal;
 
   PN_stdfloat _material_ambient;
   PN_stdfloat _material_diffuse;

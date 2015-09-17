@@ -26,6 +26,10 @@ PyMemberDef standard_type_members[] = {
   {NULL}  /* Sentinel */
 };
 
+static RuntimeTypeMap runtime_type_map;
+static RuntimeTypeSet runtime_type_set;
+static NamedTypeMap named_type_map;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DtoolCanThisBeAPandaInstance
 //  Description: Given a valid (non-NULL) PyObject, does a simple
@@ -401,7 +405,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
         /////////////////////////////////////////////
         // ask class to allocate an instance..
         /////////////////////////////////////////////
-        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->As_PyTypeObject().tp_new(&target_class->As_PyTypeObject(), NULL, NULL);
+        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, NULL, NULL);
         if (self != NULL) {
           self->_ptr_to_object = new_local_this;
           self->_memory_rules = memory_rules;
@@ -418,7 +422,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // if we get this far .. just wrap the thing in the known type ??
   //    better than aborting...I guess....
   /////////////////////////////////////////////////////
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL, NULL);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, NULL, NULL);
   if (self != NULL) {
     self->_ptr_to_object = local_this_in;
     self->_memory_rules = memory_rules;
@@ -442,7 +446,7 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   }
 
   Dtool_PyTypedObject *classdef = &in_classdef;
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL, NULL);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->_PyType.tp_new(&classdef->_PyType, NULL, NULL);
   if (self != NULL) {
     self->_ptr_to_object = local_this;
     self->_memory_rules = memory_rules;
@@ -487,42 +491,97 @@ void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 void
-RegisterRuntimeClass(Dtool_PyTypedObject *otype, int class_id) {
-  if (class_id == 0) {
+RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
+  pair<NamedTypeMap::iterator, bool> result =
+    named_type_map.insert(NamedTypeMap::value_type(name, &otype));
+
+  if (!result.second) {
+    // There was already a class with this name in the dictionary.
     interrogatedb_cat.warning()
-      << "Class " << otype->_PyType.tp_name
+      << "Double definition for class " << name << "\n";
+  }
+}
+
+void
+RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype) {
+  int type_index = otype._type.get_index();
+
+  if (type_index == 0) {
+    interrogatedb_cat.warning()
+      << "Class " << otype._PyType.tp_name
       << " has a zero TypeHandle value; check that init_type() is called.\n";
 
-  } else if (class_id > 0) {
-    RunTimeTypeDictionary &dict = GetRunTimeDictionary();
-    pair<RunTimeTypeDictionary::iterator, bool> result =
-      dict.insert(RunTimeTypeDictionary::value_type(class_id, otype));
+  } else if (type_index < 0 || type_index >= TypeRegistry::ptr()->get_num_typehandles()) {
+    interrogatedb_cat.warning()
+      << "Class " << otype._PyType.tp_name
+      << " has an illegal TypeHandle value; check that init_type() is called.\n";
+
+  } else {
+    pair<RuntimeTypeMap::iterator, bool> result =
+      runtime_type_map.insert(RuntimeTypeMap::value_type(type_index, &otype));
     if (!result.second) {
-      // There was already an entry in the dictionary for class_id.
+      // There was already an entry in the dictionary for type_index.
       Dtool_PyTypedObject *other_type = (*result.first).second;
       interrogatedb_cat.warning()
-        << "Classes " << otype->_PyType.tp_name
+        << "Classes " << otype._PyType.tp_name
         << " and " << other_type->_PyType.tp_name
-        << " share the same TypeHandle value (" << class_id
+        << " share the same TypeHandle value (" << type_index
         << "); check class definitions.\n";
 
     } else {
-      GetRunTimeTypeList().insert(class_id);
-      otype->_type = TypeRegistry::ptr()->find_type_by_id(class_id);
+      runtime_type_set.insert(type_index);
     }
+  }
+}
+
+Dtool_PyTypedObject *
+LookupNamedClass(const string &name) {
+  NamedTypeMap::const_iterator it;
+  it = named_type_map.find(name);
+
+  if (it == named_type_map.end()) {
+    // Find a type named like this in the type registry.
+    TypeHandle handle = TypeRegistry::ptr()->find_type(name);
+    if (handle.get_index() > 0) {
+      RuntimeTypeMap::const_iterator it2;
+      it2 = runtime_type_map.find(handle.get_index());
+      if (it2 != runtime_type_map.end()) {
+        return it2->second;
+      }
+    }
+
+    interrogatedb_cat.error()
+      << "Attempt to use type " << name << " which has not yet been defined!\n";
+    return NULL;
+  } else {
+    return it->second;
+  }
+}
+
+Dtool_PyTypedObject *
+LookupRuntimeTypedClass(TypeHandle handle) {
+  RuntimeTypeMap::const_iterator it;
+  it = runtime_type_map.find(handle.get_index());
+
+  if (it == runtime_type_map.end()) {
+    interrogatedb_cat.error()
+      << "Attempt to use type " << handle << " which has not yet been defined!\n";
+    return NULL;
+  } else {
+    return it->second;
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
-  RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
-  if (di != GetRunTimeDictionary().end()) {
+  RuntimeTypeMap::iterator di = runtime_type_map.find(type);
+  if (di != runtime_type_map.end()) {
     return di->second;
   } else {
-    int type2 = get_best_parent_from_Set(type, GetRunTimeTypeList());
-    di = GetRunTimeDictionary().find(type2);
-    if (di != GetRunTimeDictionary().end()) {
+    int type2 = get_best_parent_from_Set(type, runtime_type_set);
+    di = runtime_type_map.find(type2);
+    if (di != runtime_type_map.end()) {
       return di->second;
     }
   }
@@ -565,11 +624,6 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #else
     return Dtool_Raise_TypeError("Py_InitModule returned NULL");
 #endif
-  }
-
-  // the constant inits... enums, classes ...
-  for (int y = 0; defs[y] != NULL; y++) {
-    defs[y]->_constants(module);
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);
@@ -751,39 +805,12 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
   return PyBool_FromLong(result);
 }
 
-PyObject *make_list_for_item(PyObject *self, const char *num_name,
-                             const char *element_name) {
-  PyObject *num_result = PyObject_CallMethod(self, (char *)num_name, (char *)"()");
-  if (num_result == NULL) {
-    return NULL;
-  }
-
-  Py_ssize_t num_elements;
-#if PY_MAJOR_VERSION >= 3
-  num_elements = PyLong_AsSsize_t(num_result);
-#else
-  num_elements = PyInt_AsSsize_t(num_result);
-#endif
-  Py_DECREF(num_result);
-
-  PyObject *list = PyList_New(num_elements);
-  for (int i = 0; i < num_elements; ++i) {
-    PyObject *element = PyObject_CallMethod(self, (char *)element_name, (char *)"(i)", i);
-    if (element == NULL) {
-      Py_DECREF(list);
-      return NULL;
-    }
-    PyList_SET_ITEM(list, i, element);
-  }
-  return list;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: copy_from_make_copy
 //  Description: This is a support function for a synthesized
 //               __copy__() method from a C++ make_copy() method.
 ////////////////////////////////////////////////////////////////////
-PyObject *copy_from_make_copy(PyObject *self) {
+PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   return PyObject_CallMethod(self, (char *)"make_copy", (char *)"()");
 }
 
@@ -792,7 +819,7 @@ PyObject *copy_from_make_copy(PyObject *self) {
 //  Description: This is a support function for a synthesized
 //               __copy__() method from a C++ copy constructor.
 ////////////////////////////////////////////////////////////////////
-PyObject *copy_from_copy_constructor(PyObject *self) {
+PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *this_class = PyObject_Type(self);
   if (this_class == NULL) {
     return NULL;
@@ -821,7 +848,7 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
 //               to whether the indicated value will fit.
 ////////////////////////////////////////////////////////////////////
 #if PY_MAJOR_VERSION < 3
-EXPCL_DTOOLCONFIG PyObject *
+EXPCL_INTERROGATEDB PyObject *
 PyLongOrInt_FromUnsignedLong(unsigned long value) {
   if ((long)value < 0) {
     return PyLong_FromUnsignedLong(value);

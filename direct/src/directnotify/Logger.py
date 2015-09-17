@@ -1,7 +1,6 @@
 """Logger module: contains the logger class which creates and writes
    data to log files on disk"""
 
-import sys
 import time
 import math
 

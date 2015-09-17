@@ -86,6 +86,14 @@
   #define EXPTP_DTOOLCONFIG IMPORT_TEMPL
 #endif
 
+#ifdef BUILDING_INTERROGATEDB
+  #define EXPCL_INTERROGATEDB EXPORT_CLASS
+  #define EXPTP_INTERROGATEDB EXPORT_TEMPL
+#else
+  #define EXPCL_INTERROGATEDB IMPORT_CLASS
+  #define EXPTP_INTERROGATEDB IMPORT_TEMPL
+#endif
+
 #ifdef BUILDING_MISC
   #define EXPCL_MISC EXPORT_CLASS
   #define EXPTP_MISC EXPORT_TEMPL
@@ -97,7 +105,12 @@
 /* These two are always defined empty, because pystub is statically
    built.  But we leave the symbol around in case we change our minds
    to make pystub once again be a dynamic library. */
+#if __GNUC__ >= 4
+/* In GCC, though, we still need to mark the symbols as visible. */
+#define EXPCL_PYSTUB __attribute__((visibility("default")))
+#else
 #define EXPCL_PYSTUB
+#endif
 #define EXPTP_PYSTUB
 
 #endif

@@ -14,6 +14,10 @@
 
 #include "pandaSystem.h"
 
+ConfigVariableInt gl_version
+  ("gl-version", "",
+   PRC_DESC("Set this to get an OpenGL context with a specific version."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "
@@ -183,9 +187,11 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
-ConfigVariableBool gl_matrix_palette
-  ("gl-matrix-palette", false,
-   PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
+ConfigVariableBool gl_force_fbo_color
+  ("gl-force-fbo-color", true,
+   PRC_DESC("This is set to true to force all FBOs to have at least one "
+            "color attachment.  This is to work around an Intel driver "
+            "issue.  Set to false to allow depth-only FBOs."));
 
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,
@@ -221,6 +227,12 @@ ConfigVariableBool gl_dump_compiled_shaders
    PRC_DESC("This configures Panda to dump the binary content of GLSL "
             "programs to disk with a filename like glsl_program0.dump "
             "into the current directory."));
+
+ConfigVariableBool gl_validate_shaders
+  ("gl-validate-shaders", true,
+   PRC_DESC("Set this to true to enable glValidateShader the first time "
+            "a shader is bound.  This may cause helpful information about "
+            "shaders to be printed."));
 
 ConfigVariableBool gl_immutable_texture_storage
   ("gl-immutable-texture-storage", false,

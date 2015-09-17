@@ -20,6 +20,7 @@
 #include "cppTemplateScope.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppParameterList.h"
 #include "cppTBDType.h"
 #include "indent.h"
 #include "cppParser.h"
@@ -129,6 +130,97 @@ is_abstract() const {
   VFunctions funcs;
   get_pure_virtual_funcs(funcs);
   return !funcs.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPStructType::
+is_trivial() const {
+  // Make sure all base classes are trivial.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL && !base->is_trivial()) {
+      return false;
+    }
+  }
+
+  assert(_scope != NULL);
+
+  // Make sure all members are trivial.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    if (instance->_initializer != NULL) {
+      // A member with an initializer means the default constructor would
+      // assign a value.  This means the type can't be trivial.
+      return false;
+    }
+
+    // Finally, check if the data member itself is non-trivial.
+    assert(instance->_type != NULL);
+    if (!instance->_type->is_trivial()) {
+      return false;
+    }
+  }
+
+  // Now look for functions that are virtual or con/destructors.
+  bool is_default_constructible = true;
+  CPPScope::Functions::const_iterator fi;
+  for (fi = _scope->_functions.begin(); fi != _scope->_functions.end(); ++fi) {
+    CPPFunctionGroup *fgroup = (*fi).second;
+
+    CPPFunctionGroup::Instances::const_iterator ii;
+    for (ii = fgroup->_instances.begin(); ii != fgroup->_instances.end(); ++ii) {
+      CPPInstance *inst = (*ii);
+
+      if (inst->_storage_class & CPPInstance::SC_virtual) {
+        // Virtual functions are banned right off the bat.
+        return false;
+      }
+
+      assert(inst->_type != (CPPType *)NULL);
+      CPPFunctionType *ftype = inst->_type->as_function_type();
+      assert(ftype != (CPPFunctionType *)NULL);
+
+      if (ftype->_flags & (CPPFunctionType::F_destructor |
+                           CPPFunctionType::F_move_constructor |
+                           CPPFunctionType::F_copy_constructor)) {
+        // User-provided destructors and copy/move constructors are not trivial.
+        return false;
+      }
+
+      if ((ftype->_flags & CPPFunctionType::F_constructor) != 0) {
+        if (ftype->_parameters->_parameters.size() == 0 &&
+            !ftype->_parameters->_includes_ellipsis) {
+          // Same for the default constructor.
+          return false;
+        }
+        // The presence of a non-default constructor makes the class not
+        // default-constructible.
+        is_default_constructible = false;
+      }
+
+      if (fgroup->_name == "operator =") {
+        // Or assignment operators.
+        return false;
+      }
+    }
+  }
+
+  // Finally, the class must be default-constructible.
+  return is_default_constructible;
 }
 
 ////////////////////////////////////////////////////////////////////

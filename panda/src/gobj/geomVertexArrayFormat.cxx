@@ -630,20 +630,37 @@ get_format_string(bool pad) const {
     case NT_uint8:
       fmt_code = 'B';
       break;
+
     case NT_uint16:
       fmt_code = 'H';
       break;
+
     case NT_uint32:
     case NT_packed_dcba:
     case NT_packed_dabc:
       fmt_code = 'I';
       break;
+
     case NT_float32:
       fmt_code = 'f';
       break;
+
     case NT_float64:
       fmt_code = 'd';
       break;
+
+    case NT_int8:
+      fmt_code = 'b';
+      break;
+
+    case NT_int16:
+      fmt_code = 'h';
+      break;
+
+    case NT_int32:
+      fmt_code = 'i';
+      break;
+
     default:
       gobj_cat.error()
         << "Unknown numeric type " << column->get_numeric_type() << "!\n";

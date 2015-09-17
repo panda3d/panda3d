@@ -57,8 +57,9 @@ typedef double GLdouble;
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
 #if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
-typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
-typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC) (GLDEBUGPROC callback, const void *userParam);
+typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
+typedef void (APIENTRY *GLDEBUGPROC_P)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC_P) (GLDEBUGPROC_P callback, const void *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECONTROLPROC) (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (APIENTRYP PFNGLOBJECTLABELPROC) (GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
 typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
@@ -103,6 +104,7 @@ typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC) (GLenum target, GLint 
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC) (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data);
 typedef void (APIENTRYP PFNGLACTIVESTENCILFACEEXTPROC) (GLenum face);
+typedef void (APIENTRYP PFNGLSECONDARYCOLORPOINTERPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLWEIGHTPOINTERARBPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXBLENDARBPROC) (GLint count);
 typedef void (APIENTRYP PFNGLWEIGHTFVARBPROC) (GLint size, const GLfloat *weights);
@@ -130,19 +132,15 @@ typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURELAYERPROC) (GLenum target, GLenum
 typedef void (APIENTRYP PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 typedef void (APIENTRYP PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC) (GLenum target, GLenum attachment, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGENERATEMIPMAPEXTPROC) (GLenum target);
-typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXARBPROC) (GLint index);
-typedef void (APIENTRYP PFNGLMATRIXINDEXUIVARBPROC) (GLint size, const GLuint *indices);
-typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTERARBPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLBLITFRAMEBUFFEREXTPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLenum target, GLsizei coverageSamples, GLsizei colorSamples, GLenum internalformat, GLsizei width, GLsizei height);
-typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXOESPROC) (GLuint matrixpaletteindex);
-typedef void (APIENTRYP PFNGLLOADPALETTEFROMMODELVIEWMATRIXOESPROC) (void);
-typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
-typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLTEXSTORAGE1DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
 typedef void (APIENTRYP PFNGLTEXSTORAGE2DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLTEXSTORAGE3DPROC) (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+typedef void (APIENTRYP PFNGLBINDVERTEXARRAYPROC) (GLuint array);
+typedef void (APIENTRYP PFNGLDELETEVERTEXARRAYSPROC) (GLsizei n, const GLuint *arrays);
+typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -180,6 +178,8 @@ typedef void (APIENTRYP PFNGLUNIFORM4IVPROC) (GLint location, GLsizei count, con
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX3FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLVERTEXATTRIB4FVPROC) (GLuint index, const GLfloat *v);
+typedef void (APIENTRYP PFNGLVERTEXATTRIB4DVPROC) (GLuint index, const GLdouble *v);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
@@ -222,6 +222,8 @@ typedef GLboolean (APIENTRYP PFNGLISIMAGEHANDLERESIDENTPROC) (GLuint64 handle);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64PROC) (GLuint index, GLuint64EXT x);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VPROC) (GLuint index, const GLuint64EXT *v);
 typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
+typedef void *(APIENTRYP PFNGLMAPBUFFERPROC) (GLenum target, GLenum access);
+typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -345,7 +347,7 @@ public:
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void apply_fog(Fog *fog);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
@@ -355,8 +357,6 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 #endif
-
-  void print_gfx_visual();
 
   LVecBase4 get_light_color(Light *light) const;
 
@@ -390,23 +390,25 @@ protected:
   void do_issue_rescale_normal();
   void do_issue_color_write();
   void do_issue_depth_test();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_alpha_test();
 #endif
   void do_issue_depth_write();
   void do_issue_cull_face();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_fog();
 #endif
   void do_issue_depth_offset();
   void do_issue_shade_model();
-  void do_issue_shader(bool state_has_changed = false);
-#ifndef OPENGLES_2
+#ifndef OPENGLES_1
+  void do_issue_shader();
+#endif
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_material();
 #endif
   void do_issue_texture();
   void do_issue_blending();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
 #endif
@@ -422,10 +424,11 @@ protected:
   static string get_error_string(GLenum error_code);
   string show_gl_string(const string &name, GLenum id);
   virtual void query_gl_version();
+  void query_glsl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  INLINE virtual bool has_extension(const string &extension) const FINAL;
+  INLINE virtual bool has_extension(const string &extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -433,7 +436,7 @@ protected:
 
   virtual void reissue_transforms();
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const LColor &color);
   virtual void enable_light(int light_id, bool enable);
@@ -461,14 +464,17 @@ protected:
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_blend(bool val);
   INLINE void enable_depth_test(bool val);
+#ifdef SUPPORT_FIXED_FUNCTION
   INLINE void enable_fog(bool val);
   INLINE void enable_alpha_test(bool val);
+#endif
   INLINE void enable_polygon_offset(bool val);
 
   INLINE void set_color_write_mask(int mask);
   INLINE void clear_color_write_mask();
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
+  INLINE void call_glLoadMatrix(const LMatrix4 &mat);
   INLINE void call_glFogfv(GLenum pname, const LColor &color);
   INLINE void call_glMaterialfv(GLenum face, GLenum pname, const LColor &color);
   INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value);
@@ -479,7 +485,7 @@ protected:
 
   INLINE void call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value);
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
 #endif
@@ -510,23 +516,28 @@ protected:
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
   static GLenum get_usage(Geom::UsageHint usage_hint);
 
+#ifndef NDEBUG
+  static const char *get_compressed_format_string(GLenum format);
+#endif
+
   void unbind_buffers();
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   void disable_standard_vertex_arrays();
   bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 #endif
 
+  void apply_white_texture();
+
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
   void upload_usage_texture(int width, int height);
 #endif  // NDEBUG
 
-  void do_auto_rescale_normal();
   bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
-  bool apply_texture(TextureContext *tc);
-  bool apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc);
+  bool apply_texture(CLP(TextureContext) *gtc);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc);
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,
@@ -537,7 +548,7 @@ protected:
                             Texture::CompressionMode image_compression);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
-  size_t get_texture_memory_size(Texture *tex);
+  size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
@@ -584,7 +595,6 @@ protected:
   RenderModeAttrib::Mode _render_mode;
   PN_stdfloat _point_size;
   bool _point_perspective;
-  bool _vertex_blending_enabled;
   bool _scissor_enabled;
   bool _scissor_attrib_active;
   epvector<LVecBase4i> _scissor_array;
@@ -596,8 +606,7 @@ protected:
   ShaderContext *_vertex_array_shader_context;
   PT(Shader) _texture_binding_shader;
   ShaderContext *_texture_binding_shader_context;
-#endif
-#ifdef OPENGLES_2
+
   static PT(Shader) _default_shader;
 #endif
 
@@ -623,7 +632,6 @@ protected:
   DirectionalLights _dlights;
 
   int _pass_number;
-  bool _auto_rescale_normal;
   GLuint _geom_display_list;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
@@ -639,8 +647,6 @@ protected:
   bool _supports_depth24;
   bool _supports_depth32;
 #endif
-
-  int _error_count;
 
   string _gl_vendor;
   string _gl_renderer;
@@ -661,21 +667,8 @@ public:
   bool _explicit_primitive_restart;
 #endif
 
-  bool _supports_vertex_blend;
-  PFNGLWEIGHTPOINTERARBPROC _glWeightPointer;
-  PFNGLVERTEXBLENDARBPROC _glVertexBlend;
-  PFNGLWEIGHTFVARBPROC _glWeightfv;
-  PFNGLWEIGHTDVARBPROC _glWeightdv;
-
-  bool _supports_matrix_palette;
-#ifdef OPENGLES_1
-  PFNGLCURRENTPALETTEMATRIXOESPROC _glCurrentPaletteMatrix;
-  PFNGLMATRIXINDEXPOINTEROESPROC _glMatrixIndexPointer;
-#endif
-#ifndef OPENGLES
-  PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrix;
-  PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointer;
-  PFNGLMATRIXINDEXUIVARBPROC _glMatrixIndexuiv;
+#if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)
+  PFNGLSECONDARYCOLORPOINTERPROC _glSecondaryColorPointer;
 #endif
 
 #ifndef OPENGLES
@@ -693,9 +686,18 @@ public:
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
+#ifndef OPENGLES
+  PFNGLTEXBUFFERPROC _glTexBuffer;
+#endif
+
   bool _supports_clear_texture;
 #ifndef OPENGLES
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
+#endif
+
+  bool _supports_clear_buffer;
+#ifndef OPENGLES
+  PFNGLCLEARBUFFERDATAPROC _glClearBufferData;
 #endif
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
@@ -707,13 +709,18 @@ public:
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;
-  bool _supports_rescale_normal;
   bool _supports_packed_dabc;
+  bool _supports_packed_ufloat;
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  bool _supports_rescale_normal;
+#endif
 
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
-#ifndef OPENGLES_2
-  bool _supports_multitexture;
+#ifdef SUPPORT_FIXED_FUNCTION
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
+#endif
+#ifdef SUPPORT_IMMEDIATE_MODE
   PFNGLMULTITEXCOORD1FPROC _glMultiTexCoord1f;
   PFNGLMULTITEXCOORD2FPROC _glMultiTexCoord2f;
   PFNGLMULTITEXCOORD3FPROC _glMultiTexCoord3f;
@@ -731,8 +738,26 @@ public:
   PFNGLBUFFERSUBDATAPROC _glBufferSubData;
   PFNGLDELETEBUFFERSPROC _glDeleteBuffers;
 
+#ifndef OPENGLES
+  PFNGLMAPBUFFERPROC _glMapBuffer;
+  PFNGLUNMAPBUFFERPROC _glUnmapBuffer;
+  PFNGLMAPBUFFERRANGEPROC _glMapBufferRange;
+
+  bool _supports_uniform_buffers;
+  PFNGLBINDBUFFERBASEPROC _glBindBufferBase;
+
+  bool _supports_buffer_storage;
+  PFNGLBUFFERSTORAGEPROC _glBufferStorage;
+#endif
+
   PFNGLBLENDEQUATIONPROC _glBlendEquation;
   PFNGLBLENDCOLORPROC _glBlendColor;
+
+  bool _supports_vao;
+  GLuint _current_vao_index;
+  PFNGLBINDVERTEXARRAYPROC _glBindVertexArray;
+  PFNGLDELETEVERTEXARRAYSPROC _glDeleteVertexArrays;
+  PFNGLGENVERTEXARRAYSPROC _glGenVertexArrays;
 
   bool _supports_framebuffer_object;
   PFNGLISRENDERBUFFEREXTPROC _glIsRenderbuffer;
@@ -828,6 +853,8 @@ public:
   PFNGLUNIFORMMATRIX3FVPROC _glUniformMatrix3fv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
+  PFNGLVERTEXATTRIB4FVPROC _glVertexAttrib4fv;
+  PFNGLVERTEXATTRIB4DVPROC _glVertexAttrib4dv;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
@@ -836,6 +863,9 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLGETACTIVEUNIFORMSIVPROC _glGetActiveUniformsiv;
+  PFNGLGETACTIVEUNIFORMBLOCKIVPROC _glGetActiveUniformBlockiv;
+  PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC _glGetActiveUniformBlockName;
   PFNGLGENSAMPLERSPROC _glGenSamplers;
   PFNGLDELETESAMPLERSPROC _glDeleteSamplers;
   PFNGLBINDSAMPLERPROC _glBindSampler;
@@ -890,12 +920,16 @@ public:
 
   //RenderState::SlotMask _inv_state_mask;
 
+  int _error_count;
+  double _last_error_check;
   bool _check_errors;
   bool _force_flush;
   bool _supports_debug;
 
   bool _use_object_labels;
   PFNGLOBJECTLABELPROC _glObjectLabel;
+
+  GLuint _white_texture;
 
 #ifndef NDEBUG
   bool _show_texture_usage;

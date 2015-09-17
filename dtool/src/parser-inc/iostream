@@ -43,6 +43,9 @@ __published:
   static const openmode in;
   static const openmode out;
   static const openmode trunc;
+protected:
+  // Force this to be a non-trivial type.
+  ios_base() {};
 };
 class ios : public ios_base {
 __published:
@@ -56,6 +59,10 @@ __published:
   bool bad() const;
   void clear();
 };
+
+// We actually want to wrap streampos as streamoff.
+#define streampos streamoff
+
 class ostream : virtual public ios {
 __published:
   void put(char c);
@@ -101,6 +108,6 @@ extern istream cin;
 extern ostream cout;
 extern ostream cerr;
 
-typedef int streampos;
+typedef long streamoff;
 
 #endif

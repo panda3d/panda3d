@@ -5,8 +5,6 @@ the user to specify alternate parameters on the command line. """
 import getopt
 import sys
 import os
-import glob
-import types
 import time
 from direct.ffi import FFIConstants
 
@@ -224,7 +222,7 @@ def doErrorCheck():
         FFIConstants.CodeModuleNameList = codeLibs
 
 def generateNativeWrappers():
-    from direct.extensions_native.extension_native_helpers import Dtool_FindModule, Dtool_PreloadDLL
+    from direct.extensions_native.extension_native_helpers import Dtool_PreloadDLL
 
     # Empty out the output directories of unnecessary crud from
     # previous runs before we begin.
@@ -337,7 +335,7 @@ def run():
 
     if doHTML:
         from direct.directscripts import gendocs
-        from pandac.PandaModules import PandaSystem
+        from panda3d.core import PandaSystem
         versionString = '%s %s' % (
             PandaSystem.getDistributor(), PandaSystem.getVersionString())
 

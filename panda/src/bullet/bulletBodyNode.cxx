@@ -155,6 +155,8 @@ output(ostream &out) const {
 
   out << " (" << get_num_shapes() << " shapes)";
 
+  out << (is_active() ? " active" : " inactive");
+
   if (is_static()) out << " static";
   if (is_kinematic()) out << " kinematic";
 }
@@ -165,13 +167,16 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-add_shape(BulletShape *shape, const TransformState *ts) {
+add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   nassertv(get_object());
   nassertv(ts);
 
-  nassertv(!(shape->ptr()->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE 
-    && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
+  btCollisionShape *shape = bullet_shape->ptr();
+  nassertv(shape != NULL);
+
+  nassertv(!(shape->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE &&
+            ((btConvexHullShape *)shape)->getNumVertices() == 0));
 
   // Transform
   btTransform trans = TransformState_to_btTrans(ts);
@@ -193,13 +198,13 @@ add_shape(BulletShape *shape, const TransformState *ts) {
       // After adding the shape we will have one shape, but with transform.
       // We need to wrap the shape within a compound shape, in oder to
       // be able to set the local transform.
-      next = shape->ptr();
+      next = shape;
     }
     else {
       // After adding the shape we will have a total of one shape, without 
       // local transform. We can set the shape directly.
       next = new btCompoundShape();
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
     }
 
     get_object()->setCollisionShape(next);
@@ -214,7 +219,7 @@ add_shape(BulletShape *shape, const TransformState *ts) {
       // to the compound shape.
       next = previous;
 
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
     }
     else {
       // We have one shape which is NOT a compound shape, and want to add
@@ -223,7 +228,7 @@ add_shape(BulletShape *shape, const TransformState *ts) {
 
       btTransform previous_trans = btTransform::getIdentity();
       ((btCompoundShape *)next)->addChildShape(previous_trans, previous);
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+      ((btCompoundShape *)next)->addChildShape(trans, shape);
 
       get_object()->setCollisionShape(next);
       _shape = next;
@@ -236,10 +241,10 @@ add_shape(BulletShape *shape, const TransformState *ts) {
     nassertv(previous->getShapeType() == COMPOUND_SHAPE_PROXYTYPE);
 
     next = previous;
-    ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+    ((btCompoundShape *)next)->addChildShape(trans, shape);
   }
 
-  _shapes.push_back(shape);
+  _shapes.push_back(bullet_shape);
 
   // Restore the local scaling again
   np.set_scale(scale);
@@ -340,7 +345,16 @@ LPoint3 BulletBodyNode::
 get_shape_pos(int idx) const {
 
   nassertr(idx >= 0 && idx < (int)_shapes.size(), LPoint3::zero());
-  return get_shape_mat(idx).get_row3(3);
+
+  btCollisionShape *root = get_object()->getCollisionShape();
+  if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
+    btCompoundShape *compound = (btCompoundShape *)root;
+
+    btTransform trans = compound->getChildTransform(idx);
+    return btVector3_to_LVector3(trans.getOrigin());
+  }
+
+  return LPoint3::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,15 +364,24 @@ get_shape_pos(int idx) const {
 ////////////////////////////////////////////////////////////////////
 LMatrix4 BulletBodyNode::
 get_shape_mat(int idx) const {
+  return get_shape_transform(idx)->get_mat();
+}
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), LMatrix4::ident_mat());
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::get_shape_transform
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) BulletBodyNode::
+get_shape_transform(int idx) const {
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), TransformState::make_identity());
 
   btCollisionShape *root = get_object()->getCollisionShape();
   if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
     btCompoundShape *compound = (btCompoundShape *)root;
 
     btTransform trans = compound->getChildTransform(idx);
-    return btTrans_to_LMatrix4(trans);
+    return btTrans_to_TransformState(trans);
 
     // The above code assumes that shape's index in _shapes member
     // is the same as the shapes index within the compound. If it
@@ -375,7 +398,7 @@ get_shape_mat(int idx) const {
     */
   }
 
-  return LMatrix4::ident_mat();
+  return TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,18 +471,21 @@ set_active(bool active, bool force) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::set_deactivation_enabled
 //       Access: Published
-//  Description:
+//  Description: If true, this object will be deactivated after a
+//               certain amount of time has passed without movement.
+//               If false, the object will always remain active.
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_deactivation_enabled(const bool enabled, const bool force) {
+set_deactivation_enabled(bool enabled) {
 
-  int state = (enabled) ? WANTS_DEACTIVATION : DISABLE_DEACTIVATION;
+  // Don't change the state if it's currently active and we enable
+  // deactivation.
+  if (enabled != is_deactivation_enabled()) {
 
-  if (force) {
+    // It's OK to set to ACTIVE_TAG even if we don't mean to activate it; it
+    // will be disabled right away if the deactivation timer has run out.
+    int state = (enabled) ? ACTIVE_TAG : DISABLE_DEACTIVATION;
     get_object()->forceActivationState(state);
-  }
-  else {
-    get_object()->setActivationState(state);
   }
 }
 
@@ -471,7 +497,7 @@ set_deactivation_enabled(const bool enabled, const bool force) {
 bool BulletBodyNode::
 is_deactivation_enabled() const {
 
-  return (get_object()->getActivationState() & DISABLE_DEACTIVATION) == 0;
+  return (get_object()->getActivationState() != DISABLE_DEACTIVATION);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -700,3 +726,126 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
   return bounds;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  PandaNode::write_datagram(manager, dg);
+
+  dg.add_bool(is_static());
+  dg.add_bool(is_kinematic());
+  dg.add_bool(notifies_collisions());
+  dg.add_bool(get_collision_response());
+  dg.add_stdfloat(get_contact_processing_threshold());
+  //dg.add_bool(is_active());
+  dg.add_stdfloat(get_deactivation_time());
+  dg.add_bool(is_deactivation_enabled());
+  //dg.add_bool(is_debug_enabled());
+  dg.add_stdfloat(get_restitution());
+  dg.add_stdfloat(get_friction());
+#if BT_BULLET_VERSION >= 281
+  dg.add_stdfloat(get_rolling_friction());
+#else
+  dg.add_stdfloat(0);
+#endif
+  if (has_anisotropic_friction()) {
+    dg.add_bool(true);
+    get_anisotropic_friction().write_datagram(dg);
+  } else {
+    dg.add_bool(false);
+  }
+  dg.add_stdfloat(get_ccd_swept_sphere_radius());
+  dg.add_stdfloat(get_ccd_motion_threshold());
+
+  for (unsigned int i = 0; i < _shapes.size(); ++i) {
+    manager->write_pointer(dg, get_shape(i));
+    manager->write_pointer(dg, get_shape_transform(i));
+  }
+
+  // Write NULL pointer to indicate the end of the list.
+  manager->write_pointer(dg, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int BulletBodyNode::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = PandaNode::complete_pointers(p_list, manager);
+
+  PT(BulletShape) shape = DCAST(BulletShape, p_list[pi++]);
+
+  while (shape != (BulletShape *)NULL) {
+    const TransformState *trans = DCAST(TransformState, p_list[pi++]);
+    add_shape(shape, trans);
+
+    shape = DCAST(BulletShape, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool BulletBodyNode::
+require_fully_complete() const {
+  // We require the shape pointers to be complete before we add them.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new BulletBodyNode.
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PandaNode::fillin(scan, manager);
+
+  set_static(scan.get_bool());
+  set_kinematic(scan.get_bool());
+  notify_collisions(scan.get_bool());
+  set_collision_response(scan.get_bool());
+  set_contact_processing_threshold(scan.get_stdfloat());
+  //set_active(scan.get_bool(), true);
+  set_deactivation_time(scan.get_stdfloat());
+  set_deactivation_enabled(scan.get_bool());
+  set_restitution(scan.get_stdfloat());
+  set_friction(scan.get_stdfloat());
+#if BT_BULLET_VERSION >= 281
+  set_rolling_friction(scan.get_stdfloat());
+#else
+  scan.get_stdfloat();
+#endif
+  if (scan.get_bool()) {
+    LVector3 friction;
+    friction.read_datagram(scan);
+    set_anisotropic_friction(friction);
+  }
+  set_ccd_swept_sphere_radius(scan.get_stdfloat());
+  set_ccd_motion_threshold(scan.get_stdfloat());
+
+  // Read shapes.  The list is bounded by a NULL pointer.
+  while (manager->read_pointer(scan)) {
+    // Each shape comes with a TransformState.
+    manager->read_pointer(scan);
+  }
+}

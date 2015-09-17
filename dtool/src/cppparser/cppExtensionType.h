@@ -47,6 +47,7 @@ public:
 
   virtual bool is_incomplete() const;
   virtual bool is_tbd() const;
+  virtual bool is_trivial() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

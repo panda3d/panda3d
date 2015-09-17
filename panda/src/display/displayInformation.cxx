@@ -90,13 +90,12 @@ DisplayInformation() {
   int window_bits_per_pixel;
   int total_display_modes;
   DisplayMode *display_mode_array;
-  int shader_model;
   int video_memory;
   int texture_memory;
   PN_uint64 physical_memory;
   PN_uint64 available_physical_memory;
 
-  state = DisplayInformation::DS_unknown;    
+  state = DisplayInformation::DS_unknown;
   get_adapter_display_mode_state = false;
   get_device_caps_state = false;
   window_width = 0;
@@ -104,7 +103,6 @@ DisplayInformation() {
   window_bits_per_pixel = 0;
   total_display_modes = 0;
   display_mode_array = NULL;
-  shader_model = GraphicsStateGuardian::SM_00;
   video_memory = 0;
   texture_memory = 0;
   physical_memory = 0;
@@ -118,7 +116,7 @@ DisplayInformation() {
   _window_bits_per_pixel = window_bits_per_pixel;
   _total_display_modes = total_display_modes;
   _display_mode_array = display_mode_array;
-  _shader_model = shader_model;
+  _shader_model = GraphicsStateGuardian::SM_00;
   _video_memory = video_memory;
   _texture_memory = texture_memory;
 
@@ -328,8 +326,8 @@ get_display_mode_fullscreen_only (int display_index) {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-int DisplayInformation::
-get_shader_model ( ) {
+GraphicsStateGuardian::ShaderModel DisplayInformation::
+get_shader_model() {
   return _shader_model;
 }
 

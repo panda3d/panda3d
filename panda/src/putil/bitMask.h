@@ -144,7 +144,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type();
+  static void init_type(const string &name);
 
 private:
   static TypeHandle _type_handle;

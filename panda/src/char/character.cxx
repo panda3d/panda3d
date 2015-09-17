@@ -420,8 +420,7 @@ find_joint(const string &name) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     PartGroup *part = get_bundle(i)->find_child(name);
-    if (part != (PartGroup *)NULL &&
-        part->is_of_type(CharacterJoint::get_class_type())) {
+    if (part != (PartGroup *)NULL && part->is_character_joint()) {
       return DCAST(CharacterJoint, part);
     }
   }
@@ -728,7 +727,7 @@ r_merge_bundles(Character::JointMap &joint_map,
                 PartGroup *old_group, PartGroup *new_group) {
   joint_map[old_group] = new_group;
 
-  if (new_group->is_of_type(CharacterJoint::get_class_type())) {
+  if (new_group->is_character_joint()) {
     CharacterJoint *new_joint;
     DCAST_INTO_V(new_joint, new_group);
 
@@ -736,7 +735,7 @@ r_merge_bundles(Character::JointMap &joint_map,
     new_joint->_character = this;
 
     if (old_group != new_group &&
-        old_group->is_of_type(CharacterJoint::get_class_type())) {
+        old_group->is_character_joint()) {
       CharacterJoint *old_joint;
       DCAST_INTO_V(old_joint, old_group);
 
@@ -763,7 +762,7 @@ r_merge_bundles(Character::JointMap &joint_map,
   if (old_group == new_group) {
     return;
   }
-    
+
   int i = 0, j = 0;
   int old_num_children = old_group->get_num_children();
   int new_num_children = new_group->get_num_children();
@@ -809,7 +808,7 @@ r_merge_bundles(Character::JointMap &joint_map,
     // new_group.  Duplicate it.
     PartGroup *new_pc = pc->make_copy();
     new_children.push_back(new_pc);
-    
+
     r_merge_bundles(joint_map, pc, new_pc);
     i++;
   }
@@ -968,7 +967,7 @@ copy_geom(const Geom *source, const Character::JointMap &joint_map,
 void Character::
 copy_node_pointers(const Character::NodeMap &node_map,
                    PartGroup *dest, const PartGroup *source) {
-  if (dest->is_of_type(CharacterJoint::get_class_type())) {
+  if (dest->is_character_joint()) {
     nassertv(dest != source);
     const CharacterJoint *source_joint;
     CharacterJoint *dest_joint;
@@ -1204,7 +1203,7 @@ redirect_slider(const VertexSlider *vs, Character::GeomSliderMap &gsmap) {
 ////////////////////////////////////////////////////////////////////
 void Character::
 r_clear_joint_characters(PartGroup *part) {
-  if (part->is_of_type(CharacterJoint::get_class_type())) {
+  if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
 
     // It is possible for the joint to reference a different Character

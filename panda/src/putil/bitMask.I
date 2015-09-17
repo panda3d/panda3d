@@ -862,10 +862,8 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-init_type() {
-  ostringstream str;
-  str << "BitMask" << num_bits;
-  register_type(_type_handle, str.str());
+init_type(const string &name) {
+  register_type(_type_handle, name);
 }
 
 ////////////////////////////////////////////////////////////////////

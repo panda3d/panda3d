@@ -17,6 +17,7 @@
 #include "graphicsBuffer.h"
 #include "config_display.h"
 #include "mutexHolder.h"
+#include "displayInformation.h"
 
 TypeHandle GraphicsPipe::_type_handle;
 

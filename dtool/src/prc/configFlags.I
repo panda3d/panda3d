@@ -20,7 +20,7 @@
 //               valid (based on a comparison of the supplied
 //               local_modified value with the global_modified value).
 ////////////////////////////////////////////////////////////////////
-INLINE bool ConfigFlags::
+ALWAYS_INLINE bool ConfigFlags::
 is_cache_valid(AtomicAdjust::Integer local_modified) {
   return local_modified == _global_modified;
 }
@@ -32,7 +32,7 @@ is_cache_valid(AtomicAdjust::Integer local_modified) {
 //               the cache will appear to be valid, until someone next
 //               calls invalidate_cache().
 ////////////////////////////////////////////////////////////////////
-INLINE void ConfigFlags::
+ALWAYS_INLINE void ConfigFlags::
 mark_cache_valid(AtomicAdjust::Integer &local_modified) {
   local_modified = _global_modified;
 }

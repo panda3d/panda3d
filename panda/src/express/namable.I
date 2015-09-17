@@ -45,6 +45,19 @@ operator = (const Namable &other) {
   return *this;
 }
 
+#ifdef USE_MOVE_SEMANTICS
+////////////////////////////////////////////////////////////////////
+//     Function: Namable::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Namable &Namable::
+operator = (Namable &&other) NOEXCEPT {
+  _name = MOVE(other._name);
+  return *this;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::set_name
 //       Access: Public

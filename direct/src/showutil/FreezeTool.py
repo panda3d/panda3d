@@ -9,7 +9,7 @@ import imp
 import platform
 import types
 from StringIO import StringIO
-from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
+from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -17,9 +17,7 @@ try:
 except ImportError:
     p3extend_frozen = None
 
-import direct
 from panda3d.core import *
-from pandac.extension_native_helpers import dll_suffix, dll_ext
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -66,7 +64,7 @@ class CompilationEnvironment:
         # Paths to Python stuff.
         self.Python = None
         self.PythonIPath = get_python_inc()
-        self.PythonVersion = get_python_version()
+        self.PythonVersion = get_config_var("LDVERSION") or get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -1073,7 +1071,7 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + '\0\0\0\0' + \
+            data = imp.get_magic() + b'\0\0\0\0' + \
                    marshal.dumps(code)
 
             stream = StringStream(data)
@@ -1352,7 +1350,10 @@ class Freezer:
         for i in range(0, len(code), 16):
             result += '\n  '
             for c in code[i:i+16]:
-                result += ('%d,' % ord(c))
+                if isinstance(c, int): # Python 3
+                    result += ('%d,' % c)
+                else: # Python 2
+                    result += ('%d,' % ord(c))
         result += '\n};\n'
         return result
 
@@ -1403,15 +1404,6 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
-
-        # Look for a dtool extension.  This loop is roughly lifted
-        # from extension_native_helpers.Dtool_PreloadDLL().
-        filename = name + dll_suffix + dll_ext
-        for dir in sys.path + [sys.prefix]:
-            lib = os.path.join(dir, filename)
-            if os.path.exists(lib):
-                file = open(lib, 'rb')
-                return (file, lib, (dll_ext, 'rb', imp.C_EXTENSION))
 
         message = "DLL loader cannot find %s." % (name)
         raise ImportError, message

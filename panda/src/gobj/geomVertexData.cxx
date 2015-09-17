@@ -2425,7 +2425,7 @@ get_array_info(const InternalName *name,
                const GeomVertexArrayDataHandle *&array_reader,
                int &num_values,
                GeomVertexDataPipelineReader::NumericType &numeric_type,
-               int &start, int &stride, int &divisor,
+               bool &normalized, int &start, int &stride, int &divisor,
                int &num_elements, int &element_stride) const {
   nassertr(_got_array_readers, false);
   int array_index;
@@ -2434,6 +2434,7 @@ get_array_info(const InternalName *name,
     array_reader = _array_readers[array_index];
     num_values = column->get_num_values();
     numeric_type = column->get_numeric_type();
+    normalized = (column->get_contents() == GeomEnums::C_color);
     start = column->get_start();
     stride = _cdata->_format->get_array(array_index)->get_stride();
     divisor = _cdata->_format->get_array(array_index)->get_divisor();
@@ -2610,11 +2611,11 @@ set_num_rows(int n) {
     int num_values = column->get_num_values();
 
     switch (column->get_numeric_type()) {
-    case NT_packed_dcba:
-    case NT_packed_dabc:
     case NT_uint8:
     case NT_uint16:
     case NT_uint32:
+    case NT_packed_dcba:
+    case NT_packed_dabc:
       while (pointer < stop) {
         memset(pointer, 0xff, column->get_total_bytes());
         pointer += stride;
@@ -2635,15 +2636,26 @@ set_num_rows(int n) {
       while (pointer < stop) {
         PN_float64 *pi = (PN_float64 *)pointer;
         for (int i = 0; i < num_values; i++) {
-          pi[i] = 1.0f;
+          pi[i] = 1.0;
         }
         pointer += stride;
       }
       break;
 
     case NT_stdfloat:
+    case NT_int8:
+    case NT_int16:
+    case NT_int32:
       // Shouldn't have this type in the format.
       nassertr(false, false);
+      break;
+
+    case NT_packed_ufloat:
+      while (pointer < stop) {
+        *(PN_int32 *)pointer = 0x781e03c0;
+        pointer += stride;
+      }
+      break;
     }
   }
 

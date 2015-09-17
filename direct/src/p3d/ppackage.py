@@ -139,12 +139,12 @@ from direct.p3d import Packager
 from panda3d.core import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, usageText % {
+    sys.stderr.write(usageText % {
         'version' : PandaSystem.getPackageVersionString(),
         'host' : PandaSystem.getPackageHostUrl(),
         'prog' : os.path.split(sys.argv[0])[1]
-        }
-    print >> sys.stderr, msg
+        })
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 installDir = None
@@ -161,7 +161,7 @@ platforms = []
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:hv')
-except getopt.error, msg:
+except getopt.error as msg:
     usage(1, msg)
 
 for opt, arg in opts:
@@ -199,7 +199,7 @@ for opt, arg in opts:
     elif opt == '-h':
         usage(0)
     else:
-        print 'illegal option: ' + arg
+        print('illegal option: ' + arg)
         sys.exit(1)
 
 if not args:
@@ -220,7 +220,7 @@ else:
 
 if universalBinaries:
     if platforms:
-        print '\nYou may not specify both -u and -P.\n'
+        print('\nYou may not specify both -u and -P.\n')
         sys.exit(1)
     if PandaSystem.getPlatform().startswith('osx_'):
         platforms = ['osx_i386', 'osx_amd64']
@@ -251,7 +251,7 @@ for platform in platforms:
     except Packager.PackagerError:
         # Just print the error message and exit gracefully.
         inst = sys.exc_info()[1]
-        print inst.args[0]
+        print(inst.args[0])
         sys.exit(1)
 
 # An explicit call to exit() is required to exit the program, when

@@ -15,10 +15,6 @@
 /* okcircular */
 #include "odeGeom_ext.h"
 
-#ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint3f;
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: OdeSpace::get_AA_bounds
 //       Access: Published
@@ -30,8 +26,8 @@ get_AA_bounds() const {
   LPoint3f *max_point = new LPoint3f;
   _this->get_AABB(*min_point, *max_point);
 
-  PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3f, true, false);
-  PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3f, true, false);
+  PyObject *min_inst = DTool_CreatePyInstance(min_point, true);
+  PyObject *max_inst = DTool_CreatePyInstance(max_point, true);
   return Py_BuildValue("NN", min_inst, max_inst);
 }
 

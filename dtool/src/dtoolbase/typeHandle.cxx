@@ -49,7 +49,7 @@ get_memory_usage(MemoryClass memory_class) const {
 //               allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-inc_memory_usage(MemoryClass memory_class, int size) {
+inc_memory_usage(MemoryClass memory_class, size_t size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
@@ -72,7 +72,7 @@ inc_memory_usage(MemoryClass memory_class, int size) {
 //               the total allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-dec_memory_usage(MemoryClass memory_class, int size) {
+dec_memory_usage(MemoryClass memory_class, size_t size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
@@ -83,6 +83,27 @@ dec_memory_usage(MemoryClass memory_class, int size) {
   }
 }
 #endif  // DO_MEMORY_USAGE
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_best_parent_from_Set
+//       Access: Published
+//  Description: Return the Index of the BEst fit Classs from a set
+////////////////////////////////////////////////////////////////////
+int TypeHandle::
+get_best_parent_from_Set(const std::set< int > &legal_vals) const {
+  if (legal_vals.find(_index) != legal_vals.end()) {
+    return _index;
+  }
+
+  for (int pi = 0; pi < get_num_parent_classes(); ++pi) {
+    TypeHandle ph = get_parent_class(pi);
+    int val = ph.get_best_parent_from_Set(legal_vals);
+    if (val > 0) {
+      return val;
+    }
+  }
+  return -1;
+}
 
 ostream &
 operator << (ostream &out, TypeHandle::MemoryClass mem_class) {

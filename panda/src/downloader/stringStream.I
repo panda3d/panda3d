@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: StringStream::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StringStream::
 StringStream() : iostream(&_buf) {
@@ -80,9 +80,7 @@ INLINE void StringStream::
 set_data(const string &data) {
   _buf.clear();
   if (!data.empty()) {
-    pvector<unsigned char> pv;
-    pv.insert(pv.end(), (const unsigned char *)&data[0], (const unsigned char *)&data[0] + data.size());
-    _buf.swap_data(pv);
+    set_data((const unsigned char *)data.data(), data.size());
   }
 }
 

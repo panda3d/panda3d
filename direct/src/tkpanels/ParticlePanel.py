@@ -17,7 +17,10 @@ from direct.particles import ParticleEffect
 from Tkinter import *
 import Pmw, os,Placer
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.physics import *
+from panda3d.direct import getParticlePath
+
 
 class ParticlePanel(AppShell):
     # Override class variables
@@ -2778,7 +2781,8 @@ if __name__ == '__main__':
     try:
         base
     except:
-        from direct.directbase import DirectStart
+        from direct.showbase.ShowBase import ShowBase
+        base = ShowBase()
 
     root = Pmw.initialise()
     pp = ParticlePanel()

@@ -31,10 +31,11 @@
 #include "lightMutex.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
+#include "weakKeyHashMap.h"
 #include "cacheStats.h"
 #include "renderAttribRegistry.h"
+#include "graphicsStateGuardianBase.h"
 
-class GraphicsStateGuardianBase;
 class FactoryParams;
 class ShaderAttrib;
 
@@ -76,7 +77,6 @@ PUBLISHED:
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
   INLINE static CPT(RenderState) make_empty();
-  INLINE static CPT(RenderState) make_full_default();
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
   static CPT(RenderState) make(const RenderAttrib *attrib1,
                                const RenderAttrib *attrib2, int override = 0);
@@ -109,7 +109,7 @@ PUBLISHED:
   INLINE bool has_attrib(TypeHandle type) const;
   INLINE bool has_attrib(int slot) const;
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
-  INLINE const RenderAttrib *get_attrib(int slot) const;
+  ALWAYS_INLINE const RenderAttrib *get_attrib(int slot) const;
   INLINE const RenderAttrib *get_attrib_def(int slot) const;
   INLINE int get_override(TypeHandle type) const;
   INLINE int get_override(int slot) const;
@@ -238,8 +238,7 @@ private:
   };
   typedef SimpleHashMap<const RenderState *, Empty, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
-  static CPT(RenderState) _empty_state;
-  static CPT(RenderState) _full_default_state;
+  static const RenderState *_empty_state;
 
   // This iterator records the entry corresponding to this
   // RenderState object in the above global set.  We keep the index
@@ -275,9 +274,9 @@ private:
   // since there are likely to be far fewer GSG's than RenderStates.
   // The code to manage this map lives in
   // GraphicsStateGuardian::get_geom_munger().
-  typedef pmap<WCPT(GraphicsStateGuardianBase), PT(GeomMunger) > Mungers;
-  Mungers _mungers;
-  Mungers::const_iterator _last_mi;
+  typedef WeakKeyHashMap<GraphicsStateGuardianBase, PT(GeomMunger) > Mungers;
+  mutable Mungers _mungers;
+  mutable int _last_mi;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
@@ -312,7 +311,7 @@ private:
     CPT(RenderAttrib) _attrib;
     int _override;
   };
-  Attribute *_attributes;
+  Attribute _attributes[RenderAttribRegistry::_max_slots];
 
   // We also store a bitmask of the non-NULL attributes in the above
   // array.  This is redundant, but it is a useful cache.

@@ -32,6 +32,7 @@
 using namespace std;
 
 #define INLINE inline
+#define ALWAYS_INLINE inline
 #define TYPENAME typename
 #define CONSTEXPR
 #define NOEXCEPT noexcept
@@ -115,11 +116,19 @@ typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 
-#if defined(WIN32_VC) && defined(FORCE_INLINING)
+#ifdef _MSC_VER
+#define ALWAYS_INLINE __forceinline
+#elif defined(__GNUC__)
+#define ALWAYS_INLINE __attribute__((always_inline)) inline
+#else
+#define ALWAYS_INLINE inline
+#endif
+
+#ifdef FORCE_INLINING
 // If FORCE_INLINING is defined, we use the keyword __forceinline,
 // which tells MS VC++ to override its internal benefit heuristic
 // and inline the fn if it is technically possible to do so.
-#define INLINE __forceinline
+#define INLINE ALWAYS_INLINE
 #else
 #define INLINE inline
 #endif
@@ -174,7 +183,7 @@ typedef ios::seekdir ios_seekdir;
 #  define MOVE(x) x
 #endif
 
-#if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
+#if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
 // This macro must be used to export an instantiated template class
 // from a DLL.  If the template class name itself contains commas, it
 // may be necessary to first define a macro for the class name, to

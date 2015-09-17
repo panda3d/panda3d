@@ -54,16 +54,26 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   _interactive_console = interactive_console;
 
   if (program_name != NULL) {
+#if PY_MAJOR_VERSION >= 3
+    // Python 3 case: we have to convert it to a wstring.
+    TextEncoder enc;
+    enc.set_text(program_name);
+    _program_name = enc.get_wtext();
+#else
+    // Python 2 is happy with a regular string.
     _program_name = program_name;
+#endif
   }
   if (archive_file != NULL) {
     _archive_file = Filename::from_os_specific(archive_file);
   }
 
   _py_argc = 1;
-  _py_argv = (char **)malloc(2 * sizeof(char *));
-
+#if PY_MAJOR_VERSION >= 3
+  _py_argv[0] = (wchar_t *)_program_name.c_str();
+#else
   _py_argv[0] = (char *)_program_name.c_str();
+#endif
   _py_argv[1] = NULL;
 
 #ifdef NDEBUG
@@ -78,7 +88,11 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
+#if PY_MAJOR_VERSION >= 3
+  Py_SetProgramName((wchar_t *)_program_name.c_str());
+#else
   Py_SetProgramName((char *)_program_name.c_str());
+#endif
   Py_Initialize();
   PyEval_InitThreads();
   PySys_SetArgv(_py_argc, _py_argv);
@@ -238,29 +252,37 @@ run_python() {
   }
   Py_DECREF(app_runner_class);
 
+  // Import the JavaScript module.
+  PyObject *javascript_module = PyImport_ImportModule("direct.p3d.JavaScript");
+  if (javascript_module == NULL) {
+    nout << "Failed to import direct.p3d.JavaScript\n";
+    PyErr_Print();
+    return false;
+  }
+
   // Get the UndefinedObject class.
-  _undefined_object_class = PyObject_GetAttrString(app_runner_module, "UndefinedObject");
+  _undefined_object_class = PyObject_GetAttrString(javascript_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
     return 1;
   }
 
   // And the "Undefined" instance.
-  _undefined = PyObject_GetAttrString(app_runner_module, "Undefined");
+  _undefined = PyObject_GetAttrString(javascript_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
     return 1;
   }
 
   // Get the ConcreteStruct class.
-  _concrete_struct_class = PyObject_GetAttrString(app_runner_module, "ConcreteStruct");
+  _concrete_struct_class = PyObject_GetAttrString(javascript_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
     return 1;
   }
 
   // Get the BrowserObject class.
-  _browser_object_class = PyObject_GetAttrString(app_runner_module, "BrowserObject");
+  _browser_object_class = PyObject_GetAttrString(javascript_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
     return 1;
@@ -274,7 +296,7 @@ run_python() {
   }
 
   Py_DECREF(app_runner_module);
-
+  Py_DECREF(javascript_module);
 
   // Construct a Python wrapper around our methods we need to expose to Python.
   static PyMethodDef p3dpython_methods[] = {
@@ -284,7 +306,20 @@ run_python() {
       "Send an asynchronous request to the plugin host" },
     { NULL, NULL, 0, NULL }        /* Sentinel */
   };
+
+#if PY_MAJOR_VERSION >= 3
+  static PyModuleDef p3dpython_module = {
+    PyModuleDef_HEAD_INIT,
+    "p3dpython",
+    NULL,
+    -1,
+    p3dpython_methods,
+    NULL, NULL, NULL, NULL
+  };
+  PyObject *p3dpython = PyModule_Create(&p3dpython_module);
+#else
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
+#endif
   if (p3dpython == NULL) {
     PyErr_Print();
     return 1;
@@ -668,8 +703,11 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
           result = PyBool_FromLong(PyObject_IsTrue(obj));
 
         } else if (strcmp(method_name, "__int__") == 0) {
+#if PY_MAJOR_VERSION >= 3
+          result = PyNumber_Long(obj);
+#else
           result = PyNumber_Int(obj);
-
+#endif
         } else if (strcmp(method_name, "__float__") == 0) {
           result = PyNumber_Float(obj);
 
@@ -1534,10 +1572,12 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "bool");
     xvalue->SetAttribute("value", PyObject_IsTrue(value));
 
+#if PY_MAJOR_VERSION < 3
   } else if (PyInt_Check(value)) {
     // A plain integer value.
     xvalue->SetAttribute("type", "int");
     xvalue->SetAttribute("value", PyInt_AsLong(value));
+#endif
 
   } else if (PyLong_Check(value)) {
     // A long integer value.  This gets converted either as an integer
@@ -1559,9 +1599,21 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "float");
     xvalue->SetDoubleAttribute("value", PyFloat_AsDouble(value));
 
+
   } else if (PyUnicode_Check(value)) {
     // A unicode value.  Convert to utf-8 for the XML encoding.
     xvalue->SetAttribute("type", "string");
+
+#if PY_MAJOR_VERSION >= 3
+    // In Python 3, there are only unicode strings, and there is a
+    // handy function for getting the UTF-8 encoded version.
+    Py_ssize_t length = 0;
+    char *buffer = PyUnicode_AsUTF8AndSize(value, &length);
+    if (buffer != NULL) {
+      string str(buffer, length);
+      xvalue->SetAttribute("value", str);
+    }
+#else
     PyObject *as_str = PyUnicode_AsUTF8String(value);
     if (as_str != NULL) {
       char *buffer;
@@ -1595,6 +1647,7 @@ pyobj_to_xml(PyObject *value) {
       }
       Py_DECREF(ustr);
     }
+#endif  // PY_MAJOR_VERSION
 
   } else if (PyTuple_Check(value)) {
     // An immutable sequence.  Pass it as a concrete.
@@ -1633,7 +1686,11 @@ pyobj_to_xml(PyObject *value) {
             PyObject *as_str;
             if (PyUnicode_Check(a)) {
               // The key is a unicode value.
+#if PY_MAJOR_VERSION >= 3
+              as_str = a;
+#else
               as_str = PyUnicode_AsUTF8String(a);
+#endif
             } else {
               // The key is a string value or something else.  Make it
               // a string.
@@ -1641,7 +1698,12 @@ pyobj_to_xml(PyObject *value) {
             }
             char *buffer;
             Py_ssize_t length;
+#if PY_MAJOR_VERSION >= 3
+            buffer = PyUnicode_AsUTF8AndSize(as_str, &length);
+            if (buffer != NULL) {
+#else
             if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+#endif
               string str(buffer, length);
               xitem->SetAttribute("key", str);
             }
@@ -1726,7 +1788,11 @@ xml_to_pyobj(TiXmlElement *xvalue) {
   } else if (strcmp(type, "int") == 0) {
     int value;
     if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+#if PY_MAJOR_VERSION >= 3
+      return PyLong_FromLong(value);
+#else
       return PyInt_FromLong(value);
+#endif
     }
 
   } else if (strcmp(type, "float") == 0) {

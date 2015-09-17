@@ -25,7 +25,6 @@
 #include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
-#include "lightNode.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
@@ -36,7 +35,7 @@
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
-#include "aiPostProcess.h"
+#include "assimp/postprocess.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AssimpLoader::Constructor
@@ -231,7 +230,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
-  PN_stdfloat blend;
+  float blend;
   aiTextureOp op;
   aiTextureMapMode mapmode;
 
@@ -570,12 +569,13 @@ load_light(const aiLight &light) {
   aiColor3D col;
   aiVector3D vec;
 
-  PT(LightNode) lnode;
-
   switch (light.mType) {
   case aiLightSource_DIRECTIONAL: {
     PT(DirectionalLight) dlight = new DirectionalLight(name);
-    lnode = DCAST(LightNode, dlight);
+    _root->add_child(dlight);
+
+    col = light.mColorDiffuse;
+    dlight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     dlight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -589,7 +589,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_POINT: {
     PT(PointLight) plight = new PointLight(name);
-    lnode = DCAST(LightNode, plight);
+    _root->add_child(plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -604,7 +607,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_SPOT: {
     PT(Spotlight) plight = new Spotlight(name);
-    lnode = DCAST(LightNode, plight);
+    _root->add_child(plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -624,21 +630,23 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
+  // This is a somewhat recent addition to Assimp, so let's be kind to
+  // those that don't have an up-to-date version of Assimp.
+  case 0x4: //aiLightSource_AMBIENT:
+    // This is handled below.
+    break;
+
   default:
     assimp_cat.warning() << "Light '" << name << "' has an unknown type!\n";
     return;
   }
 
   // If there's an ambient color, add it as ambient light.
+  col = light.mColorAmbient;
   LVecBase4 ambient (col.r, col.g, col.b, 0);
   if (ambient != LVecBase4::zero()) {
     PT(AmbientLight) alight = new AmbientLight(name);
-    col = light.mColorAmbient;
     alight->set_color(ambient);
     _root->add_child(alight);
   }
-
-  _root->add_child(lnode);
-  col = light.mColorDiffuse;
-  lnode->set_color(LColor(col.r, col.g, col.b, 1));
 }

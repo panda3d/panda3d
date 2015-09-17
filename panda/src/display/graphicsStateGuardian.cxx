@@ -40,6 +40,7 @@
 #include "graphicsOutput.h"
 #include "texturePool.h"
 #include "geomMunger.h"
+#include "stateMunger.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -185,6 +186,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _max_3d_texture_dimension = 0;
   _max_2d_texture_array_layers = 0;
   _max_cube_map_dimension = 0;
+  _max_buffer_texture_size = 0;
 
   // Assume we don't support these fairly advanced texture combiner
   // modes.
@@ -195,6 +197,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_3d_texture = false;
   _supports_2d_texture_array = false;
   _supports_cube_map = false;
+  _supports_buffer_texture = false;
+  _supports_cube_map_array = false;
   _supports_tex_non_pow2 = false;
   _supports_texture_srgb = false;
   _supports_compressed_texture = false;
@@ -812,43 +816,42 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
-  // We can cast the RenderState to a non-const object because we are
-  // only updating a cache within the RenderState, not really changing
-  // any of its properties.
-  RenderState *nc_state = ((RenderState *)state);
+  RenderState::Mungers &mungers = state->_mungers;
 
-  // Before we even look up the map, see if the _last_mi value points
-  // to this GSG.  This is likely because we tend to visit the same
-  // state multiple times during a frame.  Also, this might well be
-  // the only GSG in the world anyway.
-  if (!nc_state->_mungers.empty()) {
-    RenderState::Mungers::const_iterator mi = nc_state->_last_mi;
-    if (!(*mi).first.was_deleted() && (*mi).first == this) {
-      if ((*mi).second->is_registered()) {
-        return (*mi).second;
+  if (!mungers.is_empty()) {
+    // Before we even look up the map, see if the _last_mi value points
+    // to this GSG.  This is likely because we tend to visit the same
+    // state multiple times during a frame.  Also, this might well be
+    // the only GSG in the world anyway.
+    int mi = state->_last_mi;
+    if (mi >= 0 && mungers.has_element(mi) && mungers.get_key(mi) == this) {
+      PT(GeomMunger) munger = mungers.get_data(mi);
+      if (munger->is_registered()) {
+        return munger;
+      }
+    }
+
+    // Nope, we have to look it up in the map.
+    mi = mungers.find(this);
+    if (mi >= 0) {
+      PT(GeomMunger) munger = mungers.get_data(mi);
+      if (munger->is_registered()) {
+        state->_last_mi = mi;
+        return munger;
+      } else {
+        // This GeomMunger is no longer registered.  Remove it from
+        // the map.
+        mungers.remove_element(mi);
       }
     }
   }
 
-  // Nope, we have to look it up in the map.
-  RenderState::Mungers::iterator mi = nc_state->_mungers.find(this);
-  if (mi != nc_state->_mungers.end() && !(*mi).first.was_deleted()) {
-    if ((*mi).second->is_registered()) {
-      nc_state->_last_mi = mi;
-      return (*mi).second;
-    }
-    // This GeomMunger is no longer registered.  Remove it from the
-    // map.
-    nc_state->_mungers.erase(mi);
-  }
-
   // Nothing in the map; create a new entry.
-  PT(GeomMunger) munger = make_geom_munger(nc_state, current_thread);
+  PT(GeomMunger) munger = make_geom_munger(state, current_thread);
   nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
+  nassertr(munger->is_of_type(StateMunger::get_class_type()), munger);
 
-  mi = nc_state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
-  nc_state->_last_mi = mi;
-
+  state->_last_mi = mungers.store(this, munger);
   return munger;
 }
 
@@ -1193,14 +1196,26 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
     return &t;
   }
-  case Shader::SMO_texmat_x: {
-    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
-    const TextureAttrib *ta = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-    int stagenr = atoi(name->get_name().c_str());
-    if (stagenr >= ta->get_num_on_stages()) {
+  case Shader::SMO_texmat_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      return &tma->get_mat(ta->get_on_stage(index));
+    } else {
       return &LMatrix4::ident_mat();
     }
-    return &tma->get_mat(ta->get_on_stage(stagenr));
+  }
+  case Shader::SMO_inv_texmat_i: {
+    const TexMatrixAttrib *tma;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
+        index < ta->get_num_on_stages()) {
+      t = tma->get_transform(ta->get_on_stage(index))->get_inverse()->get_mat();
+      return &t;
+    } else {
+      return &LMatrix4::ident_mat();
+    }
   }
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
@@ -3334,4 +3349,12 @@ get_driver_shader_version_major() {
 int GraphicsStateGuardian::
 get_driver_shader_version_minor() {
   return -1;
+}
+
+ostream &
+operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm) {
+  static const char *sm_strings[] = {"none", "1.1", "2.0", "2.x", "3.0", "4.0", "5.0", "5.1"};
+  nassertr(sm >= 0 && sm <= GraphicsStateGuardian::SM_51, out);
+  out << sm_strings[sm];
+  return out;
 }

@@ -811,6 +811,23 @@ detach_node(Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::reverse_ls
+//       Access: Published
+//  Description: Lists the hierarchy at and above the referenced node.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+reverse_ls(ostream &out, int indent_level) const {
+  if (is_empty()) {
+    out << "(empty)\n";
+    return 0;
+  } else if (has_parent()) {
+    indent_level = get_parent().reverse_ls(out, indent_level);
+  }
+  node()->write(out, indent_level);
+  return indent_level + 2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::output
 //       Access: Published
 //  Description: Writes a sensible description of the NodePath to the
@@ -6191,20 +6208,32 @@ write_bounds(ostream &out) const {
 //               than the bounding volume returned by get_bounds()
 //               (but it is more expensive to compute).
 //
+//               The bounding box is computed relative to the parent
+//               node's coordinate system by default.  You can
+//               optionally specify a different NodePath to compute
+//               the bounds relative to.  Note that the box is always
+//               axis-aligned against the given NodePath's coordinate
+//               system, so you might get a differently sized box
+//               depending on which node you pass.
+//
 //               The return value is true if any points are within the
 //               bounding volume, or false if none are.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  Thread *current_thread) const {
+                  const NodePath &other, Thread *current_thread) const {
   min_point.set(0.0f, 0.0f, 0.0f);
   max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
 
+  CPT(TransformState) transform = TransformState::make_identity();
+  if (!other.is_empty()) {
+    transform = get_transform(other)->compose(get_transform()->get_inverse());
+  }
+
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            TransformState::make_identity(),
-                            current_thread);
+                            MOVE(transform), current_thread);
 
   return found_any;
 }

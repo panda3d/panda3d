@@ -216,6 +216,58 @@ setup_cube_map(int size, ComponentType component_type, Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_cube_map_array
+//       Access: Published
+//  Description: Sets the texture as cube map array with N cube maps.
+//               Note that this number is not the same as the z_size.
+//               Follow up with read() or load() to fill
+//               the texture properties and image data, or use
+//               set_clear_color to let the texture be cleared to a
+//               solid color.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_cube_map_array(int num_cube_maps) {
+  setup_cube_map_array(0, num_cube_maps, T_unsigned_byte, F_rgb);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_cube_map_array
+//       Access: Published
+//  Description: Sets the texture as cube map array with N cube maps
+//               with the specified dimensions and format.  Follow up
+//               with set_ram_image() or modify_ram_image() to fill
+//               the image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
+//
+//               The num_cube_maps given here is multiplied by six
+//               to become the z_size of the image.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_cube_map_array(int size, int num_cube_maps, ComponentType component_type, Format format) {
+  setup_texture(TT_cube_map_array, size, size, num_cube_maps * 6, component_type, format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_buffer_texture
+//       Access: Published
+//  Description: Sets the texture as an empty buffer texture with
+//               the specified size and properties.  Follow up
+//               with set_ram_image() or modify_ram_image() to fill
+//               the image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
+//
+//               Note that a buffer texture's format needs to match
+//               the component type.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_buffer_texture(int size, ComponentType component_type, Format format,
+                     GeomEnums::UsageHint usage) {
+  setup_texture(TT_buffer_texture, size, 1, 1, component_type, format);
+  CDWriter cdata(_cycler);
+  cdata->_usage_hint = usage;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_image
 //       Access: Published
 //  Description: Clears the texture data without changing its format
@@ -887,6 +939,18 @@ get_component_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_usage_hint
+//       Access: Published
+//  Description: Returns the usage hint specified for buffer textures,
+//               or UH_unspecified for all other texture types.
+////////////////////////////////////////////////////////////////////
+INLINE GeomEnums::UsageHint Texture::
+get_usage_hint() const {
+  CDReader cdata(_cycler);
+  return cdata->_usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_wrap_u
 //       Access: Published
 //  Description: This setting determines what happens when the
@@ -1071,6 +1135,28 @@ INLINE const SamplerState &Texture::
 get_default_sampler() const {
   CDReader cdata(_cycler);
   return cdata->_default_sampler;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_default_sampler
+//       Access: Published
+//  Description: This sets the default sampler state for this
+//               texture, containing the wrap and filter properties
+//               specified on the texture level; it may still be
+//               overridden by a sampler state specified at a higher
+//               level.  This encompasses the settings for get_wrap_u,
+//               get_minfilter, get_anisotropic_degree, etc.
+//
+//               This makes a copy of the SamplerState object, so
+//               future modifications of the same SamplerState will
+//               have no effect on this texture unless you call
+//               set_default_sampler again.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_default_sampler(const SamplerState &sampler) {
+  CDWriter cdata(_cycler, true);
+  cdata->_default_sampler = sampler;
+  cdata->inc_properties_modified();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -281,6 +281,20 @@ PUBLISHED:
   INLINE void set_read_mipmaps(bool read_mipmaps);
   INLINE bool get_read_mipmaps() const;
 
+  INLINE void set_min_lod(double min_lod);
+  INLINE void clear_min_lod();
+  INLINE bool has_min_lod() const;
+  INLINE double get_min_lod() const;
+
+  INLINE void set_max_lod(double max_lod);
+  INLINE void clear_max_lod();
+  INLINE bool has_max_lod() const;
+  INLINE double get_max_lod() const;
+
+  INLINE void set_lod_bias(double lod_bias);
+  INLINE void clear_lod_bias();
+  INLINE bool has_lod_bias() const;
+  INLINE double get_lod_bias() const;
 
   void clear_multitexture();
   bool multitexture_over(EggTexture *other);
@@ -320,6 +334,9 @@ private:
     F_has_alpha_scale        = 0x0200,
     F_has_border_color       = 0x0400,
     F_has_num_views          = 0x0800,
+    F_has_min_lod            = 0x1000,
+    F_has_max_lod            = 0x2000,
+    F_has_lod_bias           = 0x4000,
   };
 
   TextureType _texture_type;
@@ -347,6 +364,9 @@ private:
   int _alpha_file_channel;
   bool _read_mipmaps;
   int _multitexture_sort;
+  double _min_lod;
+  double _max_lod;
+  double _lod_bias;
 
   class SourceAndOperand {
   public:

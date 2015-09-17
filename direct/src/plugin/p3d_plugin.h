@@ -53,7 +53,11 @@
 #endif
 
 #else  /* _WIN32 */
+#if defined(BUILDING_P3D_PLUGIN) && defined(__GNUC__)
+#define EXPCL_P3D_PLUGIN __attribute__((visibility("default")))
+#else
 #define EXPCL_P3D_PLUGIN
+#endif
 
 #endif  /* _WIN32 */
 

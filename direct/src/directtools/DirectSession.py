@@ -2,7 +2,7 @@ import math
 import types
 import string
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from DirectUtil import *
 
 from direct.showbase.DirectObject import DirectObject
@@ -304,6 +304,7 @@ class DirectSession(DirectObject):
         except NameError:
             # Has the clusterMode been set via a config variable?
             self.clusterMode = base.config.GetString("cluster-mode", '')
+
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
@@ -400,7 +401,7 @@ class DirectSession(DirectObject):
 
         if self.oobeMode:
             # Position a target point to lerp the oobe camera to
-            base.direct.cameraControl.camManipRef.iPosHpr(self.trueCamera)
+            base.direct.cameraControl.camManipRef.setPosHpr(self.trueCamera, 0, 0, 0, 0, 0, 0)
             ival = self.oobeCamera.posHprInterval(
                 2.0, pos = Point3(0), hpr = Vec3(0), 
                 other = base.direct.cameraControl.camManipRef,
@@ -416,7 +417,7 @@ class DirectSession(DirectObject):
             cameraParent = self.camera.getParent()
             # Prepare oobe camera
             self.oobeCamera.reparentTo(cameraParent)
-            self.oobeCamera.iPosHpr(self.trueCamera)
+            self.oobeCamera.setPosHpr(self.trueCamera, 0, 0, 0, 0, 0, 0)
             # Put camera under new oobe camera
             self.cam.reparentTo(self.oobeCamera)
             # Position a target point to lerp the oobe camera to
@@ -432,13 +433,13 @@ class DirectSession(DirectObject):
 
     def beginOOBE(self):
         # Make sure we've reached our final destination
-        self.oobeCamera.iPosHpr(base.direct.cameraControl.camManipRef)
+        self.oobeCamera.setPosHpr(base.direct.cameraControl.camManipRef, 0, 0, 0, 0, 0, 0)
         base.direct.camera = self.oobeCamera
         self.oobeMode = 1
 
     def endOOBE(self):
         # Make sure we've reached our final destination
-        self.oobeCamera.iPosHpr(self.trueCamera)
+        self.oobeCamera.setPosHpr(self.trueCamera, 0, 0, 0, 0, 0, 0)
         # Disable OOBE mode.
         self.cam.reparentTo(self.trueCamera)
         base.direct.camera = self.trueCamera
@@ -806,7 +807,7 @@ class DirectSession(DirectObject):
                            [nodePath, oldParent, self.activeParent, fWrt])
 
     def isNotCycle(self, nodePath, parent):
-        if nodePath.id() == parent.id():
+        if nodePath == parent:
             print 'DIRECT.reparent: Invalid parent'
             return 0
         elif parent.hasParent():
@@ -1308,6 +1309,3 @@ class DisplayRegionList(DirectObject):
             if drc.cam == cam:
                 self.displayRegionList.remove(drc)
                 break
-
-# Create one
-__builtins__['direct'] = base.direct = DirectSession()

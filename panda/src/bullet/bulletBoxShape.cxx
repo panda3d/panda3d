@@ -66,7 +66,7 @@ get_half_extents_with_margin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBoxShape::make_from_solid
-//       Access: Public
+//       Access: Public, Static
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletBoxShape *BulletBoxShape::
@@ -82,3 +82,66 @@ make_from_solid(const CollisionBox *solid) {
   return new BulletBoxShape(extents);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBoxShape::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               BulletShape.
+////////////////////////////////////////////////////////////////////
+void BulletBoxShape::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBoxShape::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void BulletBoxShape::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  dg.add_stdfloat(get_margin());
+  get_half_extents_with_margin().write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBoxShape::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type BulletShape is encountered
+//               in the Bam file.  It should create the BulletShape
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *BulletBoxShape::
+make_from_bam(const FactoryParams &params) {
+  BulletBoxShape *param = new BulletBoxShape;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBoxShape::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new BulletShape.
+////////////////////////////////////////////////////////////////////
+void BulletBoxShape::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  nassertv(_shape == NULL);
+
+  PN_stdfloat margin = scan.get_stdfloat();
+
+  LVector3 half_extents;
+  half_extents.read_datagram(scan);
+
+  _shape = new btBoxShape(LVecBase3_to_btVector3(half_extents));
+  _shape->setUserPointer(this);
+  _shape->setMargin(margin);
+}

@@ -129,7 +129,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorBlendAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, make_default);
+    _attrib_slot = register_slot(_type_handle, 100, new ColorBlendAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -141,10 +141,9 @@ private:
   static int _attrib_slot;
 };
 
-ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
-ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
+EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
+EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
 
 #include "colorBlendAttrib.I"
 
 #endif
-

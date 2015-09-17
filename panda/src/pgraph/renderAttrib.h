@@ -73,8 +73,6 @@ PUBLISHED:
   virtual bool lower_attrib_can_override() const;
 
 public:
-  INLINE bool always_reissue() const;
-
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
@@ -190,13 +188,10 @@ protected:
 
 public:
   INLINE static int register_slot(TypeHandle type_handle, int sort,
-                                  RenderAttribRegistry::MakeDefaultFunc *make_default_func);
+                                  RenderAttrib *default_attrib);
 
 private:
   void release_new();
-
-protected:
-  bool _always_reissue;
 
 public:
   static void init_attribs();
@@ -217,6 +212,8 @@ private:
   static int _garbage_index;
 
   static PStatCollector _garbage_collect_pcollector;
+
+  friend class RenderAttribRegistry;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

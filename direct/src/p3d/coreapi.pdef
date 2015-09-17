@@ -66,7 +66,7 @@ class images(package):
             token = '%s_img' % (name)
             configDict[token] = basename
         else:
-            print "Could not locate %s" % (filename)
+            print("Could not locate %s" % (filename))
 
     # Also make a few special cases.  We use the same default image
     # for many of the states.
