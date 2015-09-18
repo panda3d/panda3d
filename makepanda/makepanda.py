@@ -381,9 +381,10 @@ if (RUNTIME or RTDIST):
     if (RUNTIME):
         outputdir_suffix += "_rt"
 
-    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
-elif (DISTRIBUTOR == ""):
+if DISTRIBUTOR == "":
     DISTRIBUTOR = "makepanda"
+else:
+    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
 
 if not IsCustomOutputDir():
     if GetTarget() == "windows" and GetTargetArch() == 'x64':
@@ -1800,10 +1801,25 @@ def FreezePy(target, inputs, opts):
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
-    cmdstr += os.path.join("direct", "src", "showutil", "pfreeze.py")
-    src = inputs.pop(0)
+    cmdstr += os.path.join(GetOutputDir(), "direct", "showutil", "pfreeze.py")
+
+    if 'FREEZE_STARTUP' in opts:
+        cmdstr += " -s"
+
+    if GetOrigExt(target) == '.exe':
+        src = inputs.pop(0)
+    else:
+        src = ""
+
     for i in inputs:
-      cmdstr += " -i " + os.path.splitext(i)[0]
+        i = os.path.splitext(i)[0]
+        i = i.replace('/', '.')
+
+        if i.startswith('direct.src'):
+            i = i.replace('.src.', '.')
+
+        cmdstr += " -i " + i
+
     cmdstr += " -o " + target + " " + src
 
     if ("LINK_PYTHON_STATIC" in opts):
@@ -1919,6 +1935,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         exit("No input files for target "+target)
     infile = inputs[0]
     origsuffix = GetOrigExt(target)
+
     if (len(inputs) == 1 and origsuffix == GetOrigExt(infile)):
         # It must be a simple copy operation.
         ProgressOutput(progress, "Copying file", target)
@@ -1926,15 +1943,26 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (origsuffix==".exe" and GetHost() != "windows"):
             os.system("chmod +x \"%s\"" % target)
         return
+
     elif (target.endswith(".py")):
         ProgressOutput(progress, "Generating", target)
         return GenPyExtensions(target, inputs, opts)
+
     elif (infile.endswith(".py")):
-        if (origsuffix==".exe"):
+        if origsuffix == ".obj":
+            source = os.path.splitext(target)[0] + ".c"
+            SetOrigExt(source, ".c")
+            ProgressOutput(progress, "Building frozen source", source)
+            FreezePy(source, inputs, opts)
+            ProgressOutput(progress, "Building C++ object", target)
+            return CompileCxx(target, source, opts)
+
+        if origsuffix == ".exe":
             ProgressOutput(progress, "Building frozen executable", target)
         else:
             ProgressOutput(progress, "Building frozen library", target)
         return FreezePy(target, inputs, opts)
+
     elif (infile.endswith(".idl")):
         ProgressOutput(progress, "Compiling MIDL file", infile)
         return CompileMIDL(target, infile, opts)
@@ -5021,10 +5049,12 @@ if (RTDIST or RUNTIME):
     TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
+    TargetAdd('p3dpython_frozen.obj', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP'], input='VFSImporter.py')
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
     TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
+    TargetAdd('p3dpython.exe', input='p3dpython_frozen.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dpython.exe', input='libp3interrogatedb.dll')

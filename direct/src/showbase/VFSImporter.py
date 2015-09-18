@@ -136,7 +136,7 @@ class VFSLoader:
 
         code = self._read_code()
         if not code:
-            raise ImportError, 'No Python code in %s' % (fullname)
+            raise ImportError('No Python code in %s' % (fullname))
 
         mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
         mod.__file__ = self.filename.toOsSpecific()
@@ -230,6 +230,10 @@ class VFSLoader:
         #print >>sys.stderr, "importing frozen %s" % (fullname)
         module = imp.load_module(fullname, None, fullname,
                                  ('', '', imp.PY_FROZEN))
+
+        # Workaround for bug in Python 2.
+        if getattr(module, '__path__', None) == fullname:
+            module.__path__ = []
         return module
 
     def _read_code(self):
@@ -243,7 +247,7 @@ class VFSLoader:
             pycVfile = vfs.getFile(self.filename, False)
             if pycVfile:
                 return self._loadPyc(pycVfile, None)
-            raise IOError, 'Could not read %s' % (self.filename)
+            raise IOError('Could not read %s' % (self.filename))
 
         elif self.fileType == FTExtensionModule:
             return None
@@ -281,16 +285,21 @@ class VFSLoader:
 
         code = None
         data = vfile.readFile(True)
-        if data[:4] == imp.get_magic():
+        if data[:4] != imp.get_magic():
+            raise ValueError("Bad magic number in %s" % (vfile))
+
+        if sys.version_info >= (3, 0):
+            t = int.from_bytes(data[4:8], 'little')
+            data = data[12:]
+        else:
             t = ord(data[4]) + (ord(data[5]) << 8) + \
                (ord(data[6]) << 16) + (ord(data[7]) << 24)
-            if not timestamp or t == timestamp:
-                code = marshal.loads(data[8:])
-            else:
-                raise ValueError, 'Timestamp wrong on %s' % (vfile)
+            data = data[8:]
+
+        if not timestamp or t == timestamp:
+            return marshal.loads(data)
         else:
-            raise ValueError, 'Bad magic number in %s' % (vfile)
-        return code
+            raise ValueError("Timestamp wrong on %s" % (vfile))
 
 
     def _compile(self, filename, source):
@@ -310,15 +319,16 @@ class VFSLoader:
         except IOError:
             pass
         else:
-            f.write('\0\0\0\0')
-            f.write(chr(self.timestamp & 0xff) +
-                    chr((self.timestamp >> 8) & 0xff) +
-                    chr((self.timestamp >> 16) & 0xff) +
-                    chr((self.timestamp >> 24) & 0xff))
-            f.write(marshal.dumps(code))
-            f.flush()
-            f.seek(0, 0)
             f.write(imp.get_magic())
+            if sys.version_info >= (3, 0):
+                f.write((self.timestamp & 0xffffffff).to_bytes(4, 'little'))
+                f.write(b'\0\0\0\0')
+            else:
+                f.write(chr(self.timestamp & 0xff) +
+                        chr((self.timestamp >> 8) & 0xff) +
+                        chr((self.timestamp >> 16) & 0xff) +
+                        chr((self.timestamp >> 24) & 0xff))
+            f.write(marshal.dumps(code))
             f.close()
 
         return code
@@ -388,7 +398,7 @@ class VFSSharedImporter:
         """ Returns the directory name that the indicated
         conventionally-loaded module must have been loaded from. """
 
-        if not hasattr(mod, __file__) or mod.__file__ is None:
+        if not getattr(mod, '__file__', None):
             return None
 
         fullname = mod.__name__
@@ -433,6 +443,9 @@ class VFSSharedLoader:
         if self.reload:
             mod = sys.modules[fullname]
             path = mod.__path__ or []
+            if path == fullname:
+                # Work around Python bug setting __path__ of frozen modules.
+                path = []
             vfs_shared_path = getattr(mod, '_vfs_shared_path', [])
 
         for loader in self.loaders:
@@ -450,11 +463,12 @@ class VFSSharedLoader:
 
         if mod is None:
             # If all of them failed to load, raise ImportError.
-            raise ImportError, message
+            raise ImportError(message)
 
         # If at least one of them loaded successfully, return the
         # union of loaded modules.
         mod.__path__ = path
+        mod.__package__ = fullname
 
         # Also set this special symbol, which records that this is a
         # shared package, and also lists the paths we have already
@@ -515,7 +529,9 @@ def reloadSharedPackages():
 
     #print >> sys.stderr, "reloadSharedPackages, path = %s, sharedPackages = %s" % (sys.path, sharedPackages.keys())
 
-    for fullname in sharedPackages.keys():
+    # Sort the list, just to make sure parent packages are reloaded
+    # before child packages are.
+    for fullname in sorted(sharedPackages.keys()):
         mod = sys.modules.get(fullname, None)
         if not mod:
             continue

@@ -61,7 +61,7 @@ class panda3d(package):
            'panda3d.physics')
 
     # Include various standard Python encodings.  The rest is in morepy.
-    module('encodings', 'encodings.aliases', 'encodings.undefined,'
+    module('encodings', 'encodings.aliases', 'encodings.undefined',
            'encodings.utf_8', 'encodings.ascii', 'encodings.string_escape',
            'encodings.mbcs', 'encodings.latin_1', 'io')
 

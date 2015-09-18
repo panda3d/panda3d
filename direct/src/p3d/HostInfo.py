@@ -161,14 +161,14 @@ class HostInfo:
                 self.notify.info("Downloading contents file %s" % (request))
                 statusCode = None
                 statusString = ''
-                for attempt in range(ConfigVariableInt('contents-xml-dl-attempts', 3)):
+                for attempt in range(int(ConfigVariableInt('contents-xml-dl-attempts', 3))):
                     if attempt > 0:
                         self.notify.info("Retrying (%s)..."%(attempt,))
                     rf = Ramfile()
                     channel = http.makeChannel(False)
                     channel.getDocument(request)
                     if channel.downloadToRam(rf):
-                        self.notify.warning("Successfully downloaded %s" % (url,))
+                        self.notify.info("Successfully downloaded %s" % (url,))
                         break
                     else:
                         rf = None
@@ -369,7 +369,7 @@ class HostInfo:
             assert self.hostDir
             self.__findHostXmlForHostDir(xcontents)
 
-        if not self.hostDir:
+        if self.rootDir and not self.hostDir:
             self.hostDir = self.__determineHostDir(None, self.hostUrl)
 
         # Get the list of packages available for download and/or import.
@@ -403,7 +403,7 @@ class HostInfo:
         self.hasContentsFile = True
 
         # Now save the contents.xml file into the standard location.
-        if not self.appRunner or self.appRunner.verifyContents != self.appRunner.P3DVCNever:
+        if self.appRunner and self.appRunner.verifyContents != self.appRunner.P3DVCNever:
             assert self.hostDir
             filename = Filename(self.hostDir, 'contents.xml')
             filename.makeDir()
@@ -476,7 +476,7 @@ class HostInfo:
             self.descriptiveName = descriptiveName
 
         hostDirBasename = xhost.Attribute('host_dir')
-        if not self.hostDir:
+        if self.rootDir and not self.hostDir:
             self.hostDir = self.__determineHostDir(hostDirBasename, self.hostUrl)
 
         # Get the "download" URL, which is the source from which we
@@ -514,8 +514,9 @@ class HostInfo:
 
         if not platform:
             # Ensure that we're on the same page with non-specified
-            # platforms.  We always use None, not empty string.
-            platform = None
+            # platforms.  We have to use the empty string, not None,
+            # since Python 3 can't sort lists with both strings and None.
+            platform = ""
 
         platforms = self.packages.setdefault((name, version), {})
         package = platforms.get(platform, None)
@@ -581,14 +582,12 @@ class HostInfo:
 
         result = []
 
-        items = self.packages.items()
-        items.sort()
+        items = sorted(self.packages.items())
         for key, platforms in items:
             if self.perPlatform or includeAllPlatforms:
                 # If we maintain a different answer per platform,
                 # return all of them.
-                pitems = platforms.items()
-                pitems.sort()
+                pitems = sorted(platforms.items())
                 for pkey, package in pitems:
                     result.append(package)
             else:
@@ -701,7 +700,7 @@ class HostInfo:
 
             # If we successfully got a hostname, we don't really need the
             # full hash.  We'll keep half of it.
-            keepHash = keepHash / 2;
+            keepHash = keepHash // 2
 
         md = HashVal()
         md.hashString(hostUrl)

@@ -186,7 +186,7 @@ class Packager:
         def getKey(self):
             """ Returns a tuple used for sorting the PackageEntry
             objects uniquely per package. """
-            return (self.packageName, self.platform, self.version)
+            return (self.packageName, self.platform or "", self.version or "")
 
         def fromFile(self, packageName, platform, version, solo, perPlatform,
                      installDir, descFilename, importDescFilename):
@@ -300,8 +300,7 @@ class Packager:
                 xhost.InsertEndChild(xmirror)
 
             if packager:
-                altHosts = self.altHosts.items()
-                altHosts.sort()
+                altHosts = sorted(self.altHosts.items())
                 for keyword, alt in altHosts:
                     he = packager.hosts.get(alt, None)
                     if he:
@@ -393,8 +392,7 @@ class Packager:
                 raise PackagerError, message
 
             if self.ignoredDirFiles:
-                exts = list(self.ignoredDirFiles.keys())
-                exts.sort()
+                exts = sorted(self.ignoredDirFiles.keys())
                 total = sum([x for x in self.ignoredDirFiles.values()])
                 self.notify.warning("excluded %s files not marked for inclusion: %s" \
                                     % (total, ", ".join(["'" + ext + "'" for ext in exts])))
@@ -590,8 +588,7 @@ class Packager:
 
             # Add known module names.
             self.moduleNames = {}
-            modules = self.freezer.modules.items()
-            modules.sort()
+            modules = sorted(self.freezer.modules.items())
             for newName, mdef in modules:
                 if mdef.guess:
                     # Not really a module.
@@ -2766,11 +2763,15 @@ class Packager:
         # errors, and that the pdef file doesn't contain any really
         # crazy Python code, all this will do is fill in the
         # '__statements' list in the module scope.
+        fn = packageDef.toOsSpecific()
+        f = open(fn)
+        code = compile(f.read(), fn, 'exec')
+        f.close()
 
         # It appears that having a separate globals and locals
         # dictionary causes problems with resolving symbols within a
         # class scope.  So, we just use one dictionary, the globals.
-        execfile(packageDef.toOsSpecific(), globals)
+        exec(code, globals)
 
         packages = []
 
@@ -3351,42 +3352,27 @@ class Packager:
         producing their own custom panda3d for download.  Should be
         called before any other Python modules are named. """
 
-        # First, freeze just VFSImporter.py into its own
-        # _vfsimporter.pyd file.  This one is a special case, because
-        # we need this code in order to load python files from the
-        # Multifile, so this file can't itself be in the Multifile.
+        # This module and all its dependencies come frozen into p3dpython.
+        # We should mark them as having already been added so that we don't
+        # add them again to the Multifile.
+        self.do_module('direct.showbase.VFSImporter')
+        self.currentPackage.freezer.done(addStartupModules=True)
+        self.currentPackage.freezer.writeCode(None)
+        self.currentPackage.addExtensionModules()
+        self.currentPackage.freezer.reset()
 
-        # This requires a bit of care, because we only want to freeze
-        # VFSImporter.py, and not any other part of direct.  We do
-        # also want panda3d/__init__.py, though, since it would
-        # otherwise be part of the multifile.
-        self.do_excludeModule('direct')
-
-        # Import the actual VFSImporter module to get its filename on
-        # disk.
-        from direct.showbase import VFSImporter
-        filename = Filename.fromOsSpecific(VFSImporter.__file__)
-
-        self.do_module('VFSImporter', filename = filename)
-        self.do_freeze('_vfsimporter', compileToExe = False)
-
-        self.do_file('panda3d/_core.pyd');
-
-        # Now that we're done freezing, explicitly add 'direct' to
-        # counteract the previous explicit excludeModule().
-        self.do_module('direct')
+        self.do_file('panda3d/_core.pyd', newDir='panda3d')
 
         # This is the key Python module that is imported at runtime to
         # start an application running.
         self.do_module('direct.p3d.AppRunner')
 
         # This is the main program that drives the runtime Python.  It
-        # is responsible for loading _vfsimporter.pyd, and then
-        # importing direct.p3d.AppRunner, to start an application
-        # running.  The program comes in two parts: an executable, and
-        # an associated dynamic library.  Note that the .exe and .dll
-        # extensions are automatically replaced with the appropriate
-        # platform-specific extensions.
+        # is responsible for importing direct.p3d.AppRunner to start an
+        # application running.  The program comes in two parts: an
+        # executable, and an associated dynamic library.  Note that the
+        # .exe and .dll extensions are automatically replaced with the
+        # appropriate platform-specific extensions.
 
         if self.platform.startswith('osx'):
             # On Mac, we package up a P3DPython.app bundle.  This
@@ -3469,7 +3455,7 @@ class Packager:
                 freezer.addModule(moduleName, newName = newName)
             else:
                 freezer.modules[newName] = freezer.modules[moduleName]
-        freezer.done(compileToExe = compileToExe)
+        freezer.done(addStartupModules = compileToExe)
 
         dirname = ''
         basename = filename
@@ -3850,8 +3836,7 @@ class Packager:
                 xhost = he.makeXml(packager = self)
                 xcontents.InsertEndChild(xhost)
 
-        contents = self.contents.items()
-        contents.sort()
+        contents = sorted(self.contents.items())
         for key, pe in contents:
             xpackage = pe.makeXml()
             xcontents.InsertEndChild(xpackage)

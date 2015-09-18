@@ -164,10 +164,10 @@ def makePackedApp(args):
                 PandaSystem.getPackageHostUrl(),
                 os.path.split(sys.argv[0])[1],
                 '%s.%s' % (sys.version_info[0], sys.version_info[1]))
-            sys.exit(1)
+            sys.exit(0)
 
     if not appFilename:
-        raise ArgumentError, "No target app specified.  Use:\n%s -o app.p3d" % (os.path.split(sys.argv[0])[1])
+        raise ArgumentError, "No target app specified.  Use:\n  %s -o app.p3d\nUse -h to get more usage information." % (os.path.split(sys.argv[0])[1])
 
     if args:
         raise ArgumentError, "Extra arguments on command line."

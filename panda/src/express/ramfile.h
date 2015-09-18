@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "typedef.h"
 #include "referenceCount.h"
+#include "extension.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Ramfile
@@ -30,17 +31,23 @@ PUBLISHED:
 
   INLINE void seek(size_t pos);
   INLINE size_t tell() const;
-  string read(size_t length);
-  string readline();
+  EXTENSION(PyObject *read(size_t length));
+  EXTENSION(PyObject *readline());
   EXTENSION(PyObject *readlines());
 
-  INLINE const string &get_data() const;
+  EXTENSION(PyObject *get_data() const);
   INLINE size_t get_data_size() const;
   INLINE void clear();
 
 public:
+  string read(size_t length);
+  string readline();
+  INLINE const string &get_data() const;
+
   size_t _pos;
   string _data;
+
+  friend class Extension<Ramfile>;
 };
 
 #include "ramfile.I"

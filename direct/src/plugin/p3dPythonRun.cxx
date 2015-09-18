@@ -21,6 +21,9 @@
 
 #include "py_panda.h"
 
+// This has been compiled-in by the build system, if all is well.
+extern struct _frozen _PyImport_FrozenModules[];
+
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
 // instances of this thing.
@@ -85,17 +88,30 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   // Turn off the automatic load of site.py at startup.
   extern int Py_NoSiteFlag;
   Py_NoSiteFlag = 1;
+  Py_NoUserSiteDirectory = 1;
+
+  // Tell Python not to write bytecode files for loaded modules.
+  Py_DontWriteBytecodeFlag = 1;
+
+  // Prevent Python from complaining about finding the standard modules.
+  Py_FrozenFlag = 1;
+
+  // This contains the modules we need in order to call Py_Initialize,
+  // as well as the VFSImporter.
+  PyImport_FrozenModules = _PyImport_FrozenModules;
 
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
 #if PY_MAJOR_VERSION >= 3
   Py_SetProgramName((wchar_t *)_program_name.c_str());
+  Py_SetPythonHome((wchar_t *)L"");
 #else
   Py_SetProgramName((char *)_program_name.c_str());
+  Py_SetPythonHome((char *)"");
 #endif
   Py_Initialize();
   PyEval_InitThreads();
-  PySys_SetArgv(_py_argc, _py_argv);
+  PySys_SetArgvEx(_py_argc, _py_argv, 0);
 
   // Open the error output before we do too much more.
   if (log_pathname != NULL && *log_pathname != '\0') {
@@ -170,36 +186,42 @@ run_python() {
   // setting __path__ of frozen modules properly.
   PyObject *panda3d_module = PyImport_AddModule("panda3d");
   if (panda3d_module == NULL) {
-    nout << "Failed to create panda3d module:\n";
+    nout << "Failed to add panda3d module:\n";
     PyErr_Print();
     return 1;
   }
 
-  // Set the __path__ such that it can find panda3d/core.pyd, etc.
+  // Set the __path__ such that it can find panda3d/_core.pyd, etc.
   Filename panda3d_dir(dir, "panda3d");
   string dir_str = panda3d_dir.to_os_specific();
-  PyObject *panda3d_dict = PyModule_GetDict(panda3d_module);
-  PyObject *panda3d_path = Py_BuildValue("[s#]", dir_str.data(), dir_str.length());
-  PyDict_SetItemString(panda3d_dict, "__path__", panda3d_path);
-  Py_DECREF(panda3d_path);
+  PyModule_AddObject(panda3d_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+  PyModule_AddStringConstant(panda3d_module, "__package__", "panda3d");
 
-  // Now we can load _vfsimporter.pyd.  Since this is a magic frozen
-  // pyd, importing it automatically makes all of its frozen contents
-  // available to import as well.
-  PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
-  if (vfsimporter == NULL) {
-    nout << "Failed to import _vfsimporter:\n";
-    PyErr_Print();
-    return 1;
-  }
-  Py_DECREF(vfsimporter);
-
-  // And now we can import the VFSImporter module that was so defined.
-  PyObject *vfsimporter_module = PyImport_ImportModule("VFSImporter");
+  // Import the VFSImporter module that was frozen in.
+  PyObject *vfsimporter_module = PyImport_ImportModule("direct.showbase.VFSImporter");
   if (vfsimporter_module == NULL) {
     nout << "Failed to import VFSImporter:\n";
     PyErr_Print();
     return 1;
+  }
+
+  // Now repair the "direct" and "direct.showbase" trees, which were
+  // presumably frozen along with the VFSImporter, by setting their
+  // __path__ such that we can still find the other direct modules.
+  Filename direct_dir(dir, "direct");
+  PyObject *direct_module = PyImport_AddModule("direct");
+  if (direct_module != NULL) {
+    dir_str = direct_dir.to_os_specific();
+    PyModule_AddObject(direct_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(direct_module, "__package__", "direct");
+  }
+
+  PyObject *showbase_module = PyImport_AddModule("direct.showbase");
+  if (showbase_module != NULL) {
+    Filename showbase_dir(direct_dir, "showbase");
+    dir_str = showbase_dir.to_os_specific();
+    PyModule_AddObject(showbase_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(showbase_module, "__package__", "direct.showbase");
   }
 
   // And register the VFSImporter.

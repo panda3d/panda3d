@@ -1,5 +1,5 @@
-// Filename: ramfile_ext.h
-// Created by:  rdb (10Dec13)
+// Filename: virtualFile_ext.h
+// Created by:  rdb (15Sep15)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,33 +12,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef RAMFILE_EXT_H
-#define RAMFILE_EXT_H
+#ifndef VIRTUALFILE_EXT_H
+#define VIRTUALFILE_EXT_H
 
 #include "dtoolbase.h"
 
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "ramfile.h"
+#include "virtualFile.h"
 #include "py_panda.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Extension<Ramfile>
+//       Class : Extension<VirtualFile>
 // Description : This class defines the extension methods for
-//               Ramfile, which are called instead of
+//               VirtualFile, which are called instead of
 //               any C++ methods with the same prototype.
 ////////////////////////////////////////////////////////////////////
 template<>
-class Extension<Ramfile> : public ExtensionBase<Ramfile> {
+class Extension<VirtualFile> : public ExtensionBase<VirtualFile> {
 public:
-  PyObject *read(size_t length);
-  PyObject *readline();
-  PyObject *readlines();
-
-  PyObject *get_data() const;
+  PyObject *read_file(bool auto_unwrap) const;
+  PyObject *write_file(PyObject *data, bool auto_wrap);
 };
 
 #endif  // HAVE_PYTHON
 
-#endif  // RAMFILE_EXT_H
+#endif  // VIRTUALFILE_EXT_H
+

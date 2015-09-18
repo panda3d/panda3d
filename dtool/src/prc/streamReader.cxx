@@ -116,25 +116,6 @@ skip_bytes(size_t size) {
 //     Function: StreamReader::extract_bytes
 //       Access: Published
 //  Description: Extracts the indicated number of bytes in the
-//               stream and returns them as a string.  Returns empty
-//               string at end-of-file.
-////////////////////////////////////////////////////////////////////
-string StreamReader::
-extract_bytes(size_t size) {
-  if (_in->eof() || _in->fail()) {
-    return string();
-  }
-
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
-  size_t read_bytes = _in->gcount();
-  return string(buffer, read_bytes);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::extract_bytes
-//       Access: Published
-//  Description: Extracts the indicated number of bytes in the
 //               stream into the given character buffer.  Assumes
 //               that the buffer is big enough to hold the requested
 //               number of bytes.  Returns the number of bytes
@@ -151,8 +132,27 @@ extract_bytes(unsigned char *into, size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StreamReader::extract_bytes
+//       Access: Public
+//  Description: Extracts the indicated number of bytes in the
+//               stream and returns them as a string.  Returns empty
+//               string at end-of-file.
+////////////////////////////////////////////////////////////////////
+string StreamReader::
+extract_bytes(size_t size) {
+  if (_in->eof() || _in->fail()) {
+    return string();
+  }
+
+  char *buffer = (char *)alloca(size);
+  _in->read(buffer, size);
+  size_t read_bytes = _in->gcount();
+  return string(buffer, read_bytes);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::readline
-//       Access: Published
+//       Access: Public
 //  Description: Assumes the stream represents a text file, and
 //               extracts one line up to and including the trailing
 //               newline character.  Returns empty string when the end
@@ -177,4 +177,3 @@ readline() {
 
   return line;
 }
-
