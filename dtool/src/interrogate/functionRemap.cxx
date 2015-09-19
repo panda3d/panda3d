@@ -146,20 +146,17 @@ call_function(ostream &out, int indent_level, bool convert_result,
 
   } else if (_type == T_typecast_method) {
     // A typecast method can be invoked implicitly.
-    string cast_expr =
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) + ")";
+    ostringstream cast_expr;
+    cast_expr << "("
+      << _return_type->get_orig_type()->get_local_name(&parser) << ")";
 
-    if (TypeManager::is_handle(_cpptype)) {
-      cast_expr += "(" + container + ")";
-    } else {
-      cast_expr += "(*" + container + ")";
-    }
+    _parameters[0]._remap->pass_parameter(cast_expr, container);
 
     if (!convert_result) {
-      return_expr = cast_expr;
+      return_expr = cast_expr.str();
     } else {
       string new_str =
-        _return_type->prepare_return_expr(out, indent_level, cast_expr);
+        _return_type->prepare_return_expr(out, indent_level, cast_expr.str());
       return_expr = _return_type->get_return_expr(new_str);
     }
 
