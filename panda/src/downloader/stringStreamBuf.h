@@ -16,7 +16,7 @@
 #define STRINGSTREAMBUF_H
 
 #include "pandabase.h"
-#include "pvector.h"
+#include "vector_uchar.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StringStreamBuf
@@ -32,8 +32,8 @@ public:
 
   void clear();
 
-  INLINE void swap_data(pvector<unsigned char> &data);
-  INLINE const pvector<unsigned char> &get_data() const;
+  INLINE void swap_data(vector_uchar &data);
+  INLINE const vector_uchar &get_data() const;
 
   size_t read_chars(char *start, size_t length);
   void write_chars(const char *start, size_t length);
@@ -47,7 +47,7 @@ protected:
   virtual int underflow();
 
 private:
-  pvector<unsigned char> _data;
+  vector_uchar _data;
   char *_buffer;
   size_t _ppos;
   size_t _gpos;

@@ -34,7 +34,7 @@ __init__(PyObject *source) {
 PyObject *Extension<StringStream>::
 get_data() {
   _this->flush();
-  const pvector<unsigned char> &data = _this->_buf.get_data();
+  const vector_uchar &data = _this->_buf.get_data();
   if (!data.empty()) {
 #if PY_MAJOR_VERSION >= 3
     return PyBytes_FromStringAndSize((char *)&data[0], data.size());

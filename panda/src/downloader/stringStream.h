@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "stringStreamBuf.h"
+#include "vector_uchar.h"
 #include "extension.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +50,7 @@ public:
   void set_data(const unsigned char *data, size_t size);
 #endif
 
-  INLINE void swap_data(pvector<unsigned char> &data);
+  INLINE void swap_data(vector_uchar &data);
 
 private:
   StringStreamBuf _buf;

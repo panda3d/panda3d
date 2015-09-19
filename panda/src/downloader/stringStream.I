@@ -63,7 +63,7 @@ get_data_size() {
 INLINE string StringStream::
 get_data() {
   flush();
-  const pvector<unsigned char> &data = _buf.get_data();
+  const vector_uchar &data = _buf.get_data();
   if (!data.empty()) {
     return string((char *)&data[0], data.size());
   }
@@ -91,7 +91,7 @@ set_data(const string &data) {
 //               internal buffer.
 ////////////////////////////////////////////////////////////////////
 INLINE void StringStream::
-swap_data(pvector<unsigned char> &data) {
+swap_data(vector_uchar &data) {
   flush();
   _buf.swap_data(data);
 }

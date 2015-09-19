@@ -21,8 +21,10 @@
 
 #include "py_panda.h"
 
-// This has been compiled-in by the build system, if all is well.
-extern struct _frozen _PyImport_FrozenModules[];
+extern "C" {
+  // This has been compiled-in by the build system, if all is well.
+  extern struct _frozen _PyImport_FrozenModules[];
+};
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple

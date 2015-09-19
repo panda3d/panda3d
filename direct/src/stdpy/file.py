@@ -14,6 +14,7 @@ import panda3d._core as core
 import sys
 import os
 import io
+import encodings
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
 

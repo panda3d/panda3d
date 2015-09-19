@@ -23,7 +23,7 @@
 void StringStream::
 set_data(const unsigned char *data, size_t size) {
   _buf.clear();
-  pvector<unsigned char> pv;
+  vector_uchar pv;
   pv.insert(pv.end(), data, data + size);
   _buf.swap_data(pv);
 }
