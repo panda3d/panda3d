@@ -395,7 +395,7 @@ add_fixed_string(const string &str, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Published
+//       Access: Public
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -406,7 +406,7 @@ append_data(const void *data, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Published
+//       Access: Public
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////

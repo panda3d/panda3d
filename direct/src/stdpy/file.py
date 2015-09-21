@@ -61,20 +61,22 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
             # We can also "open" a VirtualFile object for reading.
             vfile = file
             filename = vfile.getFilename()
+        elif isinstance(file, unicode):
+            # If a raw string is given, assume it's an os-specific
+            # filename.
+            filename = core.Filename.fromOsSpecificW(file)
+        elif isinstance(file, str):
+            filename = core.Filename.fromOsSpecific(file)
+        else:
+            # If a Filename is given, make a writable copy anyway.
+            filename = core.Filename(file)
+
+        if binary or sys.version_info >= (3, 0):
             filename.setBinary()
         else:
-            # Otherwise, we must have been given a filename.  Open it.
-            if isinstance(file, unicode):
-                # If a raw string is given, assume it's an os-specific
-                # filename.
-                filename = core.Filename.fromOsSpecificW(file)
-            elif isinstance(file, str):
-                filename = core.Filename.fromOsSpecific(file)
-            else:
-                # If a Filename is given, make a writable copy anyway.
-                filename = core.Filename(file)
+            filename.setText()
 
-            filename.setBinary()
+        if not vfile:
             vfile = _vfs.getFile(filename)
 
         if not vfile:
@@ -108,7 +110,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
             if updating:
                 stream = vfile.openReadWriteFile(True)
             else:
-                stream = vfile.openWriteFile(False)
+                stream = vfile.openWriteFile(False, True)
 
             if not stream:
                 raise IOError("Could not open %s for writing" % (filename))
@@ -131,6 +133,10 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
 
     # If a binary stream was requested, return the stream we've created.
     if binary:
+        return raw
+
+    # If we're in Python 2, we don't decode unicode strings by default.
+    if not encoding and sys.version_info < (3, 0):
         return raw
 
     line_buffering = False
@@ -165,7 +171,7 @@ class StreamIOWrapper(io.IOBase):
         self.__lastWrite = False
 
         if isinstance(stream, core.Istream):
-            self.__reader = core.StreamReader(self.__stream, False)
+            self.__reader = core.StreamReader(stream, False)
 
         if isinstance(stream, core.Ostream):
             self.__writer = core.StreamWriter(stream, False)
@@ -225,6 +231,8 @@ class StreamIOWrapper(io.IOBase):
             while not self.__stream.eof():
                 result += self.__reader.extractBytes(512)
         return result
+
+    read1 = read
 
     def readline(self, size=-1):
         if not self.__reader:
