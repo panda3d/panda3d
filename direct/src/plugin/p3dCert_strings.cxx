@@ -82,7 +82,7 @@ no_cert_title[LI_COUNT] = {
   "Keine Signatur!",
   "Sin firma!",
   "Nessuna firma!",
-  "Ne subskribo!",
+  "Neniu subskribo!",
   "\320\235\320\265\321\202 \320\277\320\276\320\264\320\277\320\270\321\201"
   "\320\270!",
 };
@@ -157,7 +157,7 @@ self_signed_cert_text[LI_COUNT] = {
 
   // epo
   "\304\210i tiu aplika\304\265o de Panda3D uzas memsubskribitan ateston.  "
-  "Tio signifas  ke la nomo de la verkanto ne povas esti kontrolita, kaj vi "
+  "Tio signifas ke la nomo de la verkanto ne povas esti kontrolita, kaj vi "
   "ne havas certan scimanieron pri la vera verkanto de la aplika\304\265o.\n"
   "\n"
   "Ni rekomendas ke vi premas la butonon 'Nuligi' por eviti lan\304\211on de "

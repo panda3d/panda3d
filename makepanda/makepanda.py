@@ -5097,7 +5097,7 @@ if (RTDIST or RUNTIME):
           OPTS += ['OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
     elif (PkgSkip("WX")==0):
-      OPTS.append("WX")
+      OPTS += ["WX", "RTTI"]
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert_wx.cxx')
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
