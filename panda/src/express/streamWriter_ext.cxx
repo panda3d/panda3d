@@ -24,11 +24,10 @@
 ////////////////////////////////////////////////////////////////////
 void Extension<StreamWriter>::
 append_data(PyObject *data) {
-  cerr << "getting here: " << data << "\n";
   Py_buffer view;
   if (PyObject_GetBuffer(data, &view, PyBUF_CONTIG_RO) == -1) {
-    //PyErr_SetString(PyExc_TypeError,
-    //                "append_data() requires a contiguous buffer");
+    PyErr_SetString(PyExc_TypeError,
+                    "append_data() requires a contiguous buffer");
     return;
   }
 

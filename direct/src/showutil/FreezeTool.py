@@ -1386,6 +1386,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
     def find_module(self, name, path, *args, **kwargs):
+        if imp.is_frozen(name):
+            # Don't pick up modules that are frozen into p3dpython.
+            raise ImportError("'%s' is a frozen module" % (name))
+
         try:
             return modulefinder.ModuleFinder.find_module(self, name, path, *args, **kwargs)
         except ImportError:

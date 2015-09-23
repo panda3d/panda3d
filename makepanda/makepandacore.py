@@ -2302,7 +2302,9 @@ def SetupBuildEnvironment(compiler):
     print("Target arch: %s" % GetTargetArch())
 
     # Set to English so we can safely parse the result of gcc commands.
-    os.environ["LC_ALL"] = "C"
+    # Setting it to UTF-8 is necessary for Python 3 modules to import
+    # correctly.
+    os.environ["LC_ALL"] = "en_US.UTF-8"
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
@@ -2842,11 +2844,11 @@ class Target:
 TARGET_LIST = []
 TARGET_TABLE = {}
 
-def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
+def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None):
     if (dummy != 0):
         exit("Syntax error in TargetAdd "+target)
-    if (ipath == 0): ipath = opts
-    if (ipath == 0): ipath = []
+    if ipath is None: ipath = opts
+    if not ipath: ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
 
@@ -2867,30 +2869,34 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     else:
         t = TARGET_TABLE[full]
 
-    if opts != 0:
-        for x in opts:
-            if (t.opts.count(x)==0):
-                t.opts.append(x)
+    for x in opts:
+        if x not in t.opts:
+            t.opts.append(x)
 
     ipath = [OUTPUTDIR + "/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
-    if input != 0:
-        for x in input:
-            fullinput = FindLocation(x, ipath)
-            t.inputs.append(fullinput)
-            # Don't re-link a library or binary if just its dependency dlls have been altered.
-            # This should work out fine in most cases, and often reduces recompilation time.
-            if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
-                t.deps[fullinput] = 1
-                (base,suffix) = os.path.splitext(x)
-                if (SUFFIX_INC.count(suffix)):
-                    for d in CxxCalcDependencies(fullinput, ipath, []):
-                        t.deps[d] = 1
-    if dep != 0:
-        for x in dep:
-            fulldep = FindLocation(x, ipath)
-            t.deps[fulldep] = 1
+    for x in input:
+        fullinput = FindLocation(x, ipath)
+        t.inputs.append(fullinput)
+        # Don't re-link a library or binary if just its dependency dlls have been altered.
+        # This should work out fine in most cases, and often reduces recompilation time.
+        if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
+            t.deps[fullinput] = 1
+            (base,suffix) = os.path.splitext(x)
+            if (SUFFIX_INC.count(suffix)):
+                for d in CxxCalcDependencies(fullinput, ipath, []):
+                    t.deps[d] = 1
 
-    if winrc != 0 and GetTarget() == 'windows':
+        if x.endswith(".in"):
+            # Mark the _igate.cxx file as a dependency also.
+            outbase = os.path.basename(x)[:-3]
+            woutc = GetOutputDir()+"/tmp/"+outbase+"_igate.cxx"
+            t.deps[woutc] = 1
+
+    for x in dep:
+        fulldep = FindLocation(x, ipath)
+        t.deps[fulldep] = 1
+
+    if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
     if target.endswith(".in"):

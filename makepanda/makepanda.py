@@ -5049,7 +5049,11 @@ if (RTDIST or RUNTIME):
     TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
-    TargetAdd('p3dpython_frozen.obj', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP'], input='VFSImporter.py')
+    # Freeze VFSImporter and its dependency modules into p3dpython.
+    # Mark panda3d.core as a dependency to make sure to build that first.
+    TargetAdd('p3dpython_frozen.obj', input='VFSImporter.py', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP'])
+    TargetAdd('p3dpython_frozen.obj', dep='panda3d/core.py')
+
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
     TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
