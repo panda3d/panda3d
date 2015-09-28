@@ -112,6 +112,7 @@ inline PyObject* doPy_RETURN_FALSE()
 
 #define PyLongOrInt_Check(x) PyLong_Check(x)
 #define PyLongOrInt_FromSize_t PyLong_FromSize_t
+#define PyLongOrInt_FromSsize_t PyLong_FromSsize_t
 #define PyLongOrInt_FromLong PyLong_FromLong
 #define PyLongOrInt_FromUnsignedLong PyLong_FromUnsignedLong
 #define PyLongOrInt_AS_LONG PyLong_AS_LONG
@@ -122,6 +123,7 @@ inline PyObject* doPy_RETURN_FALSE()
 #define PyLongOrInt_Check(x) (PyInt_Check(x) || PyLong_Check(x))
 // PyInt_FromSize_t automatically picks the right type.
 #define PyLongOrInt_FromSize_t PyInt_FromSize_t
+#define PyLongOrInt_FromSsize_t PyInt_FromSsize_t
 #define PyLongOrInt_FromLong PyInt_FromLong
 #define PyLongOrInt_AS_LONG PyInt_AsLong
 

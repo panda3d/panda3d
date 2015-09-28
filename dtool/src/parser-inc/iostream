@@ -47,8 +47,16 @@ __published:
 class ios : public ios_base {
 __published:
   typedef long fmtflags;
+#ifdef _WIN64
+  typedef unsigned __int64 streampos;
+  typedef __int64 streamoff;
+#elif defined(_WIN32)
   typedef unsigned long streampos;
   typedef long streamoff;
+#else
+  typedef unsigned long long streampos;
+  typedef long long streamoff;
+#endif
 
   bool good() const;
   bool eof() const;
