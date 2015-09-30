@@ -523,7 +523,8 @@ class PackageInfo:
 
         # In case of unexpected failures on the internet, we will retry
         # the full download instead of just giving up.
-        for retry in range(core.ConfigVariableInt('package-full-dl-retries', 1)):
+        retries = core.ConfigVariableInt('package-full-dl-retries', 1).getValue()
+        for retry in range(retries):
             self.installPlans.append(planB[:])
 
         pc.stop()

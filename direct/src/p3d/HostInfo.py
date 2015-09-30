@@ -513,18 +513,15 @@ class HostInfo:
         PackageInfo, returns it. """
 
         if not platform:
-            # Ensure that we're on the same page with non-specified
-            # platforms.  We have to use the empty string, not None,
-            # since Python 3 can't sort lists with both strings and None.
-            platform = ""
+            platform = None
 
-        platforms = self.packages.setdefault((name, version), {})
-        package = platforms.get(platform, None)
+        platforms = self.packages.setdefault((name, version or ""), {})
+        package = platforms.get("", None)
         if not package:
             package = PackageInfo(self, name, version, platform = platform,
                                   solo = solo, asMirror = self.asMirror,
                                   perPlatform = perPlatform)
-            platforms[platform] = package
+            platforms[platform or ""] = package
 
         return package
 
@@ -534,12 +531,12 @@ class HostInfo:
         platform, if one is provided by this host, or None if not. """
 
         assert self.hasContentsFile
-        platforms = self.packages.get((name, version or None), {})
+        platforms = self.packages.get((name, version or ""), {})
 
-        if platform is not None:
+        if platform:
             # In this case, we are looking for a specific platform
             # only.
-            return platforms.get(platform or None, None)
+            return platforms.get(platform, None)
 
         # We are looking for one matching the current runtime
         # platform.  First, look for a package matching the current
@@ -548,7 +545,7 @@ class HostInfo:
 
         # If not found, look for one matching no particular platform.
         if not package:
-            package = platforms.get(None, None)
+            package = platforms.get("", None)
 
         return package
 
@@ -564,7 +561,7 @@ class HostInfo:
             if name and pn != name:
                 continue
 
-            if platform is None:
+            if not platform:
                 for p2 in platforms:
                     package = self.getPackage(pn, version, platform = p2)
                     if package:
@@ -596,7 +593,7 @@ class HostInfo:
                 # current platform, or no particular platform.
                 package = platforms.get(PandaSystem.getPlatform(), None)
                 if not package:
-                    package = platforms.get(None, None)
+                    package = platforms.get("", None)
 
                 if package:
                     result.append(package)

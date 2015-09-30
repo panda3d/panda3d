@@ -15,6 +15,7 @@ import sys
 import os
 import io
 import encodings
+from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
 
@@ -330,20 +331,6 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
 
     if not topdown:
         yield (top, dirnames, filenames)
-
-def join(path, *args):
-    for part in args:
-        if part == '':
-            continue
-
-        if part.startswith('/'):
-            path = part
-        elif path.endswith('/'):
-            path = path + part
-        else:
-            path = '/'.join((path, part))
-
-    return path
 
 def isfile(path):
     return _vfs.isRegularFile(core.Filename.fromOsSpecific(path))
