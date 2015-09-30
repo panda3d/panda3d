@@ -19,24 +19,29 @@
 
 #ifndef STDTYPEDEFS_H
 #define STDTYPEDEFS_H
-#ifndef __APPLE__
-typedef unsigned long size_t;
-typedef long ssize_t;
 typedef int off_t;
-typedef unsigned int time_t;
-typedef int clock_t;
+typedef long time_t;
+typedef long clock_t;
 
 struct FILE;
 
 namespace std {
 }
-#endif
-typedef int ptrdiff_t;
 
 typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
+
+#ifdef _WIN64
+typedef unsigned long long size_t;
+typedef long long ssize_t;
+typedef long long ptrdiff_t;
+#else
+typedef unsigned long size_t;
+typedef long ssize_t;
+typedef long ptrdiff_t;
+#endif
 
 #ifdef __cplusplus
 #define NULL 0L

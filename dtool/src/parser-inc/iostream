@@ -20,6 +20,19 @@
 #ifndef IOSTREAM_H
 #define IOSTREAM_H
 
+#include <stdtypedefs.h>
+
+#ifdef _WIN64
+typedef long long streamoff;
+typedef long long streamsize;
+#elif defined(_WIN32)
+typedef long streamoff;
+typedef int streamsize;
+#else
+typedef long long streamoff;
+typedef ptrdiff_t streamsize;
+#endif
+
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
 // available.
@@ -50,14 +63,6 @@ protected:
 class ios : public ios_base {
 __published:
   typedef long fmtflags;
-#if defined(_WIN64) || !defined(_WIN32)
-  typedef unsigned long long streampos;
-  typedef long long streamoff;
-#else
-  // 32-bit Windows uses 32-bit stream offsets.
-  typedef unsigned long streampos;
-  typedef long streamoff;
-#endif
 
   bool good() const;
   bool eof() const;
@@ -113,7 +118,5 @@ class streambuf {};
 extern istream cin;
 extern ostream cout;
 extern ostream cerr;
-
-typedef long streamoff;
 
 #endif

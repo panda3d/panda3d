@@ -48,7 +48,6 @@ using namespace std;
 // this maps to public.
 #define PUBLISHED __published
 
-typedef int streamsize;
 typedef int ios_openmode;
 typedef int ios_fmtflags;
 typedef int ios_iostate;
@@ -100,7 +99,7 @@ typedef basic_string<wchar_t> wstring;
 
 #ifndef HAVE_STREAMSIZE
 // Some C++ libraries (Irix) don't define this.
-typedef int streamsize;
+typedef long streamsize;
 #endif
 
 #ifndef HAVE_IOS_TYPEDEFS
