@@ -1176,6 +1176,9 @@ is_size(CPPType *type) {
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is the "ssize_t"
 //               type, or a const ssize_t, or a typedef to either.
+//               ptrdiff_t and streamsize are also accepted, since
+//               they are usually also defined as the signed
+//               counterpart to size_t.
 ////////////////////////////////////////////////////////////////////
 bool TypeManager::
 is_ssize(CPPType *type) {
@@ -1185,11 +1188,45 @@ is_ssize(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     if (type->get_simple_name() == "Py_ssize_t" ||
-        type->get_simple_name() == "ssize_t") {
+        type->get_simple_name() == "ssize_t" ||
+        type->get_simple_name() == "ptrdiff_t" ||
+        type->get_simple_name() == "streamsize") {
       return is_integer(type->as_typedef_type()->_type);
     } else {
       return is_ssize(type->as_typedef_type()->_type);
     }
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_long
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is the "long"
+//               type, whether signed or unsigned.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_long(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_long(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return (simple_type->_type == CPPSimpleType::T_int &&
+                (simple_type->_flags & CPPSimpleType::F_long) != 0);
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_long(type->as_typedef_type()->_type);
 
   default:
     break;

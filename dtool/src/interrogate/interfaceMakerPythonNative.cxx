@@ -5033,17 +5033,32 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // Windows, where longs are the same size as ints.
       // BUG: does not catch negative values on Windows when going through
       // the PyArg_ParseTuple case.
-      extra_convert
-        << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
-        << "if (" << param_name << " > UINT_MAX) {\n";
+      if (!TypeManager::is_long(type)) {
+        extra_convert
+          << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
+          << "if (" << param_name << " > UINT_MAX) {\n";
 
-      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
-                         "value %lu out of range for unsigned integer",
-                         param_name);
-      extra_convert
-        << "}\n"
-        << "#endif\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %lu out of range for unsigned integer",
+                           param_name);
 
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+      }
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_long(type)) {
+      // Signed longs are equivalent to Python's int type.
+      if (args_type == AT_single_arg) {
+        pexpr_string = "PyLongOrInt_AS_LONG(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
+      } else {
+        indent(out, indent_level) << "long " << param_name << default_expr << ";\n";
+        format_specifiers += "l";
+        parameter_list += ", &" + param_name;
+      }
       expected_params += "int";
       only_pyobjects = false;
 
@@ -5062,6 +5077,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed integer",
                            "arg_val");
+
         extra_convert
           << "}\n"
           << "#endif\n";
@@ -6177,6 +6193,10 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
     indent(out, indent_level)
       << "return PyBool_FromLong(" << return_expr << ");\n";
 
+  } else if (TypeManager::is_ssize(type)) {
+    indent(out, indent_level)
+      << "return PyLongOrInt_FromSsize_t(" << return_expr << ");\n";
+
   } else if (TypeManager::is_size(type)) {
     indent(out, indent_level)
       << "return PyLongOrInt_FromSize_t(" << return_expr << ");\n";
@@ -6203,22 +6223,12 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_unsigned_integer(type)){
-    out << "#if PY_MAJOR_VERSION >= 3\n";
-    indent(out, indent_level)
-      << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#else\n";
     indent(out, indent_level)
       << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#endif\n";
 
   } else if (TypeManager::is_integer(type)) {
-    out << "#if PY_MAJOR_VERSION >= 3\n";
     indent(out, indent_level)
-      << "return PyLong_FromLong(" << return_expr << ");\n";
-    out << "#else\n";
-    indent(out, indent_level)
-      << "return PyInt_FromLong(" << return_expr << ");\n";
-    out << "#endif\n";
+      << "return PyLongOrInt_FromLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_float(type)) {
     indent(out, indent_level)

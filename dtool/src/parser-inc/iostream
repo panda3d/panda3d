@@ -50,8 +50,14 @@ protected:
 class ios : public ios_base {
 __published:
   typedef long fmtflags;
+#if defined(_WIN64) || !defined(_WIN32)
+  typedef unsigned long long streampos;
+  typedef long long streamoff;
+#else
+  // 32-bit Windows uses 32-bit stream offsets.
   typedef unsigned long streampos;
   typedef long streamoff;
+#endif
 
   bool good() const;
   bool eof() const;
