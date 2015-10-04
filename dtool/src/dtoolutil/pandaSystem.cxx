@@ -270,6 +270,11 @@ get_compiler() {
 
   return strm.str();
 
+#elif defined(__clang__)
+  // Clang has this macro.  This case has to go before __GNUC__
+  // because that is also defined by clang.
+  return "Clang " __clang_version__;
+
 #elif defined(__GNUC__)
   // GCC defines this simple macro.
   return "GCC " __VERSION__;

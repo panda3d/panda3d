@@ -1473,7 +1473,7 @@ handle_include_directive(const string &args, int first_line,
 
       // Don't include it if we included it before and it had #pragma once.
       ParsedFiles::const_iterator it = _parsed_files.find(file);
-      if (it->_pragma_once) {
+      if (it != _parsed_files.end() && it->_pragma_once) {
         return;
       }
 
