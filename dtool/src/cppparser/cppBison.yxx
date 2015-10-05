@@ -1234,6 +1234,11 @@ instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_const);
 }
+        | KW_VOLATILE instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
+}
         | '*' instance_identifier  %prec UNARY
 {
   $$ = $2;
@@ -1436,6 +1441,11 @@ not_paren_formal_parameter_identifier:
   $$ = $2;
   $$->add_modifier(IIT_const);
 }
+        | KW_VOLATILE not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
+}
         | '*' not_paren_formal_parameter_identifier  %prec UNARY
 {
   $$ = $2;
@@ -1480,6 +1490,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' formal_parameter_identifier  %prec UNARY
 {
@@ -1528,6 +1543,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' empty_instance_identifier  %prec UNARY
 {

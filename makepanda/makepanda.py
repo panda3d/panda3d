@@ -1354,7 +1354,7 @@ def CompileIgate(woutd,wsrc,opts):
         # Assume that interrogate is on the PATH somewhere.
         cmd = 'interrogate'
 
-    cmd += ' -srcdir %s -I%s -Dvolatile -Dmutable' % (srcdir, srcdir)
+    cmd += ' -srcdir %s -I%s' % (srcdir, srcdir)
     cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L'
     if (COMPILER=="MSVC"):
         cmd += ' -D__inline -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
