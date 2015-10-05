@@ -35,6 +35,10 @@ PUBLISHED:
   EXTENSION(StringStream(PyObject *source));
   INLINE StringStream();
 
+#if _MSC_VER >= 1800
+  INLINE StringStream(const StringStream &copy) = delete;
+#endif
+
   INLINE void clear_data();
   INLINE size_t get_data_size();
 

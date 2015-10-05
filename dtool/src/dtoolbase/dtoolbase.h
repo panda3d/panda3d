@@ -55,6 +55,8 @@
 #pragma warning (disable : 4355)
 /* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
 #pragma warning (disable : 4244)
+/* C4577: 'noexcept' used with no exception handling mode specified */
+#pragma warning (disable : 4577)
 
 #if _MSC_VER >= 1300
  #if _MSC_VER >= 1310

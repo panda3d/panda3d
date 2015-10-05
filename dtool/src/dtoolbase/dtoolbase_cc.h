@@ -166,6 +166,14 @@ typedef ios::seekdir ios_seekdir;
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
+#elif defined(_MSC_VER) && _MSC_VER >= 1900
+// MSVC 2015 supports all of this goodness.
+#  define CONSTEXPR constexpr
+#  define NOEXCEPT noexcept
+#  define USE_MOVE_SEMANTICS
+#  define FINAL final
+#  define OVERRIDE override
+#  define MOVE(x) move(x)
 #elif defined(_MSC_VER) && _MSC_VER >= 1600
 // MSVC 2010 has move semantics.  Not much else.
 #  define CONSTEXPR INLINE
