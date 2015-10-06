@@ -64,5 +64,5 @@ look_up(TypeHandle handle, TypedObject *object) const {
     return look_up_invalid(handle, object);
   }
 #endif
-  return _handle_registry[handle._index];
+  return _handle_registry[(size_t)handle._index];
 }

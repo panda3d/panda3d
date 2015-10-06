@@ -319,7 +319,7 @@ relative_angle_rad(const FLOATNAME(LVector3) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_deg(const FLOATNAME(LVector3) &other) const {
-  return relative_angle_rad(other)*180/3.1415926535;
+  return relative_angle_rad(other) * FLOATCONST(180.0) / FLOATCONST(3.1415926535);
 }
 #endif  // FLOATTYPE_IS_INT
 

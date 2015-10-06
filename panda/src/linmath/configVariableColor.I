@@ -126,19 +126,23 @@ get_value() const {
 
     switch (get_num_words()) {
     case 1:
-      _cache.set(get_double_word(0), get_double_word(0), get_double_word(0), 1);
+      _cache.set((PN_stdfloat)get_double_word(0), (PN_stdfloat)get_double_word(0),
+                 (PN_stdfloat)get_double_word(0), 1);
       break;
 
     case 2:
-      _cache.set(get_double_word(0), get_double_word(0), get_double_word(0), get_double_word(1));
+      _cache.set((PN_stdfloat)get_double_word(0), (PN_stdfloat)get_double_word(0),
+                 (PN_stdfloat)get_double_word(0), (PN_stdfloat)get_double_word(1));
       break;
 
     case 3:
-      _cache.set(get_double_word(0), get_double_word(1), get_double_word(2), 1);
+      _cache.set((PN_stdfloat)get_double_word(0), (PN_stdfloat)get_double_word(1),
+                 (PN_stdfloat)get_double_word(2), 1);
       break;
 
     case 4:
-      _cache.set(get_double_word(0), get_double_word(1), get_double_word(2), get_double_word(3));
+      _cache.set((PN_stdfloat)get_double_word(0), (PN_stdfloat)get_double_word(1),
+                 (PN_stdfloat)get_double_word(2), (PN_stdfloat)get_double_word(3));
       break;
 
     default:
@@ -161,17 +165,17 @@ get_default_value() const {
   if (decl != (ConfigDeclaration *)NULL) {
     switch (decl->get_num_words()) {
     case 1:
-      return LColor(decl->get_double_word(0), decl->get_double_word(0),
-                    decl->get_double_word(0), 1);
+      return LColor((PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(0),
+                    (PN_stdfloat)decl->get_double_word(0), 1);
     case 2:
-      return LColor(decl->get_double_word(0), decl->get_double_word(0),
-                    decl->get_double_word(0), decl->get_double_word(1));
+      return LColor((PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(0),
+                    (PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(1));
     case 3:
-      return LColor(decl->get_double_word(0), decl->get_double_word(1),
-                    decl->get_double_word(2), 1);
+      return LColor((PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(1),
+                    (PN_stdfloat)decl->get_double_word(2), 1);
     case 4:
-      return LColor(decl->get_double_word(0), decl->get_double_word(1),
-                    decl->get_double_word(2), decl->get_double_word(3));
+      return LColor((PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(1),
+                    (PN_stdfloat)decl->get_double_word(2), (PN_stdfloat)decl->get_double_word(3));
     default:
       prc_cat->warning()
         << "Invalid default color value for ConfigVariable "

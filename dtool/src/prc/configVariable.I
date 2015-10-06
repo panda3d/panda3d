@@ -311,7 +311,7 @@ set_int_word(int n, int value) {
 INLINE void ConfigVariable::
 set_int64_word(int n, PN_int64 value) {
   nassertv(is_constructed());
-  _core->make_local_value()->set_int_word(n, value);
+  _core->make_local_value()->set_int64_word(n, value);
 }
 
 ////////////////////////////////////////////////////////////////////
