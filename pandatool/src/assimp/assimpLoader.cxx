@@ -418,7 +418,7 @@ load_material(size_t index) {
 //  Description: Creates a CharacterJoint from an aiNode
 ////////////////////////////////////////////////////////////////////
 void AssimpLoader::
-create_joint(PT(Character) character, PT(CharacterJointBundle) bundle, PartGroup *parent, const aiNode &node)
+create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node)
 {
   const aiMatrix4x4 &t = node.mTransformation;
   LMatrix4 mat(t.a1, t.b1, t.c1, t.d1,

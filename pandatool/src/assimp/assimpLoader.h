@@ -33,8 +33,8 @@ struct char_cmp {
     return strcmp(a,b) < 0;
   }
 };
-typedef phash_map<const char *, const aiNode *, char_cmp> BoneMap;
-typedef phash_map<const char *, PT(Character), char_cmp> CharacterMap;
+typedef pmap<const char *, const aiNode *, char_cmp> BoneMap;
+typedef pmap<const char *, PT(Character), char_cmp> CharacterMap;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AssimpLoader
@@ -75,7 +75,7 @@ private:
   void load_texture(size_t index);
   void load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr);
   void load_material(size_t index);
-  void create_joint(PT(Character) character, PT(CharacterJointBundle) bundle, PartGroup *parent, const aiNode &node);
+  void create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node);
   void load_mesh(size_t index);
   void load_node(const aiNode &node, PandaNode *parent);
   void load_light(const aiLight &light);
