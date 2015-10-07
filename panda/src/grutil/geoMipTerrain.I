@@ -385,8 +385,11 @@ get_flatten_mode() {
 ////////////////////////////////////////////////////////////////////
 INLINE const NodePath GeoMipTerrain::
 get_block_node_path(unsigned short mx, unsigned short my) {
+  nassertr(mx < _blocks.size(), NodePath::fail());
+  nassertr(my < _blocks[mx].size(), NodePath::fail());
   return _blocks[mx][my];
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_block_from_pos
 //       Access: Published

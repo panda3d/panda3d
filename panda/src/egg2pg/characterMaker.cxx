@@ -156,7 +156,7 @@ PandaNode *CharacterMaker::
 part_to_node(PartGroup *part, const string &name) const {
   PandaNode *node = _character_node;
 
-  if (part->is_of_type(CharacterJoint::get_class_type())) {
+  if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
     if (joint->_geom_node != (PandaNode *)NULL) {
       node = joint->_geom_node;
@@ -343,7 +343,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 parent_joint_nodes(PartGroup *part) {
-  if (part->is_of_type(CharacterJoint::get_class_type())) {
+  if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
     PandaNode *joint_node = joint->_geom_node;
     if (joint_node != NULL) {

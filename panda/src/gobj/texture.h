@@ -43,6 +43,7 @@
 #include "pnmImage.h"
 #include "colorSpace.h"
 #include "geomEnums.h"
+#include "bamCacheRecord.h"
 
 class PNMImage;
 class PfmFile;
@@ -51,7 +52,6 @@ class FactoryParams;
 class PreparedGraphicsObjects;
 class CullTraverser;
 class CullTraverserData;
-class BamCacheRecord;
 class TexturePeeker;
 struct DDSHeader;
 
@@ -84,6 +84,7 @@ PUBLISHED:
     TT_2d_texture_array,
     TT_cube_map,
     TT_buffer_texture,
+    TT_cube_map_array,
   };
 
   enum ComponentType {
@@ -155,6 +156,9 @@ PUBLISHED:
     F_rg8i, // 8 integer bits per R,G channel
     F_rgb8i, // 8 integer bits per R,G,B channel
     F_rgba8i, // 8 integer bits per R,G,B,A channel
+
+    F_r11_g11_b10, // unsigned floating-point, 11 Red, 11 Green, 10 Blue Bits
+
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -242,6 +246,9 @@ PUBLISHED:
   INLINE void setup_2d_texture_array(int z_size = 1);
   INLINE void setup_2d_texture_array(int x_size, int y_size, int z_size,
                                      ComponentType component_type, Format format);
+  INLINE void setup_cube_map_array(int num_cube_maps);
+  INLINE void setup_cube_map_array(int size, int num_cube_maps,
+                                   ComponentType component_type, Format format);
   INLINE void setup_buffer_texture(int size, ComponentType component_type,
                                    Format format, GeomEnums::UsageHint usage);
   void generate_normalization_cube_map(int size);
@@ -590,7 +597,7 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
   PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
   void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
-  int do_get_clear_data(const CData *cdata, unsigned char *into) const;
+  size_t do_get_clear_data(const CData *cdata, unsigned char *into) const;
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
   bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,

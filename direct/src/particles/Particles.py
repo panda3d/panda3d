@@ -1,7 +1,7 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 
+from panda3d.physics import PhysicalNode
 from panda3d.physics import ParticleSystem
-from panda3d.physics import BaseParticleFactory
 from panda3d.physics import PointParticleFactory
 from panda3d.physics import ZSpinParticleFactory
 #from panda3d.physics import OrientedParticleFactory
@@ -25,8 +25,6 @@ from panda3d.physics import TangentRingEmitter
 
 import SpriteParticleRendererExt
 
-import string
-import os
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import sys
 

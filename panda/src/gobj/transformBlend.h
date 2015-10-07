@@ -62,12 +62,12 @@ PUBLISHED:
   bool has_transform(const VertexTransform *transform) const;
   PN_stdfloat get_weight(const VertexTransform *transform) const;
 
-  INLINE int get_num_transforms() const;
-  INLINE const VertexTransform *get_transform(int n) const;
+  INLINE size_t get_num_transforms() const;
+  INLINE const VertexTransform *get_transform(size_t n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
-  INLINE PN_stdfloat get_weight(int n) const;
-  INLINE void set_transform(int n, const VertexTransform *transform);
-  INLINE void set_weight(int n, PN_stdfloat weight);
+  INLINE PN_stdfloat get_weight(size_t n) const;
+  INLINE void set_transform(size_t n, const VertexTransform *transform);
+  INLINE void set_weight(size_t n, PN_stdfloat weight);
 
   INLINE void update_blend(Thread *current_thread) const;
 

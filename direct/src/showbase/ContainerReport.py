@@ -1,6 +1,6 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import Queue, fastRepr, invertDictLossless
-from direct.showbase.PythonUtil import itype, safeRepr
+from direct.showbase.PythonUtil import Queue, invertDictLossless
+from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
 import types
 

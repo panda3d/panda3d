@@ -40,6 +40,11 @@ Options:
      of the __path__ variable, and thus must be actually imported to
      determine the true value of __path__.
 
+  -s
+     Adds the standard set of modules that are necessary for embedding
+     the Python interpreter.  Implicitly set if an executable is
+     generated.
+
 """
 
 import getopt
@@ -58,9 +63,10 @@ def usage(code, msg = ''):
 freezer = FreezeTool.Freezer()
 
 basename = None
+addStartupModules = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:sh')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -76,48 +82,57 @@ for opt, arg in opts:
     elif opt == '-p':
         for module in arg.split(','):
             freezer.handleCustomPath(module)
+    elif opt == '-s':
+        addStartupModules = True
     elif opt == '-h':
         usage(0)
     else:
         print 'illegal option: ' + flag
         sys.exit(1)
 
-if not args:
-    usage(0)
-
 if not basename:
     usage(1, 'You did not specify an output file.')
 
-if len(args) != 1:
+if len(args) > 1:
     usage(1, 'Only one main file may be specified.')
 
 outputType = 'exe'
 bl = basename.lower()
 if bl.endswith('.mf'):
     outputType = 'mf'
+elif bl.endswith('.c'):
+    outputType = 'c'
 elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
     basename = os.path.splitext(basename)[0]
     outputType = 'dll'
 elif bl.endswith('.exe'):
     basename = os.path.splitext(basename)[0]
 
-startfile = args[0]
-startmod = startfile
-if startfile.endswith('.py') or startfile.endswith('.pyw') or \
-   startfile.endswith('.pyc') or startfile.endswith('.pyo'):
-    startmod = os.path.splitext(startfile)[0]
-
 compileToExe = False
-if outputType == 'dll':
-    freezer.addModule(startmod, filename = startfile)
-else:
-    freezer.addModule('__main__', filename = startfile)
-    compileToExe = True
+if args:
+    startfile = args[0]
+    startmod = startfile
+    if startfile.endswith('.py') or startfile.endswith('.pyw') or \
+       startfile.endswith('.pyc') or startfile.endswith('.pyo'):
+        startmod = os.path.splitext(startfile)[0]
 
-freezer.done(compileToExe = compileToExe)
+    if outputType == 'dll' or outputType == 'c':
+        freezer.addModule(startmod, filename = startfile)
+    else:
+        freezer.addModule('__main__', filename = startfile)
+        compileToExe = True
+        addStartupModules = True
+
+elif outputType == 'exe':
+    # We must have a main module when making an executable.
+    usage(0)
+
+freezer.done(addStartupModules = addStartupModules)
 
 if outputType == 'mf':
     freezer.writeMultifile(basename)
+elif outputType == 'c':
+    freezer.writeCode(basename)
 else:
     freezer.generateCode(basename, compileToExe = compileToExe)
 

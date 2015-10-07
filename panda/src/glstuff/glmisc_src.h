@@ -41,6 +41,7 @@
 
 //#define GSG_VERBOSE 1
 
+extern ConfigVariableInt gl_version;
 extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
@@ -64,7 +65,7 @@ extern ConfigVariableBool gl_debug_object_labels;
 extern ConfigVariableBool gl_debug_buffers;
 extern ConfigVariableBool gl_finish;
 extern ConfigVariableBool gl_force_depth_stencil;
-extern ConfigVariableBool gl_matrix_palette;
+extern ConfigVariableBool gl_force_fbo_color;
 extern ConfigVariableBool gl_check_errors;
 extern ConfigVariableBool gl_force_flush;
 extern ConfigVariableBool gl_separate_specular_color;

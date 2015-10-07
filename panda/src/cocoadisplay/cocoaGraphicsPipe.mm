@@ -19,6 +19,7 @@
 #include "cocoaPandaApp.h"
 #include "config_cocoadisplay.h"
 #include "frameBufferProperties.h"
+#include "displayInformation.h"
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>

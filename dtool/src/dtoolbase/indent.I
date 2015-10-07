@@ -39,7 +39,7 @@ write_long_list(ostream &out, int indent_level,
     string str = item.str();
 
     indent(out, indent_level) << first_prefix << str;
-    int col = indent_level + first_prefix.length() + str.length();
+    int col = indent_level + (int)(first_prefix.length() + str.length());
 
     ++first;
 
@@ -52,7 +52,7 @@ write_long_list(ostream &out, int indent_level,
       if (col > max_col) {
         out << "\n";
         indent(out, indent_level) << later_prefix << str;
-        col = indent_level + later_prefix.length() + str.length();
+        col = indent_level + (int)(later_prefix.length() + str.length());
 
       } else {
         out << " " << str;

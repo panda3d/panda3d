@@ -1,8 +1,9 @@
+__all__ = ["PackageMerger", "PackageMergerError"]
+
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
 from direct.directnotify.DirectNotifyGlobal import *
 from panda3d.core import *
-import copy
 import shutil
 import os
 

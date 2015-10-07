@@ -95,7 +95,7 @@ operator EnumType () const {
 //  Description: Returns the number of unique words in the variable.
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
-INLINE int ConfigVariableEnum<EnumType>::
+INLINE size_t ConfigVariableEnum<EnumType>::
 size() const {
   return get_num_words();
 }
@@ -107,7 +107,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
-operator [] (int n) const {
+operator [] (size_t n) const {
   return get_word(n);
 }
 
@@ -163,7 +163,7 @@ get_default_value() const {
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
-get_word(int n) const {
+get_word(size_t n) const {
   return (EnumType)parse_string(get_string_word(n));
 }
 
@@ -175,7 +175,7 @@ get_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE void ConfigVariableEnum<EnumType>::
-set_word(int n, EnumType value) {
+set_word(size_t n, EnumType value) {
   set_string_word(n, format_enum(value));
 }
 

@@ -161,7 +161,7 @@ public:
 
   virtual bool supports_pixel_zoom() const;
 
-  INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
+  INLINE void set_cull_result(PT(CullResult) cull_result, PT(SceneSetup) scene_setup,
                               Thread *current_thread);
   INLINE CullResult *get_cull_result(Thread *current_thread) const;
   INLINE SceneSetup *get_scene_setup(Thread *current_thread) const;
@@ -359,8 +359,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_DISPLAY, EXPTP_PANDA_DISPLAY, epvector<DisplayRegion::Region>);
 
 #include "displayRegion.I"
 

@@ -92,9 +92,9 @@ private:
   X509 *_cert;
   STACK_OF(X509) *_stack;
 
-  char _header[32];
-  char _text[512];
-  char _text_clean[1024];
+  char _header[64];
+  char _text[1024];
+  char _text_clean[2048];
 
   string _friendly_name;
   int _verify_result;

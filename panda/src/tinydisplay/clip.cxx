@@ -42,15 +42,15 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   }
 
   /* color */
-  v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
-                + ZB_POINT_RED_MIN);
-  v->zp.g=(int)(v->color.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN) 
-                + ZB_POINT_GREEN_MIN);
-  v->zp.b=(int)(v->color.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
-                + ZB_POINT_BLUE_MIN);
-  v->zp.a=(int)(v->color.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN) 
-                + ZB_POINT_ALPHA_MIN);
-  
+  v->zp.r=min((int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN))
+                + ZB_POINT_RED_MIN, ZB_POINT_RED_MAX);
+  v->zp.g=min((int)(v->color.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN))
+                + ZB_POINT_GREEN_MIN, ZB_POINT_GREEN_MAX);
+  v->zp.b=min((int)(v->color.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN))
+                + ZB_POINT_BLUE_MIN, ZB_POINT_BLUE_MAX);
+  v->zp.a=min((int)(v->color.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN))
+                + ZB_POINT_ALPHA_MIN, ZB_POINT_ALPHA_MAX);
+
   /* texture */
   if (c->num_textures_enabled >= 1) {
     static const int si = 0;

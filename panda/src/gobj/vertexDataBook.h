@@ -36,7 +36,7 @@ PUBLISHED:
 
   INLINE VertexDataBlock *alloc(size_t size);
 
-  INLINE int get_num_pages() const;
+  INLINE size_t get_num_pages() const;
 
   size_t count_total_page_size() const;
   size_t count_total_page_size(VertexDataPage::RamClass ram_class) const;

@@ -118,7 +118,7 @@ munge_format_impl(const GeomVertexFormat *orig,
 
   if (normal_type != (const GeomVertexColumn *)NULL) {
     new_array_format->add_column
-      (InternalName::get_normal(), 3, NT_float32, C_vector);
+      (InternalName::get_normal(), 3, NT_float32, C_normal);
     new_format->remove_column(normal_type->get_name());
   }
 
@@ -227,7 +227,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
   if (normal_type != (const GeomVertexColumn *)NULL) {
     new_array_format->add_column
-      (InternalName::get_normal(), 3, NT_float32, C_vector);
+      (InternalName::get_normal(), 3, NT_float32, C_normal);
     new_format->remove_column(normal_type->get_name());
   }
 

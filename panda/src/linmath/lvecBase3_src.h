@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE_LINMATH ~FLOATNAME(LVecBase3)();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
@@ -112,7 +112,9 @@ PUBLISHED:
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase3) &other) const;
 
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVecBase3) get_standardized_hpr() const;
+#endif
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH size_t get_hash() const;

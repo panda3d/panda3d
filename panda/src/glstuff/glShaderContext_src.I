@@ -55,13 +55,3 @@ INLINE bool CLP(ShaderContext)::
 uses_custom_vertex_arrays() {
   return true;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::uses_custom_texture_bindings
-//       Access: Public
-//  Description: Always true, for now.
-////////////////////////////////////////////////////////////////////
-INLINE bool CLP(ShaderContext)::
-uses_custom_texture_bindings() {
-  return true;
-}

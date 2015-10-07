@@ -103,6 +103,17 @@ is_tbd() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_trivial
+//       Access: Public, Virtual
+//  Description: Returns true if the type is considered a Plain Old
+//               Data (POD) type.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_trivial() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::substitute_decl
 //       Access: Public, Virtual
 //  Description:

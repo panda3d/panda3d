@@ -29,7 +29,7 @@ class Thread;
 //               with Panda's Thread instance.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PSTATCLIENT PStatThread {
-private:
+public:
   INLINE PStatThread();
 
 PUBLISHED:

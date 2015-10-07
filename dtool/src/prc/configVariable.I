@@ -122,7 +122,7 @@ clear_value() {
 //               value.  A word is defined as a sequence of
 //               non-whitespace characters delimited by whitespace.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariable::
+INLINE size_t ConfigVariable::
 get_num_words() const {
   nassertr(is_constructed(), 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
@@ -138,7 +138,7 @@ get_num_words() const {
 //               the value.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-has_string_word(int n) const {
+has_string_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_string_word(n);
@@ -151,7 +151,7 @@ has_string_word(int n) const {
 //               boolean value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-has_bool_word(int n) const {
+has_bool_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_bool_word(n);
@@ -164,7 +164,7 @@ has_bool_word(int n) const {
 //               integer value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-has_int_word(int n) const {
+has_int_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_int_word(n);
@@ -177,7 +177,7 @@ has_int_word(int n) const {
 //               64-bit integer value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-has_int64_word(int n) const {
+has_int64_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_int64_word(n);
@@ -190,7 +190,7 @@ has_int64_word(int n) const {
 //               integer value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-has_double_word(int n) const {
+has_double_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_double_word(n);
@@ -204,7 +204,7 @@ has_double_word(int n) const {
 //               nth value.  See also has_string_word().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariable::
-get_string_word(int n) const {
+get_string_word(size_t n) const {
   nassertr(is_constructed(), string());
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_word(n);
@@ -218,7 +218,7 @@ get_string_word(int n) const {
 //               value.  See also has_bool_word().
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
-get_bool_word(int n) const {
+get_bool_word(size_t n) const {
   nassertr(is_constructed(), false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_bool_word(n);
@@ -232,7 +232,7 @@ get_bool_word(int n) const {
 //               See also has_int_word().
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariable::
-get_int_word(int n) const {
+get_int_word(size_t n) const {
   nassertr(is_constructed(), 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_int_word(n);
@@ -246,7 +246,7 @@ get_int_word(int n) const {
 //               See also has_int_word().
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 ConfigVariable::
-get_int64_word(int n) const {
+get_int64_word(size_t n) const {
   nassertr(is_constructed(), 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_int64_word(n);
@@ -260,7 +260,7 @@ get_int64_word(int n) const {
 //               See also has_double_word().
 ////////////////////////////////////////////////////////////////////
 INLINE double ConfigVariable::
-get_double_word(int n) const {
+get_double_word(size_t n) const {
   nassertr(is_constructed(), 0.0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_double_word(n);
@@ -273,7 +273,7 @@ get_double_word(int n) const {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
-set_string_word(int n, const string &value) {
+set_string_word(size_t n, const string &value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_string_word(n, value);
 }
@@ -285,7 +285,7 @@ set_string_word(int n, const string &value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
-set_bool_word(int n, bool value) {
+set_bool_word(size_t n, bool value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_bool_word(n, value);
 }
@@ -297,7 +297,7 @@ set_bool_word(int n, bool value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
-set_int_word(int n, int value) {
+set_int_word(size_t n, int value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_int_word(n, value);
 }
@@ -309,9 +309,9 @@ set_int_word(int n, int value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
-set_int64_word(int n, PN_int64 value) {
+set_int64_word(size_t n, PN_int64 value) {
   nassertv(is_constructed());
-  _core->make_local_value()->set_int_word(n, value);
+  _core->make_local_value()->set_int64_word(n, value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,7 +321,7 @@ set_int64_word(int n, PN_int64 value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
-set_double_word(int n, double value) {
+set_double_word(size_t n, double value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_double_word(n, value);
 }

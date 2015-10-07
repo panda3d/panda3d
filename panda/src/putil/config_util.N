@@ -1,4 +1,4 @@
-defconstruct ButtonHandle new ButtonHandle(0)
+defconstruct ButtonHandle ButtonHandle(0)
 
 ignoremember _factory
 ignoremember get_factory

@@ -190,9 +190,9 @@ get_num_bits_per_word() {
 //               This number may grow and/or shrink automatically as
 //               needed.
 ////////////////////////////////////////////////////////////////////
-INLINE int BitArray::
+INLINE size_t BitArray::
 get_num_bits() const {
-  return get_num_words() * num_bits_per_word;
+  return get_num_words() * (size_t)num_bits_per_word;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -359,7 +359,7 @@ set_range_to(bool value, int low_bit, int size) {
 //  Description: Returns the number of possibly-unique words stored in
 //               the array.
 ////////////////////////////////////////////////////////////////////
-INLINE int BitArray::
+INLINE size_t BitArray::
 get_num_words() const {
   return _array.size();
 }
@@ -372,7 +372,7 @@ get_num_words() const {
 //               value beyond get_num_words() will always be the same.
 ////////////////////////////////////////////////////////////////////
 INLINE BitArray::MaskType BitArray::
-get_word(int n) const {
+get_word(size_t n) const {
   nassertr(n >= 0, MaskType::all_off());
   if (n < get_num_words()) {
     return _array[n];
@@ -392,8 +392,7 @@ get_word(int n) const {
 //               array.
 ////////////////////////////////////////////////////////////////////
 INLINE void BitArray::
-set_word(int n, WordType value) {
-  nassertv(n >= 0);
+set_word(size_t n, WordType value) {
   ensure_has_word(n);
   _array[n] = value;
   normalize();

@@ -81,8 +81,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int DepthWriteAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const DepthWriteAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const DepthWriteAttrib *ta = (const DepthWriteAttrib *)other;
+
   return (int)_mode - (int)ta->_mode;
 }
 

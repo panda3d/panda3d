@@ -2,7 +2,7 @@
 
 __all__ = ['DirectRadioButton']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectButton import *
 from DirectLabel import *

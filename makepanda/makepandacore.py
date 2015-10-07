@@ -531,10 +531,12 @@ def oscmd(cmd, ignoreError = False):
     if res != 0 and not ignoreError:
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
+            sys.stdout.flush()
+            verbose_cmd = cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1]
             if sys.platform == "win32":
-                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
+                os.spawnl(os.P_WAIT, exe_path, verbose_cmd)
             else:
-                os.system(cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1])
+                os.system(verbose_cmd)
         exit("The following command returned a non-zero value: " + str(cmd))
 
     return res
@@ -1061,7 +1063,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac")
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
-    CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
     if GetTarget() == 'darwin':
         MakeDirectory(OUTPUTDIR + "/Frameworks")
@@ -1846,12 +1847,18 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         return
 
     if GetTarget() == 'windows':
-        SDK["PYTHON"] = GetThirdpartyBase() + "/win-python"
-        if (GetOptimize() <= 2):
-            SDK["PYTHON"] += "-dbg"
-        if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
-            SDK["PYTHON"] += "-x64"
+        sdkdir = GetThirdpartyBase() + "/win-python"
 
+        if sys.version_info >= (3, 0):
+            # Python 3 build...
+            sdkdir += "%d.%d" % sys.version_info[:2]
+
+        if GetOptimize() <= 2:
+            sdkdir += "-dbg"
+        if GetTargetArch() == 'x64':
+            sdkdir += "-x64"
+
+        SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
@@ -1873,9 +1880,13 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
         py_dll = os.path.basename(py_dlls[0])
-        SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
+        ver = py_dll[6] + "." + py_dll[7]
 
+        SDK["PYTHONVERSION"] = "python" + ver
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
+
+        if sys.version[:3] != ver:
+            print("Warning: running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -1934,19 +1945,24 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     if GetVerbose():
         print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+    else:
+        print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
 
-def SdkLocateVisualStudio():
+def SdkLocateVisualStudio(version=10):
     if (GetHost() != "windows"): return
-    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "10.0")
+
+    version = str(version) + '.0'
+
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", version)
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
 
-    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio 10.0\\VC\\bin\\cl.exe")):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio 10.0\\"
+    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (version)
 
-    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\cl.exe")):
-        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\"
+    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe")):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (version)
 
     elif "VCINSTALLDIR" in os.environ:
         vcdir = os.environ["VCINSTALLDIR"]
@@ -1957,26 +1973,49 @@ def SdkLocateVisualStudio():
 
         SDK["VISUALSTUDIO"] = vcdir
 
-def SdkLocateMSPlatform(strMode = 'default'):
+    else:
+        exit("Couldn't find Visual Studio %s.  To use a different version, use the --msvc-version option." % version)
+
+    SDK["VISUALSTUDIO_VERSION"] = version
+
+    if GetVerbose():
+        print("Using Visual Studio %s located at %s" % (version, SDK["VISUALSTUDIO"]))
+    else:
+        print("Using Visual Studio %s" % (version))
+
+def SdkLocateWindows(version = '7.1'):
     if (GetHost() != "windows"): return
-    platsdk = None
 
-    platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
-    if (platsdk and not os.path.isdir(platsdk)):
-        platsdk = None
+    version = version.upper()
 
-    if not platsdk:
-        # Most common location.  Worth a try.
-        platsdk = "C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1"
-        if not os.path.isdir(platsdk):
-            platsdk = None
+    if version == '10':
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+    elif version == '8.0':
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot")
+    else:
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v" + version, "InstallationFolder")
 
-    if not platsdk:
-        exit("Couldn't find Windows SDK v7.1")
+        if not platsdk or not os.path.isdir(platsdk):
+            # Most common location.  Worth a try.
+            platsdk = GetProgramFiles() + "\\Microsoft SDKs\\Windows\\v" + version
+            if not os.path.isdir(platsdk):
+                if not version.endswith('A'):
+                    # Try the stripped-down version that is bundled with Visual Studio.
+                    return SdkLocateWindows(version + 'A')
+                platsdk = None
+
+    if not platsdk or not os.path.isdir(platsdk):
+        exit("Couldn't find Windows SDK version %s.  To use a different version, use the --windows-sdk option." % (version))
 
     if not platsdk.endswith("\\"):
         platsdk += "\\"
     SDK["MSPLATFORM"] = platsdk
+    SDK["MSPLATFORM_VERSION"] = version
+
+    if GetVerbose():
+        print("Using Windows SDK %s located at %s" % (version, platsdk))
+    else:
+        print("Using Windows SDK %s" % (version))
 
 def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
@@ -2214,20 +2253,44 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
-    AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
-    AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
-    AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
-    AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
-    if (arch != 'x64'):
-        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
-        AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.CRT")
-        AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.MFC")
-    elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\x64")):
-        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\x64")
-    elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\amd64")):
-        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\amd64")
+
+    if SDK["MSPLATFORM_VERSION"] == '10':
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin\\" + arch)
+
+        # Windows Kit 10 introduces the "universal CRT".
+        inc_dir = SDK["MSPLATFORM"] + "Include\\10.0.10240.0\\"
+        lib_dir = SDK["MSPLATFORM"] + "Lib\\10.0.10240.0\\"
+        AddToPathEnv("INCLUDE", inc_dir + "shared")
+        AddToPathEnv("INCLUDE", inc_dir + "ucrt")
+        AddToPathEnv("INCLUDE", inc_dir + "um")
+        AddToPathEnv("LIB", lib_dir + "ucrt\\" + arch)
+        AddToPathEnv("LIB", lib_dir + "um\\" + arch)
     else:
-        exit("Could not locate 64-bits libraries in Platform SDK!")
+        AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
+        AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
+        AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
+        AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
+
+        if arch != 'x64':
+            AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
+            AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.CRT")
+            AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.MFC")
+
+        elif os.path.isdir(SDK["MSPLATFORM"] + "lib\\x64"):
+            AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\x64")
+
+        elif os.path.isdir(SDK["MSPLATFORM"] + "lib\\amd64"):
+            AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\amd64")
+
+        else:
+            exit("Could not locate 64-bits libraries in Windows SDK directory!\nUsing directory: %s" % SDK["MSPLATFORM"])
+
+    # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
+    # with Visual Studio 2015 requires use of the Universal CRT.
+    if SDK["MSPLATFORM_VERSION"] == '7.1' and SDK["VISUALSTUDIO_VERSION"] == '14.0':
+        win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
+        AddToPathEnv("LIB", win_kit + "Lib\\10.0.10150.0\\ucrt\\" + arch)
+        AddToPathEnv("INCLUDE", win_kit + "Include\\10.0.10150.0\\ucrt")
 
 ########################################################################
 #
@@ -2288,7 +2351,12 @@ def SetupBuildEnvironment(compiler):
         print("Host OS: %s" % GetHost())
         print("Host arch: %s" % GetHostArch())
         print("Target OS: %s" % GetTarget())
-        print("Target arch: %s" % GetTargetArch())
+    print("Target arch: %s" % GetTargetArch())
+
+    # Set to English so we can safely parse the result of gcc commands.
+    # Setting it to UTF-8 is necessary for Python 3 modules to import
+    # correctly.
+    os.environ["LC_ALL"] = "en_US.UTF-8"
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
@@ -2694,17 +2762,20 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def CalcLocation(fn, ipath):
+    if fn.startswith("panda3d/") and fn.endswith(".py"):
+        return OUTPUTDIR + "/" + fn
+
     if (fn.count("/")): return fn
     dllext = ""
     target = GetTarget()
     if (GetOptimize() <= 2 and target == 'windows'): dllext = "_d"
 
-    if (fn == "PandaModules.py"): return OUTPUTDIR+"/pandac/" + fn
     if (fn == "AndroidManifest.xml"): return OUTPUTDIR+"/"+fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+    if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
@@ -2825,11 +2896,11 @@ class Target:
 TARGET_LIST = []
 TARGET_TABLE = {}
 
-def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
+def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None):
     if (dummy != 0):
         exit("Syntax error in TargetAdd "+target)
-    if (ipath == 0): ipath = opts
-    if (ipath == 0): ipath = []
+    if ipath is None: ipath = opts
+    if not ipath: ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
 
@@ -2850,30 +2921,34 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     else:
         t = TARGET_TABLE[full]
 
-    if opts != 0:
-        for x in opts:
-            if (t.opts.count(x)==0):
-                t.opts.append(x)
+    for x in opts:
+        if x not in t.opts:
+            t.opts.append(x)
 
     ipath = [OUTPUTDIR + "/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
-    if input != 0:
-        for x in input:
-            fullinput = FindLocation(x, ipath)
-            t.inputs.append(fullinput)
-            # Don't re-link a library or binary if just its dependency dlls have been altered.
-            # This should work out fine in most cases, and often reduces recompilation time.
-            if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
-                t.deps[fullinput] = 1
-                (base,suffix) = os.path.splitext(x)
-                if (SUFFIX_INC.count(suffix)):
-                    for d in CxxCalcDependencies(fullinput, ipath, []):
-                        t.deps[d] = 1
-    if dep != 0:
-        for x in dep:
-            fulldep = FindLocation(x, ipath)
-            t.deps[fulldep] = 1
+    for x in input:
+        fullinput = FindLocation(x, ipath)
+        t.inputs.append(fullinput)
+        # Don't re-link a library or binary if just its dependency dlls have been altered.
+        # This should work out fine in most cases, and often reduces recompilation time.
+        if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
+            t.deps[fullinput] = 1
+            (base,suffix) = os.path.splitext(x)
+            if (SUFFIX_INC.count(suffix)):
+                for d in CxxCalcDependencies(fullinput, ipath, []):
+                    t.deps[d] = 1
 
-    if winrc != 0 and GetTarget() == 'windows':
+        if x.endswith(".in"):
+            # Mark the _igate.cxx file as a dependency also.
+            outbase = os.path.basename(x)[:-3]
+            woutc = GetOutputDir()+"/tmp/"+outbase+"_igate.cxx"
+            t.deps[woutc] = 1
+
+    for x in dep:
+        fulldep = FindLocation(x, ipath)
+        t.deps[fulldep] = 1
+
+    if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
     if target.endswith(".in"):

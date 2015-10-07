@@ -855,7 +855,7 @@ class Loader(DirectObject):
     def loadShader (self, shaderPath, okMissing = False):
         shader = ShaderPool.loadShader (shaderPath)
         if not shader and not okMissing:
-            message = 'Could not shader file: %s' % (shaderPath)
+            message = 'Could not load shader file: %s' % (shaderPath)
             raise IOError, message
         return shader
 

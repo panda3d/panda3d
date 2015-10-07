@@ -66,10 +66,6 @@ extern char **environ;
 #include <dlfcn.h>
 #endif
 
-#ifdef HAVE_PYTHON
-#include "Python.h"
-#endif
-
 // We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
 // getenv() to read environment variables at static init time.  In
 // this case, we must read all of the environment variables directly
@@ -265,56 +261,9 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "COMMON_APPDATA") {
     return Filename::get_common_appdata_directory().to_os_specific();
   } else if (var == "MAIN_DIR") {
-#ifdef HAVE_PYTHON
-    // If we're running from Python code, read out sys.argv.
-    if (!ns_has_environment_variable("PANDA_INCOMPATIBLE_PYTHON") && Py_IsInitialized()) {
-      // Since we might have gotten to this point from a function call
-      // marked BLOCKING, which releases the Python thread state, we
-      // have to temporarily re-establish our thread state in the
-      // Python interpreter.
-      PyGILState_STATE state = PyGILState_Ensure();
-
-      Filename main_dir;
-      PyObject *obj = PySys_GetObject((char*) "argv");  // borrowed reference
-      if (obj != NULL && PyList_Check(obj)) {
-        PyObject *item = PyList_GetItem(obj, 0);  // borrowed reference
-        if (item != NULL) {
-          if (PyUnicode_Check(item)) {
-            Py_ssize_t size = PyUnicode_GetSize(item);
-            wchar_t *data = new wchar_t[size + 1];
-#if PY_MAJOR_VERSION >= 3
-            if (PyUnicode_AsWideChar(item, data, size) != -1) {
-#else
-            if (PyUnicode_AsWideChar((PyUnicodeObject*) item, data, size) != -1) {
-#endif
-              wstring wstr (data, size);
-              main_dir = Filename::from_os_specific_w(wstr);
-            }
-            delete data;
-          }
-#if PY_MAJOR_VERSION < 3
-          else if (PyString_Check(item)) {
-            char *str = PyString_AsString(item);
-            if (str != (char *)NULL) {
-              main_dir = Filename::from_os_specific(str);
-            }
-          }
-#endif
-        }
-      }
-
-      PyGILState_Release(state);
-
-      if (main_dir.empty()) {
-        // We must be running in the Python interpreter directly, so return the CWD.
-        return get_cwd().to_os_specific();
-      }
-      main_dir.make_absolute();
-      return Filename(main_dir.get_dirname()).to_os_specific();
-    }
-#endif
-
-    // Otherwise, Return the binary name's parent directory.
+    // Return the binary name's parent directory.  If we're running
+    // inside the Python interpreter, this will be overridden by
+    // a setting from panda3d/core.py.
     if (!_binary_name.empty()) {
       Filename main_dir (_binary_name);
       main_dir.make_absolute();
@@ -471,7 +420,7 @@ ns_clear_shadow(const string &var) {
 //               available, not counting arg 0, the binary name.  The
 //               nonstatic implementation.
 ////////////////////////////////////////////////////////////////////
-int ExecutionEnvironment::
+size_t ExecutionEnvironment::
 ns_get_num_args() const {
   return _args.size();
 }
@@ -486,8 +435,8 @@ ns_get_num_args() const {
 //               implementation.
 ////////////////////////////////////////////////////////////////////
 string ExecutionEnvironment::
-ns_get_arg(int n) const {
-  assert(n >= 0 && n < ns_get_num_args());
+ns_get_arg(size_t n) const {
+  assert(n < ns_get_num_args());
   return _args[n];
 }
 
@@ -770,9 +719,9 @@ read_args() {
   if (_binary_name.empty()) {
     char readlinkbuf [PATH_MAX];
 #ifdef HAVE_PROC_CURPROC_FILE
-    int pathlen = readlink("/proc/curproc/file", readlinkbuf, PATH_MAX - 1);
+    ssize_t pathlen = readlink("/proc/curproc/file", readlinkbuf, PATH_MAX - 1);
 #else
-    int pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX - 1);
+    ssize_t pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX - 1);
 #endif
     if (pathlen > 0) {
       readlinkbuf[pathlen] = 0;

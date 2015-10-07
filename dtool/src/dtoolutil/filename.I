@@ -332,8 +332,8 @@ length() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE char Filename::
-operator [] (int n) const {
-  assert(n >= 0 && n < (int)_filename.length());
+operator [] (size_t n) const {
+  assert(n < _filename.length());
   return _filename[n];
 }
 

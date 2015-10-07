@@ -106,7 +106,7 @@ protected:
   bool push_file(const CPPFile &file);
   bool push_string(const string &input, bool lock_position);
 
-  string expand_manifests(const string &input_expr);
+  string expand_manifests(const string &input_expr, bool expand_undefined);
   CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
                             CPPScope *global_scope);
 
@@ -133,6 +133,8 @@ private:
                            int first_col, const CPPFile &first_file);
   void handle_include_directive(const string &args, int first_line,
                                 int first_col, const CPPFile &first_file);
+  void handle_pragma_directive(const string &args, int first_line,
+                               int first_col, const CPPFile &first_file);
   void handle_error_directive(const string &args, int first_line,
                               int first_col, const CPPFile &first_file);
 

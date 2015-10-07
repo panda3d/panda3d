@@ -100,7 +100,7 @@ set_animation(const GeomVertexAnimationSpec &animation) {
 //               parallel, this will be the same as the number of data
 //               types.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexFormat::
+INLINE size_t GeomVertexFormat::
 get_num_arrays() const {
   return _arrays.size();
 }
@@ -112,8 +112,8 @@ get_num_arrays() const {
 //               format.
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayFormat *GeomVertexFormat::
-get_array(int array) const {
-  nassertr(array >= 0 && array < (int)_arrays.size(), NULL);
+get_array(size_t array) const {
+  nassertr(array < _arrays.size(), NULL);
   return _arrays[array];
 }
 
@@ -137,7 +137,7 @@ has_column(const InternalName *name) const {
 //               This may only be called after the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexFormat::
+INLINE size_t GeomVertexFormat::
 get_num_points() const {
   nassertr(_is_registered, 0);
   return _points.size();
@@ -154,9 +154,9 @@ get_num_points() const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_point(int n) const {
+get_point(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_points.size(), NULL);
+  nassertr(n < _points.size(), NULL);
   return _points[n];
 }
 
@@ -169,7 +169,7 @@ get_point(int n) const {
 //               This may only be called after the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexFormat::
+INLINE size_t GeomVertexFormat::
 get_num_vectors() const {
   nassertr(_is_registered, 0);
   return _vectors.size();
@@ -187,9 +187,9 @@ get_num_vectors() const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_vector(int n) const {
+get_vector(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_vectors.size(), NULL);
+  nassertr(n < _vectors.size(), NULL);
   return _vectors[n];
 }
 
@@ -202,7 +202,7 @@ get_vector(int n) const {
 //               This may only be called after the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexFormat::
+INLINE size_t GeomVertexFormat::
 get_num_texcoords() const {
   nassertr(_is_registered, 0);
   return _texcoords.size();
@@ -218,9 +218,9 @@ get_num_texcoords() const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_texcoord(int n) const {
+get_texcoord(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_texcoords.size(), NULL);
+  nassertr(n < _texcoords.size(), NULL);
   return _texcoords[n];
 }
 
@@ -233,7 +233,7 @@ get_texcoord(int n) const {
 //               This may only be called after the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexFormat::
+INLINE size_t GeomVertexFormat::
 get_num_morphs() const {
   nassertr(_is_registered, 0);
 
@@ -252,9 +252,9 @@ get_num_morphs() const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_morph_slider(int n) const {
+get_morph_slider(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+  nassertr(n < _morphs.size(), NULL);
 
   return _morphs[n]._slider;
 }
@@ -271,9 +271,9 @@ get_morph_slider(int n) const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_morph_base(int n) const {
+get_morph_base(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+  nassertr(n < _morphs.size(), NULL);
 
   return _morphs[n]._base;
 }
@@ -292,9 +292,9 @@ get_morph_base(int n) const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 INLINE const InternalName *GeomVertexFormat::
-get_morph_delta(int n) const {
+get_morph_delta(size_t n) const {
   nassertr(_is_registered, NULL);
-  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+  nassertr(n < _morphs.size(), NULL);
 
   return _morphs[n]._delta;
 }

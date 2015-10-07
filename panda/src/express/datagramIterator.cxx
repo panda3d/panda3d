@@ -31,7 +31,7 @@ get_string() {
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
-  int last_index = _current_index;
+  size_t last_index = _current_index;
 
   _current_index += s_len;
 
@@ -53,7 +53,7 @@ get_string32() {
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
-  int last_index = _current_index;
+  size_t last_index = _current_index;
 
   _current_index += s_len;
 
@@ -79,7 +79,7 @@ get_z_string() {
   }
   nassertr(p < length, "");  // no NULL character?
 
-  int last_index = _current_index;
+  size_t last_index = _current_index;
   _current_index = p + 1;
 
   return string(ptr + last_index, p - last_index);
@@ -143,7 +143,7 @@ extract_bytes(size_t size) {
   nassertr(_current_index + size <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
-  int last_index = _current_index;
+  size_t last_index = _current_index;
 
   _current_index += size;
 

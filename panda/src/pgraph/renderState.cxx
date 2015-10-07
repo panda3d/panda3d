@@ -40,8 +40,7 @@
 
 LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
-CPT(RenderState) RenderState::_empty_state;
-CPT(RenderState) RenderState::_full_default_state;
+const RenderState *RenderState::_empty_state = NULL;
 UpdateSeq RenderState::_last_cycle_detect;
 int RenderState::_garbage_index = 0;
 
@@ -72,20 +71,11 @@ RenderState() :
   _auto_shader_state(NULL),
   _lock("RenderState")
 {
-  // Allocate the _attributes array.
-  RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
-  _attributes = (Attribute *)reg->get_array_chain()->allocate(reg->get_max_slots() * sizeof(Attribute), get_class_type());
-
-  // Also make sure each element gets initialized.
-  for (int i = 0; i < reg->get_max_slots(); ++i) {
-    new(&_attributes[i]) Attribute();
-  }
-
   if (_states == (States *)NULL) {
     init_states();
   }
   _saved_entry = -1;
-  _last_mi = _mungers.end();
+  _last_mi = -1;
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
   _generated_shader = NULL;
@@ -103,17 +93,13 @@ RenderState(const RenderState &copy) :
   _auto_shader_state(NULL),
   _lock("RenderState")
 {
-  // Allocate the _attributes array.
-  RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
-  _attributes = (Attribute *)reg->get_array_chain()->allocate(reg->get_max_slots() * sizeof(Attribute), get_class_type());
-
-  // Also make sure each element gets initialized, as a copy.
-  for (int i = 0; i < reg->get_max_slots(); ++i) {
-    new(&_attributes[i]) Attribute(copy._attributes[i]);
+  // Copy over the attributes.
+  for (int i = 0; i < RenderAttribRegistry::_max_slots; ++i) {
+    _attributes[i] = copy._attributes[i];
   }
 
   _saved_entry = -1;
-  _last_mi = _mungers.end();
+  _last_mi = -1;
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
   _generated_shader = NULL;
@@ -159,14 +145,6 @@ RenderState::
   // longer true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
   _cache_stats.add_num_states(-1);
-
-  // Free the _attributes array.
-  RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
-  for (int i = 0; i < reg->get_max_slots(); ++i) {
-    _attributes[i].~Attribute();
-  }
-  reg->get_array_chain()->deallocate(_attributes, get_class_type());
-  _attributes = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -355,12 +333,37 @@ make(const RenderAttrib *attrib1,
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::make
 //       Access: Published, Static
+//  Description: Returns a RenderState with five attributes set.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+make(const RenderAttrib *attrib1,
+     const RenderAttrib *attrib2,
+     const RenderAttrib *attrib3,
+     const RenderAttrib *attrib4,
+     const RenderAttrib *attrib5, int override) {
+  RenderState *state = new RenderState;
+  state->_attributes[attrib1->get_slot()].set(attrib1, override);
+  state->_attributes[attrib2->get_slot()].set(attrib2, override);
+  state->_attributes[attrib3->get_slot()].set(attrib3, override);
+  state->_attributes[attrib4->get_slot()].set(attrib4, override);
+  state->_attributes[attrib5->get_slot()].set(attrib5, override);
+  state->_filled_slots.set_bit(attrib1->get_slot());
+  state->_filled_slots.set_bit(attrib2->get_slot());
+  state->_filled_slots.set_bit(attrib3->get_slot());
+  state->_filled_slots.set_bit(attrib4->get_slot());
+  state->_filled_slots.set_bit(attrib5->get_slot());
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::make
+//       Access: Published, Static
 //  Description: Returns a RenderState with n attributes set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 make(const RenderAttrib * const *attrib, int num_attribs, int override) {
   if (num_attribs == 0) {
-    return make_empty();
+    return _empty_state;
   }
   RenderState *state = new RenderState;
   for (int i = 0; i < num_attribs; i++) {
@@ -490,7 +493,7 @@ invert_compose(const RenderState *other) const {
 
   if (other == this) {
     // a->invert_compose(a) always produces identity.
-    return make_empty();
+    return _empty_state;
   }
 
   if (!state_cache) {
@@ -633,7 +636,7 @@ remove_attrib(int slot) const {
 
   // Will this bring us down to the empty state?
   if (_filled_slots.get_num_on_bits() == 1) {
-    return make_empty();
+    return _empty_state;
   }
 
   RenderState *new_state = new RenderState(*this);
@@ -982,7 +985,7 @@ clear_cache() {
       RenderState *state = (RenderState *)(*ti).p();
 
       int i;
-      int cache_size = state->_composition_cache.get_size();
+      int cache_size = (int)state->_composition_cache.get_size();
       for (i = 0; i < cache_size; ++i) {
         if (state->_composition_cache.has_element(i)) {
           const RenderState *result = state->_composition_cache.get_data(i)._result;
@@ -992,10 +995,10 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = state->_invert_composition_cache.get_size();
+      cache_size = (int)state->_invert_composition_cache.get_size();
       for (i = 0; i < cache_size; ++i) {
         if (state->_invert_composition_cache.has_element(i)) {
           const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
@@ -1005,7 +1008,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_invert_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
       state->_invert_composition_cache.clear();
     }
 
@@ -1110,7 +1113,7 @@ clear_munger_cache() {
     }
     RenderState *state = (RenderState *)(_states->get_key(si));
     state->_mungers.clear();
-    state->_last_mi = state->_mungers.end();
+    state->_last_mi = -1;
   }
 }
 
@@ -1314,17 +1317,17 @@ validate_states() {
 ////////////////////////////////////////////////////////////////////
 int RenderState::
 get_geom_rendering(int geom_rendering) const {
-  const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, get_attrib(RenderModeAttrib::get_class_slot()));
-  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, get_attrib(TexGenAttrib::get_class_slot()));
-  const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, get_attrib(TexMatrixAttrib::get_class_slot()));
+  const RenderModeAttrib *render_mode;
+  const TexGenAttrib *tex_gen;
+  const TexMatrixAttrib *tex_matrix;
 
-  if (render_mode != (const RenderModeAttrib *)NULL) {
+  if (get_attrib(render_mode)) {
     geom_rendering = render_mode->get_geom_rendering(geom_rendering);
   }
-  if (tex_gen != (const TexGenAttrib *)NULL) {
+  if (get_attrib(tex_gen)) {
     geom_rendering = tex_gen->get_geom_rendering(geom_rendering);
   }
-  if (tex_matrix != (const TexMatrixAttrib *)NULL) {
+  if (get_attrib(tex_matrix)) {
     geom_rendering = tex_matrix->get_geom_rendering(geom_rendering);
   }
 
@@ -1507,7 +1510,7 @@ return_new(RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 return_unique(RenderState *state) {
-  nassertr(state != (RenderState *)NULL, state);
+  nassertr(state != (RenderState *)NULL, NULL);
 
   if (!state_cache) {
     return state;
@@ -1523,13 +1526,9 @@ return_unique(RenderState *state) {
 
   if (state->_saved_entry != -1) {
     // This state is already in the cache.
-    //nassertr(_states->find(state) == state->_saved_entry, state);
+    //nassertr(_states->find(state) == state->_saved_entry, pt_state);
     return state;
   }
-
-  // Save the state in a local PointerTo so that it will be freed at
-  // the end of this function if no one else uses it.
-  CPT(RenderState) pt_state = state;
 
   // Ensure each of the individual attrib pointers has been uniquified
   // before we add the state to the cache.
@@ -1538,7 +1537,7 @@ return_unique(RenderState *state) {
     int slot = mask.get_lowest_on_bit();
     while (slot >= 0) {
       Attribute &attrib = state->_attributes[slot];
-      nassertr(attrib._attrib != (RenderAttrib *)NULL, state);
+      nassertd(attrib._attrib != (RenderAttrib *)NULL) continue;
       attrib._attrib = attrib._attrib->get_unique();
       mask.clear_bit(slot);
       slot = mask.get_lowest_on_bit();
@@ -1548,6 +1547,11 @@ return_unique(RenderState *state) {
   int si = _states->find(state);
   if (si != -1) {
     // There's an equivalent state already in the set.  Return it.
+    // The state that was passed may be newly created and therefore
+    // may not be automatically deleted.  Do that if necessary.
+    if (state->get_ref_count() == 0) {
+      delete state;
+    }
     return _states->get_key(si);
   }
 
@@ -1562,7 +1566,7 @@ return_unique(RenderState *state) {
 
   // Save the index and return the input state.
   state->_saved_entry = si;
-  return pt_state;
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1621,15 +1625,6 @@ do_compose(const RenderState *other) const {
     slot = mask.get_lowest_on_bit();
   }
 
-  // If we have any ShaderAttrib with auto-shader enabled,
-  // remove any shader inputs on it. This is a workaround for an
-  // issue that makes the shader-generator regenerate the shader
-  // every time a shader input changes.
-  CPT(ShaderAttrib) sattrib = DCAST(ShaderAttrib, new_state->get_attrib_def(ShaderAttrib::get_class_slot()));
-  if (sattrib->auto_shader()) {
-    sattrib = DCAST(ShaderAttrib, sattrib->clear_all_shader_inputs());
-  }
-
   return return_new(new_state);
 }
 
@@ -1660,9 +1655,8 @@ do_invert_compose(const RenderState *other) const {
 
     } else if (b._attrib == NULL) {
       // A wins.  Invert it.
-      CPT(RenderState) full_default = make_full_default();
-      CPT(RenderAttrib) default_attrib = full_default->get_attrib(slot);
-      result.set(a._attrib->invert_compose(default_attrib), 0);
+      RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
+      result.set(a._attrib->invert_compose(reg->get_slot_default(slot)), 0);
 
     } else {
       // Both are good.  (Overrides are not used in invert_compose.)
@@ -2162,8 +2156,14 @@ init_states() {
   _states_lock = new LightReMutex("RenderState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
-}
 
+  // Initialize the empty state object as well.  It is used so often
+  // that it is declared globally, and lives forever.
+  RenderState *state = new RenderState;
+  state->local_object();
+  state->_saved_entry = _states->store(state, Empty());
+  _empty_state = state;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::register_with_read_factory

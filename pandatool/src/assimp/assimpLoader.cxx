@@ -25,18 +25,29 @@
 #include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
-#include "lightNode.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
 #include "pointLight.h"
 #include "look_at.h"
 #include "texturePool.h"
+#include "character.h"
+#include "pvector.h"
 
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
-#include "aiPostProcess.h"
+#include "assimp/postprocess.h"
+
+struct BoneWeight {
+  CPT(JointVertexTransform) joint_vertex_xform;
+  float weight;
+
+  BoneWeight(CPT(JointVertexTransform) joint_vertex_xform, float weight)
+    : joint_vertex_xform(joint_vertex_xform), weight(weight)
+  {}
+};
+typedef pvector<BoneWeight> BoneWeightList;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AssimpLoader::Constructor
@@ -158,6 +169,29 @@ build_graph() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AssimpLoader::find_ndoe
+//       Access: Private
+//  Description: Finds a node by name.
+////////////////////////////////////////////////////////////////////
+const aiNode *AssimpLoader::
+find_node(const aiNode &root, const aiString &name) {
+  const aiNode *node;
+
+  if (root.mName == name) {
+    return &root;
+  } else {
+    for (size_t i = 0; i < root.mNumChildren; ++i) {
+      node = find_node(*root.mChildren[i], name);
+      if (node) {
+          return node;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AssimpLoader::load_texture
 //       Access: Private
 //  Description: Converts an aiTexture into a Texture.
@@ -231,7 +265,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
-  PN_stdfloat blend;
+  float blend;
   aiTextureOp op;
   aiTextureMapMode mapmode;
 
@@ -379,6 +413,28 @@ load_material(size_t index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AssimpLoader::create_joint
+//       Access: Private
+//  Description: Creates a CharacterJoint from an aiNode
+////////////////////////////////////////////////////////////////////
+void AssimpLoader::
+create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node)
+{
+  const aiMatrix4x4 &t = node.mTransformation;
+  LMatrix4 mat(t.a1, t.b1, t.c1, t.d1,
+                t.a2, t.b2, t.c2, t.d2,
+                t.a3, t.b3, t.c3, t.d3,
+                t.a4, t.b4, t.c4, t.d4);
+  PT(CharacterJoint) joint = new CharacterJoint(character, bundle, parent, node.mName.C_Str(), mat);
+
+  for (size_t i = 0; i < node.mNumChildren; ++i) {
+    if (_bonemap.find(node.mChildren[i]->mName.C_Str()) != _bonemap.end()) {
+      create_joint(character, bundle, joint, *node.mChildren[i]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AssimpLoader::load_mesh
 //       Access: Private
 //  Description: Converts an aiMesh into a Geom.
@@ -386,6 +442,48 @@ load_material(size_t index) {
 void AssimpLoader::
 load_mesh(size_t index) {
   const aiMesh &mesh = *_scene->mMeshes[index];
+
+  // Check if we need to make a Character
+  PT(Character) character = NULL;
+  if (mesh.HasBones()) {
+    assimp_cat.debug()
+      << "Creating character for " << mesh.mName.C_Str() << "\n";
+
+    // Find and add all bone nodes to the bone map
+    for (size_t i = 0; i < mesh.mNumBones; ++i) {
+      const aiBone &bone = *mesh.mBones[i];
+      const aiNode *node = find_node(*_scene->mRootNode, bone.mName);
+      _bonemap[bone.mName.C_Str()] = node;
+    }
+
+    // Find the root bone node
+    const aiNode *root = _bonemap[mesh.mBones[0]->mName.C_Str()];
+    while (root->mParent && _bonemap.find(root->mParent->mName.C_Str()) != _bonemap.end()) {
+      root = root->mParent;
+    }
+
+    // Now create a character from the bones
+    character = new Character(mesh.mName.C_Str());
+    PT(CharacterJointBundle) bundle = character->get_bundle(0);
+    PT(PartGroup) skeleton = new PartGroup(bundle, "<skeleton>");
+    create_joint(character, bundle, skeleton, *root);
+  }
+
+  // Create transform blend table
+  PT(TransformBlendTable) tbtable = new TransformBlendTable;
+  pvector<BoneWeightList> bone_weights(mesh.mNumVertices);
+  if (character) {
+    for (size_t i = 0; i < mesh.mNumBones; ++i) {
+      const aiBone &bone = *mesh.mBones[i];
+      CPT(JointVertexTransform) jvt = new JointVertexTransform(character->find_joint(bone.mName.C_Str()));
+
+      for (size_t j = 0; j < bone.mNumWeights; ++j) {
+          const aiVertexWeight &weight = bone.mWeights[j];
+
+          bone_weights[weight.mVertexId].push_back(BoneWeight(jvt, weight.mWeight));
+      }
+    }
+  }
 
   // Create the vertex format.
   PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
@@ -406,14 +504,28 @@ load_mesh(size_t index) {
       aformat->add_column(InternalName::get_texcoord_name(out.str()), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     }
   }
+
+  PT(GeomVertexArrayFormat) tb_aformat = new GeomVertexArrayFormat;
+  tb_aformat->add_column(InternalName::make("transform_blend"), 1, Geom::NT_uint16, Geom::C_index);
+
   //TODO: if there is only one UV set, hackily iterate over the texture stages and clear the texcoord name things
 
   PT(GeomVertexFormat) format = new GeomVertexFormat;
   format->add_array(aformat);
+  if (character) {
+    format->add_array(tb_aformat);
+
+    GeomVertexAnimationSpec aspec;
+    aspec.set_panda();
+    format->set_animation(aspec);
+  }
 
   // Create the GeomVertexData.
   string name (mesh.mName.data, mesh.mName.length);
   PT(GeomVertexData) vdata = new GeomVertexData(name, GeomVertexFormat::register_format(format), Geom::UH_static);
+  if (character) {
+    vdata->set_transform_blend_table(tbtable);
+  }
   vdata->unclean_set_num_rows(mesh.mNumVertices);
 
   // Read out the vertices.
@@ -460,6 +572,22 @@ load_mesh(size_t index) {
     }
   }
 
+  // Now the transform blend table
+  if (character) {
+    GeomVertexWriter transform_blend (vdata, InternalName::get_transform_blend());
+
+    for (size_t i = 0; i < mesh.mNumVertices; ++i) {
+      TransformBlend tblend;
+
+      for (size_t j = 0; j < bone_weights[i].size(); ++j) {
+        tblend.add_transform(bone_weights[i][j].joint_vertex_xform, bone_weights[i][j].weight);
+      }
+      transform_blend.add_data1i(tbtable->add_blend(tblend));
+    }
+
+    tbtable->set_rows(SparseArray::lower_on(vdata->get_num_rows()));
+  }
+
   // Now read out the primitives.
   // Keep in mind that we called ReadFile with the aiProcess_Triangulate
   // flag earlier, so we don't have to worry about polygons.
@@ -502,6 +630,10 @@ load_mesh(size_t index) {
 
   _geoms[index] = geom;
   _geom_matindices[index] = mesh.mMaterialIndex;
+
+  if (character) {
+    _charmap[mesh.mName.C_Str()] = character;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -512,6 +644,12 @@ load_mesh(size_t index) {
 void AssimpLoader::
 load_node(const aiNode &node, PandaNode *parent) {
   PT(PandaNode) pnode;
+  PT(Character) character;
+
+  // Skip nodes we've converted to joints
+  if (_bonemap.find(node.mName.C_Str()) != _bonemap.end()) {
+      return;
+  }
 
   // Create the node and give it a name.
   string name (node.mName.data, node.mName.length);
@@ -520,7 +658,13 @@ load_node(const aiNode &node, PandaNode *parent) {
   } else {
     pnode = new PandaNode(name);
   }
-  parent->add_child(pnode);
+
+  if (_charmap.find(node.mName.C_Str()) != _charmap.end()) {
+    character = _charmap[node.mName.C_Str()];
+    parent->add_child(character);
+  } else {
+    parent->add_child(pnode);
+  }
 
   // Load in the transformation matrix.
   const aiMatrix4x4 &t = node.mTransformation;
@@ -546,13 +690,17 @@ load_node(const aiNode &node, PandaNode *parent) {
       meshIndex = node.mMeshes[0];
       gnode->add_geom(_geoms[meshIndex]);
       gnode->set_state(_mat_states[_geom_matindices[meshIndex]]);
-
     } else {
       for (size_t i = 0; i < node.mNumMeshes; ++i) {
         meshIndex = node.mMeshes[i];
         gnode->add_geom(_geoms[node.mMeshes[i]],
           _mat_states[_geom_matindices[meshIndex]]);
       }
+    }
+
+    if (character) {
+        assimp_cat.debug() << "Adding char to geom\n";
+      character->add_child(gnode);
     }
   }
 }
@@ -570,12 +718,13 @@ load_light(const aiLight &light) {
   aiColor3D col;
   aiVector3D vec;
 
-  PT(LightNode) lnode;
-
   switch (light.mType) {
   case aiLightSource_DIRECTIONAL: {
     PT(DirectionalLight) dlight = new DirectionalLight(name);
-    lnode = DCAST(LightNode, dlight);
+    _root->add_child(dlight);
+
+    col = light.mColorDiffuse;
+    dlight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     dlight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -589,7 +738,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_POINT: {
     PT(PointLight) plight = new PointLight(name);
-    lnode = DCAST(LightNode, plight);
+    _root->add_child(plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -604,7 +756,10 @@ load_light(const aiLight &light) {
 
   case aiLightSource_SPOT: {
     PT(Spotlight) plight = new Spotlight(name);
-    lnode = DCAST(LightNode, plight);
+    _root->add_child(plight);
+
+    col = light.mColorDiffuse;
+    plight->set_color(LColor(col.r, col.g, col.b, 1));
 
     col = light.mColorSpecular;
     plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
@@ -624,21 +779,23 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
+  // This is a somewhat recent addition to Assimp, so let's be kind to
+  // those that don't have an up-to-date version of Assimp.
+  case 0x4: //aiLightSource_AMBIENT:
+    // This is handled below.
+    break;
+
   default:
     assimp_cat.warning() << "Light '" << name << "' has an unknown type!\n";
     return;
   }
 
   // If there's an ambient color, add it as ambient light.
+  col = light.mColorAmbient;
   LVecBase4 ambient (col.r, col.g, col.b, 0);
   if (ambient != LVecBase4::zero()) {
     PT(AmbientLight) alight = new AmbientLight(name);
-    col = light.mColorAmbient;
     alight->set_color(ambient);
     _root->add_child(alight);
   }
-
-  _root->add_child(lnode);
-  col = light.mColorDiffuse;
-  lnode->set_color(LColor(col.r, col.g, col.b, 1));
 }

@@ -58,12 +58,12 @@ PUBLISHED:
   BLOCKING void ls(ostream &out = cout) const;
   BLOCKING void ls_all(ostream &out = cout) const;
 
-  BLOCKING INLINE string read_file(bool auto_unwrap) const;
+  EXTENSION(BLOCKING PyObject *read_file(bool auto_unwrap) const);
   BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
   BLOCKING virtual void close_read_file(istream *stream) const;
   virtual bool was_read_successful() const;
 
-  BLOCKING INLINE bool write_file(const string &data, bool auto_wrap);
+  EXTENSION(BLOCKING PyObject *write_file(PyObject *data, bool auto_wrap));
   BLOCKING virtual ostream *open_write_file(bool auto_wrap, bool truncate);
   BLOCKING virtual ostream *open_append_file();
   BLOCKING virtual void close_write_file(ostream *stream);
@@ -81,6 +81,9 @@ PUBLISHED:
 public:
   virtual bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents);
   virtual bool atomic_read_contents(string &contents) const;
+
+  INLINE string read_file(bool auto_unwrap) const;
+  INLINE bool write_file(const string &data, bool auto_wrap);
 
   INLINE void set_original_filename(const Filename &filename);
   bool read_file(string &result, bool auto_unwrap) const;

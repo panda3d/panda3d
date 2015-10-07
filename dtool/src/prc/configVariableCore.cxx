@@ -318,7 +318,7 @@ has_value() const {
 //               defined, this will always be at least 1 (for the
 //               default value, at least).
 ////////////////////////////////////////////////////////////////////
-int ConfigVariableCore::
+size_t ConfigVariableCore::
 get_num_declarations() const {
   if (has_local_value()) {
     return 1;
@@ -343,7 +343,7 @@ get_num_declarations() const {
 //               variable.
 ////////////////////////////////////////////////////////////////////
 const ConfigDeclaration *ConfigVariableCore::
-get_declaration(int n) const {
+get_declaration(size_t n) const {
   ((ConfigVariableCore *)this)->_value_queried = true;
   if (_default_value == (ConfigDeclaration *)NULL) {
     prc_cat->warning()
@@ -356,7 +356,7 @@ get_declaration(int n) const {
     return _local_value;
   }
   check_sort_declarations();
-  if (n >= 0 && n < (int)_trusted_declarations.size()) {
+  if (n < _trusted_declarations.size()) {
     return _trusted_declarations[n];
   }
   return _default_value;

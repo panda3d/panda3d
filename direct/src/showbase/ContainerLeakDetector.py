@@ -1,6 +1,5 @@
-from pandac.PandaModules import PStatCollector
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import Queue, invertDictLossless, makeFlywheelGen
+from direct.showbase.PythonUtil import makeFlywheelGen
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
 import types, weakref, random, __builtin__

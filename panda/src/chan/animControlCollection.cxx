@@ -191,7 +191,7 @@ play_all() {
 //  Description: Starts all animations playing.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
-play_all(int from, int to) {
+play_all(double from, double to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->play(from, to);
@@ -219,7 +219,7 @@ loop_all(bool restart) {
 //  Description: Starts all animations looping.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
-loop_all(bool restart, int from, int to) {
+loop_all(bool restart, double from, double to) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->loop(restart, from, to);
@@ -254,7 +254,7 @@ stop_all() {
 //  Description: Sets all animations to the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimControlCollection::
-pose_all(int frame) {
+pose_all(double frame) {
   Controls::const_iterator ci;
   for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
     (*ci)._control->pose(frame);

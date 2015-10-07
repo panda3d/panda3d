@@ -37,7 +37,7 @@ CLP(GeomContext)::
 bool CLP(GeomContext)::
 get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                  UpdateSeq modified) {
-#ifdef OPENGLES
+#if defined(OPENGLES) || !defined(SUPPORT_FIXED_FUNCTION)
   // Display lists not supported by OpenGL ES.
   nassertr(false, false);
   return false;
@@ -68,7 +68,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
 ////////////////////////////////////////////////////////////////////
 void CLP(GeomContext)::
 release_display_lists() {
-#ifdef OPENGLES
+#if defined(OPENGLES) || !defined(SUPPORT_FIXED_FUNCTION)
   // Display lists not supported by OpenGL ES.
   nassertv(_display_lists.empty());
 
@@ -103,6 +103,7 @@ release_display_lists() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GeomContext)::
 remove_munger(CLP(GeomMunger) *munger) {
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
   DisplayLists::iterator dli = _display_lists.find(munger);
   nassertv(dli != _display_lists.end());
 
@@ -116,4 +117,5 @@ remove_munger(CLP(GeomMunger) *munger) {
   // running in any thread.  Instead, enqueue the display list index
   // and let it get deleted at the end of the current or next frame.
   glgsg->record_deleted_display_list(index);
+#endif
 }

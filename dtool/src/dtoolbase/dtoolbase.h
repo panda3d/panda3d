@@ -55,6 +55,10 @@
 #pragma warning (disable : 4355)
 /* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
 #pragma warning (disable : 4244)
+/* C4267: 'var' : conversion from 'size_t' to 'type', possible loss of data */
+#pragma warning (disable : 4267)
+/* C4577: 'noexcept' used with no exception handling mode specified */
+#pragma warning (disable : 4577)
 
 #if _MSC_VER >= 1300
  #if _MSC_VER >= 1310
@@ -431,6 +435,9 @@
 #if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __declspec(dllexport)
 #define IMPORT_CLASS __declspec(dllimport)
+#elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#define EXPORT_CLASS __attribute__((visibility("default")))
+#define IMPORT_CLASS
 #else
 #define EXPORT_CLASS
 #define IMPORT_CLASS

@@ -3,19 +3,20 @@ within a Panda3D Multifile, which can be easily be downloaded and/or
 patched onto a client machine, for the purpose of running a large
 application. """
 
+__all__ = ["Packager", "PackagerError", "OutsideOfPackageError", "ArgumentError"]
+
 # Important to import panda3d first, to avoid naming conflicts with
 # Python's "string" and "Loader" names that are imported later.
 from panda3d.core import *
 import sys
 import os
 import glob
-import marshal
 import string
 import types
 import getpass
-import platform
 import struct
 import subprocess
+import copy
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
 from direct.showbase import Loader
@@ -185,7 +186,7 @@ class Packager:
         def getKey(self):
             """ Returns a tuple used for sorting the PackageEntry
             objects uniquely per package. """
-            return (self.packageName, self.platform, self.version)
+            return (self.packageName, self.platform or "", self.version or "")
 
         def fromFile(self, packageName, platform, version, solo, perPlatform,
                      installDir, descFilename, importDescFilename):
@@ -299,8 +300,7 @@ class Packager:
                 xhost.InsertEndChild(xmirror)
 
             if packager:
-                altHosts = self.altHosts.items()
-                altHosts.sort()
+                altHosts = sorted(self.altHosts.items())
                 for keyword, alt in altHosts:
                     he = packager.hosts.get(alt, None)
                     if he:
@@ -372,9 +372,15 @@ class Packager:
             self.requiredFilenames = []
             self.requiredModules = []
 
+            # A list of required packages that were missing.
+            self.missingPackages = []
+
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
+            
+            # Map of extensions to files to number (ignored by dir)
+            self.ignoredDirFiles = {}
 
         def close(self):
             """ Writes out the contents of the current package.  Returns True
@@ -385,6 +391,12 @@ class Packager:
                 message = 'Cannot generate packages without an installDir; use -i'
                 raise PackagerError, message
 
+            if self.ignoredDirFiles:
+                exts = sorted(self.ignoredDirFiles.keys())
+                total = sum([x for x in self.ignoredDirFiles.values()])
+                self.notify.warning("excluded %s files not marked for inclusion: %s" \
+                                    % (total, ", ".join(["'" + ext + "'" for ext in exts])))
+                
             if not self.host:
                 self.host = self.packager.host
 
@@ -454,7 +466,7 @@ class Packager:
             if self.p3dApplication:
                 allowPythonDev = self.configs.get('allow_python_dev', 0)
                 if int(allowPythonDev):
-                    print "\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName)
+                    print("\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName))
 
             return result
 
@@ -484,6 +496,12 @@ class Packager:
             """ Installs the package, either as a p3d application, or
             as a true package.  Either is implemented with a
             Multifile. """
+
+            if self.missingPackages:
+                missing = ', '.join([name for name, version in self.missingPackages])
+                self.notify.warning("Cannot build package %s due to missing dependencies: %s" % (self.packageName, missing))
+                self.cleanup()
+                return False
 
             self.multifile = Multifile()
 
@@ -570,8 +588,7 @@ class Packager:
 
             # Add known module names.
             self.moduleNames = {}
-            modules = self.freezer.modules.items()
-            modules.sort()
+            modules = sorted(self.freezer.modules.items())
             for newName, mdef in modules:
                 if mdef.guess:
                     # Not really a module.
@@ -702,7 +719,7 @@ class Packager:
             self.packageDesc = packageDir + self.packageDesc
             self.packageImportDesc = packageDir + self.packageImportDesc
 
-            print "Generating %s" % (self.packageFilename)
+            print("Generating %s" % (self.packageFilename))
 
             if self.p3dApplication:
                 self.packageFullpath = Filename(self.packager.p3dInstallDir, self.packageFilename)
@@ -819,6 +836,14 @@ class Packager:
 
             self.packager.contents[pe.getKey()] = pe
             self.packager.contentsChanged = True
+
+            # Hack for coreapi package, to preserve backward compatibility
+            # with old versions of the runtime, which still called the
+            # 32-bit Windows platform "win32".
+            if self.packageName == "coreapi" and self.platform == "win_i386":
+                pe2 = copy.copy(pe)
+                pe2.platform = "win32"
+                self.packager.contents[pe2.getKey()] = pe2
 
             self.cleanup()
             return True
@@ -1232,13 +1257,13 @@ class Packager:
                 elf.close()
                 return None
 
-            if not ident.startswith("\177ELF"):
+            if not ident.startswith(b"\177ELF"):
                 # No elf magic!  Beware of orcs.
                 return None
 
             # Make sure we read in the correct endianness and integer size
-            byteOrder = "<>"[ord(ident[5]) - 1]
-            elfClass = ord(ident[4]) - 1 # 0 = 32-bits, 1 = 64-bits
+            byteOrder = "<>"[ord(ident[5:6]) - 1]
+            elfClass = ord(ident[4:5]) - 1 # 0 = 32-bits, 1 = 64-bits
             headerStruct = byteOrder + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[elfClass]
             sectionStruct = byteOrder + ("4xI8xIII8xI", "4xI16xQQI12xQ")[elfClass]
             dynamicStruct = byteOrder + ("iI", "qQ")[elfClass]
@@ -1272,17 +1297,17 @@ class Packager:
                 elf.seek(offset)
                 data = elf.read(entsize)
                 tag, val = struct.unpack_from(dynamicStruct, data)
-                newSectionData = ""
+                newSectionData = b""
                 startReplace = None
                 pad = 0
 
                 # Read tags until we find a NULL tag.
                 while tag != 0:
                     if tag == 1: # A NEEDED entry.  Read it from the string table.
-                        filenames.append(stringTables[link][val : stringTables[link].find('\0', val)])
+                        filenames.append(stringTables[link][val : stringTables[link].find(b'\0', val)])
 
                     elif tag == 15 or tag == 29:
-                        rpath += stringTables[link][val : stringTables[link].find('\0', val)].split(':')
+                        rpath += stringTables[link][val : stringTables[link].find(b'\0', val)].split(b':')
                         # An RPATH or RUNPATH entry.
                         if not startReplace:
                             startReplace = elf.tell() - entsize
@@ -1296,7 +1321,7 @@ class Packager:
                     tag, val = struct.unpack_from(dynamicStruct, data)
 
                 if startReplace is not None:
-                    newSectionData += data + ("\0" * pad)
+                    newSectionData += data + (b"\0" * pad)
                     rewriteSections.append((startReplace, newSectionData))
             elf.close()
 
@@ -1329,7 +1354,7 @@ class Packager:
             for offset, data in rewriteSections:
                 elf.seek(offset)
                 elf.write(data)
-            elf.write("\0" * pad)
+            elf.write(b"\0" * pad)
             elf.close()
             return filenames
 
@@ -1467,6 +1492,10 @@ class Packager:
                 if he:
                     xhost = he.makeXml(packager = self.packager)
                     xpackage.InsertEndChild(xhost)
+
+            self.extracts.sort()
+            for name, xextract in self.extracts:
+                xpackage.InsertEndChild(xextract)
 
             doc.InsertEndChild(xpackage)
 
@@ -1813,7 +1842,10 @@ class Packager:
                         self.notify.warning(message)
                     return
 
-            self.freezer.addModule(moduleName, filename = file.filename)
+            if file.text:
+                self.freezer.addModule(moduleName, filename = file.filename, text = file.text)
+            else:
+                self.freezer.addModule(moduleName, filename = file.filename)
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
@@ -2161,8 +2193,10 @@ class Packager:
                     ext = Filename(lowerName).getExtension()
                     if ext not in self.packager.nonuniqueExtensions:
                         self.skipFilenames[lowerName] = True
+
                 for moduleName, mdef in package.moduleNames.items():
-                    self.skipModules[moduleName] = mdef
+                    if not mdef.exclude:
+                        self.skipModules[moduleName] = mdef
 
     # Packager constructor
     def __init__(self, platform = None):
@@ -2185,6 +2219,9 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
+        
+        # Set this to true to verbosely log files ignored by dir().
+        self.verbosePrint = False
 
         # This will be appended to the basename of any .p3d package,
         # before the .p3d extension.
@@ -2333,7 +2370,7 @@ class Packager:
 
         # Binary files that are copied (and compressed) without
         # processing.
-        self.binaryExtensions = [ 'ttf', 'TTF', 'mid', 'ico' ]
+        self.binaryExtensions = [ 'ttf', 'TTF', 'mid', 'ico', 'cur' ]
 
         # Files that can have an existence in multiple different
         # packages simultaneously without conflict.
@@ -2373,7 +2410,7 @@ class Packager:
                 }
 
         # Files that should be extracted to disk.
-        self.extractExtensions = self.executableExtensions[:] + self.manifestExtensions[:] + [ 'ico' ]
+        self.extractExtensions = self.executableExtensions[:] + self.manifestExtensions[:] + [ 'ico', 'cur' ]
 
         # Files that indicate a platform dependency.
         self.platformSpecificExtensions = self.executableExtensions[:]
@@ -2390,6 +2427,14 @@ class Packager:
         # should be added exactly byte-for-byte as they are.
         self.unprocessedExtensions = []
 
+        # Files for which warnings should be suppressed when they are
+        # not handled by dir()
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
+                                             'p3d', 'pdef', 
+                                             'c', 'C', 'cxx', 'cpp', 'h', 'H',
+                                             'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
+                                             'o', 'obj', 'a', 'lib', 'bc', 'll']
+         
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -2456,7 +2501,7 @@ class Packager:
         if not os.path.isfile('/sbin/ldconfig'):
             return False
 
-        handle = subprocess.Popen(['/sbin/ldconfig', '-p'], stdout=subprocess.PIPE)
+        handle = subprocess.Popen(['/sbin/ldconfig', '-p'], stdout=subprocess.PIPE, universal_newlines=True)
         out, err = handle.communicate()
 
         if handle.returncode != 0:
@@ -2617,12 +2662,20 @@ class Packager:
             if dirname.makeTrueCase():
                 searchPath.appendDirectory(dirname)
 
+    def _ensureExtensions(self):
+        self.knownExtensions = \
+            self.imageExtensions + \
+            self.modelExtensions + \
+            self.textExtensions + \
+            self.binaryExtensions + \
+            self.uncompressibleExtensions + \
+            self.unprocessedExtensions
 
     def setup(self):
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
 
-        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions + self.unprocessedExtensions
+        self._ensureExtensions()
 
         self.currentPackage = None
 
@@ -2710,11 +2763,15 @@ class Packager:
         # errors, and that the pdef file doesn't contain any really
         # crazy Python code, all this will do is fill in the
         # '__statements' list in the module scope.
+        fn = packageDef.toOsSpecific()
+        f = open(fn)
+        code = compile(f.read(), fn, 'exec')
+        f.close()
 
         # It appears that having a separate globals and locals
         # dictionary causes problems with resolving symbols within a
         # class scope.  So, we just use one dictionary, the globals.
-        execfile(packageDef.toOsSpecific(), globals)
+        exec(code, globals)
 
         packages = []
 
@@ -2979,10 +3036,10 @@ class Packager:
             # environment.
             return None
 
+        # Make sure we have a fresh version of the contents file.
         host = appRunner.getHost(hostUrl)
-        if not host.readContentsFile():
-            if not host.downloadContentsFile(appRunner.http):
-                return None
+        if not host.downloadContentsFile(appRunner.http):
+            return None
 
         packageInfos = []
         packageInfo = host.getPackage(packageName, version, platform = platform)
@@ -3031,7 +3088,7 @@ class Packager:
         tuples = []
         for package in packages:
             version = self.__makeVersionTuple(package.version)
-            tuples.append((version, file))
+            tuples.append((version, package))
         tuples.sort(reverse = True)
 
         return [t[1] for t in tuples]
@@ -3044,7 +3101,7 @@ class Packager:
         tuples = []
         for package in packages:
             version = self.__makeVersionTuple(package.packageVersion)
-            tuples.append((version, file))
+            tuples.append((version, package))
         tuples.sort(reverse = True)
 
         return [t[1] for t in tuples]
@@ -3103,9 +3160,9 @@ class Packager:
         if panda1.version == panda2.version:
             return True
 
-        print 'Rejecting package %s, version "%s": depends on %s, version "%s" instead of version "%s"' % (
+        print('Rejecting package %s, version "%s": depends on %s, version "%s" instead of version "%s"' % (
             package.packageName, package.version,
-            panda1.packageName, panda1.version, panda2.version)
+            panda1.packageName, panda1.version, panda2.version))
         return False
 
     def __findPackageInRequires(self, packageName, list):
@@ -3188,7 +3245,9 @@ class Packager:
                                        requires = self.currentPackage.requires)
             if not package:
                 message = 'Unknown package %s, version "%s"' % (packageName, version)
-                raise PackagerError, message
+                self.notify.warning(message)
+                self.currentPackage.missingPackages.append((packageName, pversion))
+                continue
 
             self.requirePackage(package)
 
@@ -3293,42 +3352,27 @@ class Packager:
         producing their own custom panda3d for download.  Should be
         called before any other Python modules are named. """
 
-        # First, freeze just VFSImporter.py into its own
-        # _vfsimporter.pyd file.  This one is a special case, because
-        # we need this code in order to load python files from the
-        # Multifile, so this file can't itself be in the Multifile.
+        # This module and all its dependencies come frozen into p3dpython.
+        # We should mark them as having already been added so that we don't
+        # add them again to the Multifile.
+        self.do_module('direct.showbase.VFSImporter')
+        self.currentPackage.freezer.done(addStartupModules=True)
+        self.currentPackage.freezer.writeCode(None)
+        self.currentPackage.addExtensionModules()
+        self.currentPackage.freezer.reset()
 
-        # This requires a bit of care, because we only want to freeze
-        # VFSImporter.py, and not any other part of direct.  We do
-        # also want panda3d/__init__.py, though, since it would
-        # otherwise be part of the multifile.
-        self.do_excludeModule('direct')
-
-        # Import the actual VFSImporter module to get its filename on
-        # disk.
-        from direct.showbase import VFSImporter
-        filename = Filename.fromOsSpecific(VFSImporter.__file__)
-
-        self.do_module('VFSImporter', filename = filename)
-        self.do_freeze('_vfsimporter', compileToExe = False)
-
-        self.do_file('panda3d/core.pyd');
-
-        # Now that we're done freezing, explicitly add 'direct' to
-        # counteract the previous explicit excludeModule().
-        self.do_module('direct')
+        self.do_file('panda3d/_core.pyd', newDir='panda3d')
 
         # This is the key Python module that is imported at runtime to
         # start an application running.
         self.do_module('direct.p3d.AppRunner')
 
         # This is the main program that drives the runtime Python.  It
-        # is responsible for loading _vfsimporter.pyd, and then
-        # importing direct.p3d.AppRunner, to start an application
-        # running.  The program comes in two parts: an executable, and
-        # an associated dynamic library.  Note that the .exe and .dll
-        # extensions are automatically replaced with the appropriate
-        # platform-specific extensions.
+        # is responsible for importing direct.p3d.AppRunner to start an
+        # application running.  The program comes in two parts: an
+        # executable, and an associated dynamic library.  Note that the
+        # .exe and .dll extensions are automatically replaced with the
+        # appropriate platform-specific extensions.
 
         if self.platform.startswith('osx'):
             # On Mac, we package up a P3DPython.app bundle.  This
@@ -3411,7 +3455,7 @@ class Packager:
                 freezer.addModule(moduleName, newName = newName)
             else:
                 freezer.modules[newName] = freezer.modules[moduleName]
-        freezer.done(compileToExe = compileToExe)
+        freezer.done(addStartupModules = compileToExe)
 
         dirname = ''
         basename = filename
@@ -3604,6 +3648,43 @@ class Packager:
         filename = Filename(filename)
         self.currentPackage.excludeFile(filename)
 
+
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
+                         imageExtensions = None, textExtensions = None, 
+                         uncompressibleExtensions = None, unprocessedExtensions = None,
+                         suppressWarningForExtensions = None):
+        """ Ensure that dir() will include files with the given extensions.
+        The extensions should not have '.' prefixes.
+        
+        All except 'suppressWarningForExtensions' allow the given kinds of files
+        to be packaged with their respective semantics (read the source).
+        
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+        so no warnings will be emitted for them.
+        """
+        if executableExtensions:
+            self.executableExtensions += executableExtensions
+
+        if extractExtensions:
+            self.extractExtensions += extractExtensions
+
+        if imageExtensions:
+            self.imageExtensions += imageExtensions
+
+        if textExtensions:
+            self.textExtensions += textExtensions
+
+        if uncompressibleExtensions:
+            self.uncompressibleExtensions += uncompressibleExtensions
+
+        if unprocessedExtensions:
+            self.unprocessedExtensions += unprocessedExtensions
+
+        if suppressWarningForExtensions:
+            self.suppressWarningForExtensions += suppressWarningForExtensions
+
+        self._ensureExtensions()
+
     def do_dir(self, dirname, newDir = None, unprocessed = None):
 
         """ Adds the indicated directory hierarchy to the current
@@ -3676,7 +3757,12 @@ class Packager:
                     filename.setBinary()
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False, unprocessed = unprocessed)
-
+            elif not ext in self.suppressWarningForExtensions:
+                newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
+                self.currentPackage.ignoredDirFiles[ext] = newCount
+                
+                if self.verbosePrint:
+                    self.notify.warning("ignoring file %s" % filename) 
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of
@@ -3750,8 +3836,7 @@ class Packager:
                 xhost = he.makeXml(packager = self)
                 xcontents.InsertEndChild(xhost)
 
-        contents = self.contents.items()
-        contents.sort()
+        contents = sorted(self.contents.items())
         for key, pe in contents:
             xpackage = pe.makeXml()
             xcontents.InsertEndChild(xpackage)

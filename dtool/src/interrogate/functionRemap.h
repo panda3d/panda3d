@@ -53,8 +53,10 @@ public:
 
   string get_parameter_name(int n) const;
   string call_function(ostream &out, int indent_level,
+                       bool convert_result, const string &container) const;
+  string call_function(ostream &out, int indent_level,
                        bool convert_result, const string &container,
-                       const vector_string &pexprs = vector_string()) const;
+                       const vector_string &pexprs) const;
 
   void write_orig_prototype(ostream &out, int indent_level, bool local=false,
                             int num_default_args=0) const;

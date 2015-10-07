@@ -39,7 +39,8 @@ P3D_initialize(int api_version, const char *contents_filename,
                const char *platform, const char *log_directory,
                const char *log_basename, bool trusted_environment,
                bool console_environment,
-               const char *root_dir, const char *host_dir) {
+               const char *root_dir, const char *host_dir,
+               const char *start_dir) {
   if (api_version < 10 || api_version > P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -89,12 +90,16 @@ P3D_initialize(int api_version, const char *contents_filename,
     host_dir = "";
   }
 
+  if (api_version < 17 || start_dir == NULL) {
+    start_dir = "";
+  }
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   bool result = inst_mgr->initialize(api_version, contents_filename, host_url,
                                      verify_contents, platform,
                                      log_directory, log_basename,
                                      trusted_environment, console_environment,
-                                     root_dir, host_dir);
+                                     root_dir, host_dir, start_dir);
   RELEASE_LOCK(_api_lock);
   return result;
 }

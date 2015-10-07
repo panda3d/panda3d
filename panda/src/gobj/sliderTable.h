@@ -49,20 +49,20 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(SliderTable) register_table(const SliderTable *table);
 
-  INLINE int get_num_sliders() const;
-  INLINE const VertexSlider *get_slider(int n) const;
+  INLINE size_t get_num_sliders() const;
+  INLINE const VertexSlider *get_slider(size_t n) const;
   MAKE_SEQ(get_sliders, get_num_sliders, get_slider);
-  INLINE const SparseArray &get_slider_rows(int n) const;
+  INLINE const SparseArray &get_slider_rows(size_t n) const;
 
   INLINE const SparseArray &find_sliders(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
-  void set_slider(int n, const VertexSlider *slider);
-  void set_slider_rows(int n, const SparseArray &rows);
-  void remove_slider(int n);
-  int add_slider(const VertexSlider *slider, const SparseArray &rows);
+  void set_slider(size_t n, const VertexSlider *slider);
+  void set_slider_rows(size_t n, const SparseArray &rows);
+  void remove_slider(size_t n);
+  size_t add_slider(const VertexSlider *slider, const SparseArray &rows);
 
   void write(ostream &out) const;
 

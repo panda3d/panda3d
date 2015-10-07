@@ -17,9 +17,9 @@
 #if defined(HAVE_PYTHON) && defined(DO_MEMORY_USAGE)
 
 #ifndef CPPPARSER
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedObject;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedReferenceCount;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_ReferenceCount;
+extern Dtool_PyTypedObject Dtool_TypedObject;
+extern Dtool_PyTypedObject Dtool_TypedReferenceCount;
+extern Dtool_PyTypedObject Dtool_ReferenceCount;
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_ReferenceCount;
 //               type is known, which has a Python representation.
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<MemoryUsagePointers>::
-get_python_pointer(int n) const {
+get_python_pointer(size_t n) const {
   TypedObject *typed_ptr = _this->get_typed_pointer(n);
   ReferenceCount *ref_ptr = _this->get_pointer(n);
 

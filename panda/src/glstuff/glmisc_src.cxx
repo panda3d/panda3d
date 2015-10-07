@@ -14,6 +14,10 @@
 
 #include "pandaSystem.h"
 
+ConfigVariableInt gl_version
+  ("gl-version", "",
+   PRC_DESC("Set this to get an OpenGL context with a specific version."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "
@@ -183,9 +187,11 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
-ConfigVariableBool gl_matrix_palette
-  ("gl-matrix-palette", false,
-   PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
+ConfigVariableBool gl_force_fbo_color
+  ("gl-force-fbo-color", true,
+   PRC_DESC("This is set to true to force all FBOs to have at least one "
+            "color attachment.  This is to work around an Intel driver "
+            "issue.  Set to false to allow depth-only FBOs."));
 
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,

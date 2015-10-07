@@ -25,18 +25,7 @@
 
 TypeHandle RescaleNormalAttrib::_type_handle;
 int RescaleNormalAttrib::_attrib_slot;
-
-// This variable is defined here instead of in config_pgraph.cxx,
-// because it depends on rescaleNormalAttrib.h having already been
-// included.
-static ConfigVariableEnum<RescaleNormalAttrib::Mode> rescale_normals
-("rescale-normals", RescaleNormalAttrib::M_auto,
- PRC_DESC("Specifies the kind of RescaleNormalAttrib that should be "
-          "created for the top of the scene graph.  This can automatically "
-          "ensure that your lighting normals are unit-length, which may be "
-          "particularly necessary in the presence of scales in the scene "
-          "graph.  Turning it off ('none') may produce a small performance "
-          "benefit."));
+CPT(RenderAttrib) RescaleNormalAttrib::_attribs[RescaleNormalAttrib::M_auto + 1];
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RescaleNormalAttrib::make
@@ -47,28 +36,18 @@ static ConfigVariableEnum<RescaleNormalAttrib::Mode> rescale_normals
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RescaleNormalAttrib::
 make(RescaleNormalAttrib::Mode mode) {
-  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
-  return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RescaleNormalAttrib::make_default
-//       Access: Published, Static
-//  Description: Constructs a RescaleNoramlAttrib object that's
-//               suitable for putting at the top of a scene graph.
-//               This will contain whatever attrib was suggested by
-//               the user's rescale-normals Config variable.
-////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) RescaleNormalAttrib::
-make_default() {
-  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(rescale_normals);
-  return return_new(attrib);
+  if (_attribs[mode].is_null()) {
+    // Don't bother with return_new, since this is the only way a
+    // RescaleNormalAttrib can be made anyway.
+    _attribs[mode] = new RescaleNormalAttrib(mode);
+  }
+  return _attribs[mode];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RescaleNormalAttrib::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RescaleNormalAttrib::
 output(ostream &out) const {
@@ -92,8 +71,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int RescaleNormalAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const RescaleNormalAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const RescaleNormalAttrib *ta = (const RescaleNormalAttrib *)other;
   return (int)_mode - (int)ta->_mode;
 }
 
@@ -112,6 +90,21 @@ get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, (int)_mode);
   return hash;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RescaleNormalAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RescaleNormalAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  // We currently only support M_normalize in the ShaderGenerator.
+  if (_mode == M_none || _mode == M_normalize) {
+    return this;
+  } else {
+    return RescaleNormalAttrib::make(M_normalize);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,6 +163,35 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RescaleNormalAttrib::init_type
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void RescaleNormalAttrib::
+init_type() {
+  RenderAttrib::init_type();
+  register_type(_type_handle, "RescaleNormalAttrib",
+                RenderAttrib::get_class_type());
+
+  // This is defined here, since we have otherwise no guarantee that
+  // the config var has already been constructed by the time we call
+  // init_type() at static init time.
+  static ConfigVariableEnum<RescaleNormalAttrib::Mode> rescale_normals
+  ("rescale-normals", RescaleNormalAttrib::M_auto,
+   PRC_DESC("Specifies the kind of RescaleNormalAttrib that should be "
+            "created for the top of the scene graph.  This can automatically "
+            "ensure that your lighting normals are unit-length, which may be "
+            "particularly necessary in the presence of scales in the scene "
+            "graph.  Turning it off ('none') may produce a small performance "
+            "benefit."));
+
+  Mode mode = rescale_normals;
+  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
+  _attrib_slot = register_slot(_type_handle, 100, attrib);
+  _attribs[mode] = attrib;
 }
 
 ////////////////////////////////////////////////////////////////////

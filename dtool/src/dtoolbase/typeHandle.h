@@ -82,7 +82,7 @@ class TypedObject;
 //               ancestry of a particular type may be queried, and the
 //               type name may be retrieved for run-time display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL TypeHandle {
+class EXPCL_DTOOL TypeHandle FINAL {
 PUBLISHED:
   enum MemoryClass {
     MC_singleton,
@@ -94,8 +94,10 @@ PUBLISHED:
               // enum value.
   };
 
-  INLINE TypeHandle();
-  INLINE TypeHandle(const TypeHandle &copy);
+  // The default constructor must do nothing, because we can't
+  // guarantee ordering of static initializers.  If the constructor
+  // tried to initialize its value, it  might happen after the value
+  // had already been set previously by another static initializer!
 
   EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
@@ -121,14 +123,14 @@ PUBLISHED:
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = (TypedObject *)NULL) const;
 
-  INLINE int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
+  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
 #ifdef DO_MEMORY_USAGE
-  int get_memory_usage(MemoryClass memory_class) const;
+  size_t get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, size_t size);
   void dec_memory_usage(MemoryClass memory_class, size_t size);
 #else
-  static CONSTEXPR int get_memory_usage(MemoryClass) { return 0; }
+  static CONSTEXPR size_t get_memory_usage(MemoryClass) { return 0; }
   INLINE void inc_memory_usage(MemoryClass, size_t) { }
   INLINE void dec_memory_usage(MemoryClass, size_t) { }
 #endif  // DO_MEMORY_USAGE
@@ -137,6 +139,9 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
   INLINE static TypeHandle none();
   INLINE operator bool () const;
+
+public:
+  INLINE static TypeHandle from_index(int index);
 
 private:
   int _index;

@@ -43,7 +43,7 @@ WeakPointerTo(const PointerTo<T> &copy) :
 template<class T>
 INLINE WeakPointerTo<T>::
 WeakPointerTo(const WeakPointerTo<T> &copy) :
-  WeakPointerToBase<T>(*(const PointerToBase<T> *)&copy)
+  WeakPointerToBase<T>(*(const WeakPointerToBase<T> *)&copy)
 {
 }
 
@@ -194,7 +194,7 @@ WeakConstPointerTo(const ConstPointerTo<T> &copy) :
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const WeakPointerTo<T> &copy) :
-  WeakPointerToBase<T>(*(const PointerToBase<T> *)&copy)
+  WeakPointerToBase<T>(*(const WeakPointerToBase<T> *)&copy)
 {
 }
 
@@ -206,7 +206,7 @@ WeakConstPointerTo(const WeakPointerTo<T> &copy) :
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
-  WeakPointerToBase<T>(*(const PointerToBase<T> *)&copy)
+  WeakPointerToBase<T>(*(const WeakPointerToBase<T> *)&copy)
 {
 }
 

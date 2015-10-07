@@ -31,7 +31,7 @@ goto done
 :missing2
   echo %thirdparty%
   echo You seem to be missing the 'thirdparty' directory.  You probably checked
-  echo the source code out from sourceforge.  The sourceforge repository is
+  echo the source code out from GitHub.  The GitHub repository is
   echo missing the 'thirdparty' directory.  You will need to supplement the
   echo code by downloading the 'thirdparty' directory from www.panda3d.org
   goto done

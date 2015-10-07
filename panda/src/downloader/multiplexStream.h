@@ -36,6 +36,10 @@ class EXPCL_PANDAEXPRESS MultiplexStream : public ostream {
 PUBLISHED:
   INLINE MultiplexStream();
 
+#if _MSC_VER >= 1800
+  INLINE MultiplexStream(const MultiplexStream &copy) = delete;
+#endif
+
   INLINE void add_ostream(ostream *out, bool delete_later = false);
   INLINE bool add_stdio_file(FILE *file, bool close_when_done);
   INLINE void add_standard_output();

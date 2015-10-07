@@ -25,7 +25,7 @@
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
 #define PY_FROM_FLOATTYPE PyFloat_FromDouble
-#define PY_AS_FLOATTYPE PyFloat_AsDouble
+#define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ __reduce__(PyObject *self) const {
 //  Description: This is used to implement swizzle masks.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
-__getattr__(const string &attr_name) const {
+__getattr__(PyObject *self, const string &attr_name) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
@@ -90,7 +90,7 @@ __getattr__(const string &attr_name) const {
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it != 'x' && *it != 'y') {
-      return NULL;
+      return Dtool_Raise_AttributeError(self, attr_name.c_str());
     }
   }
 
@@ -121,7 +121,7 @@ __getattr__(const string &attr_name) const {
     }
   }
 
-  return NULL;
+  return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,10 +135,7 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it != 'x' && *it != 'y') {
-      PyTypeObject *tp = self->ob_type;
-      PyErr_Format(PyExc_AttributeError,
-                   "'%.100s' object has no attribute '%.200s'",
-                   tp->tp_name, attr_name.c_str());
+      Dtool_Raise_AttributeError(self, attr_name.c_str());
       return -1;
     }
   }

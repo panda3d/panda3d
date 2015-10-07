@@ -33,7 +33,7 @@ class BulletShape;
 class EXPCL_PANDABULLET BulletRigidBodyNode : public BulletBodyNode {
 
 PUBLISHED:
-  BulletRigidBodyNode(const char *name="rigid");
+  explicit BulletRigidBodyNode(const char *name="rigid");
   INLINE ~BulletRigidBodyNode();
 
   // Mass & inertia

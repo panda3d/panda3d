@@ -1,4 +1,6 @@
-from panda3d.core import Filename, URLSpec, DocumentSpec, Ramfile, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
+__all__ = ["PackageInfo"]
+
+from panda3d.core import Filename, DocumentSpec, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
 import panda3d.core as core
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.ScanDirectoryNode import ScanDirectoryNode
@@ -275,7 +277,7 @@ class PackageInfo:
             # We've already got one.
             yield self.stepComplete; return
 
-        if self.host.appRunner and self.host.appRunner.verifyContents != self.host.appRunner.P3DVCNever:
+        if not self.host.appRunner or self.host.appRunner.verifyContents != self.host.appRunner.P3DVCNever:
             # We're allowed to download it.
             self.http = http
 
@@ -521,7 +523,8 @@ class PackageInfo:
 
         # In case of unexpected failures on the internet, we will retry
         # the full download instead of just giving up.
-        for retry in range(core.ConfigVariableInt('package-full-dl-retries', 1)):
+        retries = core.ConfigVariableInt('package-full-dl-retries', 1).getValue()
+        for retry in range(retries):
             self.installPlans.append(planB[:])
 
         pc.stop()
@@ -1149,7 +1152,7 @@ class PackageInfo:
         thisDir = ScanDirectoryNode(self.getPackageDir(), ignoreUsageXml = True)
         diskSpace = thisDir.getTotalSize()
         self.notify.info("Package %s uses %s MB" % (
-            self.packageName, (diskSpace + 524288) / 1048576))
+            self.packageName, (diskSpace + 524288) // 1048576))
         return diskSpace
 
     def markUsed(self):

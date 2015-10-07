@@ -212,6 +212,13 @@ add_material(EggPrimitive *egg_prim) {
 ////////////////////////////////////////////////////////////////////
 int XFileMesh::
 add_vertex(XFileVertex *vertex) {
+  if (vertex->_has_color) {
+    _has_colors = true;
+  }
+  if (vertex->_has_uv) {
+    _has_uvs = true;
+  }
+
   int next_index = _vertices.size();
   _unique_vertices.insert(UniqueVertices::value_type(vertex, next_index));
   _vertices.push_back(vertex);
@@ -228,6 +235,10 @@ add_vertex(XFileVertex *vertex) {
 ////////////////////////////////////////////////////////////////////
 int XFileMesh::
 add_normal(XFileNormal *normal) {
+  if (normal->_has_normal) {
+    _has_normals = true;
+  }
+
   int next_index = _normals.size();
   _unique_normals.insert(UniqueNormals::value_type(normal, next_index));
   _normals.push_back(normal);
@@ -244,6 +255,10 @@ add_normal(XFileNormal *normal) {
 ////////////////////////////////////////////////////////////////////
 int XFileMesh::
 add_material(XFileMaterial *material) {
+  if (material->has_material()) {
+    _has_materials = true;
+  }
+
   int next_index = _materials.size();
   _unique_materials.insert(UniqueMaterials::value_type(material, next_index));
   _materials.push_back(material);

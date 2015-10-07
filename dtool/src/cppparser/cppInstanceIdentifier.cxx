@@ -166,7 +166,16 @@ add_scoped_pointer_modifier(CPPIdentifier *scoping) {
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_array_modifier(CPPExpression *expr) {
-  _modifiers.push_back(Modifier::array_type(expr));
+  // Special case for operator new[] and delete[].  We're not really
+  // adding an array modifier to them, but appending [] to the
+  // identifier.  This is to work around a parser ambiguity.
+  if (_ident != NULL && (_ident->get_simple_name() == "operator delete" ||
+                         _ident->get_simple_name() == "operator new")) {
+
+    _ident->_names.back().append_name("[]");
+  } else {
+    _modifiers.push_back(Modifier::array_type(expr));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,6 +284,11 @@ r_unroll_type(CPPType *start_type,
 
   case IIT_const:
     result = new CPPConstType(r_unroll_type(start_type, mi));
+    break;
+
+  case IIT_volatile:
+    // Just pass it through for now.
+    result = r_unroll_type(start_type, mi);
     break;
 
   case IIT_paren:
