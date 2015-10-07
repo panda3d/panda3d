@@ -122,6 +122,8 @@ PUBLISHED:
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void forward_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
+  BLOCKING void apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale = 1.0);
+
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void apply_mask(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
