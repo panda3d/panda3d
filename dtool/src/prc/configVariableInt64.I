@@ -29,11 +29,11 @@ ConfigVariableInt64(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableInt64::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const string &name, PN_int64 default_value, 
-                  const string &description, PN_int64 flags) :
+ConfigVariableInt64(const string &name, PN_int64 default_value,
+                    const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_int64, description, flags),
 #else
@@ -48,11 +48,11 @@ ConfigVariableInt64(const string &name, PN_int64 default_value,
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableInt64::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const string &name, const string &default_value, 
-                  const string &description, PN_int64 flags) :
+ConfigVariableInt64(const string &name, const string &default_value,
+                    const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_int64, description, flags),
 #else
@@ -89,7 +89,7 @@ operator PN_int64 () const {
 //       Access: Published
 //  Description: Returns the number of unique words in the variable.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int64 ConfigVariableInt64::
+INLINE size_t ConfigVariableInt64::
 size() const {
   return get_num_words();
 }
@@ -100,7 +100,7 @@ size() const {
 //  Description: Returns the value of the variable's nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 ConfigVariableInt64::
-operator [] (int n) const {
+operator [] (size_t n) const {
   return get_word(n);
 }
 
@@ -150,7 +150,7 @@ get_default_value() const {
 //  Description: Returns the variable's nth value.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 ConfigVariableInt64::
-get_word(int n) const {
+get_word(size_t n) const {
   return get_int64_word(n);
 }
 
@@ -161,7 +161,7 @@ get_word(int n) const {
 //               local copy of the variable's overall value.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariableInt64::
-set_word(int n, PN_int64 value) {
+set_word(size_t n, PN_int64 value) {
   set_int64_word(n, value);
 }
 

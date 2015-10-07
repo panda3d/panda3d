@@ -63,12 +63,12 @@ PUBLISHED:
   ConfigDeclaration *make_declaration(ConfigVariableCore *variable, const string &value);
   bool delete_declaration(ConfigDeclaration *decl);
 
-  int get_num_declarations() const;
-  const ConfigDeclaration *get_declaration(int n) const;
-  ConfigDeclaration *modify_declaration(int n);
-  string get_variable_name(int n) const;
-  string get_string_value(int n) const;
-  bool is_variable_used(int n) const;
+  size_t get_num_declarations() const;
+  const ConfigDeclaration *get_declaration(size_t n) const;
+  ConfigDeclaration *modify_declaration(size_t n);
+  string get_variable_name(size_t n) const;
+  string get_string_value(size_t n) const;
+  bool is_variable_used(size_t n) const;
 
   void output(ostream &out) const;
   void output_brief_signature(ostream &out) const;

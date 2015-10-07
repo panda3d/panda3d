@@ -69,13 +69,13 @@ PUBLISHED:
   INLINE void prepend_path(const DSearchPath &path);
 
   INLINE bool is_empty() const;
-  INLINE int get_num_directories() const;
-  INLINE const Filename &get_directory(int n) const;
+  INLINE size_t get_num_directories() const;
+  INLINE const Filename &get_directory(size_t n) const;
   MAKE_SEQ(get_directories, get_num_directories, get_directory);
 
   INLINE Filename find_file(const Filename &filename) const;
-  INLINE int find_all_files(const Filename &filename, 
-                            DSearchPath::Results &results) const;
+  INLINE size_t find_all_files(const Filename &filename,
+                               DSearchPath::Results &results) const;
   INLINE DSearchPath::Results find_all_files(const Filename &filename) const;
 
   INLINE void output(ostream &out) const;

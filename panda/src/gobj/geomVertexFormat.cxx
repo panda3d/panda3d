@@ -205,8 +205,8 @@ get_union_format(const GeomVertexFormat *other) const {
     // Add the columns from the first format.
     if (ai < _arrays.size()) {
       GeomVertexArrayFormat *array_format = _arrays[ai];
-      int num_columns = array_format->get_num_columns();
-      for (int i = 0; i < num_columns; ++i) {
+      size_t num_columns = array_format->get_num_columns();
+      for (size_t i = 0; i < num_columns; ++i) {
         const GeomVertexColumn *column_a = array_format->get_column(i);
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
@@ -232,8 +232,8 @@ get_union_format(const GeomVertexFormat *other) const {
     // Add the columns from the second format.
     if (ai < other->_arrays.size()) {
       GeomVertexArrayFormat *array_format = other->_arrays[ai];
-      int num_columns = array_format->get_num_columns();
-      for (int i = 0; i < num_columns; ++i) {
+      size_t num_columns = array_format->get_num_columns();
+      for (size_t i = 0; i < num_columns; ++i) {
         const GeomVertexColumn *column_a = array_format->get_column(i);
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
@@ -276,9 +276,9 @@ get_union_format(const GeomVertexFormat *other) const {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat *GeomVertexFormat::
-modify_array(int array) {
+modify_array(size_t array) {
   nassertr(!is_registered(), NULL);
-  nassertr(array >= 0 && array < (int)_arrays.size(), NULL);
+  nassertr(array < _arrays.size(), NULL);
 
   if (_arrays[array]->is_registered() ||
       _arrays[array]->get_ref_count() > 1) {
@@ -297,9 +297,9 @@ modify_array(int array) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
-set_array(int array, const GeomVertexArrayFormat *format) {
+set_array(size_t array, const GeomVertexArrayFormat *format) {
   nassertv(!is_registered());
-  nassertv(array >= 0 && array < (int)_arrays.size());
+  nassertv(array < _arrays.size());
   _arrays[array] = (GeomVertexArrayFormat *)format;
 }
 
@@ -312,10 +312,10 @@ set_array(int array, const GeomVertexArrayFormat *format) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
-remove_array(int array) {
+remove_array(size_t array) {
   nassertv(!is_registered());
 
-  nassertv(array >= 0 && array < (int)_arrays.size());
+  nassertv(array < _arrays.size());
   _arrays.erase(_arrays.begin() + array);
 }
 
@@ -330,11 +330,11 @@ remove_array(int array) {
 //               This may not be called once the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-int GeomVertexFormat::
+size_t GeomVertexFormat::
 add_array(const GeomVertexArrayFormat *array_format) {
-  nassertr(!is_registered(), -1);
+  nassertr(!is_registered(), 0);
 
-  int new_array = (int)_arrays.size();
+  size_t new_array = _arrays.size();
   _arrays.push_back((GeomVertexArrayFormat *)array_format);
   return new_array;
 }
@@ -351,9 +351,9 @@ add_array(const GeomVertexArrayFormat *array_format) {
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
-insert_array(int array, const GeomVertexArrayFormat *array_format) {
+insert_array(size_t array, const GeomVertexArrayFormat *array_format) {
   nassertv(!is_registered());
-  nassertv(array >= 0 && array <= (int)_arrays.size());
+  nassertv(array <= _arrays.size());
 
   _arrays.insert(_arrays.begin() + array, (GeomVertexArrayFormat *)array_format);
 }
@@ -403,9 +403,9 @@ remove_empty_arrays() {
 //  Description: Returns the total number of different columns in
 //               the specification, across all arrays.
 ////////////////////////////////////////////////////////////////////
-int GeomVertexFormat::
+size_t GeomVertexFormat::
 get_num_columns() const {
-  int num_columns = 0;
+  size_t num_columns = 0;
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
     num_columns += (*ai)->get_num_columns();
@@ -420,7 +420,7 @@ get_num_columns() const {
 //               across all arrays.
 ////////////////////////////////////////////////////////////////////
 const GeomVertexColumn *GeomVertexFormat::
-get_column(int i) const {
+get_column(size_t i) const {
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
     if (i < (*ai)->get_num_columns()) {
@@ -445,7 +445,7 @@ get_column(int i) const {
 //               array data.
 ////////////////////////////////////////////////////////////////////
 int GeomVertexFormat::
-get_array_with(int i) const {
+get_array_with(size_t i) const {
   int array_index = 0;
   for (array_index = 0; array_index < (int)_arrays.size(); array_index++) {
     if (i < _arrays[array_index]->get_num_columns()) {

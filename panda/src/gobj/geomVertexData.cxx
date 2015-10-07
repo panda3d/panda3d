@@ -1675,7 +1675,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
     CPT(GeomVertexArrayFormat) blend_array_format = orig_format->get_array(blend_array_index);
 
     if (blend_array_format->get_stride() == 2 &&
-        blend_array_format->get_column(0)->get_component_bytes() == 2) {
+        blend_array_format->get_column((size_t)0)->get_component_bytes() == 2) {
       // The blend indices are a table of ushorts.  Optimize this
       // common case.
       CPT(GeomVertexArrayDataHandle) blend_array_handle = cdata->_arrays[blend_array_index].get_read_pointer()->get_handle(current_thread);

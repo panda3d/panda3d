@@ -89,7 +89,7 @@ operator bool () const {
 //       Access: Published
 //  Description: Returns the number of unique words in the variable.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableBool::
+INLINE size_t ConfigVariableBool::
 size() const {
   return get_num_words();
 }
@@ -100,7 +100,7 @@ size() const {
 //  Description: Returns the value of the variable's nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBool::
-operator [] (int n) const {
+operator [] (size_t n) const {
   return get_word(n);
 }
 
@@ -150,7 +150,7 @@ get_default_value() const {
 //  Description: Returns the variable's nth value.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBool::
-get_word(int n) const {
+get_word(size_t n) const {
   return get_bool_word(n);
 }
 
@@ -161,6 +161,6 @@ get_word(int n) const {
 //               local copy of the variable's overall value.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariableBool::
-set_word(int n, bool value) {
+set_word(size_t n, bool value) {
   set_bool_word(n, value);
 }

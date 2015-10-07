@@ -126,11 +126,11 @@ PUBLISHED:
   int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
 #ifdef DO_MEMORY_USAGE
-  int get_memory_usage(MemoryClass memory_class) const;
+  size_t get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, size_t size);
   void dec_memory_usage(MemoryClass memory_class, size_t size);
 #else
-  static CONSTEXPR int get_memory_usage(MemoryClass) { return 0; }
+  static CONSTEXPR size_t get_memory_usage(MemoryClass) { return 0; }
   INLINE void inc_memory_usage(MemoryClass, size_t) { }
   INLINE void dec_memory_usage(MemoryClass, size_t) { }
 #endif  // DO_MEMORY_USAGE

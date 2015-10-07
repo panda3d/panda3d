@@ -3460,23 +3460,23 @@ write_function_for_name(ostream &out, Object *obj,
   if (map_sets.size() > 1) {
     switch (args_type) {
     case AT_keyword_args:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "Py_ssize_t parameter_count = PyTuple_Size(args);\n";
       indent(out, 2) << "if (kwds != NULL) {\n";
       indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
       indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "Py_ssize_t parameter_count = PyTuple_Size(args);\n";
       break;
 
     case AT_single_arg:
       // It shouldn't get here, but we'll handle these cases nonetheless.
-      indent(out, 2) << "const int parameter_count = 1;\n";
+      indent(out, 2) << "const Py_ssize_t parameter_count = 1;\n";
       break;
 
     default:
-      indent(out, 2) << "const int parameter_count = 0;\n";
+      indent(out, 2) << "const Py_ssize_t parameter_count = 0;\n";
       break;
     }
 
@@ -3571,19 +3571,19 @@ write_function_for_name(ostream &out, Object *obj,
       switch (args_type) {
       case AT_keyword_args:
         out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
-        out << "    int parameter_count = PyTuple_Size(args);\n";
+        out << "    Py_ssize_t parameter_count = PyTuple_Size(args);\n";
         out << "    if (kwds != NULL) {\n";
         out << "      parameter_count += PyDict_Size(kwds);\n";
         out << "    }\n";
         break;
       case AT_varargs:
         out << "  if (PyTuple_Size(args) > 0) {\n";
-        out << "    const int parameter_count = PyTuple_GET_SIZE(args);\n";
+        out << "    const Py_ssize_t parameter_count = PyTuple_GET_SIZE(args);\n";
         break;
       case AT_single_arg:
         // Shouldn't happen, but let's handle this case nonetheless.
         out << "  {\n";
-        out << "    const int parameter_count = 1;\n";
+        out << "    const Py_ssize_t parameter_count = 1;\n";
         break;
       case AT_no_args:
         break;
@@ -3603,7 +3603,7 @@ write_function_for_name(ostream &out, Object *obj,
     } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg
       // in write_function_forset (not using ParseTupleAndKeywords).
-      out << "    int parameter_count = PyTuple_Size(args);\n"
+      out << "    Py_ssize_t parameter_count = PyTuple_Size(args);\n"
              "    if (kwds != NULL) {\n"
              "      parameter_count += PyDict_Size(kwds);\n"
              "    }\n"
@@ -3724,7 +3724,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -3762,7 +3762,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -6679,7 +6679,7 @@ is_remap_legal(FunctionRemap *remap) {
   }
 
   // all non-optional params must be legal
-  for (int pn = 0; pn < (int)remap->_parameters.size(); pn++) {
+  for (size_t pn = 0; pn < remap->_parameters.size(); pn++) {
     ParameterRemap *param = remap->_parameters[pn]._remap;
     CPPType *orig_type = param->get_orig_type();
     if (param->get_default_value() == NULL && !is_cpp_type_legal(orig_type)) {
@@ -6767,12 +6767,12 @@ is_remap_coercion_possible(FunctionRemap *remap) {
     return false;
   }
 
-  int pn = 0;
+  size_t pn = 0;
   if (remap->_has_this) {
     // Skip the "this" parameter.  It's never coercible.
     ++pn;
   }
-  while (pn < (int)remap->_parameters.size()) {
+  while (pn < remap->_parameters.size()) {
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
 
     if (TypeManager::is_char_pointer(type)) {

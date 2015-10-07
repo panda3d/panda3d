@@ -447,7 +447,7 @@ string_severity(const string &str) {
   for (string::const_iterator si = str.begin();
        si != str.end();
        ++si) {
-    lstring += tolower(*si);
+    lstring += (char)tolower(*si);
   }
 
   if (lstring == "spam") {

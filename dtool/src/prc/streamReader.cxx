@@ -68,7 +68,7 @@ get_z_string() {
   string result;
   int ch = _in->get();
   while (!_in->eof() && !_in->fail() && ch != '\0') {
-    result += ch;
+    result += (char)ch;
     ch = _in->get();
   }
 
@@ -167,7 +167,7 @@ readline() {
   string line;
   int ch = _in->get();
   while (!_in->eof() && !_in->fail()) {
-    line += ch;
+    line += (char)ch;
     if (ch == '\n') {
       // Here's the newline character.
       return line;

@@ -102,8 +102,8 @@ PUBLISHED:
   void pack_columns();
   void align_columns_for_animation();
 
-  INLINE int get_num_columns() const;
-  INLINE const GeomVertexColumn *get_column(int i) const;
+  INLINE size_t get_num_columns() const;
+  INLINE const GeomVertexColumn *get_column(size_t i) const;
   MAKE_SEQ(get_columns, get_num_columns, get_column);
 
   const GeomVertexColumn *get_column(const InternalName *name) const;

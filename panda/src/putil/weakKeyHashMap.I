@@ -247,7 +247,7 @@ operator [] (const Key *key) {
 //  Description: Returns the total number of slots in the table.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value>
-INLINE int WeakKeyHashMap<Key, Value>::
+INLINE size_t WeakKeyHashMap<Key, Value>::
 get_size() const {
   return _table_size;
 }
@@ -377,7 +377,7 @@ remove_element(int n) {
   // Now we have put a hole in the table.  If there was a hash
   // conflict in the slot following this one, we have to move it down
   // to close the hole.
-  size_t i = n;
+  size_t i = (size_t)n;
   i = (i + 1) & (_table_size - 1);
   while (get_exists_array()[i] != 0) {
     if (_table[i]._key.was_deleted()) {
@@ -426,7 +426,7 @@ remove_element(int n) {
 //               pointers that were recently deleted.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value>
-INLINE int WeakKeyHashMap<Key, Value>::
+INLINE size_t WeakKeyHashMap<Key, Value>::
 get_num_entries() const {
   return _num_entries;
 }

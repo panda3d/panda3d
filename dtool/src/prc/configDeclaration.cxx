@@ -58,7 +58,7 @@ ConfigDeclaration::
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-set_string_word(int n, const string &value) {
+set_string_word(size_t n, const string &value) {
   if (!_got_words) {
     get_words();
   }
@@ -92,7 +92,7 @@ set_string_word(int n, const string &value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-set_bool_word(int n, bool value) {
+set_bool_word(size_t n, bool value) {
   set_string_word(n, value ? "1" : "0");
 
   _words[n]._flags |= (F_checked_bool | F_valid_bool);
@@ -107,7 +107,7 @@ set_bool_word(int n, bool value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-set_int_word(int n, int value) {
+set_int_word(size_t n, int value) {
   set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_int | F_valid_int);
@@ -122,7 +122,7 @@ set_int_word(int n, int value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-set_int64_word(int n, PN_int64 value) {
+set_int64_word(size_t n, PN_int64 value) {
   set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_int64 | F_valid_int64);
@@ -137,7 +137,7 @@ set_int64_word(int n, PN_int64 value) {
 //               affecting the other words.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-set_double_word(int n, double value) {
+set_double_word(size_t n, double value) {
   set_string_word(n, format_string(value));
 
   _words[n]._flags |= (F_checked_double | F_valid_double);
@@ -202,7 +202,7 @@ get_words() {
 //               boolean value.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-check_bool_word(int n) {
+check_bool_word(size_t n) {
   if (!_got_words) {
     get_words();
   }
@@ -249,7 +249,7 @@ check_bool_word(int n) {
 //               integer value.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-check_int_word(int n) {
+check_int_word(size_t n) {
   if (!_got_words) {
     get_words();
   }
@@ -309,7 +309,7 @@ check_int_word(int n) {
 //               integer value.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-check_int64_word(int n) {
+check_int64_word(size_t n) {
   if (!_got_words) {
     get_words();
   }
@@ -367,7 +367,7 @@ check_int64_word(int n) {
 //               floating-point value.
 ////////////////////////////////////////////////////////////////////
 void ConfigDeclaration::
-check_double_word(int n) {
+check_double_word(size_t n) {
   if (!_got_words) {
     get_words();
   }
@@ -403,9 +403,9 @@ check_double_word(int n) {
 //
 //               The return value is the number of words extracted.
 ////////////////////////////////////////////////////////////////////
-int ConfigDeclaration::
+size_t ConfigDeclaration::
 extract_words(const string &str, vector_string &words) {
-  int num_words = 0;
+  size_t num_words = 0;
 
   size_t pos = 0;
   while (pos < str.length() && isspace((unsigned int)str[pos])) {
@@ -439,7 +439,7 @@ downcase(const string &s) {
   result.reserve(s.size());
   string::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
-    result += tolower(*p);
+    result += (char)tolower(*p);
   }
   return result;
 }

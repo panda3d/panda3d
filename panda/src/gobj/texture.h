@@ -597,7 +597,7 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
   PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
   void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
-  int do_get_clear_data(const CData *cdata, unsigned char *into) const;
+  size_t do_get_clear_data(const CData *cdata, unsigned char *into) const;
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
   bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,

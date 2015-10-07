@@ -123,15 +123,15 @@ PUBLISHED:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
-  INLINE int get_composition_cache_num_entries() const;
-  INLINE int get_invert_composition_cache_num_entries() const;
+  INLINE size_t get_composition_cache_num_entries() const;
+  INLINE size_t get_invert_composition_cache_num_entries() const;
 
-  INLINE int get_composition_cache_size() const;
-  INLINE const RenderState *get_composition_cache_source(int n) const;
-  INLINE const RenderState *get_composition_cache_result(int n) const;
-  INLINE int get_invert_composition_cache_size() const;
-  INLINE const RenderState *get_invert_composition_cache_source(int n) const;
-  INLINE const RenderState *get_invert_composition_cache_result(int n) const;
+  INLINE size_t get_composition_cache_size() const;
+  INLINE const RenderState *get_composition_cache_source(size_t n) const;
+  INLINE const RenderState *get_composition_cache_result(size_t n) const;
+  INLINE size_t get_invert_composition_cache_size() const;
+  INLINE const RenderState *get_invert_composition_cache_source(size_t n) const;
+  INLINE const RenderState *get_invert_composition_cache_result(size_t n) const;
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 

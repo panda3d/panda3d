@@ -98,7 +98,7 @@ operator != (const Socket_Address &in) const {
 //  Description: Set to the broadcast address and a specified port
 ////////////////////////////////////////////////////////////////////
 INLINE bool Socket_Address::
-set_broadcast(int port) {
+set_broadcast(unsigned short port) {
   _addr.sin_family = AF_INET;
   _addr.sin_addr.s_addr = 0xffffffff;
   _addr.sin_port = htons(port);
@@ -111,7 +111,7 @@ set_broadcast(int port) {
 //  Description: Set to any address and a specified port
 ////////////////////////////////////////////////////////////////////
 INLINE bool Socket_Address::
-set_any_IP(int port) {
+set_any_IP(unsigned short port) {
   _addr.sin_family = AF_INET;
   _addr.sin_addr.s_addr = INADDR_ANY;
   _addr.sin_port = htons(port);
@@ -124,7 +124,7 @@ set_any_IP(int port) {
 //  Description: Set to a specified port
 ////////////////////////////////////////////////////////////////////
 INLINE bool Socket_Address::
-set_port(int port) {
+set_port(unsigned short port) {
   _addr.sin_port = htons(port);
   return true;
 }
@@ -182,7 +182,7 @@ get_ip_port() const {
 //               it returns false and the address may be undefined.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Socket_Address::
-set_host(const std::string &hostname, int port) {
+set_host(const std::string &hostname, unsigned short port) {
   struct hostent *hp = NULL;
 
   //
@@ -195,7 +195,7 @@ set_host(const std::string &hostname, int port) {
   //
   //
 
-  PN_uint32 addr =  (long)inet_addr(hostname.c_str());
+  PN_uint32 addr = (PN_uint32)inet_addr(hostname.c_str());
   if (addr == INADDR_NONE) {
     hp = gethostbyname(hostname.c_str());
     if (hp == NULL) {
@@ -226,7 +226,7 @@ set_host(const std::string &hostname) {
   std::string host = hostname.substr(0, pos);
   std::string port = hostname.substr(pos + 1, 100);;
 
-  int port_dig = atoi(port.c_str());
+  unsigned short port_dig = (unsigned short)atoi(port.c_str());
   return set_host(host, port_dig);
 }
 
@@ -236,7 +236,7 @@ set_host(const std::string &hostname) {
 //  Description:
 //////////////////////////////////////////////////////////////
 INLINE bool Socket_Address::
-set_host(PN_uint32 in_hostname, int port) {
+set_host(PN_uint32 in_hostname, unsigned short port) {
   memcpy(&_addr.sin_addr, &in_hostname, sizeof(in_hostname));
   _addr.sin_port = htons(port);
   _addr.sin_family = AF_INET;

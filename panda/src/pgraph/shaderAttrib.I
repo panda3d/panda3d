@@ -272,7 +272,7 @@ set_shader_input(CPT_InternalName id, const NodePath &np, int priority) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, double n1, double n2, double n3, double n4, int priority) const {
-  return set_shader_input(new ShaderInput(MOVE(id), LVecBase4(n1, n2, n3, n4), priority));
+  return set_shader_input(new ShaderInput(MOVE(id), LVecBase4((PN_stdfloat)n1, (PN_stdfloat)n2, (PN_stdfloat)n3, (PN_stdfloat)n4), priority));
 }
 
 //weifengh

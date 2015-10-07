@@ -4432,7 +4432,7 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
 //               be initialized with this string repeated for
 //               every pixel.
 ////////////////////////////////////////////////////////////////////
-int Texture::
+size_t Texture::
 do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
   nassertr(cdata->_num_components <= 4, 0);

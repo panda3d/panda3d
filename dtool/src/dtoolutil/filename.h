@@ -121,7 +121,7 @@ PUBLISHED:
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
-  INLINE char operator [] (int n) const;
+  INLINE char operator [] (size_t n) const;
 
   EXTENSION(PyObject *__repr__() const);
 

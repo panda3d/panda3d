@@ -119,7 +119,7 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint4) &source) {
 
 INLINE_LINMATH FLOATNAME2(LQuaternion)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion) &c) {
-  return FLOATNAME2(LQuaternion)(c.get_r(), c.get_i(), c.get_j(), c.get_k());
+  return FLOATNAME2(LQuaternion)((FLOATTYPE2)c.get_r(), (FLOATTYPE2)c.get_i(), (FLOATTYPE2)c.get_j(), (FLOATTYPE2)c.get_k());
 }
 
 INLINE_LINMATH FLOATNAME2(LMatrix3)
@@ -141,45 +141,45 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix4) &source) {
 
 INLINE_LINMATH FLOATNAME2(LVecBase2)
 lcast_to(FLOATTYPE2 *, const LVecBase2i &source) {
-  return FLOATNAME2(LVecBase2)(source[0], source[1]);
+  return FLOATNAME2(LVecBase2)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1]);
 }
 
 INLINE_LINMATH FLOATNAME2(LVecBase3)
 lcast_to(FLOATTYPE2 *, const LVecBase3i &source) {
-  return FLOATNAME2(LVecBase3)(source[0], source[1], source[2]);
+  return FLOATNAME2(LVecBase3)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2]);
 }
 
 INLINE_LINMATH FLOATNAME2(LVecBase4)
 lcast_to(FLOATTYPE2 *, const LVecBase4i &source) {
-  return FLOATNAME2(LVecBase4)(source[0], source[1], source[2], source[3]);
+  return FLOATNAME2(LVecBase4)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2], (FLOATTYPE2)source[3]);
 }
 
 INLINE_LINMATH FLOATNAME2(LVector2)
 lcast_to(FLOATTYPE2 *, const LVector2i &source) {
-  return FLOATNAME2(LVector2)(source[0], source[1]);
+  return FLOATNAME2(LVector2)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1]);
 }
 
 INLINE_LINMATH FLOATNAME2(LVector3)
 lcast_to(FLOATTYPE2 *, const LVector3i &source) {
-  return FLOATNAME2(LVector3)(source[0], source[1], source[2]);
+  return FLOATNAME2(LVector3)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2]);
 }
 
 INLINE_LINMATH FLOATNAME2(LVector4)
 lcast_to(FLOATTYPE2 *, const LVector4i &source) {
-  return FLOATNAME2(LVector4)(source[0], source[1], source[2], source[3]);
+  return FLOATNAME2(LVector4)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2], (FLOATTYPE2)source[3]);
 }
 
 INLINE_LINMATH FLOATNAME2(LPoint2)
 lcast_to(FLOATTYPE2 *, const LPoint2i &source) {
-  return FLOATNAME2(LPoint2)(source[0], source[1]);
+  return FLOATNAME2(LPoint2)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1]);
 }
 
 INLINE_LINMATH FLOATNAME2(LPoint3)
 lcast_to(FLOATTYPE2 *, const LPoint3i &source) {
-  return FLOATNAME2(LPoint3)(source[0], source[1], source[2]);
+  return FLOATNAME2(LPoint3)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2]);
 }
 
 INLINE_LINMATH FLOATNAME2(LPoint4)
 lcast_to(FLOATTYPE2 *, const LPoint4i &source) {
-  return FLOATNAME2(LPoint4)(source[0], source[1], source[2], source[3]);
+  return FLOATNAME2(LPoint4)((FLOATTYPE2)source[0], (FLOATTYPE2)source[1], (FLOATTYPE2)source[2], (FLOATTYPE2)source[3]);
 }

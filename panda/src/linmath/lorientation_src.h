@@ -23,7 +23,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LOrientation)();
   INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion) &c);
   INLINE_LINMATH FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k);
-  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist);
+  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, FLOATTYPE twist);
   INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m);
   INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m);
 

@@ -349,7 +349,7 @@ has_system(const string &system) const {
 //               get_system() to iterate through the entire list of
 //               available Panda subsystems.
 ////////////////////////////////////////////////////////////////////
-int PandaSystem::
+size_t PandaSystem::
 get_num_systems() const {
   return _systems.size();
 }
@@ -362,8 +362,8 @@ get_num_systems() const {
 //               order.
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
-get_system(int n) const {
-  if (n < 0 || n >= (int)_systems.size()) {
+get_system(size_t n) const {
+  if (n >= _systems.size()) {
     return string();
   }
 

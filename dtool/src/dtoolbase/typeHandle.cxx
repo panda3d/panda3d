@@ -28,7 +28,7 @@ TypeHandle TypeHandle::_none;
 //               only updated if track-memory-usage is set true in
 //               your Config.prc file.
 ////////////////////////////////////////////////////////////////////
-int TypeHandle::
+size_t TypeHandle::
 get_memory_usage(MemoryClass memory_class) const {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) == TypeHandle::none()) {

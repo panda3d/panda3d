@@ -1304,7 +1304,7 @@ set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
   // Validate the format and make sure to copy its numeric type.
   const GeomVertexArrayFormat *format = vertices->get_array_format();
   nassertv(format->get_num_columns() == 1);
-  cdata->_index_type = format->get_column(0)->get_numeric_type();
+  cdata->_index_type = format->get_column((size_t)0)->get_numeric_type();
 
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;

@@ -48,25 +48,25 @@ PUBLISHED:
   INLINE void set_string_value(const string &value);
   INLINE void clear_value();
 
-  INLINE int get_num_words() const;
+  INLINE size_t get_num_words() const;
 
-  INLINE bool has_string_word(int n) const;
-  INLINE bool has_bool_word(int n) const;
-  INLINE bool has_int_word(int n) const;
-  INLINE bool has_int64_word(int n) const;
-  INLINE bool has_double_word(int n) const;
+  INLINE bool has_string_word(size_t n) const;
+  INLINE bool has_bool_word(size_t n) const;
+  INLINE bool has_int_word(size_t n) const;
+  INLINE bool has_int64_word(size_t n) const;
+  INLINE bool has_double_word(size_t n) const;
 
-  INLINE string get_string_word(int n) const;
-  INLINE bool get_bool_word(int n) const;
-  INLINE int get_int_word(int n) const;
-  INLINE PN_int64 get_int64_word(int n) const;
-  INLINE double get_double_word(int n) const;
+  INLINE string get_string_word(size_t n) const;
+  INLINE bool get_bool_word(size_t n) const;
+  INLINE int get_int_word(size_t n) const;
+  INLINE PN_int64 get_int64_word(size_t n) const;
+  INLINE double get_double_word(size_t n) const;
 
-  INLINE void set_string_word(int n, const string &value);
-  INLINE void set_bool_word(int n, bool value);
-  INLINE void set_int_word(int n, int value);
-  INLINE void set_int64_word(int n, PN_int64 value);
-  INLINE void set_double_word(int n, double value);
+  INLINE void set_string_word(size_t n, const string &value);
+  INLINE void set_bool_word(size_t n, bool value);
+  INLINE void set_int_word(size_t n, int value);
+  INLINE void set_int64_word(size_t n, PN_int64 value);
+  INLINE void set_double_word(size_t n, double value);
 
 protected:
   INLINE bool is_constructed() const;

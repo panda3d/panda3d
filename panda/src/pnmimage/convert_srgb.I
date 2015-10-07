@@ -66,7 +66,7 @@ encode_sRGB_float(unsigned char val) {
   // This seems like a very unlikely use case, so I didn't bother
   // making a look-up table for this.
   return (val == 0) ? 0
-    : (1.055f * cpow((float)val * (1.f / 255.f), 0.41666f) - 0.055);
+    : (1.055f * cpow((float)val * (1.f / 255.f), 0.41666f) - 0.055f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ INLINE float
 encode_sRGB_float(float val) {
   return (val < 0.0031308f)
     ? (val * 12.92f)
-    : (1.055f * cpow(val, 0.41666f) - 0.055);
+    : (1.055f * cpow(val, 0.41666f) - 0.055f);
 }
 
 ////////////////////////////////////////////////////////////////////

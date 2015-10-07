@@ -344,7 +344,7 @@ INLINE string Texture::
 get_clear_data() const {
   CDReader cdata(_cycler);
   unsigned char data[16];
-  int size = do_get_clear_data(cdata, data);
+  size_t size = do_get_clear_data(cdata, data);
   return string((char *)data, size);
 }
 
