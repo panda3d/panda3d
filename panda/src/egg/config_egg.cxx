@@ -126,7 +126,7 @@ ConfigVariableBool egg_consider_fans
           "vertex.  This may help if your scene involves lots of such "
           "connected triangles, but it can also make the overall stripping "
           "less effective (by interfering with triangle strips)."));
- 
+
 ConfigVariableDouble egg_max_tfan_angle
 ("egg-max-tfan-angle", 40.0,
  PRC_DESC("The maximum average angle per triangle to allow in a triangle "
@@ -159,6 +159,12 @@ ConfigVariableInt egg_recursion_limit
           "to prevent deeply-recursive algorithms from triggering a stack "
           "overflow.  Set it larger to run more efficiently if your stack "
           "allows it; set it lower if you experience stack overflows."));
+
+ConfigVariableInt egg_precision
+("egg-precision", 15,
+ PRC_DESC("The number of digits of precision to write out for values in "
+          "an egg file.  Leave this at 0 to use the default setting for the "
+          "stream."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg

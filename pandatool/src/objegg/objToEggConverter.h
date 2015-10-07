@@ -62,6 +62,7 @@ protected:
   bool process_g(vector_string &words);
 
   EggVertex *get_face_vertex(const string &face_reference);
+  void generate_egg_points();
 
   bool process_node(const Filename &filename);
   bool process_line_node(const string &line);
@@ -70,14 +71,14 @@ protected:
   bool process_g_node(vector_string &words);
 
   void generate_points();
-  int add_synth_normal(const LVecBase3 &normal);
+  int add_synth_normal(const LVecBase3d &normal);
 
   // Read from the obj file.
   int _line_number;
-  typedef epvector<LVecBase4> Vec4Table;
-  typedef epvector<LVecBase3> Vec3Table;
-  typedef epvector<LVecBase2> Vec2Table;
-  typedef pmap<LVecBase3, int> UniqueVec3Table;
+  typedef epvector<LVecBase4d> Vec4Table;
+  typedef epvector<LVecBase3d> Vec3Table;
+  typedef epvector<LVecBase2d> Vec2Table;
+  typedef pmap<LVecBase3d, int> UniqueVec3Table;
 
   Vec4Table _v_table;
   Vec3Table _vn_table, _rgb_table;
@@ -85,7 +86,7 @@ protected:
   Vec2Table _xvt_table;
   Vec3Table _synth_vn_table;
   UniqueVec3Table _unique_synth_vn_table;
-  LVecBase2 _ref_plane_res;
+  LVecBase2d _ref_plane_res;
   bool _v4_given, _vt3_given;
   bool _f_given;
 

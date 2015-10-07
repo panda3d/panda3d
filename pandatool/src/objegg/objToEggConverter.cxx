@@ -179,7 +179,7 @@ process(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *strm = vfs->open_read_file(filename, true);
   if (strm == NULL) {
-    objegg_cat.error() 
+    objegg_cat.error()
       << "Couldn't read " << filename << "\n";
     return false;
   }
@@ -238,13 +238,17 @@ process(const Filename &filename) {
     ++_line_number;
   }
 
+  if (!_f_given) {
+    generate_egg_points();
+  }
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_line
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_line(const string &line) {
@@ -281,7 +285,7 @@ process_line(const string &line) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_line
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_ref_plane_res(const string &line) {
@@ -300,9 +304,9 @@ process_ref_plane_res(const string &line) {
   }
 
   bool okflag = true;
-  LPoint3 pos;
-  okflag &= string_to_stdfloat(words[1], _ref_plane_res[0]);
-  okflag &= string_to_stdfloat(words[2], _ref_plane_res[1]);
+  LPoint3d pos;
+  okflag &= string_to_double(words[1], _ref_plane_res[0]);
+  okflag &= string_to_double(words[2], _ref_plane_res[1]);
 
   if (!okflag) {
     objegg_cat.error()
@@ -316,24 +320,24 @@ process_ref_plane_res(const string &line) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_v
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_v(vector_string &words) {
-  if (words.size() != 4 && words.size() != 5 && 
+  if (words.size() != 4 && words.size() != 5 &&
       words.size() != 7 && words.size() != 8) {
     objegg_cat.error()
       << "Wrong number of tokens at line " << _line_number << "\n";
     return false;
   }
-  
+
   bool okflag = true;
-  LPoint4 pos;
-  okflag &= string_to_stdfloat(words[1], pos[0]);
-  okflag &= string_to_stdfloat(words[2], pos[1]);
-  okflag &= string_to_stdfloat(words[3], pos[2]);
+  LPoint4d pos;
+  okflag &= string_to_double(words[1], pos[0]);
+  okflag &= string_to_double(words[2], pos[1]);
+  okflag &= string_to_double(words[3], pos[2]);
   if (words.size() == 5 || words.size() == 8) {
-    okflag &= string_to_stdfloat(words[4], pos[3]);
+    okflag &= string_to_double(words[4], pos[3]);
     _v4_given = true;
   } else {
     pos[3] = 1.0;
@@ -351,10 +355,10 @@ process_v(vector_string &words) {
   // position.
   if (words.size() == 7 && words.size() == 8) {
     size_t si = words.size();
-    LVecBase3 rgb;
-    okflag &= string_to_stdfloat(words[si - 3], rgb[0]);
-    okflag &= string_to_stdfloat(words[si - 2], rgb[1]);
-    okflag &= string_to_stdfloat(words[si - 1], rgb[2]);
+    LVecBase3d rgb;
+    okflag &= string_to_double(words[si - 3], rgb[0]);
+    okflag &= string_to_double(words[si - 2], rgb[1]);
+    okflag &= string_to_double(words[si - 1], rgb[2]);
 
     if (!okflag) {
       objegg_cat.error()
@@ -362,7 +366,7 @@ process_v(vector_string &words) {
       return false;
     }
     while (_rgb_table.size() + 1 < _v_table.size()) {
-      _rgb_table.push_back(LVecBase3(1.0, 1.0, 1.0));
+      _rgb_table.push_back(LVecBase3d(1.0, 1.0, 1.0));
     }
     _rgb_table.push_back(rgb);
   }
@@ -373,7 +377,7 @@ process_v(vector_string &words) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_vt
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_vt(vector_string &words) {
@@ -382,13 +386,13 @@ process_vt(vector_string &words) {
       << "Wrong number of tokens at line " << _line_number << "\n";
     return false;
   }
-  
+
   bool okflag = true;
-  LTexCoord3 uvw;
-  okflag &= string_to_stdfloat(words[1], uvw[0]);
-  okflag &= string_to_stdfloat(words[2], uvw[1]);
+  LTexCoord3d uvw;
+  okflag &= string_to_double(words[1], uvw[0]);
+  okflag &= string_to_double(words[2], uvw[1]);
   if (words.size() == 4) {
-    okflag &= string_to_stdfloat(words[3], uvw[2]);
+    okflag &= string_to_double(words[3], uvw[2]);
     _vt3_given = true;
   } else {
     uvw[2] = 0.0;
@@ -420,11 +424,11 @@ process_xvt(vector_string &words) {
       << "Wrong number of tokens at line " << _line_number << "\n";
     return false;
   }
-  
+
   bool okflag = true;
-  LTexCoord uv;
-  okflag &= string_to_stdfloat(words[1], uv[0]);
-  okflag &= string_to_stdfloat(words[2], uv[1]);
+  LTexCoordd uv;
+  okflag &= string_to_double(words[1], uv[0]);
+  okflag &= string_to_double(words[2], uv[1]);
 
   if (!okflag) {
     objegg_cat.error()
@@ -454,7 +458,7 @@ process_xvc(vector_string &words) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_vn
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_vn(vector_string &words) {
@@ -463,12 +467,12 @@ process_vn(vector_string &words) {
       << "Wrong number of tokens at line " << _line_number << "\n";
     return false;
   }
-  
+
   bool okflag = true;
-  LVector3 normal;
-  okflag &= string_to_stdfloat(words[1], normal[0]);
-  okflag &= string_to_stdfloat(words[2], normal[1]);
-  okflag &= string_to_stdfloat(words[3], normal[2]);
+  LVector3d normal;
+  okflag &= string_to_double(words[1], normal[0]);
+  okflag &= string_to_double(words[2], normal[1]);
+  okflag &= string_to_double(words[3], normal[2]);
 
   if (!okflag) {
     objegg_cat.error()
@@ -550,13 +554,13 @@ get_face_vertex(const string &reference) {
     if (_v4_given) {
       synth.set_pos(LCAST(double, _v_table[entry._vi - 1]));
     } else {
-      LPoint4 pos = _v_table[entry._vi - 1];
+      LPoint4d pos = _v_table[entry._vi - 1];
       synth.set_pos(LPoint3d(pos[0], pos[1], pos[2]));
     }
 
     if (entry._vi - 1 < (int)_rgb_table.size()) {
       // We have a per-vertex color too.
-      LRGBColor rgb = _rgb_table[entry._vi - 1];
+      LRGBColord rgb = _rgb_table[entry._vi - 1];
       LColor rgba(rgb[0], rgb[1], rgb[2], 1.0);
       synth.set_color(rgba);
     }
@@ -565,22 +569,37 @@ get_face_vertex(const string &reference) {
   if (entry._vti != 0) {
     // We have a texture coordinate; apply it.
     if (_vt3_given) {
-      synth.set_uvw("", LCAST(double, _vt_table[entry._vti - 1]));
+      synth.set_uvw("", _vt_table[entry._vti - 1]);
     } else {
-      LTexCoord3 uvw = _vt_table[entry._vti - 1];
+      LTexCoord3d uvw = _vt_table[entry._vti - 1];
       synth.set_uv("", LTexCoordd(uvw[0], uvw[1]));
     }
   } else if (entry._vi - 1 < (int)_xvt_table.size()) {
     // We have an xvt texture coordinate.
-    synth.set_uv("", LCAST(double, _xvt_table[entry._vi - 1]));
+    synth.set_uv("", _xvt_table[entry._vi - 1]);
   }
 
   if (entry._vni != 0) {
     // We have a normal; apply it.
-    synth.set_normal(LCAST(double, _vn_table[entry._vni - 1]));
+    synth.set_normal(_vn_table[entry._vni - 1]);
   }
 
   return _vpool->create_unique_vertex(synth);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ObjToEggConverter::generate_egg_points
+//       Access: Protected
+//  Description: If an obj file defines no faces, create a bunch of
+//               EggVertex objects to illustrate the vertex positions
+//               at least.
+////////////////////////////////////////////////////////////////////
+void ObjToEggConverter::
+generate_egg_points() {
+  for (size_t vi = 0; vi < _v_table.size(); ++vi) {
+    const LVecBase4d &p = _v_table[vi];
+    _vpool->make_new_vertex(LVecBase3d(p[0], p[1], p[2]));
+  }
 }
 
 
@@ -594,7 +613,7 @@ process_node(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *strm = vfs->open_read_file(filename, true);
   if (strm == NULL) {
-    objegg_cat.error() 
+    objegg_cat.error()
       << "Couldn't read " << filename << "\n";
     return false;
   }
@@ -647,7 +666,7 @@ process_node(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::process_line_node
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ObjToEggConverter::
 process_line_node(const string &line) {
@@ -706,7 +725,7 @@ process_f_node(vector_string &words) {
 
   if (verts.size() < 3) {
     // Not enough vertices.
-    objegg_cat.error() 
+    objegg_cat.error()
       << "Degenerate face at " << _line_number << "\n";
     return false;
   }
@@ -714,16 +733,16 @@ process_f_node(vector_string &words) {
   int synth_vni = 0;
   if (!all_vn) {
     // Synthesize a normal if we need it.
-    LNormal normal = LNormal::zero();
+    LNormald normal = LNormald::zero();
     for (size_t i = 0; i < verts.size(); ++i) {
       int vi0 = verts[i]._vi;
       int vi1 = verts[(i + 1) % verts.size()]._vi;
       if (vi0 == 0 || vi1 == 0) {
         continue;
       }
-      const LVecBase4 &p0 = _v_table[vi0 - 1];
-      const LVecBase4 &p1 = _v_table[vi1 - 1];
-      
+      const LVecBase4d &p0 = _v_table[vi0 - 1];
+      const LVecBase4d &p1 = _v_table[vi1 - 1];
+
       normal[0] += p0[1] * p1[2] - p0[2] * p1[1];
       normal[1] += p0[2] * p1[0] - p0[0] * p1[2];
       normal[2] += p0[0] * p1[1] - p0[1] * p1[0];
@@ -738,7 +757,7 @@ process_f_node(vector_string &words) {
   if (verts.size() != 3) {
     // We have to triangulate a higher-order polygon.
     for (size_t i = 0; i < verts.size(); ++i) {
-      const LVecBase4 &p = _v_table[verts[i]._vi - 1];
+      const LVecBase4d &p = _v_table[verts[i]._vi - 1];
       tri.add_vertex(p[0], p[1], p[2]);
       tri.add_polygon_vertex(i);
     }
@@ -806,7 +825,7 @@ process_g_node(vector_string &words) {
   }
 
   _current_vertex_data = new VertexData(np.node(), name);
-  
+
   return true;
 }
 
@@ -825,8 +844,8 @@ generate_points() {
   GeomVertexWriter vertex_writer(vdata, InternalName::get_vertex());
 
   for (size_t vi = 0; vi < _v_table.size(); ++vi) {
-    const LVecBase4 &p = _v_table[vi];
-    vertex_writer.add_data3(p[0], p[1], p[2]);
+    const LVecBase4d &p = _v_table[vi];
+    vertex_writer.add_data3d(p[0], p[1], p[2]);
   }
 
   PT(GeomPrimitive) prim = new GeomPoints(GeomEnums::UH_static);
@@ -849,7 +868,7 @@ generate_points() {
 //               1-based index number to the normal.
 ////////////////////////////////////////////////////////////////////
 int ObjToEggConverter::
-add_synth_normal(const LVecBase3 &normal) {
+add_synth_normal(const LVecBase3d &normal) {
   pair<UniqueVec3Table::iterator, bool> result = _unique_synth_vn_table.insert(UniqueVec3Table::value_type(normal, _unique_synth_vn_table.size()));
   UniqueVec3Table::iterator ni = result.first;
   int index = (*ni).second;
@@ -879,7 +898,7 @@ VertexEntry(const ObjToEggConverter *converter, const string &obj_vertex) {
   vector_string words;
   tokenize(obj_vertex, words, "/", false);
   nassertv(!words.empty());
-  
+
   for (size_t i = 0; i < words.size(); ++i) {
     int index;
     if (trim(words[i]).empty()) {
@@ -927,11 +946,11 @@ VertexEntry(const ObjToEggConverter *converter, const string &obj_vertex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ObjToEggConverter::VertexData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ObjToEggConverter::VertexData::
-VertexData(PandaNode *parent, const string &name) : 
-  _parent(parent), _name(name) 
+VertexData(PandaNode *parent, const string &name) :
+  _parent(parent), _name(name)
 {
   _geom_node = NULL;
 
@@ -986,7 +1005,7 @@ add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry) {
       return index;
     }
   }
-      
+
   // We didn't already have a vertex we could repurpose, so try to add
   // exactly the desired vertex.
   result = _unique_entries.insert(UniqueVertexEntries::value_type(entry, _entries.size()));
@@ -1031,8 +1050,8 @@ add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry) {
 //               assigned to the last vertex.
 ////////////////////////////////////////////////////////////////////
 void ObjToEggConverter::VertexData::
-add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0, 
-             const VertexEntry &v1, const VertexEntry &v2, 
+add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0,
+             const VertexEntry &v1, const VertexEntry &v2,
              int synth_vni) {
   int v0i, v1i, v2i;
 
@@ -1064,24 +1083,24 @@ close_geom(const ObjToEggConverter *converter) {
     // used.
     PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
     if (_v4_given) {
-      aformat->add_column(InternalName::get_vertex(), 4, 
+      aformat->add_column(InternalName::get_vertex(), 4,
                           GeomEnums::NT_stdfloat, GeomEnums::C_point);
     } else {
-      aformat->add_column(InternalName::get_vertex(), 3, 
+      aformat->add_column(InternalName::get_vertex(), 3,
                           GeomEnums::NT_stdfloat, GeomEnums::C_point);
     }
-    
+
     // We always add normals--if no normals appeared in the file, we
     // synthesize them.
     aformat->add_column(InternalName::get_normal(), 3,
                         GeomEnums::NT_stdfloat, GeomEnums::C_vector);
-    
+
     if (_vt_given) {
       if (_vt3_given) {
-        aformat->add_column(InternalName::get_texcoord(), 3, 
+        aformat->add_column(InternalName::get_texcoord(), 3,
                             GeomEnums::NT_stdfloat, GeomEnums::C_texcoord);
       } else {
-        aformat->add_column(InternalName::get_texcoord(), 2, 
+        aformat->add_column(InternalName::get_texcoord(), 2,
                             GeomEnums::NT_stdfloat, GeomEnums::C_texcoord);
       }
     }
@@ -1090,54 +1109,54 @@ close_geom(const ObjToEggConverter *converter) {
       aformat->add_column(InternalName::get_color(), 4,
                           GeomEnums::NT_uint8, GeomEnums::C_color);
     }
-    
+
     CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(aformat);
-    
+
     // Create and populate the vertex data.
     PT(GeomVertexData) vdata = new GeomVertexData(_name, format, GeomEnums::UH_static);
     GeomVertexWriter vertex_writer(vdata, InternalName::get_vertex());
     GeomVertexWriter normal_writer(vdata, InternalName::get_normal());
     GeomVertexWriter texcoord_writer(vdata, InternalName::get_texcoord());
     GeomVertexWriter color_writer(vdata, InternalName::get_color());
-    
+
     for (size_t i = 0; i < _entries.size(); ++i) {
       const VertexEntry &entry = _entries[i];
-      
+
       if (entry._vi != 0) {
         vertex_writer.set_row(i);
-        vertex_writer.add_data4(converter->_v_table[entry._vi - 1]);
+        vertex_writer.add_data4d(converter->_v_table[entry._vi - 1]);
       }
       if (entry._vti != 0) {
         texcoord_writer.set_row(i);
-        texcoord_writer.add_data3(converter->_vt_table[entry._vti - 1]);
+        texcoord_writer.add_data3d(converter->_vt_table[entry._vti - 1]);
       } else if (entry._vi - 1 < (int)converter->_xvt_table.size()) {
         // We have an xvt texture coordinate.
         texcoord_writer.set_row(i);
-        texcoord_writer.add_data2(converter->_xvt_table[entry._vi - 1]);
+        texcoord_writer.add_data2d(converter->_xvt_table[entry._vi - 1]);
       }
       if (entry._vni != 0) {
         normal_writer.set_row(i);
-        normal_writer.add_data3(converter->_vn_table[entry._vni - 1]);
+        normal_writer.add_data3d(converter->_vn_table[entry._vni - 1]);
       } else if (entry._synth_vni != 0) {
         normal_writer.set_row(i);
-        normal_writer.add_data3(converter->_synth_vn_table[entry._synth_vni - 1]);
+        normal_writer.add_data3d(converter->_synth_vn_table[entry._synth_vni - 1]);
       } else {
         // In this case, the normal isn't used and doesn't matter; we
         // fill it in a unit vector just for neatness.
         normal_writer.set_row(i);
-        normal_writer.add_data3(0, 0, 1);
-      }        
+        normal_writer.add_data3d(0, 0, 1);
+      }
       if (_rgb_given) {
         if (entry._vi - 1 < (int)converter->_rgb_table.size()) {
           color_writer.set_row(i);
-          color_writer.add_data3(converter->_rgb_table[entry._vi - 1]);
+          color_writer.add_data3d(converter->_rgb_table[entry._vi - 1]);
         }
       }
     }
 
     // Transform to zup-right.
     vdata->transform_vertices(LMatrix4::convert_mat(CS_zup_right, CS_default));
-    
+
     // Now create a Geom with this data.
     CPT(RenderState) state = RenderState::make_empty();
     if (_rgb_given) {
@@ -1159,10 +1178,10 @@ close_geom(const ObjToEggConverter *converter) {
       _geom_node = new GeomNode(_name);
       _parent->add_child(_geom_node);
     }
-    
+
     _geom_node->add_geom(geom, state);
   }
-  
+
   _prim = new GeomTriangles(GeomEnums::UH_static);
   _entries.clear();
   _unique_entries.clear();
