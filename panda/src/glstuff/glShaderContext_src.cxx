@@ -1852,9 +1852,9 @@ void CLP(ShaderContext)::
 update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
 
-  int i = 0;
+  size_t i = 0;
   if (table != NULL) {
-    int num_transforms = min(_transform_table_size, table->get_num_transforms());
+    size_t num_transforms = min((size_t)_transform_table_size, table->get_num_transforms());
     for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
       LMatrix4 matrix;
@@ -1885,8 +1885,8 @@ update_slider_table(const SliderTable *table) {
   memset(sliders, 0, _slider_table_size * 4);
 
   if (table != NULL) {
-    int num_sliders = min(_slider_table_size, table->get_num_sliders());
-    for (int i = 0; i < num_sliders; ++i) {
+    size_t num_sliders = min((size_t)_slider_table_size, table->get_num_sliders());
+    for (size_t i = 0; i < num_sliders; ++i) {
       sliders[i] = table->get_slider(i)->get_slider();
     }
   }

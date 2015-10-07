@@ -151,9 +151,9 @@ get_total_bytes() const {
 //  Description: Returns the number of different columns in the
 //               array.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t GeomVertexArrayFormat::
+INLINE int GeomVertexArrayFormat::
 get_num_columns() const {
-  return _columns.size();
+  return (int)_columns.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,10 +162,10 @@ get_num_columns() const {
 //  Description: Returns the ith column of the array.
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexColumn *GeomVertexArrayFormat::
-get_column(size_t i) const {
-  nassertr(i < _columns.size(), NULL);
+get_column(int i) const {
+  nassertr(i >= 0 && i < (int)_columns.size(), NULL);
   consider_sort_columns();
-  return _columns[i];
+  return _columns[(size_t)i];
 }
 
 ////////////////////////////////////////////////////////////////////
