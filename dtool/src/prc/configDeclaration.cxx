@@ -63,7 +63,7 @@ set_string_word(size_t n, const string &value) {
     get_words();
   }
 
-  while (n >= (int)_words.size()) {
+  while (n >= _words.size()) {
     Word w;
     w._flags = 0;
     _words.push_back(w);
@@ -207,7 +207,7 @@ check_bool_word(size_t n) {
     get_words();
   }
 
-  if (n >= 0 && n < (int)_words.size()) {
+  if (n < _words.size()) {
     Word &word = _words[n];
     if ((word._flags & F_checked_bool) == 0) {
       word._flags |= F_checked_bool;
@@ -254,7 +254,7 @@ check_int_word(size_t n) {
     get_words();
   }
 
-  if (n >= 0 && n < (int)_words.size()) {
+  if (n < _words.size()) {
     Word &word = _words[n];
     if ((word._flags & F_checked_int) == 0) {
       word._flags |= F_checked_int;
@@ -314,7 +314,7 @@ check_int64_word(size_t n) {
     get_words();
   }
 
-  if (n >= 0 && n < (int)_words.size()) {
+  if (n < _words.size()) {
     Word &word = _words[n];
     if ((word._flags & F_checked_int64) == 0) {
       word._flags |= F_checked_int64;
@@ -372,7 +372,7 @@ check_double_word(size_t n) {
     get_words();
   }
 
-  if (n >= 0 && n < (int)_words.size()) {
+  if (n < _words.size()) {
     Word &word = _words[n];
     if ((word._flags & F_checked_double) == 0) {
       word._flags |= F_checked_double;

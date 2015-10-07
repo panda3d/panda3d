@@ -3460,23 +3460,23 @@ write_function_for_name(ostream &out, Object *obj,
   if (map_sets.size() > 1) {
     switch (args_type) {
     case AT_keyword_args:
-      indent(out, 2) << "Py_ssize_t parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       indent(out, 2) << "if (kwds != NULL) {\n";
-      indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
+      indent(out, 2) << "  parameter_count += (int)PyDict_Size(kwds);\n";
       indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
-      indent(out, 2) << "Py_ssize_t parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       break;
 
     case AT_single_arg:
       // It shouldn't get here, but we'll handle these cases nonetheless.
-      indent(out, 2) << "const Py_ssize_t parameter_count = 1;\n";
+      indent(out, 2) << "const int parameter_count = 1;\n";
       break;
 
     default:
-      indent(out, 2) << "const Py_ssize_t parameter_count = 0;\n";
+      indent(out, 2) << "const int parameter_count = 0;\n";
       break;
     }
 
@@ -3571,19 +3571,19 @@ write_function_for_name(ostream &out, Object *obj,
       switch (args_type) {
       case AT_keyword_args:
         out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
-        out << "    Py_ssize_t parameter_count = PyTuple_Size(args);\n";
+        out << "    int parameter_count = (int)PyTuple_Size(args);\n";
         out << "    if (kwds != NULL) {\n";
-        out << "      parameter_count += PyDict_Size(kwds);\n";
+        out << "      parameter_count += (int)PyDict_Size(kwds);\n";
         out << "    }\n";
         break;
       case AT_varargs:
         out << "  if (PyTuple_Size(args) > 0) {\n";
-        out << "    const Py_ssize_t parameter_count = PyTuple_GET_SIZE(args);\n";
+        out << "    const int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
         break;
       case AT_single_arg:
         // Shouldn't happen, but let's handle this case nonetheless.
         out << "  {\n";
-        out << "    const Py_ssize_t parameter_count = 1;\n";
+        out << "    const int parameter_count = 1;\n";
         break;
       case AT_no_args:
         break;
@@ -3603,9 +3603,9 @@ write_function_for_name(ostream &out, Object *obj,
     } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg
       // in write_function_forset (not using ParseTupleAndKeywords).
-      out << "    Py_ssize_t parameter_count = PyTuple_Size(args);\n"
+      out << "    int parameter_count = (int)PyTuple_Size(args);\n"
              "    if (kwds != NULL) {\n"
-             "      parameter_count += PyDict_Size(kwds);\n"
+             "      parameter_count += (int)PyDict_Size(kwds);\n"
              "    }\n"
              "  if (parameter_count != 1) {\n"
              "#ifdef NDEBUG\n";
