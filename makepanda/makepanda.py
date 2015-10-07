@@ -7033,7 +7033,7 @@ try:
 
             fn += VERSION
 
-            if SDK["PYTHONVERSION"] != "python2.7":
+            if not RUNTIME and SDK["PYTHONVERSION"] != "python2.7":
                 fn += '-py' + SDK["PYTHONVERSION"][6:]
 
             if GetOptimize() <= 2:
