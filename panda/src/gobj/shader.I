@@ -682,7 +682,7 @@ ShaderPtrData(const LVecBase2i &vec) :
 INLINE void Shader::ShaderPtrData::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
-  dg.add_uint32(_size);
+  dg.add_uint32((PN_uint32)_size);
 
   if (_type == SPT_double) {
     const double *data = (const double *) _ptr;
@@ -867,7 +867,7 @@ get_filename_from_index(int index, ShaderType type) const {
     }
   } else if (glsl_preprocess && index >= 2048 &&
              (index - 2048) < (int)_included_files.size()) {
-    return _included_files[index - 2048];
+    return _included_files[(size_t)index - 2048];
   }
   // Must be a mistake.  Quietly put back the integer.
   char str[32];
