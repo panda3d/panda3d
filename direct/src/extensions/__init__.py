@@ -1,1 +1,1 @@
-from PandaModules import *
+from pandac.PandaModules import *
