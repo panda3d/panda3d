@@ -42,21 +42,6 @@ makepanda\makepanda.bat --everything --installer
 When the build succeeds, it will produce an .exe file that you can use to
 install Panda3D on your system.
 
-Mac
----
-1. install the NVIDIA Cg toolkit
-2. install xcode packagemaker from apple developer site
-3. install homebrew http://brew.sh/
-4.do the command  brew install fftw --with-fortran python apple-gcc42 freetype gtk+ wxmac eigen jpeg
-libpng ode --enable-double-precision libtiff
-5. get rest of third party depependencies from the site or from a developer 64 bit or 32 bit depending on your system
-6. cd  panda3d  if u cloned it to your username directory
-7. run python makepanda/makepanda.py --everything --installer --no-ffmpeg --no-vrpn --no-rocket --no-opencv --no-gles --no-gles2 --no-egl
-to makes it go faster do --threads (number how many processors u have) 
-8. open resulting dmg from that folder and then run the .pkg
-9. done you compiled panda3d on mac 
-
-
 Linux
 -----
 
