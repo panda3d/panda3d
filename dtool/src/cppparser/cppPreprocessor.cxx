@@ -189,7 +189,7 @@ CPPPreprocessor() {
   _noangles = false;
   _state = S_eof;
   _paren_nesting = 0;
-  _angle_bracket_found = false;
+  _parsing_template_params = false;
   _unget = '\0';
   _last_c = '\0';
   _start_of_line = true;
@@ -847,6 +847,11 @@ internal_get_next_token() {
     break;
 
   case '>':
+    if (_parsing_template_params && _paren_nesting <= 0) {
+      // Don't parse > as greater-than when parsing a template list, as per C++11.
+      // However, nested >> must be preserved, such as in A<(2>>1)>
+      break;
+    }
     if (next_c == '>' && _last_c == '=') {
       _last_c = get();
       return CPPToken(RSHIFTEQUAL, first_line, first_col, first_file);
@@ -934,7 +939,7 @@ internal_get_next_token() {
 
     case '>':
       if (_paren_nesting <= 0) {
-        _angle_bracket_found = true;
+        _parsing_template_params = false;
         _state = S_end_nested;
         return CPPToken::eof();
       }
@@ -2351,14 +2356,18 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 
   State old_state = _state;
   int old_nesting = _paren_nesting;
+  bool old_parsing_params = _parsing_template_params;
 
   const CPPTemplateParameterList &formal_params = scope->_parameters;
   CPPTemplateParameterList::Parameters::const_iterator pi;
-  _angle_bracket_found = false;
+
+  _state = S_nested;
+  _paren_nesting = 0;
+  _parsing_template_params = true;
 
   CPPToken token = internal_get_next_token();
   if (token._token == '>') {
-    _angle_bracket_found = true;
+    _parsing_template_params = false;
   } else {
     _saved_tokens.push_back(token);
   }
@@ -2366,17 +2375,15 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   CPPTemplateParameterList *actual_params = new CPPTemplateParameterList;
 
   for (pi = formal_params._parameters.begin();
-       pi != formal_params._parameters.end() && !_angle_bracket_found;
+       pi != formal_params._parameters.end() && _parsing_template_params;
        ++pi) {
-    _state = S_nested;
-    _paren_nesting = 0;
-
     CPPFile first_file = get_file();
     int first_line = get_line_number();
     int first_col = get_col_number();
 
     CPPDeclaration *decl = (*pi);
     if (decl->as_type()) {
+      // Parse a typename template parameter.
       _saved_tokens.push_back(CPPToken(START_TYPE));
       CPPType *type = ::parse_type(this, current_scope, global_scope);
       if (type == NULL) {
@@ -2386,6 +2393,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
       }
       actual_params->_parameters.push_back(type);
     } else {
+      // Parse a constant expression template parameter.
       _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
       CPPExpression *expr = parse_const_expr(this, current_scope, global_scope);
       if (expr == NULL) {
@@ -2395,16 +2403,19 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
       }
       actual_params->_parameters.push_back(expr);
     }
+
+    _state = S_nested;
+    _paren_nesting = 0;
   }
 
-  if (!_angle_bracket_found) {
+  if (_parsing_template_params) {
     warning("Ignoring extra parameters in template instantiation");
     skip_to_angle_bracket();
   }
 
   _state = old_state;
   _paren_nesting = old_nesting;
-  _angle_bracket_found = false;
+  _parsing_template_params = old_parsing_params;
 
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
@@ -2461,7 +2472,7 @@ skip_to_angle_bracket() {
     << "Skipping tokens:\n";
 #endif
 
-  while (!_angle_bracket_found && _state != S_eof) {
+  while (_parsing_template_params && _state != S_eof) {
     _state = S_nested;
     while (_state != S_end_nested && _state != S_eof) {
       get_next_token();

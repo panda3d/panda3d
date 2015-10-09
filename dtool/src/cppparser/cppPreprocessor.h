@@ -198,7 +198,7 @@ private:
   };
   State _state;
   int _paren_nesting;
-  bool _angle_bracket_found;
+  bool _parsing_template_params;
 
   bool _start_of_line;
   int _unget;
