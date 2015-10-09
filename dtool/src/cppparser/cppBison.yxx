@@ -1138,6 +1138,7 @@ template_declaration:
 {
   pop_scope();
 }
+	| KW_TEMPLATE type_like_declaration
         ;
 
 template_formal_parameters:
