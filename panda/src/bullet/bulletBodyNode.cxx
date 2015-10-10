@@ -761,7 +761,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(get_ccd_swept_sphere_radius());
   dg.add_stdfloat(get_ccd_motion_threshold());
 
-  for (int i = 0; i < _shapes.size(); ++i) {
+  for (unsigned int i = 0; i < _shapes.size(); ++i) {
     manager->write_pointer(dg, get_shape(i));
     manager->write_pointer(dg, get_shape_transform(i));
   }

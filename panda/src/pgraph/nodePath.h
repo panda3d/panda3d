@@ -278,8 +278,7 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
   INLINE void reverse_ls() const;
-  INLINE int reverse_ls(ostream &out, int indent_level = 0) const;
-
+  int reverse_ls(ostream &out, int indent_level = 0) const;
 
   // Aggregate transform and state information.
   const RenderState *get_state(Thread *current_thread = Thread::get_current_thread()) const;

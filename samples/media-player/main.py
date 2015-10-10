@@ -38,7 +38,8 @@ class MediaPlayer(ShowBase):
         # but we want to make sure we get a MovieTexture, since it
         # implements synchronizeTo.
         self.tex = MovieTexture("name")
-        assert self.tex.read(media_file), "Failed to load video!"
+        success = self.tex.read(media_file)
+        assert success, "Failed to load video!"
 
         # Set up a fullscreen card to set the video texture on.
         cm = CardMaker("My Fullscreen Card")

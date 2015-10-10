@@ -112,6 +112,7 @@ PUBLISHED:
   };
 
 public:
+  virtual GeometricBoundingVolume *as_geometric_bounding_volume();
   virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const;
   virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;
   virtual const BoundingSphere *as_bounding_sphere() const;

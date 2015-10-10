@@ -39,6 +39,18 @@ CPPToken(int token, int line_number, int col_number,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPToken::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPToken::
+CPPToken(int token, const YYLTYPE &loc, const string &str, const YYSTYPE &val) :
+  _token(token), _lloc(loc), _lval(val)
+{
+  _lval.str = str;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPToken::Copy Constructor
 //       Access: Public
 //  Description:

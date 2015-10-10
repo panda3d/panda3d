@@ -646,6 +646,25 @@ clear_color_write_mask() {
 
 #ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glLoadMatrix
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glLoadMatrix(const LMatrix4 &mat) {
+#if defined(OPENGLES) && defined(STDFLOAT_DOUBLE)
+  LMatrix4f matf = LCAST(float, mat);
+  glLoadMatrixf(matf.get_data());
+#elif defined(STDFLOAT_DOUBLE)
+  glLoadMatrixd(mat.get_data());
+#else
+  glLoadMatrixf(mat.get_data());
+#endif
+}
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogfv
 //       Access: Public
 //  Description: This method is necessary because there is no

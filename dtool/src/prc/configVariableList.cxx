@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableList::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableList::
 output(ostream &out) const {
@@ -27,12 +27,12 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableList::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableList::
 write(ostream &out) const {
-  int num_values = get_num_values();
-  for (int i = 0; i < num_values; ++i) {
+  size_t num_values = get_num_values();
+  for (size_t i = 0; i < num_values; ++i) {
     out << get_string_value(i) << "\n";
   }
 }

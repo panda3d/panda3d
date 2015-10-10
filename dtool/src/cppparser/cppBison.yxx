@@ -61,13 +61,18 @@ yyerror(const string &msg) {
 }
 
 static void
+yyerror(YYLTYPE *loc, const string &msg) {
+  current_lexer->error(msg, *loc);
+}
+
+static void
 yyerror(const string &msg, YYLTYPE &loc) {
-  current_lexer->error(msg, loc.first_line, loc.first_column);
+  current_lexer->error(msg, loc);
 }
 
 static void
 yywarning(const string &msg, YYLTYPE &loc) {
-  current_lexer->warning(msg, loc.first_line, loc.first_column);
+  current_lexer->warning(msg, loc);
 }
 
 static int
@@ -194,8 +199,10 @@ pop_struct() {
 
 /* This is a bison-specific declaration to enable recursive calls to
    yyparse().  It changes the calling sequence to yylex(), passing
-   pointers to the current yylval and yylloc. */
-%pure_parser
+   pointers to the current yylval and yylloc.  It also adds a pointer
+   to the current lloc to yyerror, which gives us better diagnostics. */
+%define api.pure full
+%locations
 
 %token <u.real> REAL
 %token <u.integer> INTEGER
@@ -822,7 +829,7 @@ function_prototype:
     yyerror("Invalid destructor name: ~" + $2->get_fully_scoped_name(), @2);
   } else {
     CPPIdentifier *ident =
-      new CPPIdentifier("~" + $2->get_simple_name(), @2.file);
+      new CPPIdentifier("~" + $2->get_simple_name(), @2);
     delete $2;
 
     CPPType *type;
@@ -897,7 +904,7 @@ function_prototype:
   string name = "operator typecast " + $2->get_simple_name();
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier(name, @1.file);
+    ident = new CPPIdentifier(name, @2);
   } else {
     ident->add_name(name);
   }
@@ -918,7 +925,7 @@ function_prototype:
 
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator typecast", @1.file);
+    ident = new CPPIdentifier("operator typecast", @4);
   } else {
     ident->add_name("operator typecast");
   }
@@ -1138,6 +1145,7 @@ template_declaration:
 {
   pop_scope();
 }
+	| KW_TEMPLATE type_like_declaration
         ;
 
 template_formal_parameters:
@@ -1222,7 +1230,7 @@ instance_identifier:
   // like a regular function.
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator "+$2, @2.file);
+    ident = new CPPIdentifier("operator "+$2, @2);
   } else {
     ident->_names.push_back("operator "+$2);
   }
@@ -1233,6 +1241,11 @@ instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' instance_identifier  %prec UNARY
 {
@@ -1409,6 +1422,16 @@ formal_parameter:
   $$ = new CPPInstance($2, $3, 0, @3.file);
   $$->set_initializer($4);
 }
+        | KW_CONST KW_REGISTER type formal_parameter_identifier maybe_initialize
+{
+  $4->add_modifier(IIT_const);
+  $$ = new CPPInstance($3, $4, 0, @3.file);
+  $$->set_initializer($5);
+}
+        | KW_REGISTER formal_parameter
+{
+  $$ = $2;
+}
         | formal_const_expr
 {
   CPPType *type =
@@ -1435,6 +1458,11 @@ not_paren_formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' not_paren_formal_parameter_identifier  %prec UNARY
 {
@@ -1480,6 +1508,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' formal_parameter_identifier  %prec UNARY
 {
@@ -1528,6 +1561,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' empty_instance_identifier  %prec UNARY
 {

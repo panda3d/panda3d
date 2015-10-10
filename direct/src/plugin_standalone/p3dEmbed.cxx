@@ -53,7 +53,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // the + 1 from the test.
   _read_offset_check = read_offset + (streampos)1;
   if (_read_offset_check == (streampos)0xFF3D3D01) {
-    cerr << "This program is not intended to be run directly.\nIt is used by pdeploy to construct an embedded Panda3D application.\n";
+    cerr << "This program is not intended to be run directly.\nIt is used "
+            "by pdeploy to construct an embedded Panda3D application.\n";
     return 1;
   }
 
@@ -86,22 +87,30 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   string value;
   string root_dir;
   string host_dir;
+  string start_dir;
+
   while (true) {
     if (curchr == EOF) {
       cerr << "Truncated stream\n";
-      return(1);
+      return 1;
 
     } else if (curchr == 0) {
       // Two null bytes in a row means we've reached the end of the data.
       if (havenull) {
         break;
       }
-      
+
       // This means we haven't seen an '=' character yet.
       if (keyword == "") {
         if (curstr != "") {
           cerr << "Ignoring token '" << curstr << "' without value\n";
         }
+
+      } else if (keyword == "start_dir") {
+        // Don't pass this on as a token, since it has slightly different
+        // semantics when used as an HTML token.
+        start_dir = curstr;
+
       } else {
         value.assign(curstr);
         P3D_token token;
@@ -118,6 +127,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
           _got_win_size = true;
         } else if (keyword == "log_basename") {
           _log_basename = value;
+        } else if (keyword == "log_directory") {
+          _log_dirname = value;
         } else if (keyword == "root_dir") {
           root_dir = value;
         } else if (keyword == "host_dir") {
@@ -166,6 +177,13 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
     Filename host_dir_f(host_dir);
     host_dir_f.make_absolute(f.get_dirname());
     _host_dir = host_dir_f.to_os_specific();
+  }
+
+  // Make the start directory absolute
+  if (!start_dir.empty()) {
+    Filename start_dir_f(start_dir);
+    start_dir_f.make_absolute(f.get_dirname());
+    _start_dir = start_dir_f.to_os_specific();
   }
 
   // Initialize the core API by directly assigning all of the function
@@ -229,17 +247,16 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // function pointers.  This will also call P3D_initialize().
   if (!init_plugin("", _host_url, _verify_contents, _this_platform, 
                    _log_dirname, _log_basename, true, _console_environment,
-                   _root_dir, _host_dir, cerr)) {
+                   _root_dir, _host_dir, _start_dir, cerr)) {
     cerr << "Unable to launch core API\n";
     return 1;
   }
-  
+
   // Create a plugin instance and run the program
   P3D_instance *inst = create_instance(f, true, argv, argc, read_offset);
   _instances.insert(inst);
   
   run_main_loop();
-
 
   unload_plugin(cerr);
   return 0;

@@ -66,7 +66,7 @@ get_search_path() {
 //               specified with the PRC_FILENAME variable in
 //               Config.pp.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigPageManager::
+INLINE size_t ConfigPageManager::
 get_num_prc_patterns() const {
   return _prc_patterns.size();
 }
@@ -79,8 +79,8 @@ get_num_prc_patterns() const {
 //               get_num_prc_patterns().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigPageManager::
-get_prc_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_prc_patterns.size(), string());
+get_prc_pattern(size_t n) const {
+  nassertr(n < _prc_patterns.size(), string());
   return _prc_patterns[n].get_pattern();
 }
 
@@ -91,7 +91,7 @@ get_prc_pattern(int n) const {
 //               are compiled in that will be searched for as special
 //               config files that are understood to be encrypted.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigPageManager::
+INLINE size_t ConfigPageManager::
 get_num_prc_encrypted_patterns() const {
   return _prc_encrypted_patterns.size();
 }
@@ -104,8 +104,8 @@ get_num_prc_encrypted_patterns() const {
 //               file.  See get_num_prc_encrypted_patterns().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigPageManager::
-get_prc_encrypted_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_prc_patterns.size(), string());
+get_prc_encrypted_pattern(size_t n) const {
+  nassertr(n < _prc_patterns.size(), string());
   return _prc_encrypted_patterns[n].get_pattern();
 }
 
@@ -118,7 +118,7 @@ get_prc_encrypted_pattern(int n) const {
 //               and their output taken to be input.  This is normally
 //               empty.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigPageManager::
+INLINE size_t ConfigPageManager::
 get_num_prc_executable_patterns() const {
   return _prc_executable_patterns.size();
 }
@@ -131,8 +131,8 @@ get_num_prc_executable_patterns() const {
 //               file.  See get_num_prc_executable_patterns().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigPageManager::
-get_prc_executable_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_prc_patterns.size(), string());
+get_prc_executable_pattern(size_t n) const {
+  nassertr(n < _prc_patterns.size(), string());
   return _prc_executable_patterns[n].get_pattern();
 }
 
@@ -144,7 +144,7 @@ get_prc_executable_pattern(int n) const {
 //               were automatically discovered on the disk as .prc
 //               files.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigPageManager::
+INLINE size_t ConfigPageManager::
 get_num_implicit_pages() const {
   return _implicit_pages.size();
 }
@@ -156,9 +156,9 @@ get_num_implicit_pages() const {
 //               See get_num_implicit_pages().
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigPage *ConfigPageManager::
-get_implicit_page(int n) const {
+get_implicit_page(size_t n) const {
   check_sort_pages();
-  nassertr(n >= 0 && n < (int)_implicit_pages.size(), (ConfigPage *)NULL);
+  nassertr(n < _implicit_pages.size(), (ConfigPage *)NULL);
   return _implicit_pages[n];
 }
 
@@ -170,7 +170,7 @@ get_implicit_page(int n) const {
 //               were loaded dynamically at runtime by explicit calls
 //               to ConfigPageManager::make_explicit_page().
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigPageManager::
+INLINE size_t ConfigPageManager::
 get_num_explicit_pages() const {
   return _explicit_pages.size();
 }
@@ -182,9 +182,9 @@ get_num_explicit_pages() const {
 //               See get_num_explicit_pages().
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigPage *ConfigPageManager::
-get_explicit_page(int n) const {
+get_explicit_page(size_t n) const {
   check_sort_pages();
-  nassertr(n >= 0 && n < (int)_explicit_pages.size(), (ConfigPage *)NULL);
+  nassertr(n < _explicit_pages.size(), (ConfigPage *)NULL);
   return _explicit_pages[n];
 }
 

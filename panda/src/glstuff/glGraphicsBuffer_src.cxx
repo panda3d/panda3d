@@ -155,7 +155,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
         CLP(TextureContext) *gtc = *it;
 
-        if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+        if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
           glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
           // If we've done it for one, we've done it for all.
           break;
@@ -307,7 +307,7 @@ rebuild_bitplanes() {
       RenderTexturePlane plane = rt._plane;
       Texture *tex = rt._texture;
 
-      if (rtm_mode == RTM_bind_layered) {
+      if (rtm_mode == RTM_bind_layered && glgsg->_supports_geometry_shaders) {
         if (tex->get_z_size() != _rb_size_z) {
           GLCAT.warning()
            << "All textures attached to layered FBO should have the same layer count!\n";
@@ -1062,6 +1062,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
 #ifndef OPENGLES
   if (_rb_size_z != 1) {
     // Bind all of the layers of the texture.
+    nassertv(glgsg->_glFramebufferTexture != NULL);
     glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, attachpoint,
                                  gtc->_index, 0);
     return;
@@ -1276,7 +1277,7 @@ open_buffer() {
 
   // Actually, let's always get a colour buffer for now until we
   // figure out why Intel HD Graphics cards complain otherwise.
-  if (_fb_properties.get_color_bits() == 0) {
+  if (gl_force_fbo_color && _fb_properties.get_color_bits() == 0) {
     _fb_properties.set_color_bits(1);
   }
 
@@ -1655,7 +1656,7 @@ resolve_multisamples() {
     for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
       CLP(TextureContext) *gtc = *it;
 
-      if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+      if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
         glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
         // If we've done it for one, we've done it for all.
         break;

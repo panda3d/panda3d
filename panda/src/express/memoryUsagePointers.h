@@ -50,17 +50,17 @@ PUBLISHED:
   MemoryUsagePointers();
   ~MemoryUsagePointers();
 
-  int get_num_pointers() const;
-  ReferenceCount *get_pointer(int n) const;
+  size_t get_num_pointers() const;
+  ReferenceCount *get_pointer(size_t n) const;
   MAKE_SEQ(get_pointers, get_num_pointers, get_pointer);
-  TypedObject *get_typed_pointer(int n) const;
+  TypedObject *get_typed_pointer(size_t n) const;
   MAKE_SEQ(get_typed_pointers, get_num_pointers, get_typed_pointer);
 
-  TypeHandle get_type(int n) const;
-  string get_type_name(int n) const;
-  double get_age(int n) const;
+  TypeHandle get_type(size_t n) const;
+  string get_type_name(size_t n) const;
+  double get_age(size_t n) const;
 
-  EXTENSION(PyObject *get_python_pointer(int n) const);
+  EXTENSION(PyObject *get_python_pointer(size_t n) const);
 
   void clear();
 

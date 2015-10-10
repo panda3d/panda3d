@@ -64,9 +64,10 @@ PLUGIN_VERSION=None
 OSXTARGET=None
 OSX_ARCHS=[]
 HOST_URL=None
-global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
+global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
-STRMSPLATFORMVERSION = 'default'
+WINDOWS_SDK = None
+MSVC_VERSION = None
 BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
 
@@ -152,7 +153,8 @@ def usage(problem):
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
-    print("  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2)")
+    print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.0, 7.1 or 10.  Default is 7.1)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14.  Default is 10)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -165,13 +167,13 @@ def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
-    global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
+    global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
-        "directx-sdk=", "platform-sdk=", "use-icl",
+        "directx-sdk=", "windows-sdk=", "msvc-version=", "use-icl",
         "universal", "target=", "arch=", "git-commit="]
     anything = 0
     optimize = ""
@@ -222,11 +224,10 @@ def parseopts(args):
                 if STRDXSDKVERSION == '':
                     print("No DirectX SDK version specified. Using 'default' DirectX SDK search")
                     STRDXSDKVERSION = 'default'
-            elif (option=="--platform-sdk"):
-                STRMSPLATFORMVERSION = value.strip().lower()
-                if STRMSPLATFORMVERSION == '':
-                    print("No MS Platform SDK version specified. Using 'default' MS Platform SDK search")
-                    STRMSPLATFORMVERSION = 'default'
+            elif (option=="--windows-sdk"):
+                WINDOWS_SDK = value.strip().lower()
+            elif (option=="--msvc-version"):
+                MSVC_VERSION = value.strip().lower()
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             else:
                 for pkg in PkgListGet():
@@ -302,17 +303,30 @@ def parseopts(args):
     if GIT_COMMIT is not None and not re.match("^[a-f0-9]{40}$", GIT_COMMIT):
         usage("Invalid SHA-1 hash given for --git-commit option!")
 
-    is_win7 = False
-    if GetHost() == "windows":
-        if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
-            platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
+    if GetTarget() == 'windows':
+        if not MSVC_VERSION:
+            print("No MSVC version specified. Defaulting to 10 (Visual Studio 2010).")
+            MSVC_VERSION = 10
 
-    if sys.platform == "win32":
-        # Note: not available in cygwin.
-        winver = sys.getwindowsversion()
-        if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-            is_win7 = True
-    if RUNTIME or not is_win7:
+        try:
+            MSVC_VERSION = int(MSVC_VERSION)
+        except:
+            usage("Invalid setting for --msvc-version")
+
+        if not WINDOWS_SDK:
+            print("No Windows SDK version specified. Defaulting to '7.1'.")
+            WINDOWS_SDK = '7.1'
+
+        is_win7 = False
+        if sys.platform == 'win32':
+            # Note: not available in cygwin.
+            winver = sys.getwindowsversion()
+            if winver[0] >= 6 and winver[1] >= 1:
+                is_win7 = True
+
+        if RUNTIME or not is_win7:
+            PkgDisable("TOUCHINPUT")
+    else:
         PkgDisable("TOUCHINPUT")
 
 parseopts(sys.argv[1:])
@@ -381,9 +395,10 @@ if (RUNTIME or RTDIST):
     if (RUNTIME):
         outputdir_suffix += "_rt"
 
-    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
-elif (DISTRIBUTOR == ""):
+if DISTRIBUTOR == "":
     DISTRIBUTOR = "makepanda"
+else:
+    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
 
 if not IsCustomOutputDir():
     if GetTarget() == "windows" and GetTargetArch() == 'x64':
@@ -403,9 +418,6 @@ if (RUNTIME):
         else:
             # Unused packages for runtime.
             PkgDisable(pkg)
-
-if (GetHost() == 'windows'):
-    os.environ["BISON_SIMPLE"] = GetThirdpartyBase()+"/win-util/bison.simple"
 
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
@@ -443,8 +455,8 @@ SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
-SdkLocateVisualStudio()
-SdkLocateMSPlatform(STRMSPLATFORMVERSION)
+SdkLocateVisualStudio(MSVC_VERSION)
+SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
 SdkLocateAndroid()
@@ -455,9 +467,8 @@ SdkAutoDisableMax()
 SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
-if (RTDIST and DISTRIBUTOR == "cmu"):
-    HOST_URL = "https://runtime.panda3d.org/"
-
+if RTDIST and DISTRIBUTOR == "cmu":
+    # Some validation checks for the CMU builds.
     if (RTDIST_VERSION == "cmu_1.7" and SDK["PYTHONVERSION"] != "python2.6"):
         exit("The CMU 1.7 runtime distribution must be built against Python 2.6!")
     elif (RTDIST_VERSION == "cmu_1.8" and SDK["PYTHONVERSION"] != "python2.7"):
@@ -465,7 +476,7 @@ if (RTDIST and DISTRIBUTOR == "cmu"):
     elif (RTDIST_VERSION == "cmu_1.9" and SDK["PYTHONVERSION"] != "python2.7"):
         exit("The CMU 1.9 runtime distribution must be built against Python 2.7!")
 
-elif RTDIST and not HOST_URL:
+if RTDIST and not HOST_URL:
     exit("You must specify a host URL when building the rtdist!")
 
 if RUNTIME and not HOST_URL:
@@ -1050,6 +1061,10 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
 
+            if WINDOWS_SDK.startswith('7.') and MSVC_VERSION > 10:
+                # To preserve Windows XP compatibility.
+                cmd += " /D_USING_V110_SDK71_"
+
             cmd += " /W3 " + BracketNameWithQuotes(src)
             oscmd(cmd)
         else:
@@ -1336,7 +1351,7 @@ def CompileIgate(woutd,wsrc,opts):
         # Assume that interrogate is on the PATH somewhere.
         cmd = 'interrogate'
 
-    cmd += ' -srcdir %s -I%s -Dvolatile -Dmutable' % (srcdir, srcdir)
+    cmd += ' -srcdir %s -I%s' % (srcdir, srcdir)
     cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L'
     if (COMPILER=="MSVC"):
         cmd += ' -D__inline -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
@@ -1485,9 +1500,13 @@ def CompileLink(dll, obj, opts):
             cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
             cmd += ' /OUT:' + BracketNameWithQuotes(dll)
 
-            subsystem = GetValueOption(opts, "SUBSYSTEM:")
-            if subsystem:
-                cmd += " /SUBSYSTEM:" + subsystem
+            # Set the subsystem.  Specify that we want to target Windows XP.
+            subsystem = GetValueOption(opts, "SUBSYSTEM:") or "CONSOLE"
+            cmd += " /SUBSYSTEM:" + subsystem
+            if GetTargetArch() == 'x64':
+                cmd += ",5.02"
+            else:
+                cmd += ",5.01"
 
             if dll.endswith(".dll"):
                 cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(dll))[0] + ".lib"
@@ -1630,6 +1649,8 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"
+
+        cmd += " -Wl,-allow-multiple-definition"
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
@@ -1801,10 +1822,25 @@ def FreezePy(target, inputs, opts):
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
-    cmdstr += os.path.join("direct", "src", "showutil", "pfreeze.py")
-    src = inputs.pop(0)
+    cmdstr += os.path.join(GetOutputDir(), "direct", "showutil", "pfreeze.py")
+
+    if 'FREEZE_STARTUP' in opts:
+        cmdstr += " -s"
+
+    if GetOrigExt(target) == '.exe':
+        src = inputs.pop(0)
+    else:
+        src = ""
+
     for i in inputs:
-      cmdstr += " -i " + os.path.splitext(i)[0]
+        i = os.path.splitext(i)[0]
+        i = i.replace('/', '.')
+
+        if i.startswith('direct.src'):
+            i = i.replace('.src.', '.')
+
+        cmdstr += " -i " + i
+
     cmdstr += " -o " + target + " " + src
 
     if ("LINK_PYTHON_STATIC" in opts):
@@ -1920,6 +1956,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         exit("No input files for target "+target)
     infile = inputs[0]
     origsuffix = GetOrigExt(target)
+
     if (len(inputs) == 1 and origsuffix == GetOrigExt(infile)):
         # It must be a simple copy operation.
         ProgressOutput(progress, "Copying file", target)
@@ -1927,15 +1964,26 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (origsuffix==".exe" and GetHost() != "windows"):
             os.system("chmod +x \"%s\"" % target)
         return
+
     elif (target.endswith(".py")):
         ProgressOutput(progress, "Generating", target)
         return GenPyExtensions(target, inputs, opts)
+
     elif (infile.endswith(".py")):
-        if (origsuffix==".exe"):
+        if origsuffix == ".obj":
+            source = os.path.splitext(target)[0] + ".c"
+            SetOrigExt(source, ".c")
+            ProgressOutput(progress, "Building frozen source", source)
+            FreezePy(source, inputs, opts)
+            ProgressOutput(progress, "Building C++ object", target)
+            return CompileCxx(target, source, opts)
+
+        if origsuffix == ".exe":
             ProgressOutput(progress, "Building frozen executable", target)
         else:
             ProgressOutput(progress, "Building frozen library", target)
         return FreezePy(target, inputs, opts)
+
     elif (infile.endswith(".idl")):
         ProgressOutput(progress, "Compiling MIDL file", infile)
         return CompileMIDL(target, infile, opts)
@@ -2785,6 +2833,11 @@ if (PkgSkip("PYTHON")==0 and os.path.isdir(GetThirdpartyBase()+"/Pmw")):
     CopyTree(GetOutputDir()+'/Pmw',         GetThirdpartyBase()+'/Pmw')
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
+# Since Eigen is included by all sorts of core headers, as a convenience
+# to C++ users on Windows, we include it in the Panda include directory.
+if not PkgSkip("EIGEN") and GetTarget() == "windows" and GetThirdpartyDir():
+    CopyTree(GetOutputDir()+'/include/Eigen', GetThirdpartyDir()+'eigen/include/Eigen')
+
 ########################################################################
 #
 # Copy header files to the built/include/parser-inc directory.
@@ -3271,6 +3324,7 @@ IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite*.cx
 TargetAdd('libp3downloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3downloader.in', opts=['IMOD:panda3d.core', 'ILIB:libp3downloader', 'SRCDIR:panda/src/downloader'])
 TargetAdd('libp3downloader_igate.obj', input='libp3downloader.in', opts=["DEPENDENCYONLY"])
+TargetAdd('p3downloader_stringStream_ext.obj', opts=OPTS, input='stringStream_ext.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -3905,6 +3959,7 @@ if (not RUNTIME):
   TargetAdd('core_module.obj', opts=['IMOD:panda3d._core', 'ILIB:_core'])
 
   TargetAdd('_core.pyd', input='libp3downloader_igate.obj')
+  TargetAdd('_core.pyd', input='p3downloader_stringStream_ext.obj')
   TargetAdd('_core.pyd', input='p3express_ext_composite.obj')
   TargetAdd('_core.pyd', input='libp3express_igate.obj')
 
@@ -5020,17 +5075,26 @@ if (RTDIST or RUNTIME):
     TargetAdd("libp3d_plugin_static.ilb", input='plugin_get_twirl_data.obj')
 
   if (PkgSkip("PYTHON")==0 and RTDIST):
+    # Freeze VFSImporter and its dependency modules into p3dpython.
+    # Mark panda3d.core as a dependency to make sure to build that first.
+    TargetAdd('p3dpython_frozen.obj', input='VFSImporter.py', opts=['DIR:direct/src/showbase', 'FREEZE_STARTUP'])
+    TargetAdd('p3dpython_frozen.obj', dep='panda3d/core.py')
+
     TargetAdd('p3dpython_p3dpython_composite1.obj', opts=OPTS, input='p3dpython_composite1.cxx')
     TargetAdd('p3dpython_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dpython_composite1.obj')
     TargetAdd('p3dpython.exe', input='p3dpython_p3dPythonMain.obj')
+    TargetAdd('p3dpython.exe', input='p3dpython_frozen.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('p3dpython.exe', input='libp3tinyxml.ilb')
+    TargetAdd('p3dpython.exe', input='libp3interrogatedb.dll')
     TargetAdd('p3dpython.exe', opts=['PYTHON', 'WINUSER'])
 
     TargetAdd('libp3dpython.dll', input='p3dpython_p3dpython_composite1.obj')
+    TargetAdd('libp3dpython.dll', input='p3dpython_frozen.obj')
     TargetAdd('libp3dpython.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3dpython.dll', input='libp3tinyxml.ilb')
+    TargetAdd('libp3dpython.dll', input='libp3interrogatedb.dll')
     TargetAdd('libp3dpython.dll', opts=['PYTHON', 'WINUSER'])
 
     if GetTarget() == 'windows':
@@ -5040,8 +5104,10 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dpythonw_p3dPythonMain.obj', opts=OPTS, input='p3dPythonMain.cxx')
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dpython_composite1.obj')
       TargetAdd('p3dpythonw.exe', input='p3dpythonw_p3dPythonMain.obj')
+      TargetAdd('p3dpythonw.exe', input='p3dpython_frozen.obj')
       TargetAdd('p3dpythonw.exe', input=COMMON_PANDA_LIBS)
       TargetAdd('p3dpythonw.exe', input='libp3tinyxml.ilb')
+      TargetAdd('p3dpythonw.exe', input='libp3interrogatedb.dll')
       TargetAdd('p3dpythonw.exe', opts=['SUBSYSTEM:WINDOWS', 'PYTHON', 'WINUSER'])
 
   if (PkgSkip("OPENSSL")==0 and RTDIST):
@@ -5051,20 +5117,22 @@ if (RTDIST or RUNTIME):
     if (PkgSkip("FLTK")==0):
       OPTS.append("FLTK")
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert.cxx')
+      TargetAdd('plugin_p3dCert_strings.obj', opts=OPTS, input='p3dCert_strings.cxx')
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['OPENSSL', 'FLTK', 'X11', 'WINCOMCTL', 'WINSOCK', 'WINGDI', 'WINUSER', 'ADVAPI', 'WINOLE', 'WINSHELL', 'SUBSYSTEM:WINDOWS']
+      TargetAdd('p3dcert.exe', input='plugin_p3dCert_strings.obj')
+      OPTS=['SUBSYSTEM:WINDOWS', 'OPENSSL', 'FLTK', 'X11', 'WINCOMCTL', 'WINSOCK', 'WINGDI', 'WINUSER', 'ADVAPI', 'WINOLE', 'WINSHELL', 'SUBSYSTEM:WINDOWS']
       if GetTarget() == 'darwin':
           OPTS += ['OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
     elif (PkgSkip("WX")==0):
-      OPTS.append("WX")
+      OPTS += ["WX", "RTTI"]
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert_wx.cxx')
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
+      OPTS=['SUBSYSTEM:WINDOWS', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
       if GetTarget() == "darwin":
           OPTS += ['GL', 'OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
@@ -5194,7 +5262,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='libp3dtool.dll')
     TargetAdd('panda3dw.exe', input='libp3pystub.lib')
     TargetAdd('panda3dw.exe', input='libp3tinyxml.ilb')
-    TargetAdd('panda3dw.exe', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
+    TargetAdd('panda3dw.exe', opts=['SUBSYSTEM:WINDOWS', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
 if (RTDIST):
   OPTS=['BUILDING:P3D_PLUGIN', 'DIR:direct/src/plugin_standalone', 'DIR:direct/src/plugin', 'DIR:dtool/src/dtoolbase', 'DIR:dtool/src/dtoolutil', 'DIR:dtool/src/pystub', 'DIR:dtool/src/prc', 'DIR:dtool/src/dconfig', 'DIR:panda/src/express', 'DIR:panda/src/downloader', 'RUNTIME', 'P3DEMBED', 'OPENSSL', 'ZLIB']
@@ -5270,7 +5338,7 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_common.obj')
     TargetAdd('p3dembedw.exe', input='libp3tinyxml.ilb')
     TargetAdd('p3dembedw.exe', input='libp3d_plugin_static.ilb')
-    TargetAdd('p3dembedw.exe', opts=['NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL'])
+    TargetAdd('p3dembedw.exe', opts=['SUBSYSTEM:WINDOWS', 'NOICON', 'WINGDI', 'WINSOCK2', 'ZLIB', 'WINUSER', 'OPENSSL', 'WINOLE', 'MSIMG', 'WINCOMCTL', 'ADVAPI', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
@@ -5999,7 +6067,7 @@ if (PkgSkip("PANDATOOL")==0 and (GetTarget() == 'windows' or PkgSkip("GTK2")==0)
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('pstats.exe', input='libp3pystub.lib')
-    TargetAdd('pstats.exe', opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/
@@ -6693,8 +6761,8 @@ def MakeInstallerLinux():
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             if PkgSkip("PYTHON")==0:
-                depends += ", " + PYTHONV + ", python-pmw"
-                recommends += ", python-wxversion, python-profiler (>= " + PV + "), python-tk (>= " + PV + ")"
+                depends += ", " + PYTHONV
+                recommends += ", python-wxversion, python-profiler (>= " + PV + "), python-pmw, python-tk (>= " + PV + ")"
             if PkgSkip("NVIDIACG")==0:
                 depends += ", nvidia-cg-toolkit"
 
@@ -6987,7 +7055,7 @@ try:
 
             fn += VERSION
 
-            if SDK["PYTHONVERSION"] != "python2.7":
+            if not RUNTIME and SDK["PYTHONVERSION"] != "python2.7":
                 fn += '-py' + SDK["PYTHONVERSION"][6:]
 
             if GetOptimize() <= 2:

@@ -1174,7 +1174,7 @@ clear_cache() {
       TransformState *state = (TransformState *)(*ti).p();
 
       int i;
-      int cache_size = state->_composition_cache.get_size();
+      int cache_size = (int)state->_composition_cache.get_size();
       for (i = 0; i < cache_size; ++i) {
         if (state->_composition_cache.has_element(i)) {
           const TransformState *result = state->_composition_cache.get_data(i)._result;
@@ -1184,7 +1184,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
       cache_size = state->_invert_composition_cache.get_size();
@@ -1197,7 +1197,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_invert_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
       state->_invert_composition_cache.clear();
     }
 

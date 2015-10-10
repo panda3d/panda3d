@@ -294,7 +294,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
 
     // Now, how many more bits do we need to encode each of our
     // children?
-    int num_children = _child_classes.size();
+    int num_children = (int)_child_classes.size();
     int more_bits = 0;
     int i = num_children - 1;
     while (i > 0) {

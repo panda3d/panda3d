@@ -86,8 +86,10 @@ CPPPreprocessor::InputFile::
 InputFile() {
   _in = NULL;
   _ignore_manifest = NULL;
-  _line_number = 1;
-  _col_number = 1;
+  _line_number = 0;
+  _col_number = 0;
+  _next_line_number = 1;
+  _next_col_number = 1;
   _lock_position = false;
 }
 
@@ -145,11 +147,15 @@ connect_input(const string &input) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::get
 //       Access: Public
-//  Description:
+//  Description: Fetches a single character from the source file.
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::InputFile::
 get() {
   assert(_in != NULL);
+
+  _line_number = _next_line_number;
+  _col_number = _next_col_number;
+
   int c = _in->get();
 
   // Quietly skip over embedded carriage-return characters.  We
@@ -165,15 +171,37 @@ get() {
 
   case '\n':
     if (!_lock_position) {
-      _line_number++;
-      _col_number = 1;
+      ++_next_line_number;
+      _next_col_number = 1;
     }
     break;
 
   default:
     if (!_lock_position) {
-      _col_number++;
+      ++_next_col_number;
     }
+  }
+
+  return c;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::InputFile::peek
+//       Access: Public
+//  Description: Like get(), but does not advance the file pointer.
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::InputFile::
+peek() {
+  assert(_in != NULL);
+
+  int c = _in->peek();
+
+  // Quietly skip over embedded carriage-return characters.  We
+  // shouldn't see any of these unless there was some DOS-to-Unix file
+  // conversion problem.
+  while (c == '\r') {
+    get();
+    c = _in->peek();
   }
 
   return c;
@@ -189,7 +217,7 @@ CPPPreprocessor() {
   _noangles = false;
   _state = S_eof;
   _paren_nesting = 0;
-  _angle_bracket_found = false;
+  _parsing_template_params = false;
   _unget = '\0';
   _last_c = '\0';
   _start_of_line = true;
@@ -258,7 +286,8 @@ get_file() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_line_number
 //       Access: Public
-//  Description:
+//  Description: Returns the line number of the last character
+//               returned by get().
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_line_number() const {
@@ -271,7 +300,8 @@ get_line_number() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_col_number
 //       Access: Public
-//  Description:
+//  Description: Returns the column number of the last character
+//               returned by get().
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_col_number() const {
@@ -312,9 +342,7 @@ get_next_token0() {
     token = internal_get_next_token();
   }
 
-  int first_line = token._lloc.first_line;
-  int first_col = token._lloc.first_column;
-  CPPFile first_file = token._lloc.file;
+  YYLTYPE loc = token._lloc;
 
   if (_resolve_identifiers &&
       (token._token == SIMPLE_IDENTIFIER || token._token == SCOPE)) {
@@ -333,7 +361,7 @@ get_next_token0() {
       token = internal_get_next_token();
     }
 
-    CPPIdentifier *ident = new CPPIdentifier(name, token._lloc.file);
+    CPPIdentifier *ident = new CPPIdentifier(name, loc);
     YYSTYPE result;
     result.u.identifier = ident;
 
@@ -351,6 +379,9 @@ get_next_token0() {
     }
 
     while (token._token == SCOPE) {
+      loc.last_line = token._lloc.last_line;
+      loc.last_column = token._lloc.last_column;
+
       name += "::";
       token = internal_get_next_token();
       string token_prefix;
@@ -376,12 +407,16 @@ get_next_token0() {
           return token;
         }
         _saved_tokens.push_back(token);
-        return CPPToken(SCOPING, first_line, first_col, first_file,
-                        name, result);
+        return CPPToken(SCOPING, loc, name, result);
       }
 
       name += token._lval.str;
       ident->_names.push_back(token_prefix + token._lval.str);
+
+      loc.last_line = token._lloc.last_line;
+      loc.last_column = token._lloc.last_column;
+      ident->_loc.last_line = loc.last_line;
+      ident->_loc.last_column = loc.last_column;
 
       token = internal_get_next_token();
 
@@ -409,11 +444,27 @@ get_next_token0() {
       token_type = TYPENAME_IDENTIFIER;
     }
 
-    return CPPToken(token_type, first_line, first_col, first_file,
-                    name, result);
+    return CPPToken(token_type, loc, name, result);
   }
 
   // This is the normal case: just pass through whatever token we got.
+  return token;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::peek_next_token
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPToken CPPPreprocessor::
+peek_next_token() {
+  CPPToken token(0);
+  if (!_saved_tokens.empty()) {
+    token = _saved_tokens.back();
+  } else {
+    token = internal_get_next_token();
+    _saved_tokens.push_back(token);
+  }
   return token;
 }
 
@@ -423,24 +474,46 @@ get_next_token0() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-warning(const string &message, int line, int col, CPPFile file) {
+warning(const string &message) {
+  if (_verbose < 2) {
+    return;
+  }
+  int line = get_line_number();
+  int col = get_col_number();
+  YYLTYPE loc;
+  loc.first_line = line;
+  loc.first_column = col;
+  loc.last_line = line;
+  loc.last_column = col;
+  loc.file = get_file();
+  warning(message, loc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::warning
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPPreprocessor::
+warning(const string &message, const YYLTYPE &loc) {
   if (_verbose >= 2) {
-    if (line == 0) {
-      line = get_line_number();
-      col = get_col_number();
-    }
-    if (file.empty()) {
-      file = get_file();
-    }
-    int indent_level = 0;
     if (_verbose >= 3) {
-      indent_level = _files.size() * 2;
+      indent(cerr, _files.size() * 2);
     }
-    indent(cerr, indent_level)
-      << "*** Warning in " << file
-      << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, indent_level)
-      << message << "\n";
+
+    if (!loc.file.empty()) {
+      cerr << loc.file << ':';
+    }
+    if (loc.first_line) {
+      cerr << loc.first_line << ':';
+
+      if (loc.first_column) {
+        cerr << loc.first_column << ':';
+      }
+    }
+
+    cerr << " warning: " << message << "\n";
+    show_line(loc);
   }
   _warning_count++;
 }
@@ -451,7 +524,25 @@ warning(const string &message, int line, int col, CPPFile file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-error(const string &message, int line, int col, CPPFile file) {
+error(const string &message) {
+  int line = get_line_number();
+  int col = get_col_number();
+  YYLTYPE loc;
+  loc.first_line = line;
+  loc.first_column = col;
+  loc.last_line = line;
+  loc.last_column = col;
+  loc.file = get_file();
+  error(message, loc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::error
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPPreprocessor::
+error(const string &message, const YYLTYPE &loc) {
   if (_state == S_nested || _state == S_end_nested) {
     // Don't report or log errors in the nested state.  These will be
     // reported when the nesting level collapses.
@@ -459,22 +550,23 @@ error(const string &message, int line, int col, CPPFile file) {
   }
 
   if (_verbose >= 1) {
-    if (line == 0) {
-      line = get_line_number();
-      col = get_col_number();
-    }
-    if (file.empty()) {
-      file = get_file();
-    }
-    int indent_level = 0;
     if (_verbose >= 3) {
-      indent_level = _files.size() * 2;
+      indent(cerr, _files.size() * 2);
     }
-    indent(cerr, indent_level)
-      << "*** Error in " << file
-      << " near line " << line << ", column " << col << ":\n";
-    indent(cerr, indent_level)
-      << message << "\n";
+
+    if (!loc.file.empty()) {
+      cerr << loc.file << ':';
+    }
+    if (loc.first_line) {
+      cerr << loc.first_line << ':';
+
+      if (loc.first_column) {
+        cerr << loc.first_column << ':';
+      }
+    }
+
+    cerr << " error: " << message << "\n";
+    show_line(loc);
 
     if (_error_abort) {
       cerr << "Aborting.\n";
@@ -482,6 +574,63 @@ error(const string &message, int line, int col, CPPFile file) {
     }
   }
   _error_count++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::show_line
+//       Access: Public
+//  Description: Shows the indicated line, useful for error messages.
+////////////////////////////////////////////////////////////////////
+void CPPPreprocessor::
+show_line(const YYLTYPE &loc) {
+  if (loc.file._filename.empty()) {
+    return;
+  }
+
+  int indent_level = 0;
+  if (_verbose >= 3) {
+    indent_level = _files.size() * 2;
+  }
+
+  // Seek to the offending line in the file.
+  ifstream stream;
+  if (loc.file._filename.open_read(stream)) {
+    int l = 0;
+    string linestr;
+    while (l < loc.first_line) {
+      getline(stream, linestr);
+      ++l;
+    }
+
+    // Strip off trailing whitespace.
+    size_t last = linestr.length();
+    while (isspace(linestr[--last])) {
+      linestr = linestr.substr(0, last);
+    }
+
+    indent(cerr, indent_level) << linestr << "\n";
+
+    // Point the user at the offending column.
+    if (loc.first_column) {
+      int last_column;
+      if (loc.first_line == loc.last_line && loc.last_column) {
+        last_column = loc.last_column;
+      } else {
+        last_column = linestr.length();
+      }
+
+      indent(cerr, indent_level);
+      int i = 0;
+      for (; i < loc.first_column - 1; ++i) {
+        cerr.put(' ');
+      }
+      cerr.put('^');
+      while (++i < last_column) {
+        cerr.put('~');
+      }
+      cerr << "\n";
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -800,114 +949,39 @@ internal_get_next_token() {
     return get_number(c);
   }
 
-  _last_c = c;
   if (c == EOF) {
     _state = S_eof;
     return CPPToken::eof();
   }
 
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
-
   // Check for a number beginning with a decimal point.
-  int next_c = get();
+  int next_c = peek();
   if (c == '.' && isdigit(next_c)) {
-    return get_number(c, next_c);
+    return get_number(c);
   }
+
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+  loc.last_line = loc.first_line;
+  loc.last_column = loc.first_column;
 
   // Check for two- or three-character tokens.
-  _last_c = get();
+  int di = check_digraph(c);
+  if (di != 0) {
+    c = di;
+    ++loc.last_column;
+    get();
 
-  switch (c) {
-  case '+':
-    if (next_c == '+') return CPPToken(PLUSPLUS, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(PLUSEQUAL, first_line, first_col, first_file);
-    break;
-
-  case '-':
-    if (next_c == '-') return CPPToken(MINUSMINUS, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(MINUSEQUAL, first_line, first_col, first_file);
-    if (next_c == '>' && _last_c == '*') {
-      _last_c = get();
-      return CPPToken(POINTSAT_STAR, first_line, first_col, first_file);
+    int tri = check_trigraph(di);
+    if (tri != 0) {
+      ++loc.last_column;
+      get();
+      return CPPToken(tri, loc);
     }
-    if (next_c == '>') return CPPToken(POINTSAT, first_line, first_col, first_file);
-    break;
-
-  case '<':
-    if (next_c == '<' && _last_c == '=') {
-      _last_c = get();
-      return CPPToken(LSHIFTEQUAL, first_line, first_col, first_file);
-    }
-    if (next_c == '<') return CPPToken(LSHIFT, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(LECOMPARE, first_line, first_col, first_file);
-    if (next_c == ':') return CPPToken('[', first_line, first_col, first_file);
-    if (next_c == '%') return CPPToken('{', first_line, first_col, first_file);
-    break;
-
-  case '>':
-    if (next_c == '>' && _last_c == '=') {
-      _last_c = get();
-      return CPPToken(RSHIFTEQUAL, first_line, first_col, first_file);
-    }
-    if (next_c == '>') return CPPToken(RSHIFT, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(GECOMPARE, first_line, first_col, first_file);
-    break;
-
-  case '|':
-    if (next_c == '|') return CPPToken(OROR, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(OREQUAL, first_line, first_col, first_file);
-    break;
-
-  case '&':
-    if (next_c == '&') return CPPToken(ANDAND, first_line, first_col, first_file);
-    if (next_c == '=') return CPPToken(ANDEQUAL, first_line, first_col, first_file);
-    break;
-
-  case '^':
-    if (next_c == '=') return CPPToken(XOREQUAL, first_line, first_col, first_file);
-    break;
-
-  case '=':
-    if (next_c == '=') return CPPToken(EQCOMPARE, first_line, first_col, first_file);
-    break;
-
-  case '!':
-    if (next_c == '=') return CPPToken(NECOMPARE, first_line, first_col, first_file);
-    break;
-
-  case '.':
-    if (next_c == '*') return CPPToken(DOT_STAR, first_line, first_col, first_file);
-    if (next_c == '.' && _last_c == '.') {
-      _last_c = get();
-      return CPPToken(ELLIPSIS, first_line, first_col, first_file);
-    }
-    break;
-
-  case ':':
-    if (next_c == ':') return CPPToken(SCOPE, first_line, first_col, first_file);
-    if (next_c == '>') return CPPToken(']', first_line, first_col, first_file);
-    break;
-
-  case '*':
-    if (next_c == '=') return CPPToken(TIMESEQUAL, first_line, first_col, first_file);
-    break;
-
-  case '/':
-    if (next_c == '=') return CPPToken(DIVIDEEQUAL, first_line, first_col, first_file);
-    break;
-
-  case '%':
-    if (next_c == '=') return CPPToken(MODEQUAL, first_line, first_col, first_file);
-    if (next_c == '>') return CPPToken('}', first_line, first_col, first_file);
-    break;
+    return CPPToken(di, loc);
   }
-
-  // It wasn't any of the two- or three-character tokens, so put back
-  // the lookahead character and return the one-character token.
-  unget(_last_c);
-  _last_c = next_c;
 
   if (_state == S_nested) {
     // If we're running a nested lexer, keep track of the paren
@@ -934,18 +1008,149 @@ internal_get_next_token() {
 
     case '>':
       if (_paren_nesting <= 0) {
-        _angle_bracket_found = true;
+        _parsing_template_params = false;
         _state = S_end_nested;
         return CPPToken::eof();
       }
     }
   }
 
-  // We skip whitespace here again, so that we can read any comments
-  // after this point before we parse this line.
-  _last_c = skip_whitespace(_last_c);
+  // Look for an end-of-line comment, and parse it before we finish
+  // this token.  This is not strictly necessary, but it allows us to
+  // pick up docstrings from comments after enum values.
+  while (next_c != EOF && isspace(next_c)) {
+    get();
+    next_c = peek();
+  }
+  if (next_c == '/') {
+    _last_c = skip_whitespace(get());
+  }
 
-  return CPPToken(c, first_line, first_col, first_file);
+  return CPPToken(c, loc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::check_digraph
+//       Access: Private
+//  Description: Checks the next character in the stream to see if
+//               this might be a two-character token.
+//               Returns 0 if it is only a single-character token.
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::
+check_digraph(int c) {
+  int next_c = peek();
+  switch (c) {
+  case '+':
+    if (next_c == '+') return PLUSPLUS;
+    if (next_c == '=') return PLUSEQUAL;
+    break;
+
+  case '-':
+    if (next_c == '-') return MINUSMINUS;
+    if (next_c == '=') return MINUSEQUAL;
+    if (next_c == '>') return POINTSAT;
+    break;
+
+  case '<':
+    if (next_c == '<') return LSHIFT;
+    if (next_c == '=') return LECOMPARE;
+    if (next_c == ':') return '[';
+    if (next_c == '%') return '{';
+    break;
+
+  case '>':
+    if (_parsing_template_params && _paren_nesting <= 0) {
+      // Don't parse >> as right-shift when parsing a template list, as
+      // per C++11, to allow a syntax like A<B>>.
+      // However, nested >> must be preserved, such as in A<(2>>1)>
+      break;
+    }
+    if (next_c == '>') return RSHIFT;
+    if (next_c == '=') return GECOMPARE;
+    break;
+
+  case '|':
+    if (next_c == '|') return OROR;
+    if (next_c == '=') return OREQUAL;
+    break;
+
+  case '&':
+    if (next_c == '&') return ANDAND;
+    if (next_c == '=') return ANDEQUAL;
+    break;
+
+  case '^':
+    if (next_c == '=') return XOREQUAL;
+    break;
+
+  case '=':
+    if (next_c == '=') return EQCOMPARE;
+    break;
+
+  case '!':
+    if (next_c == '=') return NECOMPARE;
+    break;
+
+  case '.':
+    if (next_c == '*') return DOT_STAR;
+    if (next_c == '.') {
+      get();
+      if (peek() == '.') {
+        return ELLIPSIS;
+      } else {
+        unget('.');
+      }
+    }
+    break;
+
+  case ':':
+    if (next_c == ':') return SCOPE;
+    if (next_c == '>') return ']';
+    break;
+
+  case '*':
+    if (next_c == '=') return TIMESEQUAL;
+    break;
+
+  case '/':
+    if (next_c == '=') return DIVIDEEQUAL;
+    break;
+
+  case '%':
+    if (next_c == '=') return MODEQUAL;
+    if (next_c == '>') return '}';
+    break;
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::check_trigraph
+//       Access: Private
+//  Description: Checks the next character in the stream to see if
+//               this might be a three-character token; usually
+//               called in conjunction with check_digraph.
+//               Returns 0 if it is not a three-character token.
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::
+check_trigraph(int c) {
+  int next_c = peek();
+  switch (c) {
+  case POINTSAT:
+    if (next_c == '*') return POINTSAT_STAR;
+    break;
+
+  case LSHIFT:
+    if (next_c == '=') return LSHIFTEQUAL;
+    break;
+
+  case RSHIFT:
+    if (next_c == '=') return RSHIFTEQUAL;
+    break;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -961,11 +1166,10 @@ skip_whitespace(int c) {
     if (c == '\\') {
       // This does not usually occur in the middle of unquoted C++
       // code, except before a newline character.
-      c = get();
-      if (c != '\n') {
-        unget(c);
+      if (peek() != '\n') {
         return '\\';
       }
+      c = get();
     }
 
     if (!isspace(c)) {
@@ -983,16 +1187,18 @@ skip_whitespace(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_comment(int c) {
-  if (c == '/') {
-    int next_c = get();
+  while (c == '/') {
+    int next_c = peek();
     if (next_c == '*') {
+      get();
       _last_cpp_comment = false;
       c = skip_c_comment(get());
     } else if (next_c == '/') {
+      get();
       c = skip_cpp_comment(get());
+      break;
     } else {
       _last_cpp_comment = false;
-      unget(next_c);
       return c;
     }
   }
@@ -1009,14 +1215,21 @@ skip_comment(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_c_comment(int c) {
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number() - 2;
+  loc.last_line = 0;
+  loc.last_column = 0;
+
   if (_save_comments) {
     CPPCommentBlock *comment = new CPPCommentBlock;
     _comments.push_back(comment);
 
-    comment->_file = get_file();
-    comment->_line_number = get_line_number();
-    comment->_last_line = get_line_number();
-    comment->_col_number = get_col_number() - 2;
+    comment->_file = loc.file;
+    comment->_line_number = loc.first_line;
+    comment->_last_line = loc.last_line;
+    comment->_col_number = loc.first_column;
     comment->_c_style = true;
     comment->_comment = "/*";
 
@@ -1035,9 +1248,10 @@ skip_c_comment(int c) {
       }
     }
 
-    warning("Comment is unterminated",
-            comment->_line_number, comment->_col_number,
-            comment->_file);
+    loc.last_line = get_line_number();
+    comment->_last_line = loc.last_line;
+
+    warning("Comment is unterminated", loc);
 
   } else {
     CPPFile first_file = get_file();
@@ -1055,9 +1269,9 @@ skip_c_comment(int c) {
       }
     }
 
-    warning("Comment is unterminated",
-            first_line_number, first_col_number,
-            first_file);
+    loc.last_line = get_line_number();
+
+    warning("Comment is unterminated", loc);
   }
 
   return c;
@@ -1130,13 +1344,24 @@ skip_cpp_comment(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 process_directive(int c) {
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
+  assert(c == '#');
+  c = skip_whitespace(get());
+
+  int begin_line = get_line_number();
+  int begin_column = get_col_number();
 
   string command, args;
   c = get_preprocessor_command(c, command);
+
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+
   c = get_preprocessor_args(c, args);
+
+  loc.last_line = get_line_number();
+  loc.last_column = 0;
 
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
@@ -1144,15 +1369,15 @@ process_directive(int c) {
 #endif
 
   if (command == "define") {
-    handle_define_directive(args, first_line, first_col, first_file);
+    handle_define_directive(args, loc);
   } else if (command == "undef") {
-    handle_undef_directive(args, first_line, first_col, first_file);
+    handle_undef_directive(args, loc);
   } else if (command == "ifdef") {
-    handle_ifdef_directive(args, first_line, first_col, first_file);
+    handle_ifdef_directive(args, loc);
   } else if (command == "ifndef") {
-    handle_ifndef_directive(args, first_line, first_col, first_file);
+    handle_ifndef_directive(args, loc);
   } else if (command == "if") {
-    handle_if_directive(args, first_line, first_col, first_file);
+    handle_if_directive(args, loc);
   } else if (command == "else" || command == "elif") {
     // Presumably this follows some #if or #ifdef.  We don't bother to
     // check this, however.
@@ -1161,16 +1386,19 @@ process_directive(int c) {
     // Presumably this follows some #if or #ifdef.  We don't bother to
     // check this, however.
   } else if (command == "include") {
-    handle_include_directive(args, first_line, first_col, first_file);
+    handle_include_directive(args, loc);
   } else if (command == "pragma") {
-    handle_pragma_directive(args, first_line, first_col, first_file);
+    handle_pragma_directive(args, loc);
   } else if (command == "ident") {
     // Quietly ignore idents.
   } else if (command == "error") {
-    handle_error_directive(args, first_line, first_col, first_file);
+    handle_error_directive(args, loc);
   } else {
-    warning("Ignoring unknown directive #" + command,
-            first_line, first_col, first_file);
+    loc.first_line = begin_line;
+    loc.first_column = begin_column;
+    loc.last_line = begin_line;
+    loc.last_column = begin_column + command.size() - 1;
+    warning("Ignoring unknown directive #" + command, loc);
   }
 
   _start_of_line = true;
@@ -1184,19 +1412,13 @@ process_directive(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_preprocessor_command(int c, string &command) {
-  // Skip the hash mark.
-  assert(c == '#');
-  c = get();
-
-  // Also skip any whitespace following the hash mark--but don't skip
-  // past a newline.
-  while (c != EOF && (c == ' ' || c == '\t')) {
-    c = get();
-  }
-
   // The next sequence of characters is the command.
   while (c != EOF && (isalnum(c) || c == '_')) {
     command += c;
+    c = get();
+  }
+
+  while (c != EOF && c != '\n' && isspace(c)) {
     c = get();
   }
 
@@ -1244,13 +1466,11 @@ get_preprocessor_args(int c, string &args) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_define_directive(const string &args, int first_line,
-                        int first_col, const CPPFile &first_file) {
+handle_define_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
-    warning("Ignoring empty #define directive",
-            first_line, first_col, first_file);
+    warning("Ignoring empty #define directive", loc);
   } else {
-    CPPManifest *manifest = new CPPManifest(args, first_file);
+    CPPManifest *manifest = new CPPManifest(args, loc.file);
     manifest->_vis = preprocessor_vis;
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
@@ -1280,11 +1500,9 @@ handle_define_directive(const string &args, int first_line,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_undef_directive(const string &args, int first_line,
-                       int first_col, const CPPFile &first_file) {
+handle_undef_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
-    warning("Ignoring empty #undef directive",
-            first_line, first_col, first_file);
+    warning("Ignoring empty #undef directive", loc);
   } else {
     Manifests::iterator mi = _manifests.find(args);
     if (mi != _manifests.end()) {
@@ -1299,7 +1517,7 @@ handle_undef_directive(const string &args, int first_line,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_ifdef_directive(const string &args, int, int, const CPPFile &) {
+handle_ifdef_directive(const string &args, const YYLTYPE &loc) {
   Manifests::const_iterator mi = _manifests.find(args);
   if (mi != _manifests.end()) {
     // The macro is defined.  We continue.
@@ -1316,7 +1534,7 @@ handle_ifdef_directive(const string &args, int, int, const CPPFile &) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_ifndef_directive(const string &args, int, int, const CPPFile &) {
+handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
   Manifests::const_iterator mi = _manifests.find(args);
   if (mi == _manifests.end()) {
     // The macro is undefined.  We continue.
@@ -1334,8 +1552,7 @@ handle_ifndef_directive(const string &args, int, int, const CPPFile &) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_if_directive(const string &args, int first_line,
-                    int first_col, const CPPFile &first_file) {
+handle_if_directive(const string &args, const YYLTYPE &loc) {
   CPPExpression *expr = parse_expr(args, global_scope, global_scope);
 
   int expression_result = 0;
@@ -1343,14 +1560,12 @@ handle_if_directive(const string &args, int first_line,
   if (expr != (CPPExpression *)NULL) {
     CPPExpression::Result result = expr->evaluate();
     if (result._type == CPPExpression::RT_error) {
-      warning("Ignoring invalid expression " + args,
-              first_line, first_col, first_file);
+      warning("Ignoring invalid expression " + args, loc);
     } else {
       expression_result = result.as_integer();
     }
   } else {
-    warning("Ignoring invalid expression " + args,
-            first_line, first_col, first_file);
+    warning("Ignoring invalid expression " + args, loc);
   }
 
   if (expression_result) {
@@ -1368,8 +1583,7 @@ handle_if_directive(const string &args, int first_line,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_include_directive(const string &args, int first_line,
-                         int first_col, const CPPFile &first_file) {
+handle_include_directive(const string &args, const YYLTYPE &loc) {
   bool okflag = false;
   Filename filename;
   Filename filename_as_referenced;
@@ -1463,8 +1677,7 @@ handle_include_directive(const string &args, int first_line,
     }
 
     if (!found_file) {
-      warning("Cannot find " + filename.get_fullpath(),
-              first_line, first_col, first_file);
+      warning("Cannot find " + filename.get_fullpath(), loc);
     } else {
       _last_c = '\0';
 
@@ -1472,18 +1685,16 @@ handle_include_directive(const string &args, int first_line,
 
       // Don't include it if we included it before and it had #pragma once.
       ParsedFiles::const_iterator it = _parsed_files.find(file);
-      if (it->_pragma_once) {
+      if (it != _parsed_files.end() && it->_pragma_once) {
         return;
       }
 
       if (!push_file(file)) {
-        warning("Unable to read " + filename.get_fullpath(),
-                first_line, first_col, first_file);
+        warning("Unable to read " + filename.get_fullpath(), loc);
       }
     }
   } else {
-    warning("Ignoring invalid #include directive",
-            first_line, first_col, first_file);
+    warning("Ignoring invalid #include directive", loc);
   }
 }
 
@@ -1493,10 +1704,9 @@ handle_include_directive(const string &args, int first_line,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_pragma_directive(const string &args, int first_line,
-                        int first_col, const CPPFile &first_file) {
+handle_pragma_directive(const string &args, const YYLTYPE &loc) {
   if (args == "once") {
-    ParsedFiles::iterator it = _parsed_files.find(first_file);
+    ParsedFiles::iterator it = _parsed_files.find(loc.file);
     assert(it != _parsed_files.end());
     it->_pragma_once = true;
   }
@@ -1508,9 +1718,8 @@ handle_pragma_directive(const string &args, int first_line,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_error_directive(const string &args, int first_line,
-                       int first_col, const CPPFile &first_file) {
-  error(args, first_line, first_col, first_file);
+handle_error_directive(const string &args, const YYLTYPE &loc) {
+  error(args, loc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1529,9 +1738,14 @@ skip_false_if_block(bool consider_elifs) {
   int c = skip_comment(get());
   while (c != EOF) {
     if (c == '#' && _start_of_line) {
-      CPPFile first_file = get_file();
-      int first_line = get_line_number();
-      int first_col = get_col_number();
+      c = skip_whitespace(get());
+
+      YYLTYPE loc;
+      loc.file = get_file();
+      loc.first_line = get_line_number();
+      loc.first_column = get_col_number();
+      loc.last_line = loc.first_line;
+      loc.last_column = loc.first_column;
 
       // Is this it?
       string command, args;
@@ -1550,7 +1764,7 @@ skip_false_if_block(bool consider_elifs) {
         if (level == 0 && consider_elifs) {
           // If we pass this test, we're in.
           _save_comments = true;
-          handle_if_directive(args, first_line, first_col, first_file);
+          handle_if_directive(args, loc);
           return;
         }
       } else if (command == "endif") {
@@ -1577,18 +1791,22 @@ skip_false_if_block(bool consider_elifs) {
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_quoted_char(int c) {
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
-  string str = scan_quoted(c);
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
 
+  string str = scan_quoted(c);
   YYSTYPE result;
   if (!str.empty()) {
     result.u.integer = (int)str[0];
   } else {
     result.u.integer = 0;
   }
-  return CPPToken(CHAR_TOK, first_line, first_col, first_file, str, result);
+
+  loc.last_line = get_line_number();
+  loc.last_column = get_col_number();
+  return CPPToken(CHAR_TOK, loc, str, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1598,11 +1816,16 @@ get_quoted_char(int c) {
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_quoted_string(int c) {
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+
   string str = scan_quoted(c);
-  return CPPToken(STRING, first_line, first_col, first_file, str);
+
+  loc.last_line = get_line_number();
+  loc.last_column = get_col_number();
+  return CPPToken(STRING, loc, str);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1612,33 +1835,40 @@ get_quoted_string(int c) {
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_identifier(int c) {
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+  loc.last_line = loc.first_line;
+  loc.last_column = loc.first_column;
 
   string name(1, (char)c);
 
-  c = get();
+  c = peek();
   while (c != EOF && (isalnum(c) || c == '_')) {
-    name += c;
-    c = get();
+    name += get();
+    c = peek();
   }
   if (c == '\'' || c == '"') {
     // This is actually a wide-character or wide-string literal or
     // some such: a string with an alphanumeric prefix.  We don't
     // necessarily try to parse it correctly; for most purposes, we
     // don't care.
+    get();
     CPPToken token(0);
     if (c == '\'') {
       token = get_quoted_char(c);
     } else {
       token = get_quoted_string(c);
     }
-    token._lloc.first_column = first_col;
+    token._lloc.first_column = loc.first_column;
     return token;
   }
 
-  _last_c = c;
+  loc.last_line = get_line_number();
+  loc.last_column = get_col_number();
+
+  _last_c = 0;
 
   // Is it a manifest?
   Manifests::const_iterator mi = _manifests.find(name);
@@ -1663,11 +1893,10 @@ get_identifier(int c) {
   if (kw != 0) {
     YYSTYPE result;
     result.u.identifier = (CPPIdentifier *)NULL;
-    return CPPToken(kw, first_line, first_col, first_file, name, result);
+    return CPPToken(kw, loc, name, result);
   }
 
-  return CPPToken(SIMPLE_IDENTIFIER, first_line, first_col, first_file,
-                  name);
+  return CPPToken(SIMPLE_IDENTIFIER, loc, name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1717,6 +1946,9 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
   // Skip whitespace till paren.
   int c = _last_c;
   _last_c = '\0';
+  if (c == 0) {
+    c = get();
+  }
   while (c != EOF && isspace(c)) {
     c = get();
   }
@@ -1800,13 +2032,18 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
     }
   }
 
+  YYLTYPE loc;
+  loc.first_line = first_line;
+  loc.first_column = first_col;
+  loc.last_line = first_line;
+  loc.last_column = first_col;
+  loc.file = first_file;
+
   if ((int)args.size() < num_args) {
-    warning("Not enough arguments for manifest " + name,
-            first_line, first_col, first_file);
+    warning("Not enough arguments for manifest " + name, loc);
 
   } else if (va_arg < 0 && (int)args.size() > num_args) {
-    warning("Too many arguments for manifest " + name,
-            first_line, first_col, first_file);
+    warning("Too many arguments for manifest " + name, loc);
   }
 }
 
@@ -1936,93 +2173,103 @@ extract_manifest_args_inline(const string &name, int num_args,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
-get_number(int c, int c2) {
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
+get_number(int c) {
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+  loc.last_line = loc.first_line;
+  loc.last_column = loc.first_column;
 
   string num(1, (char)c);
   bool leading_zero = (c == '0');
   bool decimal_point = (c == '.');
 
-  if (c2 == 0) {
-    c = get();
-  } else {
-    c = c2;
-  }
+  c = peek();
+
   if (leading_zero && c == 'x') {
     // Here we have a hex number.
-    num += c;
-    c = get();
+    num += get();
+    c = peek();
 
     while (c != EOF && (isdigit(c) || (tolower(c) >= 'a' && tolower(c) <= 'f'))) {
-      num += c;
-      c = get();
+      num += get();
+      c = peek();
     }
 
-    while (c == 'L' || c == 'U') {
+    while (c == 'L' || c == 'U' || c == 'l' || c == 'u') {
       // We allow (and ignore) an 'L' and/or 'U' following the number.
-      c = get();
+      get();
+      c = peek();
     }
 
-    _last_c = c;
+    loc.last_line = get_line_number();
+    loc.last_column = get_col_number();
+
+    _last_c = 0;
 
     YYSTYPE result;
     result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
-    return CPPToken(INTEGER, first_line, first_col, first_file, num, result);
+    return CPPToken(INTEGER, loc, num, result);
   }
 
   while (c != EOF && isdigit(c)) {
-    num += c;
-    c = get();
+    num += get();
+    c = peek();
   }
 
   if (c == '.' && !decimal_point) {
     // Now we have a floating-point number.
     decimal_point = true;
-    num += c;
-    c = get();
+    num += get();
+    c = peek();
 
     while (c != EOF && isdigit(c)) {
-      num += c;
-      c = get();
+      num += get();
+      c = peek();
     }
   }
 
   if (decimal_point) {
     if (tolower(c) == 'e') {
       // An exponent is allowed.
-      num += c;
-      c = get();
+      num += get();
+      c = peek();
       if (c == '-' || c == '+') {
-        num += c;
-        c = get();
+        num += get();
+        c = peek();
       }
       while (c != EOF && isdigit(c)) {
-        num += c;
-        c = get();
+        num += get();
+        c = peek();
       }
     }
 
     if (c == 'f') {
       // We allow (and ignore) an 'f' following the number.
-      c = get();
+      get();
+      c = peek();
     }
 
-    _last_c = c;
+    loc.last_line = get_line_number();
+    loc.last_column = get_col_number();
+
     YYSTYPE result;
     result.u.real = pstrtod(num.c_str(), (char **)NULL);
-    return CPPToken(REAL, first_line, first_col, first_file, num, result);
+    return CPPToken(REAL, loc, num, result);
   }
 
   // This is a decimal or octal integer number.
 
   while (c == 'L' || c == 'U') {
     // We allow (and ignore) an 'L' and/or 'U' following the number.
-    c = get();
+    get();
+    c = peek();
   }
 
-  _last_c = c;
+  loc.last_line = get_line_number();
+  loc.last_column = get_col_number();
+
   YYSTYPE result;
 
   if (leading_zero) {
@@ -2036,7 +2283,7 @@ get_number(int c, int c2) {
     result.u.integer = strtol(num.c_str(), (char **)NULL, 10);
   }
 
-  return CPPToken(INTEGER, first_line, first_col, first_file, num, result);
+  return CPPToken(INTEGER, loc, num, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2162,7 +2409,7 @@ scan_escape_sequence(int c) {
     return '\v';
 
   case 'e':
-    // \e is non-standard, buT GCC supports it.
+    // \e is non-standard, but GCC supports it.
     return '\x1B';
 
   case 'x':
@@ -2170,11 +2417,8 @@ scan_escape_sequence(int c) {
     c = get();
     if (isxdigit(c)) {
       int val = hex_val(c);
-      c = get();
-      if (isxdigit(c)) {
-        val = (val << 4) | hex_val(c);
-      } else {
-        unget(c);
+      if (isxdigit(peek())) {
+        val = (val << 4) | hex_val(get());
       }
       return val;
     }
@@ -2191,17 +2435,13 @@ scan_escape_sequence(int c) {
     // Octal character.
     {
       int val = (c - '0');
-      c = get();
+      c = peek();
       if (c >= '0' && c <= '7') {
-        val = (val << 3) | (c - '0');
-        c = get();
+        val = (val << 3) | (get() - '0');
+        c = peek();
         if (c >= '0' && c <= '7') {
-          val = (val << 3) | (c - '0');
-        } else {
-          unget(c);
+          val = (val << 3) | (get() - '0');
         }
-      } else {
-        unget(c);
       }
       return val;
     }
@@ -2237,7 +2477,6 @@ scan_quoted(int c) {
   }
   return str;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::should_ignore_manifest
@@ -2321,9 +2560,43 @@ get() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::peek
+//       Access: Private
+//  Description: Like get(), but does not alter the current state.
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::
+peek() {
+  if (_unget != '\0') {
+    return _unget;
+  }
+
+  if (_files.empty()) {
+    return EOF;
+  }
+
+  Files::reverse_iterator it = _files.rbegin();
+  int c = (*it).peek();
+
+  while (c == EOF && it != _files.rend()) {
+    int last_c = (*it)._prev_last_c;
+    ++it;
+
+    if (last_c != '\0') {
+      c = last_c;
+    } else if (it != _files.rend()) {
+      c = (*it).peek();
+    }
+  }
+
+  return c;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::unget
 //       Access: Private
-//  Description:
+//  Description: Undoes the effects of a previous get().  Not
+//               recommended, use peek() instead where possible, as
+//               it doesn't cause the column index to be off.
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 unget(int c) {
@@ -2350,14 +2623,18 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 
   State old_state = _state;
   int old_nesting = _paren_nesting;
+  bool old_parsing_params = _parsing_template_params;
 
   const CPPTemplateParameterList &formal_params = scope->_parameters;
   CPPTemplateParameterList::Parameters::const_iterator pi;
-  _angle_bracket_found = false;
+
+  _state = S_nested;
+  _paren_nesting = 0;
+  _parsing_template_params = true;
 
   CPPToken token = internal_get_next_token();
   if (token._token == '>') {
-    _angle_bracket_found = true;
+    _parsing_template_params = false;
   } else {
     _saved_tokens.push_back(token);
   }
@@ -2365,45 +2642,50 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   CPPTemplateParameterList *actual_params = new CPPTemplateParameterList;
 
   for (pi = formal_params._parameters.begin();
-       pi != formal_params._parameters.end() && !_angle_bracket_found;
+       pi != formal_params._parameters.end() && _parsing_template_params;
        ++pi) {
-    _state = S_nested;
-    _paren_nesting = 0;
-
-    CPPFile first_file = get_file();
-    int first_line = get_line_number();
-    int first_col = get_col_number();
+    CPPToken token = peek_next_token();
+    YYLTYPE loc = token._lloc;
 
     CPPDeclaration *decl = (*pi);
     if (decl->as_type()) {
+      // Parse a typename template parameter.
       _saved_tokens.push_back(CPPToken(START_TYPE));
       CPPType *type = ::parse_type(this, current_scope, global_scope);
       if (type == NULL) {
-        warning("Invalid type", first_line, first_col, first_file);
+        loc.last_line = get_line_number();
+        loc.last_column = get_col_number() - 1;
+        warning("Invalid type", loc);
         skip_to_end_nested();
         type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
       }
       actual_params->_parameters.push_back(type);
     } else {
+      // Parse a constant expression template parameter.
       _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
       CPPExpression *expr = parse_const_expr(this, current_scope, global_scope);
       if (expr == NULL) {
-        warning("Invalid expression", first_line, first_col, first_file);
+        loc.last_line = get_line_number();
+        loc.last_column = get_col_number() - 1;
+        warning("Invalid expression", loc);
         skip_to_end_nested();
         expr = new CPPExpression(0);
       }
       actual_params->_parameters.push_back(expr);
     }
+
+    _state = S_nested;
+    _paren_nesting = 0;
   }
 
-  if (!_angle_bracket_found) {
+  if (_parsing_template_params) {
     warning("Ignoring extra parameters in template instantiation");
     skip_to_angle_bracket();
   }
 
   _state = old_state;
   _paren_nesting = old_nesting;
-  _angle_bracket_found = false;
+  _parsing_template_params = old_parsing_params;
 
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
@@ -2460,7 +2742,7 @@ skip_to_angle_bracket() {
     << "Skipping tokens:\n";
 #endif
 
-  while (!_angle_bracket_found && _state != S_eof) {
+  while (_parsing_template_params && _state != S_eof) {
     _state = S_nested;
     while (_state != S_end_nested && _state != S_eof) {
       get_next_token();

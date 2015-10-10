@@ -21,7 +21,7 @@
 //               list in Python.
 ////////////////////////////////////////////////////////////////////
 INLINE Filename DSearchPath::Results::
-operator [] (int n) const {
+operator [] (size_t n) const {
   return get_file(n);
 }
 
@@ -32,7 +32,7 @@ operator [] (int n) const {
 //               is defined to make the Results object appear to be a
 //               list in Python.
 ////////////////////////////////////////////////////////////////////
-INLINE int DSearchPath::Results::
+INLINE size_t DSearchPath::Results::
 size() const {
   return get_num_files();
 }

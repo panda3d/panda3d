@@ -25,12 +25,12 @@ get_slot(TypeHandle type_handle) const {
   if (type_index >= (int)_slots_by_type.size()) {
     return 0;
   }
-  return _slots_by_type[type_index];
+  return _slots_by_type[(size_t)type_index];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttribRegistry::get_max_slots
-//       Access: Published
+//       Access: Published, Static
 //  Description: Returns the maximum number that any slot number is
 //               allowed to grow.  Actually, this number will be one
 //               higher than the highest possible slot number.  This
@@ -41,8 +41,8 @@ get_slot(TypeHandle type_handle) const {
 //               This number will not change during the lifetime of
 //               the application.
 ////////////////////////////////////////////////////////////////////
-INLINE int RenderAttribRegistry::
-get_max_slots() const {
+CONSTEXPR int RenderAttribRegistry::
+get_max_slots() {
   return _max_slots;
 }
 
@@ -81,6 +81,20 @@ get_slot_sort(int slot) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttribRegistry::get_slot_default
+//       Access: Published
+//  Description: Returns the default RenderAttrib object associated
+//               with slot n.  This is the attrib that should be
+//               applied in the absence of any other attrib of this
+//               type.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderAttrib *RenderAttribRegistry::
+get_slot_default(int slot) const {
+  nassertr(slot >= 0 && slot < (int)_registry.size(), 0);
+  return _registry[slot]._default_attrib;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttribRegistry::get_num_sorted_slots
 //       Access: Published
 //  Description: Returns the number of entries in the sorted_slots
@@ -102,18 +116,6 @@ INLINE int RenderAttribRegistry::
 get_sorted_slot(int n) const {
   nassertr(n >= 0 && n < (int)_sorted_slots.size(), 0);
   return _sorted_slots[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::get_array_chain
-//       Access: Published
-//  Description: Returns the DeletedBufferChain object that may be
-//               used to allocated appropriately-sized arrays of
-//               RenderState::Attribute objects.
-////////////////////////////////////////////////////////////////////
-INLINE DeletedBufferChain *RenderAttribRegistry::
-get_array_chain() const {
-  return _array_chain;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,9 +156,21 @@ SortSlots(RenderAttribRegistry *reg) : _reg(reg) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttribRegistry::SortSlots::operator ()
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool RenderAttribRegistry::SortSlots::
 operator () (int a, int b) const {
   return _reg->get_slot_sort(a) < _reg->get_slot_sort(b);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttribRegistry::RegistryNode::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE RenderAttribRegistry::RegistryNode::
+RegistryNode(TypeHandle type, int sort, const RenderAttrib *default_attrib) :
+  _type(type),
+  _sort(sort),
+  _default_attrib(default_attrib) {
 }

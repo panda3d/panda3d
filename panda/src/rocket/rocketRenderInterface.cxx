@@ -20,6 +20,7 @@
 #include "internalName.h"
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
+#include "colorAttrib.h"
 #include "colorBlendAttrib.h"
 #include "cullBinAttrib.h"
 #include "depthTestAttrib.h"
@@ -49,7 +50,8 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
     ColorBlendAttrib::make(ColorBlendAttrib::M_add,
       ColorBlendAttrib::O_incoming_alpha,
       ColorBlendAttrib::O_one_minus_incoming_alpha
-    )
+    ),
+    ColorAttrib::make_vertex()
   );
   _dimensions = context->GetDimensions();
 

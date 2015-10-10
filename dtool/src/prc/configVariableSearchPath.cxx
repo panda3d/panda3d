@@ -28,8 +28,8 @@ reload_search_path() {
   _cache.clear();
 
   _cache.append_path(_prefix);
-  int num_unique_references = _core->get_num_unique_references();
-  for (int i = 0; i < num_unique_references; i++) {
+  size_t num_unique_references = _core->get_num_unique_references();
+  for (size_t i = 0; i < num_unique_references; i++) {
     const ConfigDeclaration *decl = _core->get_unique_reference(i);
     const ConfigPage *page = decl->get_page();
 

@@ -19,7 +19,6 @@
 
 #include "cppDeclaration.h"
 #include "cppType.h"
-#include "cppIdentifier.h"
 #include "cppTemplateParameterList.h"
 
 class CPPInstanceIdentifier;

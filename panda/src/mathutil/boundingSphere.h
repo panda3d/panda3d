@@ -47,6 +47,10 @@ PUBLISHED:
   INLINE_MATHUTIL LPoint3 get_center() const;
   INLINE_MATHUTIL PN_stdfloat get_radius() const;
 
+  INLINE_MATHUTIL void set_center(const LPoint3 &center);
+  INLINE_MATHUTIL void set_radius(PN_stdfloat radius);
+
+
 public:
   virtual const BoundingSphere *as_bounding_sphere() const;
 

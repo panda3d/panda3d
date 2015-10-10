@@ -310,11 +310,6 @@ ConfigVariableInt max_lenses
           "this can be used as a simple sanity check.  Set it larger or "
           "smaller to suit your needs."));
 
-ConfigVariableBool default_antialias_enable
-("default-antialias-enable", false,
- PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
-          "nodes by default."));
-
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

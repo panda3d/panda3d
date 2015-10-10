@@ -216,6 +216,38 @@ setup_cube_map(int size, ComponentType component_type, Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_cube_map_array
+//       Access: Published
+//  Description: Sets the texture as cube map array with N cube maps.
+//               Note that this number is not the same as the z_size.
+//               Follow up with read() or load() to fill
+//               the texture properties and image data, or use
+//               set_clear_color to let the texture be cleared to a
+//               solid color.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_cube_map_array(int num_cube_maps) {
+  setup_cube_map_array(0, num_cube_maps, T_unsigned_byte, F_rgb);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::setup_cube_map_array
+//       Access: Published
+//  Description: Sets the texture as cube map array with N cube maps
+//               with the specified dimensions and format.  Follow up
+//               with set_ram_image() or modify_ram_image() to fill
+//               the image data, or use set_clear_color to let the
+//               texture be cleared to a solid color.
+//
+//               The num_cube_maps given here is multiplied by six
+//               to become the z_size of the image.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+setup_cube_map_array(int size, int num_cube_maps, ComponentType component_type, Format format) {
+  setup_texture(TT_cube_map_array, size, size, num_cube_maps * 6, component_type, format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::setup_buffer_texture
 //       Access: Published
 //  Description: Sets the texture as an empty buffer texture with
@@ -312,7 +344,7 @@ INLINE string Texture::
 get_clear_data() const {
   CDReader cdata(_cycler);
   unsigned char data[16];
-  int size = do_get_clear_data(cdata, data);
+  size_t size = do_get_clear_data(cdata, data);
   return string((char *)data, size);
 }
 

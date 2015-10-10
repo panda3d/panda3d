@@ -34,6 +34,8 @@ TypeHandle RocketInputHandler::_type_handle;
 RocketInputHandler::
 RocketInputHandler(const string &name) :
   DataNode(name),
+  _mouse_xy(-1),
+  _mouse_xy_changed(false),
   _modifiers(0),
   _wheel_delta(0)
 {
@@ -300,30 +302,6 @@ void RocketInputHandler::
 update_context(Rocket::Core::Context *context, int xoffs, int yoffs) {
   MutexHolder holder(_lock);
 
-  if (_mouse_xy_changed) {
-    _mouse_xy_changed = false;
-
-    context->ProcessMouseMove(_mouse_xy.get_x() - xoffs,
-                              _mouse_xy.get_y() - yoffs, _modifiers);
-  }
-
-  if (_mouse_buttons.size() > 0) {
-    ButtonActivityMap::const_iterator it;
-    for (it = _mouse_buttons.begin(); it != _mouse_buttons.end(); ++it) {
-      if (it->second) {
-        context->ProcessMouseButtonDown(it->first, _modifiers);
-      } else {
-        context->ProcessMouseButtonUp(it->first, _modifiers);
-      }
-    }
-    _mouse_buttons.clear();
-  }
-
-  if (_wheel_delta != 0) {
-    context->ProcessMouseWheel(_wheel_delta, _modifiers);
-    _wheel_delta = 0;
-  }
-
   if (_keys.size() > 0) {
     ButtonActivityMap::const_iterator it;
     for (it = _keys.begin(); it != _keys.end(); ++it) {
@@ -352,6 +330,30 @@ update_context(Rocket::Core::Context *context, int xoffs, int yoffs) {
       context->ProcessTextInput(*it);
     }
     _text_input.clear();
+  }
+
+  if (_mouse_xy_changed) {
+    _mouse_xy_changed = false;
+
+    context->ProcessMouseMove(_mouse_xy.get_x() - xoffs,
+                              _mouse_xy.get_y() - yoffs, _modifiers);
+  }
+
+  if (_mouse_buttons.size() > 0) {
+    ButtonActivityMap::const_iterator it;
+    for (it = _mouse_buttons.begin(); it != _mouse_buttons.end(); ++it) {
+      if (it->second) {
+        context->ProcessMouseButtonDown(it->first, _modifiers);
+      } else {
+        context->ProcessMouseButtonUp(it->first, _modifiers);
+      }
+    }
+    _mouse_buttons.clear();
+  }
+
+  if (_wheel_delta != 0) {
+    context->ProcessMouseWheel(_wheel_delta, _modifiers);
+    _wheel_delta = 0;
   }
 
   context->Update();

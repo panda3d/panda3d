@@ -49,7 +49,7 @@ private:
 
 PUBLISHED:
   static CPT(RenderAttrib) make(Mode mode);
-  static CPT(RenderAttrib) make_default();
+  INLINE static CPT(RenderAttrib) make_default();
 
   INLINE Mode get_mode() const;
 
@@ -63,6 +63,10 @@ protected:
 
 private:
   Mode _mode;
+
+  // There are so few possible combinations, and it's used fairly often, so
+  // we keep an array of the possible attributes.
+  static CPT(RenderAttrib) _attribs[M_auto + 1];
 
 PUBLISHED:
   static int get_class_slot() {
@@ -79,17 +83,12 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type() {
-    RenderAttrib::init_type();
-    register_type(_type_handle, "RescaleNormalAttrib",
-                  RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, make_default);
-  }
+  static void init_type();
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

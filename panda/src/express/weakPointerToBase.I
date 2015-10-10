@@ -43,7 +43,13 @@ WeakPointerToBase(const PointerToBase<T> &copy) {
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(const WeakPointerToBase<T> &copy) {
-  reassign(copy);
+  _void_ptr = copy._void_ptr;
+  _ptr_was_deleted = copy._ptr_was_deleted;
+
+  if (is_valid_pointer()) {
+    To *ptr = (To *)_void_ptr;
+    ptr->weak_ref(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -62,8 +62,8 @@ PUBLISHED:
   };
 
 protected:
-  INLINE static bool is_cache_valid(AtomicAdjust::Integer local_modified);
-  INLINE static void mark_cache_valid(AtomicAdjust::Integer &local_modified); 
+  ALWAYS_INLINE static bool is_cache_valid(AtomicAdjust::Integer local_modified);
+  ALWAYS_INLINE static void mark_cache_valid(AtomicAdjust::Integer &local_modified);
   INLINE static AtomicAdjust::Integer initial_invalid_cache();
   INLINE static void invalidate_cache();
 

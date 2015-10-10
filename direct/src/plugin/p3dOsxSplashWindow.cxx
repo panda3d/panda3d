@@ -36,6 +36,7 @@ P3DOsxSplashWindow::
 P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) : 
   P3DSplashWindow(inst, make_visible)
 {
+  _font_attribs = NULL;
   _install_progress = 0;
   _progress_known = true;
   _received_data = 0;
@@ -58,6 +59,9 @@ P3DOsxSplashWindow::
     HideWindow(_toplevel_window);
     DisposeWindow(_toplevel_window);
     _toplevel_window = NULL;
+  }
+  if (_font_attribs != NULL) {
+    CFRelease(_font_attribs);
   }
 }
 
@@ -123,6 +127,41 @@ set_wparams(const P3DWindowParams &wparams) {
       }
     }
   }
+
+  // Determine the attributes of the font we're going to use.
+  int symbolic = 0;
+  if (_font_style != FS_normal) {
+    symbolic |= kCTFontItalicTrait;
+  }
+  if (_font_weight > 500) {
+    symbolic |= kCTFontBoldTrait;
+  }
+  CFNumberRef symbolic_ref = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &symbolic);
+
+  CFStringRef traits_keys[1] = { kCTFontSymbolicTrait };
+  CFTypeRef traits_values[1] = { symbolic_ref };
+  CFDictionaryRef traits = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&traits_keys, (const void **)&traits_values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+  CFStringRef family = CFStringCreateWithCString(NULL, _font_family.c_str(), kCFStringEncodingUTF8);
+
+  CFStringRef attribs_keys[2] = { kCTFontFamilyNameAttribute, kCTFontTraitsAttribute };
+  CFTypeRef attribs_values[2] = { family, traits };
+  CFDictionaryRef attribs = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&attribs_keys, (const void **)&attribs_values, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+  // Create the font object.
+  CTFontDescriptorRef font_desc = CTFontDescriptorCreateWithAttributes(attribs);
+  CTFontRef font = CTFontCreateWithFontDescriptor(font_desc, _font_size, NULL);
+
+  CFStringRef keys[1] = { kCTFontAttributeName };
+  CFTypeRef values[1] = { font };
+  _font_attribs = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&keys, (const void **)&values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+  CFRelease(font);
+  CFRelease(font_desc);
+  CFRelease(attribs);
+  CFRelease(traits);
+  CFRelease(family);
+  CFRelease(symbolic_ref);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,6 +210,9 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   case IP_button_click:
     load_image(_button_click_image, image_filename);
     break;
+
+  default:
+    return;
   }
 
   refresh();
@@ -333,10 +375,8 @@ paint_window_osx_cgcontext(CGContextRef context) {
   CGColorRef bg = CGColorCreate(rgb_space, bg_components);
 
   CGRect region = { { 0, 0 }, { _win_width, _win_height } };
-  CGContextBeginPath(context);
   CGContextSetFillColorWithColor(context, bg);
-  CGContextAddRect(context, region);
-  CGContextFillPath(context);
+  CGContextFillRect(context, region);
 
   CGColorRelease(bg);
   CGColorSpaceRelease(rgb_space);
@@ -445,8 +485,6 @@ handle_event_osx_event_record(const P3D_event_data &event) {
 ////////////////////////////////////////////////////////////////////
 bool P3DOsxSplashWindow::
 handle_event_osx_cocoa(const P3D_event_data &event) {
-  bool retval = false;
-
   assert(event._event_type == P3D_ET_osx_cocoa);
   const P3DCocoaEvent &ce = event._event._osx_cocoa._event;
 
@@ -455,33 +493,31 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
     if (_visible) {
       CGContextRef context = ce.data.draw.context;
       paint_window_osx_cgcontext(context);
-      retval = true;
+      return true;
+    } else {
+      return false;
     }
-    break;
 
   case P3DCocoaEventMouseDown:
     set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, true);
-    retval = true;
-    break;
+    return true;
 
   case P3DCocoaEventMouseUp:
     set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, false);
-    retval = true;
-    break;
+    return true;
 
   case P3DCocoaEventMouseMoved:
   case P3DCocoaEventMouseDragged:
     set_mouse_data((int)ce.data.mouse.pluginX, (int)ce.data.mouse.pluginY, _mouse_down);
-    retval = true;
-    break;
+    return true;
 
   case P3DCocoaEventFocusChanged:
     _mouse_active = (ce.data.focus.hasFocus != 0);
-    retval = true;
-    break;
-  }
+    return true;
 
-  return retval;
+  default:
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,42 +648,33 @@ paint_image(CGContextRef context, const OsxImageData &image) {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 paint_progress_bar(CGContextRef context) {
-  // Get some colors we'll need.  We can't just use
-  // CGColorGetConstantColor(), since that requires 10.5.
   CGFloat fg_components[] = { _fgcolor_r / 255.0f, _fgcolor_g / 255.0f, _fgcolor_b / 255.0f, 1 };
   CGFloat bg_components[] = { _bgcolor_r / 255.0f, _bgcolor_g / 255.0f, _bgcolor_b / 255.0f, 1 };
   CGFloat bar_components[] = { _barcolor_r / 255.0f, _barcolor_g / 255.0f, _barcolor_b / 255.0f, 1 };
+  CGFloat bar_bg_components[] = { _bar_bgcolor_r / 255.0f, _bar_bgcolor_g / 255.0f, _bar_bgcolor_b / 255.0f, 1 };
   CGColorSpaceRef rgb_space = CGColorSpaceCreateDeviceRGB();
   CGColorRef fg = CGColorCreate(rgb_space, fg_components);
   CGColorRef bg = CGColorCreate(rgb_space, bg_components);
   CGColorRef bar = CGColorCreate(rgb_space, bar_components);
+  CGColorRef bar_bg = CGColorCreate(rgb_space, bar_bg_components);
 
+  // Get the proper placement for the progress bar.
   int bar_x, bar_y, bar_width, bar_height;
   get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
-  // We offset the bar by half a pixel, so we'll be drawing the
-  // one-pixel line through the middle of a pixel, and it won't try to
-  // antialias itself into a half-black two-pixel line.
-  float bar_xf = bar_x + 0.5;
-  float bar_yf = bar_y - 0.5;
-
-  CGRect bar_rect = { { bar_xf, bar_yf }, { bar_width, bar_height } };
+  CGRect bar_rect = { { bar_x, bar_y }, { bar_width, bar_height } };
 
   // Clear the entire progress bar to white (or the background color).
-  CGContextBeginPath(context);
-  CGContextSetFillColorWithColor(context, bg);
-  CGContextAddRect(context, bar_rect);
-  CGContextFillPath(context);
+  CGContextSetFillColorWithColor(context, bar_bg);
+  CGContextFillRect(context, bar_rect);
 
   // Draw the interior of the progress bar in blue (or the bar color).
   if (_progress_known) {
     int progress_width = (int)(bar_width * _install_progress + 0.5);
     if (progress_width != 0) {
-      CGRect prog = { { bar_xf, bar_yf }, { progress_width, bar_height } };
-      CGContextBeginPath(context);
+      CGRect prog = { { bar_x, bar_y }, { progress_width, bar_height } };
       CGContextSetFillColorWithColor(context, bar);
-      CGContextAddRect(context, prog);
-      CGContextFillPath(context);
+      CGContextFillRect(context, prog);
     }
   } else {
     // Progress is unknown.  Draw a moving block, not a progress bar
@@ -660,57 +687,58 @@ paint_progress_bar(CGContextRef context) {
       progress = block_travel * 2 - progress;
     }
 
-    CGRect prog = { { bar_xf + progress, bar_yf }, { block_width, bar_height } };
-    CGContextBeginPath(context);
+    CGRect prog = { { bar_x + progress, bar_y }, { block_width, bar_height } };
     CGContextSetFillColorWithColor(context, bar);
-    CGContextAddRect(context, prog);
-    CGContextFillPath(context);
+    CGContextFillRect(context, prog);
   }
-    
+
   // Draw the black stroke around the progress bar.
-  CGContextBeginPath(context);
-  CGContextSetLineWidth(context, 1);
-  CGContextSetStrokeColorWithColor(context, fg);
-  CGContextAddRect(context, bar_rect);
-  CGContextStrokePath(context);
+  if (_bar_border > 0) {
+    // We offset the border by half a pixel, so we'll be drawing the
+    // one-pixel line through the middle of a pixel, and it won't try to
+    // antialias itself into a half-black two-pixel line.
+    CGRect border_rect = { { bar_x - 0.5, bar_y - 0.5 },
+                           { bar_width + 1, bar_height + 1 } };
+
+    CGContextBeginPath(context);
+    CGContextSetLineWidth(context, 1);
+    CGContextSetStrokeColorWithColor(context, fg);
+
+    for (int i = 0; i < _bar_border; ++i) {
+      CGContextAddRect(context, border_rect);
+      border_rect.origin.x -= 1;
+      border_rect.origin.y -= 1;
+      border_rect.size.width += 2;
+      border_rect.size.height += 2;
+    }
+    CGContextStrokePath(context);
+  }
 
   if (!_install_label.empty()) {
-    // Now draw the install_label right above it.
-
     // Need to invert the text so it won't be upside-down.
     CGAffineTransform text_xform = CGAffineTransformMakeScale(1, -1);
     CGContextSetTextMatrix(context, text_xform);
 
-    // Choose a suitable font.
-    float text_height = 15.0;
-    CGContextSelectFont(context, "Helvetica", text_height, kCGEncodingMacRoman);
+    // Now draw the install_label right above it.
+    CFStringRef string = CFStringCreateWithCString(NULL, _install_label.c_str(), kCFStringEncodingUTF8);
+    CFAttributedStringRef attr_string = CFAttributedStringCreate(NULL, string, _font_attribs);
+    CTLineRef line = CTLineCreateWithAttributedString(attr_string);
 
-    // Measure the text, for centering.
-    CGContextSetTextPosition(context, 0, 0);
-    CGContextSetTextDrawingMode(context, kCGTextInvisible);
-    CGContextShowText(context, _install_label.data(), _install_label.length());
-    CGPoint end_point = CGContextGetTextPosition(context);
-    float text_width = end_point.x;
-
-    int text_x = (int)(_win_width - text_width) / 2;
-    int text_y = (int)(bar_y - text_height * 1.5);
-
-    // Clear the rectangle behind the text to bg.
-    CGRect text_rect = { { text_x - 2, text_y - 2 }, { text_width + 4, text_height + 4 } };
-
-    CGContextBeginPath(context);
-    CGContextAddRect(context, text_rect);
-    CGContextSetFillColorWithColor(context, bg);
-    CGContextFillPath(context);
+    // Determine the placement based on the size of the text.
+    CGRect bounds = CTLineGetImageBounds(line, context);
+    float text_x = (_win_width - bounds.size.width) / 2.0f - bounds.origin.x;
+    float text_y = bar_y + bounds.origin.y - 4 - _bar_border;
 
     // And finally, draw the text.
-    CGContextSetTextDrawingMode(context, kCGTextFill);
-    CGContextSetFillColorWithColor(context, fg);
+    CGContextSetTextPosition(context, text_x, text_y);
+    CTLineDraw(line, context);
 
-    CGContextShowTextAtPoint(context, text_x, text_y + text_height, 
-                             _install_label.data(), _install_label.length());
+    CFRelease(line);
+    CFRelease(attr_string);
+    CFRelease(string);
   }
 
+  CGColorRelease(bar_bg);
   CGColorRelease(bar);
   CGColorRelease(bg);
   CGColorRelease(fg);

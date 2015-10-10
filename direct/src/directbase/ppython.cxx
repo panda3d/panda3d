@@ -36,7 +36,7 @@ int main(int argc, char *mb_argv[]) {
     size_t len = mbstowcs(NULL, mb_argv[i], 0);
     argv[i] = new wchar_t[len + 1];
     mbstowcs(argv[i], mb_argv[i], len);
-    argv[i][len] = NULL;
+    argv[i][len] = 0;
   }
   // Just for good measure
   argv[argc] = NULL;

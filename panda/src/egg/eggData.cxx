@@ -44,14 +44,14 @@ TypeHandle EggData::_type_handle;
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  
+
   if (egg_filename.is_fully_qualified() && vfs->exists(egg_filename)) {
     return true;
   }
-  
+
   vfs->resolve_filename(egg_filename, searchpath, "egg") ||
     vfs->resolve_filename(egg_filename, get_model_path(), "egg");
-  
+
   return vfs->exists(egg_filename);
 }
 
@@ -90,10 +90,10 @@ read(Filename filename, string display_name) {
     egg_cat.error() << "Unable to open " << display_name << "\n";
     return false;
   }
-  
+
   egg_cat.info()
     << "Reading " << display_name << "\n";
-  
+
   bool read_ok = read(*file);
   vfile->close_read_file(file);
   return read_ok;
@@ -263,7 +263,17 @@ write_egg(Filename filename) {
 bool EggData::
 write_egg(ostream &out) {
   pre_write();
-  write(out, 0);
+
+  if (egg_precision > 0) {
+    // Change the egg precision as requested.
+    streamsize orig_precision = out.precision();
+    out.precision((streamsize)egg_precision);
+    write(out, 0);
+    out.precision(orig_precision);
+  } else {
+    // Use the stream default precision.
+    write(out, 0);
+  }
   return true;
 }
 

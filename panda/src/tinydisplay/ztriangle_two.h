@@ -326,13 +326,13 @@ FNAME(white_perspective) (ZBuffer *zb,
 
 #define DRAW_LINE()                                             \
   {                                                             \
-    register ZPOINT *pz;                                        \
-    register PIXEL *pp;                                         \
-    register int s,t,z,zz;                                      \
-    register int n,dsdx,dtdx;                                   \
-    PN_stdfloat sz,tz,fz,zinv;                                        \
+    ZPOINT *pz;                                                 \
+    PIXEL *pp;                                                  \
+    int s,t,z,zz;                                               \
+    int n,dsdx,dtdx;                                            \
+    PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
-    fz=(PN_stdfloat)z1;                                               \
+    fz=(PN_stdfloat)z1;                                         \
     zinv=1.0f / fz;                                             \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
     pz=pz1+x1;                                                  \
@@ -341,7 +341,7 @@ FNAME(white_perspective) (ZBuffer *zb,
     tz=tz1;                                                     \
     while (n>=(NB_INTERP-1)) {                                  \
       {                                                         \
-        PN_stdfloat ss,tt;                                            \
+        PN_stdfloat ss,tt;                                      \
         ss=(sz * zinv);                                         \
         tt=(tz * zinv);                                         \
         s=(int) ss;                                             \
@@ -452,14 +452,14 @@ FNAME(flat_perspective) (ZBuffer *zb,
 
 #define DRAW_LINE()                                             \
   {                                                             \
-    register ZPOINT *pz;                                        \
-    register PIXEL *pp;                                         \
-    register int s,t,z,zz;                                      \
-    register int n,dsdx,dtdx;                                   \
-    register int or1,og1,ob1,oa1;                               \
-    PN_stdfloat sz,tz,fz,zinv;                                        \
+    ZPOINT *pz;                                                 \
+    PIXEL *pp;                                                  \
+    int s,t,z,zz;                                               \
+    int n,dsdx,dtdx;                                            \
+    int or1,og1,ob1,oa1;                                        \
+    PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
-    fz=(PN_stdfloat)z1;                                               \
+    fz=(PN_stdfloat)z1;                                         \
     zinv=1.0f / fz;                                             \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
     pz=pz1+x1;                                                  \
@@ -472,7 +472,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
     oa1 = a1;                                                   \
     while (n>=(NB_INTERP-1)) {                                  \
       {                                                         \
-        PN_stdfloat ss,tt;                                            \
+        PN_stdfloat ss,tt;                                      \
         ss=(sz * zinv);                                         \
         tt=(tz * zinv);                                         \
         s=(int) ss;                                             \
@@ -592,14 +592,14 @@ FNAME(smooth_perspective) (ZBuffer *zb,
 
 #define DRAW_LINE()                                             \
   {                                                             \
-    register ZPOINT *pz;                                        \
-    register PIXEL *pp;                                         \
-    register int s,t,z,zz;                                      \
-    register int n,dsdx,dtdx;                                   \
-    register int or1,og1,ob1,oa1;                               \
-    PN_stdfloat sz,tz,fz,zinv;                                        \
+    ZPOINT *pz;                                                 \
+    PIXEL *pp;                                                  \
+    int s,t,z,zz;                                               \
+    int n,dsdx,dtdx;                                            \
+    int or1,og1,ob1,oa1;                                        \
+    PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
-    fz=(PN_stdfloat)z1;                                               \
+    fz=(PN_stdfloat)z1;                                         \
     zinv=1.0f / fz;                                             \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
     pz=pz1+x1;                                                  \
@@ -612,7 +612,7 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     oa1 = a1;                                                   \
     while (n>=(NB_INTERP-1)) {                                  \
       {                                                         \
-        PN_stdfloat ss,tt;                                            \
+        PN_stdfloat ss,tt;                                      \
         ss=(sz * zinv);                                         \
         tt=(tz * zinv);                                         \
         s=(int) ss;                                             \
@@ -723,14 +723,14 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
 
 #define DRAW_LINE()                                                     \
   {                                                                     \
-    register ZPOINT *pz;                                                \
-    register PIXEL *pp;                                                 \
-    register int s,t,sa,ta,z,zz;                                        \
-    register int n,dsdx,dtdx,dsadx,dtadx;                               \
-    register int or1,og1,ob1,oa1;                                       \
-    PN_stdfloat sz,tz,sza,tza,fz,zinv;                                        \
+    ZPOINT *pz;                                                         \
+    PIXEL *pp;                                                          \
+    int s,t,sa,ta,z,zz;                                                 \
+    int n,dsdx,dtdx,dsadx,dtadx;                                        \
+    int or1,og1,ob1,oa1;                                                \
+    PN_stdfloat sz,tz,sza,tza,fz,zinv;                                  \
     n=(x2>>16)-x1;                                                      \
-    fz=(PN_stdfloat)z1;                                                       \
+    fz=(PN_stdfloat)z1;                                                 \
     zinv=1.0f / fz;                                                     \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                              \
     pz=pz1+x1;                                                          \
@@ -745,7 +745,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
     oa1 = a1;                                                           \
     while (n>=(NB_INTERP-1)) {                                          \
       {                                                                 \
-        PN_stdfloat ss,tt;                                                    \
+        PN_stdfloat ss,tt;                                              \
         ss=(sz * zinv);                                                 \
         tt=(tz * zinv);                                                 \
         s=(int) ss;                                                     \
@@ -755,7 +755,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
         CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);         \
       }                                                                 \
       {                                                                 \
-        PN_stdfloat ssa,tta;                                                  \
+        PN_stdfloat ssa,tta;                                            \
         ssa=(sza * zinv);                                               \
         tta=(tza * zinv);                                               \
         sa=(int) ssa;                                                   \
@@ -783,7 +783,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
       tza+=ndtzadx;                                                     \
     }                                                                   \
     {                                                                   \
-      PN_stdfloat ss,tt;                                                      \
+      PN_stdfloat ss,tt;                                                \
       ss=(sz * zinv);                                                   \
       tt=(tz * zinv);                                                   \
       s=(int) ss;                                                       \
@@ -793,7 +793,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
       CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);           \
     }                                                                   \
     {                                                                   \
-      PN_stdfloat ssa,tta;                                                    \
+      PN_stdfloat ssa,tta;                                              \
       ssa=(sza * zinv);                                                 \
       tta=(tza * zinv);                                                 \
       sa=(int) ssa;                                                     \
@@ -884,14 +884,14 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
 
 #define DRAW_LINE()                                                     \
   {                                                                     \
-    register ZPOINT *pz;                                                \
-    register PIXEL *pp;                                                 \
-    register int s,t,sa,ta,sb,tb,z,zz;                                  \
-    register int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                   \
-    register int or1,og1,ob1,oa1;                                       \
-    PN_stdfloat sz,tz,sza,tza,szb,tzb,fz,zinv;                                \
+    ZPOINT *pz;                                                         \
+    PIXEL *pp;                                                          \
+    int s,t,sa,ta,sb,tb,z,zz;                                           \
+    int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                            \
+    int or1,og1,ob1,oa1;                                                \
+    PN_stdfloat sz,tz,sza,tza,szb,tzb,fz,zinv;                          \
     n=(x2>>16)-x1;                                                      \
-    fz=(PN_stdfloat)z1;                                                       \
+    fz=(PN_stdfloat)z1;                                                 \
     zinv=1.0f / fz;                                                     \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                              \
     pz=pz1+x1;                                                          \
@@ -908,7 +908,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     oa1 = a1;                                                           \
     while (n>=(NB_INTERP-1)) {                                          \
       {                                                                 \
-        PN_stdfloat ss,tt;                                                    \
+        PN_stdfloat ss,tt;                                              \
         ss=(sz * zinv);                                                 \
         tt=(tz * zinv);                                                 \
         s=(int) ss;                                                     \
@@ -918,7 +918,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
         CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);         \
       }                                                                 \
       {                                                                 \
-        PN_stdfloat ssa,tta;                                                  \
+        PN_stdfloat ssa,tta;                                            \
         ssa=(sza * zinv);                                               \
         tta=(tza * zinv);                                               \
         sa=(int) ssa;                                                   \
@@ -928,7 +928,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
         CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);     \
       }                                                                 \
       {                                                                 \
-        PN_stdfloat ssb,ttb;                                                  \
+        PN_stdfloat ssb,ttb;                                            \
         ssb=(szb * zinv);                                               \
         ttb=(tzb * zinv);                                               \
         sb=(int) ssb;                                                   \
@@ -958,7 +958,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
       tzb+=ndtzbdx;                                                     \
     }                                                                   \
     {                                                                   \
-      PN_stdfloat ss,tt;                                                      \
+      PN_stdfloat ss,tt;                                                \
       ss=(sz * zinv);                                                   \
       tt=(tz * zinv);                                                   \
       s=(int) ss;                                                       \
@@ -968,7 +968,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
       CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);           \
     }                                                                   \
     {                                                                   \
-      PN_stdfloat ssa,tta;                                                    \
+      PN_stdfloat ssa,tta;                                              \
       ssa=(sza * zinv);                                                 \
       tta=(tza * zinv);                                                 \
       sa=(int) ssa;                                                     \
@@ -978,7 +978,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
       CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);       \
     }                                                                   \
     {                                                                   \
-      PN_stdfloat ssb,ttb;                                                    \
+      PN_stdfloat ssb,ttb;                                              \
       ssb=(szb * zinv);                                                 \
       ttb=(tzb * zinv);                                                 \
       sb=(int) ssb;                                                     \
@@ -1008,4 +1008,3 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
 #undef INTERP_MIPMAP
 #undef CALC_MIPMAP_LEVEL
 #undef ZB_LOOKUP_TEXTURE
-

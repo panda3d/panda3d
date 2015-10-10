@@ -71,16 +71,25 @@ PUBLISHED:
   BLOCKING INLINE void add_fixed_string(const string &str, size_t size);
 
   BLOCKING void pad_bytes(size_t size);
-  BLOCKING INLINE void append_data(const void *data, size_t size);
-  BLOCKING INLINE void append_data(const string &data);
+  EXTENSION(void append_data(PyObject *data));
 
   BLOCKING INLINE void flush();
 
   BLOCKING INLINE void write(const string &str);
 
+public:
+  BLOCKING INLINE void append_data(const void *data, size_t size);
+  BLOCKING INLINE void append_data(const string &data);
+
 private:
   ostream *_out;
   bool _owns_stream;
+
+#ifdef HAVE_PYTHON
+PUBLISHED:
+  // Python 2 needs this for printing to work correctly.
+  int softspace;
+#endif
 };
 
 #include "streamWriter.I"

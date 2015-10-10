@@ -14,6 +14,7 @@
 
 #include "eggToObjConverter.h"
 #include "config_objegg.h"
+#include "config_egg.h"
 #include "eggData.h"
 #include "string_utils.h"
 #include "streamReader.h"
@@ -135,6 +136,9 @@ process(const Filename &filename) {
   if (file == (ostream *)NULL) {
     return false;
   }
+  if (egg_precision != 0) {
+    file->precision(egg_precision);
+  }
 
   _current_group = NULL;
 
@@ -209,7 +213,7 @@ write_faces(ostream &out, EggNode *egg_node) {
       write_group_reference(out, egg_node);
 
       EggPrimitive *egg_prim = DCAST(EggPrimitive, egg_node);
-      
+
       out << prim_type;
       EggPrimitive::iterator pi;
       for (pi = egg_prim->begin(); pi != egg_prim->end(); ++pi) {
@@ -217,13 +221,13 @@ write_faces(ostream &out, EggNode *egg_node) {
         int vert_index = -1;
         int uv_index = -1;
         int norm_index = -1;
-        
+
         if (vdef._vert3_index != -1) {
           vert_index = vdef._vert3_index + 1;
         } else if (vdef._vert4_index != -1) {
           vert_index = vdef._vert4_index + 1 + (int)_unique_vert3.size();
         }
-        
+
         if (vdef._uv2_index != -1) {
           uv_index = vdef._uv2_index + 1;
         } else if (vdef._uv3_index != -1) {
@@ -233,11 +237,11 @@ write_faces(ostream &out, EggNode *egg_node) {
         if (vdef._norm_index != -1) {
           norm_index = vdef._norm_index + 1;
         }
-        
+
         if (vert_index == -1) {
           continue;
         }
-        
+
         if (norm_index != -1) {
           if (uv_index != -1) {
             out << " " << vert_index << "/" << uv_index << "/" << norm_index;
@@ -416,7 +420,7 @@ record_unique(UniqueVertices &unique, double pos) {
 //               indicated table to the obj output stream.
 ////////////////////////////////////////////////////////////////////
 void EggToObjConverter::
-write_vertices(ostream &out, const string &prefix, int num_components, 
+write_vertices(ostream &out, const string &prefix, int num_components,
                const UniqueVertices &unique) {
   // First, sort the list into numeric order.
   int num_vertices = (int)unique.size();
@@ -445,7 +449,7 @@ write_vertices(ostream &out, const string &prefix, int num_components,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToObjConverter::VertexDef::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggToObjConverter::VertexDef::
 VertexDef() :

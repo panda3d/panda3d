@@ -123,9 +123,9 @@ PUBLISHED:
   INLINE void operator >>= (int shift);
 
   INLINE bool is_inverse() const;
-  INLINE int get_num_subranges() const;
-  INLINE int get_subrange_begin(int n) const;
-  INLINE int get_subrange_end(int n) const;
+  INLINE size_t get_num_subranges() const;
+  INLINE int get_subrange_begin(size_t n) const;
+  INLINE int get_subrange_end(size_t n) const;
 
 private:
   void do_add_range(int begin, int end);

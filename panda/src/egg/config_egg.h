@@ -41,6 +41,7 @@ extern EXPCL_PANDAEGG ConfigVariableInt egg_min_tfan_tris;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_coplanar_threshold;
 extern EXPCL_PANDAEGG ConfigVariableInt egg_test_vref_integrity;
 extern EXPCL_PANDAEGG ConfigVariableInt egg_recursion_limit;
+extern EXPCL_PANDAEGG ConfigVariableInt egg_precision;
 
 extern EXPCL_PANDAEGG void init_libegg();
 

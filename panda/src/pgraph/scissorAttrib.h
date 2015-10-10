@@ -89,7 +89,10 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ScissorAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, make_default);
+
+    ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0, 1, 0, 1));
+    attrib->_off = true;
+    _attrib_slot = register_slot(_type_handle, 100, attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

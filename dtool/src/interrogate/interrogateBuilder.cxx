@@ -1434,8 +1434,9 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     return 0;
   }
 
-  if (element->_file._source != CPPFile::S_local ||
-      in_ignorefile(element->_file._filename_as_referenced)) {
+  if (struct_type == NULL &&
+      (element->_file._source != CPPFile::S_local ||
+       in_ignorefile(element->_file._filename_as_referenced))) {
     // The element is defined in some other package or in an
     // ignorable file.
     return 0;

@@ -133,7 +133,7 @@ get_total_cpp_size() {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_panda_heap_single_size() {
-  return AtomicAdjust::get(get_global_ptr()->_total_heap_single_size);
+  return (size_t)AtomicAdjust::get(get_global_ptr()->_total_heap_single_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ get_panda_heap_single_size() {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_panda_heap_array_size() {
-  return AtomicAdjust::get(get_global_ptr()->_total_heap_array_size);
+  return (size_t)AtomicAdjust::get(get_global_ptr()->_total_heap_array_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +159,7 @@ INLINE size_t MemoryUsage::
 get_panda_heap_overhead() {
 #if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
   MemoryUsage *mu = get_global_ptr();
-  return AtomicAdjust::get(mu->_requested_heap_size) - AtomicAdjust::get(mu->_total_heap_single_size) - AtomicAdjust::get(mu->_total_heap_array_size);
+  return (size_t)(AtomicAdjust::get(mu->_requested_heap_size) - AtomicAdjust::get(mu->_total_heap_single_size) - AtomicAdjust::get(mu->_total_heap_array_size));
 #else
   return 0;
 #endif
@@ -173,7 +173,7 @@ get_panda_heap_overhead() {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_panda_mmap_size() {
-  return AtomicAdjust::get(get_global_ptr()->_total_mmap_size);
+  return (size_t)AtomicAdjust::get(get_global_ptr()->_total_mmap_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,7 +206,7 @@ get_external_size() {
 #else
     // Without alternative malloc, the Panda allocated memory is also
     // included in total_size, so we have to subtract it out.
-    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size;
+    return mu->_total_size - (size_t)mu->_total_heap_single_size - (size_t)mu->_total_heap_array_size;
 #endif
   } else {
     return 0;
@@ -223,12 +223,12 @@ INLINE size_t MemoryUsage::
 get_total_size() {
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
-    return mu->_total_size + mu->_requested_heap_size;
+    return mu->_total_size + (size_t)mu->_requested_heap_size;
   } else {
 #if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
-    return mu->_requested_heap_size;
+    return (size_t)mu->_requested_heap_size;
 #else
-    return AtomicAdjust::get(mu->_total_heap_single_size) + AtomicAdjust::get(mu->_total_heap_array_size);
+    return (size_t)(AtomicAdjust::get(mu->_total_heap_single_size) + AtomicAdjust::get(mu->_total_heap_array_size));
 #endif
   }
 }

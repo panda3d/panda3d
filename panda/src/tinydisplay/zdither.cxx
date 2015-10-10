@@ -89,7 +89,7 @@ ZDither_lookupColor(int r,int g,int b) {
 
 #define DITHER_PIXEL2(a)            \
 { \
-  register int v,t,r,g,c;           \
+  int v,t,r,g,c;           \
   v=*(unsigned int *)(pp+(a));                  \
   g=(v & 0x07DF07DF) + g_d; \
   r=(((v & 0xF800F800) >> 2) + r_d) & 0x70007000; \
@@ -110,8 +110,8 @@ ZB_ditherFrameBuffer(ZBuffer *zb,unsigned char *buf,
   unsigned short *pp1;
   int r_d,g_d,b_d;
   unsigned char *ctable=zb->dctable;
-  register unsigned char *dest;
-  register unsigned short *pp;
+  unsigned char *dest;
+  unsigned short *pp;
 
   assert( ((long)buf & 1) == 0 && (linesize & 1) == 0);
 

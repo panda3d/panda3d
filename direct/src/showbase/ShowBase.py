@@ -9,6 +9,8 @@ __all__ = ['ShowBase', 'WindowControls']
 
 from panda3d.core import *
 from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
+from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
+
 
 # This needs to be available early for DirectGUI imports
 import __builtin__ as builtins

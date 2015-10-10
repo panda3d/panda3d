@@ -61,7 +61,9 @@ get_type_index() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypedObject::
 is_of_type(TypeHandle handle) const {
-  return get_type().is_derived_from(handle, (TypedObject *)this);
+  // Shortcut for the common case where the type matches exactly.
+  TypeHandle my_type = get_type();
+  return handle == my_type || my_type.is_derived_from(handle, (TypedObject *)this);
 }
 
 ////////////////////////////////////////////////////////////////////

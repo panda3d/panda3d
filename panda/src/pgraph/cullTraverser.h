@@ -112,9 +112,6 @@ private:
   static CPT(RenderState) get_bounds_outer_viz_state();
   static CPT(RenderState) get_bounds_inner_viz_state();
   static CPT(RenderState) get_depth_offset_state();
-  void start_decal(const CullTraverserData &data);
-  CullableObject *r_get_decals(CullTraverserData &data,
-                               CullableObject *decals);
 
   GraphicsStateGuardianBase *_gsg;
   Thread *_current_thread;

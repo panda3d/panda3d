@@ -90,7 +90,7 @@ PUBLISHED:
   INLINE bool reserve_num_rows(int n);
   INLINE void clear_rows();
 
-  INLINE int get_data_size_bytes() const;
+  INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
   void output(ostream &out) const;
@@ -284,7 +284,7 @@ PUBLISHED:
   bool reserve_num_rows(int n);
   INLINE void clear_rows();
 
-  INLINE int get_data_size_bytes() const;
+  INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
   INLINE bool request_resident() const;

@@ -95,8 +95,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int DepthOffsetAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const DepthOffsetAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const DepthOffsetAttrib *ta = (const DepthOffsetAttrib *)other;
+
   if (_offset != ta->_offset) {
     return _offset - ta->_offset;
   }
@@ -147,8 +147,8 @@ get_hash_impl() const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthOffsetAttrib::
 compose_impl(const RenderAttrib *other) const {
-  const DepthOffsetAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const DepthOffsetAttrib *ta = (const DepthOffsetAttrib *)other;
+
   int new_offset = ta->_offset + _offset;
 
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset, ta->_min_value, ta->_max_value);
@@ -166,8 +166,8 @@ compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthOffsetAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
-  const DepthOffsetAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const DepthOffsetAttrib *ta = (const DepthOffsetAttrib *)other;
+
   int new_offset = ta->_offset - _offset;
 
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset, ta->_min_value, ta->_max_value);

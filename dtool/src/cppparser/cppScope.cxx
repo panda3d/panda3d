@@ -226,9 +226,14 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
       if (other_ext->_type != type->_type) {
         if (error_sink != NULL) {
           ostringstream errstr;
-          errstr << other_ext->_type << " " << type->get_fully_scoped_name()
-                 << " was previously declared as " << other_ext->_type << "\n";
-          error_sink->error(errstr.str());
+          errstr << type->_type << " " << type->get_fully_scoped_name()
+                 << " was previously declared as " << other_ext->_type;
+          error_sink->error(errstr.str(), type->_ident->_loc);
+
+          if (other_ext->_ident != NULL) {
+            error_sink->error("previous declaration is here",
+                              other_ext->_ident->_loc);
+          }
         }
       }
       (*result.first).second = type;
@@ -242,10 +247,19 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
 
         if (error_sink != NULL) {
           ostringstream errstr;
+          if (!cppparser_output_class_keyword) {
+            errstr << type->_type << " ";
+          }
           type->output(errstr, 0, NULL, false);
-          errstr << " has conflicting declaration as ";
+          errstr << " has conflicting definition as ";
           other_type->output(errstr, 0, NULL, true);
-          error_sink->error(errstr.str());
+          error_sink->error(errstr.str(), type->_ident->_loc);
+
+          CPPExtensionType *other_ext = other_type->as_extension_type();
+          if (other_ext != NULL && other_ext->_ident != NULL) {
+            error_sink->error("previous definition is here",
+                              other_ext->_ident->_loc);
+          }
         }
       }
     }
@@ -1107,7 +1121,9 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
           def->output(errstr, 0, NULL, false);
           errstr << " has conflicting declaration as ";
           other_type->output(errstr, 0, NULL, true);
-          error_sink->error(errstr.str());
+          error_sink->error(errstr.str(), def->_ident->_loc);
+          error_sink->error("previous definition is here",
+                            other_td->_ident->_loc);
         }
       }
     } else {

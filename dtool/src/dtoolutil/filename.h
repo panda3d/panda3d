@@ -60,10 +60,11 @@ public:
     F_pattern         = 0x40,
   };
 
+  INLINE Filename(const char *filename);
+
 PUBLISHED:
   INLINE Filename(const string &filename = "");
   INLINE Filename(const wstring &filename);
-  INLINE Filename(const char *filename);
   INLINE Filename(const Filename &copy);
   Filename(const Filename &dirname, const Filename &basename);
   INLINE ~Filename();
@@ -120,7 +121,7 @@ PUBLISHED:
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
-  INLINE char operator [] (int n) const;
+  INLINE char operator [] (size_t n) const;
 
   EXTENSION(PyObject *__repr__() const);
 

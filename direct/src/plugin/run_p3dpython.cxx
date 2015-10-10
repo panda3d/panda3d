@@ -19,16 +19,17 @@
 //     Function: run_p3dpython
 //  Description: This externally-visible function is the main entry
 //               point to this DLL, and it starts the whole thing
-//               running.  Returns true on success, false on failure.
+//               running.  Returns the exit status, which will be
+//               0 on success, 1 or otherwise on failure.
 ////////////////////////////////////////////////////////////////////
-bool
+int
 run_p3dpython(const char *program_name, const char *archive_file,
-              FHandle input_handle, FHandle output_handle, 
+              FHandle input_handle, FHandle output_handle,
               const char *log_pathname, bool interactive_console) {
-  P3DPythonRun::_global_ptr = 
-    new P3DPythonRun(program_name, archive_file, input_handle, output_handle, 
+  P3DPythonRun::_global_ptr =
+    new P3DPythonRun(program_name, archive_file, input_handle, output_handle,
                      log_pathname, interactive_console);
-  bool result = P3DPythonRun::_global_ptr->run_python();
+  int result = P3DPythonRun::_global_ptr->run_python();
   delete P3DPythonRun::_global_ptr;
   P3DPythonRun::_global_ptr = NULL;
   return result;

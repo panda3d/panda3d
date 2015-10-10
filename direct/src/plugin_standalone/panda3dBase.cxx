@@ -342,7 +342,7 @@ make_parent_window() {
 ////////////////////////////////////////////////////////////////////
 P3D_instance *Panda3DBase::
 create_instance(const string &p3d, bool start_instance,
-                char **args, int num_args, const int &p3d_offset) {
+                char **args, int num_args, int p3d_offset) {
   // Check to see if the p3d filename we were given is a URL, or a
   // local file.
   Filename p3d_filename = Filename::from_os_specific(p3d);
@@ -356,9 +356,9 @@ create_instance(const string &p3d, bool start_instance,
 
     p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
-  } 
+  }
   if (is_local) {
-    read_p3d_info(p3d_filename);
+    read_p3d_info(p3d_filename, p3d_offset);
   }
 
   // Build up the token list.
@@ -454,9 +454,9 @@ delete_instance(P3D_instance *inst) {
 //               parameters (like width and height).
 ////////////////////////////////////////////////////////////////////
 bool Panda3DBase::
-read_p3d_info(const Filename &p3d_filename) {
+read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
   PT(Multifile) mf = new Multifile;
-  if (!mf->open_read(p3d_filename)) {
+  if (!mf->open_read(p3d_filename, p3d_offset)) {
     return false;
   }
   int si = mf->find_subfile("p3d_info.xml");

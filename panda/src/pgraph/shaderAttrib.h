@@ -156,7 +156,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ShaderAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 10, make_default);
+    _attrib_slot = register_slot(_type_handle, 10, new ShaderAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

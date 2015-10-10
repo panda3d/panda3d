@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <time.h>
+#include "displayInformation.h"
 
 typedef struct {
   D3DFORMAT d3d_format;
@@ -116,7 +117,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   int get_adapter_display_mode_state;
   int get_device_caps_state;
 
-  int shader_model;
+  GraphicsStateGuardian::ShaderModel shader_model;
   UINT minimum_width;
   UINT maximum_width;
   UINT minimum_height;

@@ -90,6 +90,7 @@ public:
   static bool is_unsigned_integer(CPPType *type);
   static bool is_size(CPPType *type);
   static bool is_ssize(CPPType *type);
+  static bool is_long(CPPType *type);
   static bool is_short(CPPType *type);
   static bool is_unsigned_short(CPPType *type);
   static bool is_longlong(CPPType *type);
@@ -112,6 +113,7 @@ public:
   static bool is_PyUnicodeObject(CPPType *type);
   static bool is_pointer_to_Py_buffer(CPPType *type);
   static bool is_Py_buffer(CPPType *type);
+  static bool is_handle(CPPType *type);
   static bool involves_unpublished(CPPType *type);
   static bool involves_protected(CPPType *type);
 

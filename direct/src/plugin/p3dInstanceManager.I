@@ -112,6 +112,18 @@ get_root_dir() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_start_dir
+//       Access: Public
+//  Description: Returns the directory that the .p3d file should be
+//               mounted to and run from.  This is usually the
+//               "start" subdirectory of the root_dir.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_start_dir() const {
+  return _start_dir;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_platform
 //       Access: Public
 //  Description: Returns the string that corresponds to the platform

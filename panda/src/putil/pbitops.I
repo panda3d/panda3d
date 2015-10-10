@@ -149,7 +149,7 @@ get_lowest_on_bit(PN_uint16 x) {
   unsigned long result;
   return (_BitScanForward(&result, (unsigned long) x) == 0) ? -1 : result;
 #elif defined(__GNUC__)
-  return __builtin_ffs((unsigned int) x) - 1;
+  return __builtin_ffs((int) x) - 1;
 #else
   if (x == 0) {
     return -1;
@@ -171,7 +171,7 @@ get_lowest_on_bit(PN_uint32 x) {
   unsigned long result;
   return (_BitScanForward(&result, (unsigned long) x) == 0) ? -1 : result;
 #elif defined(__GNUC__)
-  return __builtin_ffs((unsigned int) x) - 1;
+  return __builtin_ffs((int) x) - 1;
 #else
   if (x == 0) {
     return -1;
@@ -193,7 +193,7 @@ get_lowest_on_bit(PN_uint64 x) {
   unsigned long result;
   return (_BitScanForward64(&result, (unsigned __int64) x) == 0) ? -1 : result;
 #elif defined(__GNUC__)
-  return __builtin_ffsll((unsigned long long) x) - 1;
+  return __builtin_ffsll((long long) x) - 1;
 #else
   if (x == 0) {
     return -1;

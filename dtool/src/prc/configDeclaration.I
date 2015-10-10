@@ -86,7 +86,7 @@ set_string_value(const string &string_value) {
 //               value.  A word is defined as a sequence of
 //               non-whitespace characters delimited by whitespace.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigDeclaration::
+INLINE size_t ConfigDeclaration::
 get_num_words() const {
   if (!_got_words) {
     ((ConfigDeclaration *)this)->get_words();
@@ -103,11 +103,11 @@ get_num_words() const {
 //               the value.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-has_string_word(int n) const {
+has_string_word(size_t n) const {
   if (!_got_words) {
     ((ConfigDeclaration *)this)->get_words();
   }
-  return (n >= 0 && n < (int)_words.size());
+  return (n < _words.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ has_string_word(int n) const {
 //               boolean value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-has_bool_word(int n) const {
+has_bool_word(size_t n) const {
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_bool_word(n);
     return (_words[n]._flags & F_valid_bool) != 0;
@@ -132,7 +132,7 @@ has_bool_word(int n) const {
 //               integer value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-has_int_word(int n) const {
+has_int_word(size_t n) const {
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_int_word(n);
     return (_words[n]._flags & F_valid_int) != 0;
@@ -147,7 +147,7 @@ has_int_word(int n) const {
 //               int64 value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-has_int64_word(int n) const {
+has_int64_word(size_t n) const {
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_int64_word(n);
     return (_words[n]._flags & F_valid_int64) != 0;
@@ -162,7 +162,7 @@ has_int64_word(int n) const {
 //               integer value for the nth word.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-has_double_word(int n) const {
+has_double_word(size_t n) const {
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_double_word(n);
     return (_words[n]._flags & F_valid_double) != 0;
@@ -178,7 +178,7 @@ has_double_word(int n) const {
 //               nth value.  See also has_string_word().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigDeclaration::
-get_string_word(int n) const {
+get_string_word(size_t n) const {
   if (has_string_word(n)) {
     return _words[n]._str;
   }
@@ -193,7 +193,7 @@ get_string_word(int n) const {
 //               value.  See also has_bool_word().
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigDeclaration::
-get_bool_word(int n) const {
+get_bool_word(size_t n) const {
   // We use has_string_word() instead of has_bool_word(), so we can
   // return a partial answer if there was one.
   if (has_string_word(n)) {
@@ -211,7 +211,7 @@ get_bool_word(int n) const {
 //               See also has_int_word().
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigDeclaration::
-get_int_word(int n) const {
+get_int_word(size_t n) const {
   // We use has_string_word() instead of has_int_word(), so we can
   // return a partial answer if there was one.
   if (has_string_word(n)) {
@@ -229,7 +229,7 @@ get_int_word(int n) const {
 //               See also has_int64_word().
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 ConfigDeclaration::
-get_int64_word(int n) const {
+get_int64_word(size_t n) const {
   // We use has_string_word() instead of has_int64_word(), so we can
   // return a partial answer if there was one.
   if (has_string_word(n)) {
@@ -247,7 +247,7 @@ get_int64_word(int n) const {
 //               See also has_double_word().
 ////////////////////////////////////////////////////////////////////
 INLINE double ConfigDeclaration::
-get_double_word(int n) const {
+get_double_word(size_t n) const {
   // We use has_string_word() instead of has_double_word(), so we can
   // return a partial answer if there was one.
   if (has_string_word(n)) {

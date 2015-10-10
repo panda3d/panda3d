@@ -84,8 +84,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int CullBinAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const CullBinAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const CullBinAttrib *ta = (const CullBinAttrib *)other;
+
   if (_draw_order != ta->_draw_order) {
     return _draw_order - ta->_draw_order;
   }

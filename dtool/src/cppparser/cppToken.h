@@ -29,6 +29,9 @@ public:
            const CPPFile &file = CPPFile(""),
            const string &str = string(),
            const YYSTYPE &lval = YYSTYPE());
+  CPPToken(int token, const YYLTYPE &loc,
+           const string &str = string(),
+           const YYSTYPE &lval = YYSTYPE());
   CPPToken(const CPPToken &copy);
   void operator = (const CPPToken &copy);
 

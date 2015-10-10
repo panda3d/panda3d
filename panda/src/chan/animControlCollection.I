@@ -35,7 +35,7 @@ play(const string &anim_name) {
 //  Description: Starts the named animation playing.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimControlCollection::
-play(const string &anim_name, int from, int to) {
+play(const string &anim_name, double from, double to) {
   AnimControl *control = find_anim(anim_name);
   if (control == (AnimControl *)NULL) {
     return false;
@@ -67,7 +67,7 @@ loop(const string &anim_name, bool restart) {
 //  Description: Starts the named animation looping.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimControlCollection::
-loop(const string &anim_name, bool restart, int from, int to) {
+loop(const string &anim_name, bool restart, double from, double to) {
   AnimControl *control = find_anim(anim_name);
   if (control == (AnimControl *)NULL) {
     return false;
@@ -99,7 +99,7 @@ stop(const string &anim_name) {
 //  Description: Sets to a particular frame in the named animation.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimControlCollection::
-pose(const string &anim_name, int frame) {
+pose(const string &anim_name, double frame) {
   AnimControl *control = find_anim(anim_name);
   if (control == (AnimControl *)NULL) {
     return false;

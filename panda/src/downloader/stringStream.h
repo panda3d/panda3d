@@ -17,32 +17,51 @@
 
 #include "pandabase.h"
 #include "stringStreamBuf.h"
+#include "vector_uchar.h"
+#include "extension.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StringStream
 // Description : A bi-directional stream object that reads and writes
 //               data to an internal buffer, which can be retrieved
-//               and/or set as a string.
+//               and/or set as a string in Python 2 or a bytes object
+//               in Python 3.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS StringStream : public iostream {
-PUBLISHED:
-  INLINE StringStream();
+public:
   INLINE StringStream(const string &source);
+
+PUBLISHED:
+  EXTENSION(StringStream(PyObject *source));
+  INLINE StringStream();
+
+#if _MSC_VER >= 1800
+  INLINE StringStream(const StringStream &copy) = delete;
+#endif
 
   INLINE void clear_data();
   INLINE size_t get_data_size();
 
-  INLINE string get_data();
-  INLINE void set_data(const string &data);
+  EXTENSION(PyObject *get_data());
+  EXTENSION(void set_data(PyObject *data));
+
+  MAKE_PROPERTY(data, get_data, set_data);
 
 public:
-  INLINE void swap_data(pvector<unsigned char> &data);
+#ifndef CPPPARSER
+  INLINE string get_data();
+  INLINE void set_data(const string &data);
+  void set_data(const unsigned char *data, size_t size);
+#endif
+
+  INLINE void swap_data(vector_uchar &data);
 
 private:
   StringStreamBuf _buf;
+
+  friend class Extension<StringStream>;
 };
 
 #include "stringStream.I"
 
 #endif
-

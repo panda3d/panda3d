@@ -154,8 +154,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int CullFaceAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const CullFaceAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const CullFaceAttrib *ta = (const CullFaceAttrib *)other;
+
   if (_mode != ta->_mode) {
     return (int)_mode - (int)ta->_mode;
   }
@@ -199,8 +199,7 @@ get_hash_impl() const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) CullFaceAttrib::
 compose_impl(const RenderAttrib *other) const {
-  const CullFaceAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const CullFaceAttrib *ta = (const CullFaceAttrib *)other;
 
   if (!_reverse && ta->_mode != M_cull_unchanged) {
     // The normal case (there is nothing funny going on): the second
@@ -231,8 +230,7 @@ compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) CullFaceAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
-  const CullFaceAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const CullFaceAttrib *ta = (const CullFaceAttrib *)other;
 
   // The invert case is the same as the normal case, except that the
   // meaning of _reverse is inverted.  See compose_impl(), above.

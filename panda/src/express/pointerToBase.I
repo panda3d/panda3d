@@ -71,14 +71,17 @@ PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
 template<class T>
 INLINE void PointerToBase<T>::
 reassign(PointerToBase<T> &&from) NOEXCEPT {
-  To *old_ptr = (To *)this->_void_ptr;
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    To *old_ptr = (To *)this->_void_ptr;
 
-  this->_void_ptr = from._void_ptr;
-  from._void_ptr = NULL;
+    this->_void_ptr = from._void_ptr;
+    from._void_ptr = NULL;
 
-  // Now delete the old pointer.
-  if (old_ptr != (To *)NULL) {
-    unref_delete(old_ptr);
+    // Now delete the old pointer.
+    if (old_ptr != (To *)NULL) {
+      unref_delete(old_ptr);
+    }
   }
 }
 #endif  // USE_MOVE_SEMANTICS

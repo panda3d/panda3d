@@ -23,13 +23,9 @@
 
 #define GLP(name) gl##name
 
-#ifndef STDFLOAT_DOUBLE
+// OpenGL ES does not support double-precision.
 #define GLPf(name) gl ## name ## f
 #define GLPfv(name) gl ## name ## fv
-#else  // STDFLOAT_DOUBLE
-#define GLPf(name) gl ## name ## d
-#define GLPfv(name) gl ## name ## dv
-#endif  // STDFLOAT_DOUBLE
 
 #define CLP(name) GLES##name
 #define GLPREFIX_QUOTED "gl"
