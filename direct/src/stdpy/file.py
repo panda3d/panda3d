@@ -19,13 +19,21 @@ from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
 
+if sys.version < (3, 0):
+    # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
+    FileNotFoundError = IOError
+    IsADirectoryError = IOError
+    FileExistsError = IOError
+    PermissionError = IOError
+
+
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True):
     if sys.version_info >= (3, 0):
         # Python 3 is much stricter than Python 2, which lets
         # unknown flags fall through.
         for ch in mode:
             if ch not in 'rwxabt+U':
-                raise IOError("invalid mode: '%s'" % (mode))
+                raise ValueError("invalid mode: '%s'" % (mode))
 
     creating = 'x' in mode
     writing = 'w' in mode
@@ -36,7 +44,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
     reading = universal or 'r' in mode
 
     if binary and 't' in mode:
-        raise IOError("can't have text and binary mode at once")
+        raise ValueError("can't have text and binary mode at once")
 
     if creating + reading + writing + appending > 1:
         raise ValueError("must have exactly one of create/read/write/append mode")
