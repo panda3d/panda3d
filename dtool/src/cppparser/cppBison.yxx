@@ -199,14 +199,10 @@ pop_struct() {
 
 /* This is a bison-specific declaration to enable recursive calls to
    yyparse().  It changes the calling sequence to yylex(), passing
-   pointers to the current yylval and yylloc. */
-%pure_parser
-
-/* Ideally we'd define this instead of the above, which gives us better
-   tracking of error locations, but we are still using a very old
-   version of Bison on Windows. */
-//%define api.pure full
-//%locations
+   pointers to the current yylval and yylloc.  It also adds a pointer
+   to the current lloc to yyerror, which gives us better diagnostics. */
+%define api.pure full
+%locations
 
 %token <u.real> REAL
 %token <u.integer> INTEGER

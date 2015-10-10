@@ -419,9 +419,6 @@ if (RUNTIME):
             # Unused packages for runtime.
             PkgDisable(pkg)
 
-if (GetHost() == 'windows'):
-    os.environ["BISON_SIMPLE"] = GetThirdpartyBase()+"/win-util/bison.simple"
-
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
 

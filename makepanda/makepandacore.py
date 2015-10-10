@@ -431,9 +431,12 @@ def GetBison():
     if BISON is not None:
         return BISON
 
-    win_util = os.path.join(GetThirdpartyBase(), 'win-util')
-    if GetHost() == 'windows' and os.path.isdir(win_util):
-        BISON = os.path.join(win_util, 'bison.exe')
+    # We now require a newer version of Bison than the one we previously
+    # shipped in the win-util dir.  The new version has a 'data'
+    # subdirectory, so check for that.
+    win_util_data = os.path.join(GetThirdpartyBase(), 'win-util', 'data')
+    if GetHost() == 'windows' and os.path.isdir(win_util_data):
+        BISON = os.path.join(GetThirdpartyBase(), 'win-util', 'bison.exe')
     elif LocateBinary('bison'):
         BISON = 'bison'
     else:
