@@ -20,6 +20,7 @@
 #include "cppEnumType.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppIdentifier.h"
 #include "cppParameterList.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"

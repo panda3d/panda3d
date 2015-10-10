@@ -28,7 +28,39 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier::
-CPPIdentifier(const string &name, const CPPFile &file) : _file(file) {
+CPPIdentifier(const string &name, const CPPFile &file) {
+  _names.push_back(CPPNameComponent(name));
+  _native_scope = (CPPScope *)NULL;
+  _loc.first_line = 0;
+  _loc.first_column = 0;
+  _loc.last_line = 0;
+  _loc.last_column = 0;
+  _loc.file = file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPIdentifier::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPIdentifier::
+CPPIdentifier(const CPPNameComponent &name, const CPPFile &file) {
+  _names.push_back(name);
+  _native_scope = (CPPScope *)NULL;
+  _loc.first_line = 0;
+  _loc.first_column = 0;
+  _loc.last_line = 0;
+  _loc.last_column = 0;
+  _loc.file = file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPIdentifier::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPIdentifier::
+CPPIdentifier(const string &name, const cppyyltype &loc) : _loc(loc) {
   _names.push_back(CPPNameComponent(name));
   _native_scope = (CPPScope *)NULL;
 }
@@ -39,7 +71,7 @@ CPPIdentifier(const string &name, const CPPFile &file) : _file(file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier::
-CPPIdentifier(const CPPNameComponent &name, const CPPFile &file) : _file(file) {
+CPPIdentifier(const CPPNameComponent &name, const cppyyltype &loc) : _loc(loc) {
   _names.push_back(name);
   _native_scope = (CPPScope *)NULL;
 }
@@ -256,7 +288,8 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
       if (error_sink != NULL) {
         error_sink->error("Symbol " + _names[i].get_name() +
                           " is not a known scope in " +
-                          scope->get_fully_scoped_name());
+                          scope->get_fully_scoped_name(),
+                          _loc);
       }
       return (CPPScope *)NULL;
     }
@@ -302,7 +335,8 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
       if (error_sink != NULL) {
         error_sink->error("Symbol " + _names[i].get_name() +
                           " is not a known scope in " +
-                          scope->get_fully_scoped_name());
+                          scope->get_fully_scoped_name(),
+                          _loc);
       }
       return (CPPScope *)NULL;
     }
