@@ -407,6 +407,7 @@ get_next_token0() {
           return token;
         }
         _saved_tokens.push_back(token);
+        _last_token_loc = loc;
         return CPPToken(SCOPING, loc, name, result);
       }
 
@@ -444,10 +445,12 @@ get_next_token0() {
       token_type = TYPENAME_IDENTIFIER;
     }
 
+    _last_token_loc = loc;
     return CPPToken(token_type, loc, name, result);
   }
 
   // This is the normal case: just pass through whatever token we got.
+  _last_token_loc = loc;
   return token;
 }
 
@@ -843,10 +846,6 @@ expand_manifests(const string &input_expr, bool expand_undefined) {
   // Repeatedly scan the expr for any manifest names or defined()
   // function.
 
-  // We'll need to save the set of manifests we've already expanded,
-  // to guard against recursive references.
-  set<const CPPManifest *> already_expanded;
-
   bool manifest_found;
   do {
     manifest_found = false;
@@ -867,10 +866,9 @@ expand_manifests(const string &input_expr, bool expand_undefined) {
           Manifests::const_iterator mi = _manifests.find(ident);
           if (mi != _manifests.end()) {
             const CPPManifest *manifest = (*mi).second;
-            if (already_expanded.insert(manifest).second) {
-              expand_manifest_inline(expr, q, p, (*mi).second);
-              manifest_found = true;
-            }
+            expand_manifest_inline(expr, q, p, (*mi).second);
+            manifest_found = true;
+
           } else if (expand_undefined && ident != "true" && ident != "false") {
             // It is not found.  Expand it to 0.
             expr = expr.substr(0, q) + "0" + expr.substr(p);
@@ -1470,7 +1468,7 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
     warning("Ignoring empty #define directive", loc);
   } else {
-    CPPManifest *manifest = new CPPManifest(args, loc.file);
+    CPPManifest *manifest = new CPPManifest(args, loc);
     manifest->_vis = preprocessor_vis;
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
@@ -1479,18 +1477,17 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
       }
     }
 
-    // ok one memory leak here..
-    Manifests::iterator mi = _manifests.find(manifest->_name);
-    if(mi != _manifests.end())
-    {
-        // i do not see a goodway to compare the old and new hmmmm
-        //cerr << "Warning Overwriting Constant " << manifest->_name << "\n";
-        delete mi->second;
+    pair<Manifests::iterator, bool> result =
+      _manifests.insert(Manifests::value_type(manifest->_name, manifest));
+
+    if (!result.second) {
+      // There was already a macro with this name.  Delete the old.
+      CPPManifest *other = result.first->second;
+      warning("redefinition of macro '" + manifest->_name + "'", loc);
+      warning("previous definition is here", other->_loc);
+      delete other;
+      result.first->second = manifest;
     }
-
-    _manifests[manifest->_name] = manifest;
-
-
   }
 }
 
@@ -1560,7 +1557,9 @@ handle_if_directive(const string &args, const YYLTYPE &loc) {
   if (expr != (CPPExpression *)NULL) {
     CPPExpression::Result result = expr->evaluate();
     if (result._type == CPPExpression::RT_error) {
-      warning("Ignoring invalid expression " + args, loc);
+      ostringstream strm;
+      strm << *expr;
+      warning("Ignoring invalid expression " + strm.str(), loc);
     } else {
       expression_result = result.as_integer();
     }
@@ -2302,6 +2301,8 @@ check_keyword(const string &name) {
   if (name == "char32_t") return KW_CHAR32_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
+  if (name == "__const") return KW_CONST;
+  if (name == "__const__") return KW_CONST;
   if (name == "delete") return KW_DELETE;
   if (name == "double") return KW_DOUBLE;
   if (name == "dynamic_cast") return KW_DYNAMIC_CAST;
@@ -2319,6 +2320,8 @@ check_keyword(const string &name) {
   if (name == "goto") return KW_GOTO;
   if (name == "if") return KW_IF;
   if (name == "inline") return KW_INLINE;
+  if (name == "__inline") return KW_INLINE;
+  if (name == "__inline__") return KW_INLINE;
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
@@ -2337,6 +2340,7 @@ check_keyword(const string &name) {
   if (name == "signed") return KW_SIGNED;
   if (name == "sizeof") return KW_SIZEOF;
   if (name == "static") return KW_STATIC;
+  if (name == "static_assert") return KW_STATIC_ASSERT;
   if (name == "static_cast") return KW_STATIC_CAST;
   if (name == "struct") return KW_STRUCT;
   if (name == "template") return KW_TEMPLATE;

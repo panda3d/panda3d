@@ -46,9 +46,9 @@ ExpansionNode(const string &str, bool paste) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
-CPPManifest(const string &args, const CPPFile &file) :
+CPPManifest(const string &args, const cppyyltype &loc) :
   _variadic_param(-1),
-  _file(file),
+  _loc(loc),
   _expr((CPPExpression *)NULL)
 {
   assert(!args.empty());

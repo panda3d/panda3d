@@ -101,6 +101,9 @@ public:
   // incremented), or set it higher to get more debugging information.
   int _verbose;
 
+  // The location of the last token.
+  cppyyltype _last_token_loc;
+
 protected:
   bool init_cpp(const CPPFile &file);
   bool init_const_expr(const string &expr);
