@@ -23,8 +23,6 @@ typedef int off_t;
 typedef long time_t;
 typedef long clock_t;
 
-struct FILE;
-
 namespace std {
 }
 
