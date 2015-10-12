@@ -43,22 +43,19 @@ ExpansionNode(const string &str, bool paste) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::Constructor
 //       Access: Public
-//  Description:
+//  Description: Creates a manifest from a preprocessor definition.
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
-CPPManifest(const string &args, const CPPFile &file) :
+CPPManifest(const string &args, const cppyyltype &loc) :
   _variadic_param(-1),
-  _file(file),
-  _expr((CPPExpression *)NULL)
+  _loc(loc),
+  _expr((CPPExpression *)NULL),
+  _vis(V_public)
 {
   assert(!args.empty());
   assert(!isspace(args[0]));
 
-  _expr = (CPPExpression *)NULL;
-  _vis = V_public;
-
   // First, identify the manifest name.
-
   size_t p = 0;
   while (p < args.size() && !isspace(args[p]) && args[p] != '(') {
     p++;
@@ -86,6 +83,51 @@ CPPManifest(const string &args, const CPPFile &file) :
   }
 
   save_expansion(args.substr(p), parameter_names);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPManifest::Constructor
+//       Access: Public
+//  Description: Creates a custom manifest definition, for example
+//               as specified from a command-line -D option.
+////////////////////////////////////////////////////////////////////
+CPPManifest::
+CPPManifest(const string &macro, const string &definition) :
+  _variadic_param(-1),
+  _expr((CPPExpression *)NULL),
+  _vis(V_public)
+{
+  _loc.first_line = 0;
+  _loc.first_column = 0;
+  _loc.last_line = 0;
+  _loc.last_column = 0;
+
+  assert(!macro.empty());
+  assert(!isspace(macro[0]));
+
+  // First, identify the manifest name.
+  size_t p = 0;
+  while (p < macro.size() && !isspace(macro[p]) && macro[p] != '(') {
+    p++;
+  }
+
+  _name = macro.substr(0, p);
+
+  vector_string parameter_names;
+
+  if (macro[p] == '(') {
+    // Hmm, parameters.
+    _has_parameters = true;
+    parse_parameters(macro, p, parameter_names);
+    _num_parameters = parameter_names.size();
+
+    p++;
+  } else {
+    _has_parameters = false;
+    _num_parameters = 0;
+  }
+
+  save_expansion(definition, parameter_names);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -131,25 +131,26 @@ extern int cppyydebug;
      KW_SIGNED = 340,
      KW_SIZEOF = 341,
      KW_STATIC = 342,
-     KW_STATIC_CAST = 343,
-     KW_STRUCT = 344,
-     KW_TEMPLATE = 345,
-     KW_THROW = 346,
-     KW_TRUE = 347,
-     KW_TRY = 348,
-     KW_TYPEDEF = 349,
-     KW_TYPENAME = 350,
-     KW_UNION = 351,
-     KW_UNSIGNED = 352,
-     KW_USING = 353,
-     KW_VIRTUAL = 354,
-     KW_VOID = 355,
-     KW_VOLATILE = 356,
-     KW_WCHAR_T = 357,
-     KW_WHILE = 358,
-     START_CPP = 359,
-     START_CONST_EXPR = 360,
-     START_TYPE = 361
+     KW_STATIC_ASSERT = 343,
+     KW_STATIC_CAST = 344,
+     KW_STRUCT = 345,
+     KW_TEMPLATE = 346,
+     KW_THROW = 347,
+     KW_TRUE = 348,
+     KW_TRY = 349,
+     KW_TYPEDEF = 350,
+     KW_TYPENAME = 351,
+     KW_UNION = 352,
+     KW_UNSIGNED = 353,
+     KW_USING = 354,
+     KW_VIRTUAL = 355,
+     KW_VOID = 356,
+     KW_VOLATILE = 357,
+     KW_WCHAR_T = 358,
+     KW_WHILE = 359,
+     START_CPP = 360,
+     START_CONST_EXPR = 361,
+     START_TYPE = 362
    };
 #endif
 /* Tokens.  */
@@ -238,25 +239,26 @@ extern int cppyydebug;
 #define KW_SIGNED 340
 #define KW_SIZEOF 341
 #define KW_STATIC 342
-#define KW_STATIC_CAST 343
-#define KW_STRUCT 344
-#define KW_TEMPLATE 345
-#define KW_THROW 346
-#define KW_TRUE 347
-#define KW_TRY 348
-#define KW_TYPEDEF 349
-#define KW_TYPENAME 350
-#define KW_UNION 351
-#define KW_UNSIGNED 352
-#define KW_USING 353
-#define KW_VIRTUAL 354
-#define KW_VOID 355
-#define KW_VOLATILE 356
-#define KW_WCHAR_T 357
-#define KW_WHILE 358
-#define START_CPP 359
-#define START_CONST_EXPR 360
-#define START_TYPE 361
+#define KW_STATIC_ASSERT 343
+#define KW_STATIC_CAST 344
+#define KW_STRUCT 345
+#define KW_TEMPLATE 346
+#define KW_THROW 347
+#define KW_TRUE 348
+#define KW_TRY 349
+#define KW_TYPEDEF 350
+#define KW_TYPENAME 351
+#define KW_UNION 352
+#define KW_UNSIGNED 353
+#define KW_USING 354
+#define KW_VIRTUAL 355
+#define KW_VOID 356
+#define KW_VOLATILE 357
+#define KW_WCHAR_T 358
+#define KW_WHILE 359
+#define START_CPP 360
+#define START_CONST_EXPR 361
+#define START_TYPE 362
 
 
 

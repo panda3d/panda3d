@@ -57,7 +57,7 @@ int yyparse();
 
 static void
 yyerror(const string &msg) {
-  current_lexer->error(msg);
+  current_lexer->error(msg, current_lexer->_last_token_loc);
 }
 
 static void
@@ -199,9 +199,11 @@ pop_struct() {
 
 /* This is a bison-specific declaration to enable recursive calls to
    yyparse().  It changes the calling sequence to yylex(), passing
-   pointers to the current yylval and yylloc.  It also adds a pointer
-   to the current lloc to yyerror, which gives us better diagnostics. */
-%define api.pure full
+   pointers to the current yylval and yylloc.  Bison 2.7 introduces a
+   different syntax that will also pass the current yylloc to yyerror,
+   but we have to support Bison versions as old as 2.5 for now. */
+/*%define api.pure full*/
+%pure-parser
 %locations
 
 %token <u.real> REAL
@@ -288,6 +290,7 @@ pop_struct() {
 %token KW_SIGNED
 %token KW_SIZEOF
 %token KW_STATIC
+%token KW_STATIC_ASSERT
 %token KW_STATIC_CAST
 %token KW_STRUCT
 %token KW_TEMPLATE
@@ -518,10 +521,29 @@ declaration:
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
-         | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
+        | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
 {
   CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
   current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
+}
+        | KW_STATIC_ASSERT '(' const_expr ',' string ')'
+{
+  CPPExpression::Result result = $3->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("static_assert requires a constant expression", @3);
+  } else if (!result.as_boolean()) {
+    yywarning("static_assert failed: " + $5, @3);
+  }
+}
+        | KW_STATIC_ASSERT '(' const_expr ')'
+{
+  // This alternative version of static_assert was introduced in C++17.
+  CPPExpression::Result result = $3->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("static_assert requires a constant expression", @3);
+  } else if (!result.as_boolean()) {
+    yywarning("static_assert failed", @3);
+  }
 }
         ;
 
@@ -856,6 +878,9 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
 
   CPPInstanceIdentifier *ii = $4;
@@ -871,6 +896,9 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
 
   CPPInstanceIdentifier *ii = $5;
@@ -1213,6 +1241,9 @@ template_formal_parameter_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         ;
@@ -1608,6 +1639,9 @@ type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -1668,6 +1702,9 @@ type_decl:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -1746,6 +1783,9 @@ predefined_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -2419,6 +2459,9 @@ const_expr:
 {
   // A constructor call.
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
@@ -2888,6 +2931,9 @@ typedefname:
         TYPENAME_IDENTIFIER
 {
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
   $$ = type;
 }
