@@ -32,7 +32,8 @@ class CPPType;
 ////////////////////////////////////////////////////////////////////
 class CPPManifest {
 public:
-  CPPManifest(const string &args, const cppyyltype &loc = {0});
+  CPPManifest(const string &args, const cppyyltype &loc);
+  CPPManifest(const string &macro, const string &definition);
   ~CPPManifest();
 
   static string stringify(const string &source);
