@@ -142,6 +142,8 @@ private:
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
   CPPToken get_identifier(int c);
+  CPPToken get_literal(int token, YYLTYPE loc, const string &str,
+                       const YYSTYPE &result = YYSTYPE());
   CPPToken expand_manifest(const CPPManifest *manifest);
   void extract_manifest_args(const string &name, int num_args,
                              int va_arg, vector_string &args);

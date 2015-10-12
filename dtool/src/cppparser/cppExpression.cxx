@@ -207,6 +207,19 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
+CPPExpression(unsigned long long value) :
+  CPPDeclaration(CPPFile())
+{
+  _type = T_integer;
+  _u._integer = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression::
 CPPExpression(int value) :
   CPPDeclaration(CPPFile())
 {
@@ -220,7 +233,7 @@ CPPExpression(int value) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
-CPPExpression(double value) :
+CPPExpression(long double value) :
   CPPDeclaration(CPPFile())
 {
   _type = T_real;
@@ -398,6 +411,89 @@ sizeof_func(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named alignof_func constructor
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+alignof_func(CPPType *type) {
+  CPPExpression expr(0);
+  expr._type = T_alignof;
+  expr._u._typecast._to = type;
+  expr._u._typecast._op1 = NULL;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named literal constructor
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+literal(unsigned long long value, CPPInstance *lit_op) {
+  CPPExpression expr(0);
+  expr._type = T_literal;
+  expr._u._literal._value = new CPPExpression(value);
+  expr._u._literal._operator = lit_op;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named literal constructor
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+literal(long double value, CPPInstance *lit_op) {
+  CPPExpression expr(0);
+  expr._type = T_literal;
+  expr._u._literal._value = new CPPExpression(value);
+  expr._u._literal._operator = lit_op;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named literal constructor
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+literal(CPPExpression *value, CPPInstance *lit_op) {
+  CPPExpression expr(0);
+  expr._type = T_literal;
+  expr._u._literal._value = value;
+  expr._u._literal._operator = lit_op;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named raw_literal constructor
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+raw_literal(const string &raw, CPPInstance *lit_op) {
+  CPPExpression expr(0);
+  expr._type = T_raw_literal;
+  expr._str = raw;
+  expr._u._literal._value = (CPPExpression *)NULL;
+  expr._u._literal._operator = lit_op;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::get_nullptr
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+const CPPExpression &CPPExpression::
+get_nullptr() {
+  static CPPExpression expr(0);
+  expr._type = T_nullptr;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Destructor
 //       Access: Public
 //  Description:
@@ -416,13 +512,20 @@ evaluate() const {
   Result r1, r2;
 
   switch (_type) {
+  case T_nullptr:
+    return Result((void *)0);
+
   case T_integer:
-    return Result(_u._integer);
+    return Result((int)_u._integer);
 
   case T_real:
-    return Result(_u._real);
+    return Result((double)_u._real);
 
   case T_string:
+  case T_wstring:
+  case T_u8string:
+  case T_u16string:
+  case T_u32string:
     return Result();
 
   case T_variable:
@@ -466,6 +569,17 @@ evaluate() const {
   case T_new:
   case T_default_new:
   case T_sizeof:
+    return Result();
+
+  case T_alignof:
+    if (_u._typecast._to != NULL) {
+      // Check if the type is defined with an alignas.  TODO: this should
+      // probably be moved to a virtual getter on CPPType.
+      CPPExtensionType *etype = _u._typecast._to->as_extension_type();
+      if (etype != NULL && etype->_alignment != NULL) {
+        return etype->_alignment->evaluate();
+      }
+    }
     return Result();
 
   case T_binary_operation:
@@ -652,6 +766,10 @@ evaluate() const {
       abort();
     }
 
+  case T_literal:
+  case T_raw_literal:
+    return Result();
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -671,25 +789,51 @@ determine_type() const {
   CPPType *t1 = (CPPType *)NULL;
   CPPType *t2 = (CPPType *)NULL;
 
-  CPPType *int_type =
+  static CPPType *nullptr_type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_nullptr));
+
+  static CPPType *int_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
 
-  CPPType *bool_type =
+  static CPPType *unsigned_long_type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
+                                        CPPSimpleType::F_unsigned |
+                                        CPPSimpleType::F_long));
+
+  static CPPType *bool_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_bool));
 
-  CPPType *float_type =
+  static CPPType *float_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_double));
 
-  CPPType *char_type =
+  static CPPType *char_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char));
 
-  CPPType *const_char_type =
-    CPPType::new_type(new CPPConstType(char_type));
+  static CPPType *wchar_type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_wchar_t));
 
-  CPPType *char_star_type =
-    CPPType::new_type(new CPPPointerType(const_char_type));
+  static CPPType *char16_type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char16_t));
+
+  static CPPType *char32_type =
+    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char32_t));
+
+  static CPPType *char_str_type = CPPType::new_type(
+    new CPPPointerType(CPPType::new_type(new CPPConstType(char_type))));
+
+  static CPPType *wchar_str_type = CPPType::new_type(
+    new CPPPointerType(CPPType::new_type(new CPPConstType(wchar_type))));
+
+  static CPPType *char16_str_type = CPPType::new_type(
+    new CPPPointerType(CPPType::new_type(new CPPConstType(char16_type))));
+
+  static CPPType *char32_str_type = CPPType::new_type(
+    new CPPPointerType(CPPType::new_type(new CPPConstType(char32_type))));
 
   switch (_type) {
+  case T_nullptr:
+    return nullptr_type;
+
   case T_integer:
     return int_type;
 
@@ -697,7 +841,19 @@ determine_type() const {
     return float_type;
 
   case T_string:
-    return char_star_type;
+    return char_str_type;
+
+  case T_wstring:
+    return wchar_str_type;
+
+  case T_u8string:
+    return char_str_type;
+
+  case T_u16string:
+    return char16_str_type;
+
+  case T_u32string:
+    return char32_str_type;
 
   case T_variable:
     return _u._variable->_type;
@@ -725,7 +881,11 @@ determine_type() const {
     return CPPType::new_type(new CPPPointerType(_u._typecast._to));
 
   case T_sizeof:
-    return int_type;
+  case T_alignof:
+    // Note: this should actually be size_t, but that is defined as a
+    // typedef in parser-inc.  We could try to resolve it, but that's
+    // hacky.  Eh, it's probably not worth the effort to get this right.
+    return unsigned_long_type;
 
   case T_binary_operation:
   case T_trinary_operation:
@@ -819,6 +979,18 @@ determine_type() const {
       abort();
     }
 
+  case T_literal:
+  case T_raw_literal:
+    if (_u._literal._operator != NULL) {
+      CPPType *type = _u._literal._operator->_type;
+
+      CPPFunctionType *ftype = type->as_function_type();
+      if (ftype != (CPPFunctionType *)NULL) {
+        return ftype->_return_type;
+      }
+    }
+    return NULL;
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -842,9 +1014,14 @@ is_fully_specified() const {
   }
 
   switch (_type) {
+  case T_nullptr:
   case T_integer:
   case T_real:
   case T_string:
+  case T_wstring:
+  case T_u8string:
+  case T_u16string:
+  case T_u32string:
     return false;
 
   case T_variable:
@@ -865,6 +1042,7 @@ is_fully_specified() const {
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
+  case T_alignof:
     return _u._typecast._to->is_fully_specified();
 
   case T_trinary_operation:
@@ -881,6 +1059,13 @@ is_fully_specified() const {
 
   case T_unary_operation:
     return _u._op._op1->is_fully_specified();
+
+  case T_literal:
+    return _u._literal._value->is_fully_specified() &&
+      _u._literal._operator->is_fully_specified();
+
+  case T_raw_literal:
+    return _u._literal._value->is_fully_specified();
 
   default:
     return true;
@@ -972,6 +1157,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
+  case T_alignof:
     rep->_u._typecast._to =
       _u._typecast._to->substitute_decl(subst, current_scope, global_scope)
       ->as_type();
@@ -1042,6 +1228,7 @@ is_tbd() const {
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
+  case T_alignof:
     return _u._typecast._to->is_tbd();
 
   case T_trinary_operation:
@@ -1075,6 +1262,10 @@ is_tbd() const {
 void CPPExpression::
 output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   switch (_type) {
+  case T_nullptr:
+    out << "nullptr";
+    break;
+
   case T_integer:
     out << _u._integer;
     break;
@@ -1090,8 +1281,29 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_string:
-    out << '"';
+  case T_wstring:
+  case T_u8string:
+  case T_u16string:
+  case T_u32string:
     {
+      switch (_type) {
+      case T_wstring:
+        out << 'L';
+        break;
+      case T_u8string:
+        out << "u8";
+        break;
+      case T_u16string:
+        out << "u";
+        break;
+      case T_u32string:
+        out << "U";
+        break;
+      default:
+        break;
+      }
+      // We don't really care about preserving the encoding for now.
+      out << '"';
       string::const_iterator si;
       for (si = _str.begin(); si != _str.end(); ++si) {
         switch (*si) {
@@ -1193,6 +1405,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << ")";
     break;
 
+  case T_alignof:
+    out << "alignof(";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
   case T_unary_operation:
     switch (_u._op._operator) {
     case UNARY_NOT:
@@ -1208,9 +1426,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
       break;
 
     case UNARY_MINUS:
-      out << "(- ";
+      out << '-';
       _u._op._op1->output(out, indent_level, scope, false);
-      out << ")";
       break;
 
     case UNARY_STAR:
@@ -1362,6 +1579,24 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << ")";
     break;
 
+  case T_literal:
+    _u._literal._value->output(out, indent_level, scope, false);
+    if (_u._literal._operator != NULL) {
+      string name = _u._literal._operator->get_simple_name();
+      assert(name.substr(0, 12) == "operator \"\" ");
+      out << name.substr(12);
+    }
+    break;
+
+  case T_raw_literal:
+    out << _str;
+    if (_u._literal._operator != NULL) {
+      string name = _u._literal._operator->get_simple_name();
+      assert(name.substr(0, 12) == "operator \"\" ");
+      out << name.substr(12);
+    }
+    break;
+
   default:
     out << "(** invalid operand type " << (int)_type << " **)";
   }
@@ -1456,6 +1691,9 @@ is_equal(const CPPDeclaration *other) const {
   }
 
   switch (_type) {
+  case T_nullptr:
+    return true;
+
   case T_integer:
     return _u._integer == ot->_u._integer;
 
@@ -1463,6 +1701,10 @@ is_equal(const CPPDeclaration *other) const {
     return _u._real == ot->_u._real;
 
   case T_string:
+  case T_wstring:
+  case T_u8string:
+  case T_u16string:
+  case T_u32string:
     return _str == ot->_str;
 
   case T_variable:
@@ -1483,6 +1725,7 @@ is_equal(const CPPDeclaration *other) const {
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
+  case T_alignof:
     return _u._typecast._to == ot->_u._typecast._to;
 
   case T_unary_operation:
@@ -1495,6 +1738,14 @@ is_equal(const CPPDeclaration *other) const {
   case T_trinary_operation:
     return *_u._op._op1 == *ot->_u._op._op1 &&
       *_u._op._op2 == *ot->_u._op._op2;
+
+  case T_literal:
+    return *_u._literal._value == *ot->_u._literal._value &&
+      _u._literal._operator == ot->_u._literal._operator;
+
+  case T_raw_literal:
+    return _str == ot->_str &&
+      _u._literal._operator == ot->_u._literal._operator;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";
@@ -1520,6 +1771,9 @@ is_less(const CPPDeclaration *other) const {
   }
 
   switch (_type) {
+  case T_nullptr:
+    return false;
+
   case T_integer:
     return _u._integer < ot->_u._integer;
 
@@ -1527,6 +1781,10 @@ is_less(const CPPDeclaration *other) const {
     return _u._real < ot->_u._real;
 
   case T_string:
+  case T_wstring:
+  case T_u8string:
+  case T_u16string:
+  case T_u32string:
     return _str < ot->_str;
 
   case T_variable:
@@ -1549,6 +1807,7 @@ is_less(const CPPDeclaration *other) const {
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
+  case T_alignof:
     return _u._typecast._to < ot->_u._typecast._to;
 
   case T_trinary_operation:
@@ -1565,6 +1824,18 @@ is_less(const CPPDeclaration *other) const {
 
   case T_unary_operation:
     return *_u._op._op1 < *ot->_u._op._op1;
+
+  case T_literal:
+    if (_u._literal._operator != ot->_u._literal._operator) {
+      return _u._literal._operator < ot->_u._literal._operator;
+    }
+    return *_u._literal._value < *ot->_u._literal._value;
+
+  case T_raw_literal:
+    if (_u._literal._operator != ot->_u._literal._operator) {
+      return _u._literal._operator < ot->_u._literal._operator;
+    }
+    return _str < ot->_str;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";

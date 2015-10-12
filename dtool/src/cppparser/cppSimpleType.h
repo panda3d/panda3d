@@ -37,6 +37,11 @@ public:
     T_double,
     T_void,
 
+    // We need something to represent the type of nullptr so that we
+    // can return it from decltype(nullptr).  Note that this is not
+    // the same as nullptr_t, which is a typedef of decltype(nullptr).
+    T_nullptr,
+
     // T_parameter is a special type which is assigned to expressions
     // that are discovered where a formal parameter was expected.
     // This is a special case for handling cases like this:

@@ -38,7 +38,8 @@ CPPInstance(CPPType *type, const string &name, int storage_class) :
   CPPDeclaration(CPPFile()),
   _type(type),
   _ident(new CPPIdentifier(name)),
-  _storage_class(storage_class)
+  _storage_class(storage_class),
+  _alignment(NULL)
 {
   _initializer = NULL;
 }
@@ -53,7 +54,8 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
   CPPDeclaration(CPPFile()),
   _type(type),
   _ident(ident),
-  _storage_class(storage_class)
+  _storage_class(storage_class),
+  _alignment(NULL)
 {
   _initializer = NULL;
 }
@@ -69,7 +71,8 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
 CPPInstance::
 CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
             const CPPFile &file) :
-  CPPDeclaration(file)
+  CPPDeclaration(file),
+  _alignment(NULL)
 {
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
@@ -102,7 +105,8 @@ CPPInstance(const CPPInstance &copy) :
   _type(copy._type),
   _ident(copy._ident),
   _initializer(copy._initializer),
-  _storage_class(copy._storage_class)
+  _storage_class(copy._storage_class),
+  _alignment(copy._alignment)
 {
   assert(_type != NULL);
 }
@@ -153,6 +157,9 @@ operator == (const CPPInstance &other) const {
   if (_storage_class != other._storage_class) {
     return false;
   }
+  if (_alignment != other._alignment) {
+    return false;
+  }
 
   // We *do* care about the identifier.  We need to differentiate
   // types of function variables, among possibly other things, based
@@ -198,6 +205,9 @@ operator < (const CPPInstance &other) const {
   }
   if (_storage_class != other._storage_class) {
     return _storage_class < other._storage_class;
+  }
+  if (_alignment != other._alignment) {
+    return _alignment < other._alignment;
   }
 
   // We *do* care about the identifier.  We need to differentiate
@@ -250,6 +260,29 @@ set_initializer(CPPExpression *initializer) {
   } else {
     _initializer = initializer;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstance::set_alignment
+//       Access: Public
+//  Description: Sets the number of bytes to align this instance to.
+////////////////////////////////////////////////////////////////////
+void CPPInstance::
+set_alignment(int align) {
+  _alignment = new CPPExpression(align);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstance::set_alignment
+//       Access: Public
+//  Description: Sets the expression that is used to determine the
+//               required alignment for the variable.  This should
+//               be a constant expression, but we don't presently
+//               verify that it is.
+////////////////////////////////////////////////////////////////////
+void CPPInstance::
+set_alignment(CPPExpression *const_expr) {
+  _alignment = const_expr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -536,6 +569,11 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
     get_template_scope()->_parameters.write_formal(out, scope);
     indent(out, indent_level);
   }
+
+  if (_alignment != NULL) {
+    out << "alignas(" << *_alignment << ") ";
+  }
+
   if (_storage_class & SC_static) {
     out << "static ";
   }

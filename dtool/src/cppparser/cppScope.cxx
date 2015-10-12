@@ -313,7 +313,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       _using.insert(scope);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   } else {
@@ -322,7 +322,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       handle_declaration(decl, global_scope, error_sink);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   }

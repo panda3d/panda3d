@@ -77,6 +77,8 @@ public:
   bool operator < (const CPPInstance &other) const;
 
   void set_initializer(CPPExpression *initializer);
+  void set_alignment(int align);
+  void set_alignment(CPPExpression *const_expr);
 
   bool is_scoped() const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
@@ -111,6 +113,7 @@ public:
   CPPExpression *_initializer;
 
   int _storage_class;
+  CPPExpression *_alignment;
 
 private:
   typedef map<const CPPTemplateParameterList *, CPPInstance *, CPPTPLCompare> Instantiations;

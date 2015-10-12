@@ -209,7 +209,8 @@ pop_struct() {
 %token <u.real> REAL
 %token <u.integer> INTEGER
 %token <u.integer> CHAR_TOK
-%token <str> STRING SIMPLE_IDENTIFIER
+%token <str> SIMPLE_STRING SIMPLE_IDENTIFIER
+%token <u.expr> STRING_LITERAL CUSTOM_LITERAL
 %token <u.identifier> IDENTIFIER TYPENAME_IDENTIFIER SCOPING
 %token <u.type> TYPEDEFNAME
 
@@ -245,6 +246,9 @@ pop_struct() {
 %token LSHIFTEQUAL
 %token RSHIFTEQUAL
 
+%token KW_ALIGNAS
+%token KW_ALIGNOF
+%token KW_AUTO
 %token KW_BEGIN_PUBLISH
 %token KW_BLOCKING
 %token KW_BOOL
@@ -254,6 +258,9 @@ pop_struct() {
 %token KW_CHAR32_T
 %token KW_CLASS
 %token KW_CONST
+%token KW_CONSTEXPR
+%token KW_DECLTYPE
+%token KW_DEFAULT
 %token KW_DELETE
 %token KW_DOUBLE
 %token KW_DYNAMIC_CAST
@@ -280,6 +287,7 @@ pop_struct() {
 %token KW_NAMESPACE
 %token KW_NEW
 %token KW_NOEXCEPT
+%token KW_NULLPTR
 %token KW_OPERATOR
 %token KW_PRIVATE
 %token KW_PROTECTED
@@ -348,7 +356,7 @@ pop_struct() {
 %type <u.type> enum_element_type
 /*%type <u.type> typedefname*/
 %type <u.identifier> name
-%type <str> string
+%type <u.expr> string_literal
 
 /* We need to treat KW_OPERATOR as a scopable keyword. */
 %type <u.identifier> KW_OPERATOR
@@ -526,13 +534,15 @@ declaration:
   CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
   current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
 }
-        | KW_STATIC_ASSERT '(' const_expr ',' string ')'
+        | KW_STATIC_ASSERT '(' const_expr ',' string_literal ')'
 {
   CPPExpression::Result result = $3->evaluate();
   if (result._type == CPPExpression::RT_error) {
     yywarning("static_assert requires a constant expression", @3);
   } else if (!result.as_boolean()) {
-    yywarning("static_assert failed: " + $5, @3);
+    stringstream str;
+    str << *$5;
+    yywarning("static_assert failed: " + str.str(), @3);
   }
 }
         | KW_STATIC_ASSERT '(' const_expr ')'
@@ -571,7 +581,7 @@ storage_class:
 {
   $$ = $1 | (int)CPPInstance::SC_extern;
 }
-        | storage_class KW_EXTERN string
+        | storage_class KW_EXTERN SIMPLE_STRING
 {
   $$ = $1 | (int)CPPInstance::SC_extern;
   if ($3 == "C") {
@@ -1268,6 +1278,21 @@ instance_identifier:
 
   $$ = new CPPInstanceIdentifier(ident);
 }
+        | KW_OPERATOR SIMPLE_STRING IDENTIFIER
+{
+  // A C++11 literal operator.
+  if (!$2.empty()) {
+    yyerror("expected empty string", @2);
+  }
+  CPPIdentifier *ident = $1;
+  if (ident == NULL) {
+    ident = new CPPIdentifier("operator \"\" "+$3->get_simple_name(), @3);
+  } else {
+    ident->_names.push_back("operator \"\" "+$3->get_simple_name());
+  }
+
+  $$ = new CPPInstanceIdentifier(ident);
+}
         | KW_CONST instance_identifier  %prec UNARY
 {
   $$ = $2;
@@ -1692,6 +1717,15 @@ type:
     $$ = et;
   }
 }
+        | KW_DECLTYPE '(' const_expr ')'
+{
+  $$ = $3->determine_type();
+  if ($$ == (CPPType *)NULL) {
+    stringstream str;
+    str << *$3;
+    yyerror("could not determine type of " + str.str(), @3);
+  }
+}
         ;
 
 type_decl:
@@ -1771,6 +1805,15 @@ type_decl:
       scope->define_extension_type(et);
     }
     $$ = et;
+  }
+}
+        | KW_DECLTYPE '(' const_expr ')'
+{
+  $$ = $3->determine_type();
+  if ($$ == (CPPType *)NULL) {
+    stringstream str;
+    str << *$3;
+    yyerror("could not determine type of " + str.str(), @3);
   }
 }
         ;
@@ -2212,48 +2255,34 @@ code_block:
 
 element:
         REAL
-{
-}
         | INTEGER
-{
-}
-        | STRING
-{
-}
+        | SIMPLE_STRING
+        | STRING_LITERAL
+        | CUSTOM_LITERAL
         | CHAR_TOK
-{
-}
         | IDENTIFIER
-{
-}
         | TYPENAME_IDENTIFIER
-{
-}
         | SCOPING
-{
-}
         | SIMPLE_IDENTIFIER
-{
-}
         | ELLIPSIS | OROR | ANDAND
         | EQCOMPARE | NECOMPARE | LECOMPARE | GECOMPARE
         | LSHIFT | RSHIFT | POINTSAT_STAR | DOT_STAR | POINTSAT
         | SCOPE | PLUSPLUS | MINUSMINUS
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
-        | KW_BOOL | KW_CATCH | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T
-        | KW_WCHAR_T | KW_CLASS | KW_CONST
+        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_CATCH
+        | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T
+        | KW_CLASS | KW_CONST | KW_CONSTEXPR | KW_DECLTYPE | KW_DEFAULT
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
         | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO
-        | KW_IF | KW_INLINE | KW_INT
-        | KW_LONG | KW_MUTABLE | KW_NEW | KW_PRIVATE | KW_PROTECTED
+        | KW_IF | KW_INLINE | KW_INT | KW_LONG | KW_MUTABLE
+        | KW_NEW | KW_NULLPTR | KW_OPERATOR | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_RETURN
-        | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_CAST
-        | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF | KW_TYPENAME
-        | KW_UNION | KW_UNSIGNED | KW_VIRTUAL | KW_VOID | KW_VOLATILE
-        | KW_WHILE
-        | KW_OPERATOR
+        | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_ASSERT
+        | KW_STATIC_CAST | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY
+        | KW_TYPEDEF | KW_TYPENAME | KW_UNION | KW_UNSIGNED | KW_VIRTUAL
+        | KW_VOID | KW_VOLATILE | KW_WCHAR_T | KW_WHILE
 {
 }
         | '+' | '-' | '*' | '/' | '&' | '|' | '^' | '!' | '~' | '=' | '%'
@@ -2315,6 +2344,10 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | '!' no_angle_bracket_const_expr    %prec UNARY
 {
   $$ = new CPPExpression(UNARY_NOT, $2);
@@ -2325,15 +2358,7 @@ no_angle_bracket_const_expr:
 }
         | '-' no_angle_bracket_const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '*' no_angle_bracket_const_expr    %prec UNARY
 {
@@ -2545,6 +2570,10 @@ const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | KW_NEW predefined_type %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::new_op($2));
@@ -2563,15 +2592,7 @@ const_expr:
 }
         | '-' const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '*' const_expr    %prec UNARY
 {
@@ -2704,13 +2725,21 @@ const_operand:
 {
   $$ = new CPPExpression($1);
 }
-        | string
+        | string_literal
 {
-  $$ = new CPPExpression($1);
+  $$ = $1;
+}
+        | CUSTOM_LITERAL
+{
+  $$ = $1;
 }
         | IDENTIFIER
 {
   $$ = new CPPExpression($1, current_scope, global_scope, current_lexer);
+}
+        | KW_NULLPTR
+{
+  $$ = new CPPExpression(CPPExpression::get_nullptr());
 }
         ;
 
@@ -2742,6 +2771,10 @@ formal_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | KW_NEW predefined_type %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::new_op($2));
@@ -2760,15 +2793,7 @@ formal_const_expr:
 }
         | '-' const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '&' const_expr    %prec UNARY
 {
@@ -2897,9 +2922,17 @@ formal_const_operand:
 {
   $$ = new CPPExpression($1);
 }
-        | string
+        | string_literal
 {
-  $$ = new CPPExpression($1);
+  $$ = $1;
+}
+        | CUSTOM_LITERAL
+{
+  $$ = $1;
+}
+        | KW_NULLPTR
+{
+  $$ = new CPPExpression(CPPExpression::get_nullptr());
 }
         ;
 
@@ -2956,14 +2989,29 @@ name:
 }
         ;
 
-string:
-        STRING
+string_literal:
+        SIMPLE_STRING
+{
+  $$ = new CPPExpression($1);
+}
+        | STRING_LITERAL
 {
   $$ = $1;
 }
-        | string STRING
+        | string_literal SIMPLE_STRING
 {
-  $$ = $1 + $2;
+  // The right string takes on the literal type of the left.
+  $$ = $1;
+  $$->_str += $2;
+}
+        | string_literal STRING_LITERAL
+{
+  // We have to check that the two literal types match up.
+  $$ = $1;
+  if ($2->_type != CPPExpression::T_string && $2->_type != $1->_type) {
+    yywarning("cannot concatenate two string literals of different types", @$);
+  }
+  $$->_str += $2->_str;
 }
         ;
 

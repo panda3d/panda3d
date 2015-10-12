@@ -44,5 +44,26 @@ public:
 
 typedef basic_string<char> string;
 typedef basic_string<wchar_t> wstring;
+typedef basic_string<char16_t> u16string;
+typedef basic_string<char32_t> u32string;
+
+namespace std {
+  template<class T> struct hash;
+  template<> struct hash<string>;
+  template<> struct hash<u16string>;
+  template<> struct hash<u32string>;
+  template<> struct hash<wstring>;
+
+  namespace string_literals {
+    string operator "" s(const char *str, size_t len);
+    wstring operator "" s(const wchar_t *str, size_t len);
+    u16string operator "" s(const char16_t *str, size_t len);
+    u32string operator "" s(const char32_t *str, size_t len);
+  }
+
+  namespace literals {
+    using namespace string_literals;
+  }
+}
 
 #endif

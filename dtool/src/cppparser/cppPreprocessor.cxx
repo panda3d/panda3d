@@ -26,6 +26,7 @@
 #include "cppBison.h"
 #include "indent.h"
 #include "pstrtod.h"
+#include "string_utils.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -404,6 +405,7 @@ get_next_token0() {
           // keyword.  We make a special case for this, because it's
           // occasionally scoped in normal use.
           token._lval = result;
+          _last_token_loc = token._lloc;
           return token;
         }
         _saved_tokens.push_back(token);
@@ -1803,9 +1805,7 @@ get_quoted_char(int c) {
     result.u.integer = 0;
   }
 
-  loc.last_line = get_line_number();
-  loc.last_column = get_col_number();
-  return CPPToken(CHAR_TOK, loc, str, result);
+  return get_literal(CHAR_TOK, loc, str, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1822,9 +1822,7 @@ get_quoted_string(int c) {
 
   string str = scan_quoted(c);
 
-  loc.last_line = get_line_number();
-  loc.last_column = get_col_number();
-  return CPPToken(STRING, loc, str);
+  return get_literal(SIMPLE_STRING, loc, str);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1848,24 +1846,50 @@ get_identifier(int c) {
     name += get();
     c = peek();
   }
-  if (c == '\'' || c == '"') {
-    // This is actually a wide-character or wide-string literal or
-    // some such: a string with an alphanumeric prefix.  We don't
-    // necessarily try to parse it correctly; for most purposes, we
-    // don't care.
-    get();
-    CPPToken token(0);
-    if (c == '\'') {
-      token = get_quoted_char(c);
-    } else {
-      token = get_quoted_string(c);
-    }
-    token._lloc.first_column = loc.first_column;
-    return token;
-  }
 
   loc.last_line = get_line_number();
   loc.last_column = get_col_number();
+
+  if ((c == '\'' || c == '"') && name != "operator") {
+    // This is actually a wide-character or wide-string literal or
+    // some such.  Figure out the correct character type to use.
+    // We had to add in an exception in order to support operator"".
+
+    CPPExpression::Type type;
+    if (name == "L") {
+      type = CPPExpression::T_wstring;
+    } else if (name == "u8") {
+      type = CPPExpression::T_u8string;
+    } else if (name == "u") {
+      type = CPPExpression::T_u16string;
+    } else if (name == "U") {
+      type = CPPExpression::T_u32string;
+    } else {
+      type = CPPExpression::T_string;
+      warning("unrecognized literal prefix " + name, loc);
+    }
+
+    get();
+    string str = scan_quoted(c);
+
+    loc.last_line = get_line_number();
+    loc.last_column = get_col_number();
+
+    YYSTYPE result;
+    if (c == '\'') {
+      // We don't really care about the type for now.
+      if (!str.empty()) {
+        result.u.integer = (int)str[0];
+      } else {
+        result.u.integer = 0;
+      }
+      return get_literal(CHAR_TOK, loc, str, result);
+    } else {
+      result.u.expr = new CPPExpression(str);
+      result.u.expr->_type = type;
+      return get_literal(STRING_LITERAL, loc, str, result);
+    }
+  }
 
   _last_c = 0;
 
@@ -1896,6 +1920,171 @@ get_identifier(int c) {
   }
 
   return CPPToken(SIMPLE_IDENTIFIER, loc, name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::get_literal
+//       Access: Private
+//  Description: Under the assumption that we've just parsed a
+//               string or real constant, parse a following custom
+//               literal, and returns a token for it.
+////////////////////////////////////////////////////////////////////
+CPPToken CPPPreprocessor::
+get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
+  string suffix;
+
+  int c = peek();
+  if (isalpha(c) || c == '_') {
+    // A literal seems to be following directly.
+    while (c != EOF && (isalnum(c) || c == '_')) {
+      suffix += get();
+      c = peek();
+    }
+  }
+  loc.last_line = get_line_number();
+  loc.last_column = get_col_number();
+
+  if (suffix.empty()) {
+    // There is no suffix.
+    return CPPToken(token, loc, str, value);
+  }
+
+  // Handle built-in literal suffixes.
+  if (token == INTEGER) {
+    if (cmp_nocase(suffix, "u") == 0 ||
+        cmp_nocase(suffix, "l") == 0 ||
+        cmp_nocase(suffix, "ul") == 0 || cmp_nocase(suffix, "lu") == 0 ||
+        cmp_nocase(suffix, "ll") == 0 ||
+        cmp_nocase(suffix, "ull") == 0 || cmp_nocase(suffix, "llu") == 0) {
+      // These are built-in integer suffixes.  Right now, we don't try to
+      // distinguish between them.
+      return CPPToken(INTEGER, loc, str, value);
+    }
+  } else if (token == REAL) {
+    if (suffix == "f" || suffix == "F" ||
+        suffix == "l" || suffix == "L") {
+      return CPPToken(REAL, loc, str, value);
+    }
+  }
+
+  // Find the literal operator for this literal.
+  CPPIdentifier *ident = new CPPIdentifier("operator \"\" " + suffix);
+  CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope, this);
+
+  if (decl == NULL || decl->get_subtype() != CPPDeclaration::ST_function_group) {
+    error("unknown literal suffix " + suffix, loc);
+    return CPPToken(token, loc, str, value);
+  }
+
+  // Find the overload with the appropriate signature.
+  CPPExpression *expr = NULL;
+  CPPInstance *instance = NULL;
+  CPPInstance *raw_instance = NULL;
+  CPPFunctionGroup *fgroup = decl->as_function_group();
+  CPPFunctionGroup::Instances::iterator it;
+  for (it = fgroup->_instances.begin(); it != fgroup->_instances.end(); ++it) {
+    if ((*it)->_type == NULL) {
+      continue;
+    }
+
+    CPPFunctionType *ftype = (*it)->_type->as_function_type();
+    if (ftype == NULL || ftype->_parameters == NULL) {
+      continue;
+    }
+
+    CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
+    if (token == STRING_LITERAL || token == SIMPLE_STRING) {
+      // A custom string literal must take a second size_t argument.
+      if (params.size() != 2) continue;
+    } else {
+      if (params.size() != 1) continue;
+    }
+
+    CPPInstance *param = params[0];
+    if (param == NULL || param->_type == NULL) {
+      continue;
+    }
+
+    CPPType *type = param->_type;
+    while (type->get_subtype() == CPPDeclaration::ST_const) {
+      type = type->as_const_type()->_wrapped_around;
+    }
+    if (type->get_subtype() == CPPDeclaration::ST_simple) {
+      // It's a primitive type.  Check that it matches the appropriate token.
+      CPPSimpleType::Type simple = type->as_simple_type()->_type;
+
+      if (token == INTEGER && simple == CPPSimpleType::T_int) {
+        expr = new CPPExpression(value.u.integer);
+        instance = (*it);
+        break;
+      } else if (token == REAL && simple == CPPSimpleType::T_double) {
+        expr = new CPPExpression(value.u.real);
+        instance = (*it);
+        break;
+      } else if (token == CHAR_TOK && (simple == CPPSimpleType::T_char ||
+                                       simple == CPPSimpleType::T_wchar_t ||
+                                       simple == CPPSimpleType::T_char16_t ||
+                                       simple == CPPSimpleType::T_char32_t)) {
+        // We currently don't have the means to check the exact character type.
+        expr = new CPPExpression(value.u.integer);
+        instance = (*it);
+        break;
+      }
+
+    } else if (type->get_subtype() == CPPDeclaration::ST_pointer) {
+      // Must be a const pointer.  Unwrap it.
+      type = type->as_pointer_type()->_pointing_at;
+      if (type == NULL || type->get_subtype() != CPPDeclaration::ST_const) {
+        continue;
+      }
+      type = type->as_const_type()->_wrapped_around;
+      if (type == NULL || type->get_subtype() != CPPDeclaration::ST_simple) {
+        continue;
+      }
+
+      CPPSimpleType::Type simple = type->as_simple_type()->_type;
+      if (simple == CPPSimpleType::T_char && params.size() == 1) {
+        // This is the raw literal operator.  Store it, but don't break;
+        // a non-raw version of the operator might follow, which we'd prefer.
+        raw_instance = (*it);
+
+      } else if (token == SIMPLE_STRING && simple == CPPSimpleType::T_char) {
+        expr = new CPPExpression(str);
+        instance = (*it);
+        break;
+
+      } else if (token == STRING_LITERAL) {
+        // Verify that the character type of the string literal matches
+        // the character type of the parameter.
+        CPPExpression::Type str_type = value.u.expr->_type;
+        if ((str_type == CPPExpression::T_string && simple == CPPSimpleType::T_char) ||
+            (str_type == CPPExpression::T_wstring && simple == CPPSimpleType::T_wchar_t) ||
+            (str_type == CPPExpression::T_u8string && simple == CPPSimpleType::T_char) ||
+            (str_type == CPPExpression::T_u16string && simple == CPPSimpleType::T_char16_t) ||
+            (str_type == CPPExpression::T_u32string && simple == CPPSimpleType::T_char32_t)) {
+          expr = value.u.expr;
+          instance = (*it);
+          break;
+        }
+      }
+    }
+  }
+
+  YYSTYPE result;
+  if (instance != NULL) {
+    result.u.expr = new CPPExpression(CPPExpression::literal(expr, instance));
+    return CPPToken(CUSTOM_LITERAL, loc, str, result);
+  }
+
+  if ((token == REAL || token == INTEGER) && raw_instance != NULL) {
+    // For numeric constants, we can fall back to a raw literal operator.
+    result.u.expr = new CPPExpression(CPPExpression::raw_literal(str, instance));
+    return CPPToken(CUSTOM_LITERAL, loc, str, result);
+  }
+
+  error(fgroup->_name + " has no suitable overload for literal of this type", loc);
+  result.u.expr = NULL;
+  return CPPToken(CUSTOM_LITERAL, loc, str, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2196,20 +2385,13 @@ get_number(int c) {
       c = peek();
     }
 
-    while (c == 'L' || c == 'U' || c == 'l' || c == 'u') {
-      // We allow (and ignore) an 'L' and/or 'U' following the number.
-      get();
-      c = peek();
-    }
-
     loc.last_line = get_line_number();
     loc.last_column = get_col_number();
 
-    _last_c = 0;
-
     YYSTYPE result;
     result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
-    return CPPToken(INTEGER, loc, num, result);
+
+    return get_literal(INTEGER, loc, num, result);
   }
 
   while (c != EOF && isdigit(c)) {
@@ -2229,7 +2411,7 @@ get_number(int c) {
     }
   }
 
-  if (decimal_point) {
+  if (decimal_point || c == 'e' || c == 'E') {
     if (tolower(c) == 'e') {
       // An exponent is allowed.
       num += get();
@@ -2244,27 +2426,16 @@ get_number(int c) {
       }
     }
 
-    if (c == 'f') {
-      // We allow (and ignore) an 'f' following the number.
-      get();
-      c = peek();
-    }
-
     loc.last_line = get_line_number();
     loc.last_column = get_col_number();
 
     YYSTYPE result;
     result.u.real = pstrtod(num.c_str(), (char **)NULL);
-    return CPPToken(REAL, loc, num, result);
+
+    return get_literal(REAL, loc, num, result);
   }
 
   // This is a decimal or octal integer number.
-
-  while (c == 'L' || c == 'U') {
-    // We allow (and ignore) an 'L' and/or 'U' following the number.
-    get();
-    c = peek();
-  }
 
   loc.last_line = get_line_number();
   loc.last_column = get_col_number();
@@ -2282,7 +2453,7 @@ get_number(int c) {
     result.u.integer = strtol(num.c_str(), (char **)NULL, 10);
   }
 
-  return CPPToken(INTEGER, loc, num, result);
+  return get_literal(INTEGER, loc, num, result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2292,6 +2463,11 @@ get_number(int c) {
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 check_keyword(const string &name) {
+  if (name == "alignas") return KW_ALIGNAS;
+  if (name == "alignof") return KW_ALIGNOF;
+  if (name == "__alignof") return KW_ALIGNOF;
+  if (name == "__alignof__") return KW_ALIGNOF;
+  if (name == "auto") return KW_AUTO;
   if (name == "__begin_publish") return KW_BEGIN_PUBLISH;
   if (name == "__blocking") return KW_BLOCKING;
   if (name == "bool") return KW_BOOL;
@@ -2303,6 +2479,9 @@ check_keyword(const string &name) {
   if (name == "const") return KW_CONST;
   if (name == "__const") return KW_CONST;
   if (name == "__const__") return KW_CONST;
+  if (name == "constexpr") return KW_CONSTEXPR;
+  if (name == "decltype") return KW_DECLTYPE;
+  if (name == "default") return KW_DEFAULT;
   if (name == "delete") return KW_DELETE;
   if (name == "double") return KW_DOUBLE;
   if (name == "dynamic_cast") return KW_DYNAMIC_CAST;
@@ -2329,6 +2508,7 @@ check_keyword(const string &name) {
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
   if (name == "noexcept") return KW_NOEXCEPT;
+  if (name == "nullptr") return KW_NULLPTR;
   if (name == "new") return KW_NEW;
   if (name == "operator") return KW_OPERATOR;
   if (name == "private") return KW_PRIVATE;
