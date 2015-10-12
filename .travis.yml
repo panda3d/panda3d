@@ -8,7 +8,7 @@ script: python makepanda/makepanda.py --everything --verbose --git-commit $TRAVI
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#panda3d"
+      - "webchat.freenode.net#panda3d"
     on_success: change
     on_failure: always
     use_notice: true
