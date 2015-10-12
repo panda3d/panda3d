@@ -3,7 +3,7 @@ compiler:
   - gcc
   - clang
 before_script:
-  - sudo apt-get install python-dev libpng-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libjpeg-dev libopenal-dev libode-dev nvidia-cg-toolkit
+  - sudo apt-get install python-dev libpng-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libjpeg-dev libopenal-dev libode-dev nvidia-cg-toolkit libeigen3-dev libbullet-dev
 script: python makepanda/makepanda.py --everything --verbose --git-commit $TRAVIS_COMMIT --installer --threads 2
 notifications:
   irc:
