@@ -95,8 +95,11 @@ Mac OS X
 On Mac OS X, all you need to compile Panda3D is a set of precompiled
 thirdparty packages, which can be acquired from here:
 https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-mac.tar.gz
-
-After placing the thirdparty directory inside the panda3d source directory,
+you should install brew to install dependencies
+```bash
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && brew install apple-gcc42 fftw --with-fortran freetype gtk+ wxmac eigen
+```
+After placing the thirdparty directory  inside the panda3d source directory and installing some dependencies with brew,
 you may build Panda3D using a command like the following:
 
 ```bash
