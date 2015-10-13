@@ -617,15 +617,31 @@ evaluate() const {
       // long as we can evaluate the second one *and* that comes out
       // to be true.
       if (_u._op._operator == OROR && r2._type == RT_integer &&
-          r2.as_integer() != 0) {
+          r2.as_boolean()) {
         return r2;
       }
 
       // Ditto for the operator being && and the second one coming out
       // false.
       if (_u._op._operator == ANDAND && r2._type == RT_integer &&
-          r2.as_integer() == 0) {
+          !r2.as_boolean()) {
         return r2;
+      }
+
+      // Also for the operator being [] and the operand being a string.
+      if (_u._op._operator == '[' && r2._type == RT_integer &&
+          (_u._op._op1->_type == T_string ||
+           _u._op._op1->_type == T_u8string)) {
+
+        int index = r2.as_integer();
+        if (index == _u._op._op1->_str.size()) {
+          return Result(0);
+        } else if (index >= 0 && index < _u._op._op1->_str.size()) {
+          return Result(_u._op._op1->_str[index]);
+        } else {
+          cerr << "array index " << index << " out of bounds of string literal "
+               << *_u._op._op1 << "\n";
+        }
       }
 
       return r1;
@@ -633,7 +649,7 @@ evaluate() const {
 
     switch (_u._op._operator) {
     case UNARY_NOT:
-      return Result(!r1.as_integer());
+      return Result(!r1.as_boolean());
 
     case UNARY_NEGATE:
       return Result(~r1.as_integer());
@@ -683,14 +699,14 @@ evaluate() const {
       return Result(r1.as_integer() & r2.as_integer());
 
     case OROR:
-      if (r1.as_integer()) {
+      if (r1.as_boolean()) {
         return r1;
       } else {
         return r2;
       }
 
     case ANDAND:
-      if (r1.as_integer()) {
+      if (r1.as_boolean()) {
         return r2;
       } else {
         return r1;

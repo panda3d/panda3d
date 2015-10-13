@@ -343,6 +343,16 @@ operator [] (size_t n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string Filename::
+substr(size_t begin) const {
+  return _filename.substr(begin);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::substr
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE string Filename::
 substr(size_t begin, size_t end) const {
   return _filename.substr(begin, end);
 }

@@ -904,7 +904,7 @@ expand_manifests(const string &input_expr, bool expand_undefined) {
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope) {
-  string expr = expand_manifests(input_expr, true);
+  string expr = expand_manifests(input_expr, false);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1552,15 +1552,18 @@ handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
-  CPPExpression *expr = parse_expr(args, global_scope, global_scope);
+  // When expanding manifests, we should replace unknown macros
+  // with 0.
+  string expr = expand_manifests(args, true);
 
   int expression_result = 0;
-
-  if (expr != (CPPExpression *)NULL) {
-    CPPExpression::Result result = expr->evaluate();
+  CPPExpressionParser ep(current_scope, global_scope);
+  ep._verbose = 0;
+  if (ep.parse_expr(expr, *this)) {
+    CPPExpression::Result result = ep._expr->evaluate();
     if (result._type == CPPExpression::RT_error) {
       ostringstream strm;
-      strm << *expr;
+      strm << *ep._expr;
       warning("Ignoring invalid expression " + strm.str(), loc);
     } else {
       expression_result = result.as_integer();

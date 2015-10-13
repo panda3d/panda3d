@@ -1059,10 +1059,6 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
-      // I don't know if this _native_scope assignment is right, but it
-      // fixes some issues with variables in instantiated template scopes
-      // being printed out with an uninstantiated template scope prefix. ~rdb
-      inst->_ident->_native_scope = to_scope;
       anything_changed = true;
     }
   }
