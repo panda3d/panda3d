@@ -292,10 +292,15 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-define_namespace(CPPNamespace *scope) {
-  string name = scope->get_simple_name();
+define_namespace(CPPNamespace *ns) {
+  string name = ns->get_simple_name();
 
-  _namespaces[name] = scope;
+  _namespaces[name] = ns;
+
+  if (ns->_inline) {
+    // Add an implicit using declaration for an inline namespace.
+    _using.insert(ns->get_scope());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

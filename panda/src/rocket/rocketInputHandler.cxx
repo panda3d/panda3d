@@ -20,9 +20,11 @@
 #include "keyboardButton.h"
 #include "mouseButton.h"
 
+#ifndef CPPPARSER
 #include <Rocket/Core/Input.h>
 
 using namespace Rocket::Core::Input;
+#endif
 
 TypeHandle RocketInputHandler::_type_handle;
 

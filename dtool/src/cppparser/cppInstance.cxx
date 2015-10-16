@@ -601,6 +601,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_storage_class & SC_mutable) {
     out << "mutable ";
   }
+  if (_storage_class & SC_constexpr) {
+    out << "constexpr ";
+  }
 
   string name;
   if (_ident != NULL) {

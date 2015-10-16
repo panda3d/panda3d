@@ -577,56 +577,60 @@ storage_class:
 {
   $$ = 0;
 }
-        | storage_class KW_EXTERN
+        | KW_EXTERN storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extern;
+  $$ = $2 | (int)CPPInstance::SC_extern;
 }
-        | storage_class KW_EXTERN SIMPLE_STRING
+        | KW_EXTERN SIMPLE_STRING storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extern;
-  if ($3 == "C") {
+  $$ = $3 | (int)CPPInstance::SC_extern;
+  if ($2 == "C") {
     $$ |= (int)CPPInstance::SC_c_binding;
-  } else if ($3 == "C++") {
+  } else if ($2 == "C++") {
     $$ &= ~(int)CPPInstance::SC_c_binding;
   } else {
-    yywarning("Ignoring unknown linkage type \"" + $3 + "\"", @3);
+    yywarning("Ignoring unknown linkage type \"" + $2 + "\"", @2);
   }
 }
-        | storage_class KW_STATIC
+        | KW_STATIC storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_static;
+  $$ = $2 | (int)CPPInstance::SC_static;
 }
-        | storage_class KW_INLINE
+        | KW_INLINE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_inline;
+  $$ = $2 | (int)CPPInstance::SC_inline;
 }
-        | storage_class KW_VIRTUAL
+        | KW_VIRTUAL storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_virtual;
+  $$ = $2 | (int)CPPInstance::SC_virtual;
 }
-        | storage_class KW_EXPLICIT
+        | KW_EXPLICIT storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_explicit;
+  $$ = $2 | (int)CPPInstance::SC_explicit;
 }
-        | storage_class KW_VOLATILE
+        | KW_REGISTER storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_volatile;
+  $$ = $2 | (int)CPPInstance::SC_register;
 }
-        | storage_class KW_MUTABLE
+        | KW_VOLATILE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_mutable;
+  $$ = $2 | (int)CPPInstance::SC_volatile;
 }
-        | storage_class KW_REGISTER
+        | KW_MUTABLE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_register;
+  $$ = $2 | (int)CPPInstance::SC_mutable;
 }
-        | storage_class KW_BLOCKING
+        | KW_CONSTEXPR storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_blocking;
+  $$ = $2 | (int)CPPInstance::SC_constexpr;
 }
-        | storage_class KW_EXTENSION
+        | KW_BLOCKING storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extension;
+  $$ = $2 | (int)CPPInstance::SC_blocking;
+}
+        | KW_EXTENSION storage_class
+{
+  $$ = $2 | (int)CPPInstance::SC_extension;
 }
         ;
 
@@ -810,16 +814,18 @@ function_prototype:
 }
         formal_parameter_list ')' function_post
 {
-  pop_scope();
   CPPType *type;
-  if ($1->get_simple_name() == current_scope->get_simple_name()) {
+  if ($1->get_simple_name() == current_scope->get_simple_name() ||
+      $1->get_simple_name() == string("~") + current_scope->get_simple_name()) {
     // This is a constructor, and has no return.
     type = new CPPSimpleType(CPPSimpleType::T_void);
   } else {
     // This isn't a constructor, so it has an implicit return type of
     // int.
+    yywarning("function has no return type, assuming int", @1);
     type = new CPPSimpleType(CPPSimpleType::T_int);
   }
+  pop_scope();
 
   CPPInstanceIdentifier *ii = new CPPInstanceIdentifier($1);
   ii->add_func_modifier($4, $6);
@@ -1464,14 +1470,6 @@ formal_parameter:
   $$ = new CPPInstance($1, $2, 0, @2.file);
   $$->set_initializer($3);
 }
-        | IDENTIFIER formal_parameter_identifier maybe_initialize
-{
-  yywarning("Not a type: " + $1->get_fully_scoped_name(), @1);
-  CPPType *type =
-    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
-  $$ = new CPPInstance(type, $2, 0, @2.file);
-  $$->set_initializer($3);
-}
         | KW_CONST type formal_parameter_identifier maybe_initialize
 {
   $3->add_modifier(IIT_const);
@@ -2102,7 +2100,31 @@ namespace_declaration:
 {
   pop_scope();
 }
+        | KW_INLINE KW_NAMESPACE name '{'
+{
+  CPPScope *scope = $3->find_scope(current_scope, global_scope, current_lexer);
+  if (scope == NULL) {
+    // This must be a new namespace declaration.
+    CPPScope *parent_scope =
+      $3->get_scope(current_scope, global_scope, current_lexer);
+    if (parent_scope == NULL) {
+      parent_scope = current_scope;
+    }
+    scope = new CPPScope(parent_scope, $3->_names.back(), V_public);
+  }
+
+  CPPNamespace *nspace = new CPPNamespace($3, scope, @2.file);
+  nspace->_inline = true;
+  current_scope->add_declaration(nspace, global_scope, current_lexer, @2);
+  current_scope->define_namespace(nspace);
+  push_scope(scope);
+}
+        cpp '}'
+{
+  pop_scope();
+}
         | KW_NAMESPACE '{' cpp '}'
+        | KW_INLINE KW_NAMESPACE '{' cpp '}'
         ;
 
 using_declaration:
@@ -2929,6 +2951,10 @@ formal_const_operand:
         | CUSTOM_LITERAL
 {
   $$ = $1;
+}
+        | IDENTIFIER
+{
+  $$ = new CPPExpression($1, current_scope, global_scope, current_lexer);
 }
         | KW_NULLPTR
 {

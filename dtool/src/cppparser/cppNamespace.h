@@ -42,6 +42,8 @@ public:
 
   virtual CPPNamespace *as_namespace();
 
+  bool _inline;
+
 private:
   CPPIdentifier *_ident;
   CPPScope *_scope;

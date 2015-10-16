@@ -22,47 +22,53 @@
 
 #include <stdtypedefs.h>
 
-template<class ctype>
-class basic_string {
-public:
-  typedef typename size_t size_type;
-  static const size_t npos = -1;
-
-  basic_string();
-  basic_string(const basic_string &copy);
-  void operator = (const basic_string &copy);
-  basic_string(const ctype *string);
-  ~basic_string();
-
-  const ctype *c_str() const;
-  size_t length() const;
-
-  ctype at(size_t pos) const;
-  ctype operator[](size_t pos) const;
-  ctype &operator[](size_t pos);
-};
-
-typedef basic_string<char> string;
-typedef basic_string<wchar_t> wstring;
-typedef basic_string<char16_t> u16string;
-typedef basic_string<char32_t> u32string;
-
 namespace std {
+  template<class charT>
+  class char_traits;
+
+  template<class ctype>
+  class basic_string {
+  public:
+    struct iterator;
+    struct const_iterator;
+    struct reverse_iterator;
+    struct const_reverse_iterator;
+
+    typedef typename size_t size_type;
+    static const size_t npos = -1;
+
+    basic_string();
+    basic_string(const basic_string<ctype> &copy);
+    void operator = (const basic_string<ctype> &copy);
+    basic_string(const ctype *string);
+    ~basic_string();
+
+    const ctype *c_str() const;
+    size_t length() const;
+
+    ctype at(size_t pos) const;
+    ctype operator[](size_t pos) const;
+    ctype &operator[](size_t pos);
+  };
+
+  typedef basic_string<char> string;
+  typedef basic_string<wchar_t> wstring;
+  typedef basic_string<char16_t> u16string;
+  typedef basic_string<char32_t> u32string;
+
   template<class T> struct hash;
   template<> struct hash<string>;
   template<> struct hash<u16string>;
   template<> struct hash<u32string>;
   template<> struct hash<wstring>;
 
-  namespace string_literals {
-    string operator "" s(const char *str, size_t len);
-    wstring operator "" s(const wchar_t *str, size_t len);
-    u16string operator "" s(const char16_t *str, size_t len);
-    u32string operator "" s(const char32_t *str, size_t len);
-  }
-
-  namespace literals {
-    using namespace string_literals;
+  inline namespace literals {
+    inline namespace string_literals {
+      string operator "" s(const char *str, size_t len);
+      wstring operator "" s(const wchar_t *str, size_t len);
+      u16string operator "" s(const char16_t *str, size_t len);
+      u32string operator "" s(const char32_t *str, size_t len);
+    }
   }
 }
 

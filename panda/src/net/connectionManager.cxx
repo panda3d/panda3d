@@ -28,7 +28,7 @@
 #include <Iphlpapi.h> // For GetAdaptersAddresses()
 #elif defined(ANDROID)
 #include <net/if.h>
-#else
+#elif !defined(CPPPARSER)
 #include <net/if.h>
 #include <ifaddrs.h>
 #endif

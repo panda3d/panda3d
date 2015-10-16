@@ -2359,8 +2359,8 @@ _inP07yte_7S(PyObject *, PyObject *args) {
  */
 static PyObject *
 _inP07ytw_15(PyObject *, PyObject *args) {
-  int param0;
-  if (PyArg_ParseTuple(args, "i", &param0)) {
+  Py_ssize_t param0;
+  if (PyArg_ParseTuple(args, "n", &param0)) {
     interrogate_request_module((InterrogateModuleDef *)param0);
     return Py_BuildValue("");
   }

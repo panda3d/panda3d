@@ -32,16 +32,18 @@ public:
 
 #else  // GCC_STYLE_ALLOCATOR
 
-template<class Type>
-class allocator {
-public:
-  typedef Type *pointer;
-  typedef const Type *const_pointer;
-  typedef size_t size_type;
+namespace std {
+  template<class Type>
+  class allocator {
+  public:
+    typedef Type *pointer;
+    typedef const Type *const_pointer;
+    typedef size_t size_type;
 
-  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
-  INLINE void deallocate(pointer p, size_type n);
-};
+    pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+    void deallocate(pointer p, size_type n);
+  };
+}
 
 #endif  // GCC_STYLE_ALLOCATOR
 

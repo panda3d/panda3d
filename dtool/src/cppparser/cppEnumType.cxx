@@ -82,6 +82,7 @@ add_element(const string &name, CPPExpression *value) {
     inst = new CPPInstance(CPPType::new_type(new CPPConstType(_element_type)), ident);
   }
 
+  inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
   if (value == (CPPExpression *)NULL) {

@@ -2295,7 +2295,7 @@ get_basic_string_char_type() {
   static bool got_type = false;
   static CPPType *type = (CPPType *)NULL;
   if (!got_type) {
-    type = parser.parse_type("basic_string<char>");
+    type = parser.parse_type("std::basic_string<char>");
     got_type = true;
   }
   return type;
@@ -2312,7 +2312,7 @@ get_basic_string_wchar_type() {
   static bool got_type = false;
   static CPPType *type = (CPPType *)NULL;
   if (!got_type) {
-    type = parser.parse_type("basic_string<wchar_t>");
+    type = parser.parse_type("std::basic_string<wchar_t>");
     got_type = true;
   }
   return type;

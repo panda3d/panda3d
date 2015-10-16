@@ -10,9 +10,6 @@ ignoretype Factory<TypedWriteable>
 # builds (to support multi-arch builds), so we don't export this.
 ignoretype BitMaskNative
 
-forcetype basic_string<char>
-renametype basic_string<char> CString
-
 forcetype PointerToBase<ReferenceCountedVector<ushort> >
 forcetype PointerToArrayBase<ushort>
 forcetype PointerToArray<ushort>

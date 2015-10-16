@@ -187,6 +187,12 @@ get_local_name(CPPScope *scope) const {
     // last name.
     CPPScope *my_scope = get_scope(scope, NULL);
 
+    // Strip off template scopes, since they don't add anything
+    // particularly meaningful to the local name.
+    while (my_scope->as_template_scope() != NULL) {
+      my_scope = my_scope->get_parent_scope();
+    }
+
     if (my_scope == NULL) {
       result = get_fully_scoped_name();
     } else if (my_scope == scope) {
@@ -463,7 +469,12 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
 
   CPPDeclaration *sym;
   if (!_names.back().has_templ()) {
-    sym = scope->find_symbol(get_simple_name());
+    if (_names.size() > 1 && scope->get_simple_name() == get_simple_name()) {
+      // An identifier like Class::Class always refers to the class constructor.
+      sym = scope->get_struct_type()->get_constructor();
+    } else {
+      sym = scope->find_symbol(get_simple_name());
+    }
 
   } else {
     sym = scope->find_template(get_simple_name());
@@ -499,7 +510,12 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
 
   CPPDeclaration *sym;
   if (!_names.back().has_templ()) {
-    sym = scope->find_symbol(get_simple_name());
+    if (_names.size() > 1 && scope->get_simple_name() == get_simple_name()) {
+      // An identifier like Class::Class always refers to the class constructor.
+      sym = scope->get_struct_type()->get_constructor();
+    } else {
+      sym = scope->find_symbol(get_simple_name());
+    }
 
   } else {
     sym = scope->find_template(get_simple_name());

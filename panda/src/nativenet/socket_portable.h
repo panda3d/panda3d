@@ -8,10 +8,15 @@
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;
 
+#if defined(CPPPARSER)
+// Interrogate doesn't need to parse any of this.
+
+typedef unsigned long SOCKET;
+
 /************************************************************************
 * HP SOCKET LIBRARY STUFF
 ************************************************************************/
-#if defined(HP_SOCK)
+#elif defined(HP_SOCK)
 
 #ifndef _INCLUDE_HPUX_SOURCE
 #define _INCLUDE_HPUX_SOURCE

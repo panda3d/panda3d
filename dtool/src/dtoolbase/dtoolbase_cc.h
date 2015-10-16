@@ -34,7 +34,7 @@ using namespace std;
 #define INLINE inline
 #define ALWAYS_INLINE inline
 #define TYPENAME typename
-#define CONSTEXPR
+#define CONSTEXPR constexpr
 #define NOEXCEPT noexcept
 #define FINAL
 #define OVERRIDE

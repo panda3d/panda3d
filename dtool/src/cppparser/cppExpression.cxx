@@ -531,6 +531,10 @@ evaluate() const {
   case T_variable:
     if (_u._variable->_type != NULL &&
         _u._variable->_initializer != NULL) {
+      // A constexpr variable, which is treated as const.
+      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+        return _u._variable->_initializer->evaluate();
+      }
       // A const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
       if (const_type != NULL) {
@@ -1227,6 +1231,9 @@ is_tbd() const {
   case T_variable:
     if (_u._variable->_type != NULL &&
         _u._variable->_initializer != NULL) {
+      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+        return false;
+      }
       CPPConstType *const_type = _u._variable->_type->as_const_type();
       if (const_type != NULL) {
         return false;
@@ -1363,9 +1370,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     if (_u._variable->_type != NULL &&
         _u._variable->_initializer != NULL &&
         _u._variable->_vis > V_public) {
-      // A const variable.  Fetch its assigned value.
+      // A constexpr or const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
-      if (const_type != NULL) {
+      if ((_u._variable->_storage_class & CPPInstance::SC_constexpr) != 0 ||
+          const_type != NULL) {
         _u._variable->_initializer->output(out, indent_level, scope, false);
         break;
       }
