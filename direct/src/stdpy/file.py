@@ -19,7 +19,7 @@ from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
 
-if sys.version < (3, 0):
+if sys.version_info < (3, 0):
     # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
     FileNotFoundError = IOError
     IsADirectoryError = IOError
