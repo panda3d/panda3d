@@ -18,3 +18,7 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<Event>;
+template class PointerTo<Event>;
+template class ConstPointerTo<Event>;

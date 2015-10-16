@@ -18,3 +18,7 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<EggTexture>;
+template class PointerTo<EggTexture>;
+template class ConstPointerTo<EggTexture>;

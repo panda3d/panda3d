@@ -1650,8 +1650,6 @@ def CompileLink(dll, obj, opts):
         else:
             cmd += " -pthread"
 
-        cmd += " -Wl,-allow-multiple-definition"
-
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
 
