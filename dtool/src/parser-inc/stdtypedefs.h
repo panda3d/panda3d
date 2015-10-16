@@ -20,15 +20,15 @@
 #ifndef STDTYPEDEFS_H
 #define STDTYPEDEFS_H
 
+typedef long time_t;
+typedef long clock_t;
+
 typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 
 inline namespace std {
-  typedef long time_t;
-  typedef long clock_t;
-
 #ifdef _WIN64
   typedef unsigned long long size_t;
   typedef long long ssize_t;
