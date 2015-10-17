@@ -28,7 +28,7 @@ CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
   _scope(scope),
-  _inline(false)
+  _is_inline(false)
 {
 }
 
@@ -88,7 +88,7 @@ get_scope() const {
 ////////////////////////////////////////////////////////////////////
 void CPPNamespace::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (_inline) {
+  if (_is_inline) {
     out << "inline ";
   }
   if (!complete && _ident != NULL) {

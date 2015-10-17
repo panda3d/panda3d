@@ -111,9 +111,10 @@ protected:
   bool push_file(const CPPFile &file);
   bool push_string(const string &input, bool lock_position);
 
-  string expand_manifests(const string &input_expr, bool expand_undefined);
+  string expand_manifests(const string &input_expr, bool expand_undefined,
+                          const YYLTYPE &loc);
   CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
-                            CPPScope *global_scope);
+                            CPPScope *global_scope, const YYLTYPE &loc);
 
 private:
   CPPToken internal_get_next_token();

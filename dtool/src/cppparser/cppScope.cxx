@@ -297,7 +297,7 @@ define_namespace(CPPNamespace *ns) {
 
   _namespaces[name] = ns;
 
-  if (ns->_inline) {
+  if (ns->_is_inline) {
     // Add an implicit using declaration for an inline namespace.
     _using.insert(ns->get_scope());
   }

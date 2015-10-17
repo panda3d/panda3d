@@ -158,6 +158,10 @@ output(ostream &out, int, CPPScope *, bool) const {
     out << "parameter";
     break;
 
+  case T_auto:
+    out << "auto";
+    break;
+
   default:
     out << "***invalid type***";
   }

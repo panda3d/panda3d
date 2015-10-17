@@ -55,6 +55,13 @@ public:
     // but it initially looks like a function prototype.
     //
     T_parameter,
+
+    // T_auto is also a special type that corresponds to the "auto"
+    // keyword used in a variable assignment.  The type of it is
+    // automatically determined at a later stage based on the type
+    // of the expression that is assigned to it.
+    //
+    T_auto,
   };
 
   enum Flags {

@@ -774,6 +774,7 @@ push_file(const CPPFile &file) {
     indent(cerr, _files.size() * 2)
       << "Reading " << file << "\n";
   }
+  assert(_last_c == 0);
 
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
@@ -841,7 +842,8 @@ push_string(const string &input, bool lock_position) {
 //               string and return the new string.
 ////////////////////////////////////////////////////////////////////
 string CPPPreprocessor::
-expand_manifests(const string &input_expr, bool expand_undefined) {
+expand_manifests(const string &input_expr, bool expand_undefined,
+                 const YYLTYPE &loc) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
@@ -872,11 +874,28 @@ expand_manifests(const string &input_expr, bool expand_undefined) {
             manifest_found = true;
 
           } else if (expand_undefined && ident != "true" && ident != "false") {
-            // It is not found.  Expand it to 0.
+            // It is not found.  Expand it to 0, but only if we are currently
+            // parsing an #if expression.
             expr = expr.substr(0, q) + "0" + expr.substr(p);
             p = q + 1;
           }
         }
+      } else if (expr[p] == '\'' || expr[p] == '"') {
+        // Skip the next part until we find a closing quotation mark.
+        char quote = expr[p];
+        p++;
+        while (p < expr.size() && expr[p] != quote) {
+          if (expr[p] == '\\') {
+            // This might be an escaped quote.  Skip an extra char.
+            p++;
+          }
+          p++;
+        }
+        if (p >= expr.size()) {
+          // Unclosed string.
+          warning("missing terminating " + string(1, quote) + " character", loc);
+        }
+        p++;
       } else {
         p++;
       }
@@ -903,8 +922,8 @@ expand_manifests(const string &input_expr, bool expand_undefined) {
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
-           CPPScope *global_scope) {
-  string expr = expand_manifests(input_expr, false);
+           CPPScope *global_scope, const YYLTYPE &loc) {
+  string expr = expand_manifests(input_expr, false, loc);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1475,7 +1494,7 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
       if (!expr_string.empty()) {
-        manifest->_expr = parse_expr(expr_string, global_scope, global_scope);
+        manifest->_expr = parse_expr(expr_string, global_scope, global_scope, loc);
       }
     }
 
@@ -1554,7 +1573,7 @@ void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
   // When expanding manifests, we should replace unknown macros
   // with 0.
-  string expr = expand_manifests(args, true);
+  string expr = expand_manifests(args, true, loc);
 
   int expression_result = 0;
   CPPExpressionParser ep(current_scope, global_scope);
@@ -1602,7 +1621,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   // might not filter out quotes and angle brackets properly, we'll
   // only expand manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expr = expand_manifests(expr, false);
+    expr = expand_manifests(expr, false, loc);
   }
 
   if (!expr.empty()) {
@@ -2727,14 +2746,11 @@ get() {
     indent(cerr, _files.size() * 2)
       << "End of input stream, restoring to previous input\n";
 #endif
-    int last_c = _files.back()._prev_last_c;
     _files.pop_back();
 
-    if (last_c != '\0') {
-      c = last_c;
-    } else if (!_files.empty()) {
-      c = _files.back().get();
-    }
+    // Synthesize a newline, just in case the file doesn't already
+    // end with one.
+    c = '\n';
   }
 
   if (c == '\n') {

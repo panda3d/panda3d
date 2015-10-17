@@ -1724,6 +1724,10 @@ type:
     yyerror("could not determine type of " + str.str(), @3);
   }
 }
+        | KW_AUTO
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_auto);
+}
         ;
 
 type_decl:
@@ -1813,6 +1817,10 @@ type_decl:
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
   }
+}
+        | KW_AUTO
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_auto);
 }
         ;
 
@@ -2114,7 +2122,7 @@ namespace_declaration:
   }
 
   CPPNamespace *nspace = new CPPNamespace($3, scope, @2.file);
-  nspace->_inline = true;
+  nspace->_is_inline = true;
   current_scope->add_declaration(nspace, global_scope, current_lexer, @2);
   current_scope->define_namespace(nspace);
   push_scope(scope);

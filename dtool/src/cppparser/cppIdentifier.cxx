@@ -189,7 +189,7 @@ get_local_name(CPPScope *scope) const {
 
     // Strip off template scopes, since they don't add anything
     // particularly meaningful to the local name.
-    while (my_scope->as_template_scope() != NULL) {
+    while (my_scope != NULL && my_scope->as_template_scope() != NULL) {
       my_scope = my_scope->get_parent_scope();
     }
 
