@@ -20,23 +20,43 @@
 #ifndef WINDOWS_H
 #define WINDOWS_H
 
+#include <wtypes.h>
+
+#ifdef _WIN64
+typedef int HALF_PTR;
+typedef long long INT_PTR;
+typedef long long LONG_PTR;
+typedef unsigned long long UINT_PTR;
+typedef unsigned long long ULONG_PTR;
+#else
+typedef short HALF_PTR;
+typedef int INT_PTR;
+typedef long LONG_PTR;
+typedef unsigned int UINT_PTR;
+typedef unsigned long ULONG_PTR;
+#endif
+
 // http://msdn.microsoft.com/en-us/library/cc230309.aspx
 typedef bool BOOL;
-typedef long DWORD;
+typedef unsigned long DWORD;
 typedef long LONG;
 typedef long UINT;
 typedef unsigned long ULONG;
-typedef signed long long LONGLONG;
+typedef long long LONGLONG;
 typedef long HRESULT;
 typedef int CRITICAL_SECTION;
-typedef int HANDLE;
-typedef int HGLOBAL;
-typedef int HWAVEIN;
 typedef void *LPSTR;
 typedef void *LPWAVEHDR;
+typedef void *PVOID;
 typedef void *LPVOID;
+typedef PVOID HANDLE;
+typedef HANDLE HGLOBAL;
+typedef HANDLE HWAVEIN;
+typedef HANDLE HWND;
 typedef void *DWORD_PTR;
-typedef unsigned short WCHAR;
+typedef UINT_PTR WPARAM;
+typedef LONG_PTR LPARAM;
+typedef wchar_t WCHAR;
 typedef WCHAR *BSTR;
 typedef struct _MediaType AM_MEDIA_TYPE;
 typedef struct _VIDEO_STREAM_CONFIG_CAPS VIDEO_STREAM_CONFIG_CAPS;
@@ -48,10 +68,6 @@ typedef struct _FILTERKEYS FILTERKEYS;
 #define CALLBACK
 
 #define WINAPI
-
-union LARGE_INTEGER {
-  long long QuadPart;
-};
 
 class IGraphBuilder;
 class ICaptureGraphBuilder2;
