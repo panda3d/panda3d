@@ -608,6 +608,10 @@ protected:
   ShaderContext *_texture_binding_shader_context;
 
   static PT(Shader) _default_shader;
+
+#ifndef OPENGLES
+  bool _shader_point_size;
+#endif
 #endif
 
 #ifdef HAVE_CG

@@ -374,6 +374,10 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _white_texture = 0;
 
+#ifndef OPENGLES
+  _shader_point_size = false;
+#endif
+
 #ifdef HAVE_CG
   _cg_context = 0;
 #endif
@@ -6015,6 +6019,19 @@ do_issue_shader() {
       _current_shader_context = context;
     }
   }
+
+#ifndef OPENGLES
+  // Is the point size provided by the shader or by OpenGL?
+  bool shader_point_size = _target_shader->get_flag(ShaderAttrib::F_shader_point_size);
+  if (shader_point_size != _shader_point_size) {
+    if (shader_point_size) {
+      glEnable(GL_PROGRAM_POINT_SIZE);
+    } else {
+      glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+    _shader_point_size = shader_point_size;
+  }
+#endif
 
   report_my_gl_errors();
 }
