@@ -110,3 +110,9 @@ by the release number, eg. 10.6 or 10.7.
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.
+
+
+Issue Tracker
+--------
+Want to report a bug? Please fill out a bug report here:
+https://bugs.launchpad.net/panda3d
