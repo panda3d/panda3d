@@ -412,6 +412,16 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(param_type)) {
         return new ParameterRemapBasicWStringPtrToWString(param_type);
+
+      } else if (TypeManager::is_reference(param_type) ||
+                 TypeManager::is_pointer(param_type)) {
+        // Python strings are immutable, so we can't wrap a non-const
+        // pointer or reference to a string.
+        CPPType *pt_type = TypeManager::unwrap(param_type);
+        if (TypeManager::is_basic_string_char(pt_type) ||
+            TypeManager::is_basic_string_wchar(pt_type)) {
+          return (ParameterRemap *)NULL;
+        }
       }
     }
   }

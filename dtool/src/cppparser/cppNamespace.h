@@ -42,6 +42,10 @@ public:
 
   virtual CPPNamespace *as_namespace();
 
+  // We can't call this _inline since that would clash with an MSVC
+  // built-in keyword declaration.
+  bool _is_inline;
+
 private:
   CPPIdentifier *_ident;
   CPPScope *_scope;

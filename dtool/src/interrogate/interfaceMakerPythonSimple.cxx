@@ -360,8 +360,8 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       pexpr_string = param_name;
 
     } else if (TypeManager::is_pointer(type)) {
-      out << "int " << param_name;
-      format_specifiers += "i";
+      out << "Py_ssize_t " << param_name;
+      format_specifiers += "n";
       parameter_list += ", &" + param_name;
 
     } else {

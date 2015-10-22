@@ -29,7 +29,8 @@ CPPExtensionType(CPPExtensionType::Type type,
                  CPPIdentifier *ident, CPPScope *current_scope,
                  const CPPFile &file) :
   CPPType(file),
-  _type(type), _ident(ident)
+  _type(type), _ident(ident),
+  _alignment(NULL)
 {
   if (_ident != NULL) {
     _ident->_native_scope = current_scope;

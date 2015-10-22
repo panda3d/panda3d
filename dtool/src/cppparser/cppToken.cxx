@@ -119,8 +119,12 @@ output(ostream &out) const {
     out << "CHAR_TOK " << _lval.u.integer << " = " << _lval.str;
     break;
 
-  case STRING:
-    out << "STRING " << _lval.str;
+  case SIMPLE_STRING:
+    out << "SIMPLE_STRING " << _lval.str;
+    break;
+
+  case STRING_LITERAL:
+    out << "STRING_LITERAL " << *_lval.u.expr;
     break;
 
   case SIMPLE_IDENTIFIER:

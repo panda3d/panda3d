@@ -292,10 +292,15 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-define_namespace(CPPNamespace *scope) {
-  string name = scope->get_simple_name();
+define_namespace(CPPNamespace *ns) {
+  string name = ns->get_simple_name();
 
-  _namespaces[name] = scope;
+  _namespaces[name] = ns;
+
+  if (ns->_is_inline) {
+    // Add an implicit using declaration for an inline namespace.
+    _using.insert(ns->get_scope());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,7 +318,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       _using.insert(scope);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   } else {
@@ -322,7 +327,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       handle_declaration(decl, global_scope, error_sink);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   }
@@ -1059,10 +1064,6 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
-      // I don't know if this _native_scope assignment is right, but it
-      // fixes some issues with variables in instantiated template scopes
-      // being printed out with an uninstantiated template scope prefix. ~rdb
-      inst->_ident->_native_scope = to_scope;
       anything_changed = true;
     }
   }

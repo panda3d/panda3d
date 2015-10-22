@@ -264,6 +264,9 @@ build() {
        ci != _forcetype.end();
        ++ci) {
     CPPType *type = parser.parse_type(*ci);
+    if (type == NULL) {
+      cerr << "Failure to parse forcetype " << *ci << "\n";
+    }
     assert(type != (CPPType *)NULL);
     get_type(type, true);
   }

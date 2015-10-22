@@ -20,6 +20,8 @@
 #ifndef ZLIB_H
 #define ZLIB_H
 
+#include "zconf.h"
+
 class z_stream {
 };
 

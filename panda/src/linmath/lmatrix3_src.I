@@ -607,6 +607,8 @@ xform(const FLOATNAME(LVecBase3) &v) const {
   return v_res;
 }
 
+#undef VECTOR3_MATRIX3_PRODUCT
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::xform_point
 //       Access: Published
@@ -810,6 +812,8 @@ multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2) {
 
   MATRIX3_PRODUCT((*this), other1, other2);
 }
+
+#undef MATRIX3_PRODUCT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix * scalar
@@ -1234,6 +1238,9 @@ invert_transpose_from(const FLOATNAME(LMatrix4) &other) {
   return true;
 #endif  // HAVE_EIGEN
 }
+
+#undef MATRIX3_DETERMINANT
+#undef DET2
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::set_translate_mat

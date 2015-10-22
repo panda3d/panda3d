@@ -20,6 +20,9 @@
 #pragma implementation
 #endif
 
+template class ParamValue<int>;
+template class ParamValue<double>;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::output
 //       Access: Published
