@@ -30,6 +30,14 @@
 
 #include "collideMask.h"
 
+static ConfigVariableBool geomipterrain_incorrect_normals
+("geomipterrain-incorrect-normals", true,
+ PRC_DESC("If true, uses the incorrect normal vector calculation that "
+          "was used in Panda3D versions 1.9.0 and earlier.  If false, "
+          "uses the correct calculation.  For backward compatibility, "
+          "the default value is true in 1.9 releases, and false in "
+          "Panda3D 1.10.0 and above."));
+
 TypeHandle GeoMipTerrain::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -123,12 +131,12 @@ generate_block(unsigned short mx,
           LVecBase4f color = _color_map.get_xel_a(
             int((mx * _block_size + x) * cmap_xratio),
             int((my * _block_size + y) * cmap_yratio));
-          cwriter.add_data4f(color);
+          cwriter.set_data4f(color);
         }
-        vwriter.add_data3(x - 0.5 * _block_size, y - 0.5 * _block_size, get_pixel_value(mx, my, x, y));
-        twriter.add_data2((mx * _block_size + x) * tc_xscale,
+        vwriter.set_data3(x - 0.5 * _block_size, y - 0.5 * _block_size, get_pixel_value(mx, my, x, y));
+        twriter.set_data2((mx * _block_size + x) * tc_xscale,
                           (my * _block_size + y) * tc_yscale);
-        nwriter.add_data3(get_normal(mx, my, x, y));
+        nwriter.set_data3(get_normal(mx, my, x, y));
 
         if (x > 0 && y > 0) {
           // Left border
@@ -328,10 +336,14 @@ get_normal(int x, int y) {
   if (ny < 0) ny++;
   if (px >= int(_xsize)) px--;
   if (py >= int(_ysize)) py--;
-  double drx = get_pixel_value(px, y) - get_pixel_value(nx, y);
+  double drx = get_pixel_value(nx, y) - get_pixel_value(px, y);
   double dry = get_pixel_value(x, py) - get_pixel_value(x, ny);
   LVector3 normal(drx * 0.5, dry * 0.5, 1);
   normal.normalize();
+
+  if (geomipterrain_incorrect_normals) {
+    normal[0] = -normal[0];
+  }
 
   return normal;
 }
