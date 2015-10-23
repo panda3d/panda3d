@@ -185,6 +185,13 @@ class StreamIOWrapper(io.IOBase):
         if isinstance(stream, core.Ostream):
             self.__writer = core.StreamWriter(stream, False)
             self.__lastWrite = True
+            if sys.version_info >= (3, 0):
+                # In Python 3, we use appendData, which only accepts bytes.
+                self.__write = self.__writer.appendData
+            else:
+                # In Python 2.7, we also accept unicode objects, which are
+                # implicitly converted to C++ strings.
+                self.__write = self.__writer.write
 
     def __repr__(self):
         s = "<direct.stdpy.file.StreamIOWrapper"
@@ -283,7 +290,7 @@ class StreamIOWrapper(io.IOBase):
             raise IOError("Attempt to write to read-only stream")
 
         self.__stream.clear()  # clear eof flag
-        self.__writer.appendData(b)
+        self.__write(b)
         self.__lastWrite = True
 
     def writelines(self, lines):
@@ -297,7 +304,7 @@ class StreamIOWrapper(io.IOBase):
 
         self.__stream.clear()  # clear eof flag
         for line in lines:
-            self.__writer.appendData(line)
+            self.__write(line)
         self.__lastWrite = True
 
 
