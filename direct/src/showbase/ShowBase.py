@@ -533,9 +533,6 @@ class ShowBase(DirectObject.DirectObject):
             del self.winList
             del self.pipe
 
-        vfs = VirtualFileSystem.getGlobalPtr()
-        vfs.unmountAll()
-
     def makeDefaultPipe(self, printPipeTypes = True):
         """
         Creates the default GraphicsPipe, which will be used to make
