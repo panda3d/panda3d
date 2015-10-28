@@ -763,6 +763,11 @@ public:
   PFNGLDELETEVERTEXARRAYSPROC _glDeleteVertexArrays;
   PFNGLGENVERTEXARRAYSPROC _glGenVertexArrays;
 
+#ifndef OPENGLES
+  PFNGLDRAWARRAYSINDIRECTPROC _glDrawArraysIndirect;
+  PFNGLDRAWELEMENTSINDIRECTPROC _glDrawElementsIndirect;
+#endif
+
   bool _supports_framebuffer_object;
   PFNGLISRENDERBUFFEREXTPROC _glIsRenderbuffer;
   PFNGLBINDRENDERBUFFEREXTPROC _glBindRenderbuffer;

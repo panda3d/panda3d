@@ -245,6 +245,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_stencil_wrap = false;
   _supports_two_sided_stencil = false;
   _supports_geometry_instancing = false;
+  _supports_indirect_draw = false;
 
   // Assume a maximum of 1 render target in absence of MRT.
   _max_color_targets = 1;

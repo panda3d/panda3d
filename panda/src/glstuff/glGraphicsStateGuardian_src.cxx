@@ -1757,6 +1757,24 @@ reset() {
   }
 #endif
 
+  // Check if we support indirect draw.
+  _supports_indirect_draw = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 0) || has_extension("GL_ARB_draw_indirect")) {
+    _glDrawArraysIndirect = (PFNGLDRAWARRAYSINDIRECTPROC)
+      get_extension_func("glDrawArraysIndirect");
+    _glDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECTPROC)
+      get_extension_func("glDrawElementsIndirect");
+
+    if (_glDrawArraysIndirect == NULL || _glDrawElementsIndirect == NULL) {
+      GLCAT.warning()
+        << "Indirect draw advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_indirect_draw = true;
+    }
+  }
+#endif
+
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
   _supports_framebuffer_object = true;

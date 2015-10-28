@@ -809,6 +809,18 @@ get_supports_geometry_instancing() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_indirect_draw
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               draw calls for which the information comes from a
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_indirect_draw() const {
+  return _supports_indirect_draw;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_occlusion_query
 //       Access: Published
 //  Description: Returns true if this GSG supports an occlusion query.

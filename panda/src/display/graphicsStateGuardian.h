@@ -160,6 +160,7 @@ PUBLISHED:
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
+  INLINE bool get_supports_indirect_draw() const;
 
   INLINE bool get_supports_occlusion_query() const;
   INLINE bool get_supports_timer_query() const;
@@ -538,6 +539,7 @@ protected:
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
   bool _supports_geometry_instancing;
+  bool _supports_indirect_draw;
 
   int _max_color_targets;
 
