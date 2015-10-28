@@ -21,8 +21,6 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 
-#include <Cg/cg.h>
-
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////

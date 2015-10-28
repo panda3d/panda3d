@@ -16,7 +16,8 @@
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 
-#include "Cg/cgGL.h"
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
 
 #include "pStatGPUTimer.h"
 
