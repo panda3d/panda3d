@@ -296,7 +296,6 @@ class ShowBase(DirectObject.DirectObject):
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
 
-        self.createBaseAudioManagers()
         self.createStats()
 
         self.AppHasAudioFocus = 1
@@ -383,6 +382,8 @@ class ShowBase(DirectObject.DirectObject):
             ShowBase.notify.debug('__dev__ == %s' % __dev__)
         else:
             ShowBase.notify.info('__dev__ == %s' % __dev__)
+
+        self.createBaseAudioManagers()
 
         # set up recording of Functor creation stacks in __dev__
         PythonUtil.recordFunctorCreationStacks()

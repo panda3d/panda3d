@@ -630,8 +630,7 @@ remove_all_windows() {
   // a hack, since it's not really related to removing windows, this
   // would nevertheless be a fine time to ensure the model cache (if
   // any) has been flushed to disk.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->flush_index();
+  BamCache::flush_global_index();
 
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
@@ -716,8 +715,7 @@ render_frame() {
 
   // Since this gets called every frame, we should take advantage of
   // the opportunity to flush the cache if necessary.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->consider_flush_index();
+  BamCache::consider_flush_global_index();
 
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
