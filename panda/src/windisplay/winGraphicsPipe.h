@@ -41,8 +41,12 @@ public:
 
 private:
   HINSTANCE _hUser32;
+
   typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
   PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
+
+  typedef BOOL (WINAPI *PFN_SETPROCESSDPIAWARE)(void);
+  PFN_SETPROCESSDPIAWARE _pfnSetProcessDPIAware;
 
 public:
   static TypeHandle get_class_type() {
