@@ -1272,7 +1272,7 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
         // have focus now, don't move it to the top; it will get moved
         // the next time we get focus.
         ) {
-      order = HWND_TOP;
+      order = HWND_NOTOPMOST;
       do_change = true;
     }
     break;
