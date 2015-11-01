@@ -108,7 +108,7 @@ string FunctionRemap::
 call_function(ostream &out, int indent_level, bool convert_result,
               const string &container) const {
   vector_string pexprs;
-  for (int i = 0; i < _parameters.size(); ++i) {
+  for (size_t i = 0; i < _parameters.size(); ++i) {
     pexprs.push_back(get_parameter_name(i));
   }
   return call_function(out, indent_level, convert_result, container, pexprs);
@@ -478,8 +478,8 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
 
-    int pn = _first_true_parameter;
-    int num_parameters = pexprs.size();
+    size_t pn = _first_true_parameter;
+    size_t num_parameters = pexprs.size();
 
     if (_type == T_item_assignment_operator) {
       // The last parameter is the value to set.
@@ -513,8 +513,8 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 //               of the nth parameter is it is empty.
 ////////////////////////////////////////////////////////////////////
 string FunctionRemap::
-get_parameter_expr(int n, const vector_string &pexprs) const {
-  if (n < (int)pexprs.size()) {
+get_parameter_expr(size_t n, const vector_string &pexprs) const {
+  if (n < pexprs.size()) {
     return pexprs[n];
   }
   return get_parameter_name(n);

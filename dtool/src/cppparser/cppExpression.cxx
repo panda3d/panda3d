@@ -637,11 +637,11 @@ evaluate() const {
           (_u._op._op1->_type == T_string ||
            _u._op._op1->_type == T_u8string)) {
 
-        int index = r2.as_integer();
-        if (index == _u._op._op1->_str.size()) {
+        int index = (int)r2.as_integer();
+        if ((size_t)index == _u._op._op1->_str.size()) {
           return Result(0);
-        } else if (index >= 0 && index < _u._op._op1->_str.size()) {
-          return Result(_u._op._op1->_str[index]);
+        } else if (index >= 0 && (size_t)index < _u._op._op1->_str.size()) {
+          return Result(_u._op._op1->_str[(size_t)index]);
         } else {
           cerr << "array index " << index << " out of bounds of string literal "
                << *_u._op._op1 << "\n";

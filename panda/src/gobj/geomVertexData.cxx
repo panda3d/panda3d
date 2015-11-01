@@ -358,7 +358,7 @@ unclean_set_format(const GeomVertexFormat *format) {
 
 #ifndef NDEBUG
   nassertv(format->get_num_arrays() == cdata->_format->get_num_arrays());
-  for (int ai = 0; ai < format->get_num_arrays(); ++ai) {
+  for (size_t ai = 0; ai < format->get_num_arrays(); ++ai) {
     nassertv(format->get_array(ai)->get_stride() == cdata->_format->get_array(ai)->get_stride());
   }
   nassertv(cdata->_arrays.size() == cdata->_format->get_num_arrays());
@@ -702,7 +702,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             LVecBase4i indices(0, 0, 0, 0);
             nassertv(blend.get_num_transforms() <= 4);
 
-            for (int i = 0; i < blend.get_num_transforms(); i++) {
+            for (size_t i = 0; i < blend.get_num_transforms(); i++) {
               weights[i] = blend.get_weight(i);
               indices[i] = add_transform(transform_table, blend.get_transform(i),
                                          already_added);
@@ -722,7 +722,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
 
-            for (int i = 0; i < blend.get_num_transforms(); i++) {
+            for (size_t i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
               nassertv(index <= 4);
@@ -1184,7 +1184,7 @@ transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
 
   const GeomVertexFormat *format = get_format();
 
-  int ci;
+  size_t ci;
   for (ci = 0; ci < format->get_num_points(); ci++) {
     GeomVertexRewriter data(this, format->get_point(ci));
     do_transform_point_column(format, data, mat, begin_row, end_row);
@@ -1395,7 +1395,7 @@ describe_vertex(ostream &out, int row) const {
       // index and report the vertex weighting.
       reader.set_column(ai, column);
       int bi = reader.get_data1i();
-      if (bi >= 0 && bi < tb_table->get_num_blends()) {
+      if (bi >= 0 && (size_t)bi < tb_table->get_num_blends()) {
         const TransformBlend &blend = tb_table->get_blend(bi);
         out << "    " << blend << "\n";
       }
@@ -1681,7 +1681,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       CPT(GeomVertexArrayDataHandle) blend_array_handle = cdata->_arrays[blend_array_index].get_read_pointer()->get_handle(current_thread);
       const unsigned short *blendt = (const unsigned short *)blend_array_handle->get_read_pointer(true);
 
-      int ci;
+      size_t ci;
       for (ci = 0; ci < new_format->get_num_points(); ci++) {
         GeomVertexRewriter data(new_data, new_format->get_point(ci));
 
@@ -1768,7 +1768,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       GeomVertexReader blendi(this, InternalName::get_transform_blend());
       nassertv(blendi.has_column());
 
-      int ci;
+      size_t ci;
       for (ci = 0; ci < new_format->get_num_points(); ci++) {
         GeomVertexRewriter data(new_data, new_format->get_point(ci));
 

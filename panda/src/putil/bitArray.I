@@ -208,7 +208,7 @@ get_bit(int index) const {
   nassertr(index >= 0, false);
   int w = index / num_bits_per_word;
   int b = index % num_bits_per_word;
-  if (w >= get_num_words()) {
+  if ((size_t)w >= get_num_words()) {
     return get_highest_bits();
   } else {
     return (_array[w].get_bit(b));
@@ -226,7 +226,7 @@ set_bit(int index) {
   nassertv(index >= 0);
   int w = index / num_bits_per_word;
   int b = index % num_bits_per_word;
-  if (w >= get_num_words() && _highest_bits) {
+  if ((size_t)w >= get_num_words() && _highest_bits) {
     // All the highest bits are already on.
     return;
   }
@@ -246,7 +246,7 @@ clear_bit(int index) {
   nassertv(index >= 0);
   int w = index / num_bits_per_word;
   int b = index % num_bits_per_word;
-  if (w >= get_num_words() && !_highest_bits) {
+  if ((size_t)w >= get_num_words() && !_highest_bits) {
     // All the highest bits are already off.
     return;
   }

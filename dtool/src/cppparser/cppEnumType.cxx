@@ -177,7 +177,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   bool any_changed = false;
 
-  for (int i = 0; i < _elements.size(); ++i) {
+  for (size_t i = 0; i < _elements.size(); ++i) {
     CPPInstance *elem_rep =
       _elements[i]->substitute_decl(subst, current_scope, global_scope)
       ->as_instance();

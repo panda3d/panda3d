@@ -981,7 +981,7 @@ transform_vertices(const LMatrix4 &mat) {
   PT(GeomVertexData) new_data = modify_vertex_data();
   CPT(GeomVertexFormat) format = new_data->get_format();
 
-  int ci;
+  size_t ci;
   for (ci = 0; ci < format->get_num_points(); ci++) {
     GeomVertexRewriter data(new_data, format->get_point(ci));
 

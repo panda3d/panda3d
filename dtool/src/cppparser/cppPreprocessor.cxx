@@ -1689,7 +1689,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
 
     // Now search the quote-include-path
     if (!angle_quotes && !found_file) {
-      for (int dir=0; dir<_quote_include_path.get_num_directories(); dir++) {
+      for (size_t dir=0; dir<_quote_include_path.get_num_directories(); dir++) {
         Filename match(_quote_include_path.get_directory(dir), filename);
         if (match.exists()) {
           filename = match;

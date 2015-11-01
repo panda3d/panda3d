@@ -423,7 +423,7 @@ const GeomVertexColumn *GeomVertexFormat::
 get_column(size_t i) const {
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (*ai)->get_num_columns()) {
+    if (i < (size_t)(*ai)->get_num_columns()) {
       return (*ai)->get_column(i);
     }
     i -= (*ai)->get_num_columns();
@@ -448,7 +448,7 @@ int GeomVertexFormat::
 get_array_with(size_t i) const {
   int array_index = 0;
   for (array_index = 0; array_index < (int)_arrays.size(); array_index++) {
-    if (i < _arrays[array_index]->get_num_columns()) {
+    if (i < (size_t)_arrays[array_index]->get_num_columns()) {
       return array_index;
     }
     i -= _arrays[array_index]->get_num_columns();
