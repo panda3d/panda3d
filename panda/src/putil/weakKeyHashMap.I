@@ -710,5 +710,8 @@ expand_table() {
   nassertv(validate());
   nassertv(old_map.validate());
 
-  nassertv(_num_entries == old_map._num_entries);
+  // Note that since has_element(i) also checks whether the pointer
+  // has been deleted, we may end up with fewer entries than we
+  // started with.  Good riddance.
+  nassertv(_num_entries <= old_map._num_entries);
 }
