@@ -83,6 +83,8 @@ PUBLISHED:
   void list_index(ostream &out, int indent_level = 0) const;
 
   INLINE static BamCache *get_global_ptr();
+  INLINE static void consider_flush_global_index();
+  INLINE static void flush_global_index();
 
 private:
   void read_index();

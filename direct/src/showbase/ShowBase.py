@@ -72,6 +72,8 @@ class ShowBase(DirectObject.DirectObject):
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
+        self.__autoGarbageLogging = self.__dev__ and self.config.GetBool('auto-garbage-logging', False)
+
         ## The directory containing the main Python file of this application.
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
 
@@ -291,7 +293,6 @@ class ShowBase(DirectObject.DirectObject):
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
 
-        self.createBaseAudioManagers()
         self.createStats()
 
         self.AppHasAudioFocus = 1
@@ -378,6 +379,8 @@ class ShowBase(DirectObject.DirectObject):
             ShowBase.notify.debug('__dev__ == %s' % __dev__)
         else:
             ShowBase.notify.info('__dev__ == %s' % __dev__)
+
+        self.createBaseAudioManagers()
 
         # set up recording of Functor creation stacks in __dev__
         PythonUtil.recordFunctorCreationStacks()
@@ -2659,7 +2662,7 @@ class ShowBase(DirectObject.DirectObject):
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
                 self.notify.info("User closed main window.")
-                if __dev__ and config.GetBool('auto-garbage-logging', 0):
+                if self.__autoGarbageLogging:
                     GarbageReport.b_checkForGarbageLeaks()
                 self.userExit()
 
@@ -2667,7 +2670,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.mainWinForeground = 1
             elif not properties.getForeground() and self.mainWinForeground:
                 self.mainWinForeground = 0
-                if __dev__ and config.GetBool('auto-garbage-logging', 0):
+                if self.__autoGarbageLogging:
                     GarbageReport.b_checkForGarbageLeaks()
 
             if properties.getMinimized() and not self.mainWinMinimized:

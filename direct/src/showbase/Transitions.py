@@ -166,7 +166,7 @@ class Transitions:
             self.loadFade()
             self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
-        elif base.config.GetBool('no-loading-screen',0):
+        elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
                 self.transitionIval = finishIval
                 self.transitionIval.start()               
