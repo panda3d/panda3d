@@ -218,7 +218,7 @@ get_region(int n) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherBase::
 output(ostream &out) const {
-  out << "MouseWatcherBase (" << _regions.size() << " regions)";
+  out << "MouseWatcherGroup (" << _regions.size() << " regions)";
 }
 
 ////////////////////////////////////////////////////////////////////

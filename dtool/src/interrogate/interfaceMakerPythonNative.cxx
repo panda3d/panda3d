@@ -6121,7 +6121,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
       << "\n"
       << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n"
       << "  if (getter == (PyObject *)NULL) {\n"
-      << "    return NULL;\n"
+      << "    return Dtool_Raise_AttributeError(self, \"" << element_name << "\");\n"
       << "  }\n"
       << "\n"
       << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
