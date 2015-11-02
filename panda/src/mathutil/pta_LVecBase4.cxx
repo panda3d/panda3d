@@ -18,3 +18,18 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<ReferenceCountedVector<UnalignedLVecBase4f> >;
+template class PointerToArrayBase<UnalignedLVecBase4f>;
+template class PointerToArray<UnalignedLVecBase4f>;
+template class ConstPointerToArray<UnalignedLVecBase4f>;
+
+template class PointerToBase<ReferenceCountedVector<UnalignedLVecBase4d> >;
+template class PointerToArrayBase<UnalignedLVecBase4d>;
+template class PointerToArray<UnalignedLVecBase4d>;
+template class ConstPointerToArray<UnalignedLVecBase4d>;
+
+template class PointerToBase<ReferenceCountedVector<UnalignedLVecBase4i> >;
+template class PointerToArrayBase<UnalignedLVecBase4i>;
+template class PointerToArray<UnalignedLVecBase4i>;
+template class ConstPointerToArray<UnalignedLVecBase4i>;

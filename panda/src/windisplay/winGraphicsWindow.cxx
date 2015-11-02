@@ -284,6 +284,17 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_title();
   }
 
+  if (properties.has_icon_filename()) {
+    HICON icon = get_icon(properties.get_icon_filename());
+    if (icon != 0) {
+      ::SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+      ::SendMessage(_hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+
+      _properties.set_icon_filename(properties.get_icon_filename());
+      properties.clear_icon_filename();
+    }
+  }
+
   if (properties.has_cursor_hidden()) {
     bool hide_cursor = properties.get_cursor_hidden();
     _properties.set_cursor_hidden(hide_cursor);
@@ -1261,7 +1272,7 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
         // have focus now, don't move it to the top; it will get moved
         // the next time we get focus.
         ) {
-      order = HWND_TOP;
+      order = HWND_NOTOPMOST;
       do_change = true;
     }
     break;

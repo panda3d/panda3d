@@ -37,7 +37,7 @@ PUBLISHED:
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
-  INLINE char operator [] (int n) const;
+  INLINE char operator [] (size_t n) const;
 
   // Comparison operators are handy.
   INLINE bool operator == (const string &other) const;
@@ -48,8 +48,8 @@ PUBLISHED:
   INLINE const string &get_value() const;
   INLINE string get_default_value() const;
 
-  INLINE string get_word(int n) const;
-  INLINE void set_word(int n, const string &value);
+  INLINE string get_word(size_t n) const;
+  INLINE void set_word(size_t n, const string &value);
 
 private:
   AtomicAdjust::Integer _local_modified;

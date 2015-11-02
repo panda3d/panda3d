@@ -32,18 +32,15 @@ StateMunger::
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) StateMunger::
 munge_state(const RenderState *state) {
-  WCPT(RenderState) pt_state = state;
-
-  StateMap::iterator mi = _state_map.find(pt_state);
-  if (mi != _state_map.end()) {
-    if (!(*mi).first.was_deleted() &&
-        !(*mi).second.was_deleted()) {
-      return (*mi).second.p();
+  int mi = _state_map.find(state);
+  if (mi != -1) {
+    if (!_state_map.get_data(mi).was_deleted()) {
+      return _state_map.get_data(mi).p();
     }
   }
 
   CPT(RenderState) result = munge_state_impl(state);
-  _state_map[pt_state] = result;
+  _state_map.store(state, result.p());
 
   return result;
 }

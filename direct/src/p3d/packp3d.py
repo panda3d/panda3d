@@ -57,6 +57,14 @@ Options:
      instead of -e for files that are uncompressible by their nature
      (e.g. mpg files).  This option may be repeated as necessary.
 
+  -x ext
+     Marks files with the given extensions of needing to be physically
+     extracted to disk before they can be loaded.  This is used for
+     file types that cannot be loaded via the virtual file system,
+     such as .ico files on Windows.
+     This option is currently only implemented when deploying the
+     application with pdeploy.
+
   -p python_lib_dir
      Adds a directory to search for additional Python modules.  You
      can use this to add your system's Python path, to allow packp3d
@@ -103,7 +111,7 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:p:c:r:s:Dh')
+    opts, args = getopt.getopt(args, 'o:d:m:S:e:n:x:p:c:r:s:Dh')
 
     packager = Packager.Packager()
 
@@ -134,6 +142,8 @@ def makePackedApp(args):
             packager.binaryExtensions.append(value)
         elif option == '-n':
             packager.uncompressibleExtensions.append(value)
+        elif option == '-x':
+            packager.extractExtensions.append(value)
         elif option == '-p':
             sys.path.append(value)
         elif option == '-c':
@@ -154,10 +164,10 @@ def makePackedApp(args):
                 PandaSystem.getPackageHostUrl(),
                 os.path.split(sys.argv[0])[1],
                 '%s.%s' % (sys.version_info[0], sys.version_info[1]))
-            sys.exit(1)
+            sys.exit(0)
 
     if not appFilename:
-        raise ArgumentError, "No target app specified.  Use:\n%s -o app.p3d" % (os.path.split(sys.argv[0])[1])
+        raise ArgumentError, "No target app specified.  Use:\n  %s -o app.p3d\nUse -h to get more usage information." % (os.path.split(sys.argv[0])[1])
 
     if args:
         raise ArgumentError, "Extra arguments on command line."
@@ -170,19 +180,20 @@ def makePackedApp(args):
       appDir = Filename('.')
     appBase = appFilename.getBasenameWoExtension()
 
-    if not main:
+    if main:
+        main = Filename.fromOsSpecific(main)
+        main.makeAbsolute(root)
+    else:
         main = Filename(root, 'main.py')
-        if main.exists():
-            main = 'main.py'
-        else:
+        if not main.exists():
             main = glob.glob(os.path.join(root.toOsSpecific(), '*.py'))
             if len(main) == 0:
                 raise ArgumentError, 'No Python files in root directory.'
             elif len(main) > 1:
                 raise ArgumentError, 'Multiple Python files in root directory; specify the main application with -m "main".'
-            main = os.path.split(main[0])[1]
 
-    main = Filename.fromOsSpecific(main)
+            main = Filename.fromOsSpecific(os.path.split(main[0])[1])
+            main.makeAbsolute(root)
 
     packager.installDir = appDir
     packager.allowPythonDev = allowPythonDev

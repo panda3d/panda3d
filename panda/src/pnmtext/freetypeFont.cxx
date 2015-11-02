@@ -68,6 +68,7 @@ FreetypeFont(const FreetypeFont &copy) :
   _requested_scale_factor(copy._requested_scale_factor),
   _scale_factor(copy._scale_factor),
   _native_antialias(copy._native_antialias),
+  _font_pixels_per_unit(copy._font_pixels_per_unit),
   _line_height(copy._line_height),
   _space_advance(copy._space_advance),
   _face(copy._face),

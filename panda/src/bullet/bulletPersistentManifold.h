@@ -32,8 +32,8 @@ class EXPCL_PANDABULLET BulletPersistentManifold {
 PUBLISHED:
   INLINE ~BulletPersistentManifold();
 
-  const PandaNode *get_node0();
-  const PandaNode *get_node1();
+  PandaNode *get_node0();
+  PandaNode *get_node1();
 
   int get_num_manifold_points() const;
   BulletManifoldPoint *get_manifold_point(int idx) const;

@@ -52,12 +52,12 @@ public:
     time_t _generated_time;
   };
 
-  void record_keys(const KeyDef *key_def, int num_keys);
-  void set_key(int n, EVP_PKEY *pkey, time_t generated_time);
+  void record_keys(const KeyDef *key_def, size_t num_keys);
+  void set_key(size_t n, EVP_PKEY *pkey, time_t generated_time);
 
-  int get_num_keys() const;
-  EVP_PKEY *get_key(int n) const;
-  time_t get_generated_time(int n) const;
+  size_t get_num_keys() const;
+  EVP_PKEY *get_key(size_t n) const;
+  time_t get_generated_time(size_t n) const;
 
   static PrcKeyRegistry *get_global_ptr();
 
@@ -81,8 +81,3 @@ private:
 #endif  // HAVE_OPENSSL
 
 #endif
-
-    
-  
-  
-

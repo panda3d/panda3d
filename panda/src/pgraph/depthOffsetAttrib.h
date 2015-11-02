@@ -107,7 +107,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthOffsetAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, make_default);
+    _attrib_slot = register_slot(_type_handle, 100,
+                                 new DepthOffsetAttrib(0, 0, 1));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

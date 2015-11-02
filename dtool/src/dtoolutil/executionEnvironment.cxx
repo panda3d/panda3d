@@ -420,7 +420,7 @@ ns_clear_shadow(const string &var) {
 //               available, not counting arg 0, the binary name.  The
 //               nonstatic implementation.
 ////////////////////////////////////////////////////////////////////
-int ExecutionEnvironment::
+size_t ExecutionEnvironment::
 ns_get_num_args() const {
   return _args.size();
 }
@@ -435,8 +435,8 @@ ns_get_num_args() const {
 //               implementation.
 ////////////////////////////////////////////////////////////////////
 string ExecutionEnvironment::
-ns_get_arg(int n) const {
-  assert(n >= 0 && n < ns_get_num_args());
+ns_get_arg(size_t n) const {
+  assert(n < ns_get_num_args());
   return _args[n];
 }
 
@@ -719,9 +719,9 @@ read_args() {
   if (_binary_name.empty()) {
     char readlinkbuf [PATH_MAX];
 #ifdef HAVE_PROC_CURPROC_FILE
-    int pathlen = readlink("/proc/curproc/file", readlinkbuf, PATH_MAX - 1);
+    ssize_t pathlen = readlink("/proc/curproc/file", readlinkbuf, PATH_MAX - 1);
 #else
-    int pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX - 1);
+    ssize_t pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX - 1);
 #endif
     if (pathlen > 0) {
       readlinkbuf[pathlen] = 0;

@@ -29,9 +29,9 @@ SparseArray(const BitArray &from) {
   bool empty_bit = from.get_highest_bits();
   _inverse = empty_bit;
 
-  int begin = 0;
+  size_t begin = 0;
   bool current_state = from.get_bit(0);
-  int i = 0;
+  size_t i = 0;
 
   // By including get_num_bits()--one more than the last bit--in this
   // traversal, we guarantee that we will end on the empty_bit state

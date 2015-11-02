@@ -68,5 +68,9 @@ add_fp(double number, double threshold) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ChecksumHashGenerator::
 add_pointer(void *ptr) {
+#ifdef _WIN32
+  add_int(PtrToLong(ptr));
+#else
   add_int((long)ptr);
+#endif
 }

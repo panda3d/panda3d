@@ -241,8 +241,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int LightRampAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const LightRampAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const LightRampAttrib *ta = (const LightRampAttrib *)other;
+
   int compare_result = ((int)_mode - (int)ta->_mode) ;
   if (compare_result != 0) {
     return compare_result;

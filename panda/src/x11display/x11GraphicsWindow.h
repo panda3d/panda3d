@@ -96,6 +96,8 @@ protected:
   SizeID _orig_size_id;
 #endif
 
+  LVecBase2i _fixed_size;
+
   long _event_mask;
   bool _awaiting_configure;
   bool _dga_mouse_enabled;

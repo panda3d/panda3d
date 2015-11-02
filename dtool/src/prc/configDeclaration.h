@@ -49,25 +49,25 @@ PUBLISHED:
   INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);
 
-  INLINE int get_num_words() const;
+  INLINE size_t get_num_words() const;
 
-  INLINE bool has_string_word(int n) const;
-  INLINE bool has_bool_word(int n) const;
-  INLINE bool has_int_word(int n) const;
-  INLINE bool has_int64_word(int n) const;
-  INLINE bool has_double_word(int n) const;
+  INLINE bool has_string_word(size_t n) const;
+  INLINE bool has_bool_word(size_t n) const;
+  INLINE bool has_int_word(size_t n) const;
+  INLINE bool has_int64_word(size_t n) const;
+  INLINE bool has_double_word(size_t n) const;
 
-  INLINE string get_string_word(int n) const;
-  INLINE bool get_bool_word(int n) const;
-  INLINE int get_int_word(int n) const;
-  INLINE PN_int64 get_int64_word(int n) const;
-  INLINE double get_double_word(int n) const;
+  INLINE string get_string_word(size_t n) const;
+  INLINE bool get_bool_word(size_t n) const;
+  INLINE int get_int_word(size_t n) const;
+  INLINE PN_int64 get_int64_word(size_t n) const;
+  INLINE double get_double_word(size_t n) const;
 
-  void set_string_word(int n, const string &value);
-  void set_bool_word(int n, bool value);
-  void set_int_word(int n, int value);
-  void set_int64_word(int n, PN_int64 value);
-  void set_double_word(int n, double value);
+  void set_string_word(size_t n, const string &value);
+  void set_bool_word(size_t n, bool value);
+  void set_int_word(size_t n, int value);
+  void set_int64_word(size_t n, PN_int64 value);
+  void set_double_word(size_t n, double value);
 
   INLINE int get_decl_seq() const;
 
@@ -75,15 +75,15 @@ PUBLISHED:
   void write(ostream &out) const;
 
 public:
-  static int extract_words(const string &str, vector_string &words);
+  static size_t extract_words(const string &str, vector_string &words);
   static string downcase(const string &s);
 
 private:
   void get_words();
-  void check_bool_word(int n);
-  void check_int_word(int n);
-  void check_int64_word(int n);
-  void check_double_word(int n);
+  void check_bool_word(size_t n);
+  void check_int_word(size_t n);
+  void check_int64_word(size_t n);
+  void check_double_word(size_t n);
 
 private:
   ConfigPage *_page;

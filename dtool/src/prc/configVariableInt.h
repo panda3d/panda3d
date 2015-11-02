@@ -36,15 +36,15 @@ PUBLISHED:
   INLINE void operator = (int value);
   INLINE operator int () const;
 
-  INLINE int size() const;
-  INLINE int operator [] (int n) const;
+  INLINE size_t size() const;
+  INLINE int operator [] (size_t n) const;
 
   INLINE void set_value(int value);
   INLINE int get_value() const;
   INLINE int get_default_value() const;
 
-  INLINE int get_word(int n) const;
-  INLINE void set_word(int n, int value);
+  INLINE int get_word(size_t n) const;
+  INLINE void set_word(size_t n, int value);
 
 private:
   void set_default_value(int default_value);

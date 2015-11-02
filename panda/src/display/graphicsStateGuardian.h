@@ -132,6 +132,7 @@ PUBLISHED:
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_buffer_texture() const;
+  INLINE bool get_supports_cube_map_array() const;
   INLINE bool get_supports_tex_non_pow2() const;
   INLINE bool get_supports_texture_srgb() const;
 
@@ -159,6 +160,7 @@ PUBLISHED:
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
+  INLINE bool get_supports_indirect_draw() const;
 
   INLINE bool get_supports_occlusion_query() const;
   INLINE bool get_supports_timer_query() const;
@@ -489,6 +491,7 @@ protected:
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
   bool _supports_buffer_texture;
+  bool _supports_cube_map_array;
   bool _supports_tex_non_pow2;
   bool _supports_texture_srgb;
 
@@ -536,6 +539,7 @@ protected:
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
   bool _supports_geometry_instancing;
+  bool _supports_indirect_draw;
 
   int _max_color_targets;
 

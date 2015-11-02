@@ -197,7 +197,7 @@ private:
   Filename _cursor_filename;
   Filename _icon_filename;
   ZOrder _z_order;
-  unsigned int _flags;
+  int _flags;
   PT(WindowHandle) _parent_window;
 
   static WindowProperties *_default_properties;

@@ -65,9 +65,9 @@ public:
 
   virtual CPPExtensionType *as_extension_type();
 
-
   Type _type;
   CPPIdentifier *_ident;
+  CPPExpression *_alignment;
 };
 
 ostream &operator << (ostream &out, CPPExtensionType::Type type);

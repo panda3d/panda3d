@@ -145,7 +145,7 @@ operator != (const TransformBlend &other) const {
 //  Description: Returns the number of transforms stored in the blend
 //               object.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformBlend::
+INLINE size_t TransformBlend::
 get_num_transforms() const {
   return _entries.size();
 }
@@ -157,8 +157,8 @@ get_num_transforms() const {
 //               object.
 ////////////////////////////////////////////////////////////////////
 INLINE const VertexTransform *TransformBlend::
-get_transform(int n) const {
-  nassertr(n >= 0 && n < (int)_entries.size(), NULL);
+get_transform(size_t n) const {
+  nassertr(n < _entries.size(), NULL);
   return _entries[n]._transform;
 }
 
@@ -169,8 +169,8 @@ get_transform(int n) const {
 //               stored in the blend object.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat TransformBlend::
-get_weight(int n) const {
-  nassertr(n >= 0 && n < (int)_entries.size(), 0.0f);
+get_weight(size_t n) const {
+  nassertr(n < _entries.size(), 0.0f);
   return _entries[n]._weight;
 }
 
@@ -181,8 +181,8 @@ get_weight(int n) const {
 //               object.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-set_transform(int n, const VertexTransform *transform) {
-  nassertv(n >= 0 && n < (int)_entries.size());
+set_transform(size_t n, const VertexTransform *transform) {
+  nassertv(n < _entries.size());
   _entries[n]._transform = transform;
 }
 
@@ -193,8 +193,8 @@ set_transform(int n, const VertexTransform *transform) {
 //               stored in the blend object.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-set_weight(int n, PN_stdfloat weight) {
-  nassertv(n >= 0 && n < (int)_entries.size());
+set_weight(size_t n, PN_stdfloat weight) {
+  nassertv(n < _entries.size());
   _entries[n]._weight = weight;
 }
 

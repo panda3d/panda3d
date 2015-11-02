@@ -255,7 +255,7 @@ reload_implicit_pages() {
 
   // We walk through the list of directories in forward order, so that
   // the most important directories are visited first.
-  for (int di = 0; di < _search_path.get_num_directories(); ++di) {
+  for (size_t di = 0; di < _search_path.get_num_directories(); ++di) {
     const Filename &directory = _search_path.get_directory(di);
     if (directory.is_directory()) {
       Filename canonical(directory, ".");

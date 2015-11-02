@@ -1299,7 +1299,7 @@ static const UnicodeLatinMap::Entry latin_map[] = {
     UnicodeLatinMap::AT_curl, 0 },
 };
 #ifndef CPPPARSER
-static const int latin_map_length = sizeof(latin_map) / sizeof(UnicodeLatinMap::Entry);
+static const size_t latin_map_length = sizeof(latin_map) / sizeof(UnicodeLatinMap::Entry);
 #endif
 
 
@@ -1338,7 +1338,7 @@ void UnicodeLatinMap::
 init() {
   if (!_initialized) {
     _by_character = new ByCharacter;
-    for (int i = 0; i < latin_map_length; i++) {
+    for (size_t i = 0; i < latin_map_length; i++) {
       const UnicodeLatinMap::Entry *entry = &latin_map[i];
 
       // The first 256 characters are very common in Latin-alphabet

@@ -62,15 +62,12 @@ LightLensNode::
 LightLensNode::
 LightLensNode(const LightLensNode &copy) :
   Light(copy),
-  Camera(copy)
+  Camera(copy),
+  _shadow_caster(copy._shadow_caster),
+  _sb_xsize(copy._sb_xsize),
+  _sb_ysize(copy._sb_ysize),
+  _sb_sort(-10)
 {
-  _shadow_caster = false;
-  _sb_xsize = 512;
-  _sb_ysize = 512;
-  _sb_sort = -10;
-  // Backface culling helps eliminating artifacts.
-  set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
-                    ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,0 +1,5 @@
+#pragma once
+
+namespace std {
+  template<class T> class numeric_limits;
+};

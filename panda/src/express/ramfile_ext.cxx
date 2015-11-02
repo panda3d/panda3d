@@ -17,6 +17,49 @@
 #ifdef HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::read
+//       Access: Published
+//  Description: Extracts the indicated number of bytes in the
+//               stream and returns them as a string (or bytes,
+//               in Python 3).  Returns empty string at end-of-file.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<Ramfile>::
+read(size_t length) {
+  size_t data_length = _this->get_data_size();
+  const char *data = _this->_data.data() + _this->_pos;
+  length = min(length, data_length - _this->_pos);
+  _this->_pos = min(_this->_pos + length, data_length);
+
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)data, length);
+#else
+  return PyString_FromStringAndSize((char *)data, length);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::readline
+//       Access: Published
+//  Description: Assumes the stream represents a text file, and
+//               extracts one line up to and including the trailing
+//               newline character.  Returns empty string when the end
+//               of file is reached.
+//
+//               The interface here is intentionally designed to be
+//               similar to that for Python's File.readline()
+//               function.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<Ramfile>::
+readline() {
+  string line = _this->readline();
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize(line.data(), line.size());
+#else
+  return PyString_FromStringAndSize(line.data(), line.size());
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Ramfile::readlines
 //       Access: Published
 //  Description: Reads all the lines at once and returns a list.
@@ -44,5 +87,19 @@ readlines() {
   return lst;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::get_data
+//       Access: Published
+//  Description: Returns the entire buffer contents as a string,
+//               regardless of the current data pointer.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<Ramfile>::
+get_data() const {
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize(_this->_data.data(), _this->_data.size());
+#else
+  return PyString_FromStringAndSize(_this->_data.data(), _this->_data.size());
 #endif
+}
 
+#endif

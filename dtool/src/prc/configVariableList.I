@@ -50,7 +50,7 @@ ConfigVariableList(const string &name,
 //       Access: Published
 //  Description: Returns the number of values in the variable.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableList::
+INLINE size_t ConfigVariableList::
 get_num_values() const {
   nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_num_trusted_references();
@@ -62,7 +62,7 @@ get_num_values() const {
 //  Description: Returns the nth value of the variable.
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableList::
-get_string_value(int n) const {
+get_string_value(size_t n) const {
   nassertr(_core != (ConfigVariableCore *)NULL, string());
   const ConfigDeclaration *decl = _core->get_trusted_reference(n);
   if (decl != (ConfigDeclaration *)NULL) {
@@ -76,7 +76,7 @@ get_string_value(int n) const {
 //       Access: Published
 //  Description: Returns the number of unique values in the variable.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableList::
+INLINE size_t ConfigVariableList::
 get_num_unique_values() const {
   nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_num_unique_references();
@@ -88,7 +88,7 @@ get_num_unique_values() const {
 //  Description: Returns the nth unique value of the variable.
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableList::
-get_unique_value(int n) const {
+get_unique_value(size_t n) const {
   nassertr(_core != (ConfigVariableCore *)NULL, string());
   const ConfigDeclaration *decl = _core->get_unique_reference(n);
   if (decl != (ConfigDeclaration *)NULL) {
@@ -102,7 +102,7 @@ get_unique_value(int n) const {
 //       Access: Published
 //  Description: Returns the number of unique values of the variable.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableList::
+INLINE size_t ConfigVariableList::
 size() const {
   return get_num_unique_values();
 }
@@ -116,7 +116,7 @@ size() const {
 //               get_num_unique_values().
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableList::
-operator [] (int n) const {
+operator [] (size_t n) const {
   return get_unique_value(n);
 }
 

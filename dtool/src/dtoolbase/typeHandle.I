@@ -265,22 +265,16 @@ operator bool () const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_best_parent_from_Set
-//       Access: Published
-//  Description: Return the Index of the BEst fit Classs from a set
+//     Function: TypeHandle::from_index
+//       Access: Public, Static
+//  Description: Creates a TypeHandle from a type index without
+//               error checking, for use by internal functions.
+//
+//               See TypeRegistry::find_type_by_id().
 ////////////////////////////////////////////////////////////////////
-INLINE  int TypeHandle::get_best_parent_from_Set(const std::set< int > &legal_vals) const
-{
-    if(legal_vals.find(_index) != legal_vals.end())
-        return _index;
-        
-    for(int pi = 0; pi < get_num_parent_classes() ; pi++)
-    {
-        TypeHandle ph = get_parent_class(pi);
-        int val = ph.get_best_parent_from_Set(legal_vals);
-        if(val > 0)
-            return val;
-    
-    }
-    return -1;
+INLINE TypeHandle TypeHandle::
+from_index(int index) {
+  TypeHandle handle;
+  handle._index = index;
+  return handle;
 }

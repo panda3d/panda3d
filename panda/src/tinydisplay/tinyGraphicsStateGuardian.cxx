@@ -234,6 +234,7 @@ clear(DrawableRegion *clearable) {
   PIXEL color = 0;
   if (clearable->get_clear_color_active()) {
     LColor v = clearable->get_clear_color();
+    v = v.fmin(LColor(1, 1, 1, 1)).fmax(LColor::zero());
 
     if (_current_properties->get_srgb_color()) {
       color = SRGBA_TO_PIXEL(
@@ -697,10 +698,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!needs_color) {
     const LColor &d = _scene_graph_color;
     const LColor &s = _current_color_scale;
-    _c->current_color.v[0] = d[0] * s[0];
-    _c->current_color.v[1] = d[1] * s[1];
-    _c->current_color.v[2] = d[2] * s[2];
-    _c->current_color.v[3] = d[3] * s[3];
+    _c->current_color.v[0] = max(d[0] * s[0], (PN_stdfloat)0);
+    _c->current_color.v[1] = max(d[1] * s[1], (PN_stdfloat)0);
+    _c->current_color.v[2] = max(d[2] * s[2], (PN_stdfloat)0);
+    _c->current_color.v[3] = max(d[3] * s[3], (PN_stdfloat)0);
   }
 
   bool needs_normal = false;
@@ -756,10 +757,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     if (needs_color) {
       const LColor &d = rcolor.get_data4();
       const LColor &s = _current_color_scale;
-      _c->current_color.v[0] = d[0] * s[0];
-      _c->current_color.v[1] = d[1] * s[1];
-      _c->current_color.v[2] = d[2] * s[2];
-      _c->current_color.v[3] = d[3] * s[3];
+      _c->current_color.v[0] = max(d[0] * s[0], (PN_stdfloat)0);
+      _c->current_color.v[1] = max(d[1] * s[1], (PN_stdfloat)0);
+      _c->current_color.v[2] = max(d[2] * s[2], (PN_stdfloat)0);
+      _c->current_color.v[3] = max(d[3] * s[3], (PN_stdfloat)0);
 
       if (_color_material_flags) {
         if (_color_material_flags & CMF_ambient) {
@@ -1414,6 +1415,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     return false;
   }
   LColor border_color = tex->get_border_color();
+  border_color = border_color.fmin(LColor(1, 1, 1, 1)).fmax(LColor::zero());
   gltex->border_color.v[0] = border_color[0];
   gltex->border_color.v[1] = border_color[1];
   gltex->border_color.v[2] = border_color[2];
@@ -2565,6 +2567,7 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
     return false;
   }
   LColor border_color = tex->get_border_color();
+  border_color = border_color.fmin(LColor(1, 1, 1, 1)).fmax(LColor::zero());
   gltex->border_color.v[0] = border_color[0];
   gltex->border_color.v[1] = border_color[1];
   gltex->border_color.v[2] = border_color[2];
@@ -2681,6 +2684,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
     return false;
   }
   LColor border_color = tex->get_border_color();
+  border_color = border_color.fmin(LColor(1, 1, 1, 1)).fmax(LColor::zero());
   gltex->border_color.v[0] = border_color[0];
   gltex->border_color.v[1] = border_color[1];
   gltex->border_color.v[2] = border_color[2];

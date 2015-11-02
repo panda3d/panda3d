@@ -27,7 +27,7 @@
 #include "configVariableBool.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
-#include "pandaVersion.h"
+#include "pandaSystem.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -222,7 +222,8 @@ write_man_page(ostream &out) {
     }
   }
 
-  out << " 1 \"" << date_str << "\" \"" PANDA_VERSION_STR "\" Panda3D\n";
+  out << " 1 \"" << date_str << "\" \""
+      << PandaSystem::get_version_string() << "\" Panda3D\n";
 
   out << ".SH NAME\n";
   if (_brief.empty()) {

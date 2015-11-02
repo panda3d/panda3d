@@ -604,6 +604,10 @@ create_full_frame_buffer() {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 create_reduced_frame_buffer() {
+  if (!_full_frame_buffer) {
+     return;
+  }
+
   if (_reduced_frame_buffer != NULL) {
     ZB_close(_reduced_frame_buffer);
     _reduced_frame_buffer = NULL;

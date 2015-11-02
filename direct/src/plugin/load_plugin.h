@@ -67,13 +67,15 @@ load_plugin(const string &p3d_plugin_filename,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
-            const string &root_dir, const string &host_dir, ostream &logfile);
+            const string &root_dir, const string &host_dir,
+            const string &start_dir, ostream &logfile);
 bool
 init_plugin(const string &contents_filename, const string &host_url, 
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
-            const string &root_dir, const string &host_dir, ostream &logfile);
+            const string &root_dir, const string &host_dir,
+            const string &start_dir, ostream &logfile);
 
 void unload_plugin(ostream &logfile);
 bool is_plugin_loaded();

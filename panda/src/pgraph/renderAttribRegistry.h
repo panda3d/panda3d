@@ -48,23 +48,25 @@ public:
   // or a DoubleBitMask<BitMask32> will be faster on a 32-bit machine.
   typedef BitMask32 SlotMask;
 
+  // Raise this number whenever we add a new attrib.  This used to be
+  // determined at runtime, but it's better to have it as a constexpr.
+  static const int _max_slots = 29;
+
   int register_slot(TypeHandle type_handle, int sort,
-                    MakeDefaultFunc *make_default_func);
+                    RenderAttrib *default_attrib);
 
 PUBLISHED:
   INLINE int get_slot(TypeHandle type_handle) const;
-  INLINE int get_max_slots() const;
+  static CONSTEXPR int get_max_slots();
 
   INLINE int get_num_slots() const;
   INLINE TypeHandle get_slot_type(int slot) const;
   INLINE int get_slot_sort(int slot) const;
   void set_slot_sort(int slot, int sort);
-  CPT(RenderAttrib) get_slot_default(int slot) const;
+  INLINE const RenderAttrib *get_slot_default(int slot) const;
 
   INLINE int get_num_sorted_slots() const;
   INLINE int get_sorted_slot(int n) const;
-
-  INLINE DeletedBufferChain *get_array_chain() const;
 
   INLINE static RenderAttribRegistry *get_global_ptr();
 
@@ -75,8 +77,6 @@ private:
   static void init_global_ptr();
 
 private:
-  int _max_slots;
-
   class SortSlots {
   public:
     INLINE SortSlots(RenderAttribRegistry *reg);
@@ -86,9 +86,12 @@ private:
 
   class RegistryNode {
   public:
+    INLINE RegistryNode(TypeHandle type, int sort,
+                        const RenderAttrib *default_attrib);
+
     TypeHandle _type;
     int _sort;
-    MakeDefaultFunc *_make_default_func;
+    const RenderAttrib *_default_attrib;
   };
   typedef pvector<RegistryNode> Registry;
   Registry _registry;
@@ -96,12 +99,9 @@ private:
   vector_int _slots_by_type;
   vector_int _sorted_slots;
 
-  DeletedBufferChain *_array_chain;
-
   static RenderAttribRegistry *_global_ptr;
 };
 
 #include "renderAttribRegistry.I"
 
 #endif
-

@@ -581,12 +581,12 @@ int PPInstance::LoadPlugin( const std::string& dllFilename )
         pathname = override_filename;
       }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
-      
+
       nout << "Attempting to load core API from " << pathname << "\n";
       string contents_filename = m_rootDir + "/contents.xml";
       if (!load_plugin(pathname, contents_filename, PANDA_PACKAGE_HOST_URL,
-                       P3D_VC_normal, "", "", "", false, false, 
-                       m_rootDir, "", nout)) {
+                       P3D_VC_normal, "", "", "", false, false,
+                       m_rootDir, "", "", nout)) {
         nout << "Unable to launch core API in " << pathname << "\n";
         error = 1;
       } else {

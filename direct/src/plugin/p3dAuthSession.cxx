@@ -163,7 +163,7 @@ start_p3dcert() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _start_dir = inst_mgr->get_root_dir() + "/start";
+  _start_dir = inst_mgr->get_start_dir();
 
   string root_dir = _inst->_p3dcert_package->get_package_dir();
   mkdir_complete(_start_dir, nout);
@@ -183,7 +183,7 @@ start_p3dcert() {
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
   const wchar_t *keep[] = {
-    L"TMP", L"TEMP", L"HOME", L"USER", 
+    L"TMP", L"TEMP", L"HOME", L"USER",
     L"SYSTEMROOT", L"USERPROFILE", L"COMSPEC",
     NULL
   };
@@ -209,7 +209,8 @@ start_p3dcert() {
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
   const char *keep[] = {
-    "TMP", "TEMP", "HOME", "USER", 
+    "TMP", "TEMP", "HOME", "USER",
+    "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG",
 #ifdef HAVE_X11
     "DISPLAY", "XAUTHORITY",
 #endif

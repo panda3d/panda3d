@@ -23,6 +23,7 @@
 // This definition is intentionally recursive.  Why complicate things
 // with multiple files?
 #define FT_FREETYPE_H <ft2build.h>
+#define FT_OUTLINE_H <ft2build.h>
 
 class FT_Face;
 class FT_Library;

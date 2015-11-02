@@ -1235,11 +1235,13 @@ void InterfaceMakerPythonNative::
 write_sub_module(ostream &out, Object *obj) {
   //Object * obj = _objects[_embeded_index] ;
   string class_name = make_safe_name(obj->_itype.get_scoped_name());
+  string class_ptr;
   out << "  // Module init upcall for " << obj->_itype.get_scoped_name() << "\n";
 
   if (!obj->_itype.is_typedef()) {
     out << "  // " << *(obj->_itype._cpptype) << "\n";
     out << "  Dtool_PyModuleClassInit_" << class_name << "(module);\n";
+    class_ptr = "&Dtool_" + class_name;
 
   } else {
     // Unwrap typedefs.
@@ -1258,22 +1260,29 @@ write_sub_module(ostream &out, Object *obj) {
 
     if (!isExportThisRun(wrapped_itype._cpptype)) {
       _external_imports.insert(TypeManager::resolve_type(wrapped_itype._cpptype));
+
+      class_ptr = "Dtool_Ptr_" + class_name;
+      out << "  assert(" << class_ptr << " != NULL);\n";
+    } else {
+      class_ptr = "&Dtool_" + class_name;
     }
   }
 
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
   std::string export_class_name2 = classNameFromCppName(obj->_itype.get_name(), true);
 
+  class_ptr = "(PyObject *)" + class_ptr;
+
   // Note: PyModule_AddObject steals a reference, so we have to call Py_INCREF
   // for every but the first time we add it to the module.
   if (obj->_itype.is_typedef()) {
-    out << "  Py_INCREF((PyObject *)&Dtool_" << class_name << ");\n";
+    out << "  Py_INCREF(" << class_ptr << ");\n";
   }
 
-  out << "  PyModule_AddObject(module, \"" << export_class_name << "\", (PyObject *)&Dtool_" << class_name << ");\n";
+  out << "  PyModule_AddObject(module, \"" << export_class_name << "\", " << class_ptr << ");\n";
   if (export_class_name != export_class_name2) {
-    out << "  Py_INCREF((PyObject *)&Dtool_" << class_name << ");\n";
-    out << "  PyModule_AddObject(module, \"" << export_class_name2 << "\", (PyObject *)&Dtool_" << class_name << ");\n";
+    out << "  Py_INCREF(Dtool_Ptr_" << class_name << ");\n";
+    out << "  PyModule_AddObject(module, \"" << export_class_name2 << "\", " << class_ptr << ");\n";
   }
 }
 
@@ -1490,6 +1499,8 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << def->module_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) PyInit_" << def->module_name << "();\n"
       << "#else\n"
       << "extern \"C\" PyObject *PyInit_" << def->module_name << "();\n"
       << "#endif\n"
@@ -1503,6 +1514,8 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) void init" << def->module_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) init" << def->module_name << "();\n"
       << "#else\n"
       << "extern \"C\" void init" << def->module_name << "();\n"
       << "#endif\n"
@@ -2364,8 +2377,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
           out << "  if (local_this == NULL) {\n";
-          out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-          out << "    return -1;\n";
+          out << "    return 0;\n";
           out << "  }\n\n";
 
           // Find the remap.  There should be only one.
@@ -3448,14 +3460,14 @@ write_function_for_name(ostream &out, Object *obj,
   if (map_sets.size() > 1) {
     switch (args_type) {
     case AT_keyword_args:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       indent(out, 2) << "if (kwds != NULL) {\n";
-      indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
+      indent(out, 2) << "  parameter_count += (int)PyDict_Size(kwds);\n";
       indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       break;
 
     case AT_single_arg:
@@ -3559,14 +3571,14 @@ write_function_for_name(ostream &out, Object *obj,
       switch (args_type) {
       case AT_keyword_args:
         out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
-        out << "    int parameter_count = PyTuple_Size(args);\n";
+        out << "    int parameter_count = (int)PyTuple_Size(args);\n";
         out << "    if (kwds != NULL) {\n";
-        out << "      parameter_count += PyDict_Size(kwds);\n";
+        out << "      parameter_count += (int)PyDict_Size(kwds);\n";
         out << "    }\n";
         break;
       case AT_varargs:
         out << "  if (PyTuple_Size(args) > 0) {\n";
-        out << "    const int parameter_count = PyTuple_GET_SIZE(args);\n";
+        out << "    const int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
         break;
       case AT_single_arg:
         // Shouldn't happen, but let's handle this case nonetheless.
@@ -3591,9 +3603,9 @@ write_function_for_name(ostream &out, Object *obj,
     } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg
       // in write_function_forset (not using ParseTupleAndKeywords).
-      out << "    int parameter_count = PyTuple_Size(args);\n"
+      out << "    int parameter_count = (int)PyTuple_Size(args);\n"
              "    if (kwds != NULL) {\n"
-             "      parameter_count += PyDict_Size(kwds);\n"
+             "      parameter_count += (int)PyDict_Size(kwds);\n"
              "    }\n"
              "  if (parameter_count != 1) {\n"
              "#ifdef NDEBUG\n";
@@ -3712,7 +3724,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -3750,7 +3762,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -3978,9 +3990,9 @@ collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
       std::set<FunctionRemap *>::iterator sii;
       for (sii = rmi->second.begin(); sii != rmi->second.end(); ++sii) {
         FunctionRemap *remap = (*sii);
-        int pn = rmi->first - 1;
-        if (remap->_has_this && remap->_type != FunctionRemap::T_constructor) {
-          ++pn;
+        size_t pn = (size_t)rmi->first;
+        if (!remap->_has_this || remap->_type == FunctionRemap::T_constructor) {
+          --pn;
         }
         nassertd(pn < remap->_parameters.size()) goto abort_iteration;
 
@@ -4333,8 +4345,8 @@ write_function_forset(ostream &out,
 
       for (sii = remaps.begin(); sii != remaps.end(); ++sii) {
         remap = (*sii);
-        if (remap->_parameters.size() > (int)remap->_has_this) {
-          ParameterRemap *param = remap->_parameters[(int)remap->_has_this]._remap;
+        if (remap->_parameters.size() > (size_t)remap->_has_this) {
+          ParameterRemap *param = remap->_parameters[(size_t)remap->_has_this]._remap;
           string param_name = param->get_orig_type()->get_local_name(&parser);
 
           if (param_name != "CPT_InternalName" &&
@@ -4589,15 +4601,15 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   if (remap->_has_this) {
     num_params += 1;
   }
-  if (num_params > remap->_parameters.size()) {
+  if (num_params > (int)remap->_parameters.size()) {
     // Limit to how many parameters this remap actually has.
-    num_params = remap->_parameters.size();
+    num_params = (int)remap->_parameters.size();
     max_num_args = num_params;
     if (remap->_has_this) {
       --max_num_args;
     }
   }
-  nassertv(num_params <= remap->_parameters.size());
+  nassertv(num_params <= (int)remap->_parameters.size());
 
   bool only_pyobjects = true;
 
@@ -5021,17 +5033,32 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // Windows, where longs are the same size as ints.
       // BUG: does not catch negative values on Windows when going through
       // the PyArg_ParseTuple case.
-      extra_convert
-        << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
-        << "if (" << param_name << " > UINT_MAX) {\n";
+      if (!TypeManager::is_long(type)) {
+        extra_convert
+          << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
+          << "if (" << param_name << " > UINT_MAX) {\n";
 
-      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
-                         "value %lu out of range for unsigned integer",
-                         param_name);
-      extra_convert
-        << "}\n"
-        << "#endif\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %lu out of range for unsigned integer",
+                           param_name);
 
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+      }
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_long(type)) {
+      // Signed longs are equivalent to Python's int type.
+      if (args_type == AT_single_arg) {
+        pexpr_string = "PyLongOrInt_AS_LONG(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
+      } else {
+        indent(out, indent_level) << "long " << param_name << default_expr << ";\n";
+        format_specifiers += "l";
+        parameter_list += ", &" + param_name;
+      }
       expected_params += "int";
       only_pyobjects = false;
 
@@ -5050,6 +5077,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed integer",
                            "arg_val");
+
         extra_convert
           << "}\n"
           << "#endif\n";
@@ -6165,6 +6193,10 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
     indent(out, indent_level)
       << "return PyBool_FromLong(" << return_expr << ");\n";
 
+  } else if (TypeManager::is_ssize(type)) {
+    indent(out, indent_level)
+      << "return PyLongOrInt_FromSsize_t(" << return_expr << ");\n";
+
   } else if (TypeManager::is_size(type)) {
     indent(out, indent_level)
       << "return PyLongOrInt_FromSize_t(" << return_expr << ");\n";
@@ -6191,22 +6223,12 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_unsigned_integer(type)){
-    out << "#if PY_MAJOR_VERSION >= 3\n";
-    indent(out, indent_level)
-      << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#else\n";
     indent(out, indent_level)
       << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#endif\n";
 
   } else if (TypeManager::is_integer(type)) {
-    out << "#if PY_MAJOR_VERSION >= 3\n";
     indent(out, indent_level)
-      << "return PyLong_FromLong(" << return_expr << ");\n";
-    out << "#else\n";
-    indent(out, indent_level)
-      << "return PyInt_FromLong(" << return_expr << ");\n";
-    out << "#endif\n";
+      << "return PyLongOrInt_FromLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_float(type)) {
     indent(out, indent_level)
@@ -6330,7 +6352,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
       << "\n"
       << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n"
       << "  if (getter == (PyObject *)NULL) {\n"
-      << "    return NULL;\n"
+      << "    return Dtool_Raise_AttributeError(self, \"" << element_name << "\");\n"
       << "  }\n"
       << "\n"
       << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
@@ -6657,7 +6679,7 @@ is_remap_legal(FunctionRemap *remap) {
   }
 
   // all non-optional params must be legal
-  for (int pn = 0; pn < (int)remap->_parameters.size(); pn++) {
+  for (size_t pn = 0; pn < remap->_parameters.size(); pn++) {
     ParameterRemap *param = remap->_parameters[pn]._remap;
     CPPType *orig_type = param->get_orig_type();
     if (param->get_default_value() == NULL && !is_cpp_type_legal(orig_type)) {
@@ -6745,12 +6767,12 @@ is_remap_coercion_possible(FunctionRemap *remap) {
     return false;
   }
 
-  int pn = 0;
+  size_t pn = 0;
   if (remap->_has_this) {
     // Skip the "this" parameter.  It's never coercible.
     ++pn;
   }
-  while (pn < (int)remap->_parameters.size()) {
+  while (pn < remap->_parameters.size()) {
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
 
     if (TypeManager::is_char_pointer(type)) {

@@ -686,16 +686,30 @@ WinGraphicsPipe() {
   // these fns arent defined on win95, so get dynamic ptrs to them
   // to avoid ugly DLL loader failures on w95
   _pfnTrackMouseEvent = NULL;
+  _pfnSetProcessDPIAware = NULL;
 
   _hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
   if (_hUser32 != NULL) {
     _pfnTrackMouseEvent =
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
+
+    if (dpi_aware) {
+      _pfnSetProcessDPIAware =
+        (PFN_SETPROCESSDPIAWARE)GetProcAddress(_hUser32, "SetProcessDPIAware");
+
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "Calling SetProcessDPIAware().\n";
+      }
+      _pfnSetProcessDPIAware();
+    }
   }
 
 #ifdef HAVE_DX9
   // Use D3D to get display info.  This is disabled by default as it is slow.
   if (request_dxdisplay_information) {
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "Using Direct3D 9 to fetch display information.\n";
+    }
     DisplaySearchParameters display_search_parameters_dx9;
     int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
     dx9_display_information(display_search_parameters_dx9, _display_information);
@@ -703,6 +717,9 @@ WinGraphicsPipe() {
 #endif
   {
     // Use the Win32 API to query the available display modes.
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "Using EnumDisplaySettings to fetch display information.\n";
+    }
     pvector<DisplayMode> display_modes;
     DEVMODE dm = {0};
     dm.dmSize = sizeof(dm);

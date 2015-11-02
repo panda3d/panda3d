@@ -37,6 +37,11 @@ public:
     T_double,
     T_void,
 
+    // We need something to represent the type of nullptr so that we
+    // can return it from decltype(nullptr).  Note that this is not
+    // the same as nullptr_t, which is a typedef of decltype(nullptr).
+    T_nullptr,
+
     // T_parameter is a special type which is assigned to expressions
     // that are discovered where a formal parameter was expected.
     // This is a special case for handling cases like this:
@@ -50,6 +55,13 @@ public:
     // but it initially looks like a function prototype.
     //
     T_parameter,
+
+    // T_auto is also a special type that corresponds to the "auto"
+    // keyword used in a variable assignment.  The type of it is
+    // automatically determined at a later stage based on the type
+    // of the expression that is assigned to it.
+    //
+    T_auto,
   };
 
   enum Flags {

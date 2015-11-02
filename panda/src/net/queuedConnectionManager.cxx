@@ -16,6 +16,8 @@
 
 #include <algorithm>
 
+template class QueuedReturn< PT(Connection) >;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionManager::Constructor
 //       Access: Public

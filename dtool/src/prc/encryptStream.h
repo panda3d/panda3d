@@ -40,6 +40,10 @@ PUBLISHED:
   INLINE IDecryptStream(istream *source, bool owns_source,
                         const string &password);
 
+#if _MSC_VER >= 1800
+  INLINE IDecryptStream(const IDecryptStream &copy) = delete;
+#endif
+
   INLINE IDecryptStream &open(istream *source, bool owns_source,
                               const string &password);
   INLINE IDecryptStream &close();
@@ -68,6 +72,10 @@ PUBLISHED:
   INLINE OEncryptStream();
   INLINE OEncryptStream(ostream *dest, bool owns_dest, 
                         const string &password);
+
+#if _MSC_VER >= 1800
+  INLINE OEncryptStream(const OEncryptStream &copy) = delete;
+#endif
 
   INLINE OEncryptStream &open(ostream *dest, bool owns_dest, 
                               const string &password);

@@ -45,8 +45,8 @@ ParameterRemapThis(CPPType *type, bool is_const) :
 //               passing into the actual C++ function.
 ////////////////////////////////////////////////////////////////////
 void ParameterRemapThis::
-pass_parameter(ostream &out, const string &) {
-  out << "**invalid**";
+pass_parameter(ostream &out, const string &variable_name) {
+  out << "(*" << variable_name << ")";
 }
 
 ////////////////////////////////////////////////////////////////////

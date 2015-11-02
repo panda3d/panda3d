@@ -240,7 +240,7 @@ set_clear_stencil(const unsigned int stencil) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int DrawableRegion::
 get_clear_stencil() const {
-  return (int)(get_clear_value(RTP_stencil)[0]);
+  return (unsigned int)(get_clear_value(RTP_stencil)[0]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,9 +306,9 @@ INLINE void DrawableRegion::
 update_pixel_factor() {
   PN_stdfloat new_pixel_factor;
   if (supports_pixel_zoom()) {
-    new_pixel_factor = 1.0 / sqrt(max(_pixel_zoom, (PN_stdfloat)1.0));
+    new_pixel_factor = (PN_stdfloat)1 / sqrt(max(_pixel_zoom, (PN_stdfloat)1.0));
   } else {
-    new_pixel_factor = 1.0;
+    new_pixel_factor = 1;
   }
   if (new_pixel_factor != _pixel_factor) {
     _pixel_factor = new_pixel_factor;

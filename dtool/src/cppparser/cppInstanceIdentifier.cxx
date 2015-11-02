@@ -286,6 +286,11 @@ r_unroll_type(CPPType *start_type,
     result = new CPPConstType(r_unroll_type(start_type, mi));
     break;
 
+  case IIT_volatile:
+    // Just pass it through for now.
+    result = r_unroll_type(start_type, mi);
+    break;
+
   case IIT_paren:
     result = r_unroll_type(start_type, mi);
     break;

@@ -101,8 +101,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int TransparencyAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const TransparencyAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const TransparencyAttrib *ta = (const TransparencyAttrib *)other;
+
   return (int)_mode - (int)ta->_mode;
 }
 
