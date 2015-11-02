@@ -1223,6 +1223,10 @@ def CompileCxx(obj,src,opts):
             else:
                 cmd += " -fno-exceptions"
 
+                if src.endswith(".mm"):
+                    # Work around Apple compiler bug.
+                    cmd += " -U__EXCEPTIONS"
+
             if 'RTTI' not in opts:
                 # We always disable RTTI on Android for memory usage reasons.
                 if optlevel >= 4 or GetTarget() == "android":
