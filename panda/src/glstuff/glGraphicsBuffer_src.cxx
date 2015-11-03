@@ -1626,6 +1626,15 @@ report_my_errors(int line, const char *file) {
 void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
+    _rb_data_size_bytes = 0;
+    if (_rb_context != NULL) {
+      // We must delete this object first, because when the GSG
+      // destructs, so will the tracker that this context is
+      // attached to.
+      _rb_context->update_data_size_bytes(0);
+      delete _rb_context;
+      _rb_context = NULL;
+    }
     _is_valid = false;
     _gsg.clear();
     _host.clear();
