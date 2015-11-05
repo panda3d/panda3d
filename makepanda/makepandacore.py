@@ -508,14 +508,14 @@ def oscmd(cmd, ignoreError = False):
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
-    if sys.platform in ("win32", "cygwin"):
+    if sys.platform == "win32":
         exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:
             exit("Cannot find "+exe+" on search path")
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
     else:
-        res = os.system(cmd)
+        res = subprocess.call(cmd, shell=True)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
             print(ColorText("red", "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig)))
@@ -539,7 +539,7 @@ def oscmd(cmd, ignoreError = False):
             if sys.platform == "win32":
                 os.spawnl(os.P_WAIT, exe_path, verbose_cmd)
             else:
-                os.system(verbose_cmd)
+                subprocess.call(verbose_cmd, shell=True)
         exit("The following command returned a non-zero value: " + str(cmd))
 
     return res
@@ -2219,7 +2219,11 @@ def SdkAutoDisableSpeedTree():
 
 def AddToPathEnv(path,add):
     if path in os.environ:
-        os.environ[path] = add + os.pathsep + os.environ[path]
+        if sys.platform == 'cygwin' and path != "PATH":
+            # INCLUDE, LIB, etc. must remain in Windows-style in cygwin.
+            os.environ[path] = add + ';' + os.environ[path]
+        else:
+            os.environ[path] = add + os.pathsep + os.environ[path]
     else:
         os.environ[path] = add
 
@@ -2551,6 +2555,10 @@ def CopyFile(dstfile, srcfile):
             os.symlink(os.readlink(srcfile), dstfile)
         else:
             WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
+
+        if sys.platform == 'cygwin' and os.path.splitext(dstfile)[1].lower() in ('.dll', '.exe'):
+            os.chmod(dstfile, 0o755)
+
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):
@@ -2585,7 +2593,9 @@ def CopyTree(dstdir, srcdir, omitVCS=True):
                 if not omitVCS or entry not in VCS_DIRS:
                     CopyTree(dstpth, srcpth)
     else:
-        if sys.platform == 'win32':
+        if GetHost() == 'windows':
+            srcdir = srcdir.replace('/', '\\')
+            dstdir = dstdir.replace('/', '\\')
             cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
         else:
             cmd = 'cp -R -f ' + srcdir + ' ' + dstdir

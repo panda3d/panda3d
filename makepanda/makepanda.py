@@ -1361,9 +1361,11 @@ def CompileIgate(woutd,wsrc,opts):
     cmd += ' -srcdir %s -I%s' % (srcdir, srcdir)
     cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L'
     if (COMPILER=="MSVC"):
-        cmd += ' -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
+        cmd += ' -DWIN32_VC -DWIN32 -D_WIN32'
         if GetTargetArch() == 'x64':
-            cmd += ' -DWIN64_VC -DWIN64 -D_WIN64'
+            cmd += ' -DWIN64_VC -DWIN64 -D_WIN64 -D_M_X64 -D_M_AMD64'
+        else:
+            cmd += ' -D_M_IX86'
         # NOTE: this 1600 value is the version number for VC2010.
         cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
@@ -2631,7 +2633,7 @@ if (PkgSkip("DIRECT")==0):
         os.remove(GetOutputDir() + '/direct/ffi/panda3d.pyc')
 
 # This used to exist; no longer.
-if sys.platform == 'win32':
+if GetTarget() == 'windows':
     core_so = GetOutputDir() + '/panda3d/core.pyd'
     direct_so = GetOutputDir() + '/panda3d/direct.pyd'
     dtoolconfig_so = GetOutputDir() + '/panda3d/dtoolconfig.pyd'
