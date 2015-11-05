@@ -1964,7 +1964,7 @@ def SdkLocateVisualStudio(version=10):
     elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
         SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio %s\\" % (version)
 
-    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe")):
+    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio %s\\VC\\bin\\cl.exe" % (version))):
         SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio %s\\" % (version)
 
     elif "VCINSTALLDIR" in os.environ:
