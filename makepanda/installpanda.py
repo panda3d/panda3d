@@ -127,7 +127,7 @@ def GetLibDir():
     something like "lib" or "lib64" or in some cases, something
     similar to "lib/x86_64-linux-gnu". """
 
-    if sys.platform == "darwin":
+    if sys.platform in ("darwin", "win32", "cygwin"):
         return "lib"
 
     # This one's a bit tricky.  Some systems require us to install
