@@ -1817,12 +1817,13 @@ do_define_geom_data(CData *cdata) {
   if (!is_linear()) {
     num_segments = lens_geom_segments;
   }
-  
+
   if (cdata->_geom_data == (GeomVertexData *)NULL) {
     cdata->_geom_data = new GeomVertexData
       ("lens", GeomVertexFormat::get_v3(),
        Geom::UH_dynamic);
   }
+  cdata->_geom_data->unclean_set_num_rows(num_segments * 8 + 2);
 
   GeomVertexWriter vertex(cdata->_geom_data, InternalName::get_vertex());
   LPoint3 near_point, far_point;
@@ -1835,8 +1836,8 @@ do_define_geom_data(CData *cdata) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3(near_point);
-    vertex.add_data3(far_point);
+    vertex.set_data3(near_point);
+    vertex.set_data3(far_point);
 
     // Upper right, right edge.
     LPoint3 p2(1.0f, 1.0f - t, 0.0f);
@@ -1844,8 +1845,8 @@ do_define_geom_data(CData *cdata) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3(near_point);
-    vertex.add_data3(far_point);
+    vertex.set_data3(near_point);
+    vertex.set_data3(far_point);
 
     // Lower right, bottom edge.
     LPoint3 p3(1.0f - t, -1.0f, 0.0f);
@@ -1853,8 +1854,8 @@ do_define_geom_data(CData *cdata) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3(near_point);
-    vertex.add_data3(far_point);
+    vertex.set_data3(near_point);
+    vertex.set_data3(far_point);
 
     // Lower left, left edge.
     LPoint3 p4(-1.0f, -1.0f + t, 0.0f);
@@ -1862,19 +1863,20 @@ do_define_geom_data(CData *cdata) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3(near_point);
-    vertex.add_data3(far_point);
+    vertex.set_data3(near_point);
+    vertex.set_data3(far_point);
   }
 
-  // Finally, add one more pair for the viewing axis (or more
-  // specifically, the center of the lens).
-  LPoint3 pc(-cdata->_film_offset[0], -cdata->_film_offset[1], 0.0f);
+
+  // Finally, add one more pair for the viewing axis (or more specifically, the
+  // center of the lens).
+  LPoint3 pc(0);
   if (!do_extrude(cdata, pc, near_point, far_point)) {
-    vertex.add_data3(0.0f, 0.0f, 0.0f);
-    vertex.add_data3(0.0f, 0.0f, 0.0f);
+    vertex.set_data3(0.0f, 0.0f, 0.0f);
+    vertex.set_data3(0.0f, 0.0f, 0.0f);
   } else {
-    vertex.add_data3(near_point);
-    vertex.add_data3(far_point);
+    vertex.set_data3(near_point);
+    vertex.set_data3(far_point);
   }
 
   return num_segments;
