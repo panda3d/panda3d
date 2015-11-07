@@ -2980,7 +2980,6 @@ close_gsg() {
     display_cat.debug()
       << this << " close_gsg " << get_type() << "\n";
   }
-  free_pointers();
 
   // As tempting as it may be to try to release all the textures and
   // geoms now, we can't, because we might not be the currently-active
@@ -3005,6 +3004,8 @@ close_gsg() {
 #ifdef DO_PSTATS
   _pending_timer_queries.clear();
 #endif
+
+  free_pointers();
 }
 
 ////////////////////////////////////////////////////////////////////
