@@ -4684,6 +4684,13 @@ update_texture(TextureContext *tc, bool force) {
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+  glDeleteTextures(1, &gtc->_index);
+
+  if (gtc->_buffer != 0) {
+    _glDeleteBuffers(1, &gtc->_buffer);
+  }
+
   delete gtc;
 }
 
@@ -4817,6 +4824,11 @@ prepare_sampler(const SamplerState &sampler) {
 void CLP(GraphicsStateGuardian)::
 release_sampler(SamplerContext *sc) {
   CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
+
+  if (gsc->_index != 0) {
+    _glDeleteSamplers(1, &gsc->_index);
+  }
+
   delete gsc;
 }
 #endif  // !OPENGLES
@@ -4923,6 +4935,17 @@ prepare_shader(Shader *se) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
+#ifndef OPENGLES_1
+  if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
+    ((CLP(ShaderContext) *)sc)->release_resources();
+  }
+#if defined(HAVE_CG) && !defined(OPENGLES_2)
+  else if (sc->is_of_type(CLP(CgShaderContext)::get_class_type())) {
+    ((CLP(CgShaderContext) *)sc)->release_resources();
+  }
+#endif
+#endif
+
   delete sc;
 }
 

@@ -326,7 +326,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 ////////////////////////////////////////////////////////////////////
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
-  release_resources();
+  // Don't call release_resources; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////

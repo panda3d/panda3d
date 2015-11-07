@@ -309,6 +309,9 @@ void CLP(init_classes)() {
 #ifndef OPENGLES_1
   CLP(ShaderContext)::init_type();
 #endif
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  CLP(CgShaderContext)::init_type();
+#endif
   CLP(TextureContext)::init_type();
 #ifndef OPENGLES
   CLP(SamplerContext)::init_type();

@@ -32,13 +32,7 @@ CLP(TextureContext)::
   }
 #endif
 
-  glDeleteTextures(1, &_index);
-  _index = 0;
-
-  if (_buffer != 0) {
-    _glgsg->_glDeleteBuffers(1, &_buffer);
-    _buffer = 0;
-  }
+  // Don't call glDeleteTextures; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1513,7 +1513,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
-  release_resources();
+  // Don't call release_resources; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////
