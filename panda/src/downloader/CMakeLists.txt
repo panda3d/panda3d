@@ -62,9 +62,14 @@ set(P3DOWNLOADER_SOURCES
   virtualFileMountHTTP.cxx
 )
 
+set(P3DOWNLOADER_IGATEEXT
+  stringStream_ext.cxx
+  stringStream_ext.h
+)
+
 composite_sources(p3downloader P3DOWNLOADER_SOURCES)
 add_library(p3downloader ${P3DOWNLOADER_HEADERS} ${P3DOWNLOADER_SOURCES})
 target_link_libraries(p3downloader p3express)
-target_interrogate(p3downloader ALL)
+target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
 
 install(TARGETS p3downloader DESTINATION lib)

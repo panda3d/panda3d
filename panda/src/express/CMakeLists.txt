@@ -134,10 +134,14 @@ set(P3EXPRESS_IGATEEXT
   ramfile_ext.h
   streamReader_ext.cxx
   streamReader_ext.h
+  streamWriter_ext.cxx
+  streamWriter_ext.h
   typeHandle_ext.cxx
   typeHandle_ext.h
   virtualFileSystem_ext.cxx
-  virtualFileSystem_ext.h)
+  virtualFileSystem_ext.h
+  virtualFile_ext.cxx
+  virtualFile_ext.h)
 
 composite_sources(p3express P3EXPRESS_SOURCES)
 

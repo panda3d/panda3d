@@ -19,7 +19,9 @@ set(INTERROGATE_HEADERS
 	parameterRemapPTToPointer.h
 	parameterRemapReferenceToConcrete.h
 	parameterRemapReferenceToPointer.h parameterRemapThis.h
-	parameterRemapToString.h parameterRemapUnchanged.h
+	parameterRemapToString.h
+	parameterRemapHandleToInt.h
+	parameterRemapUnchanged.h
 	typeManager.h)
 
 set(INTERROGATE_SOURCES
@@ -42,7 +44,9 @@ set(INTERROGATE_SOURCES
 	parameterRemapEnumToInt.cxx parameterRemapPTToPointer.cxx
 	parameterRemapReferenceToConcrete.cxx
 	parameterRemapReferenceToPointer.cxx parameterRemapThis.cxx
-	parameterRemapToString.cxx parameterRemapUnchanged.cxx
+	parameterRemapToString.cxx
+	parameterRemapHandleToInt.cxx
+	parameterRemapUnchanged.cxx
 	typeManager.cxx)
 
 composite_sources(interrogate INTERROGATE_SOURCES)
