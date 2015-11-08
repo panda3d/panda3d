@@ -14,6 +14,7 @@
 
 
 #include "cppToken.h"
+#include "cppExpression.h"
 #include "cppIdentifier.h"
 #include "cppBison.h"
 

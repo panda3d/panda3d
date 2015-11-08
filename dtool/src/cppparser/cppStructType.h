@@ -17,7 +17,9 @@
 
 #include "dtoolbase.h"
 
+#include "cppIdentifier.h"
 #include "cppExtensionType.h"
+#include "cppFunctionGroup.h"
 #include "cppVisibility.h"
 
 #include <vector>

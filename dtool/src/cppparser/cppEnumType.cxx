@@ -19,6 +19,7 @@
 #include "cppConstType.h"
 #include "cppScope.h"
 #include "cppParser.h"
+#include "cppIdentifier.h"
 #include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
