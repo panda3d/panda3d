@@ -68,6 +68,7 @@ private:
   CGprogram _cg_program;
   GLuint _glsl_program;
 
+  pvector<GLint> _attributes;
   GLint _color_attrib_index;
   CGparameter _transform_table_param;
   CGparameter _slider_table_param;
