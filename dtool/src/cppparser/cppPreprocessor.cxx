@@ -154,8 +154,10 @@ int CPPPreprocessor::InputFile::
 get() {
   assert(_in != NULL);
 
-  _line_number = _next_line_number;
-  _col_number = _next_col_number;
+  if (!_lock_position) {
+    _line_number = _next_line_number;
+    _col_number = _next_col_number;
+  }
 
   int c = _in->get();
 
@@ -201,7 +203,7 @@ peek() {
   // shouldn't see any of these unless there was some DOS-to-Unix file
   // conversion problem.
   while (c == '\r') {
-    get();
+    _in->get();
     c = _in->peek();
   }
 
@@ -1872,10 +1874,11 @@ get_identifier(int c) {
   loc.last_line = get_line_number();
   loc.last_column = get_col_number();
 
-  if ((c == '\'' || c == '"') && name != "operator") {
+  if ((c == '\'' || c == '"') &&
+      (name == "L" || name == "u8" ||
+       name == "u" || name == "U")) {
     // This is actually a wide-character or wide-string literal or
     // some such.  Figure out the correct character type to use.
-    // We had to add in an exception in order to support operator"".
 
     CPPExpression::Type type;
     if (name == "L") {
@@ -1886,9 +1889,6 @@ get_identifier(int c) {
       type = CPPExpression::T_u16string;
     } else if (name == "U") {
       type = CPPExpression::T_u32string;
-    } else {
-      type = CPPExpression::T_string;
-      warning("unrecognized literal prefix " + name, loc);
     }
 
     get();
