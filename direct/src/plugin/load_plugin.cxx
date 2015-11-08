@@ -140,7 +140,7 @@ load_plugin(const string &p3d_plugin_filename,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
             const string &root_dir, const string &host_dir,
-            ostream &logfile) {
+            const string &start_dir, ostream &logfile) {
   if (plugin_loaded) {
     return true;
   }
@@ -259,7 +259,7 @@ load_plugin(const string &p3d_plugin_filename,
                    verify_contents, platform,
                    log_directory, log_basename,
                    trusted_environment, console_environment,
-                   root_dir, host_dir, logfile)) {
+                   root_dir, host_dir, start_dir, logfile)) {
     unload_dso();
     return false;
   }
@@ -283,7 +283,7 @@ init_plugin(const string &contents_filename, const string &host_url,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
             const string &root_dir, const string &host_dir,
-            ostream &logfile) {
+            const string &start_dir, ostream &logfile) {
 
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize_ptr == NULL ||
@@ -371,15 +371,26 @@ init_plugin(const string &contents_filename, const string &host_url,
     return false;
   }
 
-  if (!P3D_initialize_ptr(P3D_API_VERSION, contents_filename.c_str(),
+  // A bit of extra hand-hacked compatibility for using newer plug-ins
+  // with an older version of the core API.
+  int api_version = P3D_API_VERSION;
+  if (api_version == 17 && start_dir.empty()) {
+    api_version = 16;
+    if (host_dir.empty()) {
+      api_version = 15;
+    }
+  }
+
+  if (!P3D_initialize_ptr(api_version, contents_filename.c_str(),
                           host_url.c_str(), verify_contents, platform.c_str(),
                           log_directory.c_str(), log_basename.c_str(),
                           trusted_environment, console_environment, 
-                          root_dir.c_str(), host_dir.c_str())) {
+                          root_dir.c_str(), host_dir.c_str(),
+                          start_dir.c_str())) {
     // Oops, failure to initialize.
     logfile
       << "Failed to initialize plugin (passed API version " 
-      << P3D_API_VERSION << ")\n";
+      << api_version << ")\n";
     return false;
   }
 

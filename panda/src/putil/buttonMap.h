@@ -32,10 +32,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL ButtonMap : public TypedReferenceCount {
 PUBLISHED:
-  INLINE int get_num_buttons() const;
-  INLINE ButtonHandle get_raw_button(int i) const;
-  INLINE ButtonHandle get_mapped_button(int i) const;
-  INLINE const string &get_mapped_button_label(int i) const;
+  INLINE size_t get_num_buttons() const;
+  INLINE ButtonHandle get_raw_button(size_t i) const;
+  INLINE ButtonHandle get_mapped_button(size_t i) const;
+  INLINE const string &get_mapped_button_label(size_t i) const;
 
   INLINE ButtonHandle get_mapped_button(ButtonHandle raw) const;
   INLINE ButtonHandle get_mapped_button(const string &raw_name) const;

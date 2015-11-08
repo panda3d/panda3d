@@ -93,7 +93,9 @@ apply_transform_and_state(CullTraverser *trav,
         // Copy the bounding volumes for the frustums so we can
         // transform them.
         if (_view_frustum != (GeometricBoundingVolume *)NULL) {
-          _view_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
+          _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
+          nassertv(_view_frustum != (GeometricBoundingVolume *)NULL);
+
           _view_frustum->xform(inv_transform->get_mat());
         }
 
@@ -106,9 +108,9 @@ apply_transform_and_state(CullTraverser *trav,
 
   if (clip_plane_cull) {
     _cull_planes = _cull_planes->apply_state(trav, this,
-                                             DCAST(ClipPlaneAttrib, node_state->get_attrib(ClipPlaneAttrib::get_class_slot())),
+                                             (const ClipPlaneAttrib *)node_state->get_attrib(ClipPlaneAttrib::get_class_slot()),
                                              DCAST(ClipPlaneAttrib, off_clip_planes),
-                                             DCAST(OccluderEffect, node_effects->get_effect(OccluderEffect::get_class_type())));
+                                             (const OccluderEffect *)node_effects->get_effect(OccluderEffect::get_class_type()));
   }
 }
 
@@ -122,7 +124,8 @@ is_in_view_impl() {
   const GeometricBoundingVolume *node_gbv = NULL;
 
   if (_view_frustum != (GeometricBoundingVolume *)NULL) {
-    DCAST_INTO_R(node_gbv, _node_reader.get_bounds(), false)
+    node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
+    nassertr(node_gbv != (const GeometricBoundingVolume *)NULL, false);
 
     int result = _view_frustum->contains(node_gbv);
 
@@ -168,7 +171,8 @@ is_in_view_impl() {
 
   if (!_cull_planes->is_empty()) {
     if (node_gbv == (const GeometricBoundingVolume *)NULL) {
-      DCAST_INTO_R(node_gbv, _node_reader.get_bounds(), false)
+      node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
+      nassertr(node_gbv != (const GeometricBoundingVolume *)NULL, false);
     }
 
     // Also cull against the current clip planes.

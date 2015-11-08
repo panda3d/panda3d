@@ -64,8 +64,8 @@ add_object(CullableObject *object, Thread *current_thread) {
     return;
   }
 
-  const GeometricBoundingVolume *gbv;
-  DCAST_INTO_V(gbv, volume);
+  const GeometricBoundingVolume *gbv = volume->as_geometric_bounding_volume();
+  nassertv(gbv != NULL);
 
   LPoint3 center = gbv->get_approx_center();
   nassertv(object->_internal_transform != (const TransformState *)NULL);

@@ -59,7 +59,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // class has been defined.
 
     TypeHandle new_handle;
-    new_handle._index = _handle_registry.size();
+    new_handle._index = (int)_handle_registry.size();
 
     TypeRegistryNode *rnode = new TypeRegistryNode(new_handle, name, type_handle);
     _handle_registry.push_back(rnode);
@@ -73,7 +73,7 @@ register_type(TypeHandle &type_handle, const string &name) {
   TypeRegistryNode *rnode = (*ri).second;
   assert(rnode->_name == (*ri).first);
   assert(rnode->_handle._index >= 0 &&
-           rnode->_handle._index < (int)_handle_registry.size());
+         rnode->_handle._index < (int)_handle_registry.size());
   assert(_handle_registry[rnode->_handle._index] == rnode);
   assert(rnode->_handle._index != 0);
 
@@ -137,7 +137,7 @@ register_dynamic_type(const string &name) {
     // has something unique to point to.  This doesn't really mean
     // anything, though.
     TypeHandle *new_handle = new TypeHandle;
-    new_handle->_index = _handle_registry.size();
+    new_handle->_index = (int)_handle_registry.size();
 
     TypeRegistryNode *rnode = new TypeRegistryNode(*new_handle, name, *new_handle);
     _handle_registry.push_back(rnode);
@@ -365,7 +365,7 @@ int TypeRegistry::
 get_num_root_classes() {
   _lock->acquire();
   freshen_derivations();
-  int num_roots = _root_classes.size();
+  int num_roots = (int)_root_classes.size();
   _lock->release();
   return num_roots;
 }
@@ -410,7 +410,7 @@ get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->acquire();
   TypeRegistryNode *rnode = look_up(child, child_object);
   assert(rnode != (TypeRegistryNode *)NULL);
-  int num_parents = rnode->_parent_classes.size();
+  int num_parents = (int)rnode->_parent_classes.size();
   _lock->release();
   return num_parents;
 }
@@ -452,7 +452,7 @@ get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->acquire();
   TypeRegistryNode *rnode = look_up(child, child_object);
   assert(rnode != (TypeRegistryNode *)NULL);
-  int num_children = rnode->_child_classes.size();
+  int num_children = (int)rnode->_child_classes.size();
   _lock->release();
   return num_children;
 }

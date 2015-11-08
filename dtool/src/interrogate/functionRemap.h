@@ -112,7 +112,7 @@ public:
   bool _blocking;
   bool _extension;
   bool _const_method;
-  int _first_true_parameter;
+  size_t _first_true_parameter;
   int _num_default_parameters;
   Type _type;
   int _flags;
@@ -137,7 +137,7 @@ public:
   bool _is_valid;
 
 private:
-  string get_parameter_expr(int n, const vector_string &pexprs) const;
+  string get_parameter_expr(size_t n, const vector_string &pexprs) const;
   bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };
 

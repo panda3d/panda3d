@@ -36,7 +36,7 @@ extern Dtool_PyTypedObject Dtool_ReferenceCount;
 //               type is known, which has a Python representation.
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<MemoryUsagePointers>::
-get_python_pointer(int n) const {
+get_python_pointer(size_t n) const {
   TypedObject *typed_ptr = _this->get_typed_pointer(n);
   ReferenceCount *ref_ptr = _this->get_pointer(n);
 

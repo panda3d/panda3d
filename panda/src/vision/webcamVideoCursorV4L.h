@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_VIDEO4LINUX
+#if defined(HAVE_VIDEO4LINUX) && !defined(CPPPARSER)
 
 #include "webcamVideo.h"
 #include "movieVideoCursor.h"

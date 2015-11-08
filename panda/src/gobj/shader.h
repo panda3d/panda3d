@@ -97,8 +97,8 @@ PUBLISHED:
                          const string &tess_evaluation = "");
   static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
 
-  INLINE Filename get_filename(const ShaderType &type = ST_none) const;
-  INLINE const string &get_text(const ShaderType &type = ST_none) const;
+  INLINE Filename get_filename(ShaderType type = ST_none) const;
+  INLINE const string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
@@ -132,7 +132,7 @@ public:
     SMO_plight_x,
     SMO_slight_x,
     SMO_satten_x,
-    SMO_texmat_x,
+    SMO_texmat_i,
     SMO_plane_x,
     SMO_clipplane_x,
 
@@ -191,6 +191,8 @@ public:
     SMO_apiview_to_apiclip,
     SMO_apiclip_to_apiview,
 
+    SMO_inv_texmat_i,
+
     SMO_INVALID
   };
 
@@ -228,8 +230,10 @@ public:
     SAT_sampler1d,
     SAT_sampler2d,
     SAT_sampler3d,
-    SAT_sampler2dArray,
-    SAT_samplercube,
+    SAT_sampler2d_array,
+    SAT_sampler_cube,
+    SAT_sampler_buffer,
+    SAT_sampler_cube_array,
     SAT_unknown
 };
 
@@ -270,6 +274,9 @@ public:
     SSD_fog           = 0x040,
     SSD_light         = 0x080,
     SSD_clip_planes   = 0x100,
+    SSD_tex_matrix    = 0x200,
+    SSD_frame         = 0x400,
+    SSD_projection    = 0x800,
   };
 
   enum ShaderBug {
@@ -526,6 +533,7 @@ public:
   epvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
+  int _mat_deps;
 
   bool _error_flag;
   ShaderFile _text;

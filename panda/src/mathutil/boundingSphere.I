@@ -19,7 +19,7 @@
 //  Description: Constructs an empty sphere.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingSphere::
-BoundingSphere() {
+BoundingSphere() : _center(0) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,6 @@ BoundingSphere(const LPoint3 &center, PN_stdfloat radius) :
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL LPoint3 BoundingSphere::
 get_center() const {
-  nassertr(!is_empty(), LPoint3::zero());
   nassertr(!is_infinite(), LPoint3::zero());
   return _center;
 }
@@ -61,3 +60,25 @@ get_radius() const {
   return _radius;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::set_center
+//       Access: Published
+//  Description: Sets the center point of the sphere.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL void BoundingSphere::
+set_center(const LPoint3 &center) {
+  nassertv(!center.is_nan());
+  _center = center;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::set_radius
+//       Access: Published
+//  Description: Sets the radius of the sphere.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL void BoundingSphere::
+set_radius(PN_stdfloat radius) {
+  nassertv(!cnan(radius));
+  _radius = radius;
+  _flags = 0;
+}

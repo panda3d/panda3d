@@ -112,7 +112,9 @@ PUBLISHED:
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase3) &other) const;
 
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVecBase3) get_standardized_hpr() const;
+#endif
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH size_t get_hash() const;

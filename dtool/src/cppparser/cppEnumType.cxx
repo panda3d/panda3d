@@ -19,6 +19,7 @@
 #include "cppConstType.h"
 #include "cppScope.h"
 #include "cppParser.h"
+#include "cppIdentifier.h"
 #include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -82,6 +83,7 @@ add_element(const string &name, CPPExpression *value) {
     inst = new CPPInstance(CPPType::new_type(new CPPConstType(_element_type)), ident);
   }
 
+  inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
   if (value == (CPPExpression *)NULL) {
@@ -176,7 +178,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   bool any_changed = false;
 
-  for (int i = 0; i < _elements.size(); ++i) {
+  for (size_t i = 0; i < _elements.size(); ++i) {
     CPPInstance *elem_rep =
       _elements[i]->substitute_decl(subst, current_scope, global_scope)
       ->as_instance();

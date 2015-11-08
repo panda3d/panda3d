@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "geomMunger.h"
 #include "renderState.h"
-#include "weakPointerTo.h"
+#include "weakKeyHashMap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StateMunger
@@ -36,7 +36,7 @@ public:
 protected:
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 
-  typedef pmap< WCPT(RenderState), WCPT(RenderState) > StateMap;
+  typedef WeakKeyHashMap<RenderState, WCPT(RenderState) > StateMap;
   StateMap _state_map;
 
 public:

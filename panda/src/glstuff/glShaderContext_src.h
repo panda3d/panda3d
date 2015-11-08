@@ -45,25 +45,33 @@ public:
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
   INLINE bool valid(void);
-  void bind(bool reissue_parameters = true);
+  void bind();
   void unbind();
+
+  void set_state_and_transform(const RenderState *state,
+                               const TransformState *modelview_transform,
+                               const TransformState *projection_transform);
+
   void issue_parameters(int altered);
   void update_transform_table(const TransformTable *table);
   void update_slider_table(const SliderTable *table);
   void disable_shader_vertex_arrays();
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
-  void disable_shader_texture_bindings();
-  void update_shader_texture_bindings(ShaderContext *prev);
+  void disable_shader_texture_bindings() OVERRIDE;
+  void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
 
   INLINE bool uses_standard_vertex_arrays(void);
   INLINE bool uses_custom_vertex_arrays(void);
-  INLINE bool uses_custom_texture_bindings(void);
 
 private:
   bool _validated;
   GLuint _glsl_program;
   typedef pvector<GLuint> GLSLShaders;
   GLSLShaders _glsl_shaders;
+
+  CPT(RenderState) _state_rs;
+  CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _projection_transform;
 
   //struct ParamContext {
   //  CPT(InternalName) _name;
@@ -80,6 +88,8 @@ private:
   GLint _slider_table_index;
   GLsizei _transform_table_size;
   GLsizei _slider_table_size;
+  GLint _frame_number_loc;
+  GLint _frame_number;
   pmap<GLint, GLuint64> _glsl_uniform_handles;
 
   struct ImageInput {
@@ -98,7 +108,7 @@ private:
   void glsl_report_program_errors(GLuint program, bool fatal);
   bool glsl_compile_shader(Shader::ShaderType type);
   bool glsl_compile_and_link();
-  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
+  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *s);
   void release_resources();
 
 public:
@@ -106,9 +116,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    ShaderContext::init_type();
     register_type(_type_handle, CLASSPREFIX_QUOTED "ShaderContext",
-                  TypedObject::get_class_type());
+                  ShaderContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

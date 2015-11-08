@@ -19,7 +19,7 @@
 //  Description: Returns the total number of different blend
 //               combinations in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformBlendTable::
+INLINE size_t TransformBlendTable::
 get_num_blends() const {
   return _blends.size();
 }
@@ -30,8 +30,8 @@ get_num_blends() const {
 //  Description: Returns the nth blend in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformBlend &TransformBlendTable::
-get_blend(int n) const {
-  nassertr(n >= 0 && n < (int)_blends.size(), _blends[0]);
+get_blend(size_t n) const {
+  nassertr(n < _blends.size(), _blends[0]);
   return _blends[n];
 }
 

@@ -21,6 +21,10 @@ class EXPCL_DTOOL IPipeStream : public istream {
 PUBLISHED:
   INLINE IPipeStream(const std::string);
 
+#if _MSC_VER >= 1800
+  INLINE IPipeStream(const IPipeStream &copy) = delete;
+#endif
+
   INLINE void flush();
 
 private:
@@ -32,6 +36,10 @@ private:
 class EXPCL_DTOOL OPipeStream : public ostream {
 PUBLISHED:
   INLINE OPipeStream(const std::string);
+
+#if _MSC_VER >= 1800
+  INLINE OPipeStream(const OPipeStream &copy) = delete;
+#endif
 
   INLINE void flush();
 

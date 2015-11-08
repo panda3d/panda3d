@@ -32,7 +32,7 @@
 template<>
 class Extension<MemoryUsagePointers> : public ExtensionBase<MemoryUsagePointers> {
 public:
-  PyObject *get_python_pointer(int n) const;
+  PyObject *get_python_pointer(size_t n) const;
 };
 
 #endif  // HAVE_PYTHON && DO_MEMORY_USAGE

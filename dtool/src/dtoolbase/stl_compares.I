@@ -132,7 +132,7 @@ add_hash(size_t hash, const Key &key) {
 INLINE size_t pointer_hash::
 add_hash(size_t hash, const void *key) {
   // We don't mind if this loses precision.
-  PN_uint32 key32 = (PN_uint32)reinterpret_cast<unsigned long>(key);
+  PN_uint32 key32 = (PN_uint32)reinterpret_cast<uintptr_t>(key);
   return AddHash::add_hash(hash, &key32, 1);
 }
 

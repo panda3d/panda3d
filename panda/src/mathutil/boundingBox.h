@@ -46,6 +46,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+
 PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
   INLINE_MATHUTIL LPoint3 get_point(int n) const;
@@ -53,6 +54,8 @@ PUBLISHED:
   INLINE_MATHUTIL int get_num_planes() const;
   INLINE_MATHUTIL LPlane get_plane(int n) const;
   MAKE_SEQ(get_planes, get_num_planes, get_plane);
+
+  INLINE_MATHUTIL void set_min_max(const LPoint3 &min, const LPoint3 &max);
 
 public:
   // Inline accessors for speed.

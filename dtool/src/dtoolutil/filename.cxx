@@ -732,7 +732,7 @@ set_dirname(const string &s) {
     // Remove the directory prefix altogether.
     _filename.replace(0, _basename_start, "");
 
-    int length_change = - ((int)_basename_start);
+    ssize_t length_change = - ((ssize_t)_basename_start);
 
     _dirname_end = 0;
     _basename_start += length_change;
@@ -750,7 +750,7 @@ set_dirname(const string &s) {
       ss = s+'/';
     }
 
-    int length_change = ss.length() - _basename_start;
+    ssize_t length_change = ss.length() - _basename_start;
 
     _filename.replace(0, _basename_start, ss);
 
@@ -795,7 +795,7 @@ set_basename(const string &s) {
 ////////////////////////////////////////////////////////////////////
 void Filename::
 set_fullpath_wo_extension(const string &s) {
-  int length_change = s.length() - _basename_end;
+  ssize_t length_change = s.length() - _basename_end;
 
   _filename.replace(0, _basename_end, s);
 
@@ -815,7 +815,7 @@ set_fullpath_wo_extension(const string &s) {
 ////////////////////////////////////////////////////////////////////
 void Filename::
 set_basename_wo_extension(const string &s) {
-  int length_change = s.length() - (_basename_end - _basename_start);
+  ssize_t length_change = s.length() - (_basename_end - _basename_start);
 
   if (_basename_end == string::npos) {
     _filename.replace(_basename_start, string::npos, s);
@@ -879,8 +879,8 @@ get_filename_index(int index) const {
 
   if (_hash_end != _hash_start) {
     ostringstream strm;
-    strm << _filename.substr(0, _hash_start) 
-         << setw(_hash_end - _hash_start) << setfill('0') << index
+    strm << _filename.substr(0, _hash_start)
+         << setw((int)(_hash_end - _hash_start)) << setfill('0') << index
          << _filename.substr(_hash_end);
     file.set_fullpath(strm.str());
   }
@@ -1826,12 +1826,12 @@ find_on_searchpath(const DSearchPath &searchpath) {
     return -1;
   }
 
-  int num_directories = searchpath.get_num_directories();
-  for (int i = 0; i < num_directories; i++) {
+  size_t num_directories = searchpath.get_num_directories();
+  for (size_t i = 0; i < num_directories; ++i) {
     Filename directory = searchpath.get_directory(i);
     directory.make_absolute();
     if (make_relative_to(directory, false)) {
-      return i;
+      return (int)i;
     }
   }
 

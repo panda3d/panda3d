@@ -16,7 +16,8 @@
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 
-#include "Cg/cgGL.h"
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
 
 #include "pStatGPUTimer.h"
 
@@ -46,10 +47,24 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   _color_attrib_index = CA_color;
   _transform_table_param = 0;
   _slider_table_param = 0;
+  _frame_number = -1;
 
   nassertv(s->get_language() == Shader::SL_Cg);
 
-  CGcontext context = _glgsg->_cg_context;
+  // Get a Cg context for this GSG.
+  CGcontext context = glgsg->_cg_context;
+  if (context == 0) {
+    // The GSG doesn't have a Cg context yet.  Create one.
+    glgsg->_cg_context = context = cgCreateContext();
+
+#if CG_VERSION_NUM >= 3100
+    // This just sounds like a good thing to do.
+    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
+    if (glgsg->_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
+      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
+    }
+#endif
+  }
 
   // Ask the shader to compile itself for us and
   // to give us the resulting Cg program objects.
@@ -311,7 +326,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 ////////////////////////////////////////////////////////////////////
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
-  release_resources();
+  // Don't call release_resources; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -348,13 +363,8 @@ release_resources() {
 //               input parameters.
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
-bind(bool reissue_parameters) {
+bind() {
   if (_cg_program != 0) {
-    if (reissue_parameters) {
-      // Pass in k-parameters and transform-parameters
-      issue_parameters(Shader::SSD_general);
-    }
-
     // Bind the shaders.
     cgGLEnableProgramProfiles(_cg_program);
     cgGLBindProgram(_cg_program);
@@ -385,6 +395,88 @@ unbind() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLCgShaderContext::set_state_and_transform
+//       Access: Public
+//  Description: This function gets called whenever the RenderState
+//               or TransformState has changed, but the Shader
+//               itself has not changed.  It loads new values into the
+//               shader's parameters.
+////////////////////////////////////////////////////////////////////
+void CLP(CgShaderContext)::
+set_state_and_transform(const RenderState *target_rs,
+                        const TransformState *modelview_transform,
+                        const TransformState *projection_transform) {
+
+  if (!valid()) {
+    return;
+  }
+
+  // Find out which state properties have changed.
+  int altered = 0;
+
+  if (_modelview_transform != modelview_transform) {
+    _modelview_transform = modelview_transform;
+    altered |= Shader::SSD_transform;
+  }
+  if (_projection_transform != projection_transform) {
+    _projection_transform = projection_transform;
+    altered |= Shader::SSD_projection;
+  }
+
+  if (_state_rs != target_rs) {
+    if (_state_rs == NULL) {
+      // We haven't set any state yet.
+      altered |= Shader::SSD_general;
+    } else {
+      if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ColorAttrib::get_class_slot())) {
+        altered |= Shader::SSD_color;
+      }
+      if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
+        altered |= Shader::SSD_colorscale;
+      }
+      if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+          target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
+        altered |= Shader::SSD_material;
+      }
+      if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
+        altered |= Shader::SSD_shaderinputs;
+      }
+      if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+          target_rs->get_attrib(FogAttrib::get_class_slot())) {
+        altered |= Shader::SSD_fog;
+      }
+      if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+          target_rs->get_attrib(LightAttrib::get_class_slot())) {
+        altered |= Shader::SSD_light;
+      }
+      if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
+        altered |= Shader::SSD_clip_planes;
+      }
+      if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+          target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
+        altered |= Shader::SSD_tex_matrix;
+      }
+    }
+    _state_rs = target_rs;
+  }
+
+  // Is this the first time this shader is used this frame?
+  int frame_number = ClockObject::get_global_clock()->get_frame_count();
+  if (frame_number != _frame_number) {
+     altered |= Shader::SSD_frame;
+    _frame_number = frame_number;
+  }
+
+  if (altered != 0) {
+    issue_parameters(altered);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLCgShaderContext::issue_parameters
 //       Access: Public
 //  Description: This function gets called whenever the RenderState
@@ -401,49 +493,48 @@ unbind() {
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 issue_parameters(int altered) {
-  //PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
+  PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
 
-  if (!valid()) {
-    return;
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "Setting uniforms for " << _shader->get_filename()
+      << " (altered 0x" << hex << altered << dec << ")\n";
   }
 
-  // Iterate through _ptr parameters
-  for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
-    if (altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])) {
-      const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-      Shader::ShaderPtrData* ptr_data =
-        const_cast< Shader::ShaderPtrData*>(_glgsg->fetch_ptr_parameter(_ptr));
+  // We have no way to track modifications to PTAs, so we assume that
+  // they are modified every frame and when we switch ShaderAttribs.
+  if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
+    // Iterate through _ptr parameters
+    for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
+      Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
+      const Shader::ShaderPtrData *ptr_data =_glgsg->fetch_ptr_parameter(spec);
       if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
-      //check if the data must be shipped to the GPU
-      /*if (!ptr_data->_updated)
-        continue;
-        ptr_data->_updated = false;*/
 
       //Check if the size of the shader input and ptr_data match
-      int input_size = _ptr._dim[0] * _ptr._dim[1] * _ptr._dim[2];
+      int input_size = spec._dim[0] * spec._dim[1] * spec._dim[2];
 
       // dimension is negative only if the parameter had the (deprecated)k_ prefix.
-      if ((input_size > ptr_data->_size) && (_ptr._dim[0] > 0)) {
-        GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected "
+      if ((input_size > ptr_data->_size) && (spec._dim[0] > 0)) {
+        GLCAT.error() << spec._id._name << ": incorrect number of elements, expected "
                       <<  input_size <<" got " <<  ptr_data->_size << "\n";
         release_resources();
         return;
       }
-      CGparameter p = _cg_parameter_map[_ptr._id._seqno];
+      CGparameter p = _cg_parameter_map[spec._id._seqno];
 
       switch (ptr_data->_type) {
       case Shader::SPT_float:
-        switch(_ptr._info._class) {
+        switch (spec._info._class) {
         case Shader::SAC_scalar:
           cgSetParameter1fv(p, (float*)ptr_data->_ptr);
           continue;
 
         case Shader::SAC_vector:
-          switch (_ptr._info._type) {
+          switch (spec._info._type) {
           case Shader::SAT_vec1:
             cgSetParameter1fv(p, (float*)ptr_data->_ptr);
             continue;
@@ -466,22 +557,22 @@ issue_parameters(int altered) {
           continue;
 
         case Shader::SAC_array:
-          switch (_ptr._info._subclass) {
+          switch (spec._info._subclass) {
           case Shader::SAC_scalar:
-            cgGLSetParameterArray1f(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr);
+            cgGLSetParameterArray1f(p, 0, spec._dim[0], (float*)ptr_data->_ptr);
             continue;
           case Shader::SAC_vector:
-            switch (_ptr._dim[2]) {
-            case 1: cgGLSetParameterArray1f(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-            case 2: cgGLSetParameterArray2f(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-            case 3: cgGLSetParameterArray3f(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-            case 4: cgGLSetParameterArray4f(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
+            switch (spec._dim[2]) {
+            case 1: cgGLSetParameterArray1f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
+            case 2: cgGLSetParameterArray2f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
+            case 3: cgGLSetParameterArray3f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
+            case 4: cgGLSetParameterArray4f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
             default:
-              nassertd(_ptr._dim[2] > 0 && _ptr._dim[2] <= 4) continue;
+              nassertd(spec._dim[2] > 0 && spec._dim[2] <= 4) continue;
             }
             continue;
           case Shader::SAC_matrix:
-            cgGLSetMatrixParameterArrayfc(p, 0, _ptr._dim[0], (float*)ptr_data->_ptr);
+            cgGLSetMatrixParameterArrayfc(p, 0, spec._dim[0], (float*)ptr_data->_ptr);
             continue;
           default:
             nassertd(false) continue;
@@ -491,13 +582,13 @@ issue_parameters(int altered) {
         }
 
       case Shader::SPT_double:
-        switch(_ptr._info._class) {
+        switch (spec._info._class) {
         case Shader::SAC_scalar:
           cgSetParameter1dv(p, (double*)ptr_data->_ptr);
           continue;
 
         case Shader::SAC_vector:
-          switch (_ptr._info._type) {
+          switch (spec._info._type) {
           case Shader::SAT_vec1:
             cgSetParameter1dv(p, (double*)ptr_data->_ptr);
             continue;
@@ -520,22 +611,22 @@ issue_parameters(int altered) {
           continue;
 
         case Shader::SAC_array:
-          switch (_ptr._info._subclass) {
+          switch (spec._info._subclass) {
           case Shader::SAC_scalar:
-            cgGLSetParameterArray1d(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr);
+            cgGLSetParameterArray1d(p, 0, spec._dim[0], (double*)ptr_data->_ptr);
             continue;
           case Shader::SAC_vector:
-            switch (_ptr._dim[2]) {
-            case 1: cgGLSetParameterArray1d(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr); continue;
-            case 2: cgGLSetParameterArray2d(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr); continue;
-            case 3: cgGLSetParameterArray3d(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr); continue;
-            case 4: cgGLSetParameterArray4d(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr); continue;
+            switch (spec._dim[2]) {
+            case 1: cgGLSetParameterArray1d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
+            case 2: cgGLSetParameterArray2d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
+            case 3: cgGLSetParameterArray3d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
+            case 4: cgGLSetParameterArray4d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
             default:
-              nassertd(_ptr._dim[2] > 0 && _ptr._dim[2] <= 4) continue;
+              nassertd(spec._dim[2] > 0 && spec._dim[2] <= 4) continue;
             }
             continue;
           case Shader::SAC_matrix:
-            cgGLSetMatrixParameterArraydc(p, 0, _ptr._dim[0], (double*)ptr_data->_ptr);
+            cgGLSetMatrixParameterArraydc(p, 0, spec._dim[0], (double*)ptr_data->_ptr);
             continue;
           default:
             nassertd(false) continue;
@@ -546,12 +637,12 @@ issue_parameters(int altered) {
         continue;
 
       case Shader::SPT_int:
-        switch(_ptr._info._class) {
+        switch (spec._info._class) {
         case Shader::SAC_scalar:
           cgSetParameter1iv(p, (int*)ptr_data->_ptr);
           continue;
         case Shader::SAC_vector:
-          switch(_ptr._info._type) {
+          switch (spec._info._type) {
           case Shader::SAT_vec1: cgSetParameter1iv(p, (int*)ptr_data->_ptr); continue;
           case Shader::SAT_vec2: cgSetParameter2iv(p, (int*)ptr_data->_ptr); continue;
           case Shader::SAT_vec3: cgSetParameter3iv(p, (int*)ptr_data->_ptr); continue;
@@ -563,21 +654,27 @@ issue_parameters(int altered) {
           nassertd(false) continue;
         }
       default:
-        GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n";
+        GLCAT.error() << spec._id._name << ":" << "unrecognized parameter type\n";
         release_resources();
         return;
       }
     }
   }
 
-  for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
-    if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
-      const LMatrix4 *val = _glgsg->fetch_specified_value(_shader->_mat_spec[i], altered);
+  if (altered & _shader->_mat_deps) {
+    for (int i = 0; i < (int)_shader->_mat_spec.size(); ++i) {
+      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+
+      if ((altered & (spec._dep[0] | spec._dep[1])) == 0) {
+        continue;
+      }
+
+      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, altered);
       if (!val) continue;
       const PN_stdfloat *data = val->get_data();
 
-      CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
-      switch (_shader->_mat_spec[i]._piece) {
+      CGparameter p = _cg_parameter_map[spec._id._seqno];
+      switch (spec._piece) {
       case Shader::SMP_whole: GLfc(cgGLSetMatrixParameter)(p, data); continue;
       case Shader::SMP_transpose: GLfr(cgGLSetMatrixParameter)(p, data); continue;
       case Shader::SMP_col0: GLf(cgGLSetParameter4)(p, data[0], data[4], data[ 8], data[12]); continue;
@@ -968,9 +1065,9 @@ disable_shader_texture_bindings() {
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
-  if (prev) {
-    prev->disable_shader_texture_bindings();
-  }
+  //if (prev) {
+  //  prev->disable_shader_texture_bindings();
+  //}
 
   if (!valid()) {
     return;
@@ -978,8 +1075,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   // We get the TextureAttrib directly from the _target_rs, not the
   // filtered TextureAttrib in _target_texture.
-  const TextureAttrib *texattrib = DCAST(TextureAttrib, _glgsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
-  nassertv(texattrib != (TextureAttrib *)NULL);
+  const TextureAttrib *texattrib;
+  _glgsg->_target_rs->get_attrib_def(texattrib);
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
@@ -1040,8 +1137,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    _glgsg->apply_texture(tc);
-    _glgsg->apply_sampler(texunit, sampler, tc);
+    CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
+    _glgsg->apply_texture(gtc);
+    _glgsg->apply_sampler(texunit, sampler, gtc);
   }
 
   cg_report_errors();

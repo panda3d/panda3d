@@ -62,7 +62,7 @@ register_table(const SliderTable *table) {
 //       Access: Published
 //  Description: Returns the number of sliders in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE int SliderTable::
+INLINE size_t SliderTable::
 get_num_sliders() const {
   return _sliders.size();
 }
@@ -73,8 +73,8 @@ get_num_sliders() const {
 //  Description: Returns the nth slider in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE const VertexSlider *SliderTable::
-get_slider(int n) const {
-  nassertr(n >= 0 && n < (int)_sliders.size(), NULL);
+get_slider(size_t n) const {
+  nassertr(n < _sliders.size(), NULL);
   return _sliders[n]._slider;
 }
 
@@ -85,8 +85,8 @@ get_slider(int n) const {
 //               nth slider in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE const SparseArray &SliderTable::
-get_slider_rows(int n) const {
-  nassertr(n >= 0 && n < (int)_sliders.size(), _empty_array);
+get_slider_rows(size_t n) const {
+  nassertr(n < _sliders.size(), _empty_array);
   return _sliders[n]._rows;
 }
 

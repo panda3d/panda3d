@@ -1993,7 +1993,7 @@ def pstatcollect(scope, level = None):
 
     try:
 
-        if not (__dev__ or config.GetBool('force-pstatcollect', 0)) or \
+        if not (__dev__ or ConfigVariableBool('force-pstatcollect', False)) or \
            not scope:
             return decorator
 

@@ -74,7 +74,7 @@ output_ssl_errors() {
 ////////////////////////////////////////////////////////////////////
 void
 output_c_string(ostream &out, const string &string_name, 
-                int index, BIO *mbio) {
+                size_t index, BIO *mbio) {
   char *data_ptr;
   size_t data_size = BIO_get_mem_data(mbio, &data_ptr);
 
@@ -151,13 +151,13 @@ write_public_keys(Filename outfile) {
     "\n"
     "#include \"prcKeyRegistry.h\"\n"
     "\n";
-  
+
   PrcKeyRegistry *pkr = PrcKeyRegistry::get_global_ptr();
 
   BIO *mbio = BIO_new(BIO_s_mem());
 
-  int num_keys = pkr->get_num_keys();
-  int i;
+  size_t num_keys = pkr->get_num_keys();
+  size_t i;
   for (i = 0; i < num_keys; i++) {
     EVP_PKEY *pkey = pkr->get_key(i);
 
@@ -403,7 +403,7 @@ main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     KeyNumber key;
     char *endptr;
-    key._number = strtol(argv[i], &endptr, 0);
+    key._number = (int)strtol(argv[i], &endptr, 0);
     key._got_pass_phrase = got_pass_phrase;
     key._pass_phrase = pass_phrase;
 

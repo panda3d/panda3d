@@ -43,23 +43,23 @@ PUBLISHED:
 
   INLINE DSearchPath &get_search_path();
 
-  INLINE int get_num_prc_patterns() const;
-  INLINE string get_prc_pattern(int n) const;
+  INLINE size_t get_num_prc_patterns() const;
+  INLINE string get_prc_pattern(size_t n) const;
 
-  INLINE int get_num_prc_encrypted_patterns() const;
-  INLINE string get_prc_encrypted_pattern(int n) const;
+  INLINE size_t get_num_prc_encrypted_patterns() const;
+  INLINE string get_prc_encrypted_pattern(size_t n) const;
 
-  INLINE int get_num_prc_executable_patterns() const;
-  INLINE string get_prc_executable_pattern(int n) const;
+  INLINE size_t get_num_prc_executable_patterns() const;
+  INLINE string get_prc_executable_pattern(size_t n) const;
 
   ConfigPage *make_explicit_page(const string &name);
   bool delete_explicit_page(ConfigPage *page);
 
-  INLINE int get_num_implicit_pages() const;
-  INLINE ConfigPage *get_implicit_page(int n) const;
+  INLINE size_t get_num_implicit_pages() const;
+  INLINE ConfigPage *get_implicit_page(size_t n) const;
 
-  INLINE int get_num_explicit_pages() const;
-  INLINE ConfigPage *get_explicit_page(int n) const;
+  INLINE size_t get_num_explicit_pages() const;
+  INLINE ConfigPage *get_explicit_page(size_t n) const;
 
   void output(ostream &out) const;
   void write(ostream &out) const;

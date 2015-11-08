@@ -397,6 +397,10 @@ private:
 //       Class : GeomPipelineReader
 // Description : Encapsulates the data from a Geom,
 //               pre-fetched for one stage of the pipeline.
+//
+//               Does not hold a reference to the Geom.  The caller
+//               must ensure that the Geom persists for at least the
+//               lifetime of the GeomPipelineReader.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
@@ -434,7 +438,7 @@ public:
             bool force) const;
 
 private:
-  CPT(Geom) _object;
+  const Geom *_object;
   Thread *_current_thread;
   const Geom::CData *_cdata;
 

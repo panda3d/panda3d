@@ -125,7 +125,7 @@ compare_and_exchange(TVOLATILE AtomicAdjustGccImpl::Integer &mem,
                      AtomicAdjustGccImpl::Integer old_value,
                      AtomicAdjustGccImpl::Integer new_value) {
 
-  __atomic_compare_exchange_n(&mem, &old_value, new_value, true,
+  __atomic_compare_exchange_n(&mem, &old_value, new_value, false,
                               __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
   return old_value;
 }
@@ -142,7 +142,7 @@ compare_and_exchange_ptr(TVOLATILE AtomicAdjustGccImpl::Pointer &mem,
                          AtomicAdjustGccImpl::Pointer old_value,
                          AtomicAdjustGccImpl::Pointer new_value) {
 
-  __atomic_compare_exchange_n(&mem, &old_value, new_value, true,
+  __atomic_compare_exchange_n(&mem, &old_value, new_value, false,
                               __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
   return old_value;
 }

@@ -496,6 +496,16 @@ get_supports_buffer_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_cube_map_array
+//       Access: Published
+//  Description: Returns true if this GSG can render cube map arrays.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_cube_map_array() const {
+  return _supports_cube_map_array;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_tex_non_pow2
 //       Access: Published
 //  Description: Returns true if this GSG can handle non power of two
@@ -799,6 +809,18 @@ get_supports_geometry_instancing() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_indirect_draw
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               draw calls for which the information comes from a
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_indirect_draw() const {
+  return _supports_indirect_draw;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_occlusion_query
 //       Access: Published
 //  Description: Returns true if this GSG supports an occlusion query.
@@ -876,7 +898,7 @@ get_maximum_simultaneous_render_targets() const {
 //       Access: Published
 //  Description: Returns the ShaderModel
 ////////////////////////////////////////////////////////////////////
-INLINE int GraphicsStateGuardian::
+INLINE GraphicsStateGuardian::ShaderModel GraphicsStateGuardian::
 get_shader_model() const {
   return _shader_model;
 }
@@ -889,7 +911,7 @@ get_shader_model() const {
 //               testing lower-end shaders.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
-set_shader_model(int shader_model) {
+set_shader_model(ShaderModel shader_model) {
   if (shader_model <= _auto_detect_shader_model) {
     _shader_model = shader_model;
   }

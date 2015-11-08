@@ -258,6 +258,32 @@ get_global_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCache::consider_flush_global_index
+//       Access: Published, Static
+//  Description: If there is a global BamCache object, calls
+//               consider_flush_index() on it.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+consider_flush_global_index() {
+  if (_global_ptr != (BamCache *)NULL) {
+    _global_ptr->consider_flush_index();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::flush_global_index
+//       Access: Published, Static
+//  Description: If there is a global BamCache object, calls
+//               flush_index() on it.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+flush_global_index() {
+  if (_global_ptr != (BamCache *)NULL) {
+    _global_ptr->flush_index();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCache::mark_index_stale
 //       Access: Private
 //  Description: Indicates that the index has been modified and will

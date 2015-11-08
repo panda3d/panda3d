@@ -32,7 +32,7 @@ public:
     Time_Clock();
     Time_Clock(time_t time);
     Time_Clock(long secs, long usecs);
-    Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, unsigned long microseconds = 0, int nDST = -1);
+    Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds = 0, int nDST = -1);
     Time_Clock(const Time_Clock& timeSrc);
     
     inline const Time_Clock& operator=(const Time_Clock& timeSrc);
@@ -51,7 +51,7 @@ public:
     int GetSecond() const;
     int GetDayOfWeek() const;   // 1=Sun, 2=Mon, ..., 7=Sat
     
-    void Set(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, unsigned long microseconds = 0, int nDST = -1);
+    void Set(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds = 0, int nDST = -1);
     
     
     // Operations
@@ -70,7 +70,7 @@ public:
     {
         return _my_time.tv_sec;
     };
-    unsigned long GetUsecPart()
+    long GetUsecPart()
     {
         return _my_time.tv_usec;
     };
@@ -103,7 +103,7 @@ public:
 // Argument         : int nSec
 // Argument         : int nDST
 //////////////////////////////////////////////////////////
-inline Time_Clock::Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, unsigned long microseconds , int nDST)
+inline Time_Clock::Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds , int nDST)
 {
     struct tm atm;
     atm.tm_sec = nSec;
@@ -134,7 +134,7 @@ inline Time_Clock::Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nM
 // Argument         : unsigned long microseconds
 // Argument         : int nDST
 //////////////////////////////////////////////////////////////
-inline void Time_Clock::Set(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, unsigned long microseconds , int nDST)
+inline void Time_Clock::Set(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds , int nDST)
 {
     struct tm atm;
     atm.tm_sec = nSec;

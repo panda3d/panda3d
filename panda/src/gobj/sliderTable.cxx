@@ -75,9 +75,9 @@ SliderTable::
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
 void SliderTable::
-set_slider(int n, const VertexSlider *slider) {
+set_slider(size_t n, const VertexSlider *slider) {
   nassertv(!_is_registered);
-  nassertv(n >= 0 && n < (int)_sliders.size());
+  nassertv(n < _sliders.size());
 
   if (_sliders[n]._slider->get_name() != slider->get_name()) {
     _sliders_by_name[_sliders[n]._slider->get_name()].clear_bit(n);
@@ -94,12 +94,12 @@ set_slider(int n, const VertexSlider *slider) {
 //               valid for unregistered tables.
 ////////////////////////////////////////////////////////////////////
 void SliderTable::
-set_slider_rows(int n, const SparseArray &rows) {
+set_slider_rows(size_t n, const SparseArray &rows) {
   // We don't actually enforce the registration requirement, since
   // gee, it doesn't actually matter here; and the GeomVertexData
   // needs to be able to change the SparseArrays in the bam reader.
   //  nassertv(!_is_registered);
-  nassertv(n >= 0 && n < (int)_sliders.size());
+  nassertv(n < _sliders.size());
 
   _sliders[n]._rows = rows;
 }
@@ -111,9 +111,9 @@ set_slider_rows(int n, const SparseArray &rows) {
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
 void SliderTable::
-remove_slider(int n) {
+remove_slider(size_t n) {
   nassertv(!_is_registered);
-  nassertv(n >= 0 && n < (int)_sliders.size());
+  nassertv(n < _sliders.size());
 
   _sliders_by_name[_sliders[n]._slider->get_name()].clear_bit(n);
   _sliders.erase(_sliders.begin() + n);
@@ -126,11 +126,11 @@ remove_slider(int n) {
 //               index number of the new slider.  Only valid for
 //               unregistered tables.
 ////////////////////////////////////////////////////////////////////
-int SliderTable::
+size_t SliderTable::
 add_slider(const VertexSlider *slider, const SparseArray &rows) {
-  nassertr(!_is_registered, -1);
+  nassertr(!_is_registered, 0);
 
-  int new_index = (int)_sliders.size();
+  size_t new_index = _sliders.size();
 
   SliderDef slider_def;
   slider_def._slider = slider;

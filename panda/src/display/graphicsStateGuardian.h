@@ -83,6 +83,7 @@ PUBLISHED:
     SM_30,
     SM_40,
     SM_50,
+    SM_51,
   };
 
   INLINE void release_all();
@@ -131,6 +132,7 @@ PUBLISHED:
   INLINE bool get_supports_2d_texture_array() const;
   INLINE bool get_supports_cube_map() const;
   INLINE bool get_supports_buffer_texture() const;
+  INLINE bool get_supports_cube_map_array() const;
   INLINE bool get_supports_tex_non_pow2() const;
   INLINE bool get_supports_texture_srgb() const;
 
@@ -158,6 +160,7 @@ PUBLISHED:
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
+  INLINE bool get_supports_indirect_draw() const;
 
   INLINE bool get_supports_occlusion_query() const;
   INLINE bool get_supports_timer_query() const;
@@ -166,8 +169,8 @@ PUBLISHED:
   INLINE int get_max_color_targets() const;
   INLINE int get_maximum_simultaneous_render_targets() const;
 
-  INLINE int get_shader_model() const;
-  INLINE void set_shader_model(int shader_model);
+  INLINE ShaderModel get_shader_model() const;
+  INLINE void set_shader_model(ShaderModel shader_model);
 
   virtual int get_supported_geom_rendering() const;
   virtual bool get_supports_cg_profile(const string &name) const;
@@ -488,6 +491,7 @@ protected:
   bool _supports_2d_texture_array;
   bool _supports_cube_map;
   bool _supports_buffer_texture;
+  bool _supports_cube_map_array;
   bool _supports_tex_non_pow2;
   bool _supports_texture_srgb;
 
@@ -535,6 +539,7 @@ protected:
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
   bool _supports_geometry_instancing;
+  bool _supports_indirect_draw;
 
   int _max_color_targets;
 
@@ -545,8 +550,8 @@ protected:
 
   int  _stereo_buffer_mask;
 
-  int _auto_detect_shader_model;
-  int _shader_model;
+  ShaderModel _auto_detect_shader_model;
+  ShaderModel _shader_model;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 
@@ -663,6 +668,8 @@ private:
   friend class GraphicsWindow;
   friend class GraphicsEngine;
 };
+
+EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm);
 
 #include "graphicsStateGuardian.I"
 

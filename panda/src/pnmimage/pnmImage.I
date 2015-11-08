@@ -1386,7 +1386,7 @@ take_alpha_array() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 allocate_array() {
-  _array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
+  _array = (xel *)PANDA_MALLOC_ARRAY((size_t)_x_size * (size_t)_y_size * sizeof(xel));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1397,7 +1397,7 @@ allocate_array() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 allocate_alpha() {
-  _alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
+  _alpha = (xelval *)PANDA_MALLOC_ARRAY((size_t)_x_size * (size_t)_y_size * sizeof(xelval));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1491,7 +1491,7 @@ compute_spot_pixel(LColorf &c, float d2,
   } else if (d > min_radius) {
     d = (d - min_radius) / (max_radius - min_radius);
     float d2 = d * d;
-    float t = (3.0 * d2) - (2.0 * d * d2);
+    float t = (3.0f * d2) - (2.0f * d * d2);
     c = fg + t * (bg - fg);
   } else {
     c = fg;

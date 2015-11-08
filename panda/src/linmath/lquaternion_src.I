@@ -339,7 +339,7 @@ get_axis_normalized() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle_rad() const {
-  return acos(_v(0)) * 2.0;
+  return acos(_v(0)) * FLOATCONST(2.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,8 +368,8 @@ get_angle() const {
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_from_axis_angle_rad(FLOATTYPE angle_rad, const FLOATNAME(LVector3) &axis) {
   nassertv(IS_THRESHOLD_EQUAL(axis.length(), 1.0f, 0.001f));
-  FLOATTYPE sinHalfAngle = sin(angle_rad * 0.5);
-  _v(0) = cos(angle_rad * 0.5);
+  FLOATTYPE sinHalfAngle = sin(angle_rad * FLOATCONST(0.5));
+  _v(0) = cos(angle_rad * FLOATCONST(0.5));
   _v(1) = axis[0] * sinHalfAngle;
   _v(2) = axis[1] * sinHalfAngle;
   _v(3) = axis[2] * sinHalfAngle;

@@ -136,12 +136,13 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     if (_state->get_attrib(sattr) && sattr->auto_shader()) {
       GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
       if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
-        _state = _state->set_attrib(sattr->set_flag(ShaderAttrib::F_hardware_skinning, true));
+        static CPT(RenderState) state = RenderState::make(
+          DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
+        _state = _state->compose(state);
       }
     }
 
-    StateMunger *state_munger;
-    DCAST_INTO_R(state_munger, munger, false);
+    StateMunger *state_munger = (StateMunger *)munger;
     _state = state_munger->munge_state(_state);
 
     // If there is any animation left in the vertex data after it

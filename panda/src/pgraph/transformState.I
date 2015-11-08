@@ -804,7 +804,7 @@ node_unref() const {
 //               has been cached.  This number is not useful for any
 //               practical reason other than performance analysis.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformState::
+INLINE size_t TransformState::
 get_composition_cache_num_entries() const {
   LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_num_entries();
@@ -819,7 +819,7 @@ get_composition_cache_num_entries() const {
 //               records cache entries for the invert_compose()
 //               operation.  See get_composition_cache_num_entries().
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformState::
+INLINE size_t TransformState::
 get_invert_composition_cache_num_entries() const {
   LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_num_entries();
@@ -837,7 +837,7 @@ get_invert_composition_cache_num_entries() const {
 //               This has no practical value other than for examining
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformState::
+INLINE size_t TransformState::
 get_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_size();
@@ -855,7 +855,7 @@ get_composition_cache_size() const {
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
-get_composition_cache_source(int n) const {
+get_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
   if (!_composition_cache.has_element(n)) {
     return NULL;
@@ -878,7 +878,7 @@ get_composition_cache_source(int n) const {
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
-get_composition_cache_result(int n) const {
+get_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
   if (!_composition_cache.has_element(n)) {
     return NULL;
@@ -898,7 +898,7 @@ get_composition_cache_result(int n) const {
 //               This has no practical value other than for examining
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformState::
+INLINE size_t TransformState::
 get_invert_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_size();
@@ -916,7 +916,7 @@ get_invert_composition_cache_size() const {
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
-get_invert_composition_cache_source(int n) const {
+get_invert_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
   if (!_invert_composition_cache.has_element(n)) {
     return NULL;
@@ -940,7 +940,7 @@ get_invert_composition_cache_source(int n) const {
 //               the cache for performance analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
-get_invert_composition_cache_result(int n) const {
+get_invert_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
   if (!_invert_composition_cache.has_element(n)) {
     return NULL;

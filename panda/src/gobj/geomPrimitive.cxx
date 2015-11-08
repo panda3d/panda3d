@@ -1398,9 +1398,9 @@ modify_ends() {
 //               you do, be sure you know what you are doing!
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
-set_ends(CPTA_int ends) {
+set_ends(PTA_int ends) {
   CDWriter cdata(_cycler, true);
-  cdata->_ends = (PTA_int &)ends;
+  cdata->_ends = ends;
 
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;

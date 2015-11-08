@@ -137,7 +137,7 @@ clear_rows() {
 //       Access: Published
 //  Description: Returns the number of bytes stored in the array.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayData::
+INLINE size_t GeomVertexArrayData::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
   return cdata->_buffer.get_size();
@@ -464,7 +464,7 @@ clear_rows() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayDataHandle::
+INLINE size_t GeomVertexArrayDataHandle::
 get_data_size_bytes() const {
   return _cdata->_buffer.get_size();
 }

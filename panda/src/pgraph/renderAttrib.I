@@ -50,20 +50,6 @@ invert_compose(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::always_reissue
-//       Access: Public
-//  Description: Returns true if the RenderAttrib should be reissued
-//               to the GSG with every state change, even if it is the
-//               same pointer as it was before; or false for the
-//               normal case, to reissue only when the RenderAttrib
-//               pointer changes.
-////////////////////////////////////////////////////////////////////
-INLINE bool RenderAttrib::
-always_reissue() const {
-  return _always_reissue;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::compare_to
 //       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
@@ -160,8 +146,7 @@ calc_hash() {
 //               number.  See RenderAttribRegistry.
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderAttrib::
-register_slot(TypeHandle type_handle, int sort,
-              RenderAttribRegistry::MakeDefaultFunc *make_default_func) {
+register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
-  return reg->register_slot(type_handle, sort, make_default_func);
+  return reg->register_slot(type_handle, sort, default_attrib);
 }

@@ -17,7 +17,9 @@
 
 #include "dtoolbase.h"
 
+#include "cppIdentifier.h"
 #include "cppExtensionType.h"
+#include "cppFunctionGroup.h"
 #include "cppVisibility.h"
 
 #include <vector>
@@ -49,6 +51,7 @@ public:
   virtual bool is_incomplete() const;
   virtual bool is_trivial() const;
 
+  CPPFunctionGroup *get_constructor() const;
   CPPInstance *get_destructor() const;
 
   virtual CPPDeclaration *

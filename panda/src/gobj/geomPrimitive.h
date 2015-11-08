@@ -169,7 +169,7 @@ PUBLISHED:
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
-  void set_ends(CPTA_int ends);
+  void set_ends(PTA_int ends);
 
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;

@@ -75,11 +75,7 @@ make(unsigned short mode) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AntialiasAttrib::
 make_default() {
-  if (default_antialias_enable) {
-    return return_new(new AntialiasAttrib(M_auto));
-  } else {
-    return return_new(new AntialiasAttrib(M_none));
-  }
+  return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,8 +142,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int AntialiasAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const AntialiasAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const AntialiasAttrib *ta = (const AntialiasAttrib *)other;
+
   if (_mode != ta->_mode) {
     return (int)_mode - (int)ta->_mode;
   }
@@ -190,8 +186,7 @@ get_hash_impl() const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AntialiasAttrib::
 compose_impl(const RenderAttrib *other) const {
-  const AntialiasAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const AntialiasAttrib *ta = (const AntialiasAttrib *)other;
 
   unsigned short mode_type;
   unsigned short mode_quality;
@@ -276,4 +271,27 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = scan.get_uint16();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AntialiasAttrib::init_type
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AntialiasAttrib::
+init_type() {
+  RenderAttrib::init_type();
+  register_type(_type_handle, "AntialiasAttrib",
+                RenderAttrib::get_class_type());
+
+  // This is defined here, since we have otherwise no guarantee that
+  // the config var has already been constructed by the time we call
+  // init_type() at static init time.
+  static ConfigVariableBool default_antialias_enable
+  ("default-antialias-enable", false,
+   PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
+            "nodes by default."));
+
+  _attrib_slot = register_slot(_type_handle, 100,
+    new AntialiasAttrib(default_antialias_enable ? M_auto : M_none));
 }

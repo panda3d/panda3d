@@ -344,17 +344,17 @@
 #ifndef DRAW_LINE
       /* generic draw line */
       {
-        register PIXEL *pp;
-        register int n;
+        PIXEL *pp;
+        int n;
 #ifdef INTERP_Z
-        register ZPOINT *pz;
-        register unsigned int z,zz;
+        ZPOINT *pz;
+        unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB
-        register unsigned int or1,og1,ob1,oa1;
+        unsigned int or1,og1,ob1,oa1;
 #endif
 #ifdef INTERP_ST
-        register unsigned int s,t;
+        unsigned int s,t;
 #endif
 #ifdef INTERP_STZ
         PN_stdfloat sz,tz;

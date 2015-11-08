@@ -215,7 +215,7 @@ append_unicode_char(int character) {
 //               This is a count of wide characters, after the string
 //               has been decoded according to set_encoding().
 ////////////////////////////////////////////////////////////////////
-INLINE int TextEncoder::
+INLINE size_t TextEncoder::
 get_num_chars() const {
   return get_wtext().length();
 }
@@ -229,9 +229,9 @@ get_num_chars() const {
 //               according to set_encoding().
 ////////////////////////////////////////////////////////////////////
 INLINE int TextEncoder::
-get_unicode_char(int index) const {
+get_unicode_char(size_t index) const {
   get_wtext();
-  if (index >= 0 && index < (int)_wtext.length()) {
+  if (index < _wtext.length()) {
     return _wtext[index];
   }
   return 0;
@@ -246,9 +246,9 @@ get_unicode_char(int index) const {
 //               according to set_encoding().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextEncoder::
-set_unicode_char(int index, int character) {
+set_unicode_char(size_t index, int character) {
   get_wtext();
-  if (index >= 0 && index < (int)_wtext.length()) {
+  if (index < _wtext.length()) {
     _wtext[index] = character;
     _flags &= ~F_got_text;
   }
@@ -261,7 +261,7 @@ set_unicode_char(int index, int character) {
 //               two-, or three-byte encoded string.
 ////////////////////////////////////////////////////////////////////
 INLINE string TextEncoder::
-get_encoded_char(int index) const {
+get_encoded_char(size_t index) const {
   return get_encoded_char(index, get_encoding());
 }
 
@@ -272,7 +272,7 @@ get_encoded_char(int index) const {
 //               two-, or three-byte encoded string.
 ////////////////////////////////////////////////////////////////////
 INLINE string TextEncoder::
-get_encoded_char(int index, TextEncoder::Encoding encoding) const {
+get_encoded_char(size_t index, TextEncoder::Encoding encoding) const {
   wstring wch(1, (wchar_t)get_unicode_char(index));
   return encode_wtext(wch, encoding);
 }

@@ -187,6 +187,12 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
+ConfigVariableBool gl_force_fbo_color
+  ("gl-force-fbo-color", true,
+   PRC_DESC("This is set to true to force all FBOs to have at least one "
+            "color attachment.  This is to work around an Intel driver "
+            "issue.  Set to false to allow depth-only FBOs."));
+
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,
    PRC_DESC("Regularly call glGetError() to check for OpenGL errors.  "
@@ -302,6 +308,9 @@ void CLP(init_classes)() {
   CLP(IndexBufferContext)::init_type();
 #ifndef OPENGLES_1
   CLP(ShaderContext)::init_type();
+#endif
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  CLP(CgShaderContext)::init_type();
 #endif
   CLP(TextureContext)::init_type();
 #ifndef OPENGLES

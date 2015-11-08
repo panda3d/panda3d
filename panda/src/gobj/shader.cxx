@@ -82,12 +82,14 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
   case SAT_mat4x2:    tstr = "mat4x2 "; break;
   case SAT_mat4x3:    tstr = "mat4x3 "; break;
   case SAT_mat4x4:    tstr = "mat4x4 "; break;
-  case SAT_sampler1d: tstr = "sampler1d "; break;
-  case SAT_sampler2d: tstr = "sampler2d "; break;
-  case SAT_sampler3d: tstr = "sampler3d "; break;
-  case SAT_sampler2dArray: tstr = "sampler2dArray "; break;
-  case SAT_samplercube:    tstr = "samplercube "; break;
-  default:                 tstr = "unknown "; break;
+  case SAT_sampler1d: tstr = "sampler1D "; break;
+  case SAT_sampler2d: tstr = "sampler2D "; break;
+  case SAT_sampler3d: tstr = "sampler3D "; break;
+  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
+  case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
+  case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
+  case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
+  default:                    tstr = "unknown "; break;
   }
 
   string cstr = "invalid";
@@ -244,8 +246,10 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
   if ((p._type!=SAT_sampler1d)&&
       (p._type!=SAT_sampler2d)&&
       (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2dArray)&&
-      (p._type!=SAT_samplercube)) {
+      (p._type!=SAT_sampler2d_array)&&
+      (p._type!=SAT_sampler_cube)&&
+      (p._type!=SAT_sampler_buffer)&&
+      (p._type!=SAT_sampler_cube_array)) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -416,7 +420,17 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
       (inp == SMO_model_to_apiview) ||
-      (inp == SMO_apiview_to_model)) {
+      (inp == SMO_apiview_to_model) ||
+      (inp == SMO_view_to_world) ||
+      (inp == SMO_world_to_view) ||
+      (inp == SMO_view_x_to_view) ||
+      (inp == SMO_view_to_view_x) ||
+      (inp == SMO_apiview_x_to_view) ||
+      (inp == SMO_view_to_apiview_x) ||
+      (inp == SMO_clip_x_to_view) ||
+      (inp == SMO_view_to_clip_x) ||
+      (inp == SMO_apiclip_x_to_view) ||
+      (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
@@ -438,6 +452,25 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiclip_x_to_view) ||
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
+
+    if ((inp == SMO_alight_x) ||
+        (inp == SMO_dlight_x) ||
+        (inp == SMO_plight_x) ||
+        (inp == SMO_slight_x) ||
+        (inp == SMO_satten_x) ||
+        (inp == SMO_vec_constant_x_attrib) ||
+        (inp == SMO_view_x_to_view) ||
+        (inp == SMO_view_to_view_x) ||
+        (inp == SMO_apiview_x_to_view) ||
+        (inp == SMO_view_to_apiview_x) ||
+        (inp == SMO_clip_x_to_view) ||
+        (inp == SMO_view_to_clip_x) ||
+        (inp == SMO_apiclip_x_to_view) ||
+        (inp == SMO_view_to_apiclip_x)) {
+      // We can't track changes to these yet, so we have to assume that
+      // they are modified every frame.
+      dep |= SSD_frame;
+    }
   }
   if ((inp == SMO_light_ambient) ||
       (inp == SMO_light_source_i_attrib)) {
@@ -451,6 +484,24 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_clipplane_x) ||
       (inp == SMO_apiview_clipplane_i)) {
     dep |= SSD_clip_planes;
+  }
+  if (inp == SMO_texmat_i || inp == SMO_inv_texmat_i) {
+    dep |= SSD_tex_matrix;
+  }
+  if ((inp == SMO_window_size) ||
+      (inp == SMO_pixel_size) ||
+      (inp == SMO_frame_number) ||
+      (inp == SMO_frame_time) ||
+      (inp == SMO_frame_delta)) {
+    dep |= SSD_frame;
+  }
+  if ((inp == SMO_clip_to_view) ||
+      (inp == SMO_view_to_clip) ||
+      (inp == SMO_apiclip_to_view) ||
+      (inp == SMO_view_to_apiclip) ||
+      (inp == SMO_apiview_to_apiclip) ||
+      (inp == SMO_apiclip_to_apiview)) {
+    dep |= SSD_projection;
   }
 
   return dep;
@@ -854,6 +905,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -928,6 +980,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -941,6 +994,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -964,6 +1018,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -985,6 +1040,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1026,6 +1082,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1040,13 +1097,15 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id = p._id;
     bind._piece = SMP_whole;
     bind._func = SMF_first;
-    bind._part[0] = SMO_texmat_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[0] = SMO_texmat_i;
+    bind._arg[0] = NULL;
     bind._part[1] = SMO_identity;
     bind._arg[1] = NULL;
+    bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1068,6 +1127,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1089,6 +1149,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1135,6 +1196,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1157,8 +1219,10 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
     case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
     case SAT_sampler3d:      bind._desired_type = Texture::TT_3d_texture; break;
-    case SAT_sampler2dArray: bind._desired_type = Texture::TT_2d_texture_array; break;
-    case SAT_samplercube:    bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler2d_array:bind._desired_type = Texture::TT_2d_texture_array; break;
+    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
+    case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1191,6 +1255,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = NULL;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1211,6 +1276,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = NULL;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
     return true;
   }
 
@@ -1257,8 +1323,12 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id      = p._id;
     bind._arg     = kinputname;
     bind._info    = p;
-    bind._dep[0]  = SSD_general | SSD_shaderinputs;
-    bind._dep[1]  = SSD_general | SSD_NONE;
+
+    // We specify SSD_frame because a PTA may be modified by the app
+    // from frame to frame, and we have no way to know.  So, we must
+    // respecify a PTA at least once every frame.
+    bind._dep[0]  = SSD_general | SSD_shaderinputs | SSD_frame;
+    bind._dep[1]  = SSD_NONE;
 
     memcpy(bind._dim,arg_dim,sizeof(int)*3);
 
@@ -1294,7 +1364,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_sampler2dArray: {
+    case SAT_sampler2d_array: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
@@ -1302,11 +1372,27 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_samplercube: {
+    case SAT_sampler_cube: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
       bind._desired_type = Texture::TT_cube_map;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_buffer: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_buffer_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_cube_array: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._desired_type = Texture::TT_cube_map_array;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1396,8 +1482,10 @@ cg_parameter_type(CGparameter p) {
     case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
     case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
     case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
-    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2dArray;
-    case CG_SAMPLERCUBE:    return Shader::SAT_samplercube;
+    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2d_array;
+    case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
+    case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
+    case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
     // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
     case 1313:              return Shader::SAT_sampler1d;
     case 1314:              return Shader::SAT_sampler2d;
@@ -2046,7 +2134,8 @@ Shader(ShaderLanguage lang) :
   _parse(0),
   _loaded(false),
   _language(lang),
-  _last_modified(0)
+  _last_modified(0),
+  _mat_deps(0)
 {
 #ifdef HAVE_CG
   _cg_vprogram = 0;

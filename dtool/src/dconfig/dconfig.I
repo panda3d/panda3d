@@ -28,7 +28,7 @@ GetInt(const string &sym, int def) {
 float DConfig::
 GetFloat(const string &sym, float def) {
   ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
-  return var.get_value();
+  return (float)var.get_value();
 }
 
 double DConfig::

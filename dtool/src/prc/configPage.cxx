@@ -321,7 +321,7 @@ delete_declaration(ConfigDeclaration *decl) {
 //       Access: Published
 //  Description: Returns the number of declarations on the page.
 ////////////////////////////////////////////////////////////////////
-int ConfigPage::
+size_t ConfigPage::
 get_num_declarations() const {
   return _declarations.size();
 }
@@ -332,8 +332,8 @@ get_num_declarations() const {
 //  Description: Returns the nth declaration on the page.
 ////////////////////////////////////////////////////////////////////
 const ConfigDeclaration *ConfigPage::
-get_declaration(int n) const {
-  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
+get_declaration(size_t n) const {
+  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
@@ -346,8 +346,8 @@ get_declaration(int n) const {
 //               ConfigPage::write().
 ////////////////////////////////////////////////////////////////////
 ConfigDeclaration *ConfigPage::
-modify_declaration(int n) {
-  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
+modify_declaration(size_t n) {
+  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
@@ -358,8 +358,8 @@ modify_declaration(int n) {
 //               the page.
 ////////////////////////////////////////////////////////////////////
 string ConfigPage::
-get_variable_name(int n) const {
-  nassertr(n >= 0 && n < (int)_declarations.size(), string());
+get_variable_name(size_t n) const {
+  nassertr(n < _declarations.size(), string());
   return _declarations[n]->get_variable()->get_name();
 }
 
@@ -370,8 +370,8 @@ get_variable_name(int n) const {
 //               the page.
 ////////////////////////////////////////////////////////////////////
 string ConfigPage::
-get_string_value(int n) const {
-  nassertr(n >= 0 && n < (int)_declarations.size(), string());
+get_string_value(size_t n) const {
+  nassertr(n < _declarations.size(), string());
   return _declarations[n]->get_string_value();
 }
 
@@ -382,8 +382,8 @@ get_string_value(int n) const {
 //               the page has been used by code, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ConfigPage::
-is_variable_used(int n) const {
-  nassertr(n >= 0 && n < (int)_declarations.size(), false);
+is_variable_used(size_t n) const {
+  nassertr(n < _declarations.size(), false);
   return _declarations[n]->get_variable()->is_used();
 }
 

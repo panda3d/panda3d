@@ -53,15 +53,17 @@ public:
   int get_col_number() const;
 
   CPPToken get_next_token();
+  CPPToken peek_next_token();
 #ifdef CPP_VERBOSE_LEX
   CPPToken get_next_token0();
   int _token_index;
 #endif
 
-  void warning(const string &message, int line = 0, int col = 0,
-               CPPFile file = CPPFile());
-  void error(const string &message, int line = 0, int col = 0,
-             CPPFile file = CPPFile());
+  void warning(const string &message);
+  void warning(const string &message, const YYLTYPE &loc);
+  void error(const string &message);
+  void error(const string &message, const YYLTYPE &loc);
+  void show_line(const YYLTYPE &loc);
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
   CPPCommentBlock *get_comment_on(int line, CPPFile file);
@@ -99,6 +101,9 @@ public:
   // incremented), or set it higher to get more debugging information.
   int _verbose;
 
+  // The location of the last token.
+  cppyyltype _last_token_loc;
+
 protected:
   bool init_cpp(const CPPFile &file);
   bool init_const_expr(const string &expr);
@@ -106,12 +111,15 @@ protected:
   bool push_file(const CPPFile &file);
   bool push_string(const string &input, bool lock_position);
 
-  string expand_manifests(const string &input_expr);
+  string expand_manifests(const string &input_expr, bool expand_undefined,
+                          const YYLTYPE &loc);
   CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
-                            CPPScope *global_scope);
+                            CPPScope *global_scope, const YYLTYPE &loc);
 
 private:
   CPPToken internal_get_next_token();
+  int check_digraph(int c);
+  int check_trigraph(int c);
   int skip_whitespace(int c);
   int skip_comment(int c);
   int skip_c_comment(int c);
@@ -121,28 +129,22 @@ private:
   int get_preprocessor_command(int c, string &command);
   int get_preprocessor_args(int c, string &args);
 
-  void handle_define_directive(const string &args, int first_line,
-                               int first_col, const CPPFile &first_file);
-  void handle_undef_directive(const string &args, int first_line,
-                              int first_col, const CPPFile &first_file);
-  void handle_ifdef_directive(const string &args, int first_line,
-                              int first_col, const CPPFile &first_file);
-  void handle_ifndef_directive(const string &args, int first_line,
-                               int first_col, const CPPFile &first_file);
-  void handle_if_directive(const string &args, int first_line,
-                           int first_col, const CPPFile &first_file);
-  void handle_include_directive(const string &args, int first_line,
-                                int first_col, const CPPFile &first_file);
-  void handle_pragma_directive(const string &args, int first_line,
-                               int first_col, const CPPFile &first_file);
-  void handle_error_directive(const string &args, int first_line,
-                              int first_col, const CPPFile &first_file);
+  void handle_define_directive(const string &args, const YYLTYPE &loc);
+  void handle_undef_directive(const string &args, const YYLTYPE &loc);
+  void handle_ifdef_directive(const string &args, const YYLTYPE &loc);
+  void handle_ifndef_directive(const string &args, const YYLTYPE &loc);
+  void handle_if_directive(const string &args, const YYLTYPE &loc);
+  void handle_include_directive(const string &args, const YYLTYPE &loc);
+  void handle_pragma_directive(const string &args, const YYLTYPE &loc);
+  void handle_error_directive(const string &args, const YYLTYPE &loc);
 
   void skip_false_if_block(bool consider_elifs);
 
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
   CPPToken get_identifier(int c);
+  CPPToken get_literal(int token, YYLTYPE loc, const string &str,
+                       const YYSTYPE &result = YYSTYPE());
   CPPToken expand_manifest(const CPPManifest *manifest);
   void extract_manifest_args(const string &name, int num_args,
                              int va_arg, vector_string &args);
@@ -153,7 +155,7 @@ private:
                                     int va_arg, vector_string &args,
                                     const string &expr, size_t &p);
 
-  CPPToken get_number(int c, int c2 = 0);
+  CPPToken get_number(int c);
   static int check_keyword(const string &name);
   int scan_escape_sequence(int c);
   string scan_quoted(int c);
@@ -162,6 +164,7 @@ private:
   bool should_ignore_preprocessor() const;
 
   int get();
+  int peek();
   void unget(int c);
 
   CPPTemplateParameterList *
@@ -177,6 +180,7 @@ private:
     bool open(const CPPFile &file);
     bool connect_input(const string &input);
     int get();
+    int peek();
 
     const CPPManifest *_ignore_manifest;
     CPPFile _file;
@@ -184,6 +188,8 @@ private:
     istream *_in;
     int _line_number;
     int _col_number;
+    int _next_line_number;
+    int _next_col_number;
     bool _lock_position;
     int _prev_last_c;
   };
@@ -198,7 +204,7 @@ private:
   };
   State _state;
   int _paren_nesting;
-  bool _angle_bracket_found;
+  bool _parsing_template_params;
 
   bool _start_of_line;
   int _unget;

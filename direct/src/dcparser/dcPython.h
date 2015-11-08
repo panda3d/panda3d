@@ -20,8 +20,10 @@
 
 #ifdef HAVE_PYTHON
 
-#undef HAVE_LONG_LONG  // NSPR and Python both define this.
+#define PY_SSIZE_T_CLEAN 1
+
 #undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
 #include <Python.h>
 
 // Python 2.5 adds Py_ssize_t; earlier versions don't have it.

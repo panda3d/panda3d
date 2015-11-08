@@ -53,7 +53,11 @@
 #endif
 
 #else  /* _WIN32 */
+#if defined(BUILDING_P3D_PLUGIN) && defined(__GNUC__)
+#define EXPCL_P3D_PLUGIN __attribute__((visibility("default")))
+#else
 #define EXPCL_P3D_PLUGIN
+#endif
 
 #endif  /* _WIN32 */
 
@@ -79,7 +83,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 16
+#define P3D_API_VERSION 17
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -161,7 +165,8 @@ P3D_initialize_func(int api_version, const char *contents_filename,
                     const char *platform,
                     const char *log_directory, const char *log_basename,
                     bool trusted_environment, bool console_environment,
-                    const char *root_dir, const char *host_dir);
+                    const char *root_dir, const char *host_dir,
+                    const char *start_dir);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to

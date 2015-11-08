@@ -1124,7 +1124,7 @@ finalize(BamReader *manager) {
         // GeomVertexData::has_column().
         CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
         CPT(GeomVertexFormat) vformat = vdata->get_format();
-        for (int i = 0; i < vformat->get_num_arrays(); ++i) {
+        for (size_t i = 0; i < vformat->get_num_arrays(); ++i) {
           const GeomVertexArrayFormat *varray = vformat->get_array(i);
           manager->finalize_now((GeomVertexArrayFormat *)varray);
         }
