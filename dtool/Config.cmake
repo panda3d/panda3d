@@ -432,6 +432,11 @@ Activating this does constrain most objects in Panda to 16-byte
 alignment, which could impact memory usage on very-low-memory
 platforms.  Currently experimental." ON)
 
+# Always include Eigen, because we include it pretty much everywhere.
+if(EIGEN3_FOUND)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
+
 
 # Is Python installed, and should Python interfaces be generated?
 find_package(PythonLibs 2.5)
