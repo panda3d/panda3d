@@ -3,6 +3,9 @@
 #del func
 #####################################################################
 
+from panda3d.core import HTTPChannel
+from .extension_native_helpers import Dtool_funcToMethod
+
 """
 HTTPChannel-extensions module: contains methods to extend functionality
 of the HTTPChannel class

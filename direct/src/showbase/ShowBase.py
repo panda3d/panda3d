@@ -11,6 +11,8 @@ from panda3d.core import *
 from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
 from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
 
+# Register the extension methods for NodePath.
+from direct.extensions_native import NodePath_extensions
 
 # This needs to be available early for DirectGUI imports
 import __builtin__ as builtins

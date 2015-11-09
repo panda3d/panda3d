@@ -879,7 +879,9 @@ class DirectSession(DirectObject):
             # Yes, show everything in level
             self.showAllDescendants(nodePath.getParent())
             # Now hide all of this node path's siblings
-            nodePath.hideSiblings()
+            for sib in nodePath.getParent().getChildren():
+                if sib.node() != nodePath.node():
+                    sib.hide()
 
     def toggleVis(self, nodePath = 'None Given'):
         """ Toggle visibility of node path """
@@ -890,7 +892,10 @@ class DirectSession(DirectObject):
             nodePath = self.selected.last
         if nodePath:
             # Now toggle node path's visibility state
-            nodePath.toggleVis()
+            if nodePath.isHidden():
+                nodePath.show()
+            else:
+                nodePath.hide()
 
     def removeNodePath(self, nodePath = 'None Given'):
         if nodePath == 'None Given':
@@ -904,8 +909,11 @@ class DirectSession(DirectObject):
 
     def showAllDescendants(self, nodePath = render):
         """ Show the level and its descendants """
-        nodePath.showAllDescendants()
-        nodePath.hideCS()
+        if not isinstance(nodePath, CollisionNode):
+            nodePath.show()
+
+        for child in nodePath.getChildren():
+            self.showAllDescendants(child)
 
     def upAncestry(self):
         if self.ancestry:

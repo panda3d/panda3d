@@ -2,6 +2,9 @@
 Methods to extend functionality of the VBase3 class
 """
 
+from panda3d.core import VBase3
+from .extension_native_helpers import Dtool_funcToMethod
+
 def pPrintValues(self):
     """
     Pretty print

@@ -8,6 +8,9 @@ NodePath-extensions module: contains methods to extend functionality
 of the NodePath class
 """
 
+from panda3d.core import NodePath
+from .extension_native_helpers import Dtool_funcToMethod
+
 ####################################################################
 def id(self):
         """Deprecated.  Returns a unique id identifying the NodePath instance"""
@@ -27,7 +30,8 @@ del getChildrenAsList
 #####################################################################
 
 def printChildren(self):
-        """Prints out the children of the bottom node of a node path"""
+        """Deprecated.  Prints out the children of the bottom node of a node path"""
+        print("Warning: NodePath.printChildren() is deprecated.")
         for child in self.getChildren():
             print(child.getName())
 Dtool_funcToMethod(printChildren, NodePath)
@@ -35,14 +39,16 @@ del printChildren
 #####################################################################
 
 def removeChildren(self):
-        """Deletes the children of the bottom node of a node path"""
+        """Deprecated.  Deletes the children of the bottom node of a node path"""
+        print("Warning: NodePath.removeChildren() is deprecated.  Use get_children().detach() instead.")
         self.getChildren().detach()
 Dtool_funcToMethod(removeChildren, NodePath)
 del removeChildren
 #####################################################################
 
 def toggleVis(self):
-        """Toggles visibility of a nodePath"""
+        """Deprecated.  Toggles visibility of a nodePath"""
+        print("Warning: NodePath.toggleVis() is deprecated.  Use is_hidden(), show() and hide() instead.")
         if self.isHidden():
             self.show()
             return 1
@@ -54,7 +60,8 @@ del toggleVis
 #####################################################################
 
 def showSiblings(self):
-        """Show all the siblings of a node path"""
+        """Deprecated.  Show all the siblings of a node path"""
+        print("Warning: NodePath.showSiblings() is deprecated.")
         for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.show()
@@ -63,7 +70,8 @@ del showSiblings
 #####################################################################
 
 def hideSiblings(self):
-        """Hide all the siblings of a node path"""
+        """Deprecated.  Hide all the siblings of a node path"""
+        print("Warning: NodePath.hideSiblings() is deprecated.")
         for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.hide()
@@ -72,7 +80,8 @@ del hideSiblings
 #####################################################################
 
 def showAllDescendants(self):
-        """Show the node path and all its children"""
+        """Deprecated.  Show the node path and all its children"""
+        print("Warning: NodePath.showAllDescendants() is deprecated.")
         self.show()
         for child in self.getChildren():
             child.showAllDescendants()
@@ -81,9 +90,12 @@ del showAllDescendants
 #####################################################################
 
 def isolate(self):
-        """Show the node path and hide its siblings"""
+        """Deprecated.  Show the node path and hide its siblings"""
+        print("Warning: NodePath.isolate() is deprecated.")
         self.showAllDescendants()
-        self.hideSiblings()
+        for sib in self.getParent().getChildren():
+            if sib.node() != self.node():
+                sib.hide()
 Dtool_funcToMethod(isolate, NodePath)
 del isolate
 #####################################################################
@@ -101,7 +113,8 @@ del remove
 #####################################################################
 
 def lsNames(self):
-        """Walk down a tree and print out the path"""
+        """Deprecated. Walk down a tree and print out the path"""
+        print("Warning: NodePath.lsNames() is deprecated.")
         if self.isEmpty():
             print("(empty)")
         else:
@@ -114,7 +127,8 @@ Dtool_funcToMethod(lsNames, NodePath)
 del lsNames
 #####################################################################
 def lsNamesRecurse(self, indentString=' '):
-        """Walk down a tree and print out the path"""
+        """Deprecated.  Walk down a tree and print out the path"""
+        print("Warning: NodePath.lsNamesRecurse() is deprecated.")
         for nodePath in self.getChildren():
             type = nodePath.node().getType().getName()
             name = nodePath.getName()
@@ -125,7 +139,8 @@ Dtool_funcToMethod(lsNamesRecurse, NodePath)
 del lsNamesRecurse
 #####################################################################
 def reverseLsNames(self):
-        """Walk up a tree and print out the path to the root"""
+        """Deprecated.  Walk up a tree and print out the path to the root"""
+        print("Warning: NodePath.reverseLsNames() is deprecated.")
         ancestors = list(self.getAncestors())
         ancestry = ancestors.reverse()
         indentString = ""
@@ -139,8 +154,8 @@ Dtool_funcToMethod(reverseLsNames, NodePath)
 del reverseLsNames
 #####################################################################
 def getAncestry(self):
-        """Get a list of a node path's ancestors"""
-        print("NodePath.getAncestry() is deprecated.  Use get_ancestors() instead.""")
+        """Deprecated.  Get a list of a node path's ancestors"""
+        print("NodePath.getAncestry() is deprecated.  Use get_ancestors() instead.")
         ancestors = list(self.getAncestors())
         ancestors.reverse()
         return ancestors
@@ -151,8 +166,9 @@ del getAncestry
 
 def pPrintString(self, other = None):
         """
-        pretty print
+        Deprecated.  pretty print
         """
+        print("NodePath.pPrintString() is deprecated.")
         if __debug__:
             # Normally I would have put the if __debug__ around
             # the entire funciton, the that doesn't seem to work
@@ -183,7 +199,8 @@ del pPrintString
 #####################################################################
 
 def printPos(self, other = None, sd = 2):
-        """ Pretty print a node path's pos """
+        """ Deprecated.  Pretty print a node path's pos """
+        print("NodePath.printPos() is deprecated.")
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -201,7 +218,8 @@ del printPos
 #####################################################################
 
 def printHpr(self, other = None, sd = 2):
-        """ Pretty print a node path's hpr """
+        """ Deprecated.  Pretty print a node path's hpr """
+        print("NodePath.printHpr() is deprecated.")
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             hpr = self.getHpr(other)
@@ -219,7 +237,8 @@ del printHpr
 #####################################################################
 
 def printScale(self, other = None, sd = 2):
-        """ Pretty print a node path's scale """
+        """ Deprecated.  Pretty print a node path's scale """
+        print("NodePath.printScale() is deprecated.")
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             scale = self.getScale(other)
@@ -237,7 +256,8 @@ Dtool_funcToMethod(printScale, NodePath)
 del printScale
 #####################################################################
 def printPosHpr(self, other = None, sd = 2):
-        """ Pretty print a node path's pos and, hpr """
+        """ Deprecated.  Pretty print a node path's pos and, hpr """
+        print("NodePath.printPosHpr() is deprecated.")
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -260,7 +280,8 @@ Dtool_funcToMethod(printPosHpr, NodePath)
 del printPosHpr
 #####################################################################
 def printPosHprScale(self, other = None, sd = 2):
-        """ Pretty print a node path's pos, hpr, and scale """
+        """ Deprecated.  Pretty print a node path's pos, hpr, and scale """
+        print("NodePath.printPosHprScale() is deprecated.")
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -289,6 +310,8 @@ del printPosHprScale
 #####################################################################
 
 def printTransform(self, other = None, sd = 2, fRecursive = 0):
+    "Deprecated."
+    print("NodePath.printTransform() is deprecated.")
     from panda3d.core import Vec3
     fmtStr = '%%0.%df' % sd
     name = self.getName()
@@ -327,7 +350,8 @@ del printTransform
 
 
 def iPos(self, other = None):
-        """ Set node path's pos to 0, 0, 0 """
+        """ Deprecated.  Set node path's pos to 0, 0, 0 """
+        print("NodePath.iPos() is deprecated.")
         if other:
             self.setPos(other, 0, 0, 0)
         else:
@@ -337,7 +361,8 @@ del iPos
 #####################################################################
 
 def iHpr(self, other = None):
-        """ Set node path's hpr to 0, 0, 0 """
+        """ Deprecated.  Set node path's hpr to 0, 0, 0 """
+        print("NodePath.iHpr() is deprecated.")
         if other:
             self.setHpr(other, 0, 0, 0)
         else:
@@ -347,7 +372,8 @@ Dtool_funcToMethod(iHpr, NodePath)
 del iHpr
 #####################################################################
 def iScale(self, other = None):
-        """ SEt node path's scale to 1, 1, 1 """
+        """ Deprecated.  Set node path's scale to 1, 1, 1 """
+        print("NodePath.iScale() is deprecated.")
         if other:
             self.setScale(other, 1, 1, 1)
         else:
@@ -357,7 +383,8 @@ Dtool_funcToMethod(iScale, NodePath)
 del iScale
 #####################################################################
 def iPosHpr(self, other = None):
-        """ Set node path's pos and hpr to 0, 0, 0 """
+        """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 """
+        print("NodePath.iPosHpr() is deprecated.")
         if other:
             self.setPosHpr(other, 0, 0, 0, 0, 0, 0)
         else:
@@ -367,7 +394,8 @@ Dtool_funcToMethod(iPosHpr, NodePath)
 del iPosHpr
 #####################################################################
 def iPosHprScale(self, other = None):
-        """ Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
+        """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
+        print("NodePath.iPosHprScale() is deprecated.")
         if other:
             self.setPosHprScale(other, 0, 0, 0, 0, 0, 0, 1, 1, 1)
         else:
@@ -417,11 +445,13 @@ del deselect
 #####################################################################
 def showCS(self, mask = None):
         """
+        Deprecated.
         Shows the collision solids at or below this node.  If mask is
         not None, it is a BitMask32 object (e.g. WallBitmask,
         CameraBitmask) that indicates which particular collision
         solids should be made visible; otherwise, all of them will be.
         """
+        print("NodePath.showCS() is deprecated.  Use findAllMatches('**/+CollisionNode').show() instead.")
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
@@ -433,11 +463,13 @@ del showCS
 #####################################################################
 def hideCS(self, mask = None):
         """
+        Deprecated.
         Hides the collision solids at or below this node.  If mask is
         not None, it is a BitMask32 object (e.g. WallBitmask,
         CameraBitmask) that indicates which particular collision
         solids should be hidden; otherwise, all of them will be.
         """
+        print("NodePath.hideCS() is deprecated.  Use findAllMatches('**/+CollisionNode').hide() instead.")
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
@@ -621,6 +653,7 @@ del getNumDescendants
 #####################################################################
 def removeNonCollisions(self):
         # remove anything that is not collision-related
+        print("NodePath.removeNonCollisions() is deprecated")
         stack = [self]
         while len(stack):
                 np = stack.pop()
