@@ -363,11 +363,10 @@ EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_get_wrapper_by_unique_name(
 // and get_thing(n) are used to synthesize a new method called
 // get_things().
 
-// The class of which the make_seq is a method.
-EXPCL_INTERROGATEDB TypeIndex interrogate_make_seq_class(MakeSeqIndex make_seq);
-
-// The name of the syntheized method, e.g. "get_things"
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_seq_name(MakeSeqIndex make_seq);
+EXPCL_INTERROGATEDB const char *interrogate_make_seq_scoped_name(MakeSeqIndex make_seq);
+EXPCL_INTERROGATEDB bool interrogate_make_seq_has_comment(ElementIndex element);
+EXPCL_INTERROGATEDB const char *interrogate_make_seq_comment(ElementIndex element);
 // The name of the real method that returns the length, e.g. "get_num_things"
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_num_name(MakeSeqIndex make_seq);
 // The name of the real method that returns the nth element, e.g. "get_thing"

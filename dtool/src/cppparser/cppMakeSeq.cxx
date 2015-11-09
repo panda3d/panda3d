@@ -20,13 +20,46 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPMakeSeq::
-CPPMakeSeq(const string &seq_name, const string &num_name,
-           const string &element_name, const CPPFile &file) :
+CPPMakeSeq(CPPIdentifier *ident,
+           CPPFunctionGroup *length_getter,
+           CPPFunctionGroup *element_getter,
+           CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
-  _seq_name(seq_name),
-  _num_name(num_name),
-  _element_name(element_name)
+  _ident(ident),
+  _length_getter(length_getter),
+  _element_getter(element_getter)
 {
+  _ident->_native_scope = current_scope;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPMakeSeq::get_simple_name
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+string CPPMakeSeq::
+get_simple_name() const {
+  return _ident->get_simple_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPMakeSeq::get_local_name
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+string CPPMakeSeq::
+get_local_name(CPPScope *scope) const {
+  return _ident->get_local_name(scope);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPMakeSeq::get_fully_scoped_name
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+string CPPMakeSeq::
+get_fully_scoped_name() const {
+  return _ident->get_fully_scoped_name();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,8 +69,10 @@ CPPMakeSeq(const string &seq_name, const string &num_name,
 ////////////////////////////////////////////////////////////////////
 void CPPMakeSeq::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  out << "__make_seq(" << _seq_name << ", " << _num_name << ", "
-      << _element_name << ");";
+  out << "__make_seq(" << _ident->get_local_name(scope)
+      << ", " << _length_getter->_name
+      << ", " << _element_getter->_name
+      << ");";
 }
 
 ////////////////////////////////////////////////////////////////////

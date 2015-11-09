@@ -18,6 +18,7 @@
 #include "dtoolbase.h"
 
 #include "cppDeclaration.h"
+#include "cppIdentifier.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPMakeSeq
@@ -29,8 +30,14 @@
 ////////////////////////////////////////////////////////////////////
 class CPPMakeSeq : public CPPDeclaration {
 public:
-  CPPMakeSeq(const string &seq_name, const string &num_name,
-             const string &element_name, const CPPFile &file);
+  CPPMakeSeq(CPPIdentifier *ident,
+             CPPFunctionGroup *length_getter,
+             CPPFunctionGroup *element_getter,
+             CPPScope *current_scope, const CPPFile &file);
+
+  virtual string get_simple_name() const;
+  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_fully_scoped_name() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
@@ -38,11 +45,9 @@ public:
   virtual SubType get_subtype() const;
   virtual CPPMakeSeq *as_make_seq();
 
-  string _seq_name;
-  string _num_name;
-  string _element_name;
+  CPPIdentifier *_ident;
+  CPPFunctionGroup *_length_getter;
+  CPPFunctionGroup *_element_getter;
 };
 
 #endif
-
-

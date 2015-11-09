@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 ########################################################################
 #
-# Caution: there are two separate, independent build systems:
-# 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
-# to use both.  This file is part of the 'makepanda' system.
-#
 # To build panda using this script, type 'makepanda.py' on unix
 # or 'makepanda.bat' on windows, and examine the help-text.
 # Then run the script again with the appropriate options to compile

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 ########################################################################
 #
-# Caution: there are two separate, independent build systems:
-# 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
-# to use both.  This file is part of the 'makepanda' system.
-#
 # To install panda using this script, type 'installpanda.py'.
 # To specify an alternate location than the filesystem root /,
 # either pass it as only argument or set the DESTDIR environment

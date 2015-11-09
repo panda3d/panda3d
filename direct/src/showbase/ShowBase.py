@@ -2512,6 +2512,8 @@ class ShowBase(DirectObject.DirectObject):
         rig.reparentTo(camera)
         self.graphicsEngine.openWindows()
         self.graphicsEngine.renderFrame()
+        self.graphicsEngine.renderFrame()
+        self.graphicsEngine.syncFrame()
 
         tex = buffer.getTexture()
         saved = self.screenshot(namePrefix = namePrefix,
@@ -2602,6 +2604,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # One more frame for luck.
         self.graphicsEngine.renderFrame()
+        self.graphicsEngine.syncFrame()
 
         saved = self.screenshot(namePrefix = namePrefix,
                                 defaultFilename = defaultFilename,

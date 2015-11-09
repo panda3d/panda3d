@@ -1,9 +1,5 @@
 ########################################################################
 ##
-## Caution: there are two separate, independent build systems:
-## 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
-## to use both.  This file is part of the 'makepanda' system.
-##
 ## This file, makepandacore, contains all the global state and
 ## global functions for the makepanda system.
 ##

@@ -85,6 +85,10 @@ PUBLISHED:
   INLINE_LINMATH void set_upper_3(const FLOATNAME(LMatrix3) &upper3);
   INLINE_LINMATH FLOATNAME(LMatrix3) get_upper_3() const;
 
+  INLINE_LINMATH CRow operator [](int i) const;
+  INLINE_LINMATH Row operator [](int i);
+  INLINE_LINMATH static int size();
+
   INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase4) &v);
   INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase4) &v);
 
@@ -106,10 +110,6 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
   INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
-
-  INLINE_LINMATH CRow operator [](int i) const;
-  INLINE_LINMATH Row operator [](int i);
-  INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
   INLINE_LINMATH bool is_identity() const;

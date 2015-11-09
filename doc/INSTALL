@@ -1,10 +1,3 @@
-
-///////////////////////////////////////////////////////////////////////
-// Caution: there are two separate, independent build systems:
-// 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
-// to use both.  This file is part of the 'makepanda' system.
-///////////////////////////////////////////////////////////////////////
-
 Panda3D Install --- using the 'makepanda' system.
 
 NOTE: As the makepanda build system changes more frequently
@@ -44,9 +37,8 @@ directory will contain the following subdirectories:
     models	- piece 1, source code from github
     panda	- piece 1, source code from github
     pandatool	- piece 1, source code from github
-    ppremake	- piece 1, source code from github
     contrib     - piece 1, source code from github
-    samples	- piece 1, sample programs
+    samples	- piece 1, source code from github
     thirdparty  - piece 2, third party tools
 
 

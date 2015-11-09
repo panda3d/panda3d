@@ -93,10 +93,7 @@ input(istream &in) {
   idf_input_vector(in, _c_wrappers);
   idf_input_vector(in, _python_wrappers);
   idf_input_string(in, _comment);
-
-  if (InterrogateDatabase::get_file_minor_version() >= 2) {
-    idf_input_string(in, _prototype);
-  }
+  idf_input_string(in, _prototype);
 }
 
 ////////////////////////////////////////////////////////////////////
