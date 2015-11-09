@@ -502,7 +502,7 @@ declaration:
 
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
   }
 
   CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
@@ -512,14 +512,14 @@ declaration:
 {
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
 
   } else {
     CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
     CPPFunctionGroup *setter_func = NULL;
 
     if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @1);
+      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
     } else {
       setter_func = setter->as_function_group();
     }
@@ -529,10 +529,27 @@ declaration:
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
-        | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
+        | KW_MAKE_SEQ '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
-  CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
-  current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *element_getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (element_getter == (CPPDeclaration *)NULL || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid element method: " + $7->get_fully_scoped_name(), @5);
+    element_getter = NULL;
+  }
+
+  if (length_getter != (CPPDeclaration *)NULL && element_getter != (CPPDeclaration *)NULL) {
+    CPPMakeSeq *make_seq = new CPPMakeSeq($3,
+                                          length_getter->as_function_group(),
+                                          element_getter->as_function_group(),
+                                          current_scope, @1.file);
+    current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
+  }
 }
         | KW_STATIC_ASSERT '(' const_expr ',' string_literal ')'
 {

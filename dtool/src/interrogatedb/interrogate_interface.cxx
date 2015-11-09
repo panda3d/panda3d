@@ -414,34 +414,47 @@ interrogate_get_wrapper_by_unique_name(const char *unique_name) {
   return InterrogateDatabase::get_ptr()->get_wrapper_by_unique_name(unique_name);
 }
 
-TypeIndex 
-interrogate_make_seq_class(MakeSeqIndex make_seq) {
-  //cerr << "interrogate_make_seq_class(" << make_seq << ")\n";
-  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_class();
-}
-
 const char *
 interrogate_make_seq_seq_name(MakeSeqIndex make_seq) {
   //cerr << "interrogate_make_seq_seq_name(" << make_seq << ")\n";
   static string result;
-  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_seq_name();
+  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_name();
   return result.c_str();
+}
+
+const char *
+interrogate_make_seq_scoped_name(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_seq_name(" << make_seq << ")\n";
+  static string result;
+  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_scoped_name();
+  return result.c_str();
+}
+
+bool
+interrogate_make_seq_has_comment(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_has_comment(" << make_seq << ")\n";
+  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).has_comment();
+}
+
+const char *
+interrogate_make_seq_comment(MakeSeqIndex make_seq) {
+  //cerr << "interrogate_make_seq_comment(" << make_seq << ")\n";
+  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_comment().c_str();
 }
 
 const char *
 interrogate_make_seq_num_name(MakeSeqIndex make_seq) {
   //cerr << "interrogate_make_seq_num_name(" << make_seq << ")\n";
-  static string result;
-  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_num_name();
-  return result.c_str();
+  FunctionIndex function = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_length_getter();
+  return interrogate_function_name(function);
 }
 
 const char *
 interrogate_make_seq_element_name(MakeSeqIndex make_seq) {
   //cerr << "interrogate_make_seq_element_name(" << make_seq << ")\n";
   static string result;
-  result = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_element_name();
-  return result.c_str();
+  FunctionIndex function = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_element_getter();
+  return interrogate_function_name(function);
 }
 
 int
