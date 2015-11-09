@@ -1420,17 +1420,14 @@ def printListEnum(l):
         pass
 
 # base class for all Panda C++ objects
-# libdtoolconfig doesn't seem to have this, grab it off of PandaNode
+# libdtoolconfig doesn't seem to have this, grab it off of TypedObject
 dtoolSuperBase = None
 
 def _getDtoolSuperBase():
     global dtoolSuperBase
     from panda3d.core import TypedObject
     dtoolSuperBase = TypedObject.__bases__[0]
-    assert repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE'>"
+    assert dtoolSuperBase.__name__ == 'DTOOL_SUPER_BASE'
 
 safeReprNotify = None
 

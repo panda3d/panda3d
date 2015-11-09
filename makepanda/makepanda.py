@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 ########################################################################
 #
-# Caution: there are two separate, independent build systems:
-# 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
-# to use both.  This file is part of the 'makepanda' system.
-#
 # To build panda using this script, type 'makepanda.py' on unix
 # or 'makepanda.bat' on windows, and examine the help-text.
 # Then run the script again with the appropriate options to compile
@@ -2852,35 +2848,6 @@ if not PkgSkip("EIGEN") and GetTarget() == "windows" and GetThirdpartyDir():
 ########################################################################
 
 CopyTree(GetOutputDir()+'/include/parser-inc','dtool/src/parser-inc')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/openssl')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/netinet')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Cg')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Core')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Forest')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/glew')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Eigen')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket/Core')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/core')
-MakeDirectory(GetOutputDir()+'/include/parser-inc/opencv2/highgui')
-CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
-CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
-CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Core/','dtool/src/parser-inc/Core.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Forest/','dtool/src/parser-inc/Forest.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL/','dtool/src/parser-inc/OpenGLRenderer.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9/','dtool/src/parser-inc/DirectX9Renderer.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/Dense')
-CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/StdVector')
-CopyFile(GetOutputDir()+'/include/parser-inc/Rocket/Core/','dtool/src/parser-inc/RenderInterface.h')
-CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/core/','dtool/src/parser-inc/core.hpp')
-CopyFile(GetOutputDir()+'/include/parser-inc/opencv2/highgui/','dtool/src/parser-inc/highgui.hpp')
 DeleteVCS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################

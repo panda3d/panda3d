@@ -2,12 +2,6 @@ This document describes the use of the Panda's Config.prc
 configuration files and the runtime subsystem that extracts values
 from these files, defined in dtool/src/prc.
 
-The Config.prc files are used for runtime configuration only, and are
-not related to the Config.pp files, which control compile-time
-configuration.  If you are looking for documentation on the Config.pp
-files, see howto.use_ppremake.txt, and ppremake-*.txt, in this
-directory.
-
 
 USING THE PRC FILES
 
