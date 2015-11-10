@@ -3361,7 +3361,7 @@ class Packager:
         self.currentPackage.addExtensionModules()
         self.currentPackage.freezer.reset()
 
-        self.do_file('panda3d/_core.pyd', newDir='panda3d')
+        self.do_file('panda3d/core.pyd', newDir='panda3d')
 
         # This is the key Python module that is imported at runtime to
         # start an application running.

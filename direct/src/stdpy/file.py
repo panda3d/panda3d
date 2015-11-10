@@ -10,7 +10,7 @@ __all__ = [
     'execfile',
     ]
 
-import panda3d._core as core
+from panda3d import core
 import sys
 import os
 import io
