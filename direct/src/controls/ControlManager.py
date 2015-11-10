@@ -13,13 +13,13 @@ from direct.directnotify import DirectNotifyGlobal
 #if __debug__:
 #    import DevWalker
 from direct.task import Task
+from panda3d.core import ConfigVariableBool
+
 CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
-    wantAvatarPhysicsIndicator = config.GetBool('want-avatar-physics-indicator', 0)
-    wantAvatarPhysicsDebug = config.GetBool('want-avatar-physics-debug', 0)
-    wantWASD = config.GetBool('want-WASD', 0)
+    wantWASD = ConfigVariableBool('want-WASD', True)
 
     def __init__(self, enable=True, passMessagesThrough = False):
         assert self.notify.debug("init control manager %s" % (passMessagesThrough))

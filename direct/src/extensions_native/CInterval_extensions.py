@@ -1,4 +1,5 @@
-from .core import Dtool_funcToMethod
+from panda3d.direct import CInterval
+from .extension_native_helpers import Dtool_funcToMethod
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 CInterval.DtoolClassDict["notify"] = directNotify.newCategory("Interval")
