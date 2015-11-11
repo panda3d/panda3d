@@ -16,8 +16,10 @@ add_subdirectory(src/interval)
 #add_subdirectory(src/motiontrail)
 add_subdirectory(src/showbase)
 
-add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase)
-target_link_libraries(direct core)
+if(HAVE_PYTHON)
+  add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase)
+  target_link_libraries(direct core)
+endif()
 
 # Installation:
 if(HAVE_PYTHON)
