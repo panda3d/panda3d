@@ -21,6 +21,7 @@
 #include "luse.h"
 #include "textFont.h"
 #include "pointerTo.h"
+#include "renderState.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextProperties
@@ -169,6 +170,10 @@ PUBLISHED:
 
   void write(ostream &out, int indent_level = 0) const;
 
+public:
+  const RenderState *get_text_state() const;
+  const RenderState *get_shadow_state() const;
+
 private:
   static void load_default_font();
 
@@ -215,6 +220,9 @@ private:
   PN_stdfloat _glyph_scale;
   PN_stdfloat _glyph_shift;
   PN_stdfloat _text_scale;
+
+  mutable CPT(RenderState) _text_state;
+  mutable CPT(RenderState) _shadow_state;
 
   static PT(TextFont) _default_font;
   static bool _loaded_default_font;
