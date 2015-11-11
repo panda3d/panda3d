@@ -19,6 +19,7 @@
 
 #include "cppDeclaration.h"
 #include "cppIdentifier.h"
+#include "cppFunctionGroup.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CPPMakeSeq

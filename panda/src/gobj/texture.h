@@ -93,6 +93,8 @@ PUBLISHED:
     T_float,
     T_unsigned_int_24_8,  // Packed
     T_int,
+    T_byte,
+    T_short,
   };
 
   enum Format {
@@ -527,6 +529,7 @@ public:
   static PT(Texture) make_texture();
 
 public:
+  static bool is_unsigned(ComponentType ctype);
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);

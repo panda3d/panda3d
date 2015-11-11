@@ -19,6 +19,9 @@
 #include "staticTextFont.h"
 #include "bamFile.h"
 #include "fontPool.h"
+#include "colorAttrib.h"
+#include "cullBinAttrib.h"
+#include "transparencyAttrib.h"
 
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;
@@ -61,6 +64,8 @@ TextProperties() {
 TextProperties::
 TextProperties(const TextProperties &copy) {
   (*this) = copy;
+  _text_state = copy._text_state;
+  _shadow_state = copy._shadow_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,6 +96,9 @@ operator = (const TextProperties &copy) {
   _glyph_scale = copy._glyph_scale;
   _glyph_shift = copy._glyph_shift;
   _text_scale = copy._text_scale;
+
+  _text_state.clear();
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,6 +378,62 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << "text scale is " << get_text_scale() << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::get_text_state
+//       Access: Public
+//  Description: Returns a RenderState object suitable for rendering
+//               text with these properties.
+////////////////////////////////////////////////////////////////////
+const RenderState *TextProperties::
+get_text_state() const {
+  if (!_text_state.is_null()) {
+    return _text_state;
+  }
+
+  CPT(RenderState) state = RenderState::make_empty();
+
+  if (has_text_color()) {
+    state = state->add_attrib(ColorAttrib::make_flat(get_text_color()));
+    if (get_text_color()[3] != 1.0) {
+      state = state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    }
+  }
+
+  if (has_bin()) {
+    state = state->add_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 2));
+  }
+
+  swap(_text_state, state);
+  return _text_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::get_shadow_state
+//       Access: Public
+//  Description: Returns a RenderState object suitable for rendering
+//               the shadow of this text with these properties.
+////////////////////////////////////////////////////////////////////
+const RenderState *TextProperties::
+get_shadow_state() const {
+  if (!_shadow_state.is_null()) {
+    return _shadow_state;
+  }
+
+  CPT(RenderState) state = RenderState::make_empty();
+
+  state = state->add_attrib(ColorAttrib::make_flat(get_shadow_color()));
+  if (get_shadow_color()[3] != 1.0) {
+    state = state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  if (has_bin()) {
+    state = state->add_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 1));
+  }
+
+  swap(_shadow_state, state);
+  return _shadow_state;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -587,33 +587,16 @@ assemble_text() {
     if (placement->_properties != properties) {
       // Get a new set of properties for future glyphs.
       properties = placement->_properties;
-      text_state = RenderState::make_empty();
-      shadow_state = RenderState::make_empty();
+      text_state = properties->get_text_state();
       shadow_xform = LMatrix4::ident_mat();
 
-      if (properties->has_text_color()) {
-        text_state = text_state->add_attrib(ColorAttrib::make_flat(properties->get_text_color()));
-        if (properties->get_text_color()[3] != 1.0) {
-          text_state = text_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-        }
-      }
-
-      if (properties->has_bin()) {
-        text_state = text_state->add_attrib(CullBinAttrib::make(properties->get_bin(), properties->get_draw_order() + 2));
-      }
-
       if (properties->has_shadow()) {
-        shadow_state = shadow_state->add_attrib(ColorAttrib::make_flat(properties->get_shadow_color()));
-        if (properties->get_shadow_color()[3] != 1.0) {
-          shadow_state = shadow_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-        }
-
-        if (properties->has_bin()) {
-          shadow_state = shadow_state->add_attrib(CullBinAttrib::make(properties->get_bin(), properties->get_draw_order() + 1));
-        }
+        shadow_state = properties->get_shadow_state();
 
         LVector2 offset = properties->get_shadow();
         shadow_xform = LMatrix4::translate_mat(offset[0], 0.0f, -offset[1]);
+      } else {
+        shadow_state.clear();
       }
     }
 
