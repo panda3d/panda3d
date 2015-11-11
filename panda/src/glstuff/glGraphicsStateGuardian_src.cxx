@@ -4689,6 +4689,13 @@ void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
+#ifndef OPENGLES
+  _textures_needing_fetch_barrier.erase(gtc);
+  _textures_needing_image_access_barrier.erase(gtc);
+  _textures_needing_update_barrier.erase(gtc);
+  _textures_needing_framebuffer_barrier.erase(gtc);
+#endif
+
   glDeleteTextures(1, &gtc->_index);
 
   if (gtc->_buffer != 0) {
