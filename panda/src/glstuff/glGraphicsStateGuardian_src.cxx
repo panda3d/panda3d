@@ -1877,6 +1877,15 @@ reset() {
 #endif  // OPENGLES
 #endif
 
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
+    _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
+      get_extension_func("glGenerateTextureMipmap");
+  } else {
+    _glGenerateTextureMipmap = NULL;
+  }
+#endif
+
   _supports_framebuffer_multisample = false;
   if ( has_extension("GL_EXT_framebuffer_multisample") ) {
     _supports_framebuffer_multisample = true;
@@ -11758,6 +11767,31 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   report_my_gl_errors();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::generate_mipmaps
+//       Access: Protected
+//  Description: Causes mipmaps to be generated for an uploaded
+//               texture.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+generate_mipmaps(CLP(TextureContext) *gtc) {
+#ifndef OPENGLES
+  if (_glGenerateTextureMipmap != NULL) {
+    // OpenGL 4.5 offers an easy way to do this without binding.
+    _glGenerateTextureMipmap(gtc->_index);
+    return;
+  }
+#endif
+
+  if (_glGenerateMipmap != NULL) {
+    _state_texture = 0;
+    update_texture(gtc, true);
+    apply_texture(gtc);
+    _glGenerateMipmap(gtc->_target);
+    glBindTexture(gtc->_target, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

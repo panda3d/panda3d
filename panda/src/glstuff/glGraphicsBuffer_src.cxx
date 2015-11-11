@@ -409,20 +409,19 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
-  _fbo.reserve(num_fbos);
-  for (int layer = 0; layer < num_fbos; ++layer) {
-    if (layer >= _fbo.size()) {
-      _fbo.push_back(0);
-    }
 
+  if (num_fbos > _fbo.size()) {
+    // Generate more FBO handles.
+    int start = _fbo.size();
+    _fbo.resize(num_fbos, 0);
+    glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
+  }
+
+  for (int layer = 0; layer < num_fbos; ++layer) {
     // Bind the FBO
     if (_fbo[layer] == 0) {
-      glgsg->_glGenFramebuffers(1, &_fbo[layer]);
-
-      if (_fbo[layer] == 0) {
-        report_my_gl_errors();
-        return;
-      }
+      report_my_gl_errors();
+      return;
     }
     glgsg->bind_fbo(_fbo[layer]);
 
@@ -1118,11 +1117,7 @@ generate_mipmaps() {
     CLP(TextureContext) *gtc = *it;
 
     if (gtc->_generate_mipmaps) {
-      glgsg->_state_texture = 0;
-      glgsg->update_texture(gtc, true);
-      glgsg->apply_texture(gtc);
-      glgsg->_glGenerateMipmap(gtc->_target);
-      glBindTexture(gtc->_target, 0);
+      glgsg->generate_mipmaps(gtc);
     }
   }
 
