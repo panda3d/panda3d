@@ -19,6 +19,9 @@
 #include "staticTextFont.h"
 #include "bamFile.h"
 #include "fontPool.h"
+#include "colorAttrib.h"
+#include "cullBinAttrib.h"
+#include "transparencyAttrib.h"
 
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;
