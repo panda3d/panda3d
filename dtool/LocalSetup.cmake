@@ -159,6 +159,10 @@ check_include_file_cxx(typeinfo HAVE_RTTI)
 # Do we have Posix threads?
 #set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
+# Do we have SSE2 support?
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-msse2 HAVE_SSE2)
+
 #/* Define if needed to have 64-bit file i/o */
 #$[cdefine __USE_LARGEFILE64]
 

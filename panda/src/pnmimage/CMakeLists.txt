@@ -30,7 +30,9 @@ set(P3PNMIMAGE_IGATEEXT
   pfmFile_ext.h
 )
 
-set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES COMPILE_FLAGS -msse2)
+if(HAVE_SSE2)
+  set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES COMPILE_FLAGS -msse2)
+endif()
 
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
 add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} convert_srgb_sse2.cxx)
