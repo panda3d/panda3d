@@ -203,16 +203,20 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   case CS_yup_right:
     return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
                                0.0f,   e, 0.0f, 0.0f,
-                                 d,   b,  -c,-1.0f,
+                                  d,   b,  -c, -1.0f,
                                0.0f, 0.0f,   f, 0.0f);
 
   case CS_zup_left:
-    return FLOATNAME(LMatrix4)::convert_mat(CS_zup_right, CS_zup_left) *
-      get_perspective_projection_mat(CS_zup_right);
+    return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
+                               0.0f,  b,   -c, -1.0f,
+                                 d,   e,  0.0f, 0.0f,
+                               0.0f, 0.0f,   f, 0.0f);
 
   case CS_yup_left:
-    return FLOATNAME(LMatrix4)::convert_mat(CS_yup_right, CS_yup_left) *
-      get_perspective_projection_mat(CS_yup_right);
+    return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
+                               0.0f,   e, 0.0f, 0.0f,
+                                 -d,  -b,    c, 1.0f,
+                               0.0f, 0.0f,   f, 0.0f);
 
   default:
     mathutil_cat.error()
@@ -251,8 +255,10 @@ get_ortho_projection_mat(CoordinateSystem cs) const {
 */
   switch (cs) {
   case CS_zup_right:
-    return FLOATNAME(LMatrix4)::convert_mat(CS_yup_right, CS_zup_right) *
-      get_ortho_projection_mat(CS_yup_right);
+    return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
+                               0.0f, 0.0f,  -c, 0.0f,
+                               0.0f,  -b, 0.0f, 0.0f,
+                                -d,  -e,  -f, 1.0f);
 
   case CS_yup_right:
     return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
@@ -261,12 +267,16 @@ get_ortho_projection_mat(CoordinateSystem cs) const {
                                 -d,  -e,  -f, 1.0f);
 
   case CS_zup_left:
-    return FLOATNAME(LMatrix4)::convert_mat(CS_zup_right, CS_zup_left) *
-      get_ortho_projection_mat(CS_zup_right);
+    return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
+                               0.0f, 0.0f,  -c, 0.0f,
+                               0.0f,   b, 0.0f, 0.0f,
+                                -d,  -e,  -f, 1.0f);
 
   case CS_yup_left:
-    return FLOATNAME(LMatrix4)::convert_mat(CS_yup_right, CS_yup_left) *
-      get_ortho_projection_mat(CS_yup_right);
+    return FLOATNAME(LMatrix4)(  a, 0.0f, 0.0f, 0.0f,
+                               0.0f,   b, 0.0f, 0.0f,
+                               0.0f, 0.0f,   c, 0.0f,
+                                -d,  -e,  -f, 1.0f);
 
   default:
     mathutil_cat.error()
