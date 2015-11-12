@@ -96,9 +96,12 @@ files into the appropriate locations on your computer.  You may have to run the
 Mac OS X
 --------
 
-On Mac OS X, all you need to compile Panda3D is a set of precompiled
-thirdparty packages, which can be acquired from here:
-https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-mac.tar.gz
+On Mac OS X, you will need to download a set of precompiled thirdparty packages in order to
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.0/panda3d-1.9.0-tools-mac.tar.gz).
+
+In order to build the installer on Mac OS X you will need to install PackageMaker.
+This can be obtained from the "Auxiliary Tools for Xcode" which can be downloaded
+from Apple [here](https://developer.apple.com/downloads/).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
