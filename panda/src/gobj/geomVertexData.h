@@ -182,6 +182,8 @@ public:
   static INLINE float unpack_ufloat_c(PN_uint32 data);
 
 private:
+  static void do_set_color(GeomVertexData *vdata, const LColor &color);
+
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
                             const GeomVertexColumn *from_type,
