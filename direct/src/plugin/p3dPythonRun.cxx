@@ -193,7 +193,7 @@ run_python() {
     return 1;
   }
 
-  // Set the __path__ such that it can find panda3d/_core.pyd, etc.
+  // Set the __path__ such that it can find panda3d/core.pyd, etc.
   Filename panda3d_dir(dir, "panda3d");
   string dir_str = panda3d_dir.to_os_specific();
   PyModule_AddObject(panda3d_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));

@@ -63,7 +63,9 @@ PreparedGraphicsObjects::
   // There may be objects that are still prepared when we destruct.
   // If this is so, then all of the GSG's that own them have already
   // destructed, so we can assume their resources were internally
-  // cleaned up.  Quietly erase these remaining objects.
+  // cleaned up.  Besides, we may not even be allowed to call the
+  // GSG release methods since some APIs (eg. OpenGL) require a
+  // context current.  So we just call the destructors.
   ReMutexHolder holder(_lock);
 
   release_all_textures();
@@ -72,18 +74,38 @@ PreparedGraphicsObjects::
        tci != _released_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->set_owning_chain(NULL);
+    delete tc;
   }
-  // Is this a leak?  Should we delete these TextureContexts?
   _released_textures.clear();
 
   release_all_samplers();
+  ReleasedSamplers::iterator ssci;
+  for (ssci = _released_samplers.begin();
+       ssci != _released_samplers.end();
+       ++ssci) {
+    SamplerContext *sc = (*ssci);
+    delete sc;
+  }
   _released_samplers.clear();
 
   release_all_geoms();
+  Geoms::iterator gci;
+  for (gci = _released_geoms.begin();
+       gci != _released_geoms.end();
+       ++gci) {
+    GeomContext *gc = (*gci);
+    delete gc;
+  }
   _released_geoms.clear();
 
   release_all_shaders();
+  Shaders::iterator sci;
+  for (sci = _released_shaders.begin();
+       sci != _released_shaders.end();
+       ++sci) {
+    ShaderContext *sc = (*sci);
+    delete sc;
+  }
   _released_shaders.clear();
 
   release_all_vertex_buffers();
@@ -92,7 +114,7 @@ PreparedGraphicsObjects::
        vbci != _released_vertex_buffers.end();
        ++vbci) {
     VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    vbc->set_owning_chain(NULL);
+    delete vbc;
   }
   _released_vertex_buffers.clear();
 
@@ -102,7 +124,7 @@ PreparedGraphicsObjects::
        ibci != _released_index_buffers.end();
        ++ibci) {
     IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    ibc->set_owning_chain(NULL);
+    delete ibc;
   }
   _released_index_buffers.clear();
 }

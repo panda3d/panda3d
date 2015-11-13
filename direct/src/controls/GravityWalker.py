@@ -18,15 +18,17 @@ from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
-from pandac.PandaModules import *
+from panda3d.core import *
+from direct.extensions_native import VBase3_extensions
+from direct.extensions_native import VBase4_extensions
 import math
 
 
 class GravityWalker(DirectObject.DirectObject):
     notify = directNotify.newCategory("GravityWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
-    earlyEventSphere = base.config.GetBool('early-event-sphere', 0)
+    wantDebugIndicator = ConfigVariableBool('want-avatar-physics-indicator', False)
+    wantFloorSphere = ConfigVariableBool('want-floor-sphere', False)
+    earlyEventSphere = ConfigVariableBool('early-event-sphere', False)
 
     DiagonalFactor = math.sqrt(2.) / 2.
 

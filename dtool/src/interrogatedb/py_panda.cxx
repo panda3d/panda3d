@@ -14,6 +14,7 @@
 
 #include "py_panda.h"
 #include "config_interrogatedb.h"
+#include "executionEnvironment.h"
 
 #ifdef HAVE_PYTHON
 
@@ -624,6 +625,50 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #else
     return Dtool_Raise_TypeError("Py_InitModule returned NULL");
 #endif
+  }
+
+  // MAIN_DIR needs to be set very early; this seems like a convenient place
+  // to do that.  Perhaps we'll find a better place for this in the future.
+  static bool initialized_main_dir = false;
+  if (!initialized_main_dir) {
+    // Grab the __main__ module.
+    PyObject *main_module = PyImport_ImportModule("__main__");
+    if (main_module == NULL) {
+      interrogatedb_cat.warning() << "Unable to import __main__\n";
+    }
+
+    // Extract the __file__ attribute, if present.
+    Filename main_dir;
+    PyObject *file_attr = PyObject_GetAttrString(main_module, "__file__");
+    if (file_attr == NULL) {
+      // Must be running in the interactive interpreter.  Use the CWD.
+      main_dir = ExecutionEnvironment::get_cwd();
+    } else {
+#if PY_MAJOR_VERSION >= 3
+      Py_ssize_t length;
+      wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
+      if (buffer != NULL) {
+        main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
+        main_dir.make_absolute();
+        main_dir = main_dir.get_dirname();
+        PyMem_Free(buffer);
+      }
+#else
+      char *buffer;
+      Py_ssize_t length;
+      if (PyString_AsStringAndSize(file_attr, &buffer, &length) != -1) {
+        main_dir = Filename::from_os_specific(std::string(buffer, length));
+        main_dir.make_absolute();
+        main_dir = main_dir.get_dirname();
+      }
+#endif
+      else {
+        interrogatedb_cat.warning() << "Invalid string for __main__.__file__\n";
+      }
+    }
+    ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
+    PyErr_Clear();
+    initialized_main_dir = true;
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);

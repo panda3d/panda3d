@@ -32,6 +32,12 @@ TypeHandle WinGraphicsPipe::_type_handle;
 #define MAXIMUM_PROCESSORS 32
 #endif
 
+typedef enum _Process_DPI_Awareness {
+  Process_DPI_Unaware            = 0,
+  Process_System_DPI_Aware       = 1,
+  Process_Per_Monitor_DPI_Aware  = 2
+} Process_DPI_Awareness;
+
 typedef struct _PROCESSOR_POWER_INFORMATION {
   ULONG Number;
   ULONG MaxMhz;
@@ -686,7 +692,6 @@ WinGraphicsPipe() {
   // these fns arent defined on win95, so get dynamic ptrs to them
   // to avoid ugly DLL loader failures on w95
   _pfnTrackMouseEvent = NULL;
-  _pfnSetProcessDPIAware = NULL;
 
   _hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
   if (_hUser32 != NULL) {
@@ -694,13 +699,20 @@ WinGraphicsPipe() {
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
 
     if (dpi_aware) {
-      _pfnSetProcessDPIAware =
-        (PFN_SETPROCESSDPIAWARE)GetProcAddress(_hUser32, "SetProcessDPIAware");
+      typedef HRESULT (WINAPI *PFN_SETPROCESSDPIAWARENESS)(Process_DPI_Awareness);
+      PFN_SETPROCESSDPIAWARENESS pfnSetProcessDpiAwareness =
+        (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(_hUser32, "SetProcessDpiAwarenessInternal");
 
-      if (windisplay_cat.is_debug()) {
-        windisplay_cat.debug() << "Calling SetProcessDPIAware().\n";
+      if (pfnSetProcessDpiAwareness == NULL) {
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() << "Unable to find SetProcessDpiAwareness in user32.dll.\n";
+        }
+      } else {
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
+        }
+        pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
       }
-      _pfnSetProcessDPIAware();
     }
   }
 

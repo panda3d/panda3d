@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TEXT TextGlyph : public TypedReferenceCount {
 public:
-  INLINE TextGlyph(int character);
+  INLINE TextGlyph(int character, PN_stdfloat advance=0);
   INLINE TextGlyph(int character, const Geom *geom, 
                    const RenderState *state, PN_stdfloat advance);
   INLINE TextGlyph(const TextGlyph &copy);
@@ -39,17 +39,41 @@ public:
 
 PUBLISHED:
   INLINE int get_character() const;
-  INLINE PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
+  INLINE bool has_quad() const;
+  INLINE bool get_quad(LVecBase4 &dimensions, LVecBase4 &texcoords) const;
   INLINE const RenderState *get_state() const;
   INLINE PN_stdfloat get_advance() const;
 
   virtual bool is_whitespace() const;
+
+  PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
+
+public:
+  void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                         bool &found_any, Thread *current_thread) const;
+
+  void set_quad(const LVecBase4 &dimensions, const LVecBase4 &texcoords,
+                const RenderState *state);
+
+  void set_geom(GeomVertexData *vdata, GeomPrimitive *prim,
+                const RenderState *state);
+
+private:
+  void check_quad_geom();
+  void make_quad_geom();
 
 protected:
   int _character;
   CPT(Geom) _geom;
   CPT(RenderState) _state;
   PN_stdfloat _advance;
+
+  bool _has_quad;
+  // top, left, bottom, right
+  LVecBase4 _quad_dimensions;
+  LVecBase4 _quad_texcoords;
+
+  friend class GeomTextGlyph;
 
 public:
   static TypeHandle get_class_type() {

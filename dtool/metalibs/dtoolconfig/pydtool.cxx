@@ -83,7 +83,6 @@ static PyObject *_inP07ytf513(PyObject *self, PyObject *args);
 static PyObject *_inP07ytsqGH(PyObject *self, PyObject *args);
 static PyObject *_inP07yt7shV(PyObject *self, PyObject *args);
 static PyObject *_inP07ytA1eF(PyObject *self, PyObject *args);
-static PyObject *_inP07yt9tTm(PyObject *self, PyObject *args);
 static PyObject *_inP07yt776V(PyObject *self, PyObject *args);
 static PyObject *_inP07ytfaH0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytGB9D(PyObject *self, PyObject *args);
@@ -1210,24 +1209,6 @@ _inP07ytA1eF(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
     FunctionWrapperIndex return_value = interrogate_get_wrapper_by_unique_name((char const *)param0);
-#if PY_MAJOR_VERSION >= 3
-    return PyLong_FromLong(return_value);
-#else
-    return PyInt_FromLong(return_value);
-#endif
-  }
-  return (PyObject *)NULL;
-}
-
-/*
- * Python simple wrapper for
- * TypeIndex interrogate_make_seq_class(MakeSeqIndex make_seq)
- */
-static PyObject *
-_inP07yt9tTm(PyObject *, PyObject *args) {
-  int param0;
-  if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_make_seq_class((MakeSeqIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
@@ -2433,7 +2414,6 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_wrapper_pointer", &_inP07ytsqGH, METH_VARARGS },
   { "interrogate_wrapper_unique_name", &_inP07yt7shV, METH_VARARGS },
   { "interrogate_get_wrapper_by_unique_name", &_inP07ytA1eF, METH_VARARGS },
-  { "interrogate_make_seq_class", &_inP07yt9tTm, METH_VARARGS },
   { "interrogate_make_seq_seq_name", &_inP07yt776V, METH_VARARGS },
   { "interrogate_make_seq_num_name", &_inP07ytfaH0, METH_VARARGS },
   { "interrogate_make_seq_element_name", &_inP07ytGB9D, METH_VARARGS },

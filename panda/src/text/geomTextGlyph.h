@@ -17,15 +17,12 @@
 
 #include "pandabase.h"
 #include "geom.h"
-
-#ifdef HAVE_FREETYPE
-
-#include "dynamicTextGlyph.h"
+#include "textGlyph.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomTextGlyph
 // Description : This is a specialization on Geom for containing a
-//               primitive intended to represent a DynamicTextGlyph.
+//               primitive intended to represent a TextGlyph.
 //               Its sole purpose is to maintain the geom count on the
 //               glyph, so we can determine the actual usage count on
 //               a dynamic glyph (and thus know when it is safe to
@@ -33,10 +30,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TEXT GeomTextGlyph : public Geom {
 public:
-  GeomTextGlyph(DynamicTextGlyph *glyph,
-                const GeomVertexData *data);
+  GeomTextGlyph(const TextGlyph *glyph, const GeomVertexData *data);
   GeomTextGlyph(const GeomVertexData *data);
   GeomTextGlyph(const GeomTextGlyph &copy);
+  GeomTextGlyph(const Geom &copy, const TextGlyph *glyph);
   void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();
   ALLOC_DELETED_CHAIN(GeomTextGlyph);
@@ -48,8 +45,12 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+  void add_glyph(const TextGlyph *glyph);
+
+  friend class TextAssembler;
+
 private:
-  typedef pvector< PT(DynamicTextGlyph) > Glyphs;
+  typedef pvector< CPT(TextGlyph) > Glyphs;
   Glyphs _glyphs;
 
 public:
@@ -76,12 +77,5 @@ private:
 };
 
 #include "geomTextGlyph.I"
-
-#else  // HAVE_FREETYPE
-
-// Without Freetype, a GeomTextGlyph is really just an ordinary Geom.
-typedef Geom GeomTextGlyph;
-
-#endif  // HAVE_FREETYPE
 
 #endif // GEOMTEXTGLYPH_H

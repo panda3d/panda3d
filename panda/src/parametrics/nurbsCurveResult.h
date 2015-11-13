@@ -67,7 +67,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_sample_t(int n) const;
   INLINE const LPoint3 &get_sample_point(int n) const;
   MAKE_SEQ(get_sample_ts, get_num_samples, get_sample_t);
-  MAKE_SEQ(get_sample_points, get_num_samples, get_sample_points);
+  MAKE_SEQ(get_sample_points, get_num_samples, get_sample_point);
 
 private:
   int find_segment(PN_stdfloat t);

@@ -2996,7 +2996,6 @@ close_gsg() {
     display_cat.debug()
       << this << " close_gsg " << get_type() << "\n";
   }
-  free_pointers();
 
   // As tempting as it may be to try to release all the textures and
   // geoms now, we can't, because we might not be the currently-active
@@ -3009,18 +3008,13 @@ close_gsg() {
   // will be responsible for cleaning up anything we don't clean up
   // explicitly.  We'll just let them drop.
 
-  // However, if any objects have recently been released, we have to
-  // ensure they are actually deleted properly.
-  Thread *current_thread = Thread::get_current_thread();
-  _prepared_objects->begin_frame(this, current_thread);
-  _prepared_objects->end_frame(current_thread);
-
-  // We have to clear the list of timer queries, though, otherwise
-  // their destructors will cause a crash when they try to access
-  // the GSG object.
+  // Make sure that all the contexts belonging to the GSG are deleted.
+  _prepared_objects.clear();
 #ifdef DO_PSTATS
   _pending_timer_queries.clear();
 #endif
+
+  free_pointers();
 }
 
 ////////////////////////////////////////////////////////////////////

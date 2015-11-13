@@ -33,6 +33,7 @@ class CPPInstance;
 class InterrogateBuilder;
 class InterrogateElement;
 class InterrogateFunction;
+class InterrogateMakeSeq;
 class InterrogateType;
 
 ////////////////////////////////////////////////////////////////////
@@ -116,12 +117,12 @@ public:
 
   class MakeSeq {
   public:
-    MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq);
+    MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq);
 
+    const InterrogateMakeSeq &_imake_seq;
     string _name;
-    string _seq_name;
-    string _num_name;
-    string _element_name;
+    Function *_length_getter;
+    Function *_element_getter;
   };
   typedef vector<MakeSeq *> MakeSeqs;
 

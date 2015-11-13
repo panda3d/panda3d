@@ -68,6 +68,7 @@ private:
   CGprogram _cg_program;
   GLuint _glsl_program;
 
+  pvector<GLint> _attributes;
   GLint _color_attrib_index;
   CGparameter _transform_table_param;
   CGparameter _slider_table_param;
@@ -92,9 +93,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    ShaderContext::init_type();
     register_type(_type_handle, CLASSPREFIX_QUOTED "CgShaderContext",
-                  TypedObject::get_class_type());
+                  ShaderContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

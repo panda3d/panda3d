@@ -14,6 +14,7 @@
 
 
 #include "cppScope.h"
+#include "cppParser.h"
 #include "cppDeclaration.h"
 #include "cppNamespace.h"
 #include "cppTypedefType.h"

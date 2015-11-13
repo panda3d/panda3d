@@ -19,6 +19,7 @@ except ImportError:
     signal = None
 
 from panda3d.core import *
+from direct.extensions_native import HTTPChannel_extensions
 
 def print_exc_plus():
     """

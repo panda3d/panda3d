@@ -25,10 +25,10 @@
 void InterrogateMakeSeq::
 output(ostream &out) const {
   InterrogateComponent::output(out);
-  out << _class << " ";
-  idf_output_string(out, _seq_name);
-  idf_output_string(out, _num_name);
-  idf_output_string(out, _element_name);
+  out << _length_getter << " "
+      << _element_getter << " ";
+  idf_output_string(out, _scoped_name);
+  idf_output_string(out, _comment, '\n');
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,10 +40,10 @@ output(ostream &out) const {
 void InterrogateMakeSeq::
 input(istream &in) {
   InterrogateComponent::input(in);
-  in >> _class;
-  idf_input_string(in, _seq_name);
-  idf_input_string(in, _num_name);
-  idf_input_string(in, _element_name);
+
+  in >> _length_getter >> _element_getter;
+  idf_input_string(in, _scoped_name);
+  idf_input_string(in, _comment);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,4 +55,6 @@ input(istream &in) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateMakeSeq::
 remap_indices(const IndexRemapper &remap) {
+  _length_getter = remap.map_from(_length_getter);
+  _element_getter = remap.map_from(_element_getter);
 }

@@ -409,20 +409,19 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
-  _fbo.reserve(num_fbos);
-  for (int layer = 0; layer < num_fbos; ++layer) {
-    if (layer >= _fbo.size()) {
-      _fbo.push_back(0);
-    }
 
+  if (num_fbos > _fbo.size()) {
+    // Generate more FBO handles.
+    int start = _fbo.size();
+    _fbo.resize(num_fbos, 0);
+    glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
+  }
+
+  for (int layer = 0; layer < num_fbos; ++layer) {
     // Bind the FBO
     if (_fbo[layer] == 0) {
-      glgsg->_glGenFramebuffers(1, &_fbo[layer]);
-
-      if (_fbo[layer] == 0) {
-        report_my_gl_errors();
-        return;
-      }
+      report_my_gl_errors();
+      return;
     }
     glgsg->bind_fbo(_fbo[layer]);
 
@@ -1118,11 +1117,7 @@ generate_mipmaps() {
     CLP(TextureContext) *gtc = *it;
 
     if (gtc->_generate_mipmaps) {
-      glgsg->_state_texture = 0;
-      glgsg->update_texture(gtc, true);
-      glgsg->apply_texture(gtc);
-      glgsg->_glGenerateMipmap(gtc->_target);
-      glBindTexture(gtc->_target, 0);
+      glgsg->generate_mipmaps(gtc);
     }
   }
 
@@ -1626,6 +1621,15 @@ report_my_errors(int line, const char *file) {
 void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
+    _rb_data_size_bytes = 0;
+    if (_rb_context != NULL) {
+      // We must delete this object first, because when the GSG
+      // destructs, so will the tracker that this context is
+      // attached to.
+      _rb_context->update_data_size_bytes(0);
+      delete _rb_context;
+      _rb_context = NULL;
+    }
     _is_valid = false;
     _gsg.clear();
     _host.clear();

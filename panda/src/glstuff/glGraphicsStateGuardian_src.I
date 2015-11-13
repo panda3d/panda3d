@@ -624,10 +624,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 set_color_write_mask(int mask) {
   if (gl_color_mask && _active_color_write_mask != mask) {
     _active_color_write_mask = mask;
-    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+    glColorMask((mask & ColorWriteAttrib::C_red) != 0,
+                (mask & ColorWriteAttrib::C_green) != 0,
+                (mask & ColorWriteAttrib::C_blue) != 0,
+                (mask & ColorWriteAttrib::C_alpha) != 0);
   }
 }
 

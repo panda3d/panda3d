@@ -573,75 +573,62 @@ assemble_text() {
   const TextProperties *properties = NULL;
   CPT(RenderState) text_state;
   CPT(RenderState) shadow_state;
-  LMatrix4 shadow_xform;
+  LVector2 shadow(0);
 
   bool any_shadow = false;
 
   GeomCollectorMap geom_collector_map;
   GeomCollectorMap geom_shadow_collector_map;
+  QuadMap quad_map;
+  QuadMap quad_shadow_map;
 
   PlacedGlyphs::const_iterator pgi;
   for (pgi = placed_glyphs.begin(); pgi != placed_glyphs.end(); ++pgi) {
-    const GlyphPlacement *placement = (*pgi);
+    const GlyphPlacement &placement = (*pgi);
 
-    if (placement->_properties != properties) {
+    if (placement._properties != properties) {
       // Get a new set of properties for future glyphs.
-      properties = placement->_properties;
-      text_state = RenderState::make_empty();
-      shadow_state = RenderState::make_empty();
-      shadow_xform = LMatrix4::ident_mat();
-
-      if (properties->has_text_color()) {
-        text_state = text_state->add_attrib(ColorAttrib::make_flat(properties->get_text_color()));
-        if (properties->get_text_color()[3] != 1.0) {
-          text_state = text_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-        }
-      }
-
-      if (properties->has_bin()) {
-        text_state = text_state->add_attrib(CullBinAttrib::make(properties->get_bin(), properties->get_draw_order() + 2));
-      }
+      properties = placement._properties;
+      text_state = properties->get_text_state();
 
       if (properties->has_shadow()) {
-        shadow_state = shadow_state->add_attrib(ColorAttrib::make_flat(properties->get_shadow_color()));
-        if (properties->get_shadow_color()[3] != 1.0) {
-          shadow_state = shadow_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-        }
-
-        if (properties->has_bin()) {
-          shadow_state = shadow_state->add_attrib(CullBinAttrib::make(properties->get_bin(), properties->get_draw_order() + 1));
-        }
-
-        LVector2 offset = properties->get_shadow();
-        shadow_xform = LMatrix4::translate_mat(offset[0], 0.0f, -offset[1]);
+        shadow = properties->get_shadow();
+        shadow_state = properties->get_shadow_state();
+      } else {
+        shadow.set(0, 0);
+        shadow_state.clear();
       }
     }
 
-    // We have to place the shadow first, because it copies as it
-    // goes, while the place-text function just stomps on the
-    // vertices.
     if (properties->has_shadow()) {
       if (_dynamic_merge) {
-        placement->assign_append_to(geom_shadow_collector_map, shadow_state, shadow_xform);
+        if (placement._glyph->has_quad()) {
+          placement.assign_quad_to(quad_shadow_map, shadow_state, shadow);
+        } else {
+          placement.assign_append_to(geom_shadow_collector_map, shadow_state, shadow);
+        }
       } else {
-        placement->assign_copy_to(shadow_geom_node, shadow_state, shadow_xform);
+        placement.assign_to(shadow_geom_node, shadow_state, shadow);
       }
 
       // Don't shadow the graphics.  That can result in duplication of
       // button objects, plus it looks weird.  If you want a shadowed
       // graphic, you can shadow it yourself before you add it.
-      //placement->copy_graphic_to(shadow_node, shadow_state, shadow_xform);
+      //placement.copy_graphic_to(shadow_node, shadow_state, shadow);
       any_shadow = true;
     }
 
     if (_dynamic_merge) {
-      placement->assign_append_to(geom_collector_map, text_state, LMatrix4::ident_mat());
+      if (placement._glyph->has_quad()) {
+        placement.assign_quad_to(quad_map, text_state);
+      } else {
+        placement.assign_append_to(geom_collector_map, text_state);
+      }
     } else {
-      placement->assign_to(text_geom_node, text_state);
+      placement.assign_to(text_geom_node, text_state);
     }
-    placement->copy_graphic_to(text_node, text_state, LMatrix4::ident_mat());
-    delete placement;
-  }  
+    placement.copy_graphic_to(text_node, text_state);
+  }
   placed_glyphs.clear();
 
   if (any_shadow) {
@@ -655,14 +642,18 @@ assemble_text() {
     (*gc).second.append_geom(text_geom_node, (*gc).first._state);
   }
 
+  generate_quads(text_geom_node, quad_map);
+
   if (any_shadow) {
     for (gc = geom_shadow_collector_map.begin(); 
          gc != geom_shadow_collector_map.end();
          ++gc) {
       (*gc).second.append_geom(shadow_geom_node, (*gc).first._state);
     }
+
+    generate_quads(shadow_geom_node, quad_shadow_map);
   }
-  
+
   parent_node->add_child(text_node);
 
   return parent_node;
@@ -686,8 +677,8 @@ calc_width(wchar_t character, const TextProperties &properties) {
   }
 
   bool got_glyph;
-  const TextGlyph *first_glyph = NULL;
-  const TextGlyph *second_glyph = NULL;
+  CPT(TextGlyph) first_glyph;
+  CPT(TextGlyph) second_glyph;
   UnicodeLatinMap::AccentType accent_type;
   int additional_flags;
   PN_stdfloat glyph_scale;
@@ -750,7 +741,7 @@ has_exact_character(wchar_t character, const TextProperties &properties) {
   TextFont *font = properties.get_font();
   nassertr(font != (TextFont *)NULL, false);
 
-  const TextGlyph *glyph = NULL;
+  CPT(TextGlyph) glyph;
   return font->get_glyph(character, glyph);
 }
 
@@ -776,8 +767,8 @@ has_character(wchar_t character, const TextProperties &properties) {
   }
 
   bool got_glyph;
-  const TextGlyph *first_glyph = NULL;
-  const TextGlyph *second_glyph = NULL;
+  CPT(TextGlyph) first_glyph;
+  CPT(TextGlyph) second_glyph;
   UnicodeLatinMap::AccentType accent_type;
   int additional_flags;
   PN_stdfloat glyph_scale;
@@ -820,7 +811,7 @@ is_whitespace(wchar_t character, const TextProperties &properties) {
   TextFont *font = properties.get_font();
   nassertr(font != (TextFont *)NULL, false);
 
-  const TextGlyph *glyph = NULL;
+  CPT(TextGlyph) glyph;
   if (!font->get_glyph(character, glyph)) {
     return false;
   }
@@ -828,7 +819,6 @@ is_whitespace(wchar_t character, const TextProperties &properties) {
   return glyph->is_whitespace();
 }
 
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::scan_wtext
 //       Access: Private
@@ -914,7 +904,7 @@ scan_wtext(TextAssembler::TextString &output_string,
       
       TextPropertiesManager *manager = 
         TextPropertiesManager::get_global_ptr();
-      
+
       // Get the graphic image.
       const TextGraphic *named_graphic = manager->get_graphic_ptr(graphic_name);
       if (named_graphic != (TextGraphic *)NULL) {
@@ -932,7 +922,6 @@ scan_wtext(TextAssembler::TextString &output_string,
     }
   }
 }
-#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::wordwrap_text
@@ -1214,6 +1203,181 @@ calc_hyphen_width(const TextCharacter &tch) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::generate_quads
+//       Access: Private
+//  Description: Generates Geoms for the given quads and adds them
+//               to the GeomNode.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::
+generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
+  QuadMap::const_iterator qmi;
+  for (qmi = quad_map.begin(); qmi != quad_map.end(); ++qmi) {
+    const QuadDefs &quads = qmi->second;
+    GeomTextGlyph::Glyphs glyphs;
+    glyphs.reserve(quads.size());
+
+    static CPT(GeomVertexFormat) format;
+    if (format.is_null()) {
+      // The optimized code below assumes 32-bit floats, so let's
+      // make sure we got the right format by creating it ourselves.
+      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat(
+        InternalName::get_vertex(), 3, GeomEnums::NT_float32, GeomEnums::C_point,
+        InternalName::get_texcoord(), 2, GeomEnums::NT_float32, GeomEnums::C_texcoord));
+    }
+
+    PT(GeomVertexData) vdata = new GeomVertexData("text", format, Geom::UH_static);
+
+    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+    if (quads.size() > 10922) {
+      tris->set_index_type(GeomEnums::NT_uint32);
+    } else {
+      tris->set_index_type(GeomEnums::NT_uint16);
+    }
+    PT(GeomVertexArrayData) indices = tris->modify_vertices();
+
+    int i = 0;
+
+    // This is quite a critical loop and GeomVertexWriter quickly becomes
+    // the bottleneck.  So, I've written this out the hard way instead.
+    // Two versions of the loop: one for 32-bit indices, one for 16-bit.
+    {
+      PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array(0)->modify_handle();
+      vtx_handle->unclean_set_num_rows(quads.size() * 4);
+
+      unsigned char *write_ptr = vtx_handle->get_write_pointer();
+      size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
+
+      PN_float32 *vtx_ptr = (PN_float32 *)
+        (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
+      PN_float32 *tex_ptr = (PN_float32 *)
+        (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
+
+      if (tris->get_index_type() == GeomEnums::NT_uint32) {
+        // 32-bit index case.
+        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        idx_handle->unclean_set_num_rows(quads.size() * 6);
+        PN_uint32 *idx_ptr = (PN_uint32 *)idx_handle->get_write_pointer();
+
+        QuadDefs::const_iterator qi;
+        for (qi = quads.begin(); qi != quads.end(); ++qi) {
+          const QuadDef &quad = (*qi);
+
+          vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[3];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[0];
+          tex_ptr[1] = quad._uvs[3];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[0] + quad._slantl;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[1];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[0];
+          tex_ptr[1] = quad._uvs[1];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[2] + quad._slanth;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[3];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[2];
+          tex_ptr[1] = quad._uvs[3];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[2] + quad._slantl;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[1];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[2];
+          tex_ptr[1] = quad._uvs[1];
+          tex_ptr += stride;
+
+          *(idx_ptr++) = i + 0;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 3;
+          i += 4;
+
+          glyphs.push_back(MOVE(quad._glyph));
+        }
+      } else {
+        // 16-bit index case.
+        PT(GeomVertexArrayDataHandle) idx_handle = indices->modify_handle();
+        idx_handle->unclean_set_num_rows(quads.size() * 6);
+        PN_uint16 *idx_ptr = (PN_uint16 *)idx_handle->get_write_pointer();
+
+        QuadDefs::const_iterator qi;
+        for (qi = quads.begin(); qi != quads.end(); ++qi) {
+          const QuadDef &quad = (*qi);
+
+          vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[3];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[0];
+          tex_ptr[1] = quad._uvs[3];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[0] + quad._slantl;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[1];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[0];
+          tex_ptr[1] = quad._uvs[1];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[2] + quad._slanth;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[3];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[2];
+          tex_ptr[1] = quad._uvs[3];
+          tex_ptr += stride;
+
+          vtx_ptr[0] = quad._dimensions[2] + quad._slantl;
+          vtx_ptr[1] = 0;
+          vtx_ptr[2] = quad._dimensions[1];
+          vtx_ptr += stride;
+
+          tex_ptr[0] = quad._uvs[2];
+          tex_ptr[1] = quad._uvs[1];
+          tex_ptr += stride;
+
+          *(idx_ptr++) = i + 0;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 3;
+          i += 4;
+
+          glyphs.push_back(MOVE(quad._glyph));
+        }
+      }
+    }
+
+    // We can compute this value much faster than GeomPrimitive can.
+    tris->set_minmax(0, i - 1, NULL, NULL);
+
+    PT(GeomTextGlyph) geom = new GeomTextGlyph(vdata);
+    geom->_glyphs.swap(glyphs);
+    geom->add_primitive(tris);
+    geom_node->add_geom(geom, qmi->first);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::assemble_paragraph
 //       Access: Private
 //  Description: Fills up placed_glyphs, _ul, _lr with
@@ -1232,16 +1396,17 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
   for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
     TextRow &row = (*bi);
 
+    // Store the index of the first glyph we're going to place.
+    size_t first_glyph = placed_glyphs.size();
+
     // First, assemble all the glyphs of this row.
-    PlacedGlyphs row_placed_glyphs;
     PN_stdfloat row_width, line_height, wordwrap;
     TextProperties::Alignment align;
-    assemble_row(row, row_placed_glyphs,
+    assemble_row(row, placed_glyphs,
                  row_width, line_height, align, wordwrap);
+
     // Now move the row to its appropriate position.  This might
     // involve a horizontal as well as a vertical translation.
-    LMatrix4 mat = LMatrix4::ident_mat();
-
     if (num_rows == 0) {
       // If this is the first row, account for its space.
       _ul[1] = 0.8f * line_height;
@@ -1292,15 +1457,13 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       break;
     }
 
-    mat.set_row(3, LVector3(xpos, 0.0f, ypos));
     row._xpos = xpos;
     row._ypos = ypos;
 
-    // Now store the geoms we assembled.
-    PlacedGlyphs::iterator pi;
-    for (pi = row_placed_glyphs.begin(); pi != row_placed_glyphs.end(); ++pi) {
-      (*pi)->_xform *= mat;
-      placed_glyphs.push_back(*pi);
+    // Now adjust the geoms we've assembled.
+    for (size_t i = first_glyph; i < placed_glyphs.size(); ++i) {
+      placed_glyphs[i]._xpos += xpos;
+      placed_glyphs[i]._ypos += ypos;
     }
 
     // Advance to the next line.
@@ -1324,7 +1487,7 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
 assemble_row(TextAssembler::TextRow &row,
-             TextAssembler::PlacedGlyphs &row_placed_glyphs,
+             TextAssembler::PlacedGlyphs &placed_glyphs,
              PN_stdfloat &row_width, PN_stdfloat &line_height, 
              TextProperties::Alignment &align, PN_stdfloat &wordwrap) {
   Thread *current_thread = Thread::get_current_thread();
@@ -1349,7 +1512,7 @@ assemble_row(TextAssembler::TextRow &row,
                         properties->get_underscore_height() != underscore_properties->get_underscore_height()))) {
       // Change the underscore status.
       if (underscore && underscore_start != xpos) {
-        draw_underscore(row_placed_glyphs, underscore_start, xpos,
+        draw_underscore(placed_glyphs, underscore_start, xpos,
                         underscore_properties);
       }
       underscore = properties->get_underscore();
@@ -1364,6 +1527,11 @@ assemble_row(TextAssembler::TextRow &row,
     if ((align == TextProperties::A_left) &&
         (properties->get_align() != TextProperties::A_left)) {
       align = properties->get_align();
+    }
+
+    //[fabius] a good place to take wordwrap size
+    if (properties->get_wordwrap() > 0.0f) {
+      wordwrap = properties->get_wordwrap();
     }
 
     // And the height of the row is the maximum of all the fonts used
@@ -1390,8 +1558,7 @@ assemble_row(TextAssembler::TextRow &row,
 
     } else if (graphic != (TextGraphic *)NULL) {
       // A special embedded graphic.
-      GlyphPlacement *placement = new GlyphPlacement;
-      row_placed_glyphs.push_back(placement);
+      GlyphPlacement placement;
 
       PT(PandaNode) model = graphic->get_model().node();
       if (graphic->get_instance_flag()) {
@@ -1400,12 +1567,12 @@ assemble_row(TextAssembler::TextRow &row,
         PT(ModelNode) model_node = new ModelNode("");
         model_node->set_preserve_transform(ModelNode::PT_no_touch);
         model_node->add_child(model);
-        placement->_graphic_model = model_node.p();
+        placement._graphic_model = model_node.p();
       } else {
         // Copy the model in.  This the preferred way; it's a little
         // cheaper to render than instancing (because flattening is
         // more effective).
-        placement->_graphic_model = model->copy_subgraph();
+        placement._graphic_model = model->copy_subgraph();
       }
 
       LVecBase4 frame = graphic->get_frame();
@@ -1415,29 +1582,20 @@ assemble_row(TextAssembler::TextRow &row,
 
       // Now compute the matrix that will transform the glyph (or
       // glyphs) into position.
-      LMatrix4 glyph_xform = LMatrix4::scale_mat(glyph_scale);
+      placement._scale = properties->get_glyph_scale();
+      placement._xpos = (xpos - frame[0]);
+      placement._ypos = (properties->get_glyph_shift() - frame[2]);
+      placement._properties = properties;
 
-      glyph_xform(3, 0) += (xpos - frame[0]);
-      glyph_xform(3, 2) += (properties->get_glyph_shift() - frame[2]);
-
-      if (properties->has_slant()) {
-        LMatrix4 shear(1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f,
-                        properties->get_slant(), 0.0f, 1.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 1.0f);
-        glyph_xform = shear * glyph_xform;
-      }
-      
-      placement->_xform = glyph_xform;
-      placement->_properties = properties;
+      placed_glyphs.push_back(placement);
 
       xpos += advance * glyph_scale;
 
     } else {
       // A printable character.
       bool got_glyph;
-      const TextGlyph *first_glyph;
-      const TextGlyph *second_glyph;
+      CPT(TextGlyph) first_glyph;
+      CPT(TextGlyph) second_glyph;
       UnicodeLatinMap::AccentType accent_type;
       int additional_flags;
       PN_stdfloat glyph_scale;
@@ -1464,35 +1622,17 @@ assemble_row(TextAssembler::TextRow &row,
       // into this character.  Normally, there is only one Geom per
       // character, but it may involve multiple Geoms if we need to
       // add cheesy accents or ligatures.
-      GlyphPlacement *placement = new GlyphPlacement;
-      row_placed_glyphs.push_back(placement);
-
-      PN_stdfloat advance = 0.0f;
-
-      if (first_glyph != (TextGlyph *)NULL) {
-        PT(Geom) first_char_geom = first_glyph->get_geom(_usage_hint);
-        if (first_char_geom != (Geom *)NULL) {
-          placement->add_piece(first_char_geom, first_glyph->get_state());
-        }
-        advance = first_glyph->get_advance() * advance_scale;
-      }
-      if (second_glyph != (TextGlyph *)NULL) {
-        PT(Geom) second_char_geom = second_glyph->get_geom(_usage_hint);
-        if (second_char_geom != (Geom *)NULL) {
-          second_char_geom->transform_vertices(LMatrix4::translate_mat(advance, 0.0f, 0.0f));
-          placement->add_piece(second_char_geom, second_glyph->get_state());
-        }
-        advance += second_glyph->get_advance();
-      }
+      GlyphPlacement placement;
 
       glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
-      //[fabius] a good place to take wordwrap size
-      if (properties->get_wordwrap() > 0.0f) {
-        wordwrap = properties->get_wordwrap();
-      }
-      // Now compute the matrix that will transform the glyph (or
-      // glyphs) into position.
-      LMatrix4 glyph_xform = LMatrix4::scale_mat(glyph_scale);
+      placement._glyph = NULL;
+      placement._scale = glyph_scale;
+      placement._xpos = xpos;
+      placement._ypos = properties->get_glyph_shift();
+      placement._slant = properties->get_slant();
+      placement._properties = properties;
+
+      PN_stdfloat advance = 0.0f;
 
       if (accent_type != UnicodeLatinMap::AT_none || additional_flags != 0) {
         // If we have some special handling to perform, do so now.
@@ -1500,14 +1640,18 @@ assemble_row(TextAssembler::TextRow &row,
         // glyph, so go get that.
         LPoint3 min_vert, max_vert;
         bool found_any = false;
-        placement->calc_tight_bounds(min_vert, max_vert, found_any,
-                                     current_thread);
+        if (first_glyph != NULL) {
+          first_glyph->calc_tight_bounds(min_vert, max_vert, found_any,
+                                         current_thread);
+        }
+        if (second_glyph != NULL) {
+          second_glyph->calc_tight_bounds(min_vert, max_vert, found_any,
+                                          current_thread);
+        }
 
         if (found_any) {
           LPoint3 centroid = (min_vert + max_vert) / 2.0f;
-          tack_on_accent(accent_type, min_vert, max_vert, centroid, 
-                         properties, placement);
-    
+
           if ((additional_flags & UnicodeLatinMap::AF_turned) != 0) {
             // Invert the character.  Should we also invert the accent
             // mark, so that an accent that would have been above the
@@ -1520,28 +1664,35 @@ assemble_row(TextAssembler::TextRow &row,
             // We rotate the character around its centroid, which may
             // not always be the right point, but it's the best we've
             // got and it's probably pretty close.
-            LMatrix4 rotate =
-              LMatrix4::translate_mat(-centroid) *
-              LMatrix4::rotate_mat_normaxis(180.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
-              LMatrix4::translate_mat(centroid);
-            glyph_xform *= rotate;
+            placement._scale *= -1;
+            placement._xpos += centroid[0] * 2;
+            placement._ypos += centroid[2] * 2;
+          }
+
+          if (accent_type != UnicodeLatinMap::AT_none) {
+            GlyphPlacement accent_placement(placement);
+            tack_on_accent(accent_type, min_vert, max_vert, centroid,
+                           properties, accent_placement);
+            placed_glyphs.push_back(accent_placement);
           }
         }
       }
 
-      glyph_xform(3, 0) += xpos;
-      glyph_xform(3, 2) += properties->get_glyph_shift();
-
-      if (properties->has_slant()) {
-        LMatrix4 shear(1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f,
-                        properties->get_slant(), 0.0f, 1.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 1.0f);
-        glyph_xform = shear * glyph_xform;
+      if (first_glyph != (TextGlyph *)NULL) {
+        assert(!first_glyph->is_whitespace());
+        advance = first_glyph->get_advance() * advance_scale;
+        swap(placement._glyph, first_glyph);
+        placed_glyphs.push_back(placement);
       }
-      
-      placement->_xform = glyph_xform;
-      placement->_properties = properties;
+
+      // Check if there is a second glyph to create a hacky ligature or
+      // some such nonsense.
+      if (second_glyph != (TextGlyph *)NULL) {
+        placement._xpos += advance * glyph_scale;
+        advance += second_glyph->get_advance();
+        swap(placement._glyph, second_glyph);
+        placed_glyphs.push_back(placement);
+      }
 
       xpos += advance * glyph_scale;
       line_height = max(line_height, font->get_line_height() * glyph_scale);
@@ -1549,7 +1700,7 @@ assemble_row(TextAssembler::TextRow &row,
   }
 
   if (underscore && underscore_start != xpos) {
-    draw_underscore(row_placed_glyphs, underscore_start, xpos,
+    draw_underscore(placed_glyphs, underscore_start, xpos,
                     underscore_properties);
   }
 
@@ -1570,7 +1721,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::draw_underscore
 //       Access: Private, Static
@@ -1578,35 +1729,44 @@ assemble_row(TextAssembler::TextRow &row,
 //               for the indicated range of glyphs in this row.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
-draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
-                PN_stdfloat underscore_start, PN_stdfloat underscore_end, 
+draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
+                PN_stdfloat underscore_start, PN_stdfloat underscore_end,
                 const TextProperties *underscore_properties) {
+
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
   PT(GeomVertexData) vdata = 
-    new GeomVertexData("text", format, Geom::UH_static);
-  vdata->reserve_num_rows(2);
+    new GeomVertexData("underscore", format, Geom::UH_static);
+  vdata->unclean_set_num_rows(2);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
 
   PN_stdfloat y = underscore_properties->get_underscore_height();
-  vertex.add_data3(underscore_start, 0.0f, y);
-  color.add_data4(underscore_properties->get_text_color());
-  vertex.add_data3(underscore_end, 0.0f, y);
-  color.add_data4(underscore_properties->get_text_color());
+  vertex.set_data3(underscore_start, 0.0f, y);
+  color.set_data4(underscore_properties->get_text_color());
+  vertex.set_data3(underscore_end, 0.0f, y);
+  color.set_data4(underscore_properties->get_text_color());
 
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);
-  lines->add_vertices(0, 1);
+  lines->add_next_vertices(2);
   lines->close_primitive();
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(lines);
 
-  GlyphPlacement *placement = new GlyphPlacement;
-  placement->add_piece(geom, RenderState::make_empty());
-  placement->_xform = LMatrix4::ident_mat();
-  placement->_properties = underscore_properties;
+  PT(TextGlyph) glyph = new TextGlyph(0, geom, RenderState::make_empty(), 0);
 
-  row_placed_glyphs.push_back(placement);
+  // Eventually we should probably replace this with the set_quad
+  // approach, or better, for improved performance.
+  //glyph->set_quad(LVecBase4(underscore_start, y, underscore_end, y+0.1), LVecBase4(0), RenderState::make_empty());
+
+  GlyphPlacement placement;
+  placement._glyph = MOVE(glyph);
+  placement._xpos = 0;
+  placement._ypos = 0;
+  placement._scale = 1;
+  placement._slant = 0;
+  placement._properties = underscore_properties;
+  placed_glyphs.push_back(placement);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1630,8 +1790,8 @@ draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
 get_character_glyphs(int character, const TextProperties *properties,
-                     bool &got_glyph, const TextGlyph *&glyph,
-                     const TextGlyph *&second_glyph,
+                     bool &got_glyph, CPT(TextGlyph) &glyph,
+                     CPT(TextGlyph) &second_glyph,
                      UnicodeLatinMap::AccentType &accent_type,
                      int &additional_flags,
                      PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale) {
@@ -1701,8 +1861,7 @@ get_character_glyphs(int character, const TextProperties *properties,
     }
   }
 }
-  
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::tack_on_accent
 //       Access: Private
@@ -1715,7 +1874,7 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                const LPoint3 &min_vert, const LPoint3 &max_vert,
                const LPoint3 &centroid,
                const TextProperties *properties, 
-               TextAssembler::GlyphPlacement *placement) const {
+               TextAssembler::GlyphPlacement &placement) const {
   switch (accent_type) {
   case UnicodeLatinMap::AT_grave:
     // We use the slash as the grave and acute accents.  ASCII does
@@ -1843,7 +2002,7 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
   default:
     // There are lots of other crazy kinds of accents.  Forget 'em.
     break;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1860,48 +2019,42 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
                const LPoint3 &min_vert, const LPoint3 &max_vert,
                const LPoint3 &centroid,
                const TextProperties *properties,
-               TextAssembler::GlyphPlacement *placement) const {
+               TextAssembler::GlyphPlacement &placement) const {
   TextFont *font = properties->get_font();
   nassertr(font != (TextFont *)NULL, false);
 
   Thread *current_thread = Thread::get_current_thread();
 
-  const TextGlyph *accent_glyph;
+  CPT(TextGlyph) accent_glyph;
   if (font->get_glyph(accent_mark, accent_glyph) ||
       font->get_glyph(toupper(accent_mark), accent_glyph)) {
-    PT(Geom) accent_geom = accent_glyph->get_geom(_usage_hint);
-    if (accent_geom != (Geom *)NULL) {
+    if (!accent_glyph->is_whitespace()) {
       LPoint3 min_accent, max_accent;
       bool found_any = false;
-      accent_geom->calc_tight_bounds(min_accent, max_accent, found_any,
-                                     current_thread);
+      accent_glyph->calc_tight_bounds(min_accent, max_accent, found_any,
+                                      current_thread);
       if (found_any) {
         PN_stdfloat t, u;
         LMatrix4 accent_mat;
-
-        // This gets set to true if the glyph gets mirrored and needs
-        // to have backface culling disabled.
-        bool mirrored = false;
+        bool has_mat = true;
 
         switch (transform) {
         case CT_none:
-          accent_mat = LMatrix4::ident_mat();
+          has_mat = false;
           break;
 
         case CT_mirror_x:
-          accent_mat = LMatrix4::scale_mat(-1.0f, 1.0f, 1.0f);
+          accent_mat = LMatrix4::scale_mat(-1.0f, -1.0f, 1.0f);
           t = min_accent[0];
           min_accent[0] = -max_accent[0];
           max_accent[0] = -t;
-          mirrored = true;
           break;
 
         case CT_mirror_y:
-          accent_mat = LMatrix4::scale_mat(1.0f, 1.0f, -1.0f);
+          accent_mat = LMatrix4::scale_mat(1.0f, -1.0f, -1.0f);
           t = min_accent[2];
           min_accent[2] = -max_accent[2];
           max_accent[2] = -t;
-          mirrored = true;
           break;
 
         case CT_rotate_90:
@@ -1916,8 +2069,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_180:
-          accent_mat = LMatrix4::scale_mat(-1.0f, -1.0f, 1.0f);
-          
+          has_mat = false;
+          placement._scale *= -1;
           t = min_accent[0];
           min_accent[0] = -max_accent[0];
           max_accent[0] = -t;
@@ -1946,20 +2099,19 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_squash_mirror_y:
-          accent_mat = LMatrix4::scale_mat(squash_accent_scale_x, 1.0f, -squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(squash_accent_scale_x, -1.0f, -squash_accent_scale_y);
           min_accent[0] *= squash_accent_scale_x;
           max_accent[0] *= squash_accent_scale_x;
           t = min_accent[2];
           min_accent[2] = -max_accent[2] * squash_accent_scale_y;
           max_accent[2] = -t * squash_accent_scale_y;
-          mirrored = true;
           break;
 
         case CT_squash_mirror_diag:
           accent_mat =
             LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
-            LMatrix4::scale_mat(-squash_accent_scale_x, 1.0f, squash_accent_scale_y);
-          
+            LMatrix4::scale_mat(-squash_accent_scale_x, -1.0f, squash_accent_scale_y);
+
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -1967,7 +2119,6 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           max_accent[0] = max_accent[2] * -squash_accent_scale_x;
           min_accent[2] = -u * squash_accent_scale_y;
           max_accent[2] = -t * squash_accent_scale_y;
-          mirrored = true;
           break;
 
         case CT_small_squash:
@@ -1979,20 +2130,19 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_small_squash_mirror_y:
-          accent_mat = LMatrix4::scale_mat(small_squash_accent_scale_x, 1.0f, -small_squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(small_squash_accent_scale_x, -1.0f, -small_squash_accent_scale_y);
           min_accent[0] *= small_squash_accent_scale_x;
           max_accent[0] *= small_squash_accent_scale_x;
           t = min_accent[2];
           min_accent[2] = -max_accent[2] * small_squash_accent_scale_y;
           max_accent[2] = -t * small_squash_accent_scale_y;
-          mirrored = true;
           break;
 
         case CT_small_squash_mirror_diag:
           accent_mat =
             LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
-            LMatrix4::scale_mat(-small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
-          
+            LMatrix4::scale_mat(-small_squash_accent_scale_x, -1.0f, small_squash_accent_scale_y);
+
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -2000,11 +2150,11 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           max_accent[0] = max_accent[2] * -small_squash_accent_scale_x;
           min_accent[2] = -u * small_squash_accent_scale_y;
           max_accent[2] = -t * small_squash_accent_scale_y;
-          mirrored = true;
           break;
 
         case CT_small:
-          accent_mat = LMatrix4::scale_mat(small_accent_scale);
+          has_mat = false;
+          placement._scale *= small_accent_scale;
           min_accent *= small_accent_scale;
           max_accent *= small_accent_scale;
           break;
@@ -2024,20 +2174,20 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_tiny:
-          accent_mat = LMatrix4::scale_mat(tiny_accent_scale);
+          has_mat = false;
+          placement._scale *= tiny_accent_scale;
           min_accent *= tiny_accent_scale;
           max_accent *= tiny_accent_scale;
           break;
 
         case CT_tiny_mirror_x:
-          accent_mat = LMatrix4::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
-          
+          accent_mat = LMatrix4::scale_mat(-tiny_accent_scale, -1.0f, tiny_accent_scale);
+
           t = min_accent[0];
           min_accent[0] = -max_accent[0] * tiny_accent_scale;
           max_accent[0] = -t * tiny_accent_scale;
           min_accent[2] *= tiny_accent_scale;
           max_accent[2] *= tiny_accent_scale;
-          mirrored = true;
           break;
 
         case CT_tiny_rotate_270:
@@ -2053,60 +2203,52 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           min_accent[2] = -u * tiny_accent_scale;
           max_accent[2] = -t * tiny_accent_scale;
           break;
+
+        default:
+          has_mat = false;
         }
 
         LPoint3 accent_centroid = (min_accent + max_accent) / 2.0f;
         PN_stdfloat accent_height = max_accent[2] - min_accent[2];
-        LVector3 trans;
+        PN_stdfloat accent_y = 0;
         switch (position) {
         case CP_above:
           // A little above the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    max_vert[2] - accent_centroid[2] + accent_height * 0.5);
+          accent_y = max_vert[2] - accent_centroid[2] + accent_height * 0.5f;
           break;
 
         case CP_below:
           // A little below the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    min_vert[2] - accent_centroid[2] - accent_height * 0.5);
+          accent_y = min_vert[2] - accent_centroid[2] - accent_height * 0.5f;
           break;
 
         case CP_top:
           // Touching the top of the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    max_vert[2] - accent_centroid[2]);
+          accent_y = max_vert[2] - accent_centroid[2];
           break;
 
         case CP_bottom:
           // Touching the bottom of the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    min_vert[2] - accent_centroid[2]);
+          accent_y = min_vert[2] - accent_centroid[2];
           break;
 
         case CP_within:
           // Centered within the character.
-          trans.set(centroid[0] - accent_centroid[0], 0.0f,
-                    centroid[2] - accent_centroid[2]);
+          accent_y = centroid[2] - accent_centroid[2];
           break;
         }
 
-        accent_mat.set_row(3, trans);
-        accent_geom->transform_vertices(accent_mat);
+        placement._xpos += placement._scale * (centroid[0] - accent_centroid[0] + placement._slant * accent_y);
+        placement._ypos += placement._scale * accent_y;
 
-        if (mirrored) {
-          // Once someone asks for this pointer, we hold its reference
-          // count and never free it.
-          static CPT(RenderState) disable_backface;
-          if (disable_backface == (const RenderState *)NULL) {
-            disable_backface = RenderState::make
-              (CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
-          }
-            
-          CPT(RenderState) state = 
-            accent_glyph->get_state()->compose(disable_backface);
-          placement->add_piece(accent_geom, state);
+        if (has_mat) {
+          // Some non-trivial transformation.  Apply it to the Geom.
+          PT(Geom) accent_geom = accent_glyph->get_geom(_usage_hint);
+          accent_geom->transform_vertices(accent_mat);
+          placement._glyph = new TextGlyph(0, accent_geom, accent_glyph->get_state(), 0);
         } else {
-          placement->add_piece(accent_geom, accent_glyph->get_state());
+          // A trivial transformation.
+          placement._glyph = accent_glyph;
         }
 
         return true;
@@ -2156,25 +2298,6 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::calc_tight_bounds
-//       Access: Private
-//  Description: Expands min_point and max_point to include all of the
-//               vertices in the glyph(s), if any.  found_any is set
-//               true if any points are found.  It is the caller's
-//               responsibility to initialize min_point, max_point,
-//               and found_any before calling this function.
-////////////////////////////////////////////////////////////////////
-void TextAssembler::GlyphPlacement::
-calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  bool &found_any, Thread *current_thread) const {
-  Pieces::const_iterator pi;
-  for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    (*pi)._geom->calc_tight_bounds(min_point, max_point, found_any,
-                                   current_thread);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::GlyphPlacement::assign_to
 //       Access: Private
 //  Description: Puts the pieces of the GlyphPlacement in the
@@ -2182,33 +2305,17 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 //               modified by this operation.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
-assign_to(GeomNode *geom_node, const RenderState *state) const {
-  Pieces::const_iterator pi;
-  for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    (*pi)._geom->transform_vertices(_xform);
-    geom_node->add_geom((*pi)._geom, state->compose((*pi)._state));
-  }
-}
+assign_to(GeomNode *geom_node, const RenderState *state,
+          const LVector2 &offset) const {
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::assign_copy_to
-//       Access: Private
-//  Description: Puts the pieces of the GlyphPlacement in the
-//               indicated GeomNode.  This flavor will make a copy of
-//               the Geoms first, and then apply the additional
-//               transform to the vertices.
-////////////////////////////////////////////////////////////////////
-void TextAssembler::GlyphPlacement::
-assign_copy_to(GeomNode *geom_node, const RenderState *state,
-               const LMatrix4 &extra_xform) const {
-  LMatrix4 new_xform = _xform * extra_xform;
-  Pieces::const_iterator pi;
-  for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    const Geom *geom = (*pi)._geom;
-    PT(Geom) new_geom = geom->make_copy();
-    new_geom->transform_vertices(new_xform);
-    geom_node->add_geom(new_geom, state->compose((*pi)._state));
-  }
+  LMatrix4 xform(_scale, 0.0f, 0.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f, 0.0f,
+                 _slant * _scale, 0.0f, _scale, 0.0f,
+                 _xpos + offset[0], 0.0f, _ypos - offset[1], 1.0f);
+
+  PT(Geom) geom = _glyph->get_geom(GeomEnums::UH_static);
+  geom->transform_vertices(xform);
+  geom_node->add_geom(geom, state->compose(_glyph->get_state()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2220,69 +2327,95 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
 //               vertices.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
-assign_append_to(GeomCollectorMap &geom_collector_map, 
+assign_append_to(GeomCollectorMap &geom_collector_map,
                  const RenderState *state,
-                 const LMatrix4 &extra_xform) const {
-  LMatrix4 new_xform = _xform * extra_xform;
-  Pieces::const_iterator pi;
+                 const LVector2 &offset) const {
+
+  LMatrix4 xform(_scale, 0.0f, 0.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f, 0.0f,
+                 _slant * _scale, 0.0f, _scale, 0.0f,
+                 _xpos + offset[0], 0.0f, _ypos - offset[1], 1.0f);
+
+  PT(Geom) geom = _glyph->get_geom(GeomEnums::UH_static);
 
   int p, sp, s, e, i;
-  for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
-    const Geom *geom = (*pi)._geom;
-    const GeomVertexData *vdata = geom->get_vertex_data();
-    CPT(RenderState) rs = (*pi)._state->compose(state);
-    GeomCollectorKey key(rs, vdata->get_format());
 
-    GeomCollectorMap::iterator mi = geom_collector_map.find(key);
-    if (mi == geom_collector_map.end()) {
-      mi = geom_collector_map.insert(GeomCollectorMap::value_type(key, GeomCollector(vdata->get_format()))).first;
-    }
-    GeomCollector &geom_collector = (*mi).second;
-    geom_collector.count_geom(geom);
+  const GeomVertexData *vdata = geom->get_vertex_data();
+  CPT(RenderState) rs = _glyph->get_state()->compose(state);
+  GeomCollectorKey key(rs, vdata->get_format());
 
-    // We use this map to keep track of vertex indices we have already
-    // added, so that we don't needlessly duplicate vertices into our
-    // output vertex data.
-    VertexIndexMap vimap;
+  GeomCollectorMap::iterator mi = geom_collector_map.find(key);
+  if (mi == geom_collector_map.end()) {
+    mi = geom_collector_map.insert(GeomCollectorMap::value_type(key, GeomCollector(vdata->get_format()))).first;
+  }
+  GeomCollector &geom_collector = (*mi).second;
+  geom_collector.count_geom(geom);
 
-    for (p = 0; p < geom->get_num_primitives(); p++) {
-      CPT(GeomPrimitive) primitive = geom->get_primitive(p)->decompose();
+  // We use this map to keep track of vertex indices we have already
+  // added, so that we don't needlessly duplicate vertices into our
+  // output vertex data.
+  VertexIndexMap vimap;
 
-      // Get a new GeomPrimitive of the corresponding type.
-      GeomPrimitive *new_prim = geom_collector.get_primitive(primitive->get_type());
+  for (p = 0; p < geom->get_num_primitives(); p++) {
+    CPT(GeomPrimitive) primitive = geom->get_primitive(p)->decompose();
 
-      // Walk through all of the components (e.g. triangles) of the
-      // primitive.
-      for (sp = 0; sp < primitive->get_num_primitives(); sp++) {
-        s = primitive->get_primitive_start(sp);
-        e = primitive->get_primitive_end(sp);
+    // Get a new GeomPrimitive of the corresponding type.
+    GeomPrimitive *new_prim = geom_collector.get_primitive(primitive->get_type());
 
-        // Walk through all of the vertices in the component.
-        for (i = s; i < e; i++) {
-          int vi = primitive->get_vertex(i);
+    // Walk through all of the components (e.g. triangles) of the
+    // primitive.
+    for (sp = 0; sp < primitive->get_num_primitives(); sp++) {
+      s = primitive->get_primitive_start(sp);
+      e = primitive->get_primitive_end(sp);
 
-          // Attempt to insert number "vi" into the map.
-          pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
-          int new_vertex;
-          if (added.second) {
-            // The insert succeeded.  That means this is the first
-            // time we have encountered this vertex.
-            new_vertex = geom_collector.append_vertex(vdata, vi, new_xform);
-            // Update the map with the newly-created target vertex index.
-            (*(added.first)).second = new_vertex;
+      // Walk through all of the vertices in the component.
+      for (i = s; i < e; i++) {
+        int vi = primitive->get_vertex(i);
 
-          } else {
-            // The insert failed.  This means we have previously
-            // encountered this vertex, and we have already entered
-            // its target vertex index into the vimap.  Extract that
-            // vertex index, so we can reuse it.
-            new_vertex = (*(added.first)).second;
-          }
-          new_prim->add_vertex(new_vertex);
+        // Attempt to insert number "vi" into the map.
+        pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
+        int new_vertex;
+        if (added.second) {
+          // The insert succeeded.  That means this is the first
+          // time we have encountered this vertex.
+          new_vertex = geom_collector.append_vertex(vdata, vi, xform);
+          // Update the map with the newly-created target vertex index.
+          (*(added.first)).second = new_vertex;
+
+        } else {
+          // The insert failed.  This means we have previously
+          // encountered this vertex, and we have already entered
+          // its target vertex index into the vimap.  Extract that
+          // vertex index, so we can reuse it.
+          new_vertex = (*(added.first)).second;
         }
-        new_prim->close_primitive();
+        new_prim->add_vertex(new_vertex);
       }
+      new_prim->close_primitive();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GlyphPlacement::assign_quad_to
+//       Access: Private
+//  Description: If this glyph is representable as a single quad,
+//               assigns it to the appropriate position in the map.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::GlyphPlacement::
+assign_quad_to(QuadMap &quad_map, const RenderState *state,
+               const LVector2 &offset) const {
+
+  QuadDef quad;
+  if (_glyph->get_quad(quad._dimensions, quad._uvs)) {
+    quad._dimensions *= _scale;
+    quad._slantl = quad._dimensions[1] * _slant;
+    quad._slanth = quad._dimensions[3] * _slant;
+    quad._dimensions += LVecBase4(_xpos, _ypos, _xpos, _ypos);
+    quad._dimensions += LVecBase4(offset[0], -offset[1], offset[0], -offset[1]);
+    quad._glyph = _glyph;
+
+    quad_map[state->compose(_glyph->get_state())].push_back(MOVE(quad));
   }
 }
 
@@ -2293,16 +2426,20 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
 //               copies it to the indicated node.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
-copy_graphic_to(PandaNode *node, const RenderState *state,
-                const LMatrix4 &extra_xform) const {
+copy_graphic_to(PandaNode *node, const RenderState *state) const {
   if (_graphic_model != (PandaNode *)NULL) {
-    LMatrix4 new_xform = _xform * extra_xform;
-
     // We need an intermediate node to hold the transform and state.
     PT(PandaNode) intermediate_node = new PandaNode("");
     node->add_child(intermediate_node);
 
-    intermediate_node->set_transform(TransformState::make_mat(new_xform));
+    intermediate_node->set_transform(
+      TransformState::make_pos_hpr_scale_shear(
+        LVecBase3(_xpos, 0, _ypos),
+        LVecBase3::zero(),
+        LVecBase3(_scale, 1, _scale),
+        LVecBase3(0, _slant, 0)
+      )
+    );
     intermediate_node->set_state(state);
     intermediate_node->add_child(_graphic_model);
   }

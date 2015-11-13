@@ -525,9 +525,8 @@ class Actor(DirectObject, NodePath):
             self.__LODNode = None
 
         # remove all its children
-        if(self.__geomNode):
-            self.__geomNode.removeChildren()
-
+        if self.__geomNode:
+            self.__geomNode.getChildren().detach()
         
         self.__hasLOD = 0
 

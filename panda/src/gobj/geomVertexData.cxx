@@ -976,11 +976,7 @@ set_color(const LColor &color) const {
   }
 
   PT(GeomVertexData) new_data = new GeomVertexData(*this);
-  GeomVertexWriter to(new_data, InternalName::get_color());
-  while (!to.is_at_end()) {
-    to.set_data4(color);
-  }
-
+  do_set_color(new_data, color);
   return new_data;
 }
 
@@ -1008,12 +1004,7 @@ set_color(const LColor &color, int num_components,
   PT(GeomVertexData) new_data = replace_column
     (InternalName::get_color(), num_components, numeric_type, contents);
 
-  // Now go through and set the new color value.
-  GeomVertexWriter to(new_data, InternalName::get_color());
-  while (!to.is_at_end()) {
-    to.set_data4(color);
-  }
-
+  do_set_color(new_data, color);
   return new_data;
 }
 
@@ -1193,6 +1184,64 @@ transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
   for (ci = 0; ci < format->get_num_vectors(); ci++) {
     GeomVertexRewriter data(this, format->get_vector(ci));
     do_transform_vector_column(format, data, mat, begin_row, end_row);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::do_set_color
+//       Access: Private, Static
+//  Description: Fills in the color column of the given vertex data
+//               object with a constant color.  Assumes that there
+//               is already a color column present.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+do_set_color(GeomVertexData *vdata, const LColor &color) {
+  // This function is used relatively often (by the SceneGraphReducer,
+  // when flattening colors, and by the munger, when munging colors),
+  // so I've written out a version that avoids the performance overhead
+  // of the packer and GeomVertexWriter.
+
+  const GeomVertexFormat *format = vdata->get_format();
+  const GeomVertexColumn *column;
+  int array_index;
+  if (!format->get_array_info(InternalName::get_color(), array_index, column)) {
+    nassertv(false);
+  }
+
+  size_t stride = format->get_array(array_index)->get_stride();
+
+  GeomVertexColumn::Packer *packer = column->_packer;
+  nassertv(packer != NULL);
+
+  // Pack into a buffer, which we will then copy.
+  unsigned char buffer[32];
+  size_t bufsize = column->get_total_bytes();
+#ifdef STDFLOAT_DOUBLE
+  packer->set_data4d(buffer, color);
+#else
+  packer->set_data4f(buffer, color);
+#endif
+
+  PT(GeomVertexArrayDataHandle) handle =
+    vdata->modify_array(array_index)->modify_handle();
+  unsigned char *write_ptr = handle->get_write_pointer();
+  unsigned char *end_ptr = write_ptr + handle->get_data_size_bytes();
+  write_ptr += column->get_start();
+
+  if (bufsize == 4) {
+    // Most common case.
+    while (write_ptr < end_ptr) {
+      write_ptr[0] = buffer[0];
+      write_ptr[1] = buffer[1];
+      write_ptr[2] = buffer[2];
+      write_ptr[3] = buffer[3];
+      write_ptr += stride;
+    }
+  } else {
+    while (write_ptr < end_ptr) {
+      memcpy(write_ptr, buffer, bufsize);
+      write_ptr += stride;
+    }
   }
 }
 

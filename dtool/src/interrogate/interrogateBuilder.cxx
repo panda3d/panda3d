@@ -1998,7 +1998,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
 ////////////////////////////////////////////////////////////////////
 MakeSeqIndex InterrogateBuilder::
 get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
-  string make_seq_name = struct_type->get_local_name(&parser) + "::MakeSeq_" + make_seq->_seq_name;
+  string make_seq_name = make_seq->get_local_name(&parser);
 
   // First, check to see if it's already there.
   MakeSeqsByName::const_iterator tni =
@@ -2008,21 +2008,79 @@ get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
     return index;
   }
 
+  FunctionIndex length_getter = 0;
+  FunctionIndex element_getter = 0;
+
+  CPPFunctionGroup::Instances::const_iterator fi;
+  CPPFunctionGroup *fgroup = make_seq->_length_getter;
+  if (fgroup != NULL) {
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL) {
+        length_getter = get_function(function, "", struct_type,
+                                     struct_type->get_scope(), 0);
+        if (length_getter != 0) {
+          break;
+        }
+      }
+    }
+    if (length_getter == 0) {
+      cerr << "No instance of length method '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  } else {
+    cerr << "MAKE_SEQ " << make_seq_name << " requires a length method.\n";
+    return 0;
+  }
+
+  fgroup = make_seq->_element_getter;
+  if (fgroup != NULL) {
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL && ftype->_parameters->_parameters.size() >= 1 &&
+          TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
+        // It really doesn't matter whether we grab the const or non-const
+        // version, since they should all return the same function anyway.
+        element_getter = get_function(function, "", struct_type,
+                                      struct_type->get_scope(), 0);
+        if (element_getter != 0) {
+          break;
+        }
+      }
+    }
+    if (element_getter == 0) {
+      cerr << "No instance of element method '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  } else {
+    cerr << "MAKE_SEQ " << make_seq_name << " requires an element method.\n";
+    return 0;
+  }
+
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   // It isn't here, so we'll have to define it.
   MakeSeqIndex index = idb->get_next_index();
   _make_seqs_by_name[make_seq_name] = index;
 
   InterrogateMakeSeq imake_seq;
-  imake_seq._class = get_type(struct_type, false);
-  imake_seq._seq_name = make_seq->_seq_name;
-  imake_seq._num_name = make_seq->_num_name;
-  imake_seq._element_name = make_seq->_element_name;
+  imake_seq._name = make_seq->get_simple_name();
+  imake_seq._scoped_name = descope(make_seq->get_local_name(&parser));
+
+  imake_seq._length_getter = length_getter;
+  imake_seq._element_getter = element_getter;
+
+  // See if there happens to be a comment before the MAKE_SEQ macro.
+  if (make_seq->_leading_comment != (CPPCommentBlock *)NULL) {
+    imake_seq._comment = trim_blanks(make_seq->_leading_comment->_comment);
+  }
 
   idb->add_make_seq(index, imake_seq);
-
-  InterrogateType &itype = idb->update_type(imake_seq._class);
-  itype._make_seqs.push_back(index);
 
   return index;
 }
@@ -2553,6 +2611,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
       ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype);
       itype._elements.push_back(element_index);
+
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_seq) {
+      MakeSeqIndex make_seq_index = get_make_seq((*di)->as_make_seq(), cpptype);
+      itype._make_seqs.push_back(make_seq_index);
     }
   }
 

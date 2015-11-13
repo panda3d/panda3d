@@ -546,6 +546,7 @@ protected:
                             GLenum component_type,
                             bool one_page_only, int z,
                             Texture::CompressionMode image_compression);
+  void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
   size_t get_texture_memory_size(CLP(TextureContext) *gtc);
@@ -793,6 +794,10 @@ public:
   PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC _glGetFramebufferAttachmentParameteriv;
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
+
+#ifndef OPENGLES
+  PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+#endif
 
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_multisample_coverage_nv;

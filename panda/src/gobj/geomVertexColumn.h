@@ -433,6 +433,7 @@ private:
   };
 
   friend class GeomVertexArrayFormat;
+  friend class GeomVertexData;
   friend class GeomVertexReader;
   friend class GeomVertexWriter;
 };

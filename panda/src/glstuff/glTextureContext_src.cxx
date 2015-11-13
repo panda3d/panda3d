@@ -23,22 +23,7 @@ TypeHandle CLP(TextureContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CLP(TextureContext)::
 ~CLP(TextureContext)() {
-#ifndef OPENGLES
-  if (gl_enable_memory_barriers) {
-    _glgsg->_textures_needing_fetch_barrier.erase(this);
-    _glgsg->_textures_needing_image_access_barrier.erase(this);
-    _glgsg->_textures_needing_update_barrier.erase(this);
-    _glgsg->_textures_needing_framebuffer_barrier.erase(this);
-  }
-#endif
-
-  glDeleteTextures(1, &_index);
-  _index = 0;
-
-  if (_buffer != 0) {
-    _glgsg->_glDeleteBuffers(1, &_buffer);
-    _buffer = 0;
-  }
+  // Don't call glDeleteTextures; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////

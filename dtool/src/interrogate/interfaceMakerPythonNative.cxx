@@ -1099,7 +1099,17 @@ write_class_details(ostream &out, Object *obj) {
   // Write make seqs: generated methods that return a sequence of items.
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    write_make_seq(out, obj, ClassName, cClassName, *msi);
+    if (is_function_legal((*msi)->_length_getter) &&
+        is_function_legal((*msi)->_element_getter)) {
+      write_make_seq(out, obj, ClassName, cClassName, *msi);
+    } else {
+      if (!is_function_legal((*msi)->_length_getter)) {
+        cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
+      }
+      if (!is_function_legal((*msi)->_element_getter)) {
+        cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
+      }
+    }
   }
 
   // Determine which external imports we will need.
@@ -1711,23 +1721,27 @@ write_module_class(ostream &out, Object *obj) {
 
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    const string &seq_name = (*msi)->_seq_name;
+    MakeSeq *make_seq = (*msi);
+    if (!is_function_legal(make_seq->_length_getter) ||
+        !is_function_legal(make_seq->_element_getter)) {
+      continue;
+    }
 
-    if ((seq_name.size() > 4 && seq_name.substr(0, 4) == "get_") ||
-        (seq_name.size() > 7 && seq_name.substr(0, 7) == "modify_")) {
+    string seq_name = make_seq->_imake_seq.get_name();
 
-      string flags = "METH_NOARGS";
-      if (obj->is_static_method((*msi)->_element_name)) {
-        flags += " | METH_CLASS";
-      }
-      string name1 = methodNameFromCppName((*msi)->_seq_name, export_class_name, false);
-      string name2 = methodNameFromCppName((*msi)->_seq_name, export_class_name, true);
-      out << "  {\"" << name1
-          << "\", (PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
-      if (name1 != name2) {
-        out << "  { \"" << name2
-            << "\", (PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
-      }
+    string flags = "METH_NOARGS";
+    if (!make_seq->_length_getter->_has_this &&
+        !make_seq->_element_getter->_has_this) {
+      flags += " | METH_STATIC";
+    }
+
+    string name1 = methodNameFromCppName(seq_name, export_class_name, false);
+    string name2 = methodNameFromCppName(seq_name, export_class_name, true);
+    out << "  {\"" << name1
+        << "\", (PyCFunction) &" << make_seq->_name << ", " << flags << ", NULL},\n";
+    if (name1 != name2) {
+      out << "  { \"" << name2
+          << "\", (PyCFunction) &" << make_seq->_name << ", " << flags << ", NULL},\n";
     }
   }
 
@@ -6335,47 +6349,88 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 void InterfaceMakerPythonNative::
 write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                const std::string &cClassName, MakeSeq *make_seq) {
+
   out << "/******************************************************************\n" << " * Python make_seq wrapper\n";
   out << " *******************************************************************/\n";
 
   out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
-  string element_name = methodNameFromCppName(make_seq->_element_name, ClassName, false);
 
-  // This used to be a list.  But it should really be a tuple, I think,
-  // because it probably makes more sense for it to be immutable (as
-  // changes to it won't be visible on the C++ side anyway).
+  // This used to return a list.  But it should really be a tuple, I
+  // think, because it probably makes more sense for it to be immutable
+  // (as changes to it won't be visible on the C++ side anyway).
 
-  out << "  " << cClassName  << " *local_this = NULL;\n"
-      << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "\n"
-      << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n"
-      << "  if (getter == (PyObject *)NULL) {\n"
-      << "    return Dtool_Raise_AttributeError(self, \"" << element_name << "\");\n"
-      << "  }\n"
-      << "\n"
-      << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
-      << "  PyObject *tuple = PyTuple_New(count);\n"
-      << "\n"
-      << "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
-      << "#if PY_MAJOR_VERSION >= 3\n"
-      << "    PyObject *index = PyLong_FromSsize_t(i);\n"
-      << "#else\n"
-      << "    PyObject *index = PyInt_FromSsize_t(i);\n"
-      << "#endif\n"
-      << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, self, index, NULL);\n"
-      << "    PyTuple_SET_ITEM(tuple, i, value);\n"
-      << "    Py_DECREF(index);\n"
-      << "  }\n"
-      << "\n"
-      << "  if (Dtool_CheckErrorOccurred()) {\n"
-      << "    Py_DECREF(tuple);\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "  return tuple;\n"
-      << "}\n"
-      << "\n";
+  FunctionRemap *remap = make_seq->_length_getter->_remaps.front();
+  vector_string pexprs;
+
+  if (make_seq->_length_getter->_has_this) {
+    out <<
+      "  " << cClassName  << " *local_this = NULL;\n"
+      "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+      "    return NULL;\n"
+      "  }\n"
+      "  Py_ssize_t count = (Py_ssize_t)" << remap->get_call_str("local_this", pexprs) << ";\n";
+  } else {
+    out << "  Py_ssize_t count = (Py_ssize_t)" << remap->get_call_str("", pexprs) << ";\n";
+  }
+
+  Function *elem_getter = make_seq->_element_getter;
+
+  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    // Fast way to create a temporary tuple to hold only a single item, under
+    // the assumption that the called method doesn't do anything with this tuple
+    // other than unpack it (which is a fairly safe assumption to make).
+    out << "  PyTupleObject args;\n";
+    out << "  PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+  }
+
+  out <<
+    "  PyObject *tuple = PyTuple_New(count);\n"
+    "\n"
+    "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
+    "#if PY_MAJOR_VERSION >= 3\n"
+    "    PyObject *index = PyLong_FromSsize_t(i);\n"
+    "#else\n"
+    "    PyObject *index = PyInt_FromSsize_t(i);\n"
+    "#endif\n";
+
+  switch (elem_getter->_args_type) {
+  case AT_keyword_args:
+    out << "    PyTuple_SET_ITEM(&args, 0, index);\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args, NULL);\n";
+    break;
+
+  case AT_varargs:
+    out << "    PyTuple_SET_ITEM(&args, 0, index);\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args);\n";
+    break;
+
+  case AT_single_arg:
+    out << "    PyObject *value = " << elem_getter->_name << "(self, index);\n";
+    break;
+
+  default:
+    out << "    PyObject *value = " << elem_getter->_name << "(self, NULL);\n";
+    break;
+  }
+
+  out <<
+    "    PyTuple_SET_ITEM(tuple, i, value);\n"
+    "    Py_DECREF(index);\n"
+    "  }\n"
+    "\n";
+
+  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    out << "  _Py_ForgetReference((PyObject *)&args);\n";
+  }
+
+  out <<
+    "  if (Dtool_CheckErrorOccurred()) {\n"
+    "    Py_DECREF(tuple);\n"
+    "    return NULL;\n"
+    "  }\n"
+    "  return tuple;\n"
+    "}\n"
+    "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6492,6 +6547,21 @@ record_object(TypeIndex type_index) {
       // No use exporting a property without a getter.
       delete property;
     }
+  }
+
+  int num_make_seqs = itype.number_of_make_seqs();
+  for (int msi = 0; msi < num_make_seqs; msi++) {
+    MakeSeqIndex make_seq_index = itype.get_make_seq(msi);
+    const InterrogateMakeSeq &imake_seq = idb->get_make_seq(make_seq_index);
+
+    string class_name = itype.get_scoped_name();
+    string clean_name = InterrogateBuilder::clean_identifier(class_name);
+    string wrapper_name = "MakeSeq_" + clean_name + "_" + imake_seq.get_name();
+
+    MakeSeq *make_seq = new MakeSeq(wrapper_name, imake_seq);
+    make_seq->_length_getter = record_function(itype, imake_seq.get_length_getter());
+    make_seq->_element_getter = record_function(itype, imake_seq.get_element_getter());
+    object->_make_seqs.push_back(make_seq);
   }
 
   object->check_protocols();

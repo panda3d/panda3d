@@ -31,6 +31,7 @@ extern ConfigVariableBool ime_aware;
 extern ConfigVariableBool ime_hide;
 extern ConfigVariableBool request_dxdisplay_information;
 extern ConfigVariableBool dpi_aware;
+extern ConfigVariableBool dpi_window_resize;
 
 extern EXPCL_PANDAWIN ConfigVariableBool swapbuffer_framelock;
 
