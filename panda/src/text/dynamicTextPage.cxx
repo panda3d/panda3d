@@ -189,7 +189,6 @@ garbage_collect(DynamicTextFont *font) {
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     DynamicTextGlyph *glyph = (*gi);
-    cerr << glyph->get_character() << " - " << glyph->get_ref_count() << "\n";
     if (glyph->get_ref_count() > 1) {
       // Keep this one.
       new_glyphs.insert(new_glyphs.end(), (*gi));
