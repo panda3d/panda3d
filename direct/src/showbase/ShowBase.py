@@ -63,15 +63,16 @@ def exitfunc():
 # *seem* to cause anyone any problems.
 class ShowBase(DirectObject.DirectObject):
 
+    config = get_config_showbase()
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self, fStartDirect = True, windowType = None):
-        self.__dev__ = config.GetBool('want-dev', __debug__)
+        self.__dev__ = self.config.GetBool('want-dev', __debug__)
         builtins.__dev__ = self.__dev__
 
-        logStackDump = (config.GetBool('log-stack-dump', False) or
-                        config.GetBool('client-log-stack-dump', False))
-        uploadStackDump = config.GetBool('upload-stack-dump', False)
+        logStackDump = (self.config.GetBool('log-stack-dump', False) or
+                        self.config.GetBool('client-log-stack-dump', False))
+        uploadStackDump = self.config.GetBool('upload-stack-dump', False)
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
@@ -88,8 +89,6 @@ class ShowBase(DirectObject.DirectObject):
         #debug running multiplier
         self.debugRunningMultiplier = 4
 
-        # Get the dconfig object
-        self.config = config
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
 
