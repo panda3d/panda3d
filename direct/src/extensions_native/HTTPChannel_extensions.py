@@ -3,7 +3,7 @@
 #del func
 #####################################################################
 
-from panda3d.core import HTTPChannel
+from panda3d import core
 from .extension_native_helpers import Dtool_funcToMethod
 
 """
@@ -26,8 +26,10 @@ def spawnTask(self, name = None, callback = None, extraArgs = []):
         task = Task.Task(self.doTask)
         task.callback = callback
         task.callbackArgs = extraArgs
-        return taskMgr.add(task, name)    
-Dtool_funcToMethod(spawnTask, HTTPChannel)        
+        return taskMgr.add(task, name)
+
+if hasattr(core, 'HTTPChannel'):
+    Dtool_funcToMethod(spawnTask, core.HTTPChannel)
 del spawnTask
 #####################################################################
         
@@ -38,7 +40,8 @@ def doTask(self, task):
         if task.callback:
             task.callback(*task.callbackArgs)
         return Task.done
-    
-Dtool_funcToMethod(doTask, HTTPChannel)        
+
+if hasattr(core, 'HTTPChannel'):
+    Dtool_funcToMethod(doTask, core.HTTPChannel)
 del doTask
 #####################################################################
