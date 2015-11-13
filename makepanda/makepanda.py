@@ -6844,8 +6844,9 @@ def MakeInstallerOSX():
     if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
     if os.path.isdir("samples"): pkgs.append("samples")
     for pkg in pkgs:
+        identifier = "org.panda3d.panda3d.%s.pkg" % pkg
         plist = open("/tmp/Info_plist", "w")
-        plist.write(Info_plist % { "package_id" : "org.panda3d.panda3d.%s.pkg" % pkg, "version" : VERSION })
+        plist.write(Info_plist % { "package_id" : identifier, "version" : VERSION })
         plist.close()
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
@@ -6855,7 +6856,12 @@ def MakeInstallerOSX():
         else:
             target = ''
 
-        if os.path.exists("/Developer/usr/bin/packagemaker"):
+        if os.path.exists("/usr/bin/pkgbuild"):
+            # This new package builder is used in Lion and above.
+            cmd = '/usr/bin/pkgbuild --identifier ' + identifier + ' --version ' + VERSION + ' --root dstroot/' + pkg + '/ dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg'
+
+        # In older versions, we use PackageMaker.  Apple keeps changing its location.
+        elif os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
             cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
@@ -6866,7 +6872,7 @@ def MakeInstallerOSX():
         elif os.path.exists("/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
             cmd = '/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         else:
-            exit("PackageMaker could not be found!")
+            exit("Neither pkgbuild nor PackageMaker could be found!")
         oscmd(cmd)
 
     if os.path.isfile("/tmp/Info_plist"):
