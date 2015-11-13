@@ -38,10 +38,9 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   // doesn't usually have a high fill factor.
   set_quality_level(text_quality_level);
 
-  _x_size = _font->get_page_x_size();
-  _y_size = _font->get_page_y_size();
+  _size = _font->get_page_size();
 
-  setup_2d_texture(_x_size, _y_size, T_unsigned_byte, font->get_tex_format());
+  setup_2d_texture(_size[0], _size[1], T_unsigned_byte, font->get_tex_format());
 
   // Assign a name to the Texture.
   ostringstream strm;
@@ -63,7 +62,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   set_border_color(font->get_bg());
 
   // Fill the page with the font's background color.
-  fill_region(0, 0, _x_size, _y_size, font->get_bg());
+  fill_region(0, 0, _size[0], _size[1], font->get_bg());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +73,8 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 //               glyph object and returns it; otherwise, returns NULL.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextPage::
-slot_glyph(int character, int x_size, int y_size, int margin) {
+slot_glyph(int character, int x_size, int y_size, int margin,
+           PN_stdfloat advance) {
   int x, y;
   if (!find_hole(x, y, x_size, y_size)) {
     // No room for the glyph.
@@ -84,7 +84,7 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
   // The glyph can be fit at (x, y).  Slot it.
   PT(DynamicTextGlyph) glyph = 
     new DynamicTextGlyph(character, this,
-                         x, y, x_size, y_size, margin);
+                         x, y, x_size, y_size, margin, advance);
   _glyphs.push_back(glyph);
   return glyph;
 }
@@ -97,7 +97,7 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextPage::
 fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
-  nassertv(x >= 0 && x + x_size <= _x_size && y >= 0 && y + y_size <= _y_size);
+  nassertv(x >= 0 && x + x_size <= _size[0] && y >= 0 && y + y_size <= _size[1]);
   int num_components = get_num_components();
   if (num_components == 1) {
     // Luminance or alpha.
@@ -110,7 +110,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
 
     unsigned char *image = modify_ram_image();
     for (int yi = y; yi < y + y_size; yi++) {
-      unsigned char *row = image + yi * _x_size;
+      unsigned char *row = image + yi * _size[0];
       memset(row + x, v, x_size);
     }
 
@@ -127,7 +127,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
 
     PN_uint16 *image = (PN_uint16 *)modify_ram_image().p();
     for (int yi = y; yi < y + y_size; yi++) {
-      PN_uint16 *row = image + yi * _x_size ;
+      PN_uint16 *row = image + yi * _size[0] ;
       for (int xi = x; xi < x + x_size; xi++) {
         row[xi] = v.v;
       }
@@ -142,7 +142,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
 
     unsigned char *image = modify_ram_image();
     for (int yi = y; yi < y + y_size; yi++) {
-      unsigned char *row = image + yi * _x_size * 3;
+      unsigned char *row = image + yi * _size[0] * 3;
       for (int xi = x; xi < x + x_size; xi++) {
         row[xi * 3] = p0;
         row[xi * 3 + 1] = p1;
@@ -164,12 +164,12 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
 
     PN_uint32 *image = (PN_uint32 *)modify_ram_image().p();
     for (int yi = y; yi < y + y_size; yi++) {
-      PN_uint32 *row = image + yi * _x_size;
+      PN_uint32 *row = image + yi * _size[0];
       for (int xi = x; xi < x + x_size; xi++) {
         row[xi] = v.v;
       }
     }
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,7 +189,8 @@ garbage_collect(DynamicTextFont *font) {
   Glyphs::iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     DynamicTextGlyph *glyph = (*gi);
-    if (glyph->_geom_count != 0) {
+    cerr << glyph->get_character() << " - " << glyph->get_ref_count() << "\n";
+    if (glyph->get_ref_count() > 1) {
       // Keep this one.
       new_glyphs.insert(new_glyphs.end(), (*gi));
     } else {
@@ -214,11 +215,11 @@ garbage_collect(DynamicTextFont *font) {
 bool DynamicTextPage::
 find_hole(int &x, int &y, int x_size, int y_size) const {
   y = 0;
-  while (y + y_size <= _y_size) {
-    int next_y = _y_size;
+  while (y + y_size <= _size[1]) {
+    int next_y = _size[1];
     // Scan along the row at 'y'.
     x = 0;
-    while (x + x_size <= _x_size) {
+    while (x + x_size <= _size[0]) {
       int next_x = x;
 
       // Consider the spot at x, y.

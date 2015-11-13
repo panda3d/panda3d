@@ -522,24 +522,6 @@ ComputedProperties(ComputedProperties *based_on, const wstring &wname,
       << "Unknown TextProperties: " << name << "\n";
   }
 }
-  
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::add_piece
-//       Access: Public
-//  Description: Adds a piece of the glyph, consisting of a single
-//               Geom and an associated RenderState.  Typically, a
-//               glyph will have exactly one piece; there will only be
-//               multiple pieces in the case of cheesy accent marks or
-//               ligatures.
-////////////////////////////////////////////////////////////////////
-INLINE void TextAssembler::GlyphPlacement::
-add_piece(Geom *geom, const RenderState *state) {
-  Piece piece;
-  piece._geom = geom;
-  piece._state = state;
-  _pieces.push_back(piece);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::GeomCollectorKey::Constructor
