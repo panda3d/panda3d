@@ -1591,12 +1591,13 @@ def CompileLink(dll, obj, opts):
         else:
             if (GetTarget() == "darwin"):
                 cmd = cxx + ' -undefined dynamic_lookup'
-                if ("BUNDLE" in opts): cmd += ' -bundle '
+                if ("BUNDLE" in opts):
+                    cmd += ' -bundle '
                 else:
                     if GetOrigExt(dll) == ".pyd":
                         install_name = '@loader_path/../panda3d/' + os.path.basename(dll)
                     else:
-                        install_name = os.path.basename(dll)
+                        install_name = '@loader_path/../lib/' + os.path.basename(dll)
                     cmd += ' -dynamiclib -install_name ' + install_name
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
@@ -2625,6 +2626,12 @@ ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 tp_dir = GetThirdpartyDir()
 if tp_dir is not None:
+    dylibs = set()
+
+    if GetTarget() == 'darwin':
+        for lib in glob.glob(tp_dir + "/*/lib/*.dylib"):
+            dylibs.add(os.path.basename(lib))
+
     for pkg in PkgListGet():
         if PkgSkip(pkg):
             continue
@@ -2644,12 +2651,36 @@ if tp_dir is not None:
                     CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
 
             if GetTarget() == 'darwin':
-                for tp_lib in glob.glob(tp_pkg + "/lib/*.dylib"):
-                    CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+                tp_libs = glob.glob(tp_pkg + "/lib/*.dylib")
 
                 if not PkgSkip("PYTHON"):
-                    for tp_lib in glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib")):
-                        CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
+                    tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib"))
+
+                for tp_lib in tp_libs:
+                    basename = os.path.basename(tp_lib)
+                    target = GetOutputDir() + "/lib/" + basename
+                    if not NeedsBuild([target], [tp_lib]):
+                        continue
+
+                    CopyFile(target, tp_lib)
+                    if os.path.islink(target):
+                        continue
+
+                    # Correct the inter-library dependencies so that the build is relocatable.
+                    oscmd('install_name_tool -id @loader_path/../lib/%s %s' % (basename, target))
+                    oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (target, GetOutputDir()), True)
+
+                    for line in open(GetOutputDir() + "/tmp/otool-libs.txt", "r"):
+                        line = line.strip()
+                        if not line or line.startswith('@loader_path/../lib/') or line.endswith(":"):
+                            continue
+
+                        libdep = line.split(" ", 1)[0]
+                        dep_basename = os.path.basename(libdep)
+                        if dep_basename in dylibs:
+                            oscmd("install_name_tool -change %s @loader_path/../lib/%s %s" % (libdep, dep_basename, target), True)
+
+                    JustBuilt([target], [tp_lib])
 
                 for fwx in glob.glob(tp_pkg + "/*.framework"):
                     CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
@@ -6662,16 +6693,6 @@ def MakeInstallerOSX():
         # On OSX, just specifying -P is not enough to do that.
         oscmd("cp -R -P " + GetOutputDir() + "/" + base + " " + libname)
 
-        # Execute install_name_tool to make them reference an absolute path
-        if (libname.endswith(".dylib") or libname.endswith(".so")) and not os.path.islink(libname):
-            oscmd("install_name_tool -id /Developer/Panda3D/%s %s" % (base, libname), True)
-            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, GetOutputDir()), True)
-            for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                if len(line.strip()) > 0 and not line.strip().endswith(":"):
-                    libdep = line.strip().split(" ", 1)[0]
-                    if 'lib/' + os.path.basename(libdep) in install_libs:
-                        oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
-
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
     oscmd("mkdir -p dstroot/tools/etc/paths.d")
@@ -6685,15 +6706,6 @@ def MakeInstallerOSX():
         binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
         oscmd("cp -R " + GetOutputDir() + "/bin/" + base + " " + binname)
-
-        # Execute install_name_tool to make the binaries reference an absolute path
-        if (not os.path.islink(binname)):
-            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (binname, GetOutputDir()), True)
-            for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                if len(line.strip()) > 0 and not line.strip().endswith(":"):
-                    libdep = line.strip().split(" ", 1)[0]
-                    if 'lib/' + os.path.basename(libdep) in install_libs:
-                        oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
 
     if PkgSkip("PYTHON")==0:
         PV = SDK["PYTHONVERSION"].replace("python", "")
@@ -6733,8 +6745,9 @@ def MakeInstallerOSX():
     if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
     if os.path.isdir("samples"): pkgs.append("samples")
     for pkg in pkgs:
+        identifier = "org.panda3d.panda3d.%s.pkg" % pkg
         plist = open("/tmp/Info_plist", "w")
-        plist.write(Info_plist % { "package_id" : "org.panda3d.panda3d.%s.pkg" % pkg, "version" : VERSION })
+        plist.write(Info_plist % { "package_id" : identifier, "version" : VERSION })
         plist.close()
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
@@ -6744,14 +6757,19 @@ def MakeInstallerOSX():
         else:
             target = ''
 
-        if os.path.exists("/Developer/usr/bin/packagemaker"):
+        if os.path.exists("/usr/bin/pkgbuild"):
+            # This new package builder is used in Lion and above.
+            cmd = '/usr/bin/pkgbuild --identifier ' + identifier + ' --version ' + VERSION + ' --root dstroot/' + pkg + '/ dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg'
+
+        # In older versions, we use PackageMaker.  Apple keeps changing its location.
+        elif os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
             cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg ' + target + ' --domain system --root dstroot/' + pkg + '/ --no-relocate'
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:
-            exit("PackageMaker could not be found!")
+            exit("Neither pkgbuild nor PackageMaker could be found!")
         oscmd(cmd)
 
     if os.path.isfile("/tmp/Info_plist"):
