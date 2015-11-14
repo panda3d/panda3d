@@ -13,6 +13,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textGlyph.h"
+#include "geomTextGlyph.h"
+#include "geomTriangles.h"
+#include "geomVertexReader.h"
+#include "geomVertexWriter.h"
 
 TypeHandle TextGlyph::_type_handle;
 
