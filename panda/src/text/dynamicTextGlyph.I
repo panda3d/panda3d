@@ -21,16 +21,13 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
 DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
-                 int x_size, int y_size, int margin) :
-  TextGlyph(character),
+                 int x_size, int y_size, int margin, PN_stdfloat advance) :
+  TextGlyph(character, advance),
   _page(page),
   _x(x), _y(y),
   _x_size(x_size), _y_size(y_size),
-  _margin(margin),
-  _top(0), _left(0), _bottom(0), _right(0),
-  _uv_top(0), _uv_left(0), _uv_bottom(0), _uv_right(0)
+  _margin(margin)
 {
-  _geom_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,14 +39,12 @@ DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
 DynamicTextGlyph(int character, PN_stdfloat advance) :
-  TextGlyph(character),
+  TextGlyph(character, advance),
   _page((DynamicTextPage *)NULL),
   _x(0), _y(0),
   _x_size(0), _y_size(0),
   _margin(0)
 {
-  _advance = advance;
-  _geom_count = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,17 +101,6 @@ intersects(int x, int y, int x_size, int y_size) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::get_top
-//       Access: Published
-//  Description: Returns the vertex coordinates that can be used when
-//               creating a custom text renderer.
-////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat DynamicTextGlyph::
-get_top() const {
-  return _top;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::get_left
 //       Access: Published
 //  Description: Returns the vertex coordinates that can be used when
@@ -124,7 +108,7 @@ get_top() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_left() const {
-  return _left;
+  return _quad_dimensions[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +119,7 @@ get_left() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_bottom() const {
-  return _bottom;
+  return _quad_dimensions[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,18 +130,18 @@ get_bottom() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_right() const {
-  return _right;
+  return _quad_dimensions[2];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::get_uv_top
+//     Function: DynamicTextGlyph::get_top
 //       Access: Published
-//  Description: Returns the UV coordinates that can be used when
+//  Description: Returns the vertex coordinates that can be used when
 //               creating a custom text renderer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
-get_uv_top() const {
-  return _uv_top;
+get_top() const {
+  return _quad_dimensions[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +152,7 @@ get_uv_top() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_uv_left() const {
-  return _uv_left;
+  return _quad_texcoords[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,7 +163,7 @@ get_uv_left() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_uv_bottom() const {
-  return _uv_bottom;
+  return _quad_texcoords[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,5 +174,16 @@ get_uv_bottom() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DynamicTextGlyph::
 get_uv_right() const {
-  return _uv_right;
+  return _quad_texcoords[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::get_uv_top
+//       Access: Published
+//  Description: Returns the UV coordinates that can be used when
+//               creating a custom text renderer.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat DynamicTextGlyph::
+get_uv_top() const {
+  return _quad_texcoords[3];
 }

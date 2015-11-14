@@ -164,12 +164,10 @@ private:
   // And here it is, wordwrapped.
   TextBlock _text_block;
 
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring iterators.
   void scan_wtext(TextString &output_string,
                   wstring::const_iterator &si, 
                   const wstring::const_iterator &send,
                   ComputedProperties *current_cprops);
-#endif  // CPPPARSER
 
   bool wordwrap_text();
 
@@ -179,13 +177,6 @@ private:
   // These structures are built up by assemble_paragraph() and
   // assemble_row().  They represent the actual Geoms as laid out in a
   // paragraph.
-  
-  class Piece {
-  public:
-    PT(Geom) _geom;
-    CPT(RenderState) _state;
-  };
-  typedef pvector<Piece> Pieces;
 
   class GeomCollectorKey {
   public:
@@ -218,26 +209,50 @@ private:
   };
   typedef pmap<GeomCollectorKey, GeomCollector> GeomCollectorMap;
 
-  class GlyphPlacement : public MemoryBase {
+  struct QuadDef {
+    // Copying this class is a performance hotspot, hence we define the
+    // move constructor.
+    ALWAYS_INLINE QuadDef() {}
+    ALWAYS_INLINE QuadDef(const QuadDef &copy) :
+      _dimensions(copy._dimensions), _uvs(copy._uvs),
+      _slantl(copy._slantl), _slanth(copy._slanth),
+      _glyph(copy._glyph) {}
+
+#ifdef USE_MOVE_SEMANTICS
+    ALWAYS_INLINE QuadDef(QuadDef &&from) NOEXCEPT :
+      _dimensions(from._dimensions), _uvs(from._uvs),
+      _slantl(from._slantl), _slanth(from._slanth),
+      _glyph(move(from._glyph)) {}
+#endif
+
+    LVecBase4 _dimensions;
+    LVecBase4 _uvs;
+    PN_stdfloat _slantl, _slanth;
+    CPT(TextGlyph) _glyph;
+  };
+  typedef pvector<QuadDef> QuadDefs;
+  typedef pmap<CPT(RenderState), QuadDefs> QuadMap;
+
+  void generate_quads(GeomNode *geom_node, const QuadMap &quad_map);
+
+  class GlyphPlacement {
   public:
-    INLINE void add_piece(Geom *geom, const RenderState *state);
-    void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                           bool &found_any, Thread *current_thread) const;
-    void assign_to(GeomNode *geom_node, const RenderState *state) const;
-    void assign_copy_to(GeomNode *geom_node, const RenderState *state, 
-                        const LMatrix4 &extra_xform) const;
+    void assign_to(GeomNode *geom_node, const RenderState *state,
+                   const LVector2 &offset = LVector2::zero()) const;
 
     void assign_append_to(GeomCollectorMap &geom_collector_map, const RenderState *state,
-                          const LMatrix4 &extra_xform) const;
-    void copy_graphic_to(PandaNode *node, const RenderState *state,
-                         const LMatrix4 &extra_xform) const;
+                          const LVector2 &offset = LVector2::zero()) const;
+    void assign_quad_to(QuadMap &quad_map, const RenderState *state,
+                        const LVector2 &offset = LVector2::zero()) const;
+    void copy_graphic_to(PandaNode *node, const RenderState *state) const;
 
-    Pieces _pieces;
+    CPT(TextGlyph) _glyph;
     PT(PandaNode) _graphic_model;
-    LMatrix4 _xform;
+    PN_stdfloat _xpos, _ypos;
+    PN_stdfloat _scale, _slant;
     const TextProperties *_properties;
   };
-  typedef pvector<GlyphPlacement *> PlacedGlyphs;
+  typedef pvector<GlyphPlacement> PlacedGlyphs;
 
   void assemble_paragraph(PlacedGlyphs &placed_glyphs);
   void assemble_row(TextRow &row,
@@ -281,8 +296,8 @@ private:
 
   static void
   get_character_glyphs(int character, const TextProperties *properties,
-                       bool &got_glyph, const TextGlyph *&glyph,
-                       const TextGlyph *&second_glyph,
+                       bool &got_glyph, CPT(TextGlyph) &glyph,
+                       CPT(TextGlyph) &second_glyph,
                        UnicodeLatinMap::AccentType &accent_type,
                        int &additional_flags,
                        PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale);
@@ -291,13 +306,13 @@ private:
   tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
                  const LPoint3 &centroid,
-                 const TextProperties *properties, GlyphPlacement *placement) const;
+                 const TextProperties *properties, GlyphPlacement &placement) const;
   bool 
   tack_on_accent(char accent_mark, CheesyPosition position,
                  CheesyTransform transform,
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
                  const LPoint3 &centroid,
-                 const TextProperties *properties, GlyphPlacement *placement) const;
+                 const TextProperties *properties, GlyphPlacement &placement) const;
 
   // These are filled in by assemble_paragraph().
   LVector2 _ul;

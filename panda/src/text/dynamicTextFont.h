@@ -74,6 +74,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_poly_margin() const;
 
   INLINE void set_page_size(int x_size, int y_size);
+  INLINE const LVecBase2i &get_page_size() const;
   INLINE int get_page_x_size() const;
   INLINE int get_page_y_size() const;
 
@@ -110,21 +111,21 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual bool get_glyph(int character, const TextGlyph *&glyph);
+  virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
 
 private:
   void initialize();
   void update_filters();
   void determine_tex_format();
-  DynamicTextGlyph *make_glyph(int character, FT_Face face, int glyph_index);
+  TextGlyph *make_glyph(int character, FT_Face face, int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   void blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
                                  const LColor &fg);
-  DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
+  DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance);
 
-  void render_wireframe_contours(DynamicTextGlyph *glyph);
-  void render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude);
+  void render_wireframe_contours(TextGlyph *glyph);
+  void render_polygon_contours(TextGlyph *glyph, bool face, bool extrude);
 
   static int outline_move_to(const FT_Vector *to, void *user);
   static int outline_line_to(const FT_Vector *to, void *user);
@@ -137,7 +138,7 @@ private:
 
   int _texture_margin;
   PN_stdfloat _poly_margin;
-  int _page_x_size, _page_y_size;
+  LVecBase2i _page_size;
 
   SamplerState::FilterType _minfilter;
   SamplerState::FilterType _magfilter;
@@ -159,14 +160,14 @@ private:
 
   // This doesn't need to be a reference-counting pointer, because the
   // reference to each glyph is kept by the DynamicTextPage object.
-  typedef pmap<int, DynamicTextGlyph *> Cache;
+  typedef pmap<int, TextGlyph *> Cache;
   Cache _cache;
 
   // This is a list of the glyphs that do not have any printable
   // properties (e.g. space), but still have an advance measure.  We
   // store them here to keep their reference counts; they also appear
   // in the above table.
-  typedef pvector< PT(DynamicTextGlyph) > EmptyGlyphs;
+  typedef pvector< PT(TextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
 
   class ContourPoint {
