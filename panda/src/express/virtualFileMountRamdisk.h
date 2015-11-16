@@ -158,7 +158,7 @@ private:
   };
 
   Directory _root;
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
 
 public:
   virtual TypeHandle get_type() const {

@@ -19,7 +19,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileMountRamdisk::FileBase::
-FileBase(const string &basename) : _basename(basename), _timestamp(0) {
+FileBase(const string &basename) : _basename(basename), _timestamp(time(NULL)) {
 }
 
 ////////////////////////////////////////////////////////////////////
