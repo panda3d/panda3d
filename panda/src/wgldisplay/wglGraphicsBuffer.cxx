@@ -16,6 +16,7 @@
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
 #include "glgsg.h"
+#include "wglGraphicsStateGuardian.h"
 #include "pStatTimer.h"
 
 #include <wingdi.h>

@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wglGraphicsStateGuardian.h"
+#include "config_wgldisplay.h"
 #include "wglGraphicsBuffer.h"
+#include "wglGraphicsPipe.h"
 #include "string_utils.h"
 
 TypeHandle wglGraphicsStateGuardian::_type_handle;
