@@ -13,5 +13,5 @@ if(WIN32)
   composite_sources(p3windisplay P3WINDISPLAY_SOURCES)
   add_library(p3windisplay ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})
   target_link_libraries(p3windisplay p3display p3putil
-    Coreimm.lib)
+    Imm32.lib)
 endif()

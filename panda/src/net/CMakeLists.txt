@@ -30,5 +30,9 @@ if(HAVE_NET AND WANT_NATIVE_NET)
   target_link_libraries(p3net p3express p3downloader p3pandabase p3nativenet p3pipeline)
   target_interrogate(p3net ALL)
 
+  if(WIN32)
+    target_link_libraries(p3net Iphlpapi.lib)
+  endif()
+
   install(TARGETS p3net DESTINATION lib)
 endif()
