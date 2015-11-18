@@ -51,7 +51,6 @@ class DistributedObjectBase(DirectObject):
         """
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def handleChildArriveZone(self, childObj, zoneId):
         """
