@@ -555,7 +555,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
     // If we got an empty bitmap, it's a special case.
 
     PT(TextGlyph) glyph =
-      new TextGlyph(character, advance);
+      new DynamicTextGlyph(character, advance);
     _empty_glyphs.push_back(glyph);
     return glyph;
 
