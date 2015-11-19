@@ -1116,7 +1116,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
       // We don't do redefinitions of typedefs.  But we don't complain
       // as long as this is actually a typedef to the previous definition.
       if (other_type != def->_type &&
-          (other_td == NULL || other_td->_type != def->_type)) {
+          (other_td == NULL || !other_td->_type->is_equivalent(*def->_type))) {
 
         if (error_sink != NULL) {
           ostringstream errstr;

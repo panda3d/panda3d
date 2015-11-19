@@ -341,6 +341,7 @@ pop_struct() {
 %type <u.inst_ident> empty_instance_identifier
 %type <u.type> type
 %type <u.decl> type_decl
+%type <u.decl> var_type_decl
 %type <u.type> predefined_type
 %type <u.type> full_type
 %type <u.struct_type> anonymous_struct
@@ -676,7 +677,7 @@ type_like_declaration:
         ;
 
 multiple_var_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -691,11 +692,15 @@ multiple_var_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         multiple_const_instance_identifiers
@@ -750,7 +755,7 @@ multiple_const_instance_identifiers:
 
 
 typedef_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -765,11 +770,15 @@ typedef_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         typedef_const_instance_identifiers
@@ -1891,6 +1900,18 @@ predefined_type:
   }
 }
         ;
+
+var_type_decl:
+        type_decl
+{
+  $$ = $1;
+}
+        | IDENTIFIER
+{
+  yyerror(string("unknown type '") + $1->get_fully_scoped_name() + "'", @1);
+
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
+}
 
 full_type:
         type empty_instance_identifier
