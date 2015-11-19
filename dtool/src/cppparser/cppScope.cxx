@@ -252,6 +252,11 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   }
 
   if (type->is_template()) {
+    CPPTemplateScope *scope = type->get_template_scope();
+    if (scope->_parameters._parameters.size() == 0) {
+      return;
+    }
+
     string simple_name = type->get_simple_name();
 
     pair<Templates::iterator, bool> result =
@@ -596,9 +601,14 @@ find_scope(const string &name, bool recurse) const {
   ti = _types.find(name);
   if (ti != _types.end()) {
     type = (*ti).second;
-    // Resolve if this is a typedef.
-    while (type->as_typedef_type() != (CPPTypedefType *)NULL) {
-      type = type->as_typedef_type()->_type;
+    // Resolve if this is a typedef or const.
+    while (type->get_subtype() == CPPDeclaration::ST_const ||
+           type->get_subtype() == CPPDeclaration::ST_typedef) {
+      if (type->as_typedef_type() != (CPPType *)NULL) {
+        type = type->as_typedef_type()->_type;
+      } else {
+        type = type->as_const_type()->_wrapped_around;
+      }
     }
 
   } else if (_struct_type != NULL) {
@@ -648,9 +658,14 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
     return NULL;
   }
 
-  // Resolve this if it is a typedef.
-  while (type->get_subtype() == CPPDeclaration::ST_typedef) {
-    type = type->as_typedef_type()->_type;
+  // Resolve if this is a typedef or const.
+  while (type->get_subtype() == CPPDeclaration::ST_const ||
+         type->get_subtype() == CPPDeclaration::ST_typedef) {
+    if (type->as_typedef_type() != (CPPType *)NULL) {
+      type = type->as_typedef_type()->_type;
+    } else {
+      type = type->as_const_type()->_wrapped_around;
+    }
   }
 
   CPPStructType *st = type->as_struct_type();
