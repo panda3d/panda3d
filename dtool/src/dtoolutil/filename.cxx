@@ -728,7 +728,7 @@ set_dirname(const string &s) {
     // Remove the directory prefix altogether.
     _filename.replace(0, _basename_start, "");
 
-    ssize_t length_change = - ((ssize_t)_basename_start);
+    int length_change = - ((int)_basename_start);
 
     _dirname_end = 0;
     _basename_start += length_change;
@@ -746,7 +746,7 @@ set_dirname(const string &s) {
       ss = s+'/';
     }
 
-    ssize_t length_change = ss.length() - _basename_start;
+    int length_change = (int)ss.length() - (int)_basename_start;
 
     _filename.replace(0, _basename_start, ss);
 
@@ -791,7 +791,7 @@ set_basename(const string &s) {
 ////////////////////////////////////////////////////////////////////
 void Filename::
 set_fullpath_wo_extension(const string &s) {
-  ssize_t length_change = s.length() - _basename_end;
+  int length_change = (int)s.length() - (int)_basename_end;
 
   _filename.replace(0, _basename_end, s);
 
@@ -811,7 +811,7 @@ set_fullpath_wo_extension(const string &s) {
 ////////////////////////////////////////////////////////////////////
 void Filename::
 set_basename_wo_extension(const string &s) {
-  ssize_t length_change = s.length() - (_basename_end - _basename_start);
+  int length_change = (int)s.length() - (int)(_basename_end - _basename_start);
 
   if (_basename_end == string::npos) {
     _filename.replace(_basename_start, string::npos, s);
