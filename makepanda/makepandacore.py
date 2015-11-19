@@ -1061,7 +1061,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac")
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
-    CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
     if GetTarget() == 'darwin':
         MakeDirectory(OUTPUTDIR + "/Frameworks")
@@ -2423,7 +2422,7 @@ def SetupBuildEnvironment(compiler):
         return
 
     # Add our output directories to the environment.
-    builtdir = os.path.join(os.path.abspath(GetOutputDir()))
+    builtdir = GetOutputDir()
     AddToPathEnv("PYTHONPATH", builtdir)
     AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))

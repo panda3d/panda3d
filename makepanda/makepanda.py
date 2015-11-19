@@ -1790,7 +1790,7 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/')) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
@@ -2590,6 +2590,39 @@ if (PkgSkip("DIRECT")==0):
         os.remove(GetOutputDir() + '/direct/ffi/panda3d.py')
     if os.path.isfile(GetOutputDir() + '/direct/ffi/panda3d.pyc'):
         os.remove(GetOutputDir() + '/direct/ffi/panda3d.pyc')
+
+# These files used to exist; remove them to avoid conflicts.
+del_files = ['core.py', 'core.pyc', 'core.pyo',
+             '_core.pyd', '_core.so',
+             'direct.py', 'direct.pyc', 'direct.pyo',
+             '_direct.pyd', '_direct.so']
+
+for basename in del_files:
+    path = os.path.join(GetOutputDir(), 'panda3d', basename)
+    if os.path.isfile(path):
+        print("Removing %s" % (path))
+        os.remove(path)
+
+# Write an appropriate panda3d/__init__.py
+p3d_init = """"Python bindings for the Panda3D libraries"
+"""
+
+if GetTarget() == 'windows':
+    p3d_init += """
+import os
+
+bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
+if os.path.isfile(os.path.join(bindir, 'libpanda.dll')):
+    if not os.environ.get('PATH'):
+        os.environ['PATH'] = bindir
+    else:
+        os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
+
+del os, bindir
+"""
+
+if not PkgSkip("PYTHON"):
+    ConditionalWriteFile(GetOutputDir() + '/panda3d/__init__.py', p3d_init)
 
 ##########################################################################################
 #
