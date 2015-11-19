@@ -2535,13 +2535,7 @@ def SetupBuildEnvironment(compiler):
 
 def CopyFile(dstfile, srcfile):
     if dstfile[-1] == '/':
-        dstdir = dstfile
-        fnl = srcfile.rfind("/")
-        if fnl < 0:
-            fn = srcfile
-        else:
-            fn = srcfile[fnl+1:]
-        dstfile = dstdir + fn
+        dstfile += os.path.basename(srcfile)
 
     if NeedsBuild([dstfile], [srcfile]):
         if os.path.islink(srcfile):
