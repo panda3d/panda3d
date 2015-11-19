@@ -176,13 +176,14 @@ def parseopts(args):
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
-        "directx-sdk=", "platform-sdk=", "use-icl",
+        "directx-sdk=", "platform-sdk=", "use-icl", "clean",
         "universal", "target=", "arch=", "git-commit="]
     anything = 0
     optimize = ""
     target = None
     target_arch = None
     universal = False
+    clean_build = False
     for pkg in PkgListGet():
         longopts.append("use-" + pkg.lower())
         longopts.append("no-" + pkg.lower())
@@ -233,6 +234,7 @@ def parseopts(args):
                     print("No MS Platform SDK version specified. Using 'default' MS Platform SDK search")
                     STRMSPLATFORMVERSION = 'default'
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
+            elif (option=="--clean"): clean_build = True
             else:
                 for pkg in PkgListGet():
                     if option == "--use-" + pkg.lower():
@@ -319,6 +321,10 @@ def parseopts(args):
             is_win7 = True
     if RUNTIME or not is_win7:
         PkgDisable("TOUCHINPUT")
+
+    if clean_build:
+        print("Deleting %s" % (GetOutputDir()))
+        shutil.rmtree(GetOutputDir())
 
 parseopts(sys.argv[1:])
 
