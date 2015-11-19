@@ -440,7 +440,7 @@ def makeInstaller():
         if not os.path.exists(tmproot):
             os.makedirs(tmproot)
         dst_npapi = os.path.join(tmproot, "Library", "Internet Plug-Ins", npapi)
-        dst_panda3d = os.path.join(tmproot, "usr", "bin", panda3d)
+        dst_panda3d = os.path.join(tmproot, "usr", "local", "bin", panda3d)
         dst_panda3dapp = os.path.join(tmproot, "Applications", panda3dapp)
         if not os.path.exists(dst_npapi): os.makedirs(os.path.dirname(dst_npapi))
         if not os.path.exists(dst_panda3d): os.makedirs(os.path.dirname(dst_panda3d))

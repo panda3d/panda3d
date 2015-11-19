@@ -383,6 +383,8 @@ get_next_token0() {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
+      } else {
+        error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
       }
     }
 
@@ -441,6 +443,8 @@ get_next_token0() {
           ident->_names.back().set_templ
             (nested_parse_template_instantiation(decl->get_template_scope()));
           token = internal_get_next_token();
+        } else {
+          error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
         }
       }
     }
