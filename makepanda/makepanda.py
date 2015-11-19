@@ -2794,6 +2794,10 @@ if tp_dir is not None:
             if (GetOptimize() <= 2): pydll += "_d.dll"
             else: pydll += ".dll"
             CopyFile(GetOutputDir() + "/bin" + pydll, SDK["PYTHON"] + pydll)
+
+            for fn in glob.glob(SDK["PYTHON"] + "/vcruntime*.dll"):
+                CopyFile(GetOutputDir() + "/bin/", fn)
+
             if not RTDIST:
                 CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
                 if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
