@@ -1804,7 +1804,7 @@ def CompileRsrc(target, src, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
 
-    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/')) + " "
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 

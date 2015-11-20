@@ -1706,6 +1706,18 @@ def SdkLocateDirectX( strMode = 'default' ):
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
+            dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
+            if os.path.isdir(dir):
+                print("Using DirectX SDK June 2010")
+                SDK["DX9"] = dir
+                SDK["GENERIC_DXERR_LIBRARY"] = 1
+        if ("DX9" not in SDK):
+            dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
+            if os.path.isdir(dir):
+                print("Using DirectX SDK June 2010")
+                SDK["DX9"] = dir
+                SDK["GENERIC_DXERR_LIBRARY"] = 1
+        if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK Aug 2009")
@@ -1739,21 +1751,32 @@ def SdkLocateDirectX( strMode = 'default' ):
                             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         if ("DX9" not in SDK):
             return
+
     elif strMode == 'jun2010':
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print("Found DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print("Found DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
+            dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
+            if os.path.isdir(dir):
+                SDK["DX9"] = dir
+                SDK["GENERIC_DXERR_LIBRARY"] = 1
+        if ("DX9" not in SDK):
+            dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
+            if os.path.isdir(dir):
+                SDK["DX9"] = dir
+                SDK["GENERIC_DXERR_LIBRARY"] = 1
+        if ("DX9" not in SDK):
             exit("Couldn't find DirectX June2010 SDK")
+        else:
+            print("Found DirectX SDK June 2010")
     elif strMode == 'aug2009':
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
@@ -2487,7 +2510,7 @@ def SetupBuildEnvironment(compiler):
         return
 
     # Add our output directories to the environment.
-    builtdir = os.path.join(os.path.abspath(GetOutputDir()))
+    builtdir = GetOutputDir()
     AddToPathEnv("PYTHONPATH", builtdir)
     AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
