@@ -38,8 +38,6 @@ class HostInfo:
         Note that perPlatform is also restricted by the individual
         package's specification.  """
 
-        assert appRunner or rootDir or hostDir
-
         self.__setHostUrl(hostUrl)
         self.appRunner = appRunner
         self.rootDir = rootDir
@@ -110,6 +108,52 @@ class HostInfo:
             # https-protected hostUrl, it will be the cleartext channel.
             self.downloadUrlPrefix = self.hostUrlPrefix
 
+    def freshenFile(self, http, fileSpec, localPathname):
+        """ Ensures that the localPathname is the most current version
+        of the file defined by fileSpec, as offered by host.  If not,
+        it downloads a new version on-the-spot.  Returns true on
+        success, false on failure. """
+
+        if fileSpec.quickVerify(pathname = localPathname):
+            # It's good, keep it.
+            return True
+
+        # It's stale, get a new one.
+        doc = None
+        if self.appRunner and self.appRunner.superMirrorUrl:
+            # Use the "super mirror" first.
+            url = core.URLSpec(self.appRunner.superMirrorUrl + fileSpec.filename)
+            self.notify.info("Freshening %s" % (url))
+            doc = http.getDocument(url)
+
+        if not doc or not doc.isValid():
+            # Failing the super mirror, contact the actual host.
+            url = core.URLSpec(self.hostUrlPrefix + fileSpec.filename)
+            self.notify.info("Freshening %s" % (url))
+            doc = http.getDocument(url)
+            if not doc.isValid():
+                return False
+
+        file = Filename.temporary('', 'p3d_')
+        if not doc.downloadToFile(file):
+            # Failed to download.
+            file.unlink()
+            return False
+
+        # Successfully downloaded!
+        localPathname.makeDir()
+        if not file.renameTo(localPathname):
+            # Couldn't move it into place.
+            file.unlink()
+            return False
+
+        if not fileSpec.fullVerify(pathname = localPathname, notify = self.notify):
+            # No good after download.
+            self.notify.info("%s is still no good after downloading." % (url))
+            return False
+
+        return True
+
     def downloadContentsFile(self, http, redownload = False,
                              hashVal = None):
         """ Downloads the contents.xml file for this particular host,
@@ -166,7 +210,7 @@ class HostInfo:
                     channel = http.makeChannel(False)
                     channel.getDocument(request)
                     if channel.downloadToRam(rf):
-                        self.notify.warning("Successfully downloaded %s" % (url,))
+                        self.notify.info("Successfully downloaded %s" % (url,))
                         break
                     else:
                         rf = None
@@ -367,7 +411,7 @@ class HostInfo:
             assert self.hostDir
             self.__findHostXmlForHostDir(xcontents)
 
-        if not self.hostDir:
+        if self.rootDir and not self.hostDir:
             self.hostDir = self.__determineHostDir(None, self.hostUrl)
 
         # Get the list of packages available for download and/or import.
@@ -401,7 +445,7 @@ class HostInfo:
         self.hasContentsFile = True
 
         # Now save the contents.xml file into the standard location.
-        if not self.appRunner or self.appRunner.verifyContents != self.appRunner.P3DVCNever:
+        if self.appRunner and self.appRunner.verifyContents != self.appRunner.P3DVCNever:
             assert self.hostDir
             filename = Filename(self.hostDir, 'contents.xml')
             filename.makeDir()
@@ -474,7 +518,7 @@ class HostInfo:
             self.descriptiveName = descriptiveName
 
         hostDirBasename = xhost.Attribute('host_dir')
-        if not self.hostDir:
+        if self.rootDir and not self.hostDir:
             self.hostDir = self.__determineHostDir(hostDirBasename, self.hostUrl)
 
         # Get the "download" URL, which is the source from which we

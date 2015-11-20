@@ -373,7 +373,7 @@ if RUNTIME or RTDIST:
 if DEBVERSION is None:
     DEBVERSION = VERSION
 
-MAJOR_VERSION = VERSION[:3]
+MAJOR_VERSION = '.'.join(VERSION.split('.')[:2])
 
 if P3DSUFFIX is None:
     P3DSUFFIX = MAJOR_VERSION
@@ -392,9 +392,10 @@ if (RUNTIME or RTDIST):
     if (RUNTIME):
         outputdir_suffix += "_rt"
 
-    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
-elif (DISTRIBUTOR == ""):
+if DISTRIBUTOR == "":
     DISTRIBUTOR = "makepanda"
+else:
+    RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
 
 if not IsCustomOutputDir():
     if GetTarget() == "windows" and GetTargetArch() == 'x64':
@@ -1851,6 +1852,11 @@ def Package(target, inputs, opts):
 
     command += "direct/src/p3d/ppackage.py"
 
+    if not RTDIST:
+        # Don't compile Python sources, because we might not running in the same
+        # Python version as the selected host.
+        command += " -N"
+
     if GetTarget() == "darwin":
         if SDK.get("MACOSX"):
             command += " -R \"%s\"" % SDK["MACOSX"]
@@ -1863,8 +1869,32 @@ def Package(target, inputs, opts):
     command += " -i \"" + GetOutputDir() + "/stage\""
     if (P3DSUFFIX):
         command += ' -a "' + P3DSUFFIX + '"'
+
     command += " " + inputs[0]
-    oscmd(command)
+
+    if GetOrigExt(target) == '.p3d':
+        # Build a specific .p3d file.
+        basename = os.path.basename(os.path.splitext(target)[0])
+        command += " " + basename
+        oscmd(command)
+
+        if GetTarget() == 'windows':
+            # TODO: build p3dWrapper.c executable.
+            #objfile = FindLocation('p3dWrapper_' + basename + '.obj', [])
+            #CompileCxx(objfile, 'p3dWrapper.c', ['DIR:direct/src/p3d'])
+
+            #exefile = os.path.splitext(target)[0] + '.exe'
+            #CompileLink(exefile, [objfile], ['ADVAPI'])
+            pass
+
+        # Move it to the bin directory.
+        os.rename(GetOutputDir() + '/stage/' + basename + P3DSUFFIX + '.p3d', target)
+
+        if sys.platform != 'win32':
+            oscmd('chmod +x ' + BracketNameWithQuotes(target))
+    else:
+        # This is presumably a package or set of packages.
+        oscmd(command)
 
 ##########################################################################################
 #
@@ -1957,7 +1987,10 @@ def CompileAnything(target, inputs, opts, progress = None):
         ProgressOutput(progress, "Compiling MIDL file", infile)
         return CompileMIDL(target, infile, opts)
     elif (infile.endswith(".pdef")):
-        ProgressOutput(progress, "Building package from pdef file", infile)
+        if origsuffix == '.p3d':
+            ProgressOutput(progress, "Building package", target)
+        else:
+            ProgressOutput(progress, "Building package from pdef file", infile)
         return Package(target, inputs, opts)
     elif origsuffix in SUFFIX_LIB:
         ProgressOutput(progress, "Linking static library", target)
@@ -6187,26 +6220,17 @@ if (RTDIST):
   TargetAdd('_thirdparty', opts=OPTS, input='thirdparty.pdef')
 
 #
-# Distribute prebuilt .p3d files as executable.
+# If we have a host URL and distributor, we can make .p3d deployment tools.
 #
 
-if (PkgSkip("DIRECT")==0 and not RUNTIME and not RTDIST):
-  if GetTarget() == 'windows':
+if not PkgSkip("DIRECT") and not PkgSkip("DEPLOYTOOLS") and not RUNTIME and not RTDIST and HOST_URL and DISTRIBUTOR:
     OPTS=['DIR:direct/src/p3d']
-    TargetAdd('p3dWrapper.obj', opts=OPTS, input='p3dWrapper.c')
-    TargetAdd('p3dWrapper.exe', input='p3dWrapper.obj')
-    TargetAdd('p3dWrapper.exe', opts=["ADVAPI"])
 
-  for g in glob.glob("direct/src/p3d/*.p3d"):
-    base = os.path.basename(g)
-    base = base.split(".", 1)[0]
-
-    if GetTarget() == 'windows':
-      TargetAdd(base+".exe", input='p3dWrapper.exe')
-      CopyFile(GetOutputDir()+"/bin/"+base+".p3d", g)
-    else:
-      CopyFile(GetOutputDir()+"/bin/"+base, g)
-      oscmd("chmod +x "+GetOutputDir()+"/bin/"+base)
+    TargetAdd('packp3d.p3d', opts=OPTS, input='panda3d.pdef')
+    TargetAdd('pdeploy.p3d', opts=OPTS, input='panda3d.pdef')
+    TargetAdd('pmerge.p3d', opts=OPTS, input='panda3d.pdef')
+    TargetAdd('ppackage.p3d', opts=OPTS, input='panda3d.pdef')
+    TargetAdd('ppatcher.p3d', opts=OPTS, input='panda3d.pdef')
 
 ##########################################################################################
 #
