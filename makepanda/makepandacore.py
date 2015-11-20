@@ -1874,7 +1874,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
             SDK["PYTHON"] += "-x64"
 
-        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
+        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:

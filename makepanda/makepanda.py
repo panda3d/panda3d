@@ -1879,13 +1879,12 @@ def Package(target, inputs, opts):
         oscmd(command)
 
         if GetTarget() == 'windows':
-            # TODO: build p3dWrapper.c executable.
-            #objfile = FindLocation('p3dWrapper_' + basename + '.obj', [])
-            #CompileCxx(objfile, 'p3dWrapper.c', ['DIR:direct/src/p3d'])
+            # Make an .exe that calls this .p3d.
+            objfile = FindLocation('p3dWrapper_' + basename + '.obj', [])
+            CompileCxx(objfile, 'direct/src/p3d/p3dWrapper.c', [])
 
-            #exefile = os.path.splitext(target)[0] + '.exe'
-            #CompileLink(exefile, [objfile], ['ADVAPI'])
-            pass
+            exefile = FindLocation(basename + '.exe', [])
+            CompileLink(exefile, [objfile], ['ADVAPI'])
 
         # Move it to the bin directory.
         os.rename(GetOutputDir() + '/stage/' + basename + P3DSUFFIX + '.p3d', target)
