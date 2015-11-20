@@ -6114,27 +6114,46 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
   // because it probably makes more sense for it to be immutable (as
   // changes to it won't be visible on the C++ side anyway).
 
-  out << "  " << cClassName  << " *local_this = NULL;\n"
-      << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "\n"
-      << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n"
-      << "  if (getter == (PyObject *)NULL) {\n"
+  if (!obj->is_static_method(make_seq->_num_name)) {
+    out << "  " << cClassName  << " *local_this = NULL;\n"
+        << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+        << "    return NULL;\n"
+        << "  }\n\n";
+  }
+
+  if (obj->is_static_method(make_seq->_element_name)) {
+    out << "  PyObject *getter = PyObject_GetAttrString((PyObject *)&Dtool_" << ClassName << ", \"" << element_name << "\");\n";
+  } else {
+    out << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n";
+  }
+
+  out << "  if (getter == (PyObject *)NULL) {\n"
       << "    return Dtool_Raise_AttributeError(self, \"" << element_name << "\");\n"
       << "  }\n"
-      << "\n"
-      << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
-      << "  PyObject *tuple = PyTuple_New(count);\n"
+      << "\n";
+
+  if (obj->is_static_method(make_seq->_num_name)) {
+    out << "  Py_ssize_t count = (Py_ssize_t)" << obj->_itype.get_scoped_name() << "::" << make_seq->_num_name << "();\n";
+  } else {
+    out << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n";
+  }
+
+  out << "  PyObject *tuple = PyTuple_New(count);\n"
       << "\n"
       << "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "    PyObject *index = PyLong_FromSsize_t(i);\n"
       << "#else\n"
       << "    PyObject *index = PyInt_FromSsize_t(i);\n"
-      << "#endif\n"
-      << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, self, index, NULL);\n"
-      << "    PyTuple_SET_ITEM(tuple, i, value);\n"
+      << "#endif\n";
+
+  if (obj->is_static_method(make_seq->_element_name)) {
+    out << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, index, NULL);\n";
+  } else {
+    out << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, self, index, NULL);\n";
+  }
+
+  out << "    PyTuple_SET_ITEM(tuple, i, value);\n"
       << "    Py_DECREF(index);\n"
       << "  }\n"
       << "\n"
