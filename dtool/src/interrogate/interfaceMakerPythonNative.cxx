@@ -3992,6 +3992,11 @@ bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   assert(in1 != NULL);
   assert(in2 != NULL);
 
+  if (in1->_const_method != in2->_const_method) {
+    // Non-const methods should come first.
+    return in2->_const_method;
+  }
+
   if (in1->_parameters.size() != in2->_parameters.size()) {
     return (in1->_parameters.size() > in2->_parameters.size());
   }
