@@ -798,16 +798,20 @@ set_properties_now(WindowProperties &properties) {
     int height = properties.get_y_size();
 
     if (!_properties.get_fullscreen()) {
-      _properties.set_size(width, height);
       if (_window != nil) {
         [_window setContentSize:NSMakeSize(width, height)];
       }
       [_view setFrameSize:NSMakeSize(width, height)];
 
-      cocoadisplay_cat.debug()
-        << "Setting size to " << width << ", " << height << "\n";
+      if (cocoadisplay_cat.is_debug()) {
+        cocoadisplay_cat.debug()
+          << "Setting size to " << width << ", " << height << "\n";
+      }
 
-      _context_needs_update = true;
+      // Cocoa doesn't send an event, and the other
+      // resize-window handlers will do nothing once the properties
+      // have been changed, so do this now
+      handle_resize_event();
       properties.clear_size();
 
     } else {

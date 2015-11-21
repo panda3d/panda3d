@@ -45,8 +45,10 @@
 - (void) drawRect:(NSRect)dirtyRect {
   // Do nothing.  We draw from another thread.
 
-  cocoadisplay_cat.spam()
-    << "drawRect was called.\n";
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "drawRect was called.\n";
+  }
 }
 
 - (void) finalize {
