@@ -108,7 +108,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     }
   }
 
-  if (_cg_program != 0) {
+  if (_cg_program != 0 && _glgsg->_supports_glsl) {
     if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
       _glsl_program = cgGLGetProgramID(_cg_program);
 

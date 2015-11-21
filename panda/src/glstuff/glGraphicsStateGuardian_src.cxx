@@ -1562,6 +1562,22 @@ reset() {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
     }
+  } else if (_supports_basic_shaders) {
+    // We don't support GLSL, but we support ARB programs.
+    _glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func("glDisableVertexAttribArrayARB");
+    _glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func("glEnableVertexAttribArrayARB");
+
+    _glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC)
+       get_extension_func("glVertexAttrib4fvARB");
+    _glVertexAttrib4dv = (PFNGLVERTEXATTRIB4DVPROC)
+       get_extension_func("glVertexAttrib4dvARB");
+    _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
+       get_extension_func("glVertexAttribPointerARB");
+
+    _glVertexAttribIPointer = NULL;
+    _glVertexAttribLPointer = NULL;
   }
 #endif
 
