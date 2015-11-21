@@ -53,6 +53,10 @@ init_librocket() {
   RocketInputHandler::init_type();
   RocketRegion::init_type();
 
+  if (rocket_cat->is_debug()) {
+    rocket_cat->debug() << "Initializing libRocket library.\n";
+  }
+
   RocketFileInterface* fi = new RocketFileInterface;
   Rocket::Core::SetFileInterface(fi);
 
@@ -60,6 +64,10 @@ init_librocket() {
   Rocket::Core::SetSystemInterface(si);
 
   Rocket::Core::Initialise();
+
+  // Register that we have the libRocket system.
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("libRocket");
 
 #ifdef COMPILE_IN_DEFAULT_FONT
 #ifdef HAVE_FREETYPE
