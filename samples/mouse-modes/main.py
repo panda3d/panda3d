@@ -34,7 +34,8 @@ class App(ShowBase):
         # Disable the camera trackball controls.
         self.disableMouse()
         
-        self.mouseMagnitude = 144
+        # control mapping of mouse movement to box movement
+        self.mouseMagnitude = 1
 
         self.rotateX, self.rotateY = 0, 0
 
@@ -146,7 +147,8 @@ class App(ShowBase):
         if self.manualRecenterMouse:
             # move mouse back to center
             self.recenterMouse()             
-
+            self.lastMouseX, self.lastMouseY = 0, 0  
+                
         # scale position and delta to pixels for user
         w, h = self.win.getSize()
         
@@ -158,8 +160,8 @@ class App(ShowBase):
              int(dx*w), int(dy*h))) 
 
         # rotate box by delta
-        self.rotateX += dx * 10
-        self.rotateY += dy * 10
+        self.rotateX += dx * 10 * self.mouseMagnitude
+        self.rotateY += dy * 10 * self.mouseMagnitude
 
         self.positionText.setText("Model rotation: {0}, {1}".format(
              int(self.rotateX*1000)/1000., int(self.rotateY*1000)/1000.))        
