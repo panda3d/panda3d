@@ -1881,7 +1881,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             sdkdir += "-x64"
 
         SDK["PYTHON"] = sdkdir
-        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
+        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:
@@ -2824,6 +2824,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".dle")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dle"
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".dll"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn
+        if (fn.endswith(".p3d")):   return OUTPUTDIR+"/bin/"+fn
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+dllext+".lib"
         if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+dllext+".lib"
     elif (target == 'darwin'):
@@ -2835,6 +2836,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".p3d")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
         if (fn.endswith(".rsrc")):  return OUTPUTDIR+"/tmp/"+fn
@@ -2857,6 +2859,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".p3d")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
     if (fn.endswith(".dat")):   return OUTPUTDIR+"/tmp/"+fn

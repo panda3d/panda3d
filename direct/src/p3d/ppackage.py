@@ -83,6 +83,10 @@ Options:
      initially, but should not be set on an application intended for
      deployment.
 
+  -N
+     If this option is set, Packager will not try to compile any Python
+     files to .pyc or .pyo, instead storing the original source files.
+
   -u
      On the Mac OSX platform, this means that Panda was built with
      universal binaries, and the package should be built that way as
@@ -152,6 +156,7 @@ buildPatches = False
 installSearch = []
 signParams = []
 allowPythonDev = False
+storePythonSource = False
 universalBinaries = False
 systemRoot = None
 ignoreSetHost = False
@@ -160,7 +165,7 @@ p3dSuffix = ''
 platforms = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DuP:R:Ha:hv')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:S:DNuP:R:Ha:hv')
 except getopt.error as msg:
     usage(1, msg)
 
@@ -182,6 +187,8 @@ for opt, arg in opts:
                            Filename.fromOsSpecific(password)))
     elif opt == '-D':
         allowPythonDev = True
+    elif opt == '-N':
+        storePythonSource = True
     elif opt == '-u':
         universalBinaries = True
     elif opt == '-P':
@@ -236,6 +243,7 @@ for platform in platforms:
         packager.installSearch = [installDir] + packager.installSearch
     packager.signParams = signParams
     packager.allowPythonDev = allowPythonDev
+    packager.storePythonSource = storePythonSource
     packager.systemRoot = systemRoot
     packager.ignoreSetHost = ignoreSetHost
     packager.verbosePrint = verbosePrint

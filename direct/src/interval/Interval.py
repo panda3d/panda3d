@@ -444,16 +444,16 @@ class Interval(DirectObject):
         """
         Popup control panel for interval.
         """
-        from direct.showbase import TkGlobal
-        import math
-        # I moved this here because Toontown does not ship Tk
-        from Tkinter import Toplevel, Frame, Button, LEFT, X
-        import Pmw
-        from direct.tkwidgets import EntryScale
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
+        Tkinter = importlib.import_module('Tkinter')
+
         if tl == None:
-            tl = Toplevel()
+            tl = Tkinter.Toplevel()
             tl.title('Interval Controls')
-        outerFrame = Frame(tl)
+        outerFrame = Tkinter.Frame(tl)
         def entryScaleCommand(t, s=self):
             s.setT(t)
             s.pause()
@@ -462,8 +462,8 @@ class Interval(DirectObject):
             min = 0, max = math.floor(self.getDuration() * 100) / 100,
             command = entryScaleCommand)
         es.set(self.getT(), fCommand = 0)
-        es.pack(expand = 1, fill = X)
-        bf = Frame(outerFrame)
+        es.pack(expand = 1, fill = Tkinter.X)
+        bf = Tkinter.Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
             s.clearToInitial()
@@ -473,23 +473,23 @@ class Interval(DirectObject):
             s.setT(s.getDuration())
             es.set(s.getDuration(), fCommand = 0)
             s.pause()
-        jumpToStart = Button(bf, text = '<<', command = toStart)
+        jumpToStart = Tkinter.Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
         def doPlay(s=self, es=es):
             s.resume(es.get())
 
-        stop = Button(bf, text = 'Stop',
+        stop = Tkinter.Button(bf, text = 'Stop',
                       command = lambda s=self: s.pause())
-        play = Button(
+        play = Tkinter.Button(
             bf, text = 'Play',
             command = doPlay)
-        jumpToEnd = Button(bf, text = '>>', command = toEnd)
-        jumpToStart.pack(side = LEFT, expand = 1, fill = X)
-        play.pack(side = LEFT, expand = 1, fill = X)
-        stop.pack(side = LEFT, expand = 1, fill = X)
-        jumpToEnd.pack(side = LEFT, expand = 1, fill = X)
-        bf.pack(expand = 1, fill = X)
-        outerFrame.pack(expand = 1, fill = X)
+        jumpToEnd = Tkinter.Button(bf, text = '>>', command = toEnd)
+        jumpToStart.pack(side = Tkinter.LEFT, expand = 1, fill = Tkinter.X)
+        play.pack(side = Tkinter.LEFT, expand = 1, fill = Tkinter.X)
+        stop.pack(side = Tkinter.LEFT, expand = 1, fill = Tkinter.X)
+        jumpToEnd.pack(side = Tkinter.LEFT, expand = 1, fill = Tkinter.X)
+        bf.pack(expand = 1, fill = Tkinter.X)
+        outerFrame.pack(expand = 1, fill = Tkinter.X)
         # Add function to update slider during setT calls
         def update(t, es=es):
             es.set(t, fCommand = 0)

@@ -1532,8 +1532,10 @@ class Actor(DirectObject, NodePath):
 
     # actions
     def animPanel(self):
-        from direct.showbase import TkGlobal
-        from direct.tkpanels import AnimPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        AnimPanel = importlib.import_module('direct.tkpanels.AnimPanel')
         return AnimPanel.AnimPanel(self)
 
     def stop(self, animName=None, partName=None):

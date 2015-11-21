@@ -369,7 +369,10 @@ class ClassicFSM(DirectObject):
             return 0
 
     def view(self):
-        from direct.tkpanels import FSMInspector
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        FSMInspector = importlib.import_module('direct.tkpanels.FSMInspector')
         FSMInspector.FSMInspector(self)
 
     def isInternalStateInFlux(self):

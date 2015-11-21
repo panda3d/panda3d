@@ -582,7 +582,10 @@ class TaskManager:
         return numFound
 
     def popupControls(self):
-        from direct.tkpanels import TaskManagerPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        TaskManagerPanel = importlib.import_module('direct.tkpanels.TaskManagerPanel')
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def getProfileSession(self, name=None):

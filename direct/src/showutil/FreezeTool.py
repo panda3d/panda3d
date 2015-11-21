@@ -1143,6 +1143,7 @@ class Freezer:
         elif getattr(module, '__file__', None):
             sourceFilename = Filename.fromOsSpecific(module.__file__)
             sourceFilename.setExtension("py")
+            sourceFilename.setText()
 
         if self.storePythonSource:
             if sourceFilename and sourceFilename.exists():

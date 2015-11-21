@@ -13,12 +13,12 @@ import os
 import glob
 import string
 import types
-import getpass
 import struct
 import subprocess
 import copy
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
+from direct.p3d.HostInfo import HostInfo
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
@@ -378,7 +378,8 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
-            
+            self.freezer.storePythonSource = self.packager.storePythonSource
+
             # Map of extensions to files to number (ignored by dir)
             self.ignoredDirFiles = {}
 
@@ -1075,7 +1076,7 @@ class Packager:
             fpath.append(Filename("/Library/Frameworks"))
             fpath.append(Filename("/System/Library/Frameworks"))
             fpath.append(Filename("/Developer/Library/Frameworks"))
-            fpath.append(Filename("/Users/%s" % getpass.getuser(), "Library/Frameworks"))
+            fpath.append(Filename(os.path.expanduser("~"), "Library/Frameworks"))
             if "HOME" in os.environ:
                 fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
             ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
@@ -2233,6 +2234,11 @@ class Packager:
         self.host = PandaSystem.getPackageHostUrl()
         self.addHost(self.host)
 
+        # This will be used when we're not compiling in the packaged
+        # environment.
+        self.__hostInfos = {}
+        self.http = HTTPClient.getGlobalPtr()
+
         # The maximum amount of time a client should cache the
         # contents.xml before re-querying the server, in seconds.
         self.maxAge = 0
@@ -2317,6 +2323,10 @@ class Packager:
         # Set this flag true to automatically add allow_python_dev to
         # any applications.
         self.allowPythonDev = False
+
+        # Set this flag to store the original Python source files,
+        # without compiling them to .pyc or .pyo.
+        self.storePythonSource = False
 
         # Fill this with a list of (certificate, chain, pkey,
         # password) tuples to automatically sign each p3d file
@@ -3028,17 +3038,10 @@ class Packager:
 
     def __findPackageOnHost(self, packageName, platform, version, hostUrl, requires = None):
         appRunner = AppRunnerGlobal.appRunner
-        if not appRunner:
-            # We don't download import files from a host unless we're
-            # running in a packaged environment ourselves.  It would
-            # be possible to do this, but a fair bit of work for not
-            # much gain--this is meant to be run in a packaged
-            # environment.
-            return None
 
         # Make sure we have a fresh version of the contents file.
-        host = appRunner.getHost(hostUrl)
-        if not host.downloadContentsFile(appRunner.http):
+        host = self.__getHostInfo(hostUrl)
+        if not host.downloadContentsFile(self.http):
             return None
 
         packageInfos = []
@@ -3063,22 +3066,47 @@ class Packager:
 
             # Now we've retrieved a PackageInfo.  Get the import desc file
             # from it.
-            filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
-            if not appRunner.freshenFile(host, packageInfo.importDescFile, filename):
+            if host.hostDir:
+                filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
+            else:
+                # We're not running in the packaged environment, so download
+                # to a temporary file instead of the host directory.
+                filename = Filename.temporary('', 'import_' + packageInfo.importDescFile.basename, '.xml')
+
+            if not host.freshenFile(self.http, packageInfo.importDescFile, filename):
                 self.notify.error("Couldn't download import file.")
                 continue
 
             # Now that we have the import desc file, use it to load one of
             # our Package objects.
             package = self.Package('', self)
-            if not package.readImportDescFile(filename):
-                continue
+            success = package.readImportDescFile(filename)
 
-            if self.__packageIsValid(package, requires, platform):
+            if not host.hostDir:
+                # Don't forget to delete the temporary file we created.
+                filename.unlink()
+
+            if success and self.__packageIsValid(package, requires, platform):
                 return package
 
         # Couldn't find a suitable package.
         return None
+
+    def __getHostInfo(self, hostUrl = None):
+        """ This shadows appRunner.getHost(), for the purpose of running
+        outside the packaged environment. """
+
+        if not hostUrl:
+            hostUrl = PandaSystem.getPackageHostUrl()
+
+        if AppRunnerGlobal.appRunner:
+            return AppRunnerGlobal.appRunner.getHost(hostUrl)
+
+        host = self.__hostInfos.get(hostUrl, None)
+        if not host:
+            host = HostInfo(hostUrl)
+            self.__hostInfos[hostUrl] = host
+        return host
 
     def __sortImportPackages(self, packages):
         """ Given a list of Packages read from *.import.xml filenames,

@@ -111,10 +111,13 @@ class DirectNotify:
             category.setWarning(1)
             category.setInfo(1)
             category.setDebug(1)
-            
+
     def popupControls(self, tl = None):
-        from direct.tkpanels import NotifyPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        NotifyPanel = importlib.import_module('direct.tkpanels.NotifyPanel')
         NotifyPanel.NotifyPanel(self, tl)
-        
+
     def giveNotify(self,cls):
         cls.notify = self.newCategory(cls.__name__)
