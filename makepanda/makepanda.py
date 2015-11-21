@@ -779,9 +779,7 @@ if (COMPILER=="GCC"):
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
             rocket_libs += ("RocketDebugger",)
-        if (GetHost() != "darwin"):
-            # We use a statically linked libboost_python on OSX
-            rocket_libs += ("boost_python",)
+        rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
 
         if not PkgSkip("PYTHON"):
@@ -2700,8 +2698,14 @@ if tp_dir is not None:
     dylibs = set()
 
     if GetTarget() == 'darwin':
+        # Make a list of all the dylibs we ship, to figure out whether we should use
+        # install_name_tool to correct the library reference to point to our copy.
         for lib in glob.glob(tp_dir + "/*/lib/*.dylib"):
             dylibs.add(os.path.basename(lib))
+
+        if not PkgSkip("PYTHON"):
+            for lib in glob.glob(tp_dir + "/*/lib/" + SDK["PYTHONVERSION"] + "/*.dylib"):
+                dylibs.add(os.path.basename(lib))
 
     for pkg in PkgListGet():
         if PkgSkip(pkg):
@@ -2713,48 +2717,68 @@ if tp_dir is not None:
                 CopyAllFiles(GetOutputDir() + "/bin/", tp_pkg + "/bin/")
                 if (PkgSkip("PYTHON")==0 and os.path.exists(tp_pkg + "/bin/" + SDK["PYTHONVERSION"])):
                     CopyAllFiles(GetOutputDir() + "/bin/", tp_pkg + "/bin/" + SDK["PYTHONVERSION"] + "/")
-        else:
+
+        elif GetTarget() == 'darwin':
+            tp_libs = glob.glob(tp_pkg + "/lib/*.dylib")
+
+            if not PkgSkip("PYTHON"):
+                tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib"))
+                tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.so"))
+                if pkg != 'PYTHON':
+                    tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.py"))
+
+            for tp_lib in tp_libs:
+                basename = os.path.basename(tp_lib)
+                if basename.endswith('.dylib'):
+                    # It's a dynamic link library.  Put it in the lib directory.
+                    target = GetOutputDir() + "/lib/" + basename
+                    dep_prefix = "@loader_path/../lib/"
+                    lib_id = dep_prefix + basename
+                else:
+                    # It's a Python module, like _rocketcore.so.  Copy it to the root, because
+                    # nowadays the 'lib' directory may no longer be on the PYTHONPATH.
+                    target = GetOutputDir() + "/" + basename
+                    dep_prefix = "@loader_path/lib/"
+                    lib_id = basename
+
+                if not NeedsBuild([target], [tp_lib]):
+                    continue
+
+                CopyFile(target, tp_lib)
+                if os.path.islink(target) or target.endswith('.py'):
+                    continue
+
+                # Correct the inter-library dependencies so that the build is relocatable.
+                oscmd('install_name_tool -id %s %s' % (lib_id, target))
+                oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (target, GetOutputDir()), True)
+
+                for line in open(GetOutputDir() + "/tmp/otool-libs.txt", "r"):
+                    line = line.strip()
+                    if not line or line.startswith(dep_prefix) or line.endswith(":"):
+                        continue
+
+                    libdep = line.split(" ", 1)[0]
+                    dep_basename = os.path.basename(libdep)
+                    if dep_basename in dylibs:
+                        oscmd("install_name_tool -change %s %s%s %s" % (libdep, dep_prefix, dep_basename, target), True)
+
+                JustBuilt([target], [tp_lib])
+
+            for fwx in glob.glob(tp_pkg + "/*.framework"):
+                CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
+
+        else:  # Linux / FreeBSD case.
             for tp_lib in glob.glob(tp_pkg + "/lib/*.so*"):
                 CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
 
             if not PkgSkip("PYTHON"):
                 for tp_lib in glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.so*")):
-                    CopyFile(GetOutputDir() + "/lib/" + os.path.basename(tp_lib), tp_lib)
-
-            if GetTarget() == 'darwin':
-                tp_libs = glob.glob(tp_pkg + "/lib/*.dylib")
-
-                if not PkgSkip("PYTHON"):
-                    tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib"))
-
-                for tp_lib in tp_libs:
-                    basename = os.path.basename(tp_lib)
-                    target = GetOutputDir() + "/lib/" + basename
-                    if not NeedsBuild([target], [tp_lib]):
-                        continue
-
-                    CopyFile(target, tp_lib)
-                    if os.path.islink(target):
-                        continue
-
-                    # Correct the inter-library dependencies so that the build is relocatable.
-                    oscmd('install_name_tool -id @loader_path/../lib/%s %s' % (basename, target))
-                    oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (target, GetOutputDir()), True)
-
-                    for line in open(GetOutputDir() + "/tmp/otool-libs.txt", "r"):
-                        line = line.strip()
-                        if not line or line.startswith('@loader_path/../lib/') or line.endswith(":"):
-                            continue
-
-                        libdep = line.split(" ", 1)[0]
-                        dep_basename = os.path.basename(libdep)
-                        if dep_basename in dylibs:
-                            oscmd("install_name_tool -change %s @loader_path/../lib/%s %s" % (libdep, dep_basename, target), True)
-
-                    JustBuilt([target], [tp_lib])
-
-                for fwx in glob.glob(tp_pkg + "/*.framework"):
-                    CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
+                    base = os.path.basename(tp_lib)
+                    if base.startswith('lib'):
+                        CopyFile(GetOutputDir() + "/lib/" + base, tp_lib)
+                    else:
+                        # It's a Python module, like _rocketcore.so.
+                        CopyFile(GetOutputDir() + "/" + base, tp_lib)
 
     if GetTarget() == 'windows':
         CopyAllFiles(GetOutputDir() + "/bin/", tp_dir + "extras/bin/")
@@ -6738,6 +6762,8 @@ def MakeInstallerOSX():
     oscmd("cp -R doc/LICENSE              dstroot/base/Developer/Panda3D/LICENSE")
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/Developer/Panda3D/ReleaseNotes")
     oscmd("cp -R %s/Frameworks            dstroot/base/Developer/Panda3D/Frameworks" % GetOutputDir())
+    oscmd("cp -R %s/*.so                  dstroot/base/Developer/Panda3D/" % GetOutputDir())
+    oscmd("cp -R %s/*.py                  dstroot/base/Developer/Panda3D/" % GetOutputDir())
     if os.path.isdir(GetOutputDir()+"/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
 
