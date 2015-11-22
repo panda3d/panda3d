@@ -19,6 +19,7 @@
 #include "config_audio.h"
 #include "config_util.h"
 #include "config_express.h"
+#include "config_openalAudio.h"
 #include "openalAudioManager.h"
 #include "openalAudioSound.h"
 #include "virtualFileSystem.h"
@@ -117,10 +118,11 @@ OpenALAudioManager() {
 
   // Initialization
   if (_active_managers == 0 || !_openal_active) {
-    _device = alcOpenDevice(NULL); // select the "preferred device"
+    string dev_name = get_audio_device();
+    _device = alcOpenDevice(dev_name.empty() ? NULL : dev_name.c_str()); // select the user or preferred device
     if (!_device) {
       // this is a unique kind of error
-      audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
+      audio_cat->error() << "OpenALAudioManager: alcOpenDevice(\"" << dev_name << "\"): ALC couldn't open device" << endl;
     } else {
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
@@ -210,6 +212,65 @@ shutdown() {
 bool OpenALAudioManager::
 is_valid() {
   return _is_valid;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioManager::get_device_list
+//       Access: Private
+//  Description: Interrogate the system for audio devices.
+////////////////////////////////////////////////////////////////////
+std::vector<std::string> OpenALAudioManager::
+get_device_list() {
+  std::vector<std::string> devList;
+  const char* deviceList = 0;
+
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
+    audio_cat->debug() << "Using ALC_ENUMERATE_ALL_EXT" << endl;
+    deviceList = (const char*) alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+  } else if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    audio_cat->debug() << "Using ALC_ENUMERATION_EXT" << endl;
+    deviceList = (const char*) alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+  }
+
+  if (deviceList) {
+    while (*deviceList) {
+      string dev = deviceList;
+      devList.push_back(dev);
+      audio_cat->debug() << "  " << dev << endl;
+      deviceList += strlen(deviceList) + 1;
+    }
+  }
+  return devList;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioManager::get_audio_device
+//       Access: Private
+//  Description: Fetch the audio device matching one in the
+//               configuration, or bail and return blank.
+////////////////////////////////////////////////////////////////////
+std::string OpenALAudioManager::
+get_audio_device() {
+  std::vector<std::string> devList = get_device_list();
+  if (devList.empty()) {
+    audio_cat->warning() << "No devices enumerated by OpenAL; using default" << endl;
+    return "";
+  }
+
+  std::string device = openal_device;
+  if (!device.empty()) {
+    if (std::find(devList.begin(), devList.end(), device) == devList.end()) {
+      audio_cat->warning() << "Requested OpenAL device " << device << " not detected; using default." << endl;
+      return "";
+    }
+
+    audio_cat->info() << "Using OpenAL device " << device << endl;
+    return device;
+  }
+
+  // default
+  audio_cat->info() << "Using default OpenAL device" << endl;
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////
