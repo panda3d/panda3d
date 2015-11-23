@@ -28,6 +28,14 @@
 
 #include <algorithm>
 
+#ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
+#define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
+#endif
+
+#ifndef ALC_ALL_DEVICES_SPECIFIER
+#define ALC_ALL_DEVICES_SPECIFIER 0x1013
+#endif
+
 TypeHandle OpenALAudioManager::_type_handle;
 
 ReMutex OpenALAudioManager::_lock;
