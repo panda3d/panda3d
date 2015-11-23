@@ -6754,7 +6754,6 @@ def MakeInstallerOSX():
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
 
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/lib")
-    oscmd("mkdir -p dstroot/base/Developer/Panda3D/panda3d")
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/etc")
     oscmd("cp %s/etc/Config.prc           dstroot/base/Developer/Panda3D/etc/Config.prc" % GetOutputDir())
     oscmd("cp %s/etc/Confauto.prc         dstroot/base/Developer/Panda3D/etc/Confauto.prc" % GetOutputDir())
@@ -6762,24 +6761,18 @@ def MakeInstallerOSX():
     oscmd("cp -R doc/LICENSE              dstroot/base/Developer/Panda3D/LICENSE")
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/Developer/Panda3D/ReleaseNotes")
     oscmd("cp -R %s/Frameworks            dstroot/base/Developer/Panda3D/Frameworks" % GetOutputDir())
-    oscmd("cp -R %s/*.so                  dstroot/base/Developer/Panda3D/" % GetOutputDir())
-    oscmd("cp -R %s/*.py                  dstroot/base/Developer/Panda3D/" % GetOutputDir())
     if os.path.isdir(GetOutputDir()+"/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
 
-    install_libs = []
-    for base in os.listdir(GetOutputDir()+"/lib"):
-        if (not base.endswith(".a")):
-            install_libs.append("lib/"+base)
-    for base in os.listdir(GetOutputDir()+"/panda3d"):
-        if (not base.endswith(".a")):
-            install_libs.append("panda3d/"+base)
+    # Libraries that shouldn't be in base, but are instead in other modules.
+    no_base_libs = ['libp3ffmpeg', 'libp3fmod_audio', 'libfmodex', 'libfmodexL']
 
-    for base in install_libs:
-        libname = "dstroot/base/Developer/Panda3D/" + base
-        # We really need to specify -R in order not to follow symlinks
-        # On OSX, just specifying -P is not enough to do that.
-        oscmd("cp -R -P " + GetOutputDir() + "/" + base + " " + libname)
+    for base in os.listdir(GetOutputDir()+"/lib"):
+        if not base.endswith(".a") and base.split('.')[0] not in no_base_libs:
+            libname = "dstroot/base/Developer/Panda3D/lib/" + base
+            # We really need to specify -R in order not to follow symlinks
+            # On OSX, just specifying -P is not enough to do that.
+            oscmd("cp -R -P " + GetOutputDir() + "/lib/" + base + " " + libname)
 
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D/bin")
     oscmd("mkdir -p dstroot/tools/Developer/Tools")
@@ -6799,12 +6792,14 @@ def MakeInstallerOSX():
     if PkgSkip("PYTHON")==0:
         PV = SDK["PYTHONVERSION"].replace("python", "")
         oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
-        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D")
+        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/panda3d")
         oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
         WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % PV, "/Developer/Panda3D")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % GetOutputDir())
         oscmd("cp -R %s/direct                dstroot/pythoncode/Developer/Panda3D/direct" % GetOutputDir())
         oscmd("ln -s %s                       dstroot/pythoncode/usr/local/bin/ppython" % SDK["PYTHONEXEC"])
+        oscmd("cp -R %s/*.so                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir())
+        oscmd("cp -R %s/*.py                  dstroot/pythoncode/Developer/Panda3D/" % GetOutputDir())
         if os.path.isdir(GetOutputDir()+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % GetOutputDir())
             compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/Pmw")
@@ -6812,6 +6807,26 @@ def MakeInstallerOSX():
         for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/direct"):
             if ((base != "extensions") and (base != "extensions_native")):
                 compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/direct/"+base)
+
+        for base in os.listdir(GetOutputDir()+"/panda3d"):
+            if base.endswith('.py') or base.endswith('.so'):
+                libname = "dstroot/pythoncode/Developer/Panda3D/panda3d/" + base
+                # We really need to specify -R in order not to follow symlinks
+                # On OSX, just specifying -P is not enough to do that.
+                oscmd("cp -R -P " + GetOutputDir() + "/panda3d/" + base + " " + libname)
+
+    if not PkgSkip("FFMPEG"):
+        oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
+        oscmd("cp -R %s/lib/libp3ffmpeg.* dstroot/ffmpeg/Developer/Panda3D/lib/" % GetOutputDir())
+
+    #if not PkgSkip("OPENAL"):
+    #    oscmd("mkdir -p dstroot/openal/Developer/Panda3D/lib")
+    #    oscmd("cp -R %s/lib/libp3openal_audio.* dstroot/openal/Developer/Panda3D/lib/" % GetOutputDir())
+
+    if not PkgSkip("FMODEX"):
+        oscmd("mkdir -p dstroot/fmodex/Developer/Panda3D/lib")
+        oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
+        oscmd("cp -R %s/lib/libfmodex* dstroot/fmodex/Developer/Panda3D/lib/" % GetOutputDir())
 
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
@@ -6831,7 +6846,10 @@ def MakeInstallerOSX():
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
 
     pkgs = ["base", "tools", "headers"]
-    if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
+    if not PkgSkip("PYTHON"):    pkgs.append("pythoncode")
+    if not PkgSkip("FFMPEG"):    pkgs.append("ffmpeg")
+    #if not PkgSkip("OPENAL"):    pkgs.append("openal")
+    if not PkgSkip("FMODEX"):    pkgs.append("fmodex")
     if os.path.isdir("samples"): pkgs.append("samples")
     for pkg in pkgs:
         identifier = "org.panda3d.panda3d.%s.pkg" % pkg
@@ -6872,13 +6890,8 @@ def MakeInstallerOSX():
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
     dist.write('    <choices-outline>\n')
-    dist.write('        <line choice="base"/>\n')
-    dist.write('        <line choice="tools"/>\n')
-    if PkgSkip("PYTHON")==0:
-        dist.write('        <line choice="pythoncode"/>\n')
-    if os.path.isdir("samples"):
-        dist.write('        <line choice="samples"/>\n')
-    dist.write('        <line choice="headers"/>\n')
+    for pkg in pkgs:
+        dist.write('        <line choice="%s"/>\n' % (pkg))
     dist.write('    </choices-outline>\n')
     dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
@@ -6886,24 +6899,42 @@ def MakeInstallerOSX():
     dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Panda3D/bin/">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
     dist.write('    </choice>\n')
-    if PkgSkip("PYTHON")==0:
-        dist.write('    <choice id="pythoncode" title="Python Code" tooltip="Code you\'ll need for Python development" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">\n')
+
+    if not PkgSkip("PYTHON"):
+        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>\n')
         dist.write('    </choice>\n')
+
+    if not PkgSkip("FFMPEG"):
+        dist.write('    <choice id="ffmpeg" title="FFMpeg Plug-In" tooltip="FFMpeg video and audio decoding plug-in" description="This package contains the FFMpeg plug-in, which is used for decoding video and audio files with OpenAL.')
+        if PkgSkip("VORBIS"):
+            dist.write('  It is not required for loading .wav files, which Panda3D can read out of the box.">\n')
+        else:
+            dist.write('  It is not required for loading .wav or .ogg files, which Panda3D can read out of the box.">\n')
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.ffmpeg.pkg"/>\n')
+        dist.write('    </choice>\n')
+
+    #if not PkgSkip("OPENAL"):
+    #    dist.write('    <choice id="openal" title="OpenAL Audio Plug-In" tooltip="OpenAL audio output plug-in" description="This package contains the OpenAL audio plug-in, which is an open-source library for playing sounds.">\n')
+    #    dist.write('        <pkg-ref id="org.panda3d.panda3d.openal.pkg"/>\n')
+    #    dist.write('    </choice>\n')
+
+    if not PkgSkip("FMODEX"):
+        dist.write('    <choice id="fmodex" title="FMOD Ex Plug-In" tooltip="FMOD Ex audio output plug-in" description="This package contains the FMOD Ex audio plug-in, which is a commercial library for playing sounds.  It is an optional component as Panda3D can use the open-source alternative OpenAL instead.">\n')
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.fmodex.pkg"/>\n')
+        dist.write('    </choice>\n')
+
     if os.path.isdir("samples"):
         dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>\n')
         dist.write('    </choice>\n')
+
     dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/base") // 1024))
-    dist.write('    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/tools") // 1024))
-    if PkgSkip("PYTHON")==0:
-        dist.write('    <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/pythoncode.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/pythoncode") // 1024))
-    if os.path.isdir("samples"):
-        dist.write('    <pkg-ref id="org.panda3d.panda3d.samples.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/samples.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/samples") // 1024))
-    dist.write('    <pkg-ref id="org.panda3d.panda3d.headers.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/headers.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/headers") // 1024))
+    for pkg in pkgs:
+        size = GetDirectorySize("dstroot/" + pkg) // 1024
+        dist.write('    <pkg-ref id="org.panda3d.panda3d.%s.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/%s.pkg</pkg-ref>\n' % (pkg, size, pkg))
     dist.write('</installer-script>\n')
     dist.close()
 
