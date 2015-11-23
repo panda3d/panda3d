@@ -6781,17 +6781,18 @@ def MakeInstallerOSX():
         # On OSX, just specifying -P is not enough to do that.
         oscmd("cp -R -P " + GetOutputDir() + "/" + base + " " + libname)
 
-    oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
-    oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
+    oscmd("mkdir -p dstroot/tools/Developer/Panda3D/bin")
+    oscmd("mkdir -p dstroot/tools/Developer/Tools")
+    oscmd("ln -s ../Panda3D/bin dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/etc/paths.d")
     # Trailing newline is important, works around a bug in OSX
-    WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Developer/Tools/Panda3D\n")
+    WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Developer/Panda3D/bin\n")
 
     oscmd("mkdir -p dstroot/tools/usr/local/share/man/man1")
     oscmd("cp doc/man/*.1 dstroot/tools/usr/local/share/man/man1/")
 
     for base in os.listdir(GetOutputDir()+"/bin"):
-        binname = "dstroot/tools/Developer/Tools/Panda3D/" + base
+        binname = "dstroot/tools/Developer/Panda3D/bin/" + base
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
         oscmd("cp -R " + GetOutputDir() + "/bin/" + base + " " + binname)
 
@@ -6882,7 +6883,7 @@ def MakeInstallerOSX():
     dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Tools/Panda3D/">\n')
+    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Panda3D/bin/">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
     dist.write('    </choice>\n')
     if PkgSkip("PYTHON")==0:
