@@ -322,7 +322,7 @@ def parseopts(args):
     if RUNTIME or not is_win7:
         PkgDisable("TOUCHINPUT")
 
-    if clean_build:
+    if clean_build and os.path.isdir(GetOutputDir()):
         print("Deleting %s" % (GetOutputDir()))
         shutil.rmtree(GetOutputDir())
 
