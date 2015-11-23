@@ -116,8 +116,7 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   virtual void update();
 
 private:
-  std::vector<std::string> get_device_list();
-  std::string get_audio_device();
+  string select_audio_device();
 
   void make_current() const;
 

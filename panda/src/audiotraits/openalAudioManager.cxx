@@ -91,7 +91,7 @@ OpenALAudioManager() {
   _active = audio_active;
   _volume = audio_volume;
   _play_rate = 1.0f;
-  
+
   _cache_limit = audio_cache_limit;
 
   _concurrent_sound_limit = 0;
@@ -117,21 +117,50 @@ OpenALAudioManager() {
   _forward_up[5] = 0;
 
   // Initialization
+  audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    string dev_name = get_audio_device();
-    _device = alcOpenDevice(dev_name.empty() ? NULL : dev_name.c_str()); // select the user or preferred device
-    if (!_device) {
-      // this is a unique kind of error
-      audio_cat->error() << "OpenALAudioManager: alcOpenDevice(\"" << dev_name << "\"): ALC couldn't open device" << endl;
+    _device = NULL;
+    string dev_name = select_audio_device();
+
+    if (!dev_name.empty()) {
+      // Open a specific device by name.
+      audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
+      _device = alcOpenDevice(dev_name.c_str());
+
+      if (_device == NULL) {
+        audio_cat.error()
+          << "Couldn't open OpenAL device \"" << dev_name << "\", falling back to default device\n";
+      }
     } else {
+      audio_cat.info() << "Using default OpenAL device\n";
+    }
+
+    if (_device == NULL) {
+      // Open the default device.
+      _device = alcOpenDevice(NULL);
+
+      if (_device == NULL && dev_name != "OpenAL Soft") {
+        // Try the OpenAL Soft driver instead, which is fairly reliable.
+        _device = alcOpenDevice("OpenAL Soft");
+
+        if (_device == NULL) {
+          audio_cat.error()
+            << "Couldn't open default OpenAL device\n";
+        }
+      }
+    }
+
+    if (_device != NULL) {
+      // We managed to get a device open.
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
-      alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
+      alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
       if (_context != NULL) {
         _openal_active = true;
       }
     }
   }
+
   // We increment _active_managers regardless of possible errors above.
   // The shutdown call will do the right thing when it's called,
   // either way.
@@ -152,15 +181,15 @@ OpenALAudioManager() {
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
 
     if (audio_cat.is_debug()) {
-      audio_cat->debug()
+      audio_cat.debug()
         << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;
     }
   }
 
   if (audio_cat.is_debug()) {
-    audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
-    audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
-    audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+    audio_cat.debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+    audio_cat.debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+    audio_cat.debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
   }
 }
 
@@ -215,62 +244,79 @@ is_valid() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_device_list
+//     Function: OpenALAudioManager::select_audio_device
 //       Access: Private
-//  Description: Interrogate the system for audio devices.
+//  Description: Enumerate the audio devices, selecting the one that
+//               is most appropriate or has been selected by the user.
 ////////////////////////////////////////////////////////////////////
-std::vector<std::string> OpenALAudioManager::
-get_device_list() {
-  std::vector<std::string> devList;
-  const char* deviceList = 0;
+string OpenALAudioManager::
+select_audio_device() {
+  string selected_device = openal_device;
 
+  const char *devices = NULL;
+
+  // This extension gives us all audio paths on all drivers.
   if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
-    audio_cat->debug() << "Using ALC_ENUMERATE_ALL_EXT" << endl;
-    deviceList = (const char*) alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
-  } else if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
-    audio_cat->debug() << "Using ALC_ENUMERATION_EXT" << endl;
-    deviceList = (const char*) alcGetString(NULL, ALC_DEVICE_SPECIFIER);
-  }
+    string default_device = alcGetString(NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
 
-  if (deviceList) {
-    while (*deviceList) {
-      string dev = deviceList;
-      devList.push_back(dev);
-      audio_cat->debug() << "  " << dev << endl;
-      deviceList += strlen(deviceList) + 1;
+    if (devices) {
+      audio_cat.debug() << "All OpenAL devices:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
     }
-  }
-  return devList;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_audio_device
-//       Access: Private
-//  Description: Fetch the audio device matching one in the
-//               configuration, or bail and return blank.
-////////////////////////////////////////////////////////////////////
-std::string OpenALAudioManager::
-get_audio_device() {
-  std::vector<std::string> devList = get_device_list();
-  if (devList.empty()) {
-    audio_cat->warning() << "No devices enumerated by OpenAL; using default" << endl;
-    return "";
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATE_ALL_EXT not supported\n";
   }
 
-  std::string device = openal_device;
-  if (!device.empty()) {
-    if (std::find(devList.begin(), devList.end(), device) == devList.end()) {
-      audio_cat->warning() << "Requested OpenAL device " << device << " not detected; using default." << endl;
-      return "";
+  // This extension just gives us generic driver names, like "OpenAL Soft"
+  // and "Generic Software", rather than individual outputs.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "OpenAL drivers:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (selected_device.empty() && device == "OpenAL Soft" &&
+            default_device == "Generic Software") {
+          // Prefer OpenAL Soft over the buggy Generic Software driver.
+          selected_device = "OpenAL Soft";
+        }
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
     }
-
-    audio_cat->info() << "Using OpenAL device " << device << endl;
-    return device;
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATION_EXT not supported\n";
   }
 
-  // default
-  audio_cat->info() << "Using default OpenAL device" << endl;
-  return "";
+  return selected_device;
 }
 
 ////////////////////////////////////////////////////////////////////
