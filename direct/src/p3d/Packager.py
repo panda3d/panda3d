@@ -3764,8 +3764,7 @@ class Packager:
         self.__recurseDir(dirname, newDir, unprocessed = unprocessed)
 
     def __recurseDir(self, filename, newName, unprocessed = None, packageTree = None):
-        dirList = vfs.scanDirectory(filename)
-        if dirList:
+        if filename.isDirectory():
             # It's a directory name.  Recurse.
             prefix = newName
             if prefix and prefix[-1] != '/':
@@ -3773,6 +3772,7 @@ class Packager:
 
             # First check if this is a Python package tree.  If so, add it
             # implicitly as a module.
+            dirList = vfs.scanDirectory(filename)
             for subfile in dirList:
                 filename = subfile.getFilename()
                 if filename.getBasename() == '__init__.py':
@@ -3783,6 +3783,9 @@ class Packager:
                 filename = subfile.getFilename()
                 self.__recurseDir(filename, prefix + filename.getBasename(),
                                   unprocessed = unprocessed)
+            return
+        elif not filename.exists():
+            # It doesn't exist.  Perhaps it's a virtual file.  Ignore it.
             return
 
         # It's a file name.  Add it.

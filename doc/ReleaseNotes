@@ -49,6 +49,7 @@ Fixes and improvements for the runtime:
 * Fix missing xml and ast modules from morepy package
 * Certificate dialog is now localized to various languages
 * Pass on failing exit status from packaged application
+* Remove annoying ":Packager(warning): No such file" warning
 * Fix issue installing pdeploy-generated .pkg on OS X 10.11
 
 Fixes for the Python API:
