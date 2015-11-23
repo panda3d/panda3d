@@ -2807,8 +2807,8 @@ if (PkgSkip("PYTHON")==0 and os.path.isdir(GetThirdpartyBase()+"/Pmw")):
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 # Since Eigen is included by all sorts of core headers, as a convenience
-# to C++ users on Windows, we include it in the Panda include directory.
-if not PkgSkip("EIGEN") and GetTarget() == "windows" and GetThirdpartyDir():
+# to C++ users on Win and Mac, we include it in the Panda include directory.
+if not PkgSkip("EIGEN") and GetTarget() in ("windows", "darwin") and GetThirdpartyDir():
     CopyTree(GetOutputDir()+'/include/Eigen', GetThirdpartyDir()+'eigen/include/Eigen')
 
 ########################################################################
