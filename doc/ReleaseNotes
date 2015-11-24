@@ -67,6 +67,8 @@ Fixes for the Python API:
 * MouseWatcherGroup was erroneously not exposed in 1.9.0
 * ShowBase no longer unmounts VFS when shutting down
 * No longer requires setting PATH to import panda3d.*
+* DirectDialog default geom is once again respected
+* DirectDialog no longer overrides custom frameSize
 * Fix WebcamVideo/MicrophoneAudio.getOptions() methods
 
 Changes relating to the OpenGL renderer:

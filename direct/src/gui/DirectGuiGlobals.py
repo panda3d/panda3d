@@ -14,6 +14,7 @@ defaultFontFunc = TextNode.getDefaultFont
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
+defaultDialogRelief = PGFrameStyle.TBevelOut
 drawOrder = 100
 panel = None
 
@@ -132,13 +133,16 @@ def setDefaultFontFunc(newFontFunc):
 
 def getDefaultDialogGeom():
     global defaultDialogGeom
-    if defaultDialogGeom == None:
-        defaultDialogGeom = loader.loadModel('models/gui/dialog_box_gui', okMissing = True)
     return defaultDialogGeom
 
-def setDefaultDialogGeom(newDialogGeom):
-    global defaultDialogGeom
+def getDefaultDialogRelief():
+    global defaultDialogRelief
+    return defaultDialogRelief
+
+def setDefaultDialogGeom(newDialogGeom, relief=None):
+    global defaultDialogGeom, defaultDialogRelief
     defaultDialogGeom = newDialogGeom
+    defaultDialogRelief = relief
 
 def getDefaultDrawOrder():
     return drawOrder
