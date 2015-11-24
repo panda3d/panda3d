@@ -116,6 +116,8 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   virtual void update();
 
 private:
+  string select_audio_device();
+
   void make_current() const;
 
   bool can_use_audio(MovieAudioCursor *source);

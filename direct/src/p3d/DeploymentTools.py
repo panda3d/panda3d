@@ -5,6 +5,7 @@ to build for as many platforms as possible. """
 __all__ = ["Standalone", "Installer"]
 
 import os, sys, subprocess, tarfile, shutil, time, zipfile, socket, getpass, struct
+import gzip
 from io import BytesIO, TextIOWrapper
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
@@ -994,7 +995,7 @@ class Installer:
         if self.licensefile:
             shutil.copyfile(self.licensefile.toOsSpecific(), Filename(output, "Contents/Resources/License.txt").toOsSpecific())
         pkginfo = open(Filename(output, "Contents/PkgInfo").toOsSpecific(), "w")
-        pkginfo.write("pkmkrpkg1")
+        pkginfo.write("pmkrpkg1")
         pkginfo.close()
         pkginfo = open(Filename(output, "Contents/Resources/package_version").toOsSpecific(), "w")
         pkginfo.write("major: 1\nminor: 9")
@@ -1079,18 +1080,18 @@ class Installer:
         plist.write('</plist>\n')
         plist.close()
 
-        if hasattr(tarfile, "PAX_FORMAT"):
-            archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz", format = tarfile.PAX_FORMAT, tarinfo = TarInfoRootOSX)
-        else:
-            archive = tarfile.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), "w:gz", tarinfo = TarInfoRootOSX)
-        archive.add(appfn.toOsSpecific(), appname)
+        # OS X El Capitan no longer accepts .pax archives - it must be a CPIO archive named .pax.
+        archive = gzip.open(Filename(output, "Contents/Archive.pax.gz").toOsSpecific(), 'wb')
+        self.__ino = 0
+        self.__writeCPIO(archive, appfn, appname)
+        archive.write(b"0707070000000000000000000000000000000000010000000000000000000001300000000000TRAILER!!!\0")
         archive.close()
 
         # Put the .pkg into a zipfile
-        archive = Filename(output.getDirname(), "%s %s.zip" % (self.fullname, self.version))
+        zip_fn = Filename(output.getDirname(), "%s %s.pkg.zip" % (self.fullname, self.version))
         dir = Filename(output.getDirname())
         dir.makeAbsolute()
-        zip = zipfile.ZipFile(archive.toOsSpecific(), 'w')
+        zip = zipfile.ZipFile(zip_fn.toOsSpecific(), 'w')
         for root, dirs, files in self.os_walk(output.toOsSpecific()):
             for name in files:
                 file = Filename.fromOsSpecific(os.path.join(root, name))
@@ -1100,6 +1101,61 @@ class Installer:
         zip.close()
 
         return output
+
+    def __writeCPIO(self, archive, fn, name):
+        """ Adds the given fn under the given name to the CPIO archive. """
+
+        st = os.lstat(fn.toOsSpecific())
+
+        archive.write(b"070707") # magic
+        archive.write(b"000000") # dev
+
+        # Synthesize an inode number, different for each entry.
+        self.__ino += 1
+        archive.write("%06o" % (self.__ino))
+
+        # Determine based on the type which mode to write.
+        if os.path.islink(fn.toOsSpecific()):
+            archive.write("%06o" % (st.st_mode))
+            target = os.path.readlink(fn.toOsSpecific()).encode('utf-8')
+            size = len(target)
+        elif os.path.isdir(fn.toOsSpecific()):
+            archive.write(b"040755")
+            size = 0
+        elif not fn.getExtension():  # Binary file?
+            archive.write(b"100755")
+            size = st.st_size
+        else:
+            archive.write(b"100644")
+            size = st.st_size
+
+        archive.write("000000") # uid (root)
+        archive.write("000000") # gid (wheel)
+        archive.write("%06o" % (st.st_nlink))
+        archive.write("000000") # rdev
+        archive.write("%011o" % (st.st_mtime))
+        archive.write("%06o" % (len(name) + 1))
+        archive.write("%011o" % (size))
+
+        # Write the filename, plus terminating NUL byte.
+        archive.write(name.encode('utf-8'))
+        archive.write(b"\0")
+
+        # Copy the file data to the archive.
+        if os.path.islink(fn.toOsSpecific()):
+            archive.write(target)
+        elif size:
+            handle = open(fn.toOsSpecific(), 'rb')
+            data = handle.read(1024 * 1024)
+            while data:
+                archive.write(data)
+                data = handle.read(1024 * 1024)
+            handle.close()
+
+        # If this is a directory, recurse.
+        if os.path.isdir(fn.toOsSpecific()):
+            for child in os.listdir(fn.toOsSpecific()):
+                self.__writeCPIO(archive, Filename(fn, child), name + "/" + child)
 
     def buildNSIS(self, output, platform):
         # Check if we have makensis first

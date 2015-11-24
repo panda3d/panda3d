@@ -34,7 +34,8 @@ class App(ShowBase):
         # Disable the camera trackball controls.
         self.disableMouse()
         
-        self.mouseMagnitude = 144
+        # control mapping of mouse movement to box movement
+        self.mouseMagnitude = 1
 
         self.rotateX, self.rotateY = 0, 0
 
@@ -66,7 +67,7 @@ class App(ShowBase):
         self.manualRecenterMouse = True
 
         # make a box to move with the mouse
-        self.model = self.loader.loadModel("box.egg")
+        self.model = self.loader.loadModel("box")
         self.model.reparentTo(self.render)
         
         self.cam.setPos(0, -5, 0)
@@ -75,7 +76,7 @@ class App(ShowBase):
         self.mouseTask = taskMgr.add(self.mouseTask, "Mouse Task")
         
     def setMouseMode(self, mode):
-        print "Changing mode to",mode
+        print("Changing mode to %s" % mode)
         
         self.mouseMode = mode
         
@@ -91,7 +92,7 @@ class App(ShowBase):
         
         actualMode = wp.getMouseMode()
         if self.mouseMode != actualMode:
-            print "ACTUAL MOUSE MODE:", actualMode
+            print("ACTUAL MOUSE MODE: %s" % actualMode)
             
         self.mouseMode = actualMode
         
@@ -106,11 +107,11 @@ class App(ShowBase):
             
 
     def toggleRecenter(self):
-        print "Toggling re-center behavior"
+        print("Toggling re-center behavior")
         self.manualRecenterMouse = not self.manualRecenterMouse
         
     def toggleMouse(self):
-        print "Toggling mouse visibility"
+        print("Toggling mouse visibility")
 
         self.hideMouse = not self.hideMouse
         
@@ -146,7 +147,8 @@ class App(ShowBase):
         if self.manualRecenterMouse:
             # move mouse back to center
             self.recenterMouse()             
-
+            self.lastMouseX, self.lastMouseY = 0, 0  
+                
         # scale position and delta to pixels for user
         w, h = self.win.getSize()
         
@@ -158,8 +160,8 @@ class App(ShowBase):
              int(dx*w), int(dy*h))) 
 
         # rotate box by delta
-        self.rotateX += dx * 10
-        self.rotateY += dy * 10
+        self.rotateX += dx * 10 * self.mouseMagnitude
+        self.rotateY += dy * 10 * self.mouseMagnitude
 
         self.positionText.setText("Model rotation: {0}, {1}".format(
              int(self.rotateX*1000)/1000., int(self.rotateY*1000)/1000.))        

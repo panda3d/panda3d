@@ -27,6 +27,12 @@ ConfigureFn(config_openalAudio) {
   init_libOpenALAudio();
 }
 
+ConfigVariableString openal_device
+("openal-device", "",
+ PRC_DESC("Specify the OpenAL device string for audio playback (no quotes).  If this "
+          "is not specified, the OpenAL default device is used."));
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libOpenALAudio
 //  Description: Initializes the library.  This must be called at

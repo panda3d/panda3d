@@ -2546,6 +2546,10 @@ def SetupBuildEnvironment(compiler):
             dyldpath.insert(0, os.path.join(builtdir, 'lib'))
             os.environ["DYLD_LIBRARY_PATH"] = os.pathsep.join(dyldpath)
 
+            # OS X 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
+            # on our lib directory to ppackage, so add it to PATH instead.
+            os.environ["PATH"] = os.path.join(builtdir, 'lib') + ':' + os.environ.get("PATH", "")
+
         # Workaround around compile issue on PCBSD
         if (os.path.exists("/usr/PCBSD")):
             os.environ["LD_LIBRARY_PATH"] += os.pathsep + "/usr/PCBSD/local/lib"
@@ -2563,8 +2567,12 @@ def CopyFile(dstfile, srcfile):
     if NeedsBuild([dstfile], [srcfile]):
         if os.path.islink(srcfile):
             # Preserve symlinks
-            if os.path.exists(dstfile):
+            if os.path.isfile(dstfile) or os.path.islink(dstfile):
+                print("Removing file %s" % (dstfile))
                 os.unlink(dstfile)
+            elif os.path.isdir(dstfile):
+                print("Removing directory %s" % (dstfile))
+                shutil.rmtree(dstfile)
             os.symlink(os.readlink(srcfile), dstfile)
         else:
             WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
@@ -2595,24 +2603,37 @@ def CopyAllJavaSources(dir, skip=[]):
             JustBuilt([dstfile], [srcfile])
 
 def CopyTree(dstdir, srcdir, omitVCS=True):
-    if (os.path.isdir(dstdir)):
-        for entry in os.listdir(srcdir):
+    if os.path.isdir(dstdir):
+        source_entries = os.listdir(srcdir)
+        for entry in source_entries:
             srcpth = os.path.join(srcdir, entry)
             dstpth = os.path.join(dstdir, entry)
-            if (os.path.isfile(srcpth)):
+
+            if os.path.islink(srcpth) or os.path.isfile(srcpth):
                 if not omitVCS or entry not in VCS_FILES:
                     CopyFile(dstpth, srcpth)
             else:
                 if not omitVCS or entry not in VCS_DIRS:
                     CopyTree(dstpth, srcpth)
+
+        # Delete files in dstdir that are not in srcdir.
+        for entry in os.listdir(dstdir):
+            if entry not in source_entries:
+                path = os.path.join(dstdir, entry)
+                if os.path.islink(path) or os.path.isfile(path):
+                    os.remove(path)
+                elif os.path.isdir(path):
+                    shutil.rmtree(path)
     else:
         if GetHost() == 'windows':
             srcdir = srcdir.replace('/', '\\')
             dstdir = dstdir.replace('/', '\\')
             cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+            oscmd(cmd)
         else:
-            cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
-        oscmd(cmd)
+            if subprocess.call(['cp', '-R', '-f', srcdir, dstdir]) != 0:
+                exit("Copy failed.")
+
         if omitVCS:
             DeleteVCS(dstdir)
 

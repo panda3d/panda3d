@@ -177,7 +177,7 @@ set_stop_erp(const LVecBase3 &erp) {
 INLINE int BulletTranslationalLimitMotor::
 get_current_limit(int axis) const {
 
-  nassertr((0 <- axis) && (axis <=2), false);
+  nassertr((0 <= axis) && (axis <= 2), false);
   return _motor.m_currentLimit[axis];
 }
 

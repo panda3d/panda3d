@@ -3,31 +3,107 @@
 This minor release fixes some important regressions and bugs found
 in 1.9.0, but also introduces a few minor features.
 
-It also reintroduces the deployment pipeline that was absent from
+It also reintroduces the deployment tools that were absent from
 the previous release.
 
-* Textures were not being scaled to power-of-2 in some cases
-* Fix various issues with shader inputs
-* Bullet step function accidentally defaulted to step size of 0
-* Use model-path for finding libRocket assets
-* Fix inconsistent behavior with non-power-of-2 textures in rocket
-* Fix regression with memoryviews
-* Fix symbol error when loading libp3ffmpeg on Mac OS X
+The following issues were fixed:
+* SDK now properly installs in Mac OS X 10.11 "El Capitan"
+* Windows 8.1+ no longer applies DPI virtualization to Panda window
+* Fix ffmpeg library load issue on Mac OS X
 * Fix issues running maya2egg on Mac OS X
-* PStats now tracks memory residency of graphics buffers
-* Support wireframe and point rendering modes in OpenGL ES
-* Add missing keys to libRocket keymap
+* Fix compiler errors on different platforms
+* Fix various rare crashes
+* Fix crashes on shutdown in threaded pipeline
+* Fix low-level threading crash on ARM machines
+* More reliably and robustly handle failures opening OpenAL device
+* Textures were not being scaled to power-of-2 in some cases
+* Correct scaling of normal vectors with flatten operation
+* Correct positioning of viewing axis when showing lens frustum
+* Add dpi-window-resize option to auto-resize window on DPI change
+* Fix assertions when alpha-file-channel references unknown channel
+* Use OpenGL-style vertex colors by default on non-Windows systems
+* Default vertex column alignment is now 4 bytes
+* Add PNMImage premultiply/unpremultiply methods.
 * Fix incorrect parsing of numbers with exponents in Config.prc
-* Various performance optimizations
 * Fix for reading URLs mounted via the virtual file system
-* Improve GLSL error reporting
-* Fix issue with model disappearing in rare cases with GLSL
 * Fix shader generator memory leaks and runtime performance
-* Add M_confined mouse mode that keeps cursor in window
+* Fix shader generator scaling of binormals and tangents
 * Expose _NET_WM_PID to window managers in X11
-* bam2egg supports collision sphere and plane solids
-* Add sample program demonstrating mouse modes
+* Fix a range of bugs in tinydisplay renderer.
+* Don't error when setting lens far distance to infinity
+* Allow passing custom lens to saveCubeMap/saveSphereMap
+* Fix errors in saveCubeMap/saveSphereMap in threaded pipeline
+* Fix DynamicTextFont.makeCopy()
+* Make Texture memory size estimation more accurate
+* Fix various window resizing issues
+* Fix PandaSystem.getCompiler() value for clang (it reported gcc)
+* x2egg no longer replaces face normals with vertex normals
+* Include Eigen headers in Mac and Windows SDK
+* Added geomipterrain-incorrect-normals setting, default=true
+* DisplayInformation resolution list was missing on Windows
+* Upgrade FMOD and Bullet versions on Windows and Mac OS X
+* Various performance optimizations
+* Fixed various other bugs not listed here.
+
+Fixes and improvements for the runtime:
+* Fix splash screen freezing in the X11 web plug-in
+* pdeploy will now handle extracted files (eg. .ico and .cur)
+* Added more options for customizing splash screen
+* Fix missing xml and ast modules from morepy package
+* Certificate dialog is now localized to various languages
+* Fix packp3d error when Python file is not in a package
+* Pass on failing exit status from packaged application
+* Remove annoying ":Packager(warning): No such file" warning
+* Fix issue installing pdeploy-generated .pkg on OS X 10.11
+
+Fixes for the Python API:
+* Fix mysterious and rare crash in tp_traverse
+* Bullet step function accidentally defaulted to step size of 0
+* Fix overflow of file offsets (eg. when seeking in huge files)
+* Fix regression with memoryviews
+* Fix hasattr/getattr of vector classes for invalid attributes
+* Allow passing a long to methods accepting an int
+* Fix crash when passing None to Filename constructor
+* MouseWatcherGroup was erroneously not exposed in 1.9.0
+* ShowBase no longer unmounts VFS when shutting down
+* No longer requires setting PATH to import panda3d.*
+* DirectDialog default geom is once again respected
+* DirectDialog no longer overrides custom frameSize
+* Fix WebcamVideo/MicrophoneAudio.getOptions() methods
+
+Changes relating to the OpenGL renderer:
+* Various performance improvements
+* Fix point/line thickness setting
+* Improve GLSL error reporting
+* Fix Intel driver issues, particularly with geometry shaders
+* Add more error checking for parameter types
+* Integer shader inputs were not being converted to float properly
+* Fix crash passing an undersized array to a GLSL shader input
+* p3d_ColorScale et al may now be declared as vec3
+* Fix flickering when using trans_model_to_apiview in Cg
+* Support wireframe and point rendering modes in OpenGL ES
+* Fix issue with model disappearing in rare cases with GLSL
+* Fix ColorWriteAttrib not working as it should
+* Allow deactivating PStats collectors for GPU timers
+* Memory residency of graphics buffers now tracked by PStats
+* Allow changing OpenGL coordinate system with gl-coordinate-system
+
+Fixes for libRocket integration:
+* libRocket did not work on Mac OS X in 1.9.0
+* Fix inconsistent behavior with non-power-of-2 textures in rocket
+* Use model-path for finding libRocket assets
+* Add missing keys to libRocket keymap
+* libRocket elements showed up white in tinydisplay
+
+New features:
 * Add -L (lighting) and -P (graphics pipe) pview options
+* Add M_confined mouse mode that keeps cursor in window
+* Add sample program demonstrating mouse modes
+* bam2egg supports collision sphere and plane solids
+* p3d_TransformTable GLSL input backported from 1.10 branch
+* Add openal-device setting for selecting OpenAL audio output
+* Add limited modification timestamp tracking for Ramdisk mounts
+* Support for Autodesk Maya 2016
 
 ------------------------  RELEASE 1.9.0  ------------------------
 
