@@ -7,13 +7,14 @@ It also reintroduces the deployment tools that were absent from
 the previous release.
 
 The following issues were fixed:
-* SDK now properly installs in Mac OS X "El Capitan"
+* SDK now properly installs in Mac OS X 10.11 "El Capitan"
 * Windows 8.1+ no longer applies DPI virtualization to Panda window
 * Fix ffmpeg library load issue on Mac OS X
 * Fix issues running maya2egg on Mac OS X
 * Fix compiler errors on different platforms
-* Fix random crashes
+* Fix various rare crashes
 * Fix crashes on shutdown in threaded pipeline
+* Fix low-level threading crash on ARM machines
 * More reliably and robustly handle failures opening OpenAL device
 * Textures were not being scaled to power-of-2 in some cases
 * Correct scaling of normal vectors with flatten operation
@@ -39,6 +40,8 @@ The following issues were fixed:
 * x2egg no longer replaces face normals with vertex normals
 * Include Eigen headers in Mac and Windows SDK
 * Added geomipterrain-incorrect-normals setting, default=true
+* DisplayInformation resolution list was missing on Windows
+* Upgrade FMOD and Bullet versions on Windows and Mac OS X
 * Various performance optimizations
 * Fixed various other bugs not listed here.
 
@@ -48,6 +51,7 @@ Fixes and improvements for the runtime:
 * Added more options for customizing splash screen
 * Fix missing xml and ast modules from morepy package
 * Certificate dialog is now localized to various languages
+* Fix packp3d error when Python file is not in a package
 * Pass on failing exit status from packaged application
 * Remove annoying ":Packager(warning): No such file" warning
 * Fix issue installing pdeploy-generated .pkg on OS X 10.11
@@ -55,7 +59,7 @@ Fixes and improvements for the runtime:
 Fixes for the Python API:
 * Fix mysterious and rare crash in tp_traverse
 * Bullet step function accidentally defaulted to step size of 0
-* Fix overflow sizes of various integral types, eg. file offsets
+* Fix overflow of file offsets (eg. when seeking in huge files)
 * Fix regression with memoryviews
 * Fix hasattr/getattr of vector classes for invalid attributes
 * Allow passing a long to methods accepting an int
@@ -89,7 +93,7 @@ Fixes for libRocket integration:
 * Add missing keys to libRocket keymap
 * libRocket elements showed up white in tinydisplay
 
-Further additions:
+New features:
 * Add -L (lighting) and -P (graphics pipe) pview options
 * Add M_confined mouse mode that keeps cursor in window
 * Add sample program demonstrating mouse modes
