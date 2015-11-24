@@ -103,8 +103,6 @@ class panda3d(package):
 
     excludeModule('MySQLdb', '_mysql')
 
-    excludeModule('xml', 'xml.parsers.expat', 'xml.sax')
-
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
     # that are also needed, but aren't referenced by any code.  Again,
