@@ -1374,6 +1374,8 @@ def CompileIgate(woutd,wsrc,opts):
             cmd += ' -D_LP64'
         else:
             cmd += ' -D__i386__'
+        if GetTarget() == 'darwin':
+            cmd += ' -D__APPLE__'
 
     optlevel = GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
