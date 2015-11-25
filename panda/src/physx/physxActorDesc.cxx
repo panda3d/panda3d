@@ -122,6 +122,7 @@ get_body() const {
   //PhysxBodyDesc value;
   //value._desc = *(_desc.body);
   //return value;
+  return PhysxBodyDesc();
 }
 
 ////////////////////////////////////////////////////////////////////
