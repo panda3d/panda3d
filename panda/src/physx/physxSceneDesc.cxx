@@ -97,8 +97,7 @@ set_max_bounds(PhysxBounds3 &bounds) {
 ////////////////////////////////////////////////////////////////////
 PhysxBounds3 PhysxSceneDesc::
 get_max_bounds() const {
-
-  throw "Not Implemented";
+  assert(false /* Not implemented */);
 
   //PhysxBounds3 value;
   //value._bounds = *(_desc.maxBounds);

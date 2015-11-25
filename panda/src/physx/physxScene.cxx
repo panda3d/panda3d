@@ -309,7 +309,7 @@ void PhysxScene::
 set_timing_variable() {
 
   nassertv(_error_type == ET_ok);
-  _ptr->setTiming(NULL, NULL, NX_TIMESTEP_VARIABLE);
+  _ptr->setTiming(0, 0, NX_TIMESTEP_VARIABLE);
 }
 
 ////////////////////////////////////////////////////////////////////

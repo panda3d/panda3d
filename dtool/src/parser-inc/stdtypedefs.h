@@ -19,7 +19,6 @@
 
 #ifndef STDTYPEDEFS_H
 #define STDTYPEDEFS_H
-#ifndef __APPLE__
 typedef unsigned int size_t;
 typedef int ssize_t;
 typedef int off_t;
@@ -30,7 +29,6 @@ struct FILE;
 
 namespace std {
 }
-#endif
 typedef int ptrdiff_t;
 
 typedef unsigned int uint;
