@@ -296,9 +296,6 @@ rebuild_bitplanes() {
 
   // Find the color and depth textures.  Either may be present,
   // or neither.
-  //
-  // NOTE: Currently, depth-stencil textures are not implemented,
-  // but since it's coming soon, we're structuring for it.
 
   int color_tex_index = -1;
   int depth_tex_index = -1;
@@ -313,6 +310,11 @@ rebuild_bitplanes() {
         switch (plane) {
         case RTP_color:
           color_tex_index = i;
+          break;
+
+        case RTP_depth:
+        case RTP_depth_stencil:
+          depth_tex_index = i;
           break;
 
         case RTP_aux_rgba_0:

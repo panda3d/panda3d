@@ -2647,6 +2647,18 @@ reset() {
     }
   }
 
+  _supports_depth_stencil = ((_screen->_supported_tex_formats_mask & D24S8_FLAG) != 0);
+  _supports_depth_texture = _supports_depth_stencil ||
+    (_screen->_supported_tex_formats_mask & D16_FLAG) != 0 ||
+    (_screen->_supported_tex_formats_mask & D32_FLAG) != 0 ||
+    (_screen->_supported_tex_formats_mask & D24X8_FLAG) != 0;
+
+  // In DirectX 9, all built-in depth formats use shadow map filtering.  Some
+  // drivers (GeForce 8000+, Radeon HD 4000+, Intel G45+) expose a FourCC
+  // format called "INTZ" that allows access to the actual depth.  We don't
+  // have a flag to indicate this, though.
+  _supports_shadow_filter = _supports_depth_texture;
+
   // check if compressed textures are supported
   #define CHECK_FOR_DXTVERSION(num) \
   if (_screen->_supported_tex_formats_mask & DXT##num##_FLAG) {\
