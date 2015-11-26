@@ -157,6 +157,7 @@ PUBLISHED:
   INLINE bool get_supports_tessellation_shaders() const;
   INLINE bool get_supports_compute_shaders() const;
   INLINE bool get_supports_glsl() const;
+  INLINE bool get_supports_hlsl() const;
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
@@ -532,6 +533,7 @@ protected:
   bool _supports_tessellation_shaders;
   bool _supports_compute_shaders;
   bool _supports_glsl;
+  bool _supports_hlsl;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
 

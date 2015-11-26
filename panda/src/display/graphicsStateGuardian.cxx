@@ -240,6 +240,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
   _supports_glsl = false;
+  _supports_hlsl = false;
 
   _supports_stencil = false;
   _supports_stencil_wrap = false;

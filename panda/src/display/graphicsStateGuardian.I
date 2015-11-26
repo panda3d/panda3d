@@ -773,6 +773,17 @@ get_supports_glsl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_hlsl
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               HLSL shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_hlsl() const {
+  return _supports_hlsl;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_stencil
 //       Access: Published
 //  Description: Returns true if this particular GSG supports

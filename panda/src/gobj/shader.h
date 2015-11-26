@@ -52,7 +52,8 @@ PUBLISHED:
   enum ShaderLanguage {
     SL_none,
     SL_Cg,
-    SL_GLSL
+    SL_GLSL,
+    SL_HLSL,
   };
 
   enum ShaderType {

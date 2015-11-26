@@ -86,6 +86,7 @@ protected:
 
   // Shader register allocation:
 
+  bool _use_generic_attr;
   int _vcregs_used;
   int _fcregs_used;
   int _vtregs_used;
