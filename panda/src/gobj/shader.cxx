@@ -1601,9 +1601,12 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
   char version_arg[16];
   if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
       cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
-    snprintf(version_arg, 16, "version=%s", cg_glsl_version.c_str());
+
+    string version_arg("version=");
+    version_arg += cg_glsl_version;
+
     compiler_args[nargs++] = "-po";
-    compiler_args[nargs++] = version_arg;
+    compiler_args[nargs++] = version_arg.c_str();
   }
 
   compiler_args[nargs] = 0;
