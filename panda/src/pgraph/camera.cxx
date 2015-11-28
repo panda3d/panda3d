@@ -140,6 +140,17 @@ clear_tag_state(const string &tag_state) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Camera::clear_tag_state
+//       Access: Published
+//  Description: Removes all associations established by previous
+//               calls to set_tag_state().
+////////////////////////////////////////////////////////////////////
+void Camera::
+clear_tag_states() {
+  _tag_states.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Camera::has_tag_state
 //       Access: Published
 //  Description: Returns true if set_tag_state() has previously been

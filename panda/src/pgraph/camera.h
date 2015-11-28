@@ -80,6 +80,7 @@ PUBLISHED:
 
   void set_tag_state(const string &tag_state, const RenderState *state);
   void clear_tag_state(const string &tag_state);
+  void clear_tag_states();
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
 
