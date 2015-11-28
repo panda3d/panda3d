@@ -2097,7 +2097,6 @@ DTOOL_CONFIG=[
     ("USE_DELETED_CHAIN",              '1',                      '1'),
     ("HAVE_WIN_TOUCHINPUT",            'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
-    ("HAVE_EGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
