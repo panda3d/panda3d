@@ -77,7 +77,7 @@ private:
 
   pvector<CGparameter> _cg_parameter_map;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
   GLint _frame_number;

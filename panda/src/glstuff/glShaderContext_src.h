@@ -69,7 +69,7 @@ private:
   typedef pvector<GLuint> GLSLShaders;
   GLSLShaders _glsl_shaders;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
 
