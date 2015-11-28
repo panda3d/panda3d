@@ -526,6 +526,28 @@ get_shader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::output
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ShaderAttrib::
+output(ostream &out) const {
+  out << "ShaderAttrib:";
+
+  if (_has_shader) {
+    if (_shader == NULL) {
+      out << "off";
+    } else {
+      out << _shader->get_filename().get_basename();
+    }
+  } else if (_auto_shader) {
+    out << "auto";
+  }
+
+  out << "," << _inputs.size() << " inputs";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived ShaderAttrib

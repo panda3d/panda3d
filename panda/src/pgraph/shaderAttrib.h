@@ -115,6 +115,7 @@ PUBLISHED:
   static void register_with_read_factory();
 
 public:
+  virtual void output(ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
