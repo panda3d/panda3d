@@ -79,7 +79,6 @@ upcase_string(const string &str) {
 int write_python_table_native(ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
-      << "#undef _POSIX_C_SOURCE\n"
       << "#include \"py_panda.h\"\n\n";
 
   int count = 0;

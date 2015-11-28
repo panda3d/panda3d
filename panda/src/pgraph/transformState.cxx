@@ -24,7 +24,6 @@
 #include "lightReMutexHolder.h"
 #include "lightMutexHolder.h"
 #include "thread.h"
-#include "py_panda.h"
 
 LightReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;

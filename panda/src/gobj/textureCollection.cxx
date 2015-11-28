@@ -15,10 +15,6 @@
 #include "textureCollection.h"
 #include "indent.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::Constructor
 //       Access: Published

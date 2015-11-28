@@ -117,9 +117,10 @@
 #endif
 
 #ifdef HAVE_PYTHON
-#undef _POSIX_C_SOURCE
-#undef _XOPEN_SOURCE
-#include "pyconfig.h"
+// Instead of including the Python headers, which will implicitly
+// add a linker flag to link in Python, we'll just excerpt the
+// forward declaration of PyObject.
+typedef struct _object PyObject;
 #endif
 
 #ifndef HAVE_EIGEN

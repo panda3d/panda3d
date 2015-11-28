@@ -48,6 +48,10 @@
 #undef _POSIX_C_SOURCE
 #endif
 
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
+
 #define PY_SSIZE_T_CLEAN 1
 
 #include "Python.h"

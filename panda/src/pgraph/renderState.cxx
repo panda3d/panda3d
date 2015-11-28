@@ -36,7 +36,6 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 #include "renderAttribRegistry.h"
-#include "py_panda.h"
 
 LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;

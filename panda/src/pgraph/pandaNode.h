@@ -47,13 +47,6 @@
 #include "lightReMutex.h"
 #include "extension.h"
 
-#ifdef HAVE_PYTHON
-
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-#endif  // HAVE_PYTHON
-
 class NodePathComponent;
 class CullTraverser;
 class CullTraverserData;

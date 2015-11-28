@@ -11,6 +11,7 @@
 #include "dtoolbase.h"
 
 #undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
 #define PY_SSIZE_T_CLEAN 1
 
 #if PYTHON_FRAMEWORK

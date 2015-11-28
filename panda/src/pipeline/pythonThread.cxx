@@ -16,6 +16,7 @@
 #include "pnotify.h"
 
 #ifdef HAVE_PYTHON
+#include "py_panda.h"
 
 TypeHandle PythonThread::_type_handle;
 
