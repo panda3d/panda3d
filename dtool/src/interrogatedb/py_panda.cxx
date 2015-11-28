@@ -597,17 +597,18 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #endif
   // Check the version so we can print a helpful error if it doesn't match.
   string version = Py_GetVersion();
-  if (interrogatedb_cat.is_debug()) {
-    interrogatedb_cat.debug()
-      << "Python " << version << "\n";
-  }
 
   if (version[0] != '0' + PY_MAJOR_VERSION ||
       version[2] != '0' + PY_MINOR_VERSION) {
-    interrogatedb_cat.error()
-      << "This module was compiled for Python "
-      << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is incompatible "
-      << "with Python " << version << ".\n";
+    // Raise a helpful error message.  We can safely do this because the
+    // signature and behavior for PyErr_SetString has remained consistent.
+    ostringstream errs;
+    errs << "this module was compiled for Python "
+         << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is "
+         << "incompatible with Python " << version.substr(0, 3);
+    string error = errs.str();
+    PyErr_SetString(PyExc_ImportError, error.c_str());
+    return (PyObject *)NULL;
   }
 
   // Initialize the base class of everything.
@@ -649,6 +650,12 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   // to do that.  Perhaps we'll find a better place for this in the future.
   static bool initialized_main_dir = false;
   if (!initialized_main_dir) {
+    if (interrogatedb_cat.is_debug()) {
+      // Good opportunity to print this out once, at startup.
+      interrogatedb_cat.debug()
+        << "Python " << version << "\n";
+    }
+
     // Grab the __main__ module.
     PyObject *main_module = PyImport_ImportModule("__main__");
     if (main_module == NULL) {
