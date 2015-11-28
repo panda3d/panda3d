@@ -24,8 +24,9 @@
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
-#include "pset.h"
 #include "vector_string.h"
+
+#include <algorithm>
 
 Filename output_code_filename;
 string module_name;
@@ -83,7 +84,7 @@ int write_python_table_native(ostream &out) {
 
   int count = 0;
 
-  pset<std::string> libraries;
+  vector_string libraries;
 
 //  out << "extern \"C\" {\n";
 
@@ -98,7 +99,10 @@ int write_python_table_native(ostream &out) {
     //  module_name == interrogate_function_module_name(function_index)) {
       // if it has a library name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
-        libraries.insert(interrogate_function_library_name(function_index));
+        string library_name = interrogate_function_library_name(function_index);
+        if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
+          libraries.push_back(library_name);
+        }
       }
     //}
   }
@@ -107,13 +111,16 @@ int write_python_table_native(ostream &out) {
     TypeIndex thetype  = interrogate_get_type(ti);
     if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
       if (interrogate_type_has_library_name(thetype)) {
-        libraries.insert(interrogate_type_library_name(thetype));
+        string library_name = interrogate_type_library_name(thetype);
+        if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
+          libraries.push_back(library_name);
+        }
       }
     }
   }
 
-  pset<std::string >::iterator ii;
-  for(ii = libraries.begin(); ii != libraries.end(); ii++) {
+  vector_string::const_iterator ii;
+  for (ii = libraries.begin(); ii != libraries.end(); ++ii) {
     printf("Referencing Library %s\n", (*ii).c_str());
     out << "extern LibraryDef " << *ii << "_moddef;\n";
     out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";

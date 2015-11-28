@@ -1064,25 +1064,12 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Write the constructors.
-  if (obj->_constructors.size() == 0) {
-    // There is no constructor - write one that simply outputs an error.
-    out << "static int Dtool_Init_" + ClassName + "(PyObject *, PyObject *, PyObject *) {\n"
-        << "#ifdef NDEBUG\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class\");\n"
-        << "#else\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class " << cClassName << "\");\n"
-        << "#endif\n"
-        << "  return -1;\n"
-        << "}\n\n";
+  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
+    Function *func = (*fi);
+    std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-  } else {
-    for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-      Function *func = (*fi);
-      std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-
-      string expected_params;
-      write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
-    }
+    string expected_params;
+    write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
   }
 
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
@@ -1764,19 +1751,15 @@ write_module_class(ostream &out, Object *obj) {
     }
   }
 
-  std::vector<std::string> bases;
+  std::vector<CPPType*> bases;
   for (di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = obj->_itype.get_derivation(di);
     if (!interrogate_type_is_unpublished(d_type_Index)) {
       const InterrogateType &d_itype = idb->get_type(d_type_Index);
       if (is_cpp_type_legal(d_itype._cpptype)) {
-        bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
+        bases.push_back(d_itype._cpptype);
       }
     }
-  }
-
-  if (bases.empty()) {
-    bases.push_back("DTOOL_SUPER_BASE");
   }
 
   {
@@ -3032,18 +3015,28 @@ write_module_class(ostream &out, Object *obj) {
   out << "    initdone = true;\n";
 
   // Add bases.
+  out << "    // Dependent objects\n";
   if (bases.size() > 0) {
-    out << "    // Dependent objects\n";
     string baseargs;
-    for (vector<string>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
-      baseargs += ", (PyTypeObject *)Dtool_Ptr_" + *bi;
-      string safe_name = make_safe_name(*bi);
+    for (vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
+      string safe_name = make_safe_name((*bi)->get_local_name(&parser));
 
-      out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
-          << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      if (isExportThisRun(*bi)) {
+        baseargs += ", (PyTypeObject *)&Dtool_" + safe_name;
+        out << "    Dtool_PyModuleClassInit_" << safe_name << "(NULL);\n";
+
+      } else {
+        baseargs += ", (PyTypeObject *)Dtool_Ptr_" + safe_name;
+
+        out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
+            << "    assert(Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit != NULL);\n"
+            << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      }
     }
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
+  } else {
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_Ptr_DTOOL_SUPER_BASE;\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();

@@ -595,6 +595,24 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def) 
 #else
 PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #endif
+  // Check the version so we can print a helpful error if it doesn't match.
+  string version = Py_GetVersion();
+  if (interrogatedb_cat.is_debug()) {
+    interrogatedb_cat.debug()
+      << "Python " << version << "\n";
+  }
+
+  if (version[0] != '0' + PY_MAJOR_VERSION ||
+      version[2] != '0' + PY_MINOR_VERSION) {
+    interrogatedb_cat.error()
+      << "This module was compiled for Python "
+      << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is incompatible "
+      << "with Python " << version << ".\n";
+  }
+
+  // Initialize the base class of everything.
+  Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
+
   // the module level function inits....
   MethodDefmap functions;
   for (int xx = 0; defs[xx] != NULL; xx++) {
