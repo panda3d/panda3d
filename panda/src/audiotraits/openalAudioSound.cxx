@@ -34,7 +34,7 @@ TypeHandle OpenALAudioSound::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 
 OpenALAudioSound::
@@ -49,7 +49,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
   _loops_completed(0),
   _source(0),
   _manager(manager),
-  _volume(1.0f),
+  _volume(manager->get_volume()),
   _balance(0),
   _play_rate(1.0),
   _positional(positional),
@@ -92,7 +92,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::Destructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioSound::
 ~OpenALAudioSound() {
@@ -133,12 +133,12 @@ play() {
   if (_manager == 0) return;
 
   PN_stdfloat px,py,pz,vx,vy,vz;
-  
+
   if (!_active) {
     _paused = true;
     return;
   }
-  
+
   stop();
 
   require_sound_data();
@@ -148,15 +148,15 @@ play() {
   if (!_source) {
     return;
   }
-  
+
   _manager->make_current();
-  
+
   alGetError(); // clear errors
-  
+
   // nonpositional sources are made relative to the listener so they don't move
   alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
   al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
-  
+
   // set source properties that we have stored
   set_volume(_volume);
   //set_balance(_balance);
@@ -166,7 +166,7 @@ play() {
   set_3d_drop_off_factor(_drop_off_factor);
   get_3d_attributes(&px,&py,&pz,&vx,&vy,&vz);
   set_3d_attributes(px, py, pz, vx, vy, vz);
-  
+
   _playing_loops = _loop_count;
   if (_playing_loops == 0) {
     _playing_loops = 1000000000;
@@ -177,14 +177,14 @@ play() {
   audio_debug("playing. Rate=" << play_rate);
   alSourcef(_source, AL_PITCH, play_rate);
   _playing_rate = play_rate;
-  
+
   if (_sd->_sample) {
     push_fresh_buffers();
     alSourcef(_source, AL_SEC_OFFSET, _start_time);
     _stream_queued[0]._time_offset = _start_time;
     restart_stalled_audio();
   } else {
-    audio_debug("Play: stream tell = " << _sd->_stream->tell() << " seeking " << _start_time); 
+    audio_debug("Play: stream tell = " << _sd->_stream->tell() << " seeking " << _start_time);
     if (_sd->_stream->tell() != _start_time) {
       _sd->_stream->seek(_start_time);
     }
@@ -224,15 +224,15 @@ stop() {
     }
     _stream_queued.resize(0);
   }
-  
+
   _manager->stopping_sound(this);
   release_sound_data();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::finished
-//       Access: 
-//  Description: 
+//       Access:
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 finished() {
@@ -268,13 +268,13 @@ get_loop() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_loop_count
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager==0) return;
-  
+
   if (loop_count >= 1000000000) {
     loop_count = 0;
   }
@@ -294,9 +294,9 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::restart_stalled_audio
 //       Access: public
-//  Description: When streaming audio, the computer is supposed to 
+//  Description: When streaming audio, the computer is supposed to
 //               keep OpenAL's queue full.  However, there are times
-//               when the computer is running slow and the queue 
+//               when the computer is running slow and the queue
 //               empties prematurely.  In that case, OpenAL will stop.
 //               When the computer finally gets around to refilling
 //               the queue, it is necessary to tell OpenAL to resume
@@ -349,7 +349,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 ALuint OpenALAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  
+
   // Allocate a buffer to hold the data.
   alGetError();
   ALuint buffer;
@@ -359,7 +359,7 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
     cleanup();
     return 0;
   }
-  
+
   // Now fill the buffer with the data provided.
   alBufferData(buffer,
                (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
@@ -370,7 +370,7 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
     cleanup();
     return 0;
   }
-  
+
   return buffer;
 }
 
@@ -390,7 +390,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
   int rate = cursor->audio_rate();
   int space = bytelen / (channels * 2);
   int fill = 0;
-  
+
   while (space && (_loops_completed < _playing_loops)) {
     double t = cursor->tell();
     double remain = length - t;
@@ -422,7 +422,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     space -= samples;
     buffer += (samples * channels * 2);
   }
-  return fill; 
+  return fill;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -507,7 +507,7 @@ void OpenALAudioSound::
 push_fresh_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   static unsigned char data[65536];
-  
+
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
            (_stream_queued.size() < 100)) {
@@ -518,12 +518,12 @@ push_fresh_buffers() {
     MovieAudioCursor *cursor = _sd->_stream;
     int channels = cursor->audio_channels();
     int rate = cursor->audio_rate();
-    
+
     int fill = 0;
     for (size_t i = 0; i < _stream_queued.size(); i++) {
       fill += _stream_queued[i]._samples;
     }
-    
+
     while ((_loops_completed < _playing_loops) &&
            (fill < (int)(audio_buffering_seconds * rate * channels))) {
       int loop_index = _loops_completed;
@@ -628,7 +628,7 @@ set_balance(PN_stdfloat balance_right) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_balance
 //       Access: public
-//  Description: -1.0 to 1.0 scale 
+//  Description: -1.0 to 1.0 scale
 //        -1 should be all the way left.
 //        1 is all the way to the right.
 ////////////////////////////////////////////////////////////////////
@@ -657,7 +657,7 @@ set_play_rate(PN_stdfloat play_rate) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_play_rate
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
 get_play_rate() const {
@@ -695,7 +695,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _location[0] = px;
   _location[1] = pz;
-  _location[2] = -py; 
+  _location[2] = -py;
 
   _velocity[0] = vx;
   _velocity[1] = vz;
@@ -855,7 +855,7 @@ set_active(bool active) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::get_active 
+//     Function: OpenALAudioSound::get_active
 //       Access: public
 //  Description: Returns whether the sound has been marked "active".
 ////////////////////////////////////////////////////////////////////
@@ -866,8 +866,8 @@ get_active() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_finished_event
-//       Access: 
-//  Description: 
+//       Access:
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_finished_event(const string& event) {
@@ -876,8 +876,8 @@ set_finished_event(const string& event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_finished_event
-//       Access: 
-//  Description: 
+//       Access:
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const string& OpenALAudioSound::
 get_finished_event() const {
