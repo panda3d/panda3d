@@ -430,7 +430,10 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_clip_x_to_view) ||
       (inp == SMO_view_to_clip_x) ||
       (inp == SMO_apiclip_x_to_view) ||
-      (inp == SMO_view_to_apiclip_x)) {
+      (inp == SMO_view_to_apiclip_x) ||
+      (inp == SMO_dlight_x) ||
+      (inp == SMO_plight_x) ||
+      (inp == SMO_slight_x)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
