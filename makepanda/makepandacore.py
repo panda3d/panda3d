@@ -1598,9 +1598,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         if not custom_loc:
             incdirs += list(SYS_INC_DIRS)
 
-        for ppkg, pdir in INCDIRECTORIES:
+        for ppkg, pdir in INCDIRECTORIES[:]:
             if pkg == ppkg or (ppkg == "ALWAYS" and not custom_loc):
                 incdirs.append(pdir)
+                if custom_loc and pkg != target_pkg:
+                    IncDirectory(target_pkg, pdir)
 
         # The incs list contains both subdirectories to explicitly add to
         # the include path and header files to check the existence of.
@@ -1611,7 +1613,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     incdir = sorted(glob.glob(os.path.join(dir, i)))[-1]
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
-            if incdir is None and i.endswith(".h"):
+            if incdir is None and (i.endswith('/Dense') or i.endswith(".h")):
                 have_pkg = False
                 if VERBOSE or custom_loc:
                     print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
