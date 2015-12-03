@@ -391,6 +391,51 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_box
+//       Access: Public, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a box.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_center = box->get_center() * wrt_mat;
+  LVector3 from_extents = box->get_dimensions() * wrt_mat * 0.5;
+  PN_stdfloat dist = _plane.dist_to_plane(from_center);
+
+  LVecBase3 box_x = entry.get_wrt_mat().get_row3(0);
+  LVecBase3 box_y = entry.get_wrt_mat().get_row3(1);
+  LVecBase3 box_z = entry.get_wrt_mat().get_row3(2);
+
+  if (abs(dist) >
+      abs(box_x.dot(_plane.get_normal()) * from_extents[0]) +
+      abs(box_y.dot(_plane.get_normal()) * from_extents[1]) +
+      abs(box_z.dot(_plane.get_normal()) * from_extents[2])) {
+    // No collision.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(from_center - get_normal() * dist);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable

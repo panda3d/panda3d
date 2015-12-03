@@ -68,6 +68,7 @@ PUBLISHED:
   INLINE void set_center(const LPoint3 &center);
   INLINE void set_center(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   INLINE const LPoint3 &get_center() const;
+  INLINE LVector3 get_dimensions() const;
   INLINE PN_stdfloat get_radius() const;
 
 protected:
