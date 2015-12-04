@@ -415,7 +415,7 @@ def makeTuple(x):
 
 def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
-    return dict([(k, value) for k in L])
+    return {k: value for k in L}
 
 def listToIndex2item(L):
     """converts list to dict of list index->list item"""
@@ -472,7 +472,7 @@ def uniqueElements(L):
 
 def disjoint(L1, L2):
     """returns non-zero if L1 and L2 have no common elements"""
-    used = dict([(k, None) for k in L1])
+    used = {k: None for k in L1}
     for k in L2:
         if k in used:
             return 0
