@@ -17,14 +17,14 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
     # Class methods
     def __init__(self, mopath, node, fromT = 0, toT = None,
                  duration = None, blendType = 'noBlend', name = None):
-        if toT == None:
+        if toT is None:
             toT = mopath.getMaxT()
 
-        if duration == None:
+        if duration is None:
             duration = abs(toT - fromT)
         
         # Generate unique name if necessary
-        if (name == None):
+        if (name is None):
             name = 'Mopath-%d' % MopathInterval.mopathNum
             MopathInterval.mopathNum += 1        
 

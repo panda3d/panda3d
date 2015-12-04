@@ -91,7 +91,7 @@ class DirectOptionMenu(DirectButton):
         Create new popup menu to reflect specified set of items
         """
         # Remove old component if it exits
-        if self.popupMenu != None:
+        if self.popupMenu is not None:
             self.destroycomponent('popupMenu')
         # Create new component
         self.popupMenu = self.createcomponent('popupMenu', (), None,
@@ -114,19 +114,19 @@ class DirectOptionMenu(DirectButton):
                 text = item, text_align = TextNode.ALeft,
                 command = lambda i = itemIndex: self.set(i))
             bounds = c.getBounds()
-            if self.minX == None:
+            if self.minX is None:
                 self.minX = bounds[0]
             elif bounds[0] < self.minX:
                 self.minX = bounds[0]
-            if self.maxX == None:
+            if self.maxX is None:
                 self.maxX = bounds[1]
             elif bounds[1] > self.maxX:
                 self.maxX = bounds[1]
-            if self.minZ == None:
+            if self.minZ is None:
                 self.minZ = bounds[2]
             elif bounds[2] < self.minZ:
                 self.minZ = bounds[2]
-            if self.maxZ == None:
+            if self.maxZ is None:
                 self.maxZ = bounds[3]
             elif bounds[3] > self.maxZ:
                 self.maxZ = bounds[3]

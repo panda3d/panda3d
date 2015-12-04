@@ -1912,7 +1912,7 @@ def CompileBundle(target, inputs, opts):
     objects = []
     for i in inputs:
         if (i.endswith(".plist")):
-            if (plist != None): exit("Only one plist file can be used when creating a bundle!")
+            if (plist is not None): exit("Only one plist file can be used when creating a bundle!")
             plist = i
         elif (i.endswith(".rsrc") or i.endswith(".icns")):
             resources.append(i)
@@ -1922,7 +1922,7 @@ def CompileBundle(target, inputs, opts):
             exit("Don't know how to bundle file %s" % i)
 
     # Now link the object files to form the bundle.
-    if (plist == None): exit("One plist file must be used when creating a bundle!")
+    if (plist is None): exit("One plist file must be used when creating a bundle!")
     bundleName = plistlib.readPlist(plist)["CFBundleExecutable"]
 
     oscmd("rm -rf %s" % target)

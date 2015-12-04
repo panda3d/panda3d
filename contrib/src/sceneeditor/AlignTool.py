@@ -32,7 +32,7 @@ class AlignTool(AppShell):
             ('title',       self.appname,       None),
             )
         self.defineoptions(kw, optiondefs)
-        if parent == None:
+        if parent is None:
             self.parent = Toplevel()
         AppShell.__init__(self, self.parent)
         self.parent.geometry('%dx%d+%d+%d' % (self.frameWidth, self.frameHeight,self.frameIniPosX,self.frameIniPosY))
@@ -178,7 +178,7 @@ class AlignTool(AppShell):
         list = [self.alignXVar.get(), self.alignYVar.get(), self.alignZVar.get(),
                 self.alignHVar.get(), self.alignPVar.get(), self.alignRVar.get(),
                 self.alignSXVar.get(), self.alignSYVar.get(), self.alignSZVar.get()]
-        if self.targetName != None:
+        if self.targetName is not None:
             messenger.send('ALW_align', [self.nodePath, self.targetName, list])
         return
 

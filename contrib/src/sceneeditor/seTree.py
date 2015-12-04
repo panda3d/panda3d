@@ -79,7 +79,7 @@ class TreeNode:
             return
         self.deselectall()
         self.selected = 1
-        if self.parent != None:
+        if self.parent is not None:
             if self.parent.state == 'expanded':
                 self.canvas.delete(self.image_id)
                 self.drawicon()
@@ -90,7 +90,7 @@ class TreeNode:
         if not self.selected:
             return
         self.selected = 0
-        if self.parent != None:
+        if self.parent is not None:
             if self.parent.state == 'expanded':
                 self.canvas.delete(self.image_id)
                 self.drawicon()
@@ -269,7 +269,7 @@ class TreeNode:
             self.canvas.tag_bind(id, "<Double-1>", self.flip)
             x0, y0, x1, y1 = self.canvas.bbox(id)
             textx = max(x1, 200) + 10
-        if text==None:
+        if textisNone:
             text = self.item.GetText() or "<no text>"
         try:
             self.entry

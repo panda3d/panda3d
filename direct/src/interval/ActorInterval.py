@@ -56,7 +56,7 @@ class ActorInterval(Interval.Interval):
         self.playRate = playRate
 
         # If no name specified, use id as name
-        if (name == None):
+        if (name is None):
             name = id
 
         if len(self.controls) == 0:
@@ -68,19 +68,19 @@ class ActorInterval(Interval.Interval):
 
             self.frameRate = self.controls[0].getFrameRate() * abs(playRate)
             # Compute start and end frames.
-            if startFrame != None:
+            if startFrame is not None:
                 self.startFrame = startFrame
-            elif startTime != None:
+            elif startTime is not None:
                 self.startFrame = startTime * self.frameRate
             else:
                 self.startFrame = 0
 
-            if endFrame != None:
+            if endFrame is not None:
                 self.endFrame = endFrame
-            elif endTime != None:
+            elif endTime is not None:
                 self.endFrame = endTime * self.frameRate
-            elif duration != None:
-                if startTime == None:
+            elif duration is not None:
+                if startTime is None:
                     startTime = float(self.startFrame) / float(self.frameRate)
                 endTime = startTime + duration
                 self.endFrame = duration * self.frameRate
@@ -111,7 +111,7 @@ class ActorInterval(Interval.Interval):
 
         # Compute duration if no duration specified
         self.implicitDuration = 0
-        if duration == None:
+        if duration is None:
             self.implicitDuration = 1
             duration = float(self.numFrames) / self.frameRate
 
@@ -208,7 +208,7 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
                  blendType = 'noBlend', name = None,
                  partName=None, lodName=None):
         # Generate unique name if necessary
-        if (name == None):
+        if (name is None):
             name = 'LerpAnimInterval-%d' % LerpAnimInterval.lerpAnimNum
             LerpAnimInterval.lerpAnimNum += 1
 
@@ -218,7 +218,7 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
         # Initialize superclass
         CLerpAnimEffectInterval.__init__(self, name, duration, blendType)
 
-        if startAnim != None:
+        if startAnim is not None:
             controls = actor.getAnimControls(
                 startAnim, partName = partName, lodName = lodName)
             #controls = actor.getAnimControls(startAnim)
@@ -226,7 +226,7 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
                 self.addControl(control, startAnim,
                                 1.0 - startWeight, 1.0 - endWeight)
                 
-        if endAnim != None:
+        if endAnim is not None:
             controls = actor.getAnimControls(
                 endAnim, partName = partName, lodName = lodName)
             #controls = actor.getAnimControls(endAnim)

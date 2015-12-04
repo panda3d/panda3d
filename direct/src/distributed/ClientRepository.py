@@ -200,7 +200,7 @@ class ClientRepository(ClientRepositoryBase):
         if not dclass:
             self.notify.error("Unknown distributed class: %s" % (distObj.__class__))
         classDef = dclass.getClassDef()
-        if classDef == None:
+        if classDef is None:
             self.notify.error("Could not create an undefined %s object." % (
                 dclass.getName()))
 

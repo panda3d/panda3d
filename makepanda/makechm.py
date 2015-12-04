@@ -105,7 +105,7 @@ def parseManualTree(node):
     for e in node.childNodes:
         if e.nodeType == Node.ELEMENT_NODE:
             if e.localName == "ol":
-                assert lastadded != None
+                assert lastadded is not None
                 for i in xrange(len(result)):
                     if result[i][:2] == lastadded:
                         result[i] = lastadded + (parseManualTree(e),)
@@ -138,7 +138,7 @@ def treeToHTML(tree, dirname, indent = ""):
         html += indent + "  <param name=\"Name\" value=\"%s\">\n" % title.replace("CXX", "C++").replace("\"", "&quot;")
         html += indent + "  <param name=\"Local\" value=\"%s\">\n" % urldecode(os.path.join(dirname, href))
         html += indent + "</object>\n"
-        if sub != None:
+        if sub is not None:
             html += indent + "<ul>\n"
             html += treeToHTML(sub, dirname, indent + "  ")
             html += indent + "</ul>\n"
@@ -146,7 +146,7 @@ def treeToHTML(tree, dirname, indent = ""):
 
 def makeCHM(outputfile, dirname, title, special = None):
     """Creates a CHM file based on a directory of HTML files. See the top of this file for more info."""
-    assert special == None or special in ["manual", "reference"]
+    assert special is None or special in ["manual", "reference"]
     reference = (special == "reference")
     manual = (special == "manual")
     base = ireplace(outputfile, ".chm", "")
@@ -263,7 +263,7 @@ if __name__ == "__main__":
             print "No directory named 'manual-%s' found" % lang
         else:
             print "Making CHM file for manual-%s..." % lang
-            if VERSION == None:
+            if VERSION is None:
                 makeManualCHM("manual-%s.chm" % lang, "manual-" + lang, "Panda3D Manual")
             else:
                 makeManualCHM("manual-%s-%s.chm" % (VERSION, lang), "manual-" + lang, "Panda3D %s Manual" % VERSION)
@@ -272,7 +272,7 @@ if __name__ == "__main__":
             print "No directory named 'reference-%s' found" % lang
         else:
             print "Making CHM file for reference-%s..." % lang
-            if VERSION == None:
+            if VERSION is None:
                 makeReferenceCHM("reference-%s.chm" % lang, "reference-" + lang, "Panda3D Reference")
             else:
                 makeReferenceCHM("reference-%s-%s.chm" % (VERSION, lang), "reference-" + lang, "Panda3D %s Reference" % VERSION)

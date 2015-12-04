@@ -423,7 +423,7 @@ class DistributedObject(DistributedObjectBase):
         if tuple:
             callback, extraArgs = tuple
             completeArgs = args + extraArgs
-            if callback != None:
+            if callback is not None:
                 callback(*completeArgs)
             del self.__callbacks[context]
         else:
@@ -464,9 +464,9 @@ class DistributedObject(DistributedObjectBase):
         # doneBarrier() twice, or we have not received a barrier
         # context from the AI.  I think in either case it's ok to
         # silently ignore the error.
-        if self.__barrierContext != None:
+        if self.__barrierContext is not None:
             context, aiName = self.__barrierContext
-            if name == None or name == aiName:
+            if name is None or name == aiName:
                 assert self.notify.debug('doneBarrier(%s, %s)' % (context, aiName))
                 self.sendUpdate("setBarrierReady", [context])
                 self.__barrierContext = None

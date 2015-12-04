@@ -310,7 +310,7 @@ class dataHolder:
         while self.isInScene(defaultName):
             defaultName = defaultName + '_1'
         self.ModelDic[defaultName] = loader.loadModel(FilePath)
-        if self.ModelDic[defaultName]==None:
+        if self.ModelDic[defaultName]isNone:
             del self.ModelDic[defaultName]
             self.ModelNum -= 1
             return False
@@ -338,7 +338,7 @@ class dataHolder:
         while self.isInScene(defaultName):
             defaultName = defaultName + '_1'
         self.ActorDic[defaultName] = Actor.Actor(FilePath.getFullpath())
-        if self.ActorDic[defaultName]==None:
+        if self.ActorDic[defaultName]isNone:
             del self.ActorDic[defaultName]
             self.ActorNum -= 1
             return False
@@ -729,7 +729,7 @@ class dataHolder:
         # The collision object will be reparent to "nodePath" and
         # will be show on the screen if user has enable the "show collision objects" option.
         ###########################################################################
-        if name == None:
+        if name is None:
             name = 'CollisionNode_%d'%len(self.collisionDict)
         while self.isInScene(name):
             name=name + '_1'
@@ -737,7 +737,7 @@ class dataHolder:
         node.addSolid(collisionObj)
         self.collisionDict[name] = nodePath.attachNewNode(node)
 
-        if pointA!=None:
+        if pointAis notNone:
             self.collisionDict[name].setTag('A_X','%f'%pointA.getX())
             self.collisionDict[name].setTag('A_Y','%f'%pointA.getY())
             self.collisionDict[name].setTag('A_Z','%f'%pointA.getZ())
@@ -1055,7 +1055,7 @@ class dataHolder:
         # Clean up things added to scene graph by saved file's code execution
         for light in self.Scene.LightDict:
             vestige=render.find('**/'+light)
-            if(vestige != None):
+            if(vestige is not None):
                 vestige.removeNode()
 
         ############################################################################

@@ -13,7 +13,7 @@ class ParticleEffect(NodePath):
     pid = 1
 
     def __init__(self, name=None, particles=None):
-        if name == None:
+        if name is None:
             name = 'particle-effect-%d' % ParticleEffect.pid
             ParticleEffect.pid += 1
         NodePath.__init__(self, name)
@@ -25,7 +25,7 @@ class ParticleEffect(NodePath):
         self.particlesDict = {}
         self.forceGroupDict = {}
         # The effect's particle system
-        if particles != None:
+        if particles is not None:
             self.addParticles(particles)
         self.renderParent = None
 
@@ -55,7 +55,7 @@ class ParticleEffect(NodePath):
         assert self.notify.debug('start() - name: %s' % self.name)
         self.renderParent = renderParent
         self.enable()
-        if parent != None:
+        if parent is not None:
             self.reparentTo(parent)
 
     def enable(self):
@@ -128,7 +128,7 @@ class ParticleEffect(NodePath):
                 particles.addForce(fg[i])
 
     def removeParticles(self, particles):
-        if particles == None:
+        if particles is None:
             self.notify.warning('removeParticles() - particles == None!')
             return
         particles.nodePath.detachNode()

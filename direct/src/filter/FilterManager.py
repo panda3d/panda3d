@@ -175,7 +175,7 @@ class FilterManager(DirectObject):
             auxtex0 = auxtex
             auxtex1 = None
 
-        if (colortex == None):
+        if (colortex is None):
             colortex = Texture("filter-base-color")
             colortex.setWrapU(Texture.WMClamp)
             colortex.setWrapV(Texture.WMClamp)
@@ -187,7 +187,7 @@ class FilterManager(DirectObject):
         (winx, winy) = self.getScaledSize(1,1,1)
         buffer = self.createBuffer("filter-base", winx, winy, texgroup)
 
-        if (buffer == None):
+        if (buffer is None):
             return None
 
         cm = CardMaker("filter-base-quad")
@@ -248,11 +248,11 @@ class FilterManager(DirectObject):
 
         winx, winy = self.getScaledSize(mul, div, align)
         
-        depthbits = bool(depthtex != None)
+        depthbits = bool(depthtex is not None)
 
         buffer = self.createBuffer("filter-stage", winx, winy, texgroup, depthbits)
 
-        if (buffer == None):
+        if (buffer is None):
             return None
 
         cm = CardMaker("filter-stage-quad")
@@ -298,15 +298,15 @@ class FilterManager(DirectObject):
         props.setDepthBits(depthbits)
         props.setStereo(self.win.isStereo())
         depthtex, colortex, auxtex0, auxtex1 = texgroup
-        if (auxtex0 != None):
+        if (auxtex0 is not None):
             props.setAuxRgba(1)
-        if (auxtex1 != None):
+        if (auxtex1 is not None):
             props.setAuxRgba(2)
         buffer=base.graphicsEngine.makeOutput(
             self.win.getPipe(), name, -1,
             props, winprops, GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self.win.getGsg(), self.win)
-        if (buffer == None):
+        if (buffer is None):
             return buffer
         if (depthtex):
             buffer.addRenderTexture(depthtex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPDepth)

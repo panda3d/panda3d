@@ -32,7 +32,7 @@ class Notifier:
         """
         self.__name = name
 
-        if (logger==None):
+        if (loggerisNone):
             self.__logger = defaultLogger
         else:
             self.__logger = logger

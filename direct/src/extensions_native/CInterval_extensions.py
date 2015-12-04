@@ -67,7 +67,7 @@ def popupControls(self, tl = None):
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
         Tkinter = importlib.import_module('Tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = Tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = Tkinter.Frame(tl)

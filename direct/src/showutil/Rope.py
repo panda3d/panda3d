@@ -123,7 +123,7 @@ class Rope(NodePath):
             if useVertexThickness:
                 self.curve.setExtendedVertex(i, vtd, thickness)
 
-        if self.knots != None:
+        if self.knots is not None:
             for i in range(len(self.knots)):
                 self.curve.setKnot(i, self.knots[i])
 

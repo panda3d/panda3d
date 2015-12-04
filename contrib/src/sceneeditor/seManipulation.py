@@ -492,7 +492,7 @@ class DirectManipulationControl(DirectObject):
         entry = SEditor.iRay.pickGeom(
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (entry != None) and (SEditor.selected.last != None):
+        if (entry is not None) and (SEditor.selected.last is not None):
             # Record undo point
             SEditor.pushUndo(SEditor.selected)
             # Record wrt matrix
