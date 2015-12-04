@@ -109,7 +109,7 @@ class ClassicFSM(DirectObject):
         if self.__currentState == self.__initialState:
             return
         
-        assert self.__currentState == None
+        assert self.__currentState is None
         self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
         assert not self.__internalStateInFlux
@@ -259,7 +259,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
 
@@ -350,7 +350,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                                 (self.__name, aStateName))
 

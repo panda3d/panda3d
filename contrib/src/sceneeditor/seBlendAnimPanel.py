@@ -350,11 +350,11 @@ class BlendAnimPanel(AppShell):
         #################################################################
         print 'OK!!!'
         if AB == 'a':
-            if self.animNameA != None:
+            if self.animNameA is not None:
                 self['actor'].setControlEffect(self.animNameA, 1.0, 'modelRoot','lodRoot')
             self.animNameA = self.AnimEntryA.get()
         else:
-            if self.animNameB != None:
+            if self.animNameB is not None:
                 self['actor'].setControlEffect(self.animNameB, 1.0, 'modelRoot','lodRoot')
             self.animNameB = self.AnimEntryB.get()
         self.currTime = 0.0
@@ -613,7 +613,7 @@ class BlendAnimPanel(AppShell):
         #################################################################
         oName = self.currentBlendName
         name = self.blendAnimEntry.get()
-        if self.currentBlendName == None:
+        if self.currentBlendName is None:
             Pmw.MessageDialog(None, title='Caution!',
                               message_text = "You haven't select any blended animation!!",
                               iconpos='s',

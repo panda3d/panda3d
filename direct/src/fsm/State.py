@@ -198,7 +198,7 @@ class State(DirectObject):
         # state that is safe to enter
         self.__enterChildren(argList)
 
-        if (self.__enterFunc != None):
+        if (self.__enterFunc is not None):
             apply(self.__enterFunc, argList)
 
     def exit(self, argList=[]):
@@ -209,7 +209,7 @@ class State(DirectObject):
         self.__exitChildren(argList)
 
         # call exit function if it exists
-        if (self.__exitFunc != None):
+        if (self.__exitFunc is not None):
             apply(self.__exitFunc, argList)
 
     def __str__(self):

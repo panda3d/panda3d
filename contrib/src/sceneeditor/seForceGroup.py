@@ -14,7 +14,7 @@ class ForceGroup(DirectObject):
     def __init__(self, name=None):
         """__init__(self)"""
 
-        if (name == None):
+        if (name is None):
             self.name = 'ForceGroup-%d' % ForceGroup.id 
             ForceGroup.id += 1
         else:
@@ -63,7 +63,7 @@ class ForceGroup(DirectObject):
     def removeForce(self, force):
         """removeForce(self, force)"""
         self.node.removeForce(force)
-        if (self.particleEffect != None):
+        if (self.particleEffect is not None):
             self.particleEffect.removeForce(force)
 
     # Get/set

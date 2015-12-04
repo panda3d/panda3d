@@ -515,7 +515,7 @@ class ActorControl(Pmw.MegaWidget):
         actor = self['actor']
         active = self['active']
         self.fps = actor.getFrameRate(active)
-        if (self.fps == None):
+        if (self.fps is None):
             # there was probably a problem loading the
             # active animation, set default anim properties
             print "unable to get animation fps, zeroing out animation info"
@@ -574,7 +574,7 @@ class ActorControl(Pmw.MegaWidget):
         newOffset = askfloat(parent = self.interior(),
                              title = self['text'],
                              prompt = 'Start offset (seconds):')
-        if newOffset != None:
+        if newOffset is not None:
             self.offset = newOffset
             self.updateDisplay()
 

@@ -67,7 +67,7 @@ class ProjectileInterval(Interval):
                 self.collNode = self.collNode.node()
             assert self.collNode.getNumSolids() == 0
 
-        if name == None:
+        if name is None:
             name = '%s-%s' % (self.__class__.__name__,
                               self.projectileIntervalNum)
             ProjectileInterval.projectileIntervalNum += 1

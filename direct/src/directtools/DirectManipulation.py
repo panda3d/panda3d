@@ -1044,7 +1044,7 @@ class DirectManipulationControl(DirectObject):
         entry = base.direct.iRay.pickGeom(
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (entry != None) and (base.direct.selected.last != None):
+        if (entry is not None) and (base.direct.selected.last is not None):
             # Record undo point
             base.direct.pushUndo(base.direct.selected)
             # Record wrt matrix

@@ -117,7 +117,7 @@ class Loader(DirectObject):
         """
         
         assert Loader.notify.debug("Loading model: %s" % (modelPath))
-        if loaderOptions == None:
+        if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
             loaderOptions = LoaderOptions(loaderOptions)
@@ -158,7 +158,7 @@ class Loader(DirectObject):
             result = []
             for modelPath in modelList:                
                 node = self.loader.loadSync(Filename(modelPath), loaderOptions)
-                if (node != None):
+                if (node is not None):
                     nodePath = NodePath(node)
                 else:
                     nodePath = None
@@ -276,7 +276,7 @@ class Loader(DirectObject):
             # to resolve it for us.
             options = LoaderOptions(LoaderOptions.LFSearch | LoaderOptions.LFNoDiskCache | LoaderOptions.LFCacheOnly)
             modelNode = self.loader.loadSync(Filename(model), options)
-            if modelNode == None:
+            if modelNode is None:
                 # Model not found.
                 assert Loader.notify.debug("Unloading model not loaded: %s" % (model))
                 return
@@ -296,7 +296,7 @@ class Loader(DirectObject):
         a callback is used, the model is saved asynchronously, and the
         true/false status is passed to the callback function. """
 
-        if loaderOptions == None:
+        if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
             loaderOptions = LoaderOptions(loaderOptions)
@@ -500,7 +500,7 @@ class Loader(DirectObject):
             phaseChecker(modelPath, loaderOptions)
 
         font = FontPool.loadFont(modelPath)
-        if font == None:
+        if font is None:
             if not okMissing:
                 message = 'Could not load font file: %s' % (modelPath)
                 raise IOError, message
@@ -510,21 +510,21 @@ class Loader(DirectObject):
 
         # The following properties may only be set for dynamic fonts.
         if hasattr(font, "setPointSize"):
-            if pointSize != None:
+            if pointSize is not None:
                 font.setPointSize(pointSize)
-            if pixelsPerUnit != None:
+            if pixelsPerUnit is not None:
                 font.setPixelsPerUnit(pixelsPerUnit)
-            if scaleFactor != None:
+            if scaleFactor is not None:
                 font.setScaleFactor(scaleFactor)
-            if textureMargin != None:
+            if textureMargin is not None:
                 font.setTextureMargin(textureMargin)
-            if polyMargin != None:
+            if polyMargin is not None:
                 font.setPolyMargin(polyMargin)
-            if minFilter != None:
+            if minFilter is not None:
                 font.setMinfilter(minFilter)
-            if magFilter != None:
+            if magFilter is not None:
                 font.setMagfilter(magFilter)
-            if anisotropicDegree != None:
+            if anisotropicDegree is not None:
                 font.setAnisotropicDegree(anisotropicDegree)
             if color:
                 font.setFg(color)
@@ -600,7 +600,7 @@ class Loader(DirectObject):
         left image and '1' for the right image.  Larger numbers are
         also allowed if you need more than two views.
         """
-        if loaderOptions == None:
+        if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
             loaderOptions = LoaderOptions(loaderOptions)
@@ -661,7 +661,7 @@ class Loader(DirectObject):
         numbered 8 - 15 will be part of the right eye view.
         """
         assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
-        if loaderOptions == None:
+        if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
             loaderOptions = LoaderOptions(loaderOptions)
@@ -715,7 +715,7 @@ class Loader(DirectObject):
         and each six images will define a new view.
         """
         assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
-        if loaderOptions == None:
+        if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
             loaderOptions = LoaderOptions(loaderOptions)
@@ -860,7 +860,7 @@ class Loader(DirectObject):
         return shader
 
     def unloadShader(self, shaderPath):
-        if (shaderPath != None):
+        if (shaderPath is not None):
             ShaderPool.releaseShader(shaderPath)
 
     def asyncFlattenStrong(self, model, inPlace = True,
@@ -938,7 +938,7 @@ class Loader(DirectObject):
         object = None
         if hasattr(request, "getModel"):
             node = request.getModel()
-            if (node != None):
+            if (node is not None):
                 object = NodePath(node)
 
         elif hasattr(request, "getSound"):

@@ -715,7 +715,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.tangentGroup.hide()
 
     def curveEditTask(self,state):
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             # Update curve position
             if self.manipulandumId == self.playbackMarker.id():
                 # Show playback marker
@@ -798,7 +798,7 @@ class MopathRecorder(AppShell, DirectObject):
         messenger.send('SGE_Update Explorer',[render])
 
     def createNewPointSet(self, curveName = None):
-        if curveName == None:
+        if curveName is None:
             self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
         else:
             self.pointSetName = curveName
@@ -1088,7 +1088,7 @@ class MopathRecorder(AppShell, DirectObject):
     def recordPoint(self, time):
         # Call user define callback before recording point
         if (self.getVariable('Recording', 'PRF Active').get() and
-            (self.preRecordFunc != None)):
+            (self.preRecordFunc is not None)):
             self.preRecordFunc()
         # Get point
         pos = self.nodePath.getPos(self.nodePathParent)
@@ -1217,7 +1217,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.addNodePath(nodePath)
         else:
             nodePath = self.nodePathDict.get(name, None)
-            if (nodePath == None):
+            if (nodePath is None):
                 # See if this evaluates into a node path
                 try:
                     nodePath = eval(name)
@@ -1240,7 +1240,7 @@ class MopathRecorder(AppShell, DirectObject):
                     self.playbackMarker.show()
                     # Initialize tangent marker position
                     tan = Point3(0)
-                    if self.curveCollection != None:
+                    if self.curveCollection is not None:
                         self.curveCollection.getXyzCurve().getTangent(
                             self.playbackTime, tan)
                     self.tangentMarker.setPos(tan)
@@ -1296,17 +1296,17 @@ class MopathRecorder(AppShell, DirectObject):
         self.loopPlayback = self.getVariable('Playback', 'Loop').get()
 
     def playbackGoTo(self, time):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             return
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             pos = Point3(0)
             hpr = Point3(0)
             self.curveCollection.evaluate(self.playbackTime, pos, hpr)
             self.playbackNodePath.setPosHpr(self.nodePathParent, pos, hpr)
 
     def startPlayback(self):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             return
         # Kill any existing tasks
         self.stopPlayback()
@@ -1372,7 +1372,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def jumpToEndOfPlayback(self):
         self.stopPlayback()
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             self.getWidget('Playback', 'Time').set(self.maxT)
 
     def startStopPlayback(self):
@@ -1399,7 +1399,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.numSamples = int(numSamples)
         
     def sampleCurve(self, fCompute = 1, curveName = None):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             print 'MopathRecorder.sampleCurve: Must define curve first'
             return
         # Reset curve fitters
@@ -1616,7 +1616,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.fAdjustingValues = 0
 
     def cropCurve(self):
-        if self.pointSet == None:
+        if self.pointSet is None:
             print 'Empty Point Set'
             return
         # Keep handle on old points
@@ -1958,7 +1958,7 @@ class MopathRecorder(AppShell, DirectObject):
 
 
     def bindMotionPathToNode(self):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             print '----Error: you need to select or create a curve first!'
             return
         self.accept('MP_checkName', self.bindMotionPath)
@@ -1995,7 +1995,7 @@ class MopathRecorder(AppShell, DirectObject):
         '''
         print curveList
         self.ignore('curveListFor'+self.name)
-        if curveList != None:
+        if curveList is not None:
             for collection in curveList:
                 self.curveCollection = collection
                 self.extractPointSetFromCurveCollection(curveName=self.curveCollection.getCurve(0).getName())

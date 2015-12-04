@@ -28,7 +28,7 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
         if(nodePath.hasTag("Metadata")):
             self.Metatag=self.Metanode.getTag("Metadata")
 
-        if parent == None:
+        if parent is None:
             self.parent = Toplevel()
         AppShell.__init__(self, self.parent)
         

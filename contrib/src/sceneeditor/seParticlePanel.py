@@ -32,7 +32,7 @@ class ParticlePanel(AppShell):
         self.defineoptions(kw, optiondefs)
 
         # Record particle effect
-        if particleEffect != None:
+        if particleEffect is not None:
             self.particleEffect = particleEffect
             self.effectsDict = effectsDict
         else:
@@ -893,7 +893,7 @@ class ParticlePanel(AppShell):
     def updateLabels(self):
         self.effectsLabel['text'] = self.particleEffect.getName()
         self.particlesLabel['text'] = self.particles.getName()
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupLabel['text'] = self.forceGroup.getName()
         else:
             self.forceGroupLabel['text'] = 'Force Group'
@@ -979,7 +979,7 @@ class ParticlePanel(AppShell):
 
     def selectEffectNamed(self, name):
         effect = self.effectsDict.get(name, None)
-        if effect != None:
+        if effect is not None:
             self.particleEffect = effect
             # Default to first particle in particlesDict
             self.particles = self.particleEffect.getParticlesList()[0]
@@ -1002,7 +1002,7 @@ class ParticlePanel(AppShell):
 
     def selectParticlesNamed(self, name):
         particles = self.particleEffect.getParticlesNamed(name)
-        if particles != None:
+        if particles is not None:
             self.particles = particles
             self.updateInfo()
 
@@ -1014,7 +1014,7 @@ class ParticlePanel(AppShell):
 
     def selectForceGroupNamed(self, name):
         forceGroup = self.particleEffect.getForceGroupNamed(name)
-        if forceGroup != None:
+        if forceGroup is not None:
             self.forceGroup = forceGroup
             self.updateInfo('Force')
 
@@ -1482,15 +1482,15 @@ class ParticlePanel(AppShell):
             # Update widgets to reflect current default values
             # Texture
             textureName = renderer.getSourceTextureName()
-            if textureName != None:
+            if textureName is not None:
                 self.rendererSpriteTexture.set(textureName)
             # File
             fileName = renderer.getSourceFileName()
-            if fileName != None:
+            if fileName is not None:
                 self.rendererSpriteFile.set(fileName)
             # Node
             nodeName = renderer.getSourceNodeName()
-            if nodeName != None:
+            if nodeName is not None:
                 self.rendererSpriteNode.set(nodeName)
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
@@ -1557,9 +1557,9 @@ class ParticlePanel(AppShell):
     def setRendererGeomNode(self, event):
         node = None
         nodePath = loader.loadModel(self.rendererGeomNode.get())
-        if nodePath != None:
+        if nodePath is not None:
             node = nodePath.node()
-        if (node != None):
+        if (node is not None):
             self.particles.renderer.setGeomNode(node)
     # Point #
     def setRendererPointSize(self, size):
@@ -1671,14 +1671,14 @@ class ParticlePanel(AppShell):
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupNotebook.pack(fill = X)
             self.forcePageName = (self.particleEffect.getName() + '-' +
                                   self.forceGroup.getName())
             self.forcePage = self.forcePagesDict.get(
                 self.forcePageName, None)
             # Page doesn't exist, add it
-            if self.forcePage == None:
+            if self.forcePage is None:
                 self.addForceGroupNotebookPage(
                     self.particleEffect, self.forceGroup)
             self.forceGroupNotebook.selectpage(self.forcePageName)
@@ -1703,7 +1703,7 @@ class ParticlePanel(AppShell):
         self.addForce(LinearUserDefinedForce())
 
     def addForce(self, f):
-        if self.forceGroup == None:
+        if self.forceGroup is None:
             self.createNewForceGroup()
         self.forceGroup.addForce(f)
         self.addForceWidget(self.forceGroup,f)

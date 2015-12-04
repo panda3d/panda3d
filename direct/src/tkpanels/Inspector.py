@@ -310,7 +310,7 @@ class InspectorWindow:
     # Event Handling
     def listSelectionChanged(self, event):
         partNumber = self.selectedIndex()
-        if partNumber == None:
+        if partNumber is None:
             partNumber = 0
         string = self.topInspector().stringForPartNumber(partNumber)
         self.textWidget.component('text').configure(state = 'normal')
@@ -346,7 +346,7 @@ class InspectorWindow:
     # Menu Events
     def inspect(self):
         inspector = self.inspectorForSelectedPart()
-        if inspector == None:
+        if inspector is None:
             return
         InspectorWindow(inspector).open()        
         
@@ -357,7 +357,7 @@ class InspectorWindow:
 
     def dive(self):
         inspector = self.inspectorForSelectedPart()
-        if inspector == None:
+        if inspector is None:
             return
         self.inspectors.append(inspector)
         self.update()
@@ -399,7 +399,7 @@ class InspectorWindow:
 
     def inspectorForSelectedPart(self):
         partNumber = self.selectedIndex()
-        if partNumber == None:
+        if partNumber is None:
             return None
         part = self.topInspector().partNumber(partNumber)
         return self.topInspector().inspectorFor(part)
@@ -408,7 +408,7 @@ class InspectorWindow:
         print(event)
         partNumber = self.selectedIndex()
         print(partNumber)
-        if partNumber == None:
+        if partNumber is None:
             return
         part = self.topInspector().partNumber(partNumber)
         print(part)

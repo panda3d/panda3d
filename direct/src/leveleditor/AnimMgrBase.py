@@ -354,7 +354,7 @@ class AnimMgrBase:
         self.colorUpdate(r,g,b,A,np)
     
     def colorUpdate(self, r, g, b, a, np):
-        if base.direct.selected.last == None:
+        if base.direct.selected.last is None:
             self.editor.objectMgr.updateObjectColor(r, g, b, a, np)
         elif self.editor.objectMgr.findObjectByNodePath(np) == self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last):
             self.editor.ui.objectPropertyUI.propCR.setValue(r)

@@ -294,7 +294,7 @@ class collisionWindow(AppShell):
         widget.configure(entry_state = initialState)
         widget.pack(side=LEFT)
         self.widgetDict[catagory+id] = widget
-        if defaultButton and (defaultFunction!=None):
+        if defaultButton and (defaultFunctionis notNone):
             widget = Button(frame, text=buttonText, font=('MSSansSerif', 10), command = defaultFunction)
             widget.pack(side=LEFT, padx=3)
             self.widgetDict[catagory+id+'-'+'DefaultButton']=widget

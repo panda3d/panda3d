@@ -38,7 +38,7 @@ class Logger:
     def log(self, entryString):
         """log(self, string)
         Print the given string to the log file"""
-        if (self.__logFile == None):
+        if (self.__logFile is None):
             self.__openLogFile()
         if (self.__timeStamp):
             self.__logFile.write(self.__getTimeStamp())
@@ -61,7 +61,7 @@ class Logger:
         """
         Close the error/warning output file
         """
-        if (self.__logFile != None):
+        if (self.__logFile is not None):
             self.__logFile.close()
 
     def __getTimeStamp(self):

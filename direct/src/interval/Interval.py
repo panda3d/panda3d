@@ -130,7 +130,7 @@ class Interval(DirectObject):
         return self.getT()
 
     def resume(self, startT = None):
-        if startT != None:
+        if startT is not None:
             self.setT(startT)
         self.setupResume()
         if not self.isPlaying():
@@ -450,7 +450,7 @@ class Interval(DirectObject):
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
         Tkinter = importlib.import_module('Tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = Tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = Tkinter.Frame(tl)

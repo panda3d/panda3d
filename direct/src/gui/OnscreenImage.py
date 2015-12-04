@@ -43,7 +43,7 @@ class OnscreenImage(DirectObject, NodePath):
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
 
-        if parent == None:
+        if parent is None:
             parent = aspect2d
         self.setImage(image, parent = parent, sort = sort)
 
@@ -83,7 +83,7 @@ class OnscreenImage(DirectObject, NodePath):
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            if transform == None:
+            if transform is None:
                 # If we're replacing a previous image, we throw away
                 # the new image's transform in favor of the original
                 # image's transform.

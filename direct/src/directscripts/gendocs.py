@@ -143,7 +143,7 @@ def textToHTML(comment, sep, delsection=None):
             sec = sec.replace(">","&gt;")
             sec = sec.replace("  "," ")
             sec = sec.replace("  "," ")
-            if (delsection != None) and (delsection.match(sec)):
+            if (delsection is not None) and (delsection.match(sec)):
                 included[sec] = 1
             if (included.has_key(sec)==0):
                 included[sec] = 1
@@ -577,7 +577,7 @@ class CodeDatabase:
             for func in idb.functions.values():
                 type = idb.types.get(func.classindex)
                 func.pyname = convertToPythonFn(func.componentname)
-                if (type == None):
+                if (type is None):
                     self.funcs["GLOBAL."+func.pyname] = func
                     self.globalfn.append("GLOBAL."+func.pyname)
                     self.funcExports.setdefault("pandac.PandaModules", []).append(func.pyname)

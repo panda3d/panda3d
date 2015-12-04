@@ -182,7 +182,7 @@ class TaskManager:
         so in most cases there is no need to check this method
         first. """
 
-        return (self.mgr.findTaskChain(chainName) != None)
+        return (self.mgr.findTaskChain(chainName) is not None)
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
@@ -486,7 +486,7 @@ class TaskManager:
         self.globalClock.setRealTime(t)
         messenger.send("resetClock", [timeDelta])
 
-        if self.resumeFunc != None:
+        if self.resumeFunc is not None:
             self.resumeFunc()
 
         if self.stepping:

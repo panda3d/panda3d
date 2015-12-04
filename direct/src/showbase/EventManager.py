@@ -21,7 +21,7 @@ class EventManager:
         Create a C++ event queue and handler
         """
         # Make a notify category for this class (unless there already is one)
-        if (EventManager.notify == None):
+        if (EventManager.notify is None):
             EventManager.notify = directNotify.newCategory("EventManager")
 
         self.eventQueue = eventQueue
@@ -171,10 +171,10 @@ class EventManager:
 
 
     def restart(self):
-        if self.eventQueue == None:
+        if self.eventQueue is None:
             self.eventQueue = EventQueue.getGlobalEventQueue()
 
-        if self.eventHandler == None:
+        if self.eventHandler is None:
             if self.eventQueue == EventQueue.getGlobalEventQueue():
                 # If we are using the global event queue, then we also
                 # want to use the global event handler.
