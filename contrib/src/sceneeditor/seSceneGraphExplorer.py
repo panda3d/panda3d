@@ -142,7 +142,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
 
     def selectNodePath(self,nodePath, callBack=True):
         item = self._node.find(nodePath.id())
-        if itemis not None:
+        if item is not None:
             item.select(callBack)
         else:
             print '----SGE: Error Selection'

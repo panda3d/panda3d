@@ -413,7 +413,7 @@ class CommonFilters:
         if (size=="off"):
             self.delBloom()
             return
-        if (maxtriggerisNone): maxtrigger=mintrigger+0.8
+        if (maxtrigger is None): maxtrigger=mintrigger+0.8
         oldconfig = self.configuration.get("Bloom", None)
         fullrebuild = True
         if (oldconfig) and (oldconfig.size == size):

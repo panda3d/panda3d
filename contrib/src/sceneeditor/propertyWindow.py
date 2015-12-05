@@ -326,7 +326,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # This function will draw the property frame and content of curves
         # pass the target frame as a variable
         #################################################################
-        if self.curveFrameisNone:
+        if self.curveFrame is None:
             self.curveFrame = Frame(contentFrame)
             group = Pmw.Group(self.curveFrame,
                               tag_text='Motion Path List for this Node',
@@ -928,25 +928,25 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         return
 
     def setLightingColorVec(self,color):
-        if self.lightNodeisNone:
+        if self.lightNode is None:
             return
         self.lightNode.setColor(VBase4((color[0]/255),(color[1]/255),(color[2]/255),1))
         return
 
     def setSpecularColor(self,color):
-        if self.lightNodeisNone:
+        if self.lightNode is None:
             return
         self.lightNode.setSpecColor(VBase4((color[0]/255),(color[1]/255),(color[2]/255),1))
         return
 
     def setPosition(self,position):
-        if self.lightNodeisNone:
+        if self.lightNode is None:
             return
         self.lightNode.setPosition(Point3(position[0],position[1],position[2]))
         return
 
     def setOrientation(self, orient):
-        if self.lightNodeisNone:
+        if self.lightNode is None:
             return
         self.lightNode.setOrientation(Vec3(orient[0],orient[1],orient[2]))
         return

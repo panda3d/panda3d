@@ -699,7 +699,7 @@ class myLevelEditor(AppShell):
         # we will do deselect first then remove the certain node.
         #
         #################################################################
-        if nodePathisNone:
+        if nodePath is None:
             if self.nodeSelected is None:
                 return
             nodePath = self.nodeSelected
@@ -764,7 +764,7 @@ class myLevelEditor(AppShell):
         # This function will be call when user try to open a placer panel.
         # This call will only success if there is no other placer panel been activated
         #################################################################
-        if(self.placerisNone):
+        if(self.placer is None):
             self.placer = Placer()
             self.menuPanel.entryconfig('Placer Panel', state=DISABLED)          
         return
@@ -881,7 +881,7 @@ class myLevelEditor(AppShell):
 
         self.CurrentFileName = AllScene.loadScene()
         
-        if(self.CurrentFileNameisNone):
+        if(self.CurrentFileName is None):
             return
 
         thefile=Filename(self.CurrentFileName)
@@ -1185,7 +1185,7 @@ class myLevelEditor(AppShell):
         # open the lighting panel here.
         # If there is already exist a lighting panel, then do nothing
         ################################################################
-        if self.lightingPanelisNone:
+        if self.lightingPanel is None:
             self.lightingPanel = lightingPanel(AllScene.getLightList())
             self.menuPanel.entryconfig('Lighting Panel', state=DISABLED)
         return
@@ -1217,7 +1217,7 @@ class myLevelEditor(AppShell):
         return
     
     def openInputPanel(self):
-        if self.controllerPanelisNone:
+        if self.controllerPanel is None:
             list = AllScene.getAllObjNameAsList()
             type, dataList = AllScene.getControlSetting()
             self.controllerPanel = controllerWindow(listOfObj = list, controlType = type, dataList = dataList)
@@ -1337,7 +1337,7 @@ class myLevelEditor(AppShell):
         # side window.
         # It will also call seSession to select this node in order to keep data's consistency
         ################################################################
-        if nodePathisNone:
+        if nodePath is None:
             self.isSelect = False
             self.nodeSelected =None
             if taskMgr.hasTaskNamed('seMonitorSelectedNode'):
@@ -1373,7 +1373,7 @@ class myLevelEditor(AppShell):
         # Actually this will be called by seSession
         # The reason we make two selections is we don't want they call each other and never stop...
         ################################################################
-        if nodePathisNone:
+        if nodePath is None:
             self.isSelect = False
             self.nodeSelected =None
             if taskMgr.hasTaskNamed('seMonitorSelectedNode'):

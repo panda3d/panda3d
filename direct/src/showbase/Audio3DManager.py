@@ -12,7 +12,7 @@ class Audio3DManager:
         self.audio_manager = audio_manager
         self.listener_target = listener_target
 
-        if (rootisNone):
+        if (root is None):
             self.root = render
         else:
             self.root = root

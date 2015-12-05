@@ -737,7 +737,7 @@ class dataHolder:
         node.addSolid(collisionObj)
         self.collisionDict[name] = nodePath.attachNewNode(node)
 
-        if pointAis notNone:
+        if pointA is not None:
             self.collisionDict[name].setTag('A_X','%f'%pointA.getX())
             self.collisionDict[name].setTag('A_Y','%f'%pointA.getY())
             self.collisionDict[name].setTag('A_Z','%f'%pointA.getZ())

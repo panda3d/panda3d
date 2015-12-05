@@ -1486,7 +1486,7 @@ class Actor(DirectObject, NodePath):
         in this actor
         """
         # if no part name specified fix all parts
-        if (partisNone):
+        if (part is None):
             part = self
 
         # update all characters first
@@ -2258,7 +2258,7 @@ class Actor(DirectObject, NodePath):
         else:
             partNames = [partName]
 
-        if (animsisNone):
+        if (anims is None):
             for lodName in lodNames:
                 for partName in partNames:
                     for animDef in self.__animControlDict[lodName][partName].values():
