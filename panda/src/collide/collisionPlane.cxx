@@ -405,17 +405,17 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_center = box->get_center() * wrt_mat;
-  LVector3 from_extents = box->get_dimensions() * wrt_mat * 0.5;
+  LVector3 from_extents = box->get_dimensions() * 0.5f;
   PN_stdfloat dist = _plane.dist_to_plane(from_center);
 
-  LVecBase3 box_x = entry.get_wrt_mat().get_row3(0);
-  LVecBase3 box_y = entry.get_wrt_mat().get_row3(1);
-  LVecBase3 box_z = entry.get_wrt_mat().get_row3(2);
+  LVecBase3 box_x = wrt_mat.get_row3(0);
+  LVecBase3 box_y = wrt_mat.get_row3(1);
+  LVecBase3 box_z = wrt_mat.get_row3(2);
 
-  if (abs(dist) >
-      abs(box_x.dot(_plane.get_normal()) * from_extents[0]) +
-      abs(box_y.dot(_plane.get_normal()) * from_extents[1]) +
-      abs(box_z.dot(_plane.get_normal()) * from_extents[2])) {
+  if (cabs(dist) >
+      cabs(box_x.dot(_plane.get_normal()) * from_extents[0]) +
+      cabs(box_y.dot(_plane.get_normal()) * from_extents[1]) +
+      cabs(box_z.dot(_plane.get_normal()) * from_extents[2])) {
     // No collision.
     return NULL;
   }
