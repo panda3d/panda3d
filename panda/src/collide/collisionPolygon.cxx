@@ -894,6 +894,94 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::test_intersection_from_box
+//       Access: Public, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a box.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
+
+  // To make things easier, transform the box into the coordinate
+  // space of the plane.
+  LMatrix4 wrt_mat = entry.get_wrt_mat() * _to_2d_mat;
+
+  LPoint3 from_center = box->get_center() * wrt_mat;
+  LVector3 from_extents = box->get_dimensions() * 0.5f;
+
+  LVecBase3 box_x = wrt_mat.get_row3(0);
+  LVecBase3 box_y = wrt_mat.get_row3(1);
+  LVecBase3 box_z = wrt_mat.get_row3(2);
+
+  // Is there a separating axis between the plane and the box?
+  if (cabs(from_center[1]) >
+      cabs(box_x[1] * from_extents[0]) +
+      cabs(box_y[1] * from_extents[1]) +
+      cabs(box_z[1] * from_extents[2])) {
+    // There is one.  No collision.
+    return NULL;
+  }
+
+  // Now do the same check for the cross products between the box axes
+  // and the polygon edges.
+  Points::const_iterator pi;
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    const PointDef &pd = *pi;
+
+    LVector3 axis;
+    PN_stdfloat r1, center, r2;
+
+    axis.set(-box_x[1] * pd._v[1],
+              box_x[0] * pd._v[1] - box_x[2] * pd._v[0],
+              box_x[1] * pd._v[0]);
+    r1 = cabs(box_x.dot(axis) * from_extents[0]) +
+         cabs(box_y.dot(axis) * from_extents[1]) +
+         cabs(box_z.dot(axis) * from_extents[2]);
+    project(axis, center, r2);
+    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+      return NULL;
+    }
+
+    axis.set(-box_y[1] * pd._v[1],
+              box_y[0] * pd._v[1] - box_y[2] * pd._v[0],
+              box_y[1] * pd._v[0]);
+    r1 = cabs(box_x.dot(axis) * from_extents[0]) +
+         cabs(box_y.dot(axis) * from_extents[1]) +
+         cabs(box_z.dot(axis) * from_extents[2]);
+    project(axis, center, r2);
+    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+      return NULL;
+    }
+
+    axis.set(-box_z[1] * pd._v[1],
+              box_z[0] * pd._v[1] - box_z[2] * pd._v[0],
+              box_z[1] * pd._v[0]);
+    r1 = cabs(box_x.dot(axis) * from_extents[0]) +
+         cabs(box_y.dot(axis) * from_extents[1]) +
+         cabs(box_z.dot(axis) * from_extents[2]);
+    project(axis, center, r2);
+    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+      return NULL;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  new_entry->set_surface_normal(normal);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable
@@ -1169,6 +1257,35 @@ dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const 
   }
 
   return best_dist;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::project
+//       Access: Private
+//  Description: Projects the polygon onto the given axis, returning
+//               the center on the line and the half extent.
+////////////////////////////////////////////////////////////////////
+void CollisionPolygon::
+project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const {
+  PN_stdfloat begin, end;
+
+  Points::const_iterator pi;
+  pi = _points.begin();
+
+  const LPoint2 &point = (*pi)._p;
+  begin = point[0] * axis[0] + point[1] * axis[2];
+  end = begin;
+
+  for (; pi != _points.end(); ++pi) {
+    const LPoint2 &point = (*pi)._p;
+
+    PN_stdfloat t = point[0] * axis[0] + point[1] * axis[2];
+    begin = min(begin, t);
+    end = max(end, t);
+  }
+
+  center = (end + begin) * 0.5f;
+  extent = cabs((end - begin) * 0.5f);
 }
 
 ////////////////////////////////////////////////////////////////////
