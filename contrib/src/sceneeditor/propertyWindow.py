@@ -149,7 +149,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         widget.configure(entry_state = initialState)
         widget.pack(side=LEFT)
         self.widgetsDict[text] = widget
-        if defaultButton and (defaultFunctionis notNone):
+        if defaultButton and (defaultFunction is not None):
             # create a button if they need.
             widget = Button(frame, text=buttonText, font=('MSSansSerif', 10), command = defaultFunction)
             widget.pack(side=LEFT, padx=3)

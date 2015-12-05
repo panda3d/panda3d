@@ -1711,7 +1711,7 @@ class ShowBase(DirectObject.DirectObject):
         # keep a list of sfx manager objects to apply settings to,
         # since there may be others in addition to the one we create here
         self.sfxManagerList.append(extraSfxManager)
-        newSfxManagerIsValid = (extraSfxManageris notNone) and extraSfxManager.isValid()
+        newSfxManagerIsValid = (extraSfxManager is not None) and extraSfxManager.isValid()
         self.sfxManagerIsValidList.append(newSfxManagerIsValid)
         if newSfxManagerIsValid:
             extraSfxManager.setActive(self.sfxActive)
@@ -1722,7 +1722,7 @@ class ShowBase(DirectObject.DirectObject):
         self.addSfxManager(sfxManager)
 
         self.musicManager = AudioManager.createAudioManager()
-        self.musicManagerIsValid=self.musicManageris notNone \
+        self.musicManagerIsValid=self.musicManager is not None \
                 and self.musicManager.isValid()
         if self.musicManagerIsValid:
             # ensure only 1 midi song is playing at a time:

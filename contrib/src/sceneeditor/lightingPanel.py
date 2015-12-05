@@ -287,7 +287,7 @@ class lightingPanel(AppShell):
         #################################################################
         self.lightList = list
         self.lightEntry.setlist(list)
-        if nodeis notNone:
+        if node is not None:
             self.lightEntry.selectitem(index=node.getName(), setentry=True )
             self.updateDisplay(node)
         elif len(list)>0:

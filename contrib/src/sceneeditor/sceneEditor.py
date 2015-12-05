@@ -890,7 +890,7 @@ class myLevelEditor(AppShell):
         self.CurrentDirName=thedir
         if self.CurrentFileName is not None:
             self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
-        if self.lightingPanel is notNone:
+        if self.lightingPanel is not None:
             lightList=AllScene.getList()
             self.lightingPanel.updateList(lightList)
         messenger.send('SGE_Update Explorer',[render])
@@ -1079,7 +1079,7 @@ class myLevelEditor(AppShell):
         # Ok... this is really redundancy... 
         #
         #################################################################
-        if self.nodeSelectedis notNone:
+        if self.nodeSelected is not None:
             self.duplicate(self.nodeSelected)
         pass
 
@@ -1238,7 +1238,7 @@ class myLevelEditor(AppShell):
         ################################################################
         node = AllScene.getObjFromSceneByName(name)
         
-        if (self.controllerPanel) is not None and (nodeis notNone):
+        if (self.controllerPanel) is not None and (node is not None):
             self.controllerPanel.setNodePathIn(node)
             
         return

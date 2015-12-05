@@ -310,7 +310,7 @@ class dataHolder:
         while self.isInScene(defaultName):
             defaultName = defaultName + '_1'
         self.ModelDic[defaultName] = loader.loadModel(FilePath)
-        if self.ModelDic[defaultName]isNone:
+        if self.ModelDic[defaultName]is None:
             del self.ModelDic[defaultName]
             self.ModelNum -= 1
             return False
@@ -338,7 +338,7 @@ class dataHolder:
         while self.isInScene(defaultName):
             defaultName = defaultName + '_1'
         self.ActorDic[defaultName] = Actor.Actor(FilePath.getFullpath())
-        if self.ActorDic[defaultName]isNone:
+        if self.ActorDic[defaultName]is None:
             del self.ActorDic[defaultName]
             self.ActorNum -= 1
             return False
