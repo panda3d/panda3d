@@ -87,7 +87,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
                                      key = lambda x: x[1],
                                      reverse = True)
         PhasedObject.__init__(self,
-                              {alias: phase for (phase,alias) in enumerate([item[0] for item in self.phaseParamList])})
+                              dict([(alias,phase) for (phase,alias) in enumerate([item[0] for item in self.phaseParamList])]))
         self.__id = self.__allocateId()
 
         self.autoCleanup = autoCleanup
