@@ -408,14 +408,19 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   LVector3 from_extents = box->get_dimensions() * 0.5f;
   PN_stdfloat dist = _plane.dist_to_plane(from_center);
 
-  LVecBase3 box_x = wrt_mat.get_row3(0);
-  LVecBase3 box_y = wrt_mat.get_row3(1);
-  LVecBase3 box_z = wrt_mat.get_row3(2);
+  // Determine the basis vectors describing the box.
+  LVecBase3 box_x = wrt_mat.get_row3(0) * from_extents[0];
+  LVecBase3 box_y = wrt_mat.get_row3(1) * from_extents[1];
+  LVecBase3 box_z = wrt_mat.get_row3(2) * from_extents[2];
 
-  if (cabs(dist) >
-      cabs(box_x.dot(_plane.get_normal()) * from_extents[0]) +
-      cabs(box_y.dot(_plane.get_normal()) * from_extents[1]) +
-      cabs(box_z.dot(_plane.get_normal()) * from_extents[2])) {
+  // Project the box onto the normal vector of the plane to determine
+  // whether there is a separating axis.
+  PN_stdfloat dx = box_x.dot(_plane.get_normal());
+  PN_stdfloat dy = box_y.dot(_plane.get_normal());
+  PN_stdfloat dz = box_z.dot(_plane.get_normal());
+  PN_stdfloat depth = dist - (cabs(dx) + cabs(dy) + cabs(dz));
+
+  if (depth > 0) {
     // No collision.
     return NULL;
   }
@@ -428,9 +433,18 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3 normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
-
   new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(from_center - get_normal() * dist);
+
+  // Determine which point on the cube will be the interior point.  If
+  // the points are equally close, this chooses their center instead.
+  LPoint3 interior_point = from_center +
+    box_x * ((dx < 0) - (dx > 0)) +
+    box_y * ((dy < 0) - (dy > 0)) +
+    box_z * ((dz < 0) - (dz > 0));
+
+  // The surface point is the interior point projected onto the plane.
+  new_entry->set_surface_point(interior_point - get_normal() * depth);
+  new_entry->set_interior_point(interior_point);
 
   return new_entry;
 }
