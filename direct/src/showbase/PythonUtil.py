@@ -1317,7 +1317,7 @@ class Enum:
         i = start
         for item in items:
             # remove leading/trailing whitespace
-            item = string.strip(item)
+            item = item.strip()
             # is there anything left?
             if len(item) == 0:
                 continue

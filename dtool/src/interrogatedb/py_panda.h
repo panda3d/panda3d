@@ -135,6 +135,12 @@ typedef long Py_hash_t;
 // Python 3 versions before 3.3.3 defined this incorrectly.
 #undef _PyErr_OCCURRED
 #define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
+
+// Python versions before 3.3 did not define this.
+#if PY_VERSION_HEX < 0x03030000
+#define PyUnicode_AsUTF8 _PyUnicode_AsString
+#define PyUnicode_AsUTF8AndSize _PyUnicode_AsStringAndSize
+#endif
 #endif
 
 using namespace std;

@@ -1,6 +1,5 @@
 
 from pandac.PandaModules import *
-from string import lower
 
 class DirectLight(NodePath):
     def __init__(self, light, parent):

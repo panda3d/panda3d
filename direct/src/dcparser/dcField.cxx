@@ -19,6 +19,10 @@
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 #ifdef WITHIN_PANDA
 #include "pStatTimer.h"
 #endif

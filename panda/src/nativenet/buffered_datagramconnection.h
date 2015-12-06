@@ -256,10 +256,10 @@ inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
         #ifdef HAVE_PYTHON
         ostringstream s;
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_VERSION_HEX >= 0x03030000
         PyObject *exc_type = PyExc_ConnectionError;
 #else
-        PyObject *exc_type = PyExc_StandardError;
+        PyObject *exc_type = PyExc_OSError;
 #endif
         
         s << endl << "Error sending message: " << endl;
