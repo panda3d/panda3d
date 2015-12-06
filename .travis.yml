@@ -26,7 +26,7 @@ addons:
     - python-dev
     - python3-dev
     - zlib1g-dev
-script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT --installer --threads 4
+script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT --installer --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
 notifications:
   irc:
     channels:
