@@ -1519,7 +1519,7 @@ def CompileLink(dll, obj, opts):
             else:
                 cmd += ",5.01"
 
-            if dll.endswith(".dll"):
+            if dll.endswith(".dll") or dll.endswith(".pyd"):
                 cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(dll))[0] + ".lib"
 
             for (opt, dir) in LIBDIRECTORIES:
@@ -1527,10 +1527,8 @@ def CompileLink(dll, obj, opts):
                     cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
 
             for x in obj:
-                if x.endswith(".dll"):
+                if x.endswith(".dll") or x.endswith(".pyd"):
                     cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-                elif x.endswith(".pyd"):
-                    cmd += ' ' + os.path.splitext(x)[0] + ".lib"
                 elif x.endswith(".lib"):
                     dname = os.path.splitext(os.path.basename(x))[0] + ".dll"
                     if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + dname)):
@@ -1587,10 +1585,8 @@ def CompileLink(dll, obj, opts):
                     cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
 
             for x in obj:
-                if x.endswith(".dll"):
+                if x.endswith(".dll") or x.endswith(".pyd"):
                     cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-                elif x.endswith(".pyd"):
-                    cmd += ' ' + os.path.splitext(x)[0] + ".lib"
                 elif x.endswith(".lib"):
                     dname = os.path.splitext(dll)[0]+".dll"
                     if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):

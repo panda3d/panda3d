@@ -22,6 +22,10 @@
 #include "dcClassParameter.h"
 #include <algorithm>
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 #ifdef WITHIN_PANDA
 #include "pStatTimer.h"
 
@@ -80,7 +84,7 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
 {
   _number = -1;
   _constructor = NULL;
-      
+
 #ifdef HAVE_PYTHON
   _class_def = NULL;
   _owner_class_def = NULL;
@@ -1003,7 +1007,7 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
     string field_name = PyString_AsString(py_field_name);
 #endif
     Py_XDECREF(py_field_name);
-    
+
     DCField *field = get_field_by_name(field_name);
     if (field == (DCField *)NULL) {
       ostringstream strm;

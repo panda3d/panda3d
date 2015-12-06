@@ -4733,13 +4733,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "str";
 
       } else if (TypeManager::is_wchar_pointer(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)" << param_name << ", NULL);\n"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString(" << param_name << ", NULL);\n"
           << "#else"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
           << "wchar_t *" << param_name << "_str = (wchar_t *)alloca(sizeof(wchar_t) * (" + param_name + "_len + 1));\n"
@@ -4757,14 +4761,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_wstring(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
@@ -4782,14 +4790,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
