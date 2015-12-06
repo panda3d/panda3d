@@ -131,6 +131,12 @@ inline PyObject* doPy_RETURN_FALSE()
 typedef long Py_hash_t;
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+// Python 3 versions before 3.3.3 defined this incorrectly.
+#undef _PyErr_OCCURRED
+#define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
+#endif
+
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////////
