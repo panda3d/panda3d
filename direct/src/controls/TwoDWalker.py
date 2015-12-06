@@ -3,6 +3,8 @@ TwoDWalker.py is for controling the avatars in a 2D Scroller game environment.
 """
 
 from GravityWalker import *
+from panda3d.core import ConfigVariableBool
+
 
 class TwoDWalker(GravityWalker):
     """
@@ -14,9 +16,9 @@ class TwoDWalker(GravityWalker):
     customizable input list.
     """
     notify = directNotify.newCategory("TwoDWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
-    earlyEventSphere = base.config.GetBool('early-event-sphere', 0)
+    wantDebugIndicator = ConfigVariableBool('want-avatar-physics-indicator', False)
+    wantFloorSphere = ConfigVariableBool('want-floor-sphere', False)
+    earlyEventSphere = ConfigVariableBool('early-event-sphere', False)
 
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,

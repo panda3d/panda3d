@@ -18,13 +18,14 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.task.Task import Task
-from pandac.PandaModules import *
+from panda3d.core import *
+
 
 class DevWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("DevWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    runMultiplier = base.config.GetFloat('dev-run-multiplier', 4.0)
+    wantDebugIndicator = ConfigVariableBool('want-avatar-physics-indicator', False)
+    runMultiplier = ConfigVariableDouble('dev-run-multiplier', 4.0)
 
     # Ghost mode overrides this:
     slideName = "slide-is-disabled"
@@ -109,7 +110,7 @@ class DevWalker(DirectObject.DirectObject):
         slideRight = inputState.isSet("slideRight")
         levitateUp = inputState.isSet("levitateUp")
         levitateDown = inputState.isSet("levitateDown")
-        run = inputState.isSet("run") and self.runMultiplier or 1.0
+        run = inputState.isSet("run") and self.runMultiplier.getValue() or 1.0
 
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():

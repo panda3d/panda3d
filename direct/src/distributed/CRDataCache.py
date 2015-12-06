@@ -1,4 +1,6 @@
 from direct.distributed.CachedDOData import CachedDOData
+from panda3d.core import ConfigVariableInt
+
 
 class CRDataCache:
     # Stores cached data for DistributedObjects between instantiations on the client
@@ -6,7 +8,7 @@ class CRDataCache:
     def __init__(self):
         self._doId2name2data = {}
         # maximum # of objects we will cache data for
-        self._size = config.GetInt('crdatacache-size', 10)
+        self._size = ConfigVariableInt('crdatacache-size', 10).getValue()
         assert self._size > 0
         # used to preserve the cache size
         self._junkIndex = 0

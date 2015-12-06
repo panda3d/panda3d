@@ -23,7 +23,7 @@ from pandac.PandaModules import *
 
 class NonPhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("NonPhysicsWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    wantDebugIndicator = ConfigVariableBool('want-avatar-physics-indicator', False)
 
     # Ghost mode overrides this:
     slideName = "slide-is-disabled"

@@ -1,6 +1,6 @@
 from pandac.PandaModules import *
 from direct.task import Task
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
@@ -20,7 +20,7 @@ class ConnectionRepository(
     connection (and exchange datagrams) with a gameserver.  This
     includes ClientRepository and AIRepository.
     """
-    notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
+    notify = directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
     taskChain = None
 

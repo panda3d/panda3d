@@ -1,3 +1,5 @@
+from panda3d.core import NodePath
+from panda3d.physics import *
 
 class FallTest(NodePath):
     def __init__(self):
@@ -79,7 +81,7 @@ class FallTest(NodePath):
 if __name__ == "__main__":
     from direct.directbase.ThreeUpStart import *
     test=FallTest()
-    test.reparentTo(render)
+    test.reparentTo(base.render)
     test.setup()
-    camera.setY(-10.0)
-    run()
+    base.camera.setY(-10.0)
+    base.run()

@@ -11,11 +11,12 @@ from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
+from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
 from Tkinter import *
-import Pmw, os,Placer
+import Pmw, os
 
 from panda3d.core import *
 from panda3d.physics import *
@@ -2789,4 +2790,4 @@ if __name__ == '__main__':
     base.pp=pp
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()
-    run()
+    base.run()

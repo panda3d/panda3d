@@ -15,7 +15,10 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
     #--------------------------------------------------------------------------
     # Init
     #--------------------------------------------------------------------------    
-    def __init__(self, parent = None, nodePath = render, **kw):
+    def __init__(self, parent = None, nodePath = None, **kw):
+        if nodePath is None:
+            nodePath = render
+
         optiondefs = (('menuItems',   [],   Pmw.INITOPT),)
         self.defineoptions(kw, optiondefs)
         Pmw.MegaWidget.__init__(self, parent)

@@ -27,7 +27,10 @@ DEFAULT_MENU_ITEMS = [
 
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
-    def __init__(self, parent = None, nodePath = render, isItemEditable = True, **kw):
+    def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):
+        if nodePath is None:
+            nodePath = base.render
+
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
@@ -188,7 +191,10 @@ class SceneGraphExplorerItem(TreeItem):
         messenger.send('SGE_' + command, [self.nodePath])
 
 
-def explore(nodePath = render):
+def explore(nodePath = None):
+    if nodePath is None:
+        nodePath = base.render
+
     tl = Toplevel()
     tl.title('Explore: ' + nodePath.getName())
     sge = SceneGraphExplorer(parent = tl, nodePath = nodePath)

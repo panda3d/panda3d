@@ -5,7 +5,7 @@ from direct.directnotify import DirectNotifyGlobal
 from MsgTypesCMU import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
-from pandac.PandaModules import UniqueIdAllocator
+from panda3d.core import UniqueIdAllocator
 import types
 
 class ClientRepository(ClientRepositoryBase):

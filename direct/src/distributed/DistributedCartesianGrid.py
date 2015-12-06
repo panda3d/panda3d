@@ -1,6 +1,7 @@
 
 from pandac.PandaModules import *
 from direct.interval.IntervalGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 from direct.distributed.DistributedNode import DistributedNode
 from direct.task import Task
@@ -24,7 +25,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
     
-    VisualizeGrid = config.GetBool("visualize-cartesian-grid", 0)
+    VisualizeGrid = ConfigVariableBool("visualize-cartesian-grid", False)
 
     RuleSeparator = ":"
 

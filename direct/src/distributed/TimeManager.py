@@ -21,29 +21,29 @@ class TimeManager(DistributedObject.DistributedObject):
     # The number of seconds to wait between automatic
     # synchronizations.  Set to 0 to disable auto sync after
     # startup.
-    updateFreq = base.config.GetFloat('time-manager-freq', 1800)
+    updateFreq = ConfigVariableDouble('time-manager-freq', 1800).getValue()
 
     # The minimum number of seconds to wait between two unrelated
     # synchronization attempts.  Increasing this number cuts down
     # on frivolous synchronizations.
-    minWait = base.config.GetFloat('time-manager-min-wait', 10)
+    minWait = ConfigVariableDouble('time-manager-min-wait', 10).getValue()
 
     # The maximum number of seconds of uncertainty to tolerate in
     # the clock delta without trying again.
-    maxUncertainty = base.config.GetFloat('time-manager-max-uncertainty', 1)
+    maxUncertainty = ConfigVariableDouble('time-manager-max-uncertainty', 1).getValue()
 
     # The maximum number of attempts to try to get a low-latency
     # time measurement before giving up and accepting whatever we
     # get.
-    maxAttempts = base.config.GetInt('time-manager-max-attempts', 5)
+    maxAttempts = ConfigVariableInt('time-manager-max-attempts', 5).getValue()
 
     # A simulated clock skew for debugging, in seconds.
-    extraSkew = base.config.GetInt('time-manager-extra-skew', 0)
+    extraSkew = ConfigVariableInt('time-manager-extra-skew', 0).getValue()
 
     if extraSkew != 0:
         notify.info("Simulating clock skew of %0.3f s" % extraSkew)
 
-    reportFrameRateInterval = base.config.GetDouble('report-frame-rate-interval', 300.0)
+    reportFrameRateInterval = ConfigVariableDouble('report-frame-rate-interval', 300.0).getValue()
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)

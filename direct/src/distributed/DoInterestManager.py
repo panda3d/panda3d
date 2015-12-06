@@ -78,12 +78,7 @@ class DoInterestManager(DirectObject.DirectObject):
     Top level Interest Manager
     """
     notify = directNotify.newCategory("DoInterestManager")
-    try:
-        tempbase = base
-    except:
-        tempbase = simbase
-    InterestDebug = tempbase.config.GetBool('interest-debug', False)
-    del tempbase
+    InterestDebug = ConfigVariableBool('interest-debug', False)
 
     # 'handle' is a number that represents a single interest set that the
     # client has requested; the interest set may be modified

@@ -3,7 +3,7 @@
 __all__ = []
 
 from direct.task.TaskManagerGlobal import *
-import direct.task.Task
+from direct.task import Task
 import random
 
 numTasks = 10000

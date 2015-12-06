@@ -907,8 +907,11 @@ class DirectSession(DirectObject):
     def removeAllSelected(self):
         self.selected.removeAll()
 
-    def showAllDescendants(self, nodePath = render):
+    def showAllDescendants(self, nodePath = None):
         """ Show the level and its descendants """
+        if nodePath is None:
+            nodePath = base.render
+
         if not isinstance(nodePath, CollisionNode):
             nodePath.show()
 

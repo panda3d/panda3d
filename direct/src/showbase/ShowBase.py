@@ -1641,6 +1641,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def addAngularIntegrator(self):
         if not self.physicsMgrAngular:
+            from panda3d.physics import AngularEulerIntegrator
             self.physicsMgrAngular = 1
             integrator = AngularEulerIntegrator()
             self.physicsMgr.attachAngularIntegrator(integrator)

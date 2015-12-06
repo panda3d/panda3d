@@ -1,4 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from panda3d.core import *
 from PhasedObject import PhasedObject
 

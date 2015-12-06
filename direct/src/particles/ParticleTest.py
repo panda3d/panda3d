@@ -30,4 +30,4 @@ if __name__ == "__main__":
     # Particle Panel
     pp = ParticlePanel.ParticlePanel(pe)
 
-    run()
+    base.run()

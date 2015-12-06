@@ -1,6 +1,6 @@
 
 from pandac.PandaModules import *
-
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
 from DistributedNodeAI import DistributedNodeAI
 from CartesianGridBase import CartesianGridBase

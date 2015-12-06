@@ -19,7 +19,7 @@ CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a li
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
-    wantWASD = ConfigVariableBool('want-WASD', True)
+    wantWASD = ConfigVariableBool('want-WASD', False)
 
     def __init__(self, enable=True, passMessagesThrough = False):
         assert self.notify.debug("init control manager %s" % (passMessagesThrough))
