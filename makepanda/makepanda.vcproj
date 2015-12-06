@@ -5637,26 +5637,6 @@
 				<File RelativePath="..\direct\src\plugin\p3dOsxSplashWindow.I"></File>
 				<File RelativePath="..\direct\src\plugin\p3dWinSplashWindow.cxx"></File>
 			</Filter>
-			<Filter Name="http">
-				<File RelativePath="..\direct\src\http\application_log.h"></File>
-				<File RelativePath="..\direct\src\http\baseincomingset.i"></File>
-				<File RelativePath="..\direct\src\http\strtargetbuffer.h"></File>
-				<File RelativePath="..\direct\src\http\parsedhttprequest.h"></File>
-				<File RelativePath="..\direct\src\http\ringbuffer_slide.i"></File>
-				<File RelativePath="..\direct\src\http\http_request.cxx"></File>
-				<File RelativePath="..\direct\src\http\baseincomingset.h"></File>
-				<File RelativePath="..\direct\src\http\http_bufferedreader.h"></File>
-				<File RelativePath="..\direct\src\http\http_composite1.cxx"></File>
-				<File RelativePath="..\direct\src\http\config_http.cxx"></File>
-				<File RelativePath="..\direct\src\http\config_http.h"></File>
-				<File RelativePath="..\direct\src\http\http_bufferedreader.i"></File>
-				<File RelativePath="..\direct\src\http\ringbuffer_slide.h"></File>
-				<File RelativePath="..\direct\src\http\bufferedwriter_growable.h"></File>
-				<File RelativePath="..\direct\src\http\http_connection.cxx"></File>
-				<File RelativePath="..\direct\src\http\http_connection.h"></File>
-				<File RelativePath="..\direct\src\http\http_request.h"></File>
-				<File RelativePath="..\direct\src\http\parsedhttprequest.cxx"></File>
-			</Filter>
 			<Filter Name="p3d">
 				<File RelativePath="..\direct\src\p3d\p3dWrapper.c"></File>
 			</Filter>
