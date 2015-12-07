@@ -204,21 +204,25 @@ analyze_renderstate(const RenderState *rs) {
 
   //  verify_enforce_attrib_lock();
   _state = rs;
-  const AuxBitplaneAttrib *aux_bitplane = DCAST(AuxBitplaneAttrib, rs->get_attrib_def(AuxBitplaneAttrib::get_class_slot()));
+  const AuxBitplaneAttrib *aux_bitplane;
+  rs->get_attrib_def(aux_bitplane);
   int outputs = aux_bitplane->get_outputs();
 
   // Decide whether or not we need alpha testing or alpha blending.
 
-  const AlphaTestAttrib *alpha_test = DCAST(AlphaTestAttrib, rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+  const AlphaTestAttrib *alpha_test;
+  rs->get_attrib_def(alpha_test);
   if ((alpha_test->get_mode() != RenderAttrib::M_none)&&
       (alpha_test->get_mode() != RenderAttrib::M_always)) {
     _have_alpha_test = true;
   }
-  const ColorBlendAttrib *color_blend = DCAST(ColorBlendAttrib, rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  const ColorBlendAttrib *color_blend;
+  rs->get_attrib_def(color_blend);
   if (color_blend->get_mode() != ColorBlendAttrib::M_none) {
     _have_alpha_blend = true;
   }
-  const TransparencyAttrib *transparency = DCAST(TransparencyAttrib, rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *transparency;
+  rs->get_attrib_def(transparency);
   if ((transparency->get_mode() == TransparencyAttrib::M_alpha)||
       (transparency->get_mode() == TransparencyAttrib::M_dual)) {
     _have_alpha_blend = true;
@@ -257,57 +261,71 @@ analyze_renderstate(const RenderState *rs) {
 
   // Count number of textures.
 
-  const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  const TextureAttrib *texture;
+  rs->get_attrib_def(texture);
   _num_textures = texture->get_num_on_stages();
 
   // Determine whether or not vertex colors or flat colors are present.
 
-  const ColorAttrib *color = DCAST(ColorAttrib, rs->get_attrib_def(ColorAttrib::get_class_slot()));
+  const ColorAttrib *color;
+  rs->get_attrib_def(color);
   if (color->get_color_type() == ColorAttrib::T_vertex) {
     _vertex_colors = true;
   } else if (color->get_color_type() == ColorAttrib::T_flat) {
     _flat_colors = true;
   }
 
+  // Find the material.
+
+  const MaterialAttrib *material;
+  rs->get_attrib_def(material);
+
+  if (!material->is_off()) {
+    _material = material->get_material();
+  } else {
+    _material = Material::get_default();
+  }
+
   // Break out the lights by type.
 
   _shadows = false;
-  const LightAttrib *la = DCAST(LightAttrib, rs->get_attrib_def(LightAttrib::get_class_slot()));
-  for (int i=0; i<la->get_num_on_lights(); i++) {
+  const LightAttrib *la;
+  rs->get_attrib_def(la);
+
+  for (int i = 0; i < la->get_num_on_lights(); ++i) {
     NodePath light = la->get_on_light(i);
     nassertv(!light.is_empty());
     PandaNode *light_obj = light.node();
     nassertv(light_obj != (PandaNode *)NULL);
 
     if (light_obj->get_type() == AmbientLight::get_class_type()) {
-      _alights_np.push_back(light);
-      _alights.push_back((AmbientLight*)light_obj);
-    }
-    else if (light_obj->get_type() == DirectionalLight::get_class_type()) {
-      _dlights_np.push_back(light);
-      _dlights.push_back((DirectionalLight*)light_obj);
+      if (_material->has_ambient()) {
+        LColor a = _material->get_ambient();
+        if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
+          _have_ambient = true;
+        }
+      } else {
+        _have_ambient = true;
+      }
+      _lighting = true;
+
+    } else if (light_obj->is_of_type(LightLensNode::get_class_type())) {
+      _lights_np.push_back(light);
+      _lights.push_back((LightLensNode *)light_obj);
       if (DCAST(LightLensNode, light_obj)->is_shadow_caster()) {
         _shadows = true;
       }
-    }
-    else if (light_obj->get_type() == PointLight::get_class_type()) {
-      _plights_np.push_back(light);
-      _plights.push_back((PointLight*)light_obj);
-    }
-    else if (light_obj->get_type() == Spotlight::get_class_type()) {
-      _slights_np.push_back(light);
-      _slights.push_back((Spotlight*)light_obj);
-      if (DCAST(LightLensNode, light_obj)->is_shadow_caster()) {
-        _shadows = true;
-      }
+      _lighting = true;
+      _need_eye_normal = true;
     }
   }
 
   // See if there is a normal map, height map, gloss map, or glow map.
   // Also check if anything has TexGen.
 
-  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
-  for (int i=0; i<_num_textures; i++) {
+  const TexGenAttrib *tex_gen;
+  rs->get_attrib_def(tex_gen);
+  for (int i = 0; i < _num_textures; ++i) {
     TextureStage *stage = texture->get_on_stage(i);
     TextureStage::Mode mode = stage->get_mode();
     if ((mode == TextureStage::M_normal)||
@@ -352,43 +370,15 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  // Determine whether lighting is needed.
-
-  if (la->get_num_on_lights() > 0) {
-    _lighting = true;
-    _need_eye_normal = true;
-  }
-
   // Determine whether we should normalize the normals.
   const RescaleNormalAttrib *rescale;
   rs->get_attrib_def(rescale);
 
   _normalize_normals = (rescale->get_mode() != RescaleNormalAttrib::M_none);
 
-  // Find the material.
-
-  const MaterialAttrib *material = DCAST(MaterialAttrib, rs->get_attrib_def(MaterialAttrib::get_class_slot()));
-
-  if (!material->is_off()) {
-    _material = material->get_material();
-  } else {
-    _material = Material::get_default();
-  }
-
   // Decide which material modes need to be calculated.
 
-  if (_lighting && (_alights.size() > 0)) {
-    if (_material->has_ambient()) {
-      LColor a = _material->get_ambient();
-      if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
-        _have_ambient = true;
-      }
-    } else {
-      _have_ambient = true;
-    }
-  }
-
-  if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
+  if (_lighting) {
     if (_material->has_diffuse()) {
       LColor d = _material->get_diffuse();
       if ((d[0]!=0.0)||(d[1]!=0.0)||(d[2]!=0.0)) {
@@ -406,7 +396,7 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
+  if (_lighting) {
     if (_material->has_specular()) {
       LColor s = _material->get_specular();
       if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
@@ -416,12 +406,7 @@ analyze_renderstate(const RenderState *rs) {
       _have_specular = true;
     }
 
-    if (_plights.size() + _slights.size() > 0) {
-      _need_eye_position = true;
-
-    } else if (_have_specular && _material->get_local()) {
-      _need_eye_position = true;
-    }
+    _need_eye_position = true;
   }
 
   // Decide whether to separate ambient and diffuse calculations.
@@ -442,8 +427,8 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-  if (_lighting &&
+  const LightRampAttrib *light_ramp;
+  if (_lighting && rs->get_attrib(light_ramp) &&
       (light_ramp->get_mode() != LightRampAttrib::LRT_identity)) {
     _separate_ambient_diffuse = true;
   }
@@ -463,13 +448,15 @@ analyze_renderstate(const RenderState *rs) {
 
   // Check for clip planes.
 
-  const ClipPlaneAttrib *clip_plane = DCAST(ClipPlaneAttrib, rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+  const ClipPlaneAttrib *clip_plane;
+  rs->get_attrib_def(clip_plane);
   _num_clip_planes = clip_plane->get_num_on_planes();
   if (_num_clip_planes > 0) {
     _need_world_position = true;
   }
 
-  const ShaderAttrib *shader_attrib = DCAST(ShaderAttrib, rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  const ShaderAttrib *shader_attrib;
+  rs->get_attrib_def(shader_attrib);
   if (shader_attrib->auto_shader()) {
     _auto_normal_on = shader_attrib->auto_normal_on();
     _auto_glow_on   = shader_attrib->auto_glow_on();
@@ -479,8 +466,8 @@ analyze_renderstate(const RenderState *rs) {
   }
 
   // Check for fog.
-  const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
-  if (!fog->is_off()) {
+  const FogAttrib *fog;
+  if (rs->get_attrib(fog) && !fog->is_off()) {
     _fog = true;
   }
 }
@@ -533,14 +520,8 @@ clear_analysis() {
   _auto_ramp_on   = false;
   _auto_shadow_on = false;
 
-  _alights.clear();
-  _dlights.clear();
-  _plights.clear();
-  _slights.clear();
-  _alights_np.clear();
-  _dlights_np.clear();
-  _plights_np.clear();
-  _slights_np.clear();
+  _lights.clear();
+  _lights_np.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -553,73 +534,12 @@ clear_analysis() {
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
   PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
-  CPT(RenderAttrib) shattr = ShaderAttrib::make();
-  shattr = DCAST(ShaderAttrib, shattr)->set_shader(shader);
-  if (_lighting) {
-    for (int i=0; i < (int)_alights.size(); i++) {
-      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("alight", i), _alights_np[i]);
-    }
-    for (int i=0; i < (int)_dlights.size(); i++) {
-      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlight", i), _dlights_np[i]);
-      if (_shadows && _dlights[i]->_shadow_caster) {
-        PT(Texture) tex = update_shadow_buffer(_dlights_np[i]);
-        if (tex == NULL) {
-          pgraphnodes_cat.error() << "Failed to create shadow buffer for DirectionalLight '" << _dlights[i]->get_name() << "'!\n";
-        }
-        shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlighttex", i), tex);
-      } else {
-        _dlights[i]->clear_shadow_buffers();
-      }
-    }
-    for (int i=0; i < (int)_plights.size(); i++) {
-      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("plight", i), _plights_np[i]);
-    }
-    for (int i=0; i < (int)_slights.size(); i++) {
-      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slight", i), _slights_np[i]);
-      if (_shadows && _slights[i]->_shadow_caster) {
-        PT(Texture) tex = update_shadow_buffer(_slights_np[i]);
-        if (tex == NULL) {
-          pgraphnodes_cat.error() << "Failed to create shadow buffer for Spotlight '" << _slights[i]->get_name() << "'!\n";
-        }
-        shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slighttex", i), tex);
-      } else {
-        _slights[i]->clear_shadow_buffers();
-      }
-    }
+  CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
+
+  for (size_t i = 0; i < _lights.size(); ++i) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("light", i), _lights_np[i]);
   }
   return shattr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::update_shadow_buffer
-//       Access: Protected, Virtual
-//  Description: Updates the depth buffer of the specified light,
-//               if it is configured to cast shadows.
-//               Only call this function for DirectionalLights
-//               and Spotlights. Returns the depth texture.
-////////////////////////////////////////////////////////////////////
-PT(Texture) ShaderGenerator::
-update_shadow_buffer(NodePath light_np) {
-  // Make sure everything is valid.
-  nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
-           light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
-  PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
-  if (light == NULL || !light->_shadow_caster) {
-    return NULL;
-  }
-
-  // See if we already have a buffer. If not, create one.
-  Texture *tex;
-  if (light->_sbuffers.count(_gsg) == 0) {
-    // Nope, the light doesn't have a buffer for our GSG. Make one.
-    tex = _gsg->make_shadow_buffer(light_np, _host);
-  } else {
-    // There's already a buffer - use that.
-    tex = light->_sbuffers[_gsg]->get_texture();
-  }
-  nassertr(tex != NULL, NULL);
-
-  return tex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -674,8 +594,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   string tangent_input;
   string binormal_input;
   pmap<const InternalName *, const char *> texcoord_fregs;
-  pvector<const char *> dlightcoord_fregs;
-  pvector<const char *> slightcoord_fregs;
+  pvector<const char *> lightcoord_fregs;
   const char *world_position_freg = 0;
   const char *world_normal_freg = 0;
   const char *eye_position_freg = 0;
@@ -790,25 +709,18 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  if (_lighting) {
-    if (_shadows && _auto_shadow_on) {
-      for (int i=0; i < (int)_dlights.size(); i++) {
-        if (_dlights[i]->_shadow_caster) {
-          dlightcoord_fregs.push_back(alloc_freg());
-          text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
-          text << "\t out float4 l_dlightcoord" << i << " : " << dlightcoord_fregs[i] << ",\n";
+  if (_lighting && _shadows && _auto_shadow_on) {
+    for (size_t i = 0; i < _lights.size(); ++i) {
+      if (_lights[i]->_shadow_caster) {
+        lightcoord_fregs.push_back(alloc_freg());
+        if (_lights[i]->is_of_type(PointLight::get_class_type())) {
+          text << "\t uniform float4x4 trans_model_to_light" << i << ",\n";
         } else {
-          dlightcoord_fregs.push_back(NULL);
+          text << "\t uniform float4x4 trans_model_to_clip_of_light" << i << ",\n";
         }
-      }
-      for (int i=0; i < (int)_slights.size(); i++) {
-        if (_slights[i]->_shadow_caster) {
-          slightcoord_fregs.push_back(alloc_freg());
-          text << "\t uniform float4x4 trans_model_to_clip_of_slight" << i << ",\n";
-          text << "\t out float4 l_slightcoord" << i << " : " << slightcoord_fregs[i] << ",\n";
-        } else {
-          slightcoord_fregs.push_back(NULL);
-        }
+        text << "\t out float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      } else {
+        lightcoord_fregs.push_back(NULL);
       }
     }
   }
@@ -904,14 +816,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   if (_shadows && _auto_shadow_on) {
     text << "\t float4x4 biasmat = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f};\n";
-    for (int i=0; i < (int)_dlights.size(); i++) {
-      if (_dlights[i]->_shadow_caster) {
-        text << "\t l_dlightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_dlight" << i << ", vtx_position));\n";
-      }
-    }
-    for (int i=0; i < (int)_slights.size(); i++) {
-      if (_slights[i]->_shadow_caster) {
-        text << "\t l_slightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_slight" << i << ", vtx_position));\n";
+    for (size_t i = 0; i < _lights.size(); ++i) {
+      if (_lights[i]->_shadow_caster) {
+        if (_lights[i]->is_of_type(PointLight::get_class_type())) {
+          text << "\t l_lightcoord" << i << " = mul(trans_model_to_light" << i << ", vtx_position);\n";
+        } else {
+          text << "\t l_lightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_light" << i << ", vtx_position));\n";
+        }
       }
     }
   }
@@ -962,33 +873,27 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
   }
   if (_lighting) {
-    for (int i=0; i < (int)_alights.size(); i++) {
-      text << "\t uniform float4 alight_alight" << i << ",\n";
-    }
-    for (int i=0; i < (int)_dlights.size(); i++) {
-      text << "\t uniform float4x4 dlight_dlight" << i << "_rel_view,\n";
-      if (_shadows && _dlights[i]->_shadow_caster && _auto_shadow_on) {
-        if (_use_shadow_filter) {
-          text << "\t uniform sampler2DShadow k_dlighttex" << i << ",\n";
-        } else {
-          text << "\t uniform sampler2D k_dlighttex" << i << ",\n";
-        }
-        text << "\t in float4 l_dlightcoord" << i << " : " << dlightcoord_fregs[i] << ",\n";
+    for (size_t i = 0; i < _lights.size(); ++i) {
+      if (_lights[i]->is_of_type(DirectionalLight::get_class_type())) {
+        text << "\t uniform float4x4 dlight_light" << i << "_rel_view,\n";
+
+      } else if (_lights[i]->is_of_type(PointLight::get_class_type())) {
+        text << "\t uniform float4x4 plight_light" << i << "_rel_view,\n";
+
+      } else if (_lights[i]->is_of_type(Spotlight::get_class_type())) {
+        text << "\t uniform float4x4 slight_light" << i << "_rel_view,\n";
+        text << "\t uniform float4   satten_light" << i << ",\n";
       }
-    }
-    for (int i=0; i < (int)_plights.size(); i++) {
-      text << "\t uniform float4x4 plight_plight" << i << "_rel_view,\n";
-    }
-    for (int i=0; i < (int)_slights.size(); i++) {
-      text << "\t uniform float4x4 slight_slight" << i << "_rel_view,\n";
-      text << "\t uniform float4   satten_slight" << i << ",\n";
-      if (_shadows && _slights[i]->_shadow_caster && _auto_shadow_on) {
-        if (_use_shadow_filter) {
-          text << "\t uniform sampler2DShadow k_slighttex" << i << ",\n";
+
+      if (_shadows && _lights[i]->_shadow_caster && _auto_shadow_on) {
+        if (_lights[i]->is_of_type(PointLight::get_class_type())) {
+          text << "\t uniform samplerCUBE shadow_light" << i << ",\n";
+        } else if (_use_shadow_filter) {
+          text << "\t uniform sampler2DShadow shadow_light" << i << ",\n";
         } else {
-          text << "\t uniform sampler2D k_slighttex" << i << ",\n";
+          text << "\t uniform sampler2D shadow_light" << i << ",\n";
         }
-        text << "\t in float4 l_slightcoord" << i << " : " << slightcoord_fregs[i] << ",\n";
+        text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
       }
     }
     if (_need_material_props) {
@@ -1017,6 +922,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   for (int i=0; i<_num_clip_planes; ++i) {
     text << "\t uniform float4 clipplane_" << i << ",\n";
   }
+  text << "\t uniform float4 attr_ambient,\n";
   text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
   // Clipping first!
@@ -1149,7 +1055,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (_lighting) {
     text << "\t // Begin view-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
-    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
+    text << "\t float4 lcolor,lspec,lpoint,latten,ldir,leye;\n";
+    text << "\t float3 lvec,lhalf;\n";
     if (_shadows && _auto_shadow_on) {
       text << "\t float lshad;\n";
     }
@@ -1173,26 +1080,24 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t float shininess = 50; // no shininess specified, using default\n";
       }
     }
-    for (int i=0; i < (int)_alights.size(); i++) {
-      text << "\t // Ambient Light " << i << "\n";
-      text << "\t lcolor = alight_alight" << i << ";\n";
-      if (_separate_ambient_diffuse && _have_ambient) {
-        text << "\t tot_ambient += lcolor;\n";
-      } else if(_have_diffuse) {
-        text << "\t tot_diffuse += lcolor;\n";
-      }
+    if (_separate_ambient_diffuse && _have_ambient) {
+      text << "\t tot_ambient += attr_ambient;\n";
+    } else if(_have_diffuse) {
+      text << "\t tot_diffuse += attr_ambient;\n";
     }
-    for (int i=0; i < (int)_dlights.size(); i++) {
+  }
+  for (size_t i = 0; i < _lights.size(); ++i) {
+    if (_lights[i]->is_of_type(DirectionalLight::get_class_type())) {
       text << "\t // Directional Light " << i << "\n";
-      text << "\t lcolor = dlight_dlight" << i << "_rel_view[0];\n";
-      text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
-      text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
+      text << "\t lcolor = dlight_light" << i << "_rel_view[0];\n";
+      text << "\t lspec  = dlight_light" << i << "_rel_view[1];\n";
+      text << "\t lvec   = dlight_light" << i << "_rel_view[2].xyz;\n";
       text << "\t lcolor *= saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
-      if (_shadows && _dlights[i]->_shadow_caster && _auto_shadow_on) {
+      if (_shadows && _lights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
-          text << "\t lshad = shadow2DProj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r;\n";
+          text << "\t lshad = shadow2DProj(shadow_light" << i << ", l_lightcoord" << i << ").r;\n";
         } else {
-          text << "\t lshad = tex2Dproj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r > l_dlightcoord" << i << ".z / l_dlightcoord" << i << ".w;\n";
+          text << "\t lshad = tex2Dproj(shadow_light" << i << ", l_lightcoord" << i << ").r > l_lightcoord" << i << ".z / l_lightcoord" << i << ".w;\n";
         }
         text << "\t lcolor *= lshad;\n";
         text << "\t lspec *= lshad;\n";
@@ -1202,59 +1107,64 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
+          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
-          text << "\t lhalf = dlight_dlight" << i << "_rel_view[3];\n";
+          text << "\t lhalf = dlight_light" << i << "_rel_view[3].xyz;\n";
         }
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
-    }
-    for (int i=0; i < (int)_plights.size(); i++) {
+    } else if (_lights[i]->is_of_type(PointLight::get_class_type())) {
       text << "\t // Point Light " << i << "\n";
-      text << "\t lcolor = plight_plight" << i << "_rel_view[0];\n";
-      text << "\t lspec  = plight_plight" << i << "_rel_view[1];\n";
-      text << "\t lpoint = plight_plight" << i << "_rel_view[2];\n";
-      text << "\t latten = plight_plight" << i << "_rel_view[3];\n";
-      text << "\t lvec   = lpoint - l_eye_position;\n";
-      text << "\t ldist = length(float3(lvec));\n";
+      text << "\t lcolor = plight_light" << i << "_rel_view[0];\n";
+      text << "\t lspec  = plight_light" << i << "_rel_view[1];\n";
+      text << "\t lpoint = plight_light" << i << "_rel_view[2];\n";
+      text << "\t latten = plight_light" << i << "_rel_view[3];\n";
+      text << "\t lvec   = lpoint.xyz - l_eye_position.xyz;\n";
+      text << "\t ldist = length(lvec);\n";
       text << "\t lvec /= ldist;\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec));\n";
+      if (_shadows && _lights[i]->_shadow_caster && _auto_shadow_on) {
+        text << "\t ldist = max(abs(l_lightcoord" << i << ".x), max(abs(l_lightcoord" << i << ".y), abs(l_lightcoord" << i << ".z)));\n";
+        text << "\t ldist = ((latten.w+lpoint.w)/(latten.w-lpoint.w))+((-2*latten.w*lpoint.w)/(ldist * (latten.w-lpoint.w)));\n";
+        text << "\t lshad = texCUBE(shadow_light" << i << ", l_lightcoord" << i << ".xyz).r >= ldist * 0.5 + 0.5;\n";
+        text << "\t lcolor *= lshad;\n";
+        text << "\t lspec *= lshad;\n";
+      }
       if (_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
+          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
-          text << "\t lhalf = normalize(lvec - float4(0, 1, 0, 0));\n";
+          text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
-    }
-    for (int i=0; i < (int)_slights.size(); i++) {
+    } else if (_lights[i]->is_of_type(Spotlight::get_class_type())) {
       text << "\t // Spot Light " << i << "\n";
-      text << "\t lcolor = slight_slight" << i << "_rel_view[0];\n";
-      text << "\t lspec  = slight_slight" << i << "_rel_view[1];\n";
-      text << "\t lpoint = slight_slight" << i << "_rel_view[2];\n";
-      text << "\t ldir   = slight_slight" << i << "_rel_view[3];\n";
-      text << "\t latten = satten_slight" << i << ";\n";
-      text << "\t lvec   = lpoint - l_eye_position;\n";
-      text << "\t ldist  = length(float3(lvec));\n";
+      text << "\t lcolor = slight_light" << i << "_rel_view[0];\n";
+      text << "\t lspec  = slight_light" << i << "_rel_view[1];\n";
+      text << "\t lpoint = slight_light" << i << "_rel_view[2];\n";
+      text << "\t ldir   = slight_light" << i << "_rel_view[3];\n";
+      text << "\t latten = satten_light" << i << ";\n";
+      text << "\t lvec   = lpoint.xyz - l_eye_position.xyz;\n";
+      text << "\t ldist  = length(lvec);\n";
       text << "\t lvec /= ldist;\n";
-      text << "\t langle = saturate(dot(ldir.xyz, lvec.xyz));\n";
+      text << "\t langle = saturate(dot(ldir.xyz, lvec));\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
-      if (_shadows && _slights[i]->_shadow_caster && _auto_shadow_on) {
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec));\n";
+      if (_shadows && _lights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
-          text << "\t lshad = shadow2DProj(k_slighttex" << i << ", l_slightcoord" << i << ").r;\n";
+          text << "\t lshad = shadow2DProj(shadow_light" << i << ", l_lightcoord" << i << ").r;\n";
         } else {
-          text << "\t lshad = tex2Dproj(k_slighttex" << i << ", l_slightcoord" << i << ").r > l_slightcoord" << i << ".z / l_slightcoord" << i << ".w;\n";
+          text << "\t lshad = tex2Dproj(shadow_light" << i << ", l_lightcoord" << i << ").r > l_lightcoord" << i << ".z / l_lightcoord" << i << ".w;\n";
         }
         text << "\t lcolor *= lshad;\n";
         text << "\t lspec *= lshad;\n";
@@ -1265,15 +1175,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
+          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
-          text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
+          text << "\t lhalf = normalize(lvec - float3(0,1,0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
+  }
+  if (_lighting) {
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
     if (_auto_ramp_on && _have_diffuse) {
       switch (light_ramp->get_mode()) {

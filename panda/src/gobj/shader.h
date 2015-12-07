@@ -197,6 +197,16 @@ public:
     SMO_INVALID
   };
 
+  enum ShaderTexInput {
+    STO_INVALID,
+
+    STO_named_input,
+    STO_named_stage,
+
+    STO_stage_i,
+    STO_light_i_shadow_map,
+  };
+
   enum ShaderArgClass {
     SAC_scalar,
     SAC_vector,
@@ -380,6 +390,7 @@ public:
   struct ShaderTexSpec {
     ShaderArgId       _id;
     PT(InternalName)  _name;
+    ShaderTexInput    _part;
     int               _stage;
     int               _desired_type;
     PT(InternalName)  _suffix;

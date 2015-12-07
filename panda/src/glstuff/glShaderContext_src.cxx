@@ -25,6 +25,7 @@
 #include "fogAttrib.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "ambientLight.h"
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
@@ -799,7 +800,28 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         for (bind._index = 0; bind._index < param_size; ++bind._index) {
           _shader->_mat_spec.push_back(bind);
         }
+        _shader->_mat_deps |= bind._dep[0];
         return;
+
+      } else if (matrix_name.size() > 15 &&
+                 matrix_name.substr(0, 12) == "LightSource[" &&
+                 sscanf(matrix_name.c_str(), "LightSource[%d].%s", &bind._index, name_buffer) == 2) {
+        // A matrix member of a p3d_LightSource struct.
+        if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+          if (inverse) {
+            // Tack inverse back onto the end.
+            strcpy(name_buffer + strlen(name_buffer), "Inverse");
+          }
+
+          bind._func = Shader::SMF_first;
+          bind._part[0] = Shader::SMO_light_source_i_attrib;
+          bind._arg[0] = InternalName::make(name_buffer);
+          bind._part[1] = Shader::SMO_identity;
+
+        } else {
+          GLCAT.error() << "p3d_LightSource struct does not provide a matrix named " << matrix_name << "!\n";
+          return;
+        }
 
       } else {
         GLCAT.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
@@ -813,6 +835,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     if (size > 7 && noprefix.substr(0, 7) == "Texture") {
       Shader::ShaderTexSpec bind;
       bind._id = arg_id;
+      bind._part = Shader::STO_stage_i;
       bind._name = 0;
 
       string tail;
@@ -991,6 +1014,78 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->_mat_deps |= bind._dep[0];
       return;
     }
+    if (size > 15 && noprefix.substr(0, 12) == "LightSource[") {
+      int index;
+      if (sscanf(noprefix.c_str(), "LightSource[%d].%s", &index, name_buffer) == 2) {
+        // A member of a p3d_LightSource struct.
+        string member_name(name_buffer);
+        if (member_name == "shadowMap") {
+          switch (param_type) {
+#ifndef OPENGLES
+          case GL_SAMPLER_CUBE_SHADOW:
+#endif  // !OPENGLES
+          case GL_SAMPLER_2D:
+          case GL_SAMPLER_2D_SHADOW:
+          case GL_SAMPLER_CUBE:
+            {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._part = Shader::STO_light_i_shadow_map;
+              bind._name = 0;
+              bind._desired_type = Texture::TT_2d_texture;
+              bind._stage = index;
+              if (get_sampler_texture_type(bind._desired_type, param_type)) {
+                _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
+                _shader->_tex_spec.push_back(bind);
+              }
+              return;
+            }
+          default:
+            GLCAT.error()
+              << "Invalid type for p3d_LightSource[].shadowMap input!\n";
+            return;
+          }
+        } else {
+          // A non-sampler attribute of a numbered light source.
+          Shader::ShaderMatSpec bind;
+          bind._id = arg_id;
+          bind._func = Shader::SMF_first;
+          bind._index = index;
+          bind._part[0] = Shader::SMO_light_source_i_attrib;
+          bind._arg[0] = InternalName::make(member_name);
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_light | Shader::SSD_frame | Shader::SSD_transform;
+          bind._part[1] = Shader::SMO_identity;
+          bind._arg[1] = NULL;
+          bind._dep[1] = Shader::SSD_NONE;
+
+          switch (param_type) {
+          case GL_FLOAT:
+            bind._piece = Shader::SMP_row3x1;
+            break;
+
+          case GL_FLOAT_VEC2:
+            bind._piece = Shader::SMP_row3x2;
+            break;
+
+          case GL_FLOAT_VEC3:
+            bind._piece = Shader::SMP_row3x3;
+            break;
+
+          case GL_FLOAT_VEC4:
+            bind._piece = Shader::SMP_row3;
+            break;
+
+          default:
+            GLCAT.error()
+              << "p3d_LightSource[]." << member_name << " should be float or vec\n";
+            return;
+          }
+          _shader->_mat_spec.push_back(bind);
+          _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
+          return;
+        }
+      }
+    }
     if (noprefix == "TransformTable") {
       if (param_type != GL_FLOAT_MAT4) {
         GLCAT.error()
@@ -1119,6 +1214,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_SAMPLER_CUBE: {
         Shader::ShaderTexSpec bind;
         bind._id = arg_id;
+        bind._part = Shader::STO_named_input;
         bind._name = InternalName::make(param_name);
         bind._desired_type = Texture::TT_2d_texture;
         bind._stage = 0;
@@ -1159,9 +1255,19 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._id = arg_id;
         bind._piece = Shader::SMP_whole;
         bind._func = Shader::SMF_first;
-        bind._part[0] = Shader::SMO_mat_constant_x;
-        bind._arg[0] = InternalName::make(param_name);
-        bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
+        PT(InternalName) iname = InternalName::make(param_name);
+        if (iname->get_parent() != InternalName::get_root()) {
+          // It might be something like an attribute of a shader
+          // input, like a light parameter.  It might also just be
+          // a custom struct parameter.  We can't know yet, sadly.
+          bind._part[0] = Shader::SMO_mat_constant_x_attrib;
+          bind._arg[0] = InternalName::make(param_name);
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame | Shader::SSD_transform;
+        } else {
+          bind._part[0] = Shader::SMO_mat_constant_x;
+          bind._arg[0] = InternalName::make(param_name);
+          bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
+        }
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = NULL;
         bind._dep[1] = Shader::SSD_NONE;
@@ -2260,46 +2366,19 @@ update_shader_texture_bindings(ShaderContext *prev) {
   }
 #endif
 
-  // We get the TextureAttrib directly from the _target_rs, not the
-  // filtered TextureAttrib in _target_texture.
-  const TextureAttrib *texattrib;
-  _glgsg->_target_rs->get_attrib_def(texattrib);
-  //const TextureAttrib *texattrib;
-  //_state_rs->get_attrib_def(TextureAttrib::get_class_slot());
-
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
     const InternalName *id = spec._name;
 
-    Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
     SamplerState sampler;
 
-    if (id != NULL) {
-      // Named texture input.
-      if (!_glgsg->_target_shader->has_shader_input(id)) {
-        // This used to be legal for some reason, so don't trigger the assert.
-        GLCAT.error()
-          << "Shader input " << *id << " is not present.\n";
-        continue;
-      }
-      tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
-
-    } else {
-      if (spec._stage >= texattrib->get_num_on_stages()) {
-        // Apply a white texture in order to make it easier to use a shader
-        // that takes a texture on a model that doesn't have a texture applied.
-        _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
-        _glgsg->apply_white_texture();
-        continue;
-      }
-      TextureStage *stage = texattrib->get_on_stage(spec._stage);
-      tex = texattrib->get_on_texture(stage);
-      sampler = texattrib->get_on_sampler(stage);
-      view += stage->get_tex_view_offset();
-    }
-
-    if (tex == NULL) {
+    PT(Texture) tex = _glgsg->fetch_specified_texture(spec, sampler, view);
+    if (tex.is_null()) {
+      // Apply a white texture in order to make it easier to use a shader
+      // that takes a texture on a model that doesn't have a texture applied.
+      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+      _glgsg->apply_white_texture();
       continue;
     }
 

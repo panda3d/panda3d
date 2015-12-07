@@ -6841,7 +6841,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   call_glLightfv(id, GL_POSITION, fpos);
   call_glLightfv(id, GL_SPOT_DIRECTION, dir);
 
-  glLightf(id, GL_SPOT_EXPONENT, light_obj->get_exponent());
+  glLightf(id, GL_SPOT_EXPONENT, max(min(light_obj->get_exponent(), (PN_stdfloat)128), (PN_stdfloat)0));
   glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov() * 0.5f);
 
   const LVecBase3 &att = light_obj->get_attenuation();

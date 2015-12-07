@@ -478,6 +478,9 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_light_ambient) ||
       (inp == SMO_light_source_i_attrib)) {
     dep |= SSD_light;
+    if (inp == SMO_light_source_i_attrib) {
+      dep |= SSD_transform;
+    }
   }
   if ((inp == SMO_light_product_i_ambient) ||
       (inp == SMO_light_product_i_diffuse) ||
@@ -976,6 +979,17 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._arg[0] = NULL;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
+    } else if (pieces[1] == "ambient") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_light_ambient;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
@@ -1218,6 +1232,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id = p._id;
     bind._name = 0;
     bind._stage = atoi(pieces[1].c_str());
+    bind._part = STO_stage_i;
     switch (p._type) {
     case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
     case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
@@ -1234,6 +1249,31 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._suffix = InternalName::make(((string)"-") + pieces[2]);
       shader_cat.warning()
         << "Parameter " << p._id._name << ": use of a texture suffix is deprecated.\n";
+    }
+    _tex_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "shadow") {
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p)) ||
+        (!cp_errchk_parameter_sampler(p)))
+      return false;
+    if (pieces.size() != 2) {
+      cp_report_error(p, "Invalid parameter name");
+      return false;
+    }
+    ShaderTexSpec bind;
+    bind._id = p._id;
+    bind._name = InternalName::make(pieces[1])->append("shadowMap");
+    bind._stage = -1;
+    bind._part = STO_named_input;
+    switch (p._type) {
+    case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
+    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
+    default:
+      cp_report_error(p, "Invalid type for a shadow-parameter");
+      return false;
     }
     _tex_spec.push_back(bind);
     return true;
@@ -1347,6 +1387,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1355,6 +1396,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1363,6 +1405,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1371,6 +1414,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_2d_texture_array;
       _tex_spec.push_back(bind);
       return true;
@@ -1379,6 +1423,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_cube_map;
       _tex_spec.push_back(bind);
       return true;
@@ -1387,6 +1432,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_buffer_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1395,6 +1441,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_cube_map_array;
       _tex_spec.push_back(bind);
       return true;

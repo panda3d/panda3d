@@ -263,6 +263,9 @@ public:
   const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
   const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
                                        LMatrix4 &t, int index);
+  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
+                                      SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
@@ -348,7 +351,8 @@ public:
 
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
-  virtual PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
+  PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();

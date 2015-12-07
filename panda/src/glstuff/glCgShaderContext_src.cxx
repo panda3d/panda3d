@@ -1090,26 +1090,16 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
     int texunit = cgGetParameterResourceIndex(p);
-
-    Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
     SamplerState sampler;
 
-    if (id != NULL) {
-      tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
-
-    } else {
-      if (spec._stage >= texattrib->get_num_on_stages()) {
-        // Apply a white texture in order to make it easier to use a shader
-        // that takes a texture on a model that doesn't have a texture applied.
-        _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
-        _glgsg->apply_white_texture();
-        continue;
-      }
-      TextureStage *stage = texattrib->get_on_stage(spec._stage);
-      tex = texattrib->get_on_texture(stage);
-      sampler = texattrib->get_on_sampler(stage);
-      view += stage->get_tex_view_offset();
+    PT(Texture) tex = _glgsg->fetch_specified_texture(spec, sampler, view);
+    if (tex.is_null()) {
+      // Apply a white texture in order to make it easier to use a shader
+      // that takes a texture on a model that doesn't have a texture applied.
+      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+      _glgsg->apply_white_texture();
+      continue;
     }
 
     if (spec._suffix != 0) {

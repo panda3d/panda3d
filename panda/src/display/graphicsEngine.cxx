@@ -1480,7 +1480,8 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
-  typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
+  typedef pair<NodePath, int> CullKey;
+  typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
   size_t wlist_size = wlist.size();
@@ -1495,7 +1496,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           DisplayRegionPipelineReader *dr_reader =
             new DisplayRegionPipelineReader(dr, current_thread);
           NodePath camera = dr_reader->get_camera();
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, (DisplayRegion *)NULL)).first;
+          int lens_index = dr_reader->get_lens_index();
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(CullKey(camera, lens_index), (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.
