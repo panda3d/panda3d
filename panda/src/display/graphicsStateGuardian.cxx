@@ -1158,9 +1158,9 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       get_scene()->get_world_transform()->get_mat();
     LVecBase3 p = (t.xform_point(lt->get_point()));
     LVecBase3 a = lt->get_attenuation();
-    PN_stdfloat near = lt->get_lens(0)->get_near();
-    PN_stdfloat far = lt->get_lens(0)->get_far();
-    t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],near,a[0],a[1],a[2],far);
+    PN_stdfloat lnear = lt->get_lens(0)->get_near();
+    PN_stdfloat lfar = lt->get_lens(0)->get_far();
+    t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],lnear,a[0],a[1],a[2],lfar);
     return &t;
   }
   case Shader::SMO_slight_x: {
