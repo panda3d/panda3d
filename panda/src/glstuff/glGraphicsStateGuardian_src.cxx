@@ -8644,6 +8644,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 
   case Texture::F_luminance:
+#ifdef SUPPORT_FIXED_FUNCTION
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
@@ -8656,8 +8657,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     {
       return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
     }
+#else
+    return force_sized ? GL_R8 : GL_RED;
+#endif
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
+#ifdef SUPPORT_FIXED_FUNCTION
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
@@ -8666,6 +8671,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     {
       return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
     }
+#else
+    return force_sized ? GL_RG8 : GL_RG;
+#endif
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
