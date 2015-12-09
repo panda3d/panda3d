@@ -1815,6 +1815,9 @@ reset() {
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
 #else
+  // Make sure this is properly initialized.
+  _glGenerateMipmap = NULL;
+
   //TODO: add ARB/3.0 version
 
   _supports_framebuffer_object = false;
