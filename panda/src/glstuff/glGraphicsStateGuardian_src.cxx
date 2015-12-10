@@ -1009,6 +1009,11 @@ reset() {
     (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
 #endif
 
+#ifndef OPENGLES
+  _use_separate_specular_color = gl_separate_specular_color &&
+    (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_separate_specular_color"));
+#endif
+
 #ifdef OPENGLES
   _supports_packed_dabc = false;
 #else
@@ -1723,6 +1728,9 @@ reset() {
   } else if (has_extension("GL_NV_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersNV");
+
+  } else {
+    _glDrawBuffers = NULL;
   }
 
 #else
@@ -1733,12 +1741,15 @@ reset() {
   } else if (has_extension("GL_ARB_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersARB");
+
+  } else {
+    _glDrawBuffers = NULL;
   }
 #endif
 
 #ifndef OPENGLES_1
   _max_color_targets = 1;
-  if (_glDrawBuffers != 0) {
+  if (_glDrawBuffers != NULL) {
     GLint max_draw_buffers = 0;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_color_targets = max_draw_buffers;
@@ -1993,13 +2004,16 @@ reset() {
 
   GLint max_elements_vertices = 0, max_elements_indices = 0;
 #ifndef OPENGLES
-  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
-  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
-  if (max_elements_vertices > 0) {
-    _max_vertices_per_array = max_elements_vertices;
-  }
-  if (max_elements_indices > 0) {
-    _max_vertices_per_primitive = max_elements_indices;
+  if (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_draw_range_elements")) {
+    glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
+    glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
+
+    if (max_elements_vertices > 0) {
+      _max_vertices_per_array = max_elements_vertices;
+    }
+    if (max_elements_indices > 0) {
+      _max_vertices_per_primitive = max_elements_indices;
+    }
   }
 #endif  // OPENGLES
 
@@ -6442,7 +6456,7 @@ do_issue_material() {
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
 
-  if (gl_separate_specular_color) {
+  if (_use_separate_specular_color) {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
   } else {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);

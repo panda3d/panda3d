@@ -708,6 +708,11 @@ public:
 
   bool _supports_bgr;
   bool _supports_rescale_normal;
+
+#ifndef OPENGLES
+  bool _use_separate_specular_color;
+#endif
+
   bool _supports_packed_dabc;
 
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
