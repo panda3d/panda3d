@@ -719,6 +719,10 @@ public:
 
 #ifdef SUPPORT_FIXED_FUNCTION
   bool _supports_rescale_normal;
+
+#ifndef OPENGLES
+  bool _use_separate_specular_color;
+#endif
 #endif
 
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
