@@ -43,6 +43,9 @@ PUBLISHED:
   INLINE string get_basename() const;
   INLINE NotifySeverity get_severity() const;
   INLINE void set_severity(NotifySeverity severity);
+  MAKE_PROPERTY(fullname, get_fullname);
+  MAKE_PROPERTY(basename, get_basename);
+  MAKE_PROPERTY(severity, get_severity, set_severity);
 
   INLINE bool is_on(NotifySeverity severity) const;
 

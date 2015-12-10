@@ -40,6 +40,7 @@ PUBLISHED:
   INLINE void clear_name();
   INLINE bool has_name() const;
   INLINE const string &get_name() const;
+  MAKE_PROPERTY(name, get_name, set_name);
 
   // In the absence of any definition to the contrary, outputting a
   // Namable will write out its name.

@@ -45,6 +45,9 @@ PUBLISHED:
   Thread *get_thread() const;
   INLINE int get_index() const;
 
+  MAKE_PROPERTY(thread, get_thread);
+  MAKE_PROPERTY(index, get_index);
+
 private:
   PStatClient *_client;
   int _index;

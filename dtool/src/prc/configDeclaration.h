@@ -45,6 +45,8 @@ public:
 PUBLISHED:
   INLINE ConfigPage *get_page() const;
   INLINE ConfigVariableCore *get_variable() const;
+  MAKE_PROPERTY(page, get_page);
+  MAKE_PROPERTY(variable, get_variable);
 
   INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);

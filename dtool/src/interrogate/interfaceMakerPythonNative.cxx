@@ -2634,7 +2634,7 @@ write_module_class(ostream &out, Object *obj) {
       ++num_getset;
 
       string name1 = methodNameFromCppName(ielem.get_name(), "", false);
-      string name2 = methodNameFromCppName(ielem.get_name(), "", true);
+      //string name2 = methodNameFromCppName(ielem.get_name(), "", true);
 
       string getter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter";
       string setter = "NULL";
@@ -2655,13 +2655,13 @@ write_module_class(ostream &out, Object *obj) {
       // Extra void* argument; we don't make use of it.
       out << "NULL},\n";
 
-      if (name1 != name2 && name1 != "__dict__") {
+      /*if (name1 != name2 && name1 != "__dict__") {
         // Add alternative spelling.
         out << "  {(char *)\"" << name2 << "\", " << getter << ", " << setter
             << ", (char *)\n"
             << "    \"Alias of " << name1 << ", for consistency with old naming conventions.\",\n"
             << "    NULL},\n";
-      }
+      }*/
     }
 
     out << "  {NULL},\n";
@@ -3464,7 +3464,7 @@ write_function_for_name(ostream &out, Object *obj,
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1) {
+  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";

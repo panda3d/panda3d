@@ -42,13 +42,14 @@ PUBLISHED:
   INLINE ConfigVariable(const string &name);
   INLINE ~ConfigVariable();
 
-  INLINE const ConfigDeclaration *get_default_value() const;
-
   INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);
   INLINE void clear_value();
 
   INLINE size_t get_num_words() const;
+
+protected:
+  INLINE const ConfigDeclaration *get_default_value() const;
 
   INLINE bool has_string_word(size_t n) const;
   INLINE bool has_bool_word(size_t n) const;

@@ -82,6 +82,7 @@ PUBLISHED:
 
   void set_mode(Mode mode);
   INLINE Mode get_mode() const;
+  MAKE_PROPERTY(mode, get_mode, set_mode);
 
   INLINE double get_frame_time(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE double get_real_time() const;
@@ -95,21 +96,35 @@ PUBLISHED:
   INLINE int get_frame_count(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE double get_net_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
+  MAKE_PROPERTY(frame_time, get_frame_time, set_frame_time);
+  MAKE_PROPERTY(real_time, get_real_time, set_real_time);
+  MAKE_PROPERTY(long_time, get_long_time);
+  MAKE_PROPERTY(frame_count, get_frame_count, set_frame_count);
+
   INLINE double get_dt(Thread *current_thread = Thread::get_current_thread()) const;
   void set_dt(double dt);
   void set_frame_rate(double frame_rate);
+  MAKE_PROPERTY(dt, get_dt, set_dt);
 
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
+  MAKE_PROPERTY(max_dt, get_max_dt, set_max_dt);
 
   INLINE double get_degrade_factor() const;
   INLINE void set_degrade_factor(double degrade_factor);
+  MAKE_PROPERTY(degrade_factor, get_degrade_factor, set_degrade_factor);
 
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
+  MAKE_PROPERTY(average_frame_rate_interval,
+            get_average_frame_rate_interval,
+            set_average_frame_rate_interval);
+
   double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
   double get_max_frame_duration(Thread *current_thread = Thread::get_current_thread()) const;
   double calc_frame_rate_deviation(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(average_frame_rate, get_average_frame_rate);
+  MAKE_PROPERTY(max_frame_duration, get_max_frame_duration);
 
   void tick(Thread *current_thread = Thread::get_current_thread());
   void sync_frame_time(Thread *current_thread = Thread::get_current_thread());

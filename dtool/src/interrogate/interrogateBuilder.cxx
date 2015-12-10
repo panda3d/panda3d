@@ -1905,7 +1905,14 @@ get_function(CPPInstance *function, string description,
 //               database.
 ////////////////////////////////////////////////////////////////////
 ElementIndex InterrogateBuilder::
-get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
+get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope) {
+  // This is needed so we can get a proper unique name for the property.
+  if (make_property->_ident->_native_scope != scope) {
+    make_property = new CPPMakeProperty(*make_property);
+    make_property->_ident = new CPPIdentifier(*make_property->_ident);
+    make_property->_ident->_native_scope = scope;
+  }
+
   string property_name = make_property->get_local_name(&parser);
 
   // First, check to see if it's already there.
@@ -1927,7 +1934,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype =
         function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == 0) {
+      if (ftype != NULL/* && ftype->_parameters->_parameters.size() == 0*/) {
         getter = function;
         return_type = ftype->_return_type;
 
@@ -1957,6 +1964,9 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
 
   if (return_type != NULL) {
     iproperty._type = get_type(return_type, false);
+    //if (iproperty._type == 0) {
+    //  parser.warning("cannot determine property type", make_property->_ident->_loc);
+    //}
   } else {
     iproperty._type = 0;
   }
@@ -2609,7 +2619,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
-      ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype);
+      ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype, scope);
       itype._elements.push_back(element_index);
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_seq) {
