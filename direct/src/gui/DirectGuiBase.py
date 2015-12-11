@@ -741,7 +741,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 if hasattr(base, 'printGuiCreates'):
                     printStack()
         # Attach button to parent and make that self
-        if (parent == None):
+        if (parent is None):
             parent = aspect2d
         self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
@@ -951,7 +951,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setRelief(self, fSetStyle = 1):
         relief = self['relief']
         # Convert None, and string arguments
-        if relief == None:
+        if relief is None:
             relief = PGFrameStyle.TNone
         elif isinstance(relief, types.StringTypes):
             # Convert string to frame style int
@@ -992,7 +992,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameTexture(self):
         # this might be a single texture or a list of textures
         textures = self['frameTexture']
-        if textures == None or \
+        if textures is None or \
            isinstance(textures, Texture) or \
            isinstance(textures, types.StringTypes):
             textures = (textures,) * self['numStates']

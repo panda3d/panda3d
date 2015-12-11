@@ -147,7 +147,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             # battle walker control mode.
 
             targetNp = self.avatarNodePath.currentTarget
-            if not BattleStrafe or targetNp == None or targetNp.isEmpty():
+            if not BattleStrafe or targetNp is None or targetNp.isEmpty():
                 return GravityWalker.GravityWalker.handleAvatarControls(self, task)
 
             # get the button states:

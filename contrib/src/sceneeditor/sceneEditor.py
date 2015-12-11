@@ -549,17 +549,17 @@ class myLevelEditor(AppShell):
         # closeAllSubWindows(self)
         # except side window. this function will close all sub window if there is any.
         #################################################################
-        if self.lightingPanel != None:
+        if self.lightingPanel is not None:
             self.lightingPanel.quit()
-        if self.placer != None:
+        if self.placer is not None:
             self.placer.quit()
-        if self.MopathPanel != None:
+        if self.MopathPanel is not None:
             self.MopathPanel.quit()
 
-        if self.particlePanel != None:
+        if self.particlePanel is not None:
             self.particlePanel.quit()
 
-        if self.controllerPanel != None:
+        if self.controllerPanel is not None:
             self.controllerPanel.quit()
 
         list = self.animPanel.keys()
@@ -596,7 +596,7 @@ class myLevelEditor(AppShell):
         # Then, this function will reset the lighting list in the lightingPanel
         #################################################################
         list = AllScene.removeObj(lightNode)
-        if self.lightingPanel != None:
+        if self.lightingPanel is not None:
             self.lightingPanel.updateList(list)
         return
         
@@ -610,7 +610,7 @@ class myLevelEditor(AppShell):
         # Then, this function will reset the lighting list in the lightingPanel
         #################################################################
         list, lightNode = AllScene.rename(oName, nName)
-        if self.lightingPanel != None:
+        if self.lightingPanel is not None:
             self.lightingPanel.updateList(list,lightNode)
         return
     
@@ -624,7 +624,7 @@ class myLevelEditor(AppShell):
         # panel and update the data on the panel.
         #################################################################
         lightNode = AllScene.getLightNode(lightName)
-        if self.lightingPanel != None:
+        if self.lightingPanel is not None:
             self.lightingPanel.updateDisplay(lightNode)
         return
     
@@ -639,7 +639,7 @@ class myLevelEditor(AppShell):
         # panel with the newest lighting list and update the data on the panel.
         #################################################################
         list, lightNode = AllScene.createLight(type = type)
-        if self.lightingPanel != None:
+        if self.lightingPanel is not None:
             self.lightingPanel.updateList(list,lightNode)
         self.makeDirty()
         return
@@ -686,7 +686,7 @@ class myLevelEditor(AppShell):
         # This function will be called when user try to open the duplication window
         #################################################################
         print '----Duplication!!'
-        if nodePath != None:
+        if nodePath is not None:
             self.duplicateWindow = duplicateWindow(nodePath = nodePath)
         pass
 
@@ -699,8 +699,8 @@ class myLevelEditor(AppShell):
         # we will do deselect first then remove the certain node.
         #
         #################################################################
-        if nodePath==None:
-            if self.nodeSelected == None:
+        if nodePath is None:
+            if self.nodeSelected is None:
                 return
             nodePath = self.nodeSelected
         self.deSelectNode()
@@ -764,7 +764,7 @@ class myLevelEditor(AppShell):
         # This function will be call when user try to open a placer panel.
         # This call will only success if there is no other placer panel been activated
         #################################################################
-        if(self.placer==None):
+        if(self.placer is None):
             self.placer = Placer()
             self.menuPanel.entryconfig('Placer Panel', state=DISABLED)          
         return
@@ -804,7 +804,7 @@ class myLevelEditor(AppShell):
         # openMoPathPanel(self, nodepath = None)
         # This function will open a Motion Path Recorder for you.
         #################################################################
-        if self.MopathPanel == None:
+        if self.MopathPanel is None:
             self.MopathPanel = MopathRecorder()
         pass
 
@@ -821,7 +821,7 @@ class myLevelEditor(AppShell):
         AllScene.rename(nodePath,nName)
         
         # reset the list in the controller panel if it has been opened.
-        if (self.controllerPanel) != None:
+        if (self.controllerPanel) is not None:
             list = AllScene.getAllObjNameAsList()
             self.controllerPanel.resetNameList(list = list, name = oName, nodePath = nodePath)
         return
@@ -881,16 +881,16 @@ class myLevelEditor(AppShell):
 
         self.CurrentFileName = AllScene.loadScene()
         
-        if(self.CurrentFileName==None):
+        if(self.CurrentFileName is None):
             return
 
         thefile=Filename(self.CurrentFileName)
         thedir=thefile.getFullpathWoExtension()
         print "SCENE EDITOR::" + thedir
         self.CurrentDirName=thedir
-        if self.CurrentFileName != None:
+        if self.CurrentFileName is not None:
             self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
-        if self.lightingPanel !=None:
+        if self.lightingPanel is not None:
             lightList=AllScene.getList()
             self.lightingPanel.updateList(lightList)
         messenger.send('SGE_Update Explorer',[render])
@@ -900,7 +900,7 @@ class myLevelEditor(AppShell):
         self.sideWindow.quit()
 
         # Try to re-open the side window again
-        while self.sideWindow == None:
+        while self.sideWindow is None:
             wColor = base.getBackgroundColor()
             self.worldColor[0] = wColor.getX()
             self.worldColor[1] = wColor.getY()
@@ -1039,7 +1039,7 @@ class myLevelEditor(AppShell):
         # This will also remove the monitor task which monitor selected object's
         # position, orientation and scale each frame.
         #################################################################
-        if nodePath != None:
+        if nodePath is not None:
             self.seSession.deselect(nodePath)
         if self.isSelect:
             self.isSelect = False
@@ -1079,7 +1079,7 @@ class myLevelEditor(AppShell):
         # Ok... this is really redundancy... 
         #
         #################################################################
-        if self.nodeSelected!=None:
+        if self.nodeSelected is not None:
             self.duplicate(self.nodeSelected)
         pass
 
@@ -1185,7 +1185,7 @@ class myLevelEditor(AppShell):
         # open the lighting panel here.
         # If there is already exist a lighting panel, then do nothing
         ################################################################
-        if self.lightingPanel==None:
+        if self.lightingPanel is None:
             self.lightingPanel = lightingPanel(AllScene.getLightList())
             self.menuPanel.entryconfig('Lighting Panel', state=DISABLED)
         return
@@ -1200,7 +1200,7 @@ class myLevelEditor(AppShell):
         return
 
     def openParticlePanel(self):
-        if self.particlePanel != None:
+        if self.particlePanel is not None:
             ## There already has a Particle panel!
             return
         if(len(AllScene.particleDict)==0):
@@ -1217,7 +1217,7 @@ class myLevelEditor(AppShell):
         return
     
     def openInputPanel(self):
-        if self.controllerPanel==None:
+        if self.controllerPanel is None:
             list = AllScene.getAllObjNameAsList()
             type, dataList = AllScene.getControlSetting()
             self.controllerPanel = controllerWindow(listOfObj = list, controlType = type, dataList = dataList)
@@ -1238,7 +1238,7 @@ class myLevelEditor(AppShell):
         ################################################################
         node = AllScene.getObjFromSceneByName(name)
         
-        if (self.controllerPanel) != None and (node!=None):
+        if (self.controllerPanel) is not None and (node is not None):
             self.controllerPanel.setNodePathIn(node)
             
         return
@@ -1337,7 +1337,7 @@ class myLevelEditor(AppShell):
         # side window.
         # It will also call seSession to select this node in order to keep data's consistency
         ################################################################
-        if nodePath==None:
+        if nodePath is None:
             self.isSelect = False
             self.nodeSelected =None
             if taskMgr.hasTaskNamed('seMonitorSelectedNode'):
@@ -1373,7 +1373,7 @@ class myLevelEditor(AppShell):
         # Actually this will be called by seSession
         # The reason we make two selections is we don't want they call each other and never stop...
         ################################################################
-        if nodePath==None:
+        if nodePath is None:
             self.isSelect = False
             self.nodeSelected =None
             if taskMgr.hasTaskNamed('seMonitorSelectedNode'):
@@ -1407,7 +1407,7 @@ class myLevelEditor(AppShell):
         # the position, orientation and scale data of selected node and update the display on the screen.
         # Alos, it will send out message to sychronize the data in the placer and property window.
         ################################################################
-        if self.nodeSelected != None:
+        if self.nodeSelected is not None:
             pos = self.nodeSelected.getPos()
             hpr = self.nodeSelected.getHpr()
             scale = self.nodeSelected.getScale()
@@ -1567,7 +1567,7 @@ class myLevelEditor(AppShell):
         # In this function we will restore the change and let side window know
         # the hot-key ahs been pushed.
         ################################################################
-        if self.sideWindow != None:
+        if self.sideWindow is not None:
             self.sideWindow.toggleWidgetVisFromMainW()
         else:
             self.widgetVis = (self.widgetVis+1)%2
@@ -1580,7 +1580,7 @@ class myLevelEditor(AppShell):
         # In this function we will restore the change and let side window know
         # the hot-key ahs been pushed.
         ################################################################
-        if self.sideWindow != None:
+        if self.sideWindow is not None:
             self.sideWindow.toggleBackfaceFromMainW()
         else:
             self.backface = (self.backface+1)%2
@@ -1593,7 +1593,7 @@ class myLevelEditor(AppShell):
         # In this function we will restore the change and let side window know
         # the hot-key ahs been pushed.
         ################################################################
-        if self.sideWindow != None:
+        if self.sideWindow is not None:
             self.sideWindow.toggleTextureFromMainW()
         else:
             self.texture = (self.texture+1)%2
@@ -1606,7 +1606,7 @@ class myLevelEditor(AppShell):
         # In this function we will restore the change and let side window know
         # the hot-key ahs been pushed.
         ################################################################
-        if self.sideWindow != None:
+        if self.sideWindow is not None:
             self.sideWindow.toggleWireframeFromMainW()
         else:
             self.wireframe = (self.wireframe+1)%2

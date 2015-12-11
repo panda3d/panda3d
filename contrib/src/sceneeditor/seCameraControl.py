@@ -366,7 +366,7 @@ class DirectCameraControl(DirectObject):
         if not coaDist:
             coaDist = Vec3(self.coa - ZERO_POINT).length()
         # Place the marker in render space
-        if ref == None:
+        if ref is None:
             # KEH: use the current display region
             # ref = base.cam
             ref = SEditor.drList.getCurrentDr().cam

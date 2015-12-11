@@ -97,7 +97,7 @@ class OnscreenText(DirectObject, NodePath):
               to be changed at runtime, false if it is static once
               created (which leads to better memory optimization).
         """
-        if parent == None:
+        if parent is None:
             parent = aspect2d
 
         # make a text node
@@ -115,7 +115,7 @@ class OnscreenText(DirectObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -123,7 +123,7 @@ class OnscreenText(DirectObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -131,7 +131,7 @@ class OnscreenText(DirectObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -139,7 +139,7 @@ class OnscreenText(DirectObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -147,7 +147,7 @@ class OnscreenText(DirectObject, NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         else:
             raise ValueError
@@ -166,7 +166,7 @@ class OnscreenText(DirectObject, NodePath):
         if decal:
             textNode.setCardDecal(1)
 
-        if font == None:
+        if font is None:
             font = DGG.getDefaultFont()
 
         textNode.setFont(font)
@@ -199,7 +199,7 @@ class OnscreenText(DirectObject, NodePath):
         # graph.
         self.updateTransformMat()
 
-        if drawOrder != None:
+        if drawOrder is not None:
             textNode.setBin('fixed')
             textNode.setDrawOrder(drawOrder)
 
@@ -311,7 +311,7 @@ class OnscreenText(DirectObject, NodePath):
         uniform scale, or two scales, or a tuple of two scales.
         """
 
-        if sy == None:
+        if sy is None:
             if isinstance(sx, types.TupleType):
                 self.scale = sx
             else:

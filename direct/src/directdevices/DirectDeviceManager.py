@@ -18,7 +18,7 @@ class DirectDeviceManager(VrpnClient, DirectObject):
     def __init__(self, server = None):
 
         # Determine which server to use
-        if server != None:
+        if server is not None:
             # One given as constructor argument
             self.server = server
         else:

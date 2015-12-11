@@ -52,7 +52,7 @@ class SfxPlayer:
                 d = node.getDistance(listenerNode)
             else:
                 d = node.getDistance(base.cam)
-        if d == None or d > cutoff:
+        if d is None or d > cutoff:
             volume = 0
         else:
             if SfxPlayer.UseInverseSquare:

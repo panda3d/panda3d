@@ -82,7 +82,7 @@ class DirectEntry(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
-        if self['entryFont'] == None:
+        if self['entryFont'] is None:
             font = DGG.getDefaultFont()
         else:
             font = self['entryFont']

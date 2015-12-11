@@ -115,7 +115,7 @@ class CommonFilters:
         self.bloom = []
         self.blur = []
         self.ssao = []
-        if self.task != None:
+        if self.task is not None:
           taskMgr.remove(self.task)
           self.task = None
 
@@ -174,7 +174,7 @@ class CommonFilters:
                 self.textures[tex].setWrapV(Texture.WMClamp)
 
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
-            if (self.finalQuad == None):
+            if (self.finalQuad is None):
                 self.cleanup()
                 return False
 
@@ -388,7 +388,7 @@ class CommonFilters:
             casterpos = LPoint2()
             self.manager.camera.node().getLens().project(caster.getPos(self.manager.camera), casterpos)
             self.finalQuad.setShaderInput("casterpos", LVecBase4(casterpos.getX() * 0.5 + 0.5, (casterpos.getY() * 0.5 + 0.5), 0, 0))
-        if task != None:
+        if task is not None:
             return task.cont
 
     def setCartoonInk(self, separation=1, color=(0, 0, 0, 1)):
@@ -413,7 +413,7 @@ class CommonFilters:
         if (size=="off"):
             self.delBloom()
             return
-        if (maxtrigger==None): maxtrigger=mintrigger+0.8
+        if (maxtrigger is None): maxtrigger=mintrigger+0.8
         oldconfig = self.configuration.get("Bloom", None)
         fullrebuild = True
         if (oldconfig) and (oldconfig.size == size):

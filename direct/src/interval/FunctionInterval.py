@@ -111,7 +111,7 @@ class AcceptInterval(FunctionInterval):
         def acceptFunc(dirObj = dirObj, event = event, function = function):
             dirObj.accept(event, function)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'Accept-' + event
         # Create function interval
         FunctionInterval.__init__(self, acceptFunc, name = name)
@@ -125,7 +125,7 @@ class IgnoreInterval(FunctionInterval):
         def ignoreFunc(dirObj = dirObj, event = event):
             dirObj.ignore(event)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'Ignore-' + event
         # Create function interval
         FunctionInterval.__init__(self, ignoreFunc, name = name)
@@ -141,7 +141,7 @@ class ParentInterval(FunctionInterval):
         def reparentFunc(nodePath = nodePath, parent = parent):
             nodePath.reparentTo(parent)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'ParentInterval-%d' % ParentInterval.parentIntervalNum
             ParentInterval.parentIntervalNum += 1
         # Create function interval
@@ -158,7 +158,7 @@ class WrtParentInterval(FunctionInterval):
         def wrtReparentFunc(nodePath = nodePath, parent = parent):
             nodePath.wrtReparentTo(parent)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = ('WrtParentInterval-%d' %
                     WrtParentInterval.wrtParentIntervalNum)
             WrtParentInterval.wrtParentIntervalNum += 1
@@ -181,7 +181,7 @@ class PosInterval(FunctionInterval):
             else:
                 np.setPos(pos)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'PosInterval-%d' % PosInterval.posIntervalNum
             PosInterval.posIntervalNum += 1
         # Create function interval
@@ -202,7 +202,7 @@ class HprInterval(FunctionInterval):
             else:
                 np.setHpr(hpr)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'HprInterval-%d' % HprInterval.hprIntervalNum
             HprInterval.hprIntervalNum += 1
         # Create function interval
@@ -223,7 +223,7 @@ class ScaleInterval(FunctionInterval):
             else:
                 np.setScale(scale)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'ScaleInterval-%d' % ScaleInterval.scaleIntervalNum
             ScaleInterval.scaleIntervalNum += 1
         # Create function interval
@@ -244,7 +244,7 @@ class PosHprInterval(FunctionInterval):
             else:
                 np.setPosHpr(pos, hpr)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = 'PosHprInterval-%d' % PosHprInterval.posHprIntervalNum
             PosHprInterval.posHprIntervalNum += 1
         # Create function interval
@@ -266,7 +266,7 @@ class HprScaleInterval(FunctionInterval):
             else:
                 np.setHprScale(hpr, scale)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = ('HprScale-%d' %
                     HprScaleInterval.hprScaleIntervalNum)
             HprScaleInterval.hprScaleIntervalNum += 1
@@ -289,7 +289,7 @@ class PosHprScaleInterval(FunctionInterval):
             else:
                 np.setPosHprScale(pos, hpr, scale)
         # Determine name
-        if (name == None):
+        if (name is None):
             name = ('PosHprScale-%d' %
                     PosHprScaleInterval.posHprScaleIntervalNum)
             PosHprScaleInterval.posHprScaleIntervalNum += 1

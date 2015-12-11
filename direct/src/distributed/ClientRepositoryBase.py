@@ -249,7 +249,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # ...it is not in the dictionary or the cache.
             # Construct a new one
             classDef = dclass.getClassDef()
-            if classDef == None:
+            if classDef is None:
                 self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
             distObj = classDef(self)
             distObj.dclass = dclass
@@ -297,7 +297,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # ...it is not in the dictionary or the cache.
             # Construct a new one
             classDef = dclass.getClassDef()
-            if classDef == None:
+            if classDef is None:
                 self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
             distObj = classDef(self)
             distObj.dclass = dclass
@@ -340,7 +340,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # ...it is not in the dictionary or the cache.
             # Construct a new one
             classDef = dclass.getOwnerClassDef()
-            if classDef == None:
+            if classDef is None:
                 self.notify.error("Could not create an undefined %s object. Have you created an owner view?" % (dclass.getName()))
             distObj = classDef(self)
             distObj.dclass = dclass

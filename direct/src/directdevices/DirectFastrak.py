@@ -22,7 +22,7 @@ class DirectFastrak(DirectObject):
 
     def __init__(self, device = 'Tracker0', nodePath = base.direct.camera):
         # See if device manager has been initialized
-        if base.direct.deviceManager == None:
+        if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
 
         # Set name

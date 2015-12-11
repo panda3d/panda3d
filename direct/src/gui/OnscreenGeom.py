@@ -42,7 +42,7 @@ class OnscreenGeom(DirectObject, NodePath):
         """
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
-        if parent == None:
+        if parent is None:
             parent = aspect2d
 
         self.setGeom(geom, parent = parent, sort = sort, color = color)
@@ -79,13 +79,13 @@ class OnscreenGeom(DirectObject, NodePath):
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            if transform == None:
+            if transform is None:
                 # If we're replacing a previous image, we throw away
                 # the new image's transform in favor of the original
                 # image's transform.
                 transform = self.getTransform()
             sort = self.getSort()
-            if color == None and self.hasColor():
+            if color is None and self.hasColor():
                 color = self.getColor()
 
         self.removeNode()

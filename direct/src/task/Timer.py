@@ -10,7 +10,7 @@ class Timer:
     def __init__(self, name=None):
         self.finalT = 0.0
         self.currT = 0.0
-        if (name == None):
+        if (name is None):
             name = 'default-timer-%d' % Timer.id
             Timer.id += 1
         self.name = name
@@ -51,7 +51,7 @@ class Timer:
         self.start(self.finalT - self.currT, self.name)
 
     def restart(self):
-        if (self.callback != None):
+        if (self.callback is not None):
             self.startCallback(self.finalT, self.callback)
         else:
             self.start(self.finalT, self.name)
@@ -73,7 +73,7 @@ class Timer:
         te = t - self.startT 
         self.currT = te
         if (te >= self.finalT):
-            if (self.callback != None):
+            if (self.callback is not None):
                 self.callback()
             else:
                 messenger.send(self.name)

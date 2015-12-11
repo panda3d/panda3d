@@ -69,7 +69,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
     # Item Ctrls
     #--------------------------------------------------------------------------          
     def createDefaultCtrls(self):
-        if self.renderItem == None or self.render2dItem == None:
+        if self.renderItem is None or self.render2dItem is None:
             return
         
         totalBytes = self.renderItem.getVertexBytes()+self.render2dItem.getVertexBytes()
@@ -190,7 +190,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
             btIndex += 1        
 
     def updateDefaultBTWidth(self):
-        if self.renderItem == None or self.render2dItem == None:
+        if self.renderItem is None or self.render2dItem is None:
             return
         totalBytes = self.renderItem.getVertexBytes() + self.render2dItem.getVertexBytes()
         self.buttons[0]['width'] = self.getBTWidth(self.renderItem.getVertexBytes(), totalBytes)
@@ -220,7 +220,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
 
     def addItemCtrls(self, item):
         self.rootItem = item        
-        if item == None:
+        if item is None:
             self.createDefaultCtrls()
         else:
             self.addSelfCtrl(item, item.getVertexBytes())

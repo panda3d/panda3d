@@ -54,7 +54,7 @@ class sideWindow(AppShell):
             )
         self.defineoptions(kw, optiondefs)
 
-        if parent == None:
+        if parent is None:
             self.parent = Toplevel()
         else:
             self.parent = parent

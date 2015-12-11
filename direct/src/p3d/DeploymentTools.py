@@ -116,7 +116,7 @@ class Standalone:
         indicated by the 'output' argument. You can specify to build for
         a different platform by altering the 'platform' argument. """
 
-        if platform == None:
+        if platform is None:
             platform = PandaSystem.getPlatform()
 
         vfs = VirtualFileSystem.getGlobalPtr()
@@ -692,7 +692,7 @@ class Installer:
         a different platform by altering the 'platform' argument.
         If 'output' is a directory, the installer will be stored in it. """
 
-        if platform == None:
+        if platform is None:
             platform = PandaSystem.getPlatform()
 
         if platform.startswith("win"):
@@ -1181,7 +1181,7 @@ class Installer:
                 if os.path.isfile(os.path.join(p, "makensis")):
                     makensis = os.path.join(p, "makensis")
 
-        if makensis == None:
+        if makensis is None:
             Installer.notify.warning("Makensis utility not found, no Windows installer will be built!")
             return None
 

@@ -153,9 +153,9 @@ try:
   import curses
   curses.setupterm()
   SETF = curses.tigetstr("setf")
-  if (SETF == None):
+  if (SETF is None):
     SETF = curses.tigetstr("setaf")
-  assert SETF != None
+  assert SETF is not None
   HAVE_COLORS = sys.stdout.isatty()
 except: pass
 
@@ -166,7 +166,7 @@ def DisableColors():
 def GetColor(color = None):
     if not HAVE_COLORS:
         return ""
-    if color != None:
+    if color is not None:
         color = color.lower()
 
     if (color == "blue"):
@@ -1101,7 +1101,7 @@ def GetThirdpartyBase():
     thirdparty directory.  This is useful when wanting to use a single
     system-wide thirdparty directory, for instance on a build machine."""
     global THIRDPARTYBASE
-    if (THIRDPARTYBASE != None):
+    if (THIRDPARTYBASE is not None):
         return THIRDPARTYBASE
 
     THIRDPARTYBASE = "thirdparty"
@@ -1114,7 +1114,7 @@ def GetThirdpartyDir():
     """Returns the thirdparty directory for the target platform,
     ie. thirdparty/win-libs-vc10/.  May return None in the future."""
     global THIRDPARTYDIR
-    if THIRDPARTYDIR != None:
+    if THIRDPARTYDIR is not None:
         return THIRDPARTYDIR
 
     base = GetThirdpartyBase()
@@ -1297,10 +1297,10 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
     else:
-        return bool(LocateBinary(tool) != None)
+        return bool(LocateBinary(tool) is not None)
     result = handle.read().strip()
     returnval = handle.close()
-    if returnval != None and returnval != 0:
+    if returnval is not None and returnval != 0:
         return False
     return bool(len(result) > 0)
 
@@ -1450,21 +1450,21 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
-    if (target_pkg == "" or target_pkg == None):
+    if (target_pkg == "" or target_pkg is None):
         target_pkg = pkg
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
         framework = None
-    if (libs == None or libs == ""):
+    if (libs is None or libs == ""):
         libs = ()
     elif (isinstance(libs, str)):
         libs = (libs, )
-    if (incs == None or incs == ""):
+    if (incs is None or incs == ""):
         incs = ()
     elif (isinstance(incs, str)):
         incs = (incs, )
-    if (defs == None or defs == "" or len(defs) == 0):
+    if (defs is None or defs == "" or len(defs) == 0):
         defs = {}
     elif (isinstance(incs, str)):
         defs = {defs : ""}
@@ -1503,7 +1503,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 LibDirectory(target_pkg, py_lib_dir)
 
         # TODO: check for a .pc file in the lib/pkg-config/ dir
-        if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
+        if (tool is not None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
             tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
                 LibName(target_pkg, i)
@@ -1525,7 +1525,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             DefSymbol(target_pkg, d, v)
         return
 
-    elif not custom_loc and GetHost() == "darwin" and framework != None:
+    elif not custom_loc and GetHost() == "darwin" and framework is not None:
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
@@ -1539,7 +1539,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         elif VERBOSE:
             print(ColorText("cyan", "Couldn't find the framework %s" % (framework)))
 
-    elif not custom_loc and LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None):
+    elif not custom_loc and LocateBinary(tool) is not None and (tool != "pkg-config" or pkgconfig is not None):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(target_pkg, pkgconfig, tool)
@@ -2043,7 +2043,7 @@ def SdkLocateWindows(version = '7.1'):
 
 def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
-    if (osxtarget != None):
+    if (osxtarget is not None):
         sdkname = "MacOSX%d.%d" % osxtarget
         if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
@@ -2429,7 +2429,7 @@ def SetupBuildEnvironment(compiler):
                     print("Ignoring non-existent library directory %s" % (libdir))
 
         returnval = handle.close()
-        if returnval != None and returnval != 0:
+        if returnval is not None and returnval != 0:
             print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 

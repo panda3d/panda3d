@@ -628,7 +628,7 @@ class controllerWindow(AppShell):
         # setTargetObj(self, name = None)
         # setup the target object we want to control
         #################################################################
-        if tracker == None: # Call from Keyboard page.
+        if tracker is None: # Call from Keyboard page.
             if name=='camera':
                 self.nodePath = camera
             else:
@@ -646,7 +646,7 @@ class controllerWindow(AppShell):
         # If so, it will change the name showed on panel.
         ####################################################################
         self.widgetsDict['Keyboard-ObjList'].setlist(list)
-        if name != None:
+        if name is not None:
             if self.nameOfNode == name:
                 self.nameOfNode = self.nodePath.getName()
                 self.widgetsDict['Keyboard-ObjList'].selectitem(self.nameOfNode, setentry=True)

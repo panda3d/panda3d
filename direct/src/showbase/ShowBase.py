@@ -538,7 +538,7 @@ class ShowBase(DirectObject.DirectObject):
         Creates the default GraphicsPipe, which will be used to make
         windows unless otherwise specified.
         """
-        assert self.pipe == None
+        assert self.pipe is None
         selection = GraphicsPipeSelection.getGlobalPtr()
         if printPipeTypes:
             selection.printPipeTypes()
@@ -573,7 +573,7 @@ class ShowBase(DirectObject.DirectObject):
         selection.loadAuxModules()
 
         # First, we should make sure the default pipe exists.
-        if self.pipe == None:
+        if self.pipe is None:
             self.makeDefaultPipe()
 
         # Now go through the list of known pipes, and make each one if
@@ -659,33 +659,33 @@ class ShowBase(DirectObject.DirectObject):
 
         # Give the window a chance to truly open.
         self.graphicsEngine.openWindows()
-        if win != None and not win.isValid():
+        if win is not None and not win.isValid():
             self.notify.info("Window did not open, removing.")
             self.closeWindow(win)
             win = None
 
-        if win == None and pipe == None:
+        if win is None and pipe is None:
             # Try a little harder if the window wouldn't open.
             self.makeAllPipes()
             try:
                 self.pipeList.remove(self.pipe)
             except ValueError:
                 pass
-            while self.win == None and self.pipeList:
+            while self.win is None and self.pipeList:
                 self.pipe = self.pipeList[0]
                 self.notify.info("Trying pipe type %s (%s)" % (
                     self.pipe.getType(), self.pipe.getInterfaceName()))
                 win = func()
 
                 self.graphicsEngine.openWindows()
-                if win != None and not win.isValid():
+                if win is not None and not win.isValid():
                     self.notify.info("Window did not open, removing.")
                     self.closeWindow(win)
                     win = None
-                if win == None:
+                if win is None:
                     self.pipeList.remove(self.pipe)
 
-        if win == None:
+        if win is None:
             self.notify.warning("Unable to open '%s' window." % (type))
             if requireWindow:
                 # Unless require-window is set to false, it is an
@@ -703,14 +703,14 @@ class ShowBase(DirectObject.DirectObject):
                       makeCamera = True, keepCamera = False,
                       scene = None, stereo = None, unexposedDraw = None,
                       callbackWindowDict = None):
-        if pipe == None:
+        if pipe is None:
             pipe = self.pipe
 
-            if pipe == None:
+            if pipe is None:
                 self.makeDefaultPipe()
                 pipe = self.pipe
 
-            if pipe == None:
+            if pipe is None:
                 # We couldn't get a pipe.
                 return None
 
@@ -728,22 +728,22 @@ class ShowBase(DirectObject.DirectObject):
         if pipe.getType().getName().startswith('wdx'):
             gsg = None
 
-        if type == None:
+        if type is None:
             type = self.windowType
 
-        if props == None:
+        if props is None:
             props = WindowProperties.getDefault()
 
-        if fbprops == None:
+        if fbprops is None:
             fbprops = FrameBufferProperties.getDefault()
 
-        if size != None:
+        if size is not None:
             # If we were given an explicit size, use it; otherwise,
             # the size from the properties is used.
             props = WindowProperties(props)
             props.setSize(size[0], size[1])
 
-        if name == None:
+        if name is None:
             name = 'window%s' % (self.nextWindowIndex)
             self.nextWindowIndex += 1
 
@@ -769,7 +769,7 @@ class ShowBase(DirectObject.DirectObject):
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags)
 
-        if win == None:
+        if win is None:
             # Couldn't create a window!
             return None
 
@@ -797,7 +797,7 @@ class ShowBase(DirectObject.DirectObject):
             win.requestProperties(props)
 
         mainWindow = False
-        if self.win == None:
+        if self.win is None:
             mainWindow = True
             self.win = win
 
@@ -910,7 +910,7 @@ class ShowBase(DirectObject.DirectObject):
         if startDirect:
             self.__doStartDirect()
 
-        return self.win != None
+        return self.win is not None
 
     def openMainWindow(self, *args, **kw):
         """
@@ -930,7 +930,7 @@ class ShowBase(DirectObject.DirectObject):
         oldWin = self.win
         oldLens = self.camLens
         oldClearColorActive = None
-        if self.win != None:
+        if self.win is not None:
             # Close the previous window.
             oldClearColorActive = self.win.getClearColorActive()
             oldClearColor = VBase4(self.win.getClearColor())
@@ -942,23 +942,23 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open a new window.
         self.openWindow(*args, **kw)
-        if self.win == None:
+        if self.win is None:
             self.win = oldWin
             self.winList.append(oldWin)
             success = 0
 
-        if self.win != None:
+        if self.win is not None:
             if isinstance(self.win, GraphicsWindow):
                 self.setupMouse(self.win)
             self.makeCamera2d(self.win)
             self.makeCamera2dp(self.win)
 
-            if oldLens != None:
+            if oldLens is not None:
                 # Restore the previous lens properties.
                 self.camNode.setLens(oldLens)
                 self.camLens = oldLens
 
-            if oldClearColorActive != None:
+            if oldClearColorActive is not None:
                 # Restore the previous clear properties.
                 self.win.setClearColorActive(oldClearColorActive)
                 self.win.setClearColor(oldClearColor)
@@ -1238,14 +1238,14 @@ class ShowBase(DirectObject.DirectObject):
 
         aspectRatio = 1
 
-        if win == None:
+        if win is None:
             win = self.win
 
-        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
+        if win is not None and win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
 
         else:
-            if win == None or not hasattr(win, "getRequestedProperties"):
+            if win is None or not hasattr(win, "getRequestedProperties"):
                 props = WindowProperties.getDefault()
             else:
                 props = win.getRequestedProperties()
@@ -1265,13 +1265,13 @@ class ShowBase(DirectObject.DirectObject):
         # window), or the default size if there is not yet a
         # main window.
 
-        if win == None:
+        if win is None:
             win = self.win
 
-        if win != None and win.hasSize():
+        if win is not None and win.hasSize():
             return win.getXSize(), win.getYSize()
         else:
-            if win == None or not hasattr(win, "getRequestedProperties"):
+            if win is None or not hasattr(win, "getRequestedProperties"):
                 props = WindowProperties.getDefault()
             else:
                 props = win.getRequestedProperties()
@@ -1301,7 +1301,7 @@ class ShowBase(DirectObject.DirectObject):
         """
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
-        if self.camera == None:
+        if self.camera is None:
             # We make it a ModelNode with the PTLocal flag, so that
             # a wayward flatten operations won't attempt to mangle the
             # camera.
@@ -1322,27 +1322,27 @@ class ShowBase(DirectObject.DirectObject):
         else:
             # Make a new Camera node.
             camNode = Camera(camName)
-            if lens == None:
+            if lens is None:
                 lens = PerspectiveLens()
 
-                if aspectRatio == None:
+                if aspectRatio is None:
                     aspectRatio = self.getAspectRatio(win)
                 lens.setAspectRatio(aspectRatio)
 
             cam = self.camera.attachNewNode(camNode)
 
-        if lens != None:
+        if lens is not None:
             camNode.setLens(lens)
 
-        if scene != None:
+        if scene is not None:
             camNode.setScene(scene)
 
-        if mask != None:
+        if mask is not None:
             if (isinstance(mask, int)):
                 mask = BitMask32(mask)
             camNode.setCameraMask(mask)
 
-        if self.cam == None:
+        if self.cam is None:
             self.cam = cam
             self.camNode = camNode
             self.camLens = lens
@@ -1399,7 +1399,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             cam2dNode = Camera('cam2d')
 
-        if lens == None:
+        if lens is None:
             lens = OrthographicLens()
             lens.setFilmSize(right - left, top - bottom)
             lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
@@ -1408,13 +1408,13 @@ class ShowBase(DirectObject.DirectObject):
 
         # self.camera2d is the analog of self.camera, although it's
         # not as clear how useful it is.
-        if self.camera2d == None:
+        if self.camera2d is None:
             self.camera2d = self.render2d.attachNewNode('camera2d')
 
         camera2d = self.camera2d.attachNewNode(cam2dNode)
         dr.setCamera(camera2d)
 
-        if self.cam2d == None:
+        if self.cam2d is None:
             self.cam2d = camera2d
 
         return camera2d
@@ -1443,7 +1443,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             cam2dNode = Camera('cam2dp')
 
-        if lens == None:
+        if lens is None:
             lens = OrthographicLens()
             lens.setFilmSize(right - left, top - bottom)
             lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
@@ -1452,13 +1452,13 @@ class ShowBase(DirectObject.DirectObject):
 
         # self.camera2d is the analog of self.camera, although it's
         # not as clear how useful it is.
-        if self.camera2dp == None:
+        if self.camera2dp is None:
             self.camera2dp = self.render2dp.attachNewNode('camera2dp')
 
         camera2dp = self.camera2dp.attachNewNode(cam2dNode)
         dr.setCamera(camera2dp)
 
-        if self.cam2dp == None:
+        if self.cam2dp is None:
             self.cam2dp = camera2dp
 
         return camera2dp
@@ -1496,7 +1496,7 @@ class ShowBase(DirectObject.DirectObject):
         controls are not set up, and must be set up by hand if
         desired.
         """
-        if not fMultiWin and self.buttonThrowers != None:
+        if not fMultiWin and self.buttonThrowers is not None:
             for bt in self.buttonThrowers:
                 mw = bt.getParent()
                 mk = mw.getParent()
@@ -1712,7 +1712,7 @@ class ShowBase(DirectObject.DirectObject):
         # keep a list of sfx manager objects to apply settings to,
         # since there may be others in addition to the one we create here
         self.sfxManagerList.append(extraSfxManager)
-        newSfxManagerIsValid = (extraSfxManager!=None) and extraSfxManager.isValid()
+        newSfxManagerIsValid = (extraSfxManager is not None) and extraSfxManager.isValid()
         self.sfxManagerIsValidList.append(newSfxManagerIsValid)
         if newSfxManagerIsValid:
             extraSfxManager.setActive(self.sfxActive)
@@ -1723,7 +1723,7 @@ class ShowBase(DirectObject.DirectObject):
         self.addSfxManager(sfxManager)
 
         self.musicManager = AudioManager.createAudioManager()
-        self.musicManagerIsValid=self.musicManager!=None \
+        self.musicManagerIsValid=self.musicManager is not None \
                 and self.musicManager.isValid()
         if self.musicManagerIsValid:
             # ensure only 1 midi song is playing at a time:
@@ -1801,7 +1801,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def playMusic(self, music, looping = 0, interrupt = 1, volume = None, time = 0.0):
         if music:
-            if volume != None:
+            if volume is not None:
                 music.setVolume(volume)
 
             # if interrupt was set to 0, start over even if it's
@@ -1860,7 +1860,7 @@ class ShowBase(DirectObject.DirectObject):
         return Task.cont
 
     def __audioLoop(self, state):
-        if (self.musicManager != None):
+        if (self.musicManager is not None):
             self.musicManager.update()
         for x in self.sfxManagerList:
             x.update()
@@ -1983,7 +1983,7 @@ class ShowBase(DirectObject.DirectObject):
         # give the igLoop task a reasonably "late" sort,
         # so that it will get run after most tasks
         self.cluster = cluster
-        if (not clusterSync or (cluster == None)):
+        if (not clusterSync or (cluster is None)):
             self.taskMgr.add(self.__igLoop, 'igLoop', sort = 50)
         else:
             self.taskMgr.add(self.__igLoopSync, 'igLoop', sort = 50)
@@ -2009,7 +2009,7 @@ class ShowBase(DirectObject.DirectObject):
         the window is set up to clear the color each frame (this is
         the normal setting).
         """
-        if win == None:
+        if win is None:
             win = self.win
 
         return VBase4(win.getClearColor())
@@ -2023,7 +2023,7 @@ class ShowBase(DirectObject.DirectObject):
         The color may be either a VBase3 or a VBase4, or a 3-component
         tuple, or the individual r, g, b parameters.
         """
-        if g != None:
+        if g is not None:
             color = VBase4(r, g, b, a)
         else:
             arg = r
@@ -2032,7 +2032,7 @@ class ShowBase(DirectObject.DirectObject):
             else:
                 color = VBase4(arg[0], arg[1], arg[2], a)
 
-        if win == None:
+        if win is None:
             win = self.win
 
         if win:
@@ -2286,7 +2286,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.oobeMode:
             # Disable OOBE mode.
-            if self.oobeCullFrustum != None:
+            if self.oobeCullFrustum is not None:
                 # First, disable OOBE cull mode.
                 self.oobeCull(cam = cam)
 
@@ -2372,7 +2372,7 @@ class ShowBase(DirectObject.DirectObject):
         if not getattr(self, 'oobeMode', False):
             self.oobe(cam = cam)
 
-        if self.oobeCullFrustum == None:
+        if self.oobeCullFrustum is None:
             # Enable OOBE culling.
             pnode = LensNode('oobeCull')
             pnode.setLens(self.camLens)
@@ -2403,7 +2403,7 @@ class ShowBase(DirectObject.DirectObject):
         # Create a visible representation of the frustum.
         self.removeCameraFrustum()
         geom = self.camLens.makeGeometry()
-        if geom != None:
+        if geom is not None:
             gn = GeomNode('frustum')
             gn.addGeom(geom)
             self.camFrustumVis = self.camera.attachNewNode(gn)
@@ -2440,7 +2440,7 @@ class ShowBase(DirectObject.DirectObject):
         there is a problem.
         """
 
-        if source == None:
+        if source is None:
             source = self.win
 
         if defaultFilename:
@@ -2486,16 +2486,16 @@ class ShowBase(DirectObject.DirectObject):
         there is a problem.
         """
 
-        if source == None:
+        if source is None:
             source = self.win
 
-        if camera == None:
+        if camera is None:
             if hasattr(source, "getCamera"):
                 camera = source.getCamera()
-            if camera == None:
+            if camera is None:
                 camera = self.camera
 
-        if sourceLens == None:
+        if sourceLens is None:
             sourceLens = self.camLens
 
         if hasattr(source, "getWindow"):
@@ -2503,7 +2503,7 @@ class ShowBase(DirectObject.DirectObject):
 
         rig = NodePath(namePrefix)
         buffer = source.makeCubeMap(namePrefix, size, rig, cameraMask, 1)
-        if buffer == None:
+        if buffer is None:
             raise StandardError, "Could not make cube map."
 
         # Set the near and far planes from the default lens.
@@ -2548,16 +2548,16 @@ class ShowBase(DirectObject.DirectObject):
         The return value is the filename if successful, or None if
         there is a problem.
         """
-        if source == None:
+        if source is None:
             source = self.win
 
-        if camera == None:
+        if camera is None:
             if hasattr(source, "getCamera"):
                 camera = source.getCamera()
-            if camera == None:
+            if camera is None:
                 camera = self.camera
 
-        if sourceLens == None:
+        if sourceLens is None:
             sourceLens = self.camLens
 
         if hasattr(source, "getWindow"):
@@ -2572,7 +2572,7 @@ class ShowBase(DirectObject.DirectObject):
         # Now make the cube map buffer.
         rig = NodePath(namePrefix)
         buffer = toSphere.makeCubeMap(namePrefix, size, rig, cameraMask, 0)
-        if buffer == None:
+        if buffer is None:
             self.graphicsEngine.removeWindow(toSphere)
             raise StandardError, "Could not make cube map."
 

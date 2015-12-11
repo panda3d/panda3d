@@ -40,7 +40,7 @@ class ParticlePanel(AppShell):
         self.defineoptions(kw, optiondefs)
 
         # Record particle effect
-        if particleEffect != None:
+        if particleEffect is not None:
             self.particleEffect = particleEffect
         else:
             # Make sure particles are enabled
@@ -1095,7 +1095,7 @@ class ParticlePanel(AppShell):
     def updateLabels(self):
         self.effectsLabel['text'] = self.particleEffect.getName()
         self.particlesLabel['text'] = self.particles.getName()
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupLabel['text'] = self.forceGroup.getName()
         else:
             self.forceGroupLabel['text'] = 'Force Group'
@@ -1181,7 +1181,7 @@ class ParticlePanel(AppShell):
 
     def selectEffectNamed(self, name):
         effect = self.effectsDict.get(name, None)
-        if effect != None:
+        if effect is not None:
             self.particleEffect = effect
             # Default to first particle in particlesDict
             self.particles = self.particleEffect.getParticlesList()[0]
@@ -1204,7 +1204,7 @@ class ParticlePanel(AppShell):
 
     def selectParticlesNamed(self, name):
         particles = self.particleEffect.getParticlesNamed(name)
-        if particles != None:
+        if particles is not None:
             self.particles = particles
             self.updateInfo()
 
@@ -1216,7 +1216,7 @@ class ParticlePanel(AppShell):
 
     def selectForceGroupNamed(self, name):
         forceGroup = self.particleEffect.getForceGroupNamed(name)
-        if forceGroup != None:
+        if forceGroup is not None:
             self.forceGroup = forceGroup
             self.updateInfo('Force')
 
@@ -1820,9 +1820,9 @@ class ParticlePanel(AppShell):
     def setRendererGeomNode(self, event):
         node = None
         nodePath = loader.loadModel(self.rendererGeomNode.get())
-        if nodePath != None:
+        if nodePath is not None:
             node = nodePath.node()
-        if (node != None):
+        if (node is not None):
             self.particles.geomReference = self.rendererGeomNode.get()
             self.particles.renderer.setGeomNode(node)
     # Point #
@@ -2490,14 +2490,14 @@ class ParticlePanel(AppShell):
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupNotebook.pack(fill = X)
             self.forcePageName = (self.particleEffect.getName() + '-' +
                                   self.forceGroup.getName())
             self.forcePage = self.forcePagesDict.get(
                 self.forcePageName, None)
             # Page doesn't exist, add it
-            if self.forcePage == None:
+            if self.forcePage is None:
                 self.addForceGroupNotebookPage(
                     self.particleEffect, self.forceGroup)
             self.forceGroupNotebook.selectpage(self.forcePageName)
@@ -2522,7 +2522,7 @@ class ParticlePanel(AppShell):
         self.addForce(LinearUserDefinedForce())
 
     def addForce(self, f):
-        if self.forceGroup == None:
+        if self.forceGroup is None:
             self.createNewForceGroup()
         self.forceGroup.addForce(f)
         self.addForceWidget(self.forceGroup, f)
