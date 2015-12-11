@@ -25,6 +25,11 @@
 
 #define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
+static InputDevice::ControlAxis axis_map[] = {
+  InputDevice::C_left_x, InputDevice::C_left_y, InputDevice::C_left_trigger,
+  InputDevice::C_right_x, InputDevice::C_right_y, InputDevice::C_right_trigger
+};
+
 TypeHandle EvdevInputDevice::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -95,12 +100,15 @@ do_poll() {
 ////////////////////////////////////////////////////////////////////
 bool EvdevInputDevice::
 init_device() {
-  uint8_t evtypes[EV_MAX/8 + 1];
+  nassertr(_fd >= 0, false);
+
+  uint8_t evtypes[(EV_CNT + 7) >> 3];
+  memset(evtypes, 0, sizeof(evtypes));
   char name[256];
   char uniq[256];
   if (ioctl(_fd, EVIOCGNAME(sizeof(name)), name) < 0 ||
       ioctl(_fd, EVIOCGPHYS(sizeof(uniq)), uniq) < 0 ||
-      ioctl(_fd, EVIOCGBIT(0, EV_MAX), &evtypes) < 0) {
+      ioctl(_fd, EVIOCGBIT(0, sizeof(evtypes)), evtypes) < 0) {
     close(_fd);
     _fd = -1;
     _is_connected = false;
@@ -120,6 +128,35 @@ init_device() {
   }
 
   _name = ((string)name) + "." + uniq;
+
+  if (test_bit(EV_ABS, evtypes)) {
+    // Check which axes are on the device.
+    uint8_t axes[(ABS_CNT + 7) >> 3];
+    memset(axes, 0, sizeof(axes));
+
+    int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+    for (int i = 0; i < num_bits; ++i) {
+      if (test_bit(i, axes)) {
+        if (i >= 0 && i < 6) {
+          set_control_map(i, axis_map[i]);
+        }
+      }
+    }
+  }
+
+  if (test_bit(EV_KEY, evtypes)) {
+    // Check which buttons are on the device.
+    uint8_t keys[(KEY_CNT + 7) >> 3];
+    memset(keys, 0, sizeof(keys));
+
+    int num_bits = ioctl(_fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys) << 3;
+    int bi = 0;
+    for (int i = 0; i < num_bits; ++i) {
+      if (test_bit(i, keys)) {
+        set_button_map(bi++, map_button(i));
+      }
+    }
+  }
 
   if (test_bit(EV_REL, evtypes)) {
     _flags |= IDF_has_pointer;
@@ -169,6 +206,7 @@ process_events() {
 
   int x = _pointer_data.get_x();
   int y = _pointer_data.get_y();
+  bool have_pointer = false;
   double time = ClockObject::get_global_clock()->get_frame_time();
   ButtonHandle button;
 
@@ -180,11 +218,11 @@ process_events() {
     case EV_REL:
       if (events[i].code == REL_X) x += events[i].value;
       if (events[i].code == REL_Y) y += events[i].value;
+      have_pointer = true;
       break;
 
     case EV_ABS:
-      if (events[i].code == ABS_X) x = events[i].value;
-      if (events[i].code == ABS_Y) y = events[i].value;
+      set_control_state(events[i].code, events[i].value / 32767.0);
       break;
 
     case EV_KEY:
@@ -198,7 +236,9 @@ process_events() {
     }
   }
 
-  set_pointer(true, x, y, time);
+  if (have_pointer) {
+    set_pointer(true, x, y, time);
+  }
 
   return true;
 }

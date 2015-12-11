@@ -239,6 +239,17 @@ set_control_state(int index, double state) {
     _controls.resize(index + 1, AnalogState());
   }
 
+  if (device_cat.is_spam()) {
+    device_cat.spam()
+      << "Changed control " << index;
+
+    if (_controls[index]._axis != C_none) {
+      device_cat.spam(false) << " (" << _controls[index]._axis << ")";
+    }
+
+    device_cat.spam(false) << " to " << state << "\n";
+  }
+
   _controls[index]._state = state;
   _controls[index]._known = true;
 }
