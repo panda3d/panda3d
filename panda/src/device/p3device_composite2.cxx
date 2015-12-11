@@ -6,4 +6,4 @@
 #include "trackerData.cxx"
 #include "trackerNode.cxx"
 #include "virtualMouse.cxx"
-
+#include "xInputDevice.cxx"

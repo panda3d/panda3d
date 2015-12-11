@@ -28,6 +28,7 @@
 #include "linuxJoystickDevice.h"
 #include "trackerNode.h"
 #include "virtualMouse.h"
+#include "xInputDevice.h"
 
 #include "dconfig.h"
 
@@ -73,5 +74,9 @@ init_libdevice() {
 #ifdef PHAVE_LINUX_INPUT_H
   EvdevInputDevice::init_type();
   LinuxJoystickDevice::init_type();
+#endif
+
+#ifdef _WIN32
+  XInputDevice::init_type();
 #endif
 }

@@ -110,7 +110,7 @@ protected:
 
   virtual DWORD make_style(bool fullscreen);
 
-  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
+  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size,
                                           DWORD &bitdepth);
 
   virtual void support_overlay_window(bool flag);
@@ -178,6 +178,8 @@ private:
   bool _rcontrol_down;
   bool _lalt_down;
   bool _ralt_down;
+
+  GraphicsWindowInputDevice *_input;
 
   // following adds support platform specfic window processing
   // functions.
@@ -276,7 +278,7 @@ private:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };

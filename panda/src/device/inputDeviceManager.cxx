@@ -30,9 +30,10 @@ InputDeviceManager *InputDeviceManager::_global_ptr = NULL;
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
+#ifdef PHAVE_LINUX_INPUT_H
 InputDeviceManager::
 InputDeviceManager() : _inotify_fd(-1) {
-#ifdef PHAVE_LINUX_INPUT_H
+
   // Scan /dev/input for a list of input devices.
   DIR *dir = opendir("/dev/input");
   if (dir) {
@@ -70,8 +71,12 @@ InputDeviceManager() : _inotify_fd(-1) {
     device_cat.error()
       << "Error adding inotify watch on /dev/input: " << strerror(errno) << "\n";
   }
-#endif
 }
+#else
+InputDeviceManager::
+InputDeviceManager() {
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InputDeviceManager::Destructor

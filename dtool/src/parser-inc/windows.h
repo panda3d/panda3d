@@ -39,6 +39,7 @@ typedef unsigned long ULONG_PTR;
 // http://msdn.microsoft.com/en-us/library/cc230309.aspx
 typedef bool BOOL;
 typedef unsigned long DWORD;
+typedef unsigned short WORD;
 typedef long LONG;
 typedef long UINT;
 typedef unsigned long ULONG;
