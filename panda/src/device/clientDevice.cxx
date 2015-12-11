@@ -27,15 +27,14 @@ TypeHandle ClientDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type,
-             const string &device_name) :
+             const string &device_name, int device_flags) :
+  InputDevice(device_name, DC_unknown, device_flags),
   _client(client),
-  _device_type(device_type),
-  _device_name(device_name)
+  _device_type(device_type)
 {
   // We have to explicitly ref the client pointer, since we can't use
   // a PT(ClientBase) for circular include reasons.
   _client->ref();
-  _is_connected = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +48,7 @@ ClientDevice(ClientBase *client, TypeHandle device_type,
 ////////////////////////////////////////////////////////////////////
 ClientDevice::
 ~ClientDevice() {
-  nassertv(!_is_connected);
+  nassertv(!is_connected());
 
   // And now we explicitly unref the client pointer.
   unref_delete(_client);
@@ -72,19 +71,17 @@ ClientDevice::
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
 disconnect() {
-  if (_is_connected) {
-    acquire();
+  if (is_connected()) {
     bool disconnected =
-      _client->disconnect_device(_device_type, _device_name, this);
-    _is_connected = false;
-    unlock();
+      _client->disconnect_device(_device_type, get_name(), this);
+    set_connected(false);
     nassertv(disconnected);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClientDevice::poll
-//       Access: Public
+//     Function: ClientDevice::do_poll
+//       Access: Public, Virtual, Final
 //  Description: Causes the connected ClientBase to poll all of its
 //               clients, if necessary.  This will be a no-op if the
 //               client is running in forked mode, or if it has
@@ -94,7 +91,7 @@ disconnect() {
 //               data in this ClientDevice to ensure that it is fresh.
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
-poll() {
+do_poll() {
   _client->poll();
 }
 
@@ -105,7 +102,7 @@ poll() {
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
 output(ostream &out) const {
-  out << get_type() << " " << get_device_name();
+  out << get_type() << " " << get_name();
 }
 
 ////////////////////////////////////////////////////////////////////

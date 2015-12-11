@@ -1,5 +1,5 @@
-// Filename: clientButtonDevice.I
-// Created by:  drose (26Jan01)
+// Filename: evdevInputDevice.I
+// Created by:  rdb (24Aug15)
 //
 ////////////////////////////////////////////////////////////////////
 //

@@ -1,5 +1,5 @@
-// Filename: clientButtonDevice.I
-// Created by:  drose (26Jan01)
+// Filename: linuxJoystickDevice.I
+// Created by:  rdb (21Aug15)
 //
 ////////////////////////////////////////////////////////////////////
 //

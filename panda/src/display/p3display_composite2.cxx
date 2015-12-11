@@ -5,6 +5,7 @@
 #include "graphicsWindowProc.cxx"
 #include "graphicsWindowProcCallbackData.cxx"
 #include "graphicsWindowInputDevice.cxx"
+#include "mouseAndKeyboard.cxx"
 #include "nativeWindowHandle.cxx"
 #include "parasiteBuffer.cxx"
 #include "standardMunger.cxx"

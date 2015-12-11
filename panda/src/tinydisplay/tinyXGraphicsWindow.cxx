@@ -215,9 +215,7 @@ process_events() {
   if (_xwindow == (X11_Window)0) {
     return;
   }
-  
-  poll_raw_mice();
-  
+
   XEvent event;
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
@@ -294,18 +292,18 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input_devices[0].button_down(button);
+      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input->button_down(button);
       break;
       
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input_devices[0].button_up(button);
+      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input->button_up(button);
       break;
 
     case MotionNotify:
-      _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
       break;
 
     case KeyPress:
@@ -322,11 +320,11 @@ process_events() {
       break;
 
     case EnterNotify:
-      _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+      _input->set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
       break;
 
     case LeaveNotify:
-      _input_devices[0].set_pointer_out_of_window();
+      _input->set_pointer_out_of_window();
       break;
 
     case FocusIn:
@@ -335,7 +333,7 @@ process_events() {
       break;
 
     case FocusOut:
-      _input_devices[0].focus_lost();
+      _input->focus_lost();
       properties.set_foreground(false);
       system_changed_properties(properties);
       break;

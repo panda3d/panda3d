@@ -2786,9 +2786,9 @@ handle_raw_input(HRAWINPUT hraw) {
       if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
         _input_devices[i].set_pointer_in_window(adjx, adjy);
       } else {
-        int oldx = _input_devices[i].get_raw_pointer().get_x();
-        int oldy = _input_devices[i].get_raw_pointer().get_y();
-        _input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
+        //int oldx = _input_devices[i].get_raw_pointer().get_x();
+        //int oldy = _input_devices[i].get_raw_pointer().get_y();
+        //_input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
       }
 
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) {

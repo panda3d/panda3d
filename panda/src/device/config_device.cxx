@@ -23,7 +23,9 @@
 #include "clientDialDevice.h"
 #include "clientTrackerDevice.h"
 #include "dialNode.h"
-#include "mouseAndKeyboard.h"
+#include "evdevInputDevice.h"
+#include "inputDevice.h"
+#include "linuxJoystickDevice.h"
 #include "trackerNode.h"
 #include "virtualMouse.h"
 
@@ -64,7 +66,12 @@ init_libdevice() {
   ClientDialDevice::init_type();
   ClientTrackerDevice::init_type();
   DialNode::init_type();
-  MouseAndKeyboard::init_type();
+  InputDevice::init_type();
   TrackerNode::init_type();
   VirtualMouse::init_type();
+
+#ifdef PHAVE_LINUX_INPUT_H
+  EvdevInputDevice::init_type();
+  LinuxJoystickDevice::init_type();
+#endif
 }

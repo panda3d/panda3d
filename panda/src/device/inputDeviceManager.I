@@ -1,5 +1,5 @@
-// Filename: clientTrackerDevice.I
-// Created by:  drose (25Jan01)
+// Filename: inputDeviceManager.I
+// Created by:  rdb (09Dec15)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,12 +14,14 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClientTrackerDevice::Constructor
-//       Access: Protected
-//  Description:
+//     Function: InputDeviceManager::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns the singleton instance.
 ////////////////////////////////////////////////////////////////////
-INLINE ClientTrackerDevice::
-ClientTrackerDevice(ClientBase *client, const string &device_name):
-  ClientDevice(client, get_class_type(), device_name, IDF_has_tracker)
-{
+INLINE InputDeviceManager *InputDeviceManager::
+get_global_ptr() {
+  if (_global_ptr == (InputDeviceManager *)NULL) {
+    _global_ptr = new InputDeviceManager;
+  }
+  return _global_ptr;
 }

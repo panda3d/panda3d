@@ -45,6 +45,7 @@
 class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
   AnalogNode(ClientBase *client, const string &device_name);
+  AnalogNode(InputDevice *device);
   virtual ~AnalogNode();
 
   INLINE bool is_valid() const;
@@ -73,7 +74,7 @@ private:
   enum { max_outputs = 2 };
   OutputData _outputs[max_outputs];
 
-  PT(ClientAnalogDevice) _analog;
+  PT(InputDevice) _analog;
 
 protected:
   // Inherited from DataNode

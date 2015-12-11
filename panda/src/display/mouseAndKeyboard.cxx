@@ -41,7 +41,6 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
-  _button_events = new ButtonEventList;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,20 +92,18 @@ get_source_device() const {
 void MouseAndKeyboard::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
-  if (_window->has_button_event(_device)) {
-    // Fill up the button events.
-    _button_events->clear();
-    while (_window->has_button_event(_device)) {
-      ButtonEvent be = _window->get_button_event(_device);
-      _button_events->add_event(be);
-    }
-    output.set_data(_button_events_output, EventParameter(_button_events));
+
+  PT(InputDevice) device = _window->get_input_device(_device);
+
+  if (device->has_button_event()) {
+    PT(ButtonEventList) bel = device->get_button_events();
+    output.set_data(_button_events_output, EventParameter(bel));
   }
-  if (_window->has_pointer_event(_device)) {
-    PT(PointerEventList) pel = _window->get_pointer_events(_device);
+  if (device->has_pointer_event()) {
+    PT(PointerEventList) pel = device->get_pointer_events();
     output.set_data(_pointer_events_output, EventParameter(pel));
   }
-  
+
   // Get the window size.
   WindowProperties properties = _window->get_properties();
   if (properties.has_size()) {
@@ -116,18 +113,18 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     _pixel_size->set_value(LPoint2(w, h));
     output.set_data(_pixel_size_output, EventParameter(_pixel_size));
 
-    if (_window->has_pointer(_device)) {
-      const MouseData &mdata = _window->get_pointer(_device);
+    if (device->has_pointer()) {
+      const MouseData &mdata = device->get_pointer();
 
       if (mdata._in_window) {
         // Get mouse motion in pixels.
         _pixel_xy->set_value(LPoint2(mdata._xpos, mdata._ypos));
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
-        
+
         // Normalize pixel motion to range [-1,1].
         PN_stdfloat xf = (PN_stdfloat)(2 * mdata._xpos) / (PN_stdfloat)w - 1.0f;
         PN_stdfloat yf = 1.0f - (PN_stdfloat)(2 * mdata._ypos) / (PN_stdfloat)h;
-        
+
         _xy->set_value(LPoint2(xf, yf));
         output.set_data(_xy_output, EventParameter(_xy));
       }

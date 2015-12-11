@@ -20,9 +20,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool TrackerNode::
 is_valid() const {
-  return (_tracker != (ClientTrackerDevice *)NULL) && _tracker->is_connected();
+  return (!_tracker.is_null()/* && _tracker->is_connected()*/);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TrackerNode::get_pos

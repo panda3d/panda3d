@@ -20,8 +20,6 @@
 #include "clientBase.h"
 #include "clientButtonDevice.h"
 #include "dataNode.h"
-#include "buttonEventList.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonNode
@@ -41,6 +39,7 @@
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
   ButtonNode(ClientBase *client, const string &device_name);
+  ButtonNode(InputDevice *device);
   virtual ~ButtonNode();
 
   INLINE bool is_valid() const;
@@ -58,7 +57,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  PT(ClientButtonDevice) _button;
+  PT(InputDevice) _device;
 
 protected:
   // Inherited from DataNode
@@ -69,7 +68,6 @@ protected:
 private:
   // outputs
   int _button_events_output;
-  PT(ButtonEventList) _button_events;
 
 public:
   static TypeHandle get_class_type() {

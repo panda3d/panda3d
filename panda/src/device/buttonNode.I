@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonNode::
 is_valid() const {
-  return (_button != (ClientButtonDevice *)NULL) && _button->is_connected();
+  return (_device != (ClientButtonDevice *)NULL) && _device->is_connected();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,10 +36,7 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ButtonNode::
 get_num_buttons() const {
-  _button->acquire();
-  int result = _button->get_num_buttons();
-  _button->unlock();
-  return result;
+  return _device->get_num_buttons();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,9 +55,7 @@ get_num_buttons() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ButtonNode::
 set_button_map(int index, ButtonHandle button) {
-  _button->acquire();
-  _button->set_button_map(index, button);
-  _button->unlock();
+  _device->set_button_map(index, button);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,10 +68,7 @@ set_button_map(int index, ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle ButtonNode::
 get_button_map(int index) const {
-  _button->acquire();
-  ButtonHandle result = _button->get_button_map(index);
-  _button->unlock();
-  return result;
+  return _device->get_button_map(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,10 +80,7 @@ get_button_map(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonNode::
 get_button_state(int index) const {
-  _button->acquire();
-  bool result = _button->get_button_state(index);
-  _button->unlock();
-  return result;
+  return _device->get_button_state(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,8 +92,5 @@ get_button_state(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonNode::
 is_button_known(int index) const {
-  _button->acquire();
-  bool result = _button->is_button_known(index);
-  _button->unlock();
-  return result;
+  return _device->is_button_known(index);
 }

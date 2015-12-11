@@ -74,7 +74,6 @@ protected:
   static Bool check_event(X11_Display *display, XEvent *event, char *arg);
 
   void open_raw_mice();
-  void poll_raw_mice();
 
 private:
   X11_Cursor get_cursor(const Filename &filename);
@@ -89,6 +88,7 @@ protected:
   Colormap _colormap;
   XIC _ic;
   XVisualInfo *_visual_info;
+  GraphicsWindowInputDevice *_input;
 
   bool _have_xrandr;
 #ifdef HAVE_XRANDR

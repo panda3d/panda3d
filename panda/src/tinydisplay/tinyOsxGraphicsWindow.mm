@@ -419,7 +419,7 @@ OSStatus TinyOsxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, 
     }
 
     for (unsigned int x = 0; x < actualSize/sizeof(UniChar); ++x) {
-      _input_devices[0].keystroke(text[x]);
+      _input_devices[0]->keystroke(text[x]);
     }
     DisposePtr((char *)text);
   }
@@ -492,10 +492,10 @@ TinyOsxGraphicsWindow::TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPip
   _current_icon(NULL),
   _ID(id_seed++),
   _originalMode(NULL) {
- GraphicsWindowInputDevice device =
+  PT(InputDevice) device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
   _input_devices.push_back(device);
-  _input_devices[0].set_pointer_in_window(0, 0);
+  device->set_pointer_in_window(0, 0);
   _last_key_modifiers = 0;
   _last_buttons = 0;
 
@@ -579,7 +579,7 @@ bool TinyOsxGraphicsWindow::set_icon_filename(const Filename &icon_filename) {
 ////////////////////////////////////////////////////////////////////
 void TinyOsxGraphicsWindow::
 set_pointer_in_window(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input_devices[0]->set_pointer_in_window(x, y);
 
   if (_cursor_hidden != _display_hide_cursor) {
     if (_cursor_hidden) {
@@ -600,7 +600,7 @@ set_pointer_in_window(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 void TinyOsxGraphicsWindow::
 set_pointer_out_of_window() {
-  _input_devices[0].set_pointer_out_of_window();
+  _input_devices[0]->set_pointer_out_of_window();
 
   if (_display_hide_cursor) {
     CGDisplayShowCursor(kCGDirectMainDisplay);
@@ -1333,13 +1333,13 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
 	_wheel_delta += this_wheel_delta;
 	SInt32 wheel_scale = osx_mouse_wheel_scale;
 	while (_wheel_delta > wheel_scale) {
-	  _input_devices[0].button_down(MouseButton::wheel_up());
-	  _input_devices[0].button_up(MouseButton::wheel_up());
+	  _input_devices[0]->button_down(MouseButton::wheel_up());
+	  _input_devices[0]->button_up(MouseButton::wheel_up());
 	  _wheel_delta -= wheel_scale;
 	}
 	while (_wheel_delta < -wheel_scale) {
-	  _input_devices[0].button_down(MouseButton::wheel_down());
-	  _input_devices[0].button_up(MouseButton::wheel_down());
+	  _input_devices[0]->button_down(MouseButton::wheel_down());
+	  _input_devices[0]->button_up(MouseButton::wheel_down());
 	  _wheel_delta += wheel_scale;
 	}
       }
@@ -1519,25 +1519,25 @@ HandleButtonDelta(UInt32 new_buttons) {
 
   if (changed & 0x01) {
     if (new_buttons & 0x01) {
-      _input_devices[0].button_down(MouseButton::one());
+      _input_devices[0]->button_down(MouseButton::one());
     } else {
-      _input_devices[0].button_up(MouseButton::one());
+      _input_devices[0]->button_up(MouseButton::one());
     }
   }
 
   if (changed & 0x04) {
     if (new_buttons & 0x04) {
-      _input_devices[0].button_down(MouseButton::two());
+      _input_devices[0]->button_down(MouseButton::two());
     } else {
-      _input_devices[0].button_up(MouseButton::two());
+      _input_devices[0]->button_up(MouseButton::two());
     }
   }
 
   if (changed & 0x02) {
     if (new_buttons & 0x02) {
-      _input_devices[0].button_down(MouseButton::three());
+      _input_devices[0]->button_down(MouseButton::three());
     } else {
-      _input_devices[0].button_up(MouseButton::three());
+      _input_devices[0]->button_up(MouseButton::three());
     }
   }
 
@@ -1745,7 +1745,7 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   if (properties.has_cursor_hidden()) {
     _properties.set_cursor_hidden(properties.get_cursor_hidden());
     _cursor_hidden = properties.get_cursor_hidden();
-    if (_cursor_hidden && _input_devices[0].has_pointer()) {
+    if (_cursor_hidden && _input_devices[0]->has_pointer()) {
       if (!_display_hide_cursor) {
         CGDisplayHideCursor(kCGDirectMainDisplay);
         _display_hide_cursor = true;
