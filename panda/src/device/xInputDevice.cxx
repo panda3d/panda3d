@@ -18,6 +18,7 @@
 #include "gamepadButton.h"
 
 #include <XInput.h>
+#include <CfgMgr32.h>
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
@@ -27,13 +28,47 @@
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
 #endif
 
+#ifndef BATTERY_DEVTYPE_GAMEPAD
+#define BATTERY_DEVTYPE_GAMEPAD 0x00
+#endif
+
+#ifndef BATTERY_TYPE_DISCONNECTED
+#define BATTERY_TYPE_DISCONNECTED 0x00
+#endif
+
+#ifndef BATTERY_TYPE_WIRED
+#define BATTERY_TYPE_WIRED 0x01
+#endif
+
+#ifndef BATTERY_LEVEL_FULL
+#define BATTERY_LEVEL_FULL 0x03
+#endif
+
+typedef struct _XINPUT_BATTERY_INFORMATION {
+  BYTE BatteryType;
+  BYTE BatteryLevel;
+} XINPUT_BATTERY_INFORMATION;
+
+// Undocumented, I figured out how this looks by trial and error.
+struct XINPUT_BUSINFO {
+  WORD VendorID;
+  WORD ProductID;
+  WORD RevisionID;
+  WORD Unknown1; // Unknown - padding?
+  DWORD InstanceID;
+  DWORD Unknown2;
+  //WORD Unknown3;
+};
+
 typedef DWORD (*pXInputGetState)(DWORD, XINPUT_STATE *);
 typedef DWORD (*pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
-//typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
+typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
+typedef DWORD (*pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
 
 static pXInputGetState get_state = NULL;
 static pXInputGetCapabilities get_capabilities = NULL;
-//static pXInputGetBatteryInformation get_battery_information = NULL;
+static pXInputGetBatteryInformation get_battery_information = NULL;
+static pXInputGetBaseBusInformation get_base_bus_information = NULL;
 
 bool XInputDevice::_initialized = false;
 
@@ -73,10 +108,9 @@ XInputDevice(DWORD user_index) :
     }
   }
 
-#if 0
   if (get_battery_information != NULL) {
     XINPUT_BATTERY_INFORMATION batt;
-    if (XInputGetBatteryInformation(_index, BATTERY_DEVTYPE_GAMEPAD, &batt) == ERROR_SUCCESS) {
+    if (get_battery_information(_index, 0, &batt) == ERROR_SUCCESS) {
       if (batt.BatteryType == BATTERY_TYPE_DISCONNECTED) {
         _is_connected = false;
 
@@ -89,8 +123,52 @@ XInputDevice(DWORD user_index) :
       }
     }
   }
-#endif
 
+  // Get information about the USB device.
+  // This is not documented at all.  I'm probably the first to try this.
+  XINPUT_BUSINFO businfo;
+  if (get_base_bus_information != NULL &&
+      get_base_bus_information(0, &businfo) == ERROR_SUCCESS) {
+    _vendor_id = businfo.VendorID;
+    _product_id = businfo.ProductID;
+
+    {
+      // Reformat the serial number into its original hex string form.
+      char sn[10];
+      sprintf(sn, "%08X", businfo.InstanceID);
+      _serial_number.assign(sn, 8);
+    }
+
+    // Get information about the device from Windows.  For that, we'll
+    // first need to construct the device path.  Fortunately, we now have
+    // enough information to do so.
+    char path[32];
+    sprintf(path, "USB\\VID_%04X&PID_%04X\\%08X", businfo.VendorID, businfo.ProductID, businfo.InstanceID);
+
+    DEVINST inst;
+    if (CM_Locate_DevNodeA(&inst, path, 0) != 0) {
+      if (device_cat.is_debug()) {
+        device_cat.debug()
+          << "Could not locate device node " << path << "\n";
+      }
+    } else {
+      // Get the device properties we need.
+      char buffer[4096];
+      ULONG buflen = 4096;
+      if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_DEVICEDESC, 0, buffer, &buflen, 0) == CR_SUCCESS) {
+        _name.assign(buffer);
+      }
+      buflen = 4096;
+      if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_MFG, 0, buffer, &buflen, 0) == CR_SUCCESS) {
+        _manufacturer.assign(buffer);
+      }
+    }
+  } else {
+    // We need something to name it.
+    _name = "XInput Device";
+  }
+
+  _controls.resize(6);
   _buttons.resize(16);
 
   // Get the initial state.
@@ -102,6 +180,19 @@ XInputDevice(DWORD user_index) :
   }
 
   WORD buttons = state.Gamepad.wButtons;
+
+  set_control_map(0, C_left_trigger);
+  set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
+  set_control_map(1, C_right_trigger);
+  set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
+  set_control_map(2, C_left_x);
+  set_control_state(2, state.Gamepad.sThumbLX / 32767.0);
+  set_control_map(3, C_left_y);
+  set_control_state(3, state.Gamepad.sThumbLY / 32767.0);
+  set_control_map(4, C_right_x);
+  set_control_state(4, state.Gamepad.sThumbRX / 32767.0);
+  set_control_map(5, C_right_y);
+  set_control_state(5, state.Gamepad.sThumbRY / 32767.0);
 
   set_button_map(0, GamepadButton::dpad_up());
   set_button_state(0, (buttons & XINPUT_GAMEPAD_DPAD_UP) != 0);
@@ -146,6 +237,9 @@ bool XInputDevice::
 init_xinput() {
   _initialized = true;
   HMODULE module = LoadLibraryA("Xinput1_4.dll");
+  if (!module) {
+    module = LoadLibraryA("Xinput1_3.dll");
+  }
   if (module) {
     // Undocumented version (XInputGetStateEx) that includes a
     // state bit for the guide button.
@@ -160,11 +254,13 @@ init_xinput() {
     }
 
     get_capabilities = (pXInputGetCapabilities)GetProcAddress(module, "XInputGetCapabilities");
+    get_battery_information = (pXInputGetBatteryInformation)GetProcAddress(module, "XInputGetBatteryInformation");
+    get_base_bus_information = (pXInputGetBaseBusInformation)GetProcAddress(module, MAKEINTRESOURCE(104));
     return true;
   }
 
   device_cat.error()
-    << "Failed to load Xinput1_4.dll.\n";
+    << "Failed to load XInput DLL.\n";
   return false;
 }
 
@@ -206,6 +302,13 @@ do_poll() {
       mask <<= 1;
     }
   }
+
+  set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
+  set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
+  set_control_state(2, state.Gamepad.sThumbLX / 32767.0);
+  set_control_state(3, state.Gamepad.sThumbLY / 32767.0);
+  set_control_state(4, state.Gamepad.sThumbRX / 32767.0);
+  set_control_state(5, state.Gamepad.sThumbRY / 32767.0);
 
   _last_buttons = state.Gamepad.wButtons;
   _last_packet = state.dwPacketNumber;

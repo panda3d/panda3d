@@ -206,9 +206,13 @@ protected:
   LightMutex _lock;
 
   string _name;
+  string _serial_number;
+  string _manufacturer;
   DeviceClass _device_class;
   int _flags;
   int _event_sequence;
+  short _vendor_id;
+  short _product_id;
   bool _is_connected;
   bool _enable_pointer_events;
   PointerData _pointer_data;

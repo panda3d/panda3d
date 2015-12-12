@@ -21,6 +21,8 @@ INLINE InputDevice::
 InputDevice() :
   _flags(0),
   _device_class(DC_unknown),
+  _vendor_id(0),
+  _product_id(0),
   _is_connected(false),
   _event_sequence(0),
   _enable_pointer_events(false),

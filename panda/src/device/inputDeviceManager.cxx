@@ -143,7 +143,7 @@ add_device(InputDevice *device) {
     LightMutexHolder holder(_lock);
     _all_devices.push_back(device);
   }
-  throw_event("device-added", device);
+  throw_event("connect-device", device);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ remove_device(InputDevice *device) {
     _all_devices.erase(it);
   }
 
-  throw_event("device-removed", device);
+  throw_event("disconnect-device", device);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -220,7 +220,7 @@ poll() {
           device_cat.info()
             << "Removed input device " << *device << "\n";
         }
-        throw_event("device-removed", device.p());
+        throw_event("disconnect-device", device.p());
       }
 
     } else if (event->mask & (IN_CREATE | IN_ATTRIB)) {

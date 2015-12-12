@@ -42,6 +42,7 @@ typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef long LONG;
 typedef long UINT;
+typedef unsigned char BYTE;
 typedef unsigned long ULONG;
 typedef long long LONGLONG;
 typedef long HRESULT;

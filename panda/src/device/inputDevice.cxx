@@ -32,6 +32,8 @@ InputDevice(const string &name, DeviceClass dev_class, int flags) :
   _name(name),
   _flags(flags),
   _device_class(dev_class),
+  _vendor_id(0),
+  _product_id(0),
   _is_connected(true),
   _event_sequence(0),
   _enable_pointer_events(false),
@@ -48,7 +50,7 @@ InputDevice(const string &name, DeviceClass dev_class, int flags) :
 ////////////////////////////////////////////////////////////////////
 InputDevice::
 InputDevice(const InputDevice &copy) {
-  *this = copy;
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,16 +60,7 @@ InputDevice(const InputDevice &copy) {
 ////////////////////////////////////////////////////////////////////
 void InputDevice::
 operator = (const InputDevice &copy) {
-  LightMutexHolder holder(_lock);
-  LightMutexHolder holder1(copy._lock);
-  _name = copy._name;
-  _flags = copy._flags;
-  _is_connected = copy._is_connected;
-  _event_sequence = copy._event_sequence;
-  _enable_pointer_events = copy._enable_pointer_events;
-  _pointer_data = copy._pointer_data;
-  _button_events = copy._button_events;
-  _pointer_events = copy._pointer_events;
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,10 +308,9 @@ output(ostream &out) const {
     if (_battery_level > 0 && _max_battery_level > 0) {
       out << " [";
       short i = 0;
-      for (; i < _battery_level - 1; ++i) {
+      for (; i < _battery_level; ++i) {
         out << '=';
       }
-      out << '/';
       for (; i < _max_battery_level; ++i) {
         out << ' ';
       }
