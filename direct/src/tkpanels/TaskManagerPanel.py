@@ -23,7 +23,7 @@ class TaskManagerPanel(AppShell):
         self.defineoptions(kw, optiondefs)
 
         self.taskMgr = taskMgr
-        
+
         # Call superclass initialization function
         AppShell.__init__(self, parent = parent)
 
@@ -80,7 +80,7 @@ class TaskManagerWidget(DirectObject):
         self._popupMenu.add_command(
             label = 'Remove Matching Tasks',
             command = self.removeMatchingTasks)
-                                           
+
         # Controls Frame
         controlsFrame = Frame(parent)
         self.removeButton = Button(controlsFrame, text = 'Remove Task',
@@ -112,7 +112,7 @@ class TaskManagerWidget(DirectObject):
         controlsFrame.pack(fill = X)
         controlsFrame.grid_columnconfigure(0, weight = 1)
         controlsFrame.grid_columnconfigure(1, weight = 1)
-        
+
         # Add hook to spawnTaskEvents
         self.accept('TaskManager-spawnTask', self.spawnTaskHook)
         self.accept('TaskManager-removeTask', self.removeTaskHook)
@@ -158,7 +158,7 @@ class TaskManagerWidget(DirectObject):
             taskNames.append(task.getName())
             self.__taskDict[count] = task
             count += 1
-        
+
         if taskNames:
             self.taskListBox.setlist(taskNames)
             # And set current index (so keypresses will start with index 0)
@@ -217,5 +217,5 @@ class TaskManagerWidget(DirectObject):
     def onDestroy(self):
         self.ignore('TaskManager-spawnTask')
         self.ignore('TaskManager-removeTask')
-        
+
 

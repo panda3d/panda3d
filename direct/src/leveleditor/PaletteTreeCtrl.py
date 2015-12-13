@@ -97,7 +97,7 @@ class PaletteTreeCtrl(wx.TreeCtrl):
         itemText = self.GetItemText(item)
         if item and itemText != self.rootName:
            self.Delete(item)
-           self.paletteUI.palette.delete(itemText)        
+           self.paletteUI.palette.delete(itemText)
 
     def DeleteSelected(self):
         item = self.GetSelection()

@@ -6,7 +6,7 @@ class InterestWatcher(DirectObject):
     """Object that observes all interests adds/removes over a period of time,
     and sends out an event when all of those interests have closed"""
     notify = directNotify.newCategory('InterestWatcher')
-    
+
     def __init__(self, interestMgr, name, doneEvent=None,
                  recurse=True, start=True, mustCollect=False, doCollectionMgr=None):
         DirectObject.__init__(self)
@@ -29,7 +29,7 @@ class InterestWatcher(DirectObject):
 
         self.accept(self._interestMgr._getAddInterestEvent(), self._handleInterestOpenEvent)
         self.accept(self._interestMgr._getRemoveInterestEvent(), self._handleInterestCloseEvent)
-        
+
     def stopCollect(self):
         self.ignore(self._interestMgr._getAddInterestEvent())
         self.ignore(self._interestMgr._getRemoveInterestEvent())

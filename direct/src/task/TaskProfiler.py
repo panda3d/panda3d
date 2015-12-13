@@ -104,7 +104,7 @@ class TaskProfiler:
             tracker.destroy()
         del self._namePrefix2tracker
         del self._task
-        
+
     @staticmethod
     def GetDefaultSpikeThreshold():
         return config.GetFloat('profile-task-spike-threshold', 5.)
@@ -142,7 +142,7 @@ class TaskProfiler:
             taskMgr.remove(self._taskName)
             del self._taskName
             self.notify.info('task profiler stopped')
-        
+
     def _doProfileTasks(self, task=None):
         # gather data from the previous frame
         # set up for the next frame

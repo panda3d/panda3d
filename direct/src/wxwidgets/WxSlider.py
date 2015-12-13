@@ -20,7 +20,7 @@ class WxSlider(wx.Slider):
         intMax = 100
         self.textValue = None
         self.updateCB = None
-        
+
         if style & wx.SL_HORIZONTAL:
             newStyle = wx.SL_HORIZONTAL
             if style & wx.SL_LABELS:
@@ -81,13 +81,13 @@ class WxSlider(wx.Slider):
         # overriding wx.Slider.Disable()
         wx.Slider.Disable(self)
         self.textValue.Disable()
-        
+
     def Enable(self):
         # overriding wx.Slider.Enable()
         wx.Slider.Enable(self)
         self.Bind(wx.EVT_SLIDER, self.onChange)
-        
+
         if not self.textValue is None:
             self.textValue.Enable()
-            self.textValue.Bind(wx.EVT_TEXT_ENTER, self.onEnter)        
+            self.textValue.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
 

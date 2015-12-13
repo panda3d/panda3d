@@ -55,7 +55,7 @@ class DirectGrid(NodePath, DirectObject):
             self.reparentTo(parent)
         else:
             self.reparentTo(base.direct.group)
-            
+
         self.updateGrid()
         self.fEnabled = 1
 

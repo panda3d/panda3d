@@ -44,7 +44,7 @@ class ParticleEffect(NodePath):
     def getName(self):
         # override NodePath.getName()
         return self.name
-    
+
     def reset(self):
         self.removeAllForces()
         self.removeAllParticles()
@@ -81,7 +81,7 @@ class ParticleEffect(NodePath):
             for p in self.particlesDict.values():
                 p.disable()
             self.fEnabled = 0
-        
+
     def isEnabled(self):
         """
         Note: this may be misleading if enable(), disable() not used

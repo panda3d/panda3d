@@ -4,7 +4,7 @@ from direct.showbase.PythonUtil import invertDictLossless
 
 MsgName2Id = {
     # 2 new params: passwd, char bool 0/1 1 = new account
-    # 2 new return values: 129 = not found, 12 = bad passwd, 
+    # 2 new return values: 129 = not found, 12 = bad passwd,
     'CLIENT_LOGIN':                                  1,
     'CLIENT_LOGIN_RESP':                             2,
     'CLIENT_GET_AVATARS':                            3,
@@ -85,15 +85,15 @@ MsgName2Id = {
     'CLIENT_GET_FRIEND_LIST_EXTENDED_RESP':          116,
 
     'CLIENT_SET_FIELD_SENDABLE':                     120,
-    
+
     'CLIENT_SYSTEMMESSAGE_AKNOWLEDGE':               123,
     'CLIENT_CHANGE_GENERATE_ORDER':                  124,
 
     # new toontown specific login message, adds last logged in, and if child account has parent acount
     'CLIENT_LOGIN_TOONTOWN':                         125,
-    'CLIENT_LOGIN_TOONTOWN_RESP':                    126,  
-    
-    
+    'CLIENT_LOGIN_TOONTOWN_RESP':                    126,
+
+
 
     'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED':           2001,
     'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER':     2003,
@@ -105,7 +105,7 @@ MsgName2Id = {
 
 # create id->name table for debugging
 MsgId2Names = invertDictLossless(MsgName2Id)
-    
+
 # put msg names in module scope, assigned to msg value
 globals().update(MsgName2Id)
 
@@ -115,7 +115,7 @@ QUIET_ZONE_IGNORED_LIST = [
     # We mustn't ignore updates, because some updates for localToon
     # are always important.
     #CLIENT_OBJECT_UPDATE_FIELD,
-    
+
     # These are now handled. If it is a create for a class that is in the
     # uber zone, we should create it.
     #CLIENT_CREATE_OBJECT_REQUIRED,

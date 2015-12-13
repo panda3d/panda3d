@@ -34,7 +34,7 @@ class IndirectInterval(Interval.Interval):
 
         self.startAtStart = (startT == 0)
         self.endAtEnd = (endT == None or endT == interval.getDuration())
-        
+
         if endT == None:
             endT = interval.getDuration()
 

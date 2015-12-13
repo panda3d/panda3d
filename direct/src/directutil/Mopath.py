@@ -185,6 +185,6 @@ class Mopath(DirectObject):
             tp = self.calcTime(t)
             self.xyzNurbsCurve.getPoint(tp, p)
             ls.drawTo(p)
-        
+
         return NodePath(ls.create())
-    
+

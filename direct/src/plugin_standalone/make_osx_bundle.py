@@ -60,7 +60,7 @@ def makeBundle(startDir):
     bundleFilename = Filename(rootFilename, 'Panda3D.app')
     if os.path.exists(bundleFilename.toOsSpecific()):
         shutil.rmtree(bundleFilename.toOsSpecific())
-                  
+
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
     exeFilename = Filename(bundleFilename, 'Contents/MacOS/panda3d_mac')
@@ -94,4 +94,4 @@ if __name__ == '__main__':
 
     startDir = os.path.split(sys.argv[0])[0]
     makeBundle(startDir)
-    
+

@@ -34,7 +34,7 @@ class WxAppShell(wx.Frame):
         self.appInit()
         self.__createInterface()
         self.Show()
-        
+
     def __createInterface(self):
         self.__createLogWin()
         self.__createMenuBar()
@@ -103,7 +103,7 @@ class WxAppShell(wx.Frame):
         # Override if you don't want to use default menus
         self.menuFile = wx.Menu()
         self.menuBar.Append(self.menuFile, "&File")
-        
+
         self.menuHelp = wx.Menu()
         self.menuBar.Append(self.menuHelp, "&Help")
 

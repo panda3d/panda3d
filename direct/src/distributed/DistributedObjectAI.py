@@ -242,13 +242,13 @@ class DistributedObjectAI(DistributedObjectBase):
 
     def postGenerateMessage(self):
         self.__generated = True
-        messenger.send(self.uniqueName("generate"), [self])        
+        messenger.send(self.uniqueName("generate"), [self])
 
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
@@ -260,7 +260,7 @@ class DistributedObjectAI(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
@@ -269,7 +269,7 @@ class DistributedObjectAI(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
@@ -387,7 +387,7 @@ class DistributedObjectAI(DistributedObjectBase):
         self.generate()
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
     def generateWithRequiredAndId(self, doId, parentId, zoneId, optionalFields=[]):
@@ -402,7 +402,7 @@ class DistributedObjectAI(DistributedObjectBase):
         self.generate()
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?
@@ -574,8 +574,8 @@ class DistributedObjectAI(DistributedObjectBase):
 
     def execCommand(self, string, mwMgrId, avId, zoneId):
         pass
-    
+
     def _retrieveCachedData(self):
         """ This is a no-op on the AI. """
         pass
-    
+

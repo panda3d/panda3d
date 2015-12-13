@@ -10,7 +10,7 @@ the composition process isn't simply a question of concatenating them:
 you have to somehow make them work together.  I suspect that there
 exists some fairly simple framework that would make this automatable.
 However, until I write some more filters myself, I won't know what
-that framework is.  Until then, I'll settle for this 
+that framework is.  Until then, I'll settle for this
 clunky approach.  - Josh
 
 """
@@ -337,13 +337,13 @@ class CommonFilters:
             if ("Inverted" in configuration):
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
-            
+
             self.finalQuad.setShader(Shader.make(text, Shader.SL_Cg))
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
-            
+
             self.task = taskMgr.add(self.update, "common-filters-update")
-        
+
         if (changed == "CartoonInk") or fullrebuild:
             if ("CartoonInk" in configuration):
                 c = configuration["CartoonInk"]
@@ -363,13 +363,13 @@ class CommonFilters:
                 self.bloom[0].setShaderInput("trigger", bloomconf.mintrigger, 1.0/(bloomconf.maxtrigger-bloomconf.mintrigger), 0.0, 0.0)
                 self.bloom[0].setShaderInput("desat", bloomconf.desat)
                 self.bloom[3].setShaderInput("intensity", intensity, intensity, intensity, intensity)
-        
+
         if (changed == "VolumetricLighting") or fullrebuild:
             if ("VolumetricLighting" in configuration):
                 config = configuration["VolumetricLighting"]
                 tcparam = config.density / float(config.numsamples)
                 self.finalQuad.setShaderInput("vlparams", tcparam, config.decay, config.exposure, 0.0)
-        
+
         if (changed == "AmbientOcclusion") or fullrebuild:
             if ("AmbientOcclusion" in configuration):
                 config = configuration["AmbientOcclusion"]

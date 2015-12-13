@@ -1,5 +1,5 @@
 ####################################################################
-#Dtool_funcToMethod(func, class)        
+#Dtool_funcToMethod(func, class)
 #del func
 #####################################################################
 
@@ -17,6 +17,6 @@ def pPrintValues(self):
         """
         return "\n%s\n%s\n%s" % (
             self.getRow(0).pPrintValues(), self.getRow(1).pPrintValues(), self.getRow(2).pPrintValues())
-Dtool_funcToMethod(pPrintValues, Mat3)        
+Dtool_funcToMethod(pPrintValues, Mat3)
 del pPrintValues
 #####################################################################

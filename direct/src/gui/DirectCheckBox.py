@@ -34,12 +34,12 @@ class DirectCheckBox(DirectButton):
             ('checkedImage',    None,      None),
             ('isChecked',       False,     None),
             )
-        
+
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
         DirectButton.__init__(self,parent)
-        
+
         self.initialiseoptions(DirectCheckBox)
 
 
@@ -52,7 +52,7 @@ class DirectCheckBox(DirectButton):
             self['image'] = self['uncheckedImage']
 
         self.setImage()
-        
+
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], [self['isChecked']] + self['extraArgs'])

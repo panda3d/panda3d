@@ -24,7 +24,7 @@ GRID_Z_OFFSET = 0.0
 class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
     notify.setDebug(0)
-    
+
     VisualizeGrid = ConfigVariableBool("visualize-cartesian-grid", False)
 
     RuleSeparator = ":"
@@ -102,14 +102,14 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         if child.gridParent:
             child.gridParent.delete()
             child.gridParent = None
-            
+
     @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['connector','shipboard'])
     def startProcessVisibility(self, avatar):
         if not self._onOffState:
             # if we've been told that we're OFF, don't try
             # to process visibilty
             return
-        
+
         assert not self.cr._noNewInterests
         if self.cr.noNewInterests():
             self.notify.warning(
@@ -168,7 +168,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             return Task.done
         if self.visAvatar.gameFSM.state == 'Cutscene':
             return Task.cont
-        
+
         pos = self.visAvatar.getPos(self)
         # Check to make sure our x and y are positive
         dx = self.cellWidth * self.gridSize * .5
@@ -211,14 +211,14 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 assert self.notify.debug(
                     "processVisibility: %s: altering interest to zoneId: %s" %
                     (self.doId, zoneId))
-                
+
                 event = None
                 if self.visDirty:
-                    event = self.uniqueName("visibility")                    
+                    event = self.uniqueName("visibility")
                 self.cr.alterInterest(
                     self.gridVisContext, self.getDoId(), self.visZone,
                     event = event)
-                
+
                 # If the visAvatar is parented to this grid, also do a
                 # setLocation
                 parentId = self.visAvatar.parentId
@@ -236,7 +236,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             return Task.cont
 
     # Update our location based on our avatar's position on the grid
-    # Assumes our position is correct, relative to the grid    
+    # Assumes our position is correct, relative to the grid
     def addObjectToGrid(self, av):
         assert self.notify.debug("addObjectToGrid %s" % av)
         # Get our pos relative to the island grid
@@ -273,12 +273,12 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     def turnOff(self):
         self._onOffState = False
         self.stopProcessVisibility()
-        
+
     def turnOn(self, av = None):
         self._onOffState = True
         if av:
             self.startProcessVisibility(av)
-        
+
     ##################################################
     # Visualization Tools
     ##################################################
@@ -416,6 +416,6 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
     def setWorldContext(self, worldContext):
         pass
-    
+
     def clearWorldContext(self, event = None):
         pass

@@ -130,7 +130,7 @@ Options:
   -v
      Emit a warning for any file not recognized by the dir() command
      (indicating there may be a need for addExtensions(...)).
-     
+
   -h
      Display this help
 """
@@ -202,7 +202,7 @@ for opt, arg in opts:
 
     elif opt == '-v':
         verbosePrint = True
-        
+
     elif opt == '-h':
         usage(0)
     else:

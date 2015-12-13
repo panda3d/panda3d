@@ -20,7 +20,7 @@ class StateData(DirectObject):
         self.doneStatus = None
         self.isLoaded = 0
         self.isEntered = 0
-    
+
     def enter(self):
         """
         Enters the StateData.  This makes it active in whatever sense

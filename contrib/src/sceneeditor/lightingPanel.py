@@ -22,7 +22,7 @@ class lightingPanel(AppShell):
     frameWidth  = 400
     frameHeight = 400
     currentLight = None
-    
+
     def __init__(self, lightList, parent = None, **kw):
         self.lightList = lightList
         self.lightColor = [0.3*255,0.3*255,0.3*255]
@@ -53,14 +53,14 @@ class lightingPanel(AppShell):
         self.listZone = Pmw.Group(mainFrame,tag_pyclass = None)
         self.listZone.pack(expand=0, fill=Tkinter.X,padx=3,pady=3)
         listFrame = self.listZone.interior()
-        
+
         self.lightEntry = self.createcomponent(
             'Lights List', (), None,
             Pmw.ComboBox, (listFrame,),label_text='Light :',
             labelpos = Tkinter.W, entry_width = 25, selectioncommand = self.selectLight,
             scrolledlist_items = self.lightList)
         self.lightEntry.pack(side=Tkinter.LEFT)
-        
+
         self.renameButton = self.createcomponent(
             'Rename Light', (), None,
             Button, (listFrame,),
@@ -82,7 +82,7 @@ class lightingPanel(AppShell):
                             command = self.addPoint)
         lightsMenu.add_command(label = 'Add Spotlight',
                             command = self.addSpot)
-            
+
         self.lightsButton.pack(expand=0)
         self.lightsButton['menu'] = lightsMenu
 
@@ -155,7 +155,7 @@ class lightingPanel(AppShell):
         self.pConstantAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pConstantAttenuation,
                   'Set point light constant attenuation')
-           
+
         self.pLinearAttenuation = Slider(
             pointPage,
             text = 'Linear Attenuation',
@@ -166,7 +166,7 @@ class lightingPanel(AppShell):
         self.pLinearAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pLinearAttenuation,
                   'Set point light linear attenuation')
-           
+
         self.pQuadraticAttenuation = Slider(
             pointPage,
             text = 'Quadratic Attenuation',
@@ -177,7 +177,7 @@ class lightingPanel(AppShell):
         self.pQuadraticAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.pQuadraticAttenuation,
                   'Set point light quadratic attenuation')
-           
+
         # Spot light controls
         self.sSpecularColor = seColorEntry(
             spotPage, text = 'Specular Color')
@@ -196,7 +196,7 @@ class lightingPanel(AppShell):
         self.sConstantAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sConstantAttenuation,
                   'Set spot light constant attenuation')
-           
+
         self.sLinearAttenuation = Slider(
             spotPage,
             text = 'Linear Attenuation',
@@ -207,7 +207,7 @@ class lightingPanel(AppShell):
         self.sLinearAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sLinearAttenuation,
                   'Set spot light linear attenuation')
-           
+
         self.sQuadraticAttenuation = Slider(
             spotPage,
             text = 'Quadratic Attenuation',
@@ -218,7 +218,7 @@ class lightingPanel(AppShell):
         self.sQuadraticAttenuation.pack(fill = Tkinter.X, expand = 0)
         self.bind(self.sQuadraticAttenuation,
                   'Set spot light quadratic attenuation')
-           
+
         self.sExponent = Slider(
             spotPage,
             text = 'Exponent',
@@ -231,7 +231,7 @@ class lightingPanel(AppShell):
                   'Set spot light exponent')
 
         # MRM: Add frustum controls
-           
+
         self.lightNotebook.setnaturalsize()
         self.lightNotebook.pack(expand = 1, fill = Tkinter.BOTH)
 
@@ -329,7 +329,7 @@ class lightingPanel(AppShell):
             self.lightColor.set([255*0.3,255*0.3,255*0.3])
             oldType = self.type
             self.type = 'ambient'
-            
+
         if self.type=='ambient':
             self.lightNotebook.selectpage('Ambient')
         elif self.type =='directional':
@@ -384,7 +384,7 @@ class lightingPanel(AppShell):
         #################################################################
         messenger.send('LP_addLight',['ambient'])
         return
-    
+
     def addDirectional(self):
         #################################################################
         # addDirectional(self)
@@ -393,7 +393,7 @@ class lightingPanel(AppShell):
         #################################################################
         messenger.send('LP_addLight',['directional'])
         return
-    
+
     def addPoint(self):
         #################################################################
         # addPoint(self)
@@ -402,7 +402,7 @@ class lightingPanel(AppShell):
         #################################################################
         messenger.send('LP_addLight',['point'])
         return
-    
+
     def addSpot(self):
         #################################################################
         # addSpot(self)
@@ -455,7 +455,7 @@ class lightingPanel(AppShell):
             return
         self.currentLight.setOrientation(Vec3(orient[0],orient[1],orient[2]))
         return
-    
+
     def setConstantAttenuation(self, value):
         #################################################################
         # setConstantAttenuation(self, value)
@@ -464,7 +464,7 @@ class lightingPanel(AppShell):
         #################################################################
         self.currentLight.setConstantAttenuation(value)
         return
-    
+
     def setLinearAttenuation(self, value):
         #################################################################
         # setLinearAttenuation(self, value)
@@ -473,7 +473,7 @@ class lightingPanel(AppShell):
         #################################################################
         self.currentLight.setLinearAttenuation(value)
         return
-    
+
     def setQuadraticAttenuation(self, value):
         #################################################################
         # setQuadraticAttenuation(self, value)
@@ -482,7 +482,7 @@ class lightingPanel(AppShell):
         #################################################################
         self.currentLight.setQuadraticAttenuation(value)
         return
-    
+
     def setExponent(self, value):
         #################################################################
         # setExponent(self, value)

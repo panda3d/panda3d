@@ -190,7 +190,7 @@ class DirectRadioButton(DirectButton):
 
 
     def commandFunc(self, event):
-        if len(self['value']) == len(self['variable']) != 0:            
+        if len(self['value']) == len(self['variable']) != 0:
             for i in range(len(self['value'])):
                 self['variable'][i] = self['value'][i]
         self.check()

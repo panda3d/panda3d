@@ -252,12 +252,12 @@ class Audio3DManager:
         """
         # Update the positions of all sounds based on the objects
         # to which they are attached
-        
+
         # The audio manager is not active so do nothing
         if hasattr(self.audio_manager, "getActive"):
             if self.audio_manager.getActive()==0:
                 return Task.cont
-        
+
         for known_object in self.sound_dict.keys():
             tracked_sound = 0
             while tracked_sound < len(self.sound_dict[known_object]):
@@ -274,11 +274,11 @@ class Audio3DManager:
             forward = self.root.getRelativeVector(self.listener_target, Vec3.forward())
             up = self.root.getRelativeVector(self.listener_target, Vec3.up())
             vel = self.getListenerVelocity()
-            self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2]) 
+            self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
         else:
             self.audio_manager.audio3dSetListenerAttributes(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1)
         return Task.cont
-        
+
     def disable(self):
         """
         Detaches any existing sounds and removes the update task
@@ -288,4 +288,4 @@ class Audio3DManager:
         for object in self.sound_dict.keys():
             for sound in self.sound_dict[object]:
                 self.detachSound(sound)
-        
+

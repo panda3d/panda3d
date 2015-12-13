@@ -31,9 +31,9 @@ class sideWindow(AppShell):
     backface = 0
     texture = 1
     wireframe = 0
-    
+
     enableBaseUseDrive = 0
-    
+
     def __init__(self, worldColor,lightEnable,ParticleEnable, basedriveEnable,collision,
                  backface, texture, wireframe, grid, widgetVis, enableAutoCamera, parent = None, nodePath = render, **kw):
         self.worldColor = worldColor
@@ -58,15 +58,15 @@ class sideWindow(AppShell):
             self.parent = Toplevel()
         else:
             self.parent = parent
-        
+
         AppShell.__init__(self, self.parent)
         self.parent.geometry('%dx%d+%d+%d' % (self.frameWidth, self.frameHeight,self.frameIniPosX,self.frameIniPosY))
 
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-                
+
     def appInit(self):
         print '----SideWindow is Initialized!!'
-        
+
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
@@ -212,11 +212,11 @@ class sideWindow(AppShell):
         self.notebookFrame.setnaturalsize()
         mainFrame.pack(fill = 'both', expand = 1)
 
-    
+
     def createMenuBar(self):
         # We don't need menu bar here.
         self.menuBar.destroy()
-        
+
     def onDestroy(self, event):
         #################################################################
         # onDestroy(self, event)
@@ -352,7 +352,7 @@ class sideWindow(AppShell):
         self.backface = (self.backface+1)%2
         self.backfaceButton.toggle()
         return
-    
+
     def toggleTexture(self):
         #################################################################
         # toggleTexture(self)
@@ -361,7 +361,7 @@ class sideWindow(AppShell):
         base.toggleTexture()
         self.texture = (self.texture+1)%2
         return
-    
+
     def toggleTextureFromMainW(self):
         #################################################################
         # toggleTextureFromMainW(self)
@@ -373,7 +373,7 @@ class sideWindow(AppShell):
         self.texture = (self.texture+1)%2
         self.textureButton.toggle()
         return
-    
+
     def toggleWireframe(self):
         #################################################################
         # toggleWireframe(self)
@@ -428,7 +428,7 @@ class sideWindow(AppShell):
         self.widgetVis = (self.widgetVis+1)%2
         self.widgetVisButton.toggle()
         return
-        
+
     def setBackgroundColorVec(self,color):
         #################################################################
         # setBackgroundColorVec(self,color)

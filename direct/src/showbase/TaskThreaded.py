@@ -12,7 +12,7 @@ class TaskThreaded:
     notify = directNotify.newCategory("TaskThreaded")
 
     _Serial = SerialNumGen()
-    
+
     def __init__(self, name, threaded=True, timeslice=None, callback=None):
         # timeslice is how long this thread should take every frame.
         self.__name = name

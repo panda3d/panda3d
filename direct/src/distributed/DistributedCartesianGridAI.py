@@ -34,7 +34,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
     def getCellWidth(self):
         return self.cellWidth
-    
+
     def getParentingRules(self):
         self.notify.debug("calling getter")
         rule = ("%i%s%i%s%i" % (self.startingZone, self.RuleSeparator,
@@ -127,7 +127,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
         if not self.isValidZone(zoneId):
             self.notify.warning(
-                "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %(self.doId, av.doId, zoneId, pos))                     
+                "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %(self.doId, av.doId, zoneId, pos))
             return
 
         # Set the location on the server.

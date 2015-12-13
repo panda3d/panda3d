@@ -35,7 +35,7 @@ class EditHotKeyDialog(wx.Dialog):
         vbox.Add(itemPanel)
         self.panel.SetSizer(vbox)
 
-        keyDesc = base.direct.hotKeyMap[self.currKey]        
+        keyDesc = base.direct.hotKeyMap[self.currKey]
         self.label.SetLabel(keyDesc[0])
         if 'shift' in self.currKey:
             self.modifierRadio.SetStringSelection('Shift')
@@ -94,8 +94,8 @@ class EditHotKeyDialog(wx.Dialog):
                 oldKeyDesc = base.direct.hotKeyMap[newKeyStr]
                 msg = 'The hotkey is already assigned to %s\n'%oldKeyDesc[0] +\
                       'Do you want to override this?'
-                      
-                dialog = wx.MessageDialog(None, msg, 'Hot Key exists!', 
+
+                dialog = wx.MessageDialog(None, msg, 'Hot Key exists!',
                                         wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
                 result = dialog.ShowModal()
                 if result == wx.ID_YES:

@@ -27,7 +27,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory('RelatedObjectMgr')
 
     doLaterSequence = 1
-    
+
     def __init__(self, cr):
         self.cr = cr
         self.pendingObjects = {}
@@ -64,14 +64,14 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         The return value may be saved and passed to a future call to
         abortRequest(), in order to abort a pending request before the
         timeout expires.
-        
+
         Actually, you should be careful to call abortRequest() if you
         have made a call to requestObjects() that has not been resolved.
-        To find examples, do a search for abortRequest() to find out 
-        how other code is using it.  A common idiom is to store the 
+        To find examples, do a search for abortRequest() to find out
+        how other code is using it.  A common idiom is to store the
         result from requestObjects() and call abortRequest() if delete()
         or destroy() is called on the requesting object.
-        
+
         See Also: abortRequest()
         """
         assert self.notify.debug("requestObjects(%s, timeout=%s)" % (doIdList, timeout))
@@ -107,7 +107,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         if timeout != None:
             doLaterName = "RelatedObject-%s" % (RelatedObjectMgr.doLaterSequence)
             assert self.notify.debug("doLaterName = %s" % (doLaterName))
-            
+
             RelatedObjectMgr.doLaterSequence += 1
 
         tuple = (allCallback, eachCallback, timeoutCallback,
@@ -134,7 +134,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         Aborts a previous request.  The parameter is the return value
         from a previous call to requestObjects().  The pending request
         is removed from the queue and no further callbacks will be called.
-        
+
         See Also: requestObjects()
         """
         if tuple:
@@ -164,14 +164,14 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                     taskMgr.remove(doLaterName)
 
         self.pendingObjects = {}
-        
+
 
     def __timeoutExpired(self, tuple):
         allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
         assert self.notify.debug("timeout expired for %s (remaining: %s)" % (doIdList, doIdsPending))
 
         self.__removePending(tuple, doIdsPending)
-        
+
         if timeoutCallback:
             timeoutCallback(doIdList)
         else:
@@ -191,7 +191,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             if len(pendingList) == 0:
                 del self.pendingObjects[doId]
                 self.__noListenFor(doId)
-        
+
 
     def __listenFor(self, doId):
         # Start listening for the indicated object to be generated.
@@ -230,7 +230,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                 assert self.notify.debug("All objects generated on list: %s" % (doIdList,))
                 if doLaterName:
                     taskMgr.remove(doLaterName)
-            
+
                 objects, doIdsPending = self.__generateObjectList(doIdList)
                 if None in objects:
                     assert self.notify.warning('calling %s with None.\n objects=%s\n doIdsPending=%s\n doIdList=%s\n' % (allCallback,objects,doIdsPending,doIdList))
@@ -252,6 +252,6 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                     doIdsPending.append(doId)
             else:
                 objects.append(None)
-        
+
         return objects, doIdsPending
 

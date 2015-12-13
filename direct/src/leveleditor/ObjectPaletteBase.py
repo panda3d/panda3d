@@ -77,7 +77,7 @@ class ObjectPaletteBase:
 
     def addHidden(self, item):
         if hasattr(item, 'name'):
-            self.data[item.name] = item        
+            self.data[item.name] = item
 
     def deleteStruct(self, name, deleteItems):
         try:
@@ -97,7 +97,7 @@ class ObjectPaletteBase:
            deleteItems = {}
            node = self.deleteStruct(name, deleteItems)
            if node is not None:
-              deleteItems[name] = node 
+              deleteItems[name] = node
            for key in deleteItems.keys():
                item = self.dataStruct.pop(key)
         except:

@@ -37,9 +37,9 @@ class ControlManager:
             self.enable()
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
-        
-        
-        
+
+
+
         if self.passMessagesThrough: # for not breaking toontown
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
@@ -50,7 +50,7 @@ class ControlManager:
 
     def __str__(self):
         return 'ControlManager: using \'%s\'' % self.currentControlsName
-    
+
     def add(self, controls, name="basic"):
         """
         controls is an avatar control system.
@@ -75,7 +75,7 @@ class ControlManager:
 
     def get(self, name):
         return self.controls.get(name)
-        
+
     def remove(self, name):
         """
         name is any key that was used to refer to the
@@ -166,7 +166,7 @@ class ControlManager:
         if self.currentControls:
             return self.currentControls.getIsAirborne()
         return False
-    
+
     def setTag(self, key, value):
         assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
@@ -181,7 +181,7 @@ class ControlManager:
         assert self.notify.debugCall(id(self))
         if self.currentControls:
             self.currentControls.setCollisionsActive(1)
-            
+
     def collisionsOff(self):
         assert self.notify.debugCall(id(self))
         if self.currentControls:
@@ -198,25 +198,25 @@ class ControlManager:
         if self.isEnabled:
             assert self.notify.debug('already isEnabled')
             return
-        
+
         self.isEnabled = 1
 
         # keep track of what we do on the inputState so we can undo it later on
         #self.inputStateTokens = []
         ist = self.inputStateTokens
         ist.append(inputState.watch("run", 'runningEvent', "running-on", "running-off"))
-        
+
         ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
         ist.append(inputState.watch("forward", "force-forward", "force-forward-stop"))
-        
+
         ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
         ist.append(inputState.watchWithModifiers("reverse", "mouse4", inputSource=inputState.Mouse))
-        
+
         if self.wantWASD:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
             ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
-            
+
             ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done"))
             ist.append(inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop"))
@@ -232,7 +232,7 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
             ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
-            
+
             ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnRight", "mouse-look_right", "mouse-look_right-done"))
             ist.append(inputState.watch("turnRight", "force-turnRight", "force-turnRight-stop"))
@@ -242,7 +242,7 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("jump", "space"))
         else:
             ist.append(inputState.watch("jump", "control", "control-up"))
-        
+
         if self.currentControls:
             self.currentControls.enableAvatarControls()
 
@@ -260,7 +260,7 @@ class ControlManager:
 
         if self.currentControls:
             self.currentControls.disableAvatarControls()
-            
+
         if self.passMessagesThrough: # for not breaking toontown
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
@@ -274,10 +274,10 @@ class ControlManager:
             self.currentControls.setCollisionsActive(0)
             self.currentControls.setAvatar(None)
         self.currentControls = None
-        
+
     def disableAvatarJump(self):
         """
-        prevent 
+        prevent
         """
         assert self.forceAvJumpToken is None
         self.forceAvJumpToken=inputState.force(
@@ -310,7 +310,7 @@ class ControlManager:
 
         if not self.isEnabled:
             return
-        
+
         turnLeftWASDSet = inputState.isSet("turnLeft", inputSource=inputState.WASD)
         turnRightWASDSet = inputState.isSet("turnRight", inputSource=inputState.WASD)
         slideLeftWASDSet = inputState.isSet("slideLeft", inputSource=inputState.WASD)
@@ -339,7 +339,7 @@ class ControlManager:
 
             inputState.set("slideLeft", turnLeftWASDSet, inputSource=inputState.WASD)
             inputState.set("slideRight", turnRightWASDSet, inputSource=inputState.WASD)
-                
+
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
-                
+

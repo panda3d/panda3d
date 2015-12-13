@@ -23,16 +23,16 @@ while 1 == 1:
     source = SocketAddress()
     if inbound.GetIncomingConnection(newsession,source) :
         #newsession.SetNonBlocking();
-        print source.getIpPort()    
-        newsession.SendData("Hello From the Listener\n\r");    
-        
-        s = newsession.RecvData(10);            
+        print source.getIpPort()
+        newsession.SendData("Hello From the Listener\n\r");
+
+        s = newsession.RecvData(10);
         print s
         print newsession.GetLastError()
         if newsession.ErrorIsWouldBlocking(newsession.GetLastError()) :
             print  "Reading Would Block"
         else:
-            print "Not A Blocking Error"            
-        
-        newsession.SendData("GoodBy From the Listener\n\r");    
+            print "Not A Blocking Error"
+
+        newsession.SendData("GoodBy From the Listener\n\r");
         newsession.Close();
