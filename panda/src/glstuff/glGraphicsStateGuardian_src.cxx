@@ -610,17 +610,21 @@ reset() {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       }
 
-      GLCAT.debug() << "gl-debug enabled.\n";
+      GLCAT.info() << "gl-debug enabled.\n";
     } else {
-      GLCAT.debug() << "gl-debug enabled, but NOT supported.\n";
+      GLCAT.warning() << "gl-debug enabled, but NOT supported.\n";
     }
   } else {
-    GLCAT.debug() << "gl-debug NOT enabled.\n";
-
     // However, still check if it is supported.
     _supports_debug = is_at_least_gl_version(4, 3)
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
+
+    if (_supports_debug) {
+      GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
+    } else {
+      GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+    }
   }
 #endif  // OPENGLES_1
 
@@ -665,7 +669,8 @@ reset() {
 #elif defined(OPENGLES_1)
   _supports_point_sprite = has_extension("GL_OES_point_sprite");
 #else
-  _supports_point_sprite = has_extension("GL_ARB_point_sprite");
+  _supports_point_sprite = is_at_least_gl_version(2, 0) ||
+                           has_extension("GL_ARB_point_sprite");
 #endif
 
   if (_supports_point_sprite) {
@@ -873,7 +878,8 @@ reset() {
   _supports_cube_map = true;
 #else
   _supports_cube_map =
-    has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3) ||
+    is_at_least_gl_version(1, 3) ||
+    has_extension("GL_ARB_texture_cube_map") ||
     has_extension("GL_OES_texture_cube_map");
 #endif
 
@@ -908,8 +914,6 @@ reset() {
   } else if (has_extension("GL_EXT_sRGB")) { // GLES case.
     _supports_texture_srgb = true;
   }
-
-  _supports_compressed_texture = false;
 
 #ifdef OPENGLES
   _supports_compressed_texture = true;
@@ -968,6 +972,9 @@ reset() {
       get_extension_func("glCompressedTexSubImage3DARB");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func("glGetCompressedTexImageARB");
+
+  } else {
+    _supports_compressed_texture = false;
   }
 
   if (_supports_compressed_texture) {
@@ -992,7 +999,7 @@ reset() {
 
     GLint num_compressed_formats = 0;
     glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
-    GLint *formats = (GLint *)PANDA_MALLOC_ARRAY(num_compressed_formats * sizeof(GLint));
+    GLint *formats = (GLint *)alloca(num_compressed_formats * sizeof(GLint));
     glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
     for (int i = 0; i < num_compressed_formats; ++i) {
       switch (formats[i]) {
@@ -1028,20 +1035,19 @@ reset() {
         break;
       }
     }
-    PANDA_FREE_ARRAY(formats);
   }
 
 #ifdef OPENGLES_2
   _supports_bgr = false;
 #else
   _supports_bgr =
-    has_extension("GL_EXT_bgra") || is_at_least_gl_version(1, 2);
+    is_at_least_gl_version(1, 2) || has_extension("GL_EXT_bgra");
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
   _supports_rescale_normal =
     !core_profile && gl_support_rescale_normal &&
-    (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
+    (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_rescale_normal"));
 
 #ifndef OPENGLES
   _use_separate_specular_color = gl_separate_specular_color &&
@@ -1063,18 +1069,20 @@ reset() {
   _supports_multisample =
     has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
 
-#ifdef OPENGLES_2
+#ifdef OPENGLES_1
+  _supports_generate_mipmap = is_at_least_gles_version(1, 1);
+#elif defined(OPENGLES)
   _supports_generate_mipmap = true;
 #else
-  _supports_generate_mipmap =
-    has_extension("GL_SGIS_generate_mipmap") || is_at_least_gl_version(1, 4) || is_at_least_gles_version(1, 1);
+  _supports_generate_mipmap = is_at_least_gl_version(1, 4) ||
+                              has_extension("GL_SGIS_generate_mipmap");
 #endif
 
 #ifdef OPENGLES
   _supports_tex_non_pow2 =
     has_extension("GL_OES_texture_npot");
 #else
-  _supports_tex_non_pow2 =
+  _supports_tex_non_pow2 = is_at_least_gl_version(2, 0) ||
     has_extension("GL_ARB_texture_non_power_of_two");
 #endif
 
@@ -1202,7 +1210,7 @@ reset() {
 #else
   if (gl_support_shadow_filter &&
       _supports_depth_texture &&
-      has_extension("GL_ARB_shadow") &&
+      (is_at_least_gl_version(1, 4) || has_extension("GL_ARB_shadow")) &&
       has_extension("GL_ARB_fragment_program_shadow")) {
     _supports_shadow_filter = true;
   }
@@ -1222,11 +1230,19 @@ reset() {
 #else
   if (!core_profile) {
     _supports_texture_combine =
-      has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+      is_at_least_gl_version(1, 3) ||
+      is_at_least_gles_version(1, 1) ||
+      has_extension("GL_ARB_texture_env_combine");
+
     _supports_texture_saved_result =
-      has_extension("GL_ARB_texture_env_crossbar") || has_extension("GL_OES_texture_env_crossbar") || is_at_least_gl_version(1, 4);
+      is_at_least_gl_version(1, 4) ||
+      has_extension("GL_ARB_texture_env_crossbar") ||
+      has_extension("GL_OES_texture_env_crossbar");
+
     _supports_texture_dot3 =
-      has_extension("GL_ARB_texture_env_dot3") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+      is_at_least_gl_version(1, 3) ||
+      is_at_least_gles_version(1, 1) ||
+      has_extension("GL_ARB_texture_env_dot3");
   }
 #endif
 
@@ -1556,7 +1572,8 @@ reset() {
     } else {
       _glVertexAttribIPointer = NULL;
     }
-    if (has_extension("GL_ARB_vertex_attrib_64bit")) {
+    if (is_at_least_gl_version(4, 1) ||
+        has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
          get_extension_func("glVertexAttribLPointer");
     } else {
@@ -1911,7 +1928,7 @@ reset() {
 #endif
 
   _supports_framebuffer_multisample = false;
-  if ( has_extension("GL_EXT_framebuffer_multisample") ) {
+  if (has_extension("GL_EXT_framebuffer_multisample")) {
     _supports_framebuffer_multisample = true;
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
       get_extension_func("glRenderbufferStorageMultisampleEXT");
@@ -1919,7 +1936,7 @@ reset() {
 
 #ifndef OPENGLES
   _supports_framebuffer_multisample_coverage_nv = false;
-  if ( has_extension("GL_NV_framebuffer_multisample_coverage") ) {
+  if (has_extension("GL_NV_framebuffer_multisample_coverage")) {
     _supports_framebuffer_multisample_coverage_nv = true;
     _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
       get_extension_func("glRenderbufferStorageMultisampleCoverageNV");
@@ -1928,7 +1945,7 @@ reset() {
 
 #ifndef OPENGLES_1
   _supports_framebuffer_blit = false;
-  if ( has_extension("GL_EXT_framebuffer_blit") ) {
+  if (has_extension("GL_EXT_framebuffer_blit")) {
     _supports_framebuffer_blit = true;
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
       get_extension_func("glBlitFramebufferEXT");
@@ -2142,8 +2159,8 @@ reset() {
   _edge_clamp = GL_CLAMP_TO_EDGE;
 #else
   _edge_clamp = GL_CLAMP;
-  if (has_extension("GL_SGIS_texture_edge_clamp") ||
-      is_at_least_gl_version(1, 2) || is_at_least_gles_version(1, 1)) {
+  if (is_at_least_gl_version(1, 2) || is_at_least_gles_version(1, 1) ||
+      has_extension("GL_SGIS_texture_edge_clamp")) {
     _edge_clamp = GL_CLAMP_TO_EDGE;
   }
 #endif
@@ -2176,6 +2193,20 @@ reset() {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+  }
+#endif
+
+#ifndef OPENGLES
+  _supports_texture_lod = false;
+  _supports_texture_lod_bias = false;
+
+  if (gl_support_texture_lod &&
+      (is_at_least_gl_version(1, 2) || has_extension("GL_SGIS_texture_lod"))) {
+    _supports_texture_lod = true;
+
+    if (is_at_least_gl_version(1, 4) || has_extension("GL_EXT_texture_lod_bias")) {
+      _supports_texture_lod_bias = true;
+    }
   }
 #endif
 
@@ -3398,12 +3429,18 @@ end_frame(Thread *current_thread) {
       GLenum error_code = glGetError();
       if (error_code != GL_NO_ERROR) {
         int error_count = 0;
-        bool deactivate = !report_errors_loop(__LINE__, __FILE__, error_code, error_count);
+
+        do {
+          ++error_count;
+          GLCAT.error()
+            << "GL error 0x" << hex << error_code << dec << " : "
+            << get_error_string(error_code) << "\n";
+          error_code = glGetError();
+        } while (error_code != GL_NO_ERROR);
 
         if (error_count == 1) {
           GLCAT.error()
-            << "An OpenGL error (" << get_error_string(error_code)
-            << ") has occurred.";
+            << "An OpenGL error has occurred.";
         } else {
           GLCAT.error()
             << error_count << " OpenGL errors have occurred.";
@@ -3417,7 +3454,8 @@ end_frame(Thread *current_thread) {
             << "in your PRC file to display more information.\n";
         }
 
-        if (deactivate) {
+        _error_count += error_count;
+        if (_error_count >= gl_max_errors) {
           panic_deactivate();
         }
       }
@@ -4855,9 +4893,14 @@ prepare_sampler(const SamplerState &sampler) {
     }
   }
 
-  _glSamplerParameterf(index, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
-  _glSamplerParameterf(index, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
-  _glSamplerParameterf(index, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  if (_supports_texture_lod) {
+    _glSamplerParameterf(index, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+    _glSamplerParameterf(index, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  }
+
+  if (_supports_texture_lod_bias) {
+    _glSamplerParameterf(index, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  }
 
   gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
 
@@ -7011,13 +7054,15 @@ get_error_string(GLenum error_code) {
   // We used to use gluErrorString here, but I (rdb) took it out
   // because that was really the only function we used from GLU.
   // The idea with the error table was taken from SGI's sample implementation.
-  static const char *error_strings[GL_OUT_OF_MEMORY - GL_INVALID_ENUM + 1] = {
+  static const char *error_strings[] = {
     "invalid enumerant",
     "invalid value",
     "invalid operation",
     "stack overflow",
     "stack underflow",
     "out of memory",
+    "invalid framebuffer operation",
+    "context lost",
   };
 
   if (error_code == GL_NO_ERROR) {
@@ -7026,8 +7071,8 @@ get_error_string(GLenum error_code) {
   } else if (error_code == GL_TABLE_TOO_LARGE) {
     return "table too large";
 #endif
-  } else if (error_code >= GL_INVALID_ENUM && error_code <= GL_OUT_OF_MEMORY) {
-    return error_strings[error_code - GL_INVALID_ENUM];
+  } else if (error_code >= 0x0500 && error_code <= 0x0507) {
+    return error_strings[error_code - 0x0500];
   }
 
   // Other error, somehow?  Just display the error code then.
@@ -7174,6 +7219,7 @@ void CLP(GraphicsStateGuardian)::
 query_glsl_version() {
   _gl_shadlang_ver_major = 0;
   _gl_shadlang_ver_minor = 0;
+#ifndef OPENGLES_1
 
 #ifndef OPENGLES
   // OpenGL 2.0 introduces GLSL in the core.  In 1.x, it is an extension.
@@ -7187,25 +7233,28 @@ query_glsl_version() {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
   }
-#elif !defined(OPENGLES_1)
+#else
   // OpenGL ES 2.0 and above has shader support built-in.
   string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
   _gl_shadlang_ver_major = 1;
   _gl_shadlang_ver_minor = 0;
   if (ver.empty() ||
-      sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
-                                                  &_gl_shadlang_ver_minor) != 2) {
+      sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &_gl_shadlang_ver_major,
+                                                     &_gl_shadlang_ver_minor) != 2) {
     GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
   }
 #endif
 
-#ifndef OPENGLES_1
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "Detected GLSL version: "
+      << "Detected GLSL "
+#ifdef OPENGLES
+         "ES "
+#endif
+         "version: "
       << _gl_shadlang_ver_major << "." << _gl_shadlang_ver_minor << "\n";
   }
-#endif
+#endif  // !OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -10732,13 +10781,13 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 #endif
 
 #ifndef OPENGLES
-  if (is_at_least_gl_version(1, 2)) {
+  if (_supports_texture_lod) {
     glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
     glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  }
 
-    if (is_at_least_gl_version(1, 4)) {
-      glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
-    }
+  if (_supports_texture_lod_bias) {
+    glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
   }
 #endif
 
@@ -11151,7 +11200,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES // OpenGL ES doesn't have GL_TEXTURE_MAX_LEVEL.
-    if (is_at_least_gl_version(1, 2)) {
+    if (_supports_texture_lod) {
       // By the time we get here, we have a pretty good prediction for
       // the number of mipmaps we're going to have, so tell the GL that's
       // all it's going to get.
@@ -11666,7 +11715,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
 #ifndef OPENGLES
-            if (is_at_least_gl_version(1, 2)) {
+            if (_supports_texture_lod) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
@@ -11886,10 +11935,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps()) {
-    if (is_at_least_gl_version(1, 2)) {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    }
+  if (tex->uses_mipmaps() && _supports_texture_lod) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 #endif
 
@@ -12554,7 +12601,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
 #ifndef OPENGLES
-    if (is_at_least_gl_version(1, 2)) {
+    if (_supports_texture_lod) {
       glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
     }
