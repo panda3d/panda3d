@@ -44,6 +44,12 @@ ConfigVariableBool gl_support_rescale_normal
             "it even if it appears to be available.  (This appears to be "
             "buggy on some drivers.)"));
 
+ConfigVariableBool gl_support_texture_lod
+  ("gl-support-texture-lod", true,
+   PRC_DESC("Configure this true to enable the use of minmax LOD settings "
+            "and texture LOD bias settings.  Set this to false if you "
+            "suspect a driver bug."));
+
 ConfigVariableBool gl_ignore_filters
   ("gl-ignore-filters", false,
    PRC_DESC("Configure this true to disable any texture filters at all (forcing "

@@ -45,6 +45,7 @@ extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
+extern ConfigVariableBool gl_support_texture_lod;
 extern ConfigVariableBool gl_ignore_filters;
 extern ConfigVariableBool gl_ignore_mipmaps;
 extern ConfigVariableBool gl_force_mipmaps;
