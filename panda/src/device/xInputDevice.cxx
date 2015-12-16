@@ -16,6 +16,8 @@
 
 #ifdef _WIN32
 #include "gamepadButton.h"
+#include "inputDeviceManager.h"
+#include "string_utils.h"
 
 #include <XInput.h>
 #include <CfgMgr32.h>
@@ -89,34 +91,166 @@ XInputDevice(DWORD user_index) :
     nassertv(init_xinput());
   }
 
-  if (get_capabilities != NULL) {
-    XINPUT_CAPABILITIES caps;
-    if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS) {
-      _is_connected = true;
-    } else {
-      _is_connected = false;
+  _name = "XInput Device #";
+  _name += format_string(user_index);
+
+  _controls.resize(6);
+  _buttons.resize(16);
+
+  set_control_map(0, C_left_trigger);
+  set_control_map(1, C_right_trigger);
+  set_control_map(2, C_left_x);
+  set_control_map(3, C_left_y);
+  set_control_map(4, C_right_x);
+  set_control_map(5, C_right_y);
+
+  set_button_map(0, GamepadButton::dpad_up());
+  set_button_map(1, GamepadButton::dpad_down());
+  set_button_map(2, GamepadButton::dpad_left());
+  set_button_map(3, GamepadButton::dpad_right());
+  set_button_map(4, GamepadButton::start());
+  set_button_map(5, GamepadButton::back());
+  set_button_map(6, GamepadButton::lstick());
+  set_button_map(7, GamepadButton::rstick());
+  set_button_map(8, GamepadButton::lshoulder());
+  set_button_map(9, GamepadButton::rshoulder());
+  set_button_map(10, GamepadButton::guide());
+  set_button_map(11, GamepadButton::action_a());
+  set_button_map(12, GamepadButton::action_b());
+  set_button_map(13, GamepadButton::action_x());
+  set_button_map(14, GamepadButton::action_y());
+
+  // Check if the device is connected.  If so, initialize it.
+  XINPUT_CAPABILITIES caps;
+  XINPUT_STATE state;
+  if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS &&
+      get_state(_index, &state) == ERROR_SUCCESS) {
+    _is_connected = true;
+    init_device(caps, state);
+  } else {
+    _is_connected = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XInputDevice::detect
+//       Access: Public
+//  Description: Called periodically by the InputDeviceManager to
+//               detect whether the device is currently connected.
+////////////////////////////////////////////////////////////////////
+void XInputDevice::
+detect(InputDeviceManager *mgr) {
+  bool connected = false;
+
+  XINPUT_CAPABILITIES caps;
+  XINPUT_STATE state;
+  if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS &&
+      get_state(_index, &state) == ERROR_SUCCESS) {
+    connected = true;
+  } else {
+    connected = false;
+  }
+
+  LightMutexHolder holder(_lock);
+  if (connected == _is_connected) {
+    // Nothing changed.
+    return;
+  }
+  _is_connected = connected;
+
+  if (connected) {
+    init_device(caps, state);
+    mgr->add_device(this);
+  } else {
+    mgr->remove_device(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XInputDevice::init_xinput
+//       Access: Private, Static
+//  Description: Initializes the XInput library.
+////////////////////////////////////////////////////////////////////
+bool XInputDevice::
+init_xinput() {
+  if (device_cat.is_debug()) {
+    device_cat.debug() << "Initializing XInput library.\n";
+  }
+
+  _initialized = true;
+  const char *dll_name = "Xinput1_4.dll";
+  HMODULE module = LoadLibraryA(dll_name);
+
+  // If we didn't find XInput 1.4, fall back to the older 1.3 version.
+  if (!module) {
+    if (device_cat.is_debug()) {
+      device_cat.debug()
+        << "Xinput1_4.dll not found, falling back to Xinput1_3.dll\n";
     }
 
-    if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
-      _device_class = DC_gamepad;
-    } else {
-      _device_class = DC_unknown;
+    dll_name = "Xinput1_3.dll";
+    module = LoadLibraryA(dll_name);
+  }
+
+  if (module) {
+    if (device_cat.is_debug()) {
+      device_cat.debug()
+        << "Successfully loaded " << dll_name << "\n";
     }
 
-    if (caps.Flags & XINPUT_CAPS_FFB_SUPPORTED) {
-      _flags |= IDF_has_vibration;
+    // Undocumented version (XInputGetStateEx) that includes a
+    // state bit for the guide button.
+    get_state = (pXInputGetState)GetProcAddress(module, MAKEINTRESOURCE(100));
+    if (get_state == NULL) {
+      get_state = (pXInputGetState)GetProcAddress(module, "XInputGetState");
+      if (get_state == NULL) {
+        device_cat.error()
+          << "Failed to find function XInputGetState in " << dll_name << ".\n";
+        return false;
+      }
     }
+
+    get_capabilities = (pXInputGetCapabilities)GetProcAddress(module, "XInputGetCapabilities");
+    if (get_capabilities == NULL) {
+      device_cat.error()
+        << "Failed to find function XInputGetCapabilities in " << dll_name << ".\n";
+      return false;
+    }
+
+    get_battery_information = (pXInputGetBatteryInformation)GetProcAddress(module, "XInputGetBatteryInformation");
+    get_base_bus_information = (pXInputGetBaseBusInformation)GetProcAddress(module, MAKEINTRESOURCE(104));
+    return true;
+  }
+
+  device_cat.error()
+    << "Failed to load Xinput1_4.dll or Xinput1_3.dll.\n";
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XInputDevice::init_device
+//       Access: Private
+//  Description: Initializes the device.  Called when the device was
+//               just connected.
+////////////////////////////////////////////////////////////////////
+void XInputDevice::
+init_device(XINPUT_CAPABILITIES &caps, XINPUT_STATE &state) {
+  if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
+    _device_class = DC_gamepad;
+  } else {
+    _device_class = DC_unknown;
+  }
+
+  if (caps.Flags & XINPUT_CAPS_FFB_SUPPORTED) {
+    _flags |= IDF_has_vibration;
   }
 
   if (get_battery_information != NULL) {
     XINPUT_BATTERY_INFORMATION batt;
     if (get_battery_information(_index, 0, &batt) == ERROR_SUCCESS) {
-      if (batt.BatteryType == BATTERY_TYPE_DISCONNECTED) {
-        _is_connected = false;
-
-      } else if (batt.BatteryType != BATTERY_TYPE_WIRED) {
+      if (batt.BatteryType != BATTERY_TYPE_DISCONNECTED &&
+          batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
-        _is_connected = true;
         _flags |= IDF_has_battery;
         _battery_level = batt.BatteryLevel;
         _max_battery_level = BATTERY_LEVEL_FULL;
@@ -163,105 +297,31 @@ XInputDevice(DWORD user_index) :
         _manufacturer.assign(buffer);
       }
     }
-  } else {
-    // We need something to name it.
-    _name = "XInput Device";
-  }
-
-  _controls.resize(6);
-  _buttons.resize(16);
-
-  // Get the initial state.
-  XINPUT_STATE state;
-  if (get_state(_index, &state) != ERROR_SUCCESS) {
-    // Device was disconnected.
-    _is_connected = false;
-    return;
   }
 
   WORD buttons = state.Gamepad.wButtons;
+  WORD mask = 1;
+  for (int i = 0; i < 16; ++i) {
+    if (buttons & mask) {
+      // Set the state without triggering a button event.
+      _buttons[i]._state = (buttons & mask) ? S_down : S_up;
+    }
+    mask <<= 1;
+    if (i == 10) {
+      // XInput skips 0x0800.
+      mask <<= 1;
+    }
+  }
 
-  set_control_map(0, C_left_trigger);
   set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
-  set_control_map(1, C_right_trigger);
   set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
-  set_control_map(2, C_left_x);
   set_control_state(2, state.Gamepad.sThumbLX / 32767.0);
-  set_control_map(3, C_left_y);
   set_control_state(3, state.Gamepad.sThumbLY / 32767.0);
-  set_control_map(4, C_right_x);
   set_control_state(4, state.Gamepad.sThumbRX / 32767.0);
-  set_control_map(5, C_right_y);
   set_control_state(5, state.Gamepad.sThumbRY / 32767.0);
 
-  set_button_map(0, GamepadButton::dpad_up());
-  set_button_state(0, (buttons & XINPUT_GAMEPAD_DPAD_UP) != 0);
-  set_button_map(1, GamepadButton::dpad_down());
-  set_button_state(1, (buttons & XINPUT_GAMEPAD_DPAD_DOWN) != 0);
-  set_button_map(2, GamepadButton::dpad_left());
-  set_button_state(2, (buttons & XINPUT_GAMEPAD_DPAD_LEFT) != 0);
-  set_button_map(3, GamepadButton::dpad_right());
-  set_button_state(3, (buttons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0);
-  set_button_map(4, GamepadButton::start());
-  set_button_state(4, (buttons & XINPUT_GAMEPAD_START) != 0);
-  set_button_map(5, GamepadButton::back());
-  set_button_state(5, (buttons & XINPUT_GAMEPAD_BACK) != 0);
-  set_button_map(6, GamepadButton::lstick());
-  set_button_state(6, (buttons & XINPUT_GAMEPAD_LEFT_THUMB) != 0);
-  set_button_map(7, GamepadButton::rstick());
-  set_button_state(7, (buttons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0);
-  set_button_map(8, GamepadButton::lshoulder());
-  set_button_state(8, (buttons & XINPUT_GAMEPAD_LEFT_SHOULDER) != 0);
-  set_button_map(9, GamepadButton::rshoulder());
-  set_button_state(9, (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != 0);
-  set_button_map(10, GamepadButton::guide());
-  set_button_state(10, (buttons & 0x0400) != 0);
-  set_button_map(11, GamepadButton::action_a());
-  set_button_state(11, (buttons & XINPUT_GAMEPAD_A) != 0);
-  set_button_map(12, GamepadButton::action_b());
-  set_button_state(12, (buttons & XINPUT_GAMEPAD_B) != 0);
-  set_button_map(13, GamepadButton::action_x());
-  set_button_state(13, (buttons & XINPUT_GAMEPAD_X) != 0);
-  set_button_map(14, GamepadButton::action_y());
-  set_button_state(14, (buttons & XINPUT_GAMEPAD_Y) != 0);
-
   _last_buttons = buttons;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::init
-//       Access: Protected, Static
-//  Description: Initializes the XInput library.
-////////////////////////////////////////////////////////////////////
-bool XInputDevice::
-init_xinput() {
-  _initialized = true;
-  HMODULE module = LoadLibraryA("Xinput1_4.dll");
-  if (!module) {
-    module = LoadLibraryA("Xinput1_3.dll");
-  }
-  if (module) {
-    // Undocumented version (XInputGetStateEx) that includes a
-    // state bit for the guide button.
-    get_state = (pXInputGetState)GetProcAddress(module, MAKEINTRESOURCE(100));
-    if (get_state == NULL) {
-      get_state = (pXInputGetState)GetProcAddress(module, "XInputGetState");
-      if (get_state == NULL) {
-        device_cat.error()
-          << "Failed to find function XInputGetState in XInput DLL.\n";
-        return false;
-      }
-    }
-
-    get_capabilities = (pXInputGetCapabilities)GetProcAddress(module, "XInputGetCapabilities");
-    get_battery_information = (pXInputGetBatteryInformation)GetProcAddress(module, "XInputGetBatteryInformation");
-    get_base_bus_information = (pXInputGetBaseBusInformation)GetProcAddress(module, MAKEINTRESOURCE(104));
-    return true;
-  }
-
-  device_cat.error()
-    << "Failed to load XInput DLL.\n";
-  return false;
+  _last_packet = state.dwPacketNumber;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,10 +339,24 @@ do_poll() {
 
   if (get_state(_index, &state) != ERROR_SUCCESS) {
     // Device was disconnected.
-    _is_connected = false;
+    if (_is_connected) {
+      _is_connected = false;
+      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
+      mgr->remove_device(this);
+    }
     return;
-  } else {
-    _is_connected = true;
+
+  } else if (!_is_connected) {
+    // Device was (re)connected.  It's a bit strange to call poll() on
+    // disconnected device, but there's nothing stopping the user from
+    // doing so.
+    XINPUT_CAPABILITIES caps;
+    if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS) {
+      _is_connected = true;
+      init_device(caps, state);
+      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
+      mgr->add_device(this);
+    }
   }
 
   if (state.dwPacketNumber == _last_packet) {
@@ -299,6 +373,7 @@ do_poll() {
     }
     mask <<= 1;
     if (i == 10) {
+      // XInput skips 0x0800.
       mask <<= 1;
     }
   }

@@ -20,29 +20,33 @@
 
 #ifdef _WIN32
 
+class InputDeviceManager;
+
+typedef struct _XINPUT_CAPABILITIES XINPUT_CAPABILITIES;
+typedef struct _XINPUT_STATE XINPUT_STATE;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : XInputDevice
 // Description : This uses Microsoft's XInput library to interface
 //               with an Xbox 360 game controller.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_DEVICE XInputDevice : public InputDevice {
-PUBLISHED:
+class EXPCL_PANDA_DEVICE XInputDevice FINAL : public InputDevice {
+public:
   XInputDevice(DWORD user_index);
 
+  void detect(InputDeviceManager *mgr);
   static bool init_xinput();
 
-public:
+private:
+  void init_device(XINPUT_CAPABILITIES &caps, XINPUT_STATE &state);
   virtual void do_poll();
 
 private:
-  DWORD _index;
+  const DWORD _index;
   DWORD _last_packet;
   WORD _last_buttons;
 
   static bool _initialized;
-
-  // There are only four of these in existence.
-  //static XInputDevice _devices[4];
 };
 
 #endif  // _WIN32

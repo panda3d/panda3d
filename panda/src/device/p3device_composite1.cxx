@@ -8,4 +8,5 @@
 #include "evdevInputDevice.cxx"
 #include "inputDevice.cxx"
 #include "inputDeviceManager.cxx"
+#include "inputDeviceSet.cxx"
 #include "linuxJoystickDevice.cxx"

@@ -18,6 +18,11 @@
 #include "pandabase.h"
 #include "lightMutex.h"
 #include "inputDevice.h"
+#include "inputDeviceSet.h"
+
+#ifdef _WIN32
+#include "xinputDevice.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InputDeviceManager
@@ -35,13 +40,18 @@ private:
 #endif
 
 public:
+  InputDeviceSet get_gamepads() const;
+
+PUBLISHED:
   void add_device(InputDevice *device);
   void remove_device(InputDevice *device);
 
-PUBLISHED:
-  void poll();
+  void update();
 
   INLINE static InputDeviceManager *get_global_ptr();
+
+  // The set of all currently connected gamepad devices.
+  MAKE_PROPERTY(gamepads, get_gamepads);
 
 private:
   LightMutex _lock;
@@ -53,8 +63,16 @@ private:
   DevicesByPath _devices_by_path;
 #endif
 
-  typedef pvector<PT(InputDevice)> InputDevices;
-  InputDevices _all_devices;
+#ifdef _WIN32
+  // There are always exactly four of these in existence.
+  XInputDevice _xinput_device0;
+  XInputDevice _xinput_device1;
+  XInputDevice _xinput_device2;
+  XInputDevice _xinput_device3;
+  double _last_detection;
+#endif
+
+  InputDeviceSet _connected_devices;
 
   static InputDeviceManager *_global_ptr;
 };

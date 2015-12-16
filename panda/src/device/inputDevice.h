@@ -62,6 +62,7 @@ PUBLISHED:
   // This enum contains information that can be used to identify the
   // type of input device.
   enum DeviceClass {
+    // It is not known what type of device this is.
     DC_unknown,
 
     // This means that the device doesn't correspond to a physical

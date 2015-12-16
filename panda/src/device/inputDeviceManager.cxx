@@ -23,6 +23,12 @@
 #include <sys/ioctl.h>
 #endif
 
+static ConfigVariableDouble xinput_detection_delay
+("xinput-detection-delay", 0.5,
+ PRC_DESC("How many seconds to wait between each check to see whether "
+          "an XInput has been connected.  This check is not done every "
+          "frame in order to prevent slowdown."));
+
 InputDeviceManager *InputDeviceManager::_global_ptr = NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -70,6 +76,34 @@ InputDeviceManager() : _inotify_fd(-1) {
   } else if (inotify_add_watch(_inotify_fd, "/dev/input", IN_CREATE | IN_ATTRIB | IN_DELETE) < 0) {
     device_cat.error()
       << "Error adding inotify watch on /dev/input: " << strerror(errno) << "\n";
+  }
+}
+#elif defined(_WIN32)
+InputDeviceManager::
+InputDeviceManager() :
+  _xinput_device0(0),
+  _xinput_device1(1),
+  _xinput_device2(2),
+  _xinput_device3(3),
+  _last_detection(0.0) {
+
+  // These devices are bound to the lifetime of the input manager.
+  _xinput_device0.local_object();
+  _xinput_device1.local_object();
+  _xinput_device2.local_object();
+  _xinput_device3.local_object();
+
+  if (_xinput_device0.is_connected()) {
+    _connected_devices.add_device(&_xinput_device0);
+  }
+  if (_xinput_device1.is_connected()) {
+    _connected_devices.add_device(&_xinput_device1);
+  }
+  if (_xinput_device2.is_connected()) {
+    _connected_devices.add_device(&_xinput_device2);
+  }
+  if (_xinput_device3.is_connected()) {
+    _connected_devices.add_device(&_xinput_device3);
   }
 }
 #else
@@ -124,7 +158,7 @@ consider_add_linux_device(const string &name) {
     }
 
     _devices_by_path[name] = device;
-    _all_devices.push_back(MOVE(device));
+    _connected_devices.add_device(MOVE(device));
     return true;
   }
 
@@ -133,46 +167,67 @@ consider_add_linux_device(const string &name) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::add_device
+//     Function: InputDeviceManager::get_gamepads
 //       Access: Public
-//  Description: Called when a new device has been discovered.
+//  Description: Returns all currently connected gamepad devices.
+////////////////////////////////////////////////////////////////////
+InputDeviceSet InputDeviceManager::
+get_gamepads() const {
+  InputDeviceSet gamepads;
+  LightMutexHolder holder(_lock);
+
+  for (size_t i = 0; i < _connected_devices.size(); ++i) {
+    InputDevice *device = _connected_devices[i];
+    if (device->get_device_class() == InputDevice::DC_gamepad) {
+      gamepads.add_device(device);
+    }
+  }
+
+  return gamepads;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InputDeviceManager::add_device
+//       Access: Published
+//  Description: Called when a new device has been discovered.  This
+//               may also be used to register virtual devices.
+//
+//               This sends a connect-device event.
 ////////////////////////////////////////////////////////////////////
 void InputDeviceManager::
 add_device(InputDevice *device) {
   {
     LightMutexHolder holder(_lock);
-    _all_devices.push_back(device);
+    _connected_devices.add_device(device);
   }
   throw_event("connect-device", device);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InputDeviceManager::remove_device
-//       Access: Public
-//  Description: Called when a device has been removed.
+//       Access: Published
+//  Description: Called when a device has been removed, or when a
+//               device should otherwise no longer be tracked.
+//
+//               This sends a disconnect-device event.
 ////////////////////////////////////////////////////////////////////
 void InputDeviceManager::
 remove_device(InputDevice *device) {
   {
     LightMutexHolder holder(_lock);
-
-    InputDevices::iterator it;
-    it = std::find(_all_devices.begin(), _all_devices.end(), device);
-    nassertv_always(it != _all_devices.end());
-
-    _all_devices.erase(it);
+    _connected_devices.remove_device(device);
   }
 
   throw_event("disconnect-device", device);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::poll
+//     Function: InputDeviceManager::update
 //       Access: Public
 //  Description: Polls the system to see if there are any new devices.
 ////////////////////////////////////////////////////////////////////
 void InputDeviceManager::
-poll() {
+update() {
 #ifdef PHAVE_LINUX_INPUT_H
   // We use inotify to tell us whether a device was added, removed,
   // or has changed permissions to allow us to access it.
@@ -213,8 +268,8 @@ poll() {
 
         InputDevices::iterator it2;
         _devices_by_path.erase(it);
-        it2 = std::find(_all_devices.begin(), _all_devices.end(), device);
-        _all_devices.erase(it2);
+        it2 = std::find(_connected_devices.begin(), _connected_devices.end(), device);
+        _connected_devices.erase(it2);
 
         if (device_cat.is_info()) {
           device_cat.info()
@@ -240,6 +295,22 @@ poll() {
     }
 
     ptr += sizeof(inotify_event) + event->len;
+  }
+#endif
+
+#ifdef _WIN32
+  // XInput doesn't provide a very good hot-plugging interface.  We just
+  // check if it's connected every so often.  Perhaps we can switch to
+  // using RegisterDeviceNotification in the future.
+  double time_now = ClockObject::get_global_clock()->get_real_time();
+  if (time_now - _last_detection > xinput_detection_delay.get_value()) {
+    // I've heard this can be quite slow if no device is detected.  We
+    // should probably move it to a thread.
+    _xinput_device0.detect(this);
+    _xinput_device1.detect(this);
+    _xinput_device2.detect(this);
+    _xinput_device3.detect(this);
+    _last_detection = time_now;
   }
 #endif
 }
