@@ -53,17 +53,22 @@ PUBLISHED:
 
   INLINE bool set_point_size(PN_stdfloat point_size);
   INLINE PN_stdfloat get_point_size() const;
+  MAKE_PROPERTY(point_size, get_point_size, set_point_size);
 
   INLINE bool set_pixels_per_unit(PN_stdfloat pixels_per_unit);
   INLINE PN_stdfloat get_pixels_per_unit() const;
+  MAKE_PROPERTY(pixels_per_unit, get_pixels_per_unit, set_pixels_per_unit);
 
   INLINE bool set_scale_factor(PN_stdfloat scale_factor);
   INLINE PN_stdfloat get_scale_factor() const;
+  MAKE_PROPERTY(scale_factor, get_scale_factor, set_scale_factor);
 
   INLINE void set_native_antialias(bool native_antialias);
   INLINE bool get_native_antialias() const;
+  MAKE_PROPERTY(native_antialias, get_native_antialias, set_native_antialias);
 
   INLINE int get_font_pixel_size() const;
+  MAKE_PROPERTY(font_pixel_size, get_font_pixel_size);
 
   INLINE PN_stdfloat get_line_height() const;
   INLINE PN_stdfloat get_space_advance() const;
@@ -72,11 +77,15 @@ PUBLISHED:
   INLINE int get_texture_margin() const;
   INLINE void set_poly_margin(PN_stdfloat poly_margin);
   INLINE PN_stdfloat get_poly_margin() const;
+  MAKE_PROPERTY(texture_margin, get_texture_margin, set_texture_margin);
+  MAKE_PROPERTY(poly_margin, get_poly_margin, set_poly_margin);
 
+  INLINE void set_page_size(const LVecBase2i &page_size);
   INLINE void set_page_size(int x_size, int y_size);
   INLINE const LVecBase2i &get_page_size() const;
   INLINE int get_page_x_size() const;
   INLINE int get_page_y_size() const;
+  MAKE_PROPERTY(page_size, get_page_size, set_page_size);
 
   INLINE void set_minfilter(SamplerState::FilterType filter);
   INLINE SamplerState::FilterType get_minfilter() const;
@@ -84,11 +93,16 @@ PUBLISHED:
   INLINE SamplerState::FilterType get_magfilter() const;
   INLINE void set_anisotropic_degree(int anisotropic_degree);
   INLINE int get_anisotropic_degree() const;
+  MAKE_PROPERTY(minfilter, get_minfilter, set_minfilter);
+  MAKE_PROPERTY(magfilter, get_magfilter, set_magfilter);
+  MAKE_PROPERTY(anisotropic_degree, get_anisotropic_degree, set_anisotropic_degree);
 
   INLINE void set_render_mode(RenderMode render_mode);
   INLINE RenderMode get_render_mode() const;
   INLINE void set_winding_order(WindingOrder winding_order);
   INLINE WindingOrder get_winding_order() const;
+  MAKE_PROPERTY(render_mode, get_render_mode, set_render_mode);
+  MAKE_PROPERTY(winding_order, get_winding_order, set_winding_order);
 
   INLINE void set_fg(const LColor &fg);
   INLINE const LColor &get_fg() const;
@@ -100,6 +114,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_outline_width() const;
   INLINE PN_stdfloat get_outline_feather() const;
   INLINE Texture::Format get_tex_format() const;
+  MAKE_PROPERTY(fg, get_fg, set_fg);
+  MAKE_PROPERTY(bg, get_bg, set_bg);
+  MAKE_PROPERTY(tex_format, get_tex_format);
 
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;

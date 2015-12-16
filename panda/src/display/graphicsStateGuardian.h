@@ -247,7 +247,7 @@ PUBLISHED:
   virtual bool set_gamma(PN_stdfloat gamma);
   PN_stdfloat get_gamma(PN_stdfloat gamma);
   virtual void restore_gamma();
-  MAKE_PROPERTY(get_gamma, set_gamma);
+  MAKE_PROPERTY(gamma, get_gamma, set_gamma);
 
   INLINE void set_texture_quality_override(Texture::QualityLevel quality_level);
   INLINE Texture::QualityLevel get_texture_quality_override() const;

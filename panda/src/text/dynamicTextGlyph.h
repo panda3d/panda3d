@@ -45,6 +45,7 @@ PUBLISHED:
   virtual ~DynamicTextGlyph();
 
   INLINE DynamicTextPage *get_page() const;
+  MAKE_PROPERTY(page, get_page);
 
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
 
