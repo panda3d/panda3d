@@ -266,10 +266,8 @@ update() {
         PT(InputDevice) device = it->second;
         device->set_connected(false);
 
-        InputDevices::iterator it2;
         _devices_by_path.erase(it);
-        it2 = std::find(_connected_devices.begin(), _connected_devices.end(), device);
-        _connected_devices.erase(it2);
+        _connected_devices.remove_device(device);
 
         if (device_cat.is_info()) {
           device_cat.info()
