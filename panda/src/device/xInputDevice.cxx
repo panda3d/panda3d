@@ -380,10 +380,10 @@ do_poll() {
 
   set_control_state(0, state.Gamepad.bLeftTrigger / 255.0);
   set_control_state(1, state.Gamepad.bRightTrigger / 255.0);
-  set_control_state(2, state.Gamepad.sThumbLX / 32767.0);
-  set_control_state(3, state.Gamepad.sThumbLY / 32767.0);
-  set_control_state(4, state.Gamepad.sThumbRX / 32767.0);
-  set_control_state(5, state.Gamepad.sThumbRY / 32767.0);
+  set_control_state(2, (state.Gamepad.sThumbLX + 0.5) / 32767.5);
+  set_control_state(3, (state.Gamepad.sThumbLY + 0.5) / 32767.5);
+  set_control_state(4, (state.Gamepad.sThumbRX + 0.5) / 32767.5);
+  set_control_state(5, (state.Gamepad.sThumbRY + 0.5) / 32767.5);
 
   _last_buttons = state.Gamepad.wButtons;
   _last_packet = state.dwPacketNumber;
