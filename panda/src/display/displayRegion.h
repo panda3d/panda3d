@@ -93,7 +93,7 @@ PUBLISHED:
 
   virtual void set_camera(const NodePath &camera);
   INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
-  MAKE_PROPERTY(camear, get_camera, set_camera);
+  MAKE_PROPERTY(camera, get_camera, set_camera);
 
   virtual void set_active(bool active);
   INLINE bool is_active() const;

@@ -259,6 +259,17 @@ get_poly_margin() const {
 //               for the DynamicTextFont.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
+set_page_size(const LVecBase2i &page_size) {
+  _page_size = page_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_page_size
+//       Access: Published
+//  Description: Sets the x, y size of the textures that are created
+//               for the DynamicTextFont.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
 set_page_size(int x_size, int y_size) {
   _page_size.set(x_size, y_size);
 }

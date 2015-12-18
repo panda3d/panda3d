@@ -48,14 +48,17 @@ PUBLISHED:
 #endif
 #ifdef HAVE_ROCKET_PYTHON
   EXTENSION(PyObject *get_context() const);
+  MAKE_PROPERTY(context, get_context);
 #endif
 
   INLINE void set_input_handler(RocketInputHandler *handler);
   INLINE RocketInputHandler *get_input_handler() const;
+  MAKE_PROPERTY(input_handler, get_input_handler, set_input_handler);
 
   bool init_debugger();
   void set_debugger_visible(bool visible);
   bool is_debugger_visible() const;
+  MAKE_PROPERTY(debugger_visible, is_debugger_visible, set_debugger_visible);
 
 private:
   RocketRenderInterface _interface;

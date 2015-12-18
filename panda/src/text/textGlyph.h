@@ -44,6 +44,10 @@ PUBLISHED:
   INLINE const RenderState *get_state() const;
   INLINE PN_stdfloat get_advance() const;
 
+  MAKE_PROPERTY(character, get_character);
+  MAKE_PROPERTY(state, get_state);
+  MAKE_PROPERTY(advance, get_advance);
+
   virtual bool is_whitespace() const;
 
   PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
