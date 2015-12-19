@@ -418,6 +418,18 @@ write_controls(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InputDevice::do_set_vibration
+//       Access: Private, Virtual
+//  Description: Sets the vibration strength.  The first argument
+//               controls a low-frequency motor, if present, and
+//               the latter controls a high-frequency motor.  The
+//               values are within the 0-1 range.
+////////////////////////////////////////////////////////////////////
+void InputDevice::
+do_set_vibration(double strong, double weak) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InputDevice::do_poll
 //       Access: Protected, Virtual
 //  Description: Polls the input device for new activity, to ensure

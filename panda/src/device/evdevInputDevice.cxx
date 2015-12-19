@@ -40,11 +40,25 @@ TypeHandle EvdevInputDevice::_type_handle;
 //               device using the given device filename.
 ////////////////////////////////////////////////////////////////////
 EvdevInputDevice::
-EvdevInputDevice(int index) : _index(index) {
+EvdevInputDevice(int index) :
+  _index(index),
+  _fd(-1),
+  _can_write(false),
+  _ff_id(-1),
+  _ff_playing(false),
+  _ff_strong(-1),
+  _ff_weak(-1) {
+
   char path[64];
   sprintf(path, "/dev/input/event%d", index);
 
-  _fd = open(path, O_RDONLY | O_NONBLOCK);
+  _fd = open(path, O_RDWR | O_NONBLOCK);
+  if (_fd >= 0) {
+    _can_write = true;
+  } else {
+    // On failure, open device as read-only.
+    _fd = open(path, O_RDONLY | O_NONBLOCK);
+  }
 
   if (_fd >= 0) {
     init_device();
@@ -63,21 +77,74 @@ EvdevInputDevice(int index) : _index(index) {
 EvdevInputDevice::
 ~EvdevInputDevice() {
   if (_fd != -1) {
+    if (_ff_id != -1) {
+      // Remove force-feedback effect.
+      do_set_vibration(0, 0);
+      ioctl(_fd, EVIOCRMFF, _ff_id);
+      _ff_id = -1;
+    }
+
     close(_fd);
     _fd = -1;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::check_events
-//       Access: Public
-//  Description: Returns true if there are pending events.
+//     Function: EvdevInputDevice::do_set_vibration
+//       Access: Private, Virtual
+//  Description: Sets the vibration strength.  The first argument
+//               controls a low-frequency motor, if present, and
+//               the latter controls a high-frequency motor.  The
+//               values are within the 0-1 range.
 ////////////////////////////////////////////////////////////////////
-bool EvdevInputDevice::
-check_events() const {
-  unsigned int avail = 0;
-  ioctl(_fd, FIONREAD, &avail);
-  return (avail != 0);
+void EvdevInputDevice::
+do_set_vibration(double strong, double weak) {
+  if (_fd == -1 || !_can_write) {
+    return;
+  }
+
+  int strong_level = strong * 0xffff;
+  int weak_level = weak * 0xffff;
+
+  if (strong_level == _ff_strong && weak_level == _ff_weak) {
+    // No change.
+    return;
+  }
+
+  // Upload the new effect parameters.  Do this even if we are about
+  // to stop the effect, because some drivers don't respond to simply
+  // stopping the effect.
+  struct ff_effect effect;
+  effect.type = FF_RUMBLE;
+  effect.id = _ff_id;
+  effect.direction = 0;
+  effect.trigger.button = 0;
+  effect.trigger.interval = 0;
+  effect.replay.length = 0;
+  effect.replay.delay = 0;
+  effect.u.rumble.strong_magnitude = strong_level;
+  effect.u.rumble.weak_magnitude = weak_level;
+
+  if (ioctl(_fd, EVIOCSFF, &effect) < 0) {
+    return;
+  } else {
+    _ff_id = effect.id;
+    _ff_strong = strong_level;
+    _ff_weak = weak_level;
+  }
+
+  if (!_ff_playing) {
+    // Start the effect.  We could pass 0 as value to stop the effect
+    // when a level of 0 is requested, but my driver seems to ignore it.
+    _ff_playing = true;
+
+    struct input_event play;
+    play.type = EV_FF;
+    play.code = _ff_id;
+    play.value = 1;
+
+    write(_fd, &play, sizeof(play));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -227,7 +294,20 @@ init_device() {
   }
 
   if (test_bit(EV_FF, evtypes)) {
-    _flags |= IDF_has_vibration;
+    uint8_t effects[(FF_CNT + 7) >> 3];
+    memset(effects, 0, sizeof(effects));
+    ioctl(_fd, EVIOCGBIT(EV_FF, sizeof(effects)), effects);
+
+    if (test_bit(FF_RUMBLE, effects)) {
+      if (_can_write) {
+        _flags |= IDF_has_vibration;
+      } else {
+        // Let the user know what he's missing out on.
+        device_cat.warning()
+          << "/dev/input/event" << _index << " is not writable, vibration "
+          << "effects will be unavailable.\n";
+      }
+    }
   }
 
   char path[64];

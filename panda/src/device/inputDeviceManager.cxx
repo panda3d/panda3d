@@ -202,10 +202,8 @@ consider_add_evdev_device(int ev_index) {
         // This seemed to work.  Display a warning to the user indicating
         // that they might want to configure udev properly.
         device_cat.warning()
-          << "Some features of " << device->get_device_class()
-          << " device " << device->get_name() << " are not available due"
-             " to lack of read permissions on /dev/input/event" << ev_index
-          << ".\n";
+          << "/dev/input/event" << ev_index << " is not readable, some "
+             "features will be unavailable.\n";
       }
       _evdev_devices[ev_index] = device;
       return device;

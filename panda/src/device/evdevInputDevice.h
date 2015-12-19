@@ -29,9 +29,8 @@ public:
   EvdevInputDevice(int index);
   virtual ~EvdevInputDevice();
 
-  bool check_events() const;
-
 private:
+  virtual void do_set_vibration(double strong, double weak);
   virtual void do_poll();
 
   bool init_device();
@@ -40,6 +39,11 @@ private:
 private:
   int _index;
   int _fd;
+  bool _can_write;
+  int _ff_id;
+  bool _ff_playing;
+  int _ff_strong;
+  int _ff_weak;
 
   struct AxisRange {
     double _scale;

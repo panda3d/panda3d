@@ -160,6 +160,8 @@ PUBLISHED:
   INLINE double get_control_state(int index) const;
   INLINE bool is_control_known(int index) const;
 
+  INLINE void set_vibration(double strong, double weak);
+
   INLINE void enable_pointer_events();
   INLINE void disable_pointer_events();
 
@@ -179,6 +181,7 @@ protected:
   void set_control_state(int index, double state);
   void set_tracker(const LPoint3 &pos, const LOrientation &orient, double time);
 
+  virtual void do_set_vibration(double low, double high);
   virtual void do_poll();
 
 public:

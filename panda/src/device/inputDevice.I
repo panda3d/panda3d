@@ -394,6 +394,21 @@ is_control_known(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InputDevice::set_vibration
+//       Access: Public
+//  Description: Sets the strength of the vibration effect, if
+//               supported.  The values are clamped to 0-1 range.
+//               The first value controls the low-frequency rumble
+//               motor, whereas the second controls the high-frequency
+//               motor, if present.
+////////////////////////////////////////////////////////////////////
+INLINE void InputDevice::
+set_vibration(double strong, double weak) {
+  LightMutexHolder holder(_lock);
+  do_set_vibration(max(min(strong, 1.0), 0.0), max(min(weak, 1.0), 0.0));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InputDevice::enable_pointer_events
 //       Access: Public
 //  Description: Enables the generation of mouse-movement events.
