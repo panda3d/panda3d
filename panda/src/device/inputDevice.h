@@ -111,11 +111,23 @@ PUBLISHED:
   };
 
   INLINE string get_name() const;
+  INLINE string get_manufacturer() const;
+  INLINE unsigned short get_vendor_id() const;
+  INLINE unsigned short get_product_id() const;
   INLINE bool is_connected() const;
   INLINE DeviceClass get_device_class() const;
 
   // The human-readable name of this input device.
   MAKE_PROPERTY(name, get_name);
+
+  // The device's manufacturer, or the empty string if not known.
+  MAKE_PROPERTY(manufacturer, get_manufacturer);
+
+  // USB vendor ID of the device, or 0 if not known.
+  MAKE_PROPERTY(vendor_id, get_vendor_id);
+
+  // USB product ID of the device, or 0 if not known.
+  MAKE_PROPERTY(product_id, get_product_id);
 
   // This is false if we know that the device is not currently connected.
   // May report false positives if we can't know this with certainty.
@@ -212,8 +224,8 @@ protected:
   DeviceClass _device_class;
   int _flags;
   int _event_sequence;
-  short _vendor_id;
-  short _product_id;
+  unsigned short _vendor_id;
+  unsigned short _product_id;
   bool _is_connected;
   bool _enable_pointer_events;
   PointerData _pointer_data;

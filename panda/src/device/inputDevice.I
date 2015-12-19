@@ -35,12 +35,49 @@ InputDevice() :
 ////////////////////////////////////////////////////////////////////
 //     Function: InputDevice::get_name
 //       Access: Public
-//  Description:
+//  Description: Returns a human-readable name for the device.  May
+//               not necessarily be unique.
 ////////////////////////////////////////////////////////////////////
 INLINE string InputDevice::
 get_name() const {
   LightMutexHolder holder(_lock);
   return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InputDevice::get_manufacturer
+//       Access: Public
+//  Description: Returns a string containing the manufacturer of
+//               the device, if this information is known.
+////////////////////////////////////////////////////////////////////
+INLINE string InputDevice::
+get_manufacturer() const {
+  LightMutexHolder holder(_lock);
+  return _manufacturer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InputDevice::get_vendor_id
+//       Access: Public
+//  Description: Returns a string containing the USB vendor ID of
+//               the device, if this information is known.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned short InputDevice::
+get_vendor_id() const {
+  LightMutexHolder holder(_lock);
+  return _vendor_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InputDevice::get_product_id
+//       Access: Public
+//  Description: Returns a string containing the USB product ID of
+//               the device, if this information is known.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned short InputDevice::
+get_product_id() const {
+  LightMutexHolder holder(_lock);
+  return _product_id;
 }
 
 ////////////////////////////////////////////////////////////////////

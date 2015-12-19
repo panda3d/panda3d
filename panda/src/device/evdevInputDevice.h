@@ -25,10 +25,11 @@
 //               /dev/input/event# API to read data from a raw mouse.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
-PUBLISHED:
-  EvdevInputDevice(int fd);
-  EvdevInputDevice(const string &device);
+public:
+  EvdevInputDevice(int index);
   virtual ~EvdevInputDevice();
+
+  bool check_events() const;
 
 private:
   virtual void do_poll();
@@ -37,7 +38,14 @@ private:
   bool process_events();
 
 private:
+  int _index;
   int _fd;
+
+  struct AxisRange {
+    double _scale;
+    double _bias;
+  };
+  pvector<AxisRange> _axis_ranges;
 
 public:
   static ButtonHandle map_button(int code);

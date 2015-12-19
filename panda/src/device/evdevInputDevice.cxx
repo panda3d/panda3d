@@ -19,6 +19,7 @@
 #include "gamepadButton.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
+#include "inputDeviceManager.h"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -36,31 +37,21 @@ TypeHandle EvdevInputDevice::_type_handle;
 //     Function: EvdevInputDevice::Constructor
 //       Access: Published
 //  Description: Creates a new device using the Linux joystick
-//               device using the given file descriptor.  It will
-//               be closed when this object destructs.
-////////////////////////////////////////////////////////////////////
-EvdevInputDevice::
-EvdevInputDevice(int fd) :
-  _fd(fd) {
-  init_device();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::Constructor
-//       Access: Published
-//  Description: Creates a new device using the Linux joystick
 //               device using the given device filename.
 ////////////////////////////////////////////////////////////////////
 EvdevInputDevice::
-EvdevInputDevice(const string &fn) {
-  _fd = open(fn.c_str(), O_RDONLY | O_NONBLOCK);
+EvdevInputDevice(int index) : _index(index) {
+  char path[64];
+  sprintf(path, "/dev/input/event%d", index);
+
+  _fd = open(path, O_RDONLY | O_NONBLOCK);
 
   if (_fd >= 0) {
     init_device();
   } else {
     _is_connected = false;
     device_cat.error()
-      << "Opening raw input device: " << strerror(errno) << " " << fn << "\n";
+      << "Opening raw input device: " << strerror(errno) << " " << path << "\n";
   }
 }
 
@@ -78,6 +69,18 @@ EvdevInputDevice::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EvdevInputDevice::check_events
+//       Access: Public
+//  Description: Returns true if there are pending events.
+////////////////////////////////////////////////////////////////////
+bool EvdevInputDevice::
+check_events() const {
+  unsigned int avail = 0;
+  ioctl(_fd, FIONREAD, &avail);
+  return (avail != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EvdevInputDevice::do_poll
 //       Access: Private, Virtual
 //  Description: Polls the input device for new activity, to ensure
@@ -88,8 +91,15 @@ EvdevInputDevice::
 ////////////////////////////////////////////////////////////////////
 void EvdevInputDevice::
 do_poll() {
-  if (_fd != -1) {
+  if (_fd != -1 && process_events()) {
     while (process_events()) {}
+
+    // If we got events, we are obviously connected.  Mark us so.
+    if (!_is_connected) {
+      _is_connected = true;
+      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
+      mgr->add_device(this);
+    }
   }
 }
 
@@ -104,10 +114,8 @@ init_device() {
 
   uint8_t evtypes[(EV_CNT + 7) >> 3];
   memset(evtypes, 0, sizeof(evtypes));
-  char name[256];
-  char uniq[256];
+  char name[128];
   if (ioctl(_fd, EVIOCGNAME(sizeof(name)), name) < 0 ||
-      ioctl(_fd, EVIOCGPHYS(sizeof(uniq)), uniq) < 0 ||
       ioctl(_fd, EVIOCGBIT(0, sizeof(evtypes)), evtypes) < 0) {
     close(_fd);
     _fd = -1;
@@ -116,29 +124,59 @@ init_device() {
     return false;
   }
 
-  for (char *p=name; *p; p++) {
-    if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
-      *p = '_';
-    }
-  }
-  for (char *p=uniq; *p; p++) {
-    if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
-      *p = '_';
-    }
+  _name.assign(name);
+
+  struct input_id id;
+  if (ioctl(_fd, EVIOCGID, &id) >= 0) {
+    _vendor_id = id.vendor;
+    _product_id = id.product;
   }
 
-  _name = ((string)name) + "." + uniq;
-
+  bool all_values_zero = true;
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
     uint8_t axes[(ABS_CNT + 7) >> 3];
     memset(axes, 0, sizeof(axes));
+
+    AxisRange range;
+    range._scale = 1.0;
+    range._bias = 0.0;
+    _axis_ranges.resize(ABS_CNT, range);
 
     int num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
         if (i >= 0 && i < 6) {
           set_control_map(i, axis_map[i]);
+
+          // Check the initial value and ranges.
+          struct input_absinfo absinfo;
+          if (ioctl(_fd, EVIOCGABS(i), &absinfo) >= 0) {
+            double factor, bias;
+            if (absinfo.minimum < 0) {
+              // Centered, eg. for sticks.
+              factor = 2.0 / (absinfo.maximum - absinfo.minimum);
+              bias = (absinfo.maximum + absinfo.minimum) / (double)(absinfo.minimum - absinfo.maximum);
+            } else {
+              // 0-based, eg. for triggers.
+              factor = 1.0 / absinfo.maximum;
+              bias = 0.0;
+            }
+
+            // Flip Y axis to match Windows implementation.
+            if (i == ABS_Y || i == ABS_RY) {
+              factor = -factor;
+              bias = -bias;
+            }
+
+            _axis_ranges[i]._scale = factor;
+            _axis_ranges[i]._bias = bias;
+            _controls[i]._state = fma(absinfo.value, factor, bias);
+
+            if (absinfo.value != 0) {
+              all_values_zero = false;
+            }
+          }
         }
       }
     }
@@ -148,13 +186,39 @@ init_device() {
     // Check which buttons are on the device.
     uint8_t keys[(KEY_CNT + 7) >> 3];
     memset(keys, 0, sizeof(keys));
+    ioctl(_fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys);
 
-    int num_bits = ioctl(_fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys) << 3;
+    // Also check whether the buttons are currently pressed.
+    uint8_t states[(KEY_CNT + 7) >> 3];
+    memset(states, 0, sizeof(states));
+    ioctl(_fd, EVIOCGKEY(sizeof(states)), states);
+
     int bi = 0;
-    for (int i = 0; i < num_bits; ++i) {
+    for (int i = 0; i < KEY_CNT; ++i) {
       if (test_bit(i, keys)) {
-        set_button_map(bi++, map_button(i));
+        set_button_map(bi, map_button(i));
+        if (test_bit(i, states)) {
+          _buttons[bi]._state = S_down;
+          all_values_zero = false;
+        } else {
+          _buttons[bi]._state = S_up;
+        }
+        ++bi;
       }
+    }
+
+    // Check device type.
+    if (test_bit(BTN_GAMEPAD, keys)) {
+      _device_class = DC_gamepad;
+
+    } else if (test_bit(BTN_JOYSTICK, keys)) {
+      _device_class = DC_flight_stick;
+
+    } else if (test_bit(BTN_MOUSE, keys)) {
+      _device_class = DC_mouse;
+
+    } else if (test_bit(BTN_WHEEL, keys)) {
+      _device_class = DC_steering_wheel;
     }
   }
 
@@ -166,14 +230,52 @@ init_device() {
     _flags |= IDF_has_vibration;
   }
 
-  _is_connected = true;
+  char path[64];
+  char buffer[256];
+  sprintf(path, "/sys/class/input/event%d/device/device/../product", _index);
+  FILE *f = fopen(path, "r");
+  if (f) {
+    fgets(buffer, sizeof(buffer), f);
+    buffer[strcspn(buffer, "\r\n")] = 0;
+    if (buffer[0] != 0) {
+      _name.assign(buffer);
+    }
+    fclose(f);
+  }
+  sprintf(path, "/sys/class/input/event%d/device/device/../manufacturer", _index);
+  f = fopen(path, "r");
+  if (f) {
+    fgets(buffer, sizeof(buffer), f);
+    buffer[strcspn(buffer, "\r\n")] = 0;
+    _manufacturer.assign(buffer);
+    fclose(f);
+  }
+  sprintf(path, "/sys/class/input/event%d/device/device/../serial", _index);
+  f = fopen(path, "r");
+  if (f) {
+    fgets(buffer, sizeof(buffer), f);
+    buffer[strcspn(buffer, "\r\n")] = 0;
+    _serial_number.assign(buffer);
+    fclose(f);
+  }
+
+  // Special-case fix for Xbox 360 Wireless Receiver: the Linux kernel
+  // driver always reports 4 connected gamepads, regardless of the number
+  // of gamepads actually present.  This hack partially remedies this.
+  if (all_values_zero && _vendor_id == 0x045e && _product_id == 0x0719) {
+    _is_connected = false;
+  } else {
+    _is_connected = true;
+  }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EvdevInputDevice::process_events
 //       Access: Private
-//  Description: Reads a number of events from the device.
+//  Description: Reads a number of events from the device.  Returns
+//               true if events were read, meaning this function
+//               should keep being called until it returns false.
 ////////////////////////////////////////////////////////////////////
 bool EvdevInputDevice::
 process_events() {
@@ -186,10 +288,12 @@ process_events() {
       // No data available for now.
 
     } else if (errno == ENODEV || errno == EINVAL) {
-      // The device ceased to exist, so we better close it.
+      // The device ceased to exist, so we better close it.  No need
+      // to worry about removing it from the InputDeviceManager, as it
+      // will get an inotify event sooner or later about this.
       close(_fd);
       _fd = -1;
-      _is_connected = false;
+      //_is_connected = false;
       errno = 0;
 
     } else {
@@ -210,23 +314,31 @@ process_events() {
   double time = ClockObject::get_global_clock()->get_frame_time();
   ButtonHandle button;
 
+  // It seems that some devices send a single EV_SYN event when being
+  // unplugged.  Boo.  Ignore it.
+  if (n_read == 1 && events[0].code == EV_SYN) {
+    return false;
+  }
+
   for (int i = 0; i < n_read; ++i) {
+    int code = events[i].code;
+
     switch (events[i].type) {
     case EV_SYN:
       break;
 
     case EV_REL:
-      if (events[i].code == REL_X) x += events[i].value;
-      if (events[i].code == REL_Y) y += events[i].value;
+      if (code == REL_X) x += events[i].value;
+      if (code == REL_Y) y += events[i].value;
       have_pointer = true;
       break;
 
     case EV_ABS:
-      set_control_state(events[i].code, events[i].value / 32767.0);
+      set_control_state(code, fma(events[i].value, _axis_ranges[code]._scale, _axis_ranges[code]._bias));
       break;
 
     case EV_KEY:
-      button = map_button(events[i].code);
+      button = map_button(code);
       _button_events->add_event(ButtonEvent(button, events[i].value ? ButtonEvent::T_down : ButtonEvent::T_up, time));
       break;
 

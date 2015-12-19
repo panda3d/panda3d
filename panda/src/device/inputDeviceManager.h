@@ -36,7 +36,8 @@ private:
   ~InputDeviceManager();
 
 #ifdef PHAVE_LINUX_INPUT_H
-  bool consider_add_linux_device(const string &name);
+  InputDevice *consider_add_evdev_device(int index);
+  InputDevice *consider_add_js_device(int index);
 #endif
 
 public:
@@ -59,12 +60,13 @@ private:
 #ifdef PHAVE_LINUX_INPUT_H
   int _inotify_fd;
 
-  typedef pmap<string, InputDevice*> DevicesByPath;
-  DevicesByPath _devices_by_path;
+  pvector<InputDevice *> _evdev_devices;
+  InputDeviceSet _inactive_devices;
 #endif
 
 #ifdef _WIN32
   // There are always exactly four of these in existence.
+  LightMutex _update_lock;
   XInputDevice _xinput_device0;
   XInputDevice _xinput_device1;
   XInputDevice _xinput_device2;

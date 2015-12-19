@@ -25,9 +25,11 @@
 //               /dev/input/js# API to read data from a game controller.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
-PUBLISHED:
-  LinuxJoystickDevice(const string &device);
+public:
+  LinuxJoystickDevice(int index);
   virtual ~LinuxJoystickDevice();
+
+  bool check_events() const;
 
 private:
   virtual void do_poll();
@@ -37,7 +39,7 @@ private:
 
 private:
   int _fd;
-  string _device;
+  int _index;
 
 public:
   static TypeHandle get_class_type() {
