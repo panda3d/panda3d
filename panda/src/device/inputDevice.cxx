@@ -283,11 +283,17 @@ output(ostream &out) const {
   }
 
   if (_buttons.size() > 0) {
-    out << ", " << _buttons.size() << " buttons";
+    out << ", " << _buttons.size() << " button";
+    if (_buttons.size() != 1) {
+      out.put('s');
+    }
   }
 
   if (_controls.size() > 0) {
-    out << ", " << _controls.size() << " controls";
+    out << ", " << _controls.size() << " control";
+    if (_controls.size() != 1) {
+      out.put('s');
+    }
   }
 
   if (_flags & IDF_has_pointer) {

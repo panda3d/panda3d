@@ -274,6 +274,10 @@ init_device() {
       }
     }
 
+    if (test_bit(KEY_A, keys) && test_bit(KEY_Z, keys)) {
+      _flags |= IDF_has_keyboard;
+    }
+
     // Check device type.
     if (test_bit(BTN_GAMEPAD, keys)) {
       _device_class = DC_gamepad;
@@ -286,6 +290,9 @@ init_device() {
 
     } else if (test_bit(BTN_WHEEL, keys)) {
       _device_class = DC_steering_wheel;
+
+    } else if (_flags & IDF_has_keyboard) {
+      _device_class = DC_keyboard;
     }
   }
 
