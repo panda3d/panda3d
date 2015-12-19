@@ -33,12 +33,14 @@ typedef struct _XINPUT_STATE XINPUT_STATE;
 class EXPCL_PANDA_DEVICE XInputDevice FINAL : public InputDevice {
 public:
   XInputDevice(DWORD user_index);
+  ~XInputDevice();
 
   void detect(InputDeviceManager *mgr);
   static bool init_xinput();
 
 private:
-  void init_device(XINPUT_CAPABILITIES &caps, XINPUT_STATE &state);
+  void init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state);
+  virtual void do_set_vibration(double strong, double weak);
   virtual void do_poll();
 
 private:

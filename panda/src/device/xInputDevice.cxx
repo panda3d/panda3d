@@ -63,11 +63,13 @@ struct XINPUT_BUSINFO {
 };
 
 typedef DWORD (*pXInputGetState)(DWORD, XINPUT_STATE *);
+typedef DWORD (*pXInputSetState)(DWORD, XINPUT_VIBRATION *);
 typedef DWORD (*pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
 typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
 typedef DWORD (*pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
 
 static pXInputGetState get_state = NULL;
+static pXInputSetState set_state = NULL;
 static pXInputGetCapabilities get_capabilities = NULL;
 static pXInputGetBatteryInformation get_battery_information = NULL;
 static pXInputGetBaseBusInformation get_base_bus_information = NULL;
@@ -130,6 +132,17 @@ XInputDevice(DWORD user_index) :
   } else {
     _is_connected = false;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XInputDevice::Constructor
+//       Access: Published
+//  Description: Creates a new device using the Linux joystick
+//               device using the given device filename.
+////////////////////////////////////////////////////////////////////
+XInputDevice::
+~XInputDevice() {
+  do_set_vibration(0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +223,13 @@ init_xinput() {
       }
     }
 
+    set_state = (pXInputSetState)GetProcAddress(module, "XInputSetState");
+    if (set_state == NULL) {
+      device_cat.error()
+        << "Failed to find function XInputSetState in " << dll_name << ".\n";
+      return false;
+    }
+
     get_capabilities = (pXInputGetCapabilities)GetProcAddress(module, "XInputGetCapabilities");
     if (get_capabilities == NULL) {
       device_cat.error()
@@ -234,7 +254,7 @@ init_xinput() {
 //               just connected.
 ////////////////////////////////////////////////////////////////////
 void XInputDevice::
-init_device(XINPUT_CAPABILITIES &caps, XINPUT_STATE &state) {
+init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
     _device_class = DC_gamepad;
   } else {
@@ -322,6 +342,22 @@ init_device(XINPUT_CAPABILITIES &caps, XINPUT_STATE &state) {
 
   _last_buttons = buttons;
   _last_packet = state.dwPacketNumber;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XInputDevice::do_set_vibration
+//       Access: Private, Virtual
+//  Description: Sets the vibration strength.  The first argument
+//               controls a low-frequency motor, if present, and
+//               the latter controls a high-frequency motor.  The
+//               values are within the 0-1 range.
+////////////////////////////////////////////////////////////////////
+void XInputDevice::
+do_set_vibration(double strong, double weak) {
+  XINPUT_VIBRATION vibration;
+  vibration.wLeftMotorSpeed = strong * 0xffff;
+  vibration.wRightMotorSpeed = weak * 0xffff;
+  set_state(_index, &vibration);
 }
 
 ////////////////////////////////////////////////////////////////////
