@@ -262,7 +262,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _glgsg = glgsg;
   _glsl_program = 0;
   _uses_standard_vertex_arrays = false;
-  _has_divisor = false;
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
@@ -2017,11 +2016,9 @@ disable_shader_vertex_arrays() {
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     GLint p = bind._id._seqno;
-    if (_has_divisor) {
-      _glgsg->_glVertexAttribDivisor(p, 0);
-    }
+
     for (int i = 0; i < bind._elements; ++i) {
-      _glgsg->_glDisableVertexAttribArray(p + i);
+      _glgsg->disable_vertex_attrib_array(p + i);
     }
   }
 
@@ -2035,103 +2032,104 @@ disable_shader_vertex_arrays() {
 //               shader, then enables all the vertex arrays needed
 //               by this shader.  Extracts the relevant vertex array
 //               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable arrays then immediately
-//               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (prev) {
-    prev->disable_shader_vertex_arrays();
-  }
   if (!valid()) {
     return true;
   }
 
-  if (valid()) {
-    // Get the active ColorAttrib.  We'll need it to determine how to
-    // apply vertex colors.
-    const ColorAttrib *color_attrib;
-    _state_rs->get_attrib_def(color_attrib);
+  // Get the active ColorAttrib.  We'll need it to determine how to
+  // apply vertex colors.
+  const ColorAttrib *color_attrib;
+  _state_rs->get_attrib_def(color_attrib);
 
-    const GeomVertexArrayDataHandle *array_reader;
-    Geom::NumericType numeric_type;
-    int start, stride, num_values;
-    int nvarying = _shader->_var_spec.size();
+  const GeomVertexArrayDataHandle *array_reader;
+  Geom::NumericType numeric_type;
+  int start, stride, num_values;
+  size_t nvarying = _shader->_var_spec.size();
 
-    for (int i = 0; i < nvarying; ++i) {
-      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
-      InternalName *name = bind._name;
-      int texslot = bind._append_uv;
+  GLuint max_p = 0;
 
-      if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
-        TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
-        InternalName *texname = stage->get_texcoord_name();
+  for (size_t i = 0; i < nvarying; ++i) {
+    const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+    InternalName *name = bind._name;
+    int texslot = bind._append_uv;
 
-        if (name == InternalName::get_texcoord()) {
-          name = texname;
-        } else if (texname != InternalName::get_texcoord()) {
-          name = name->append(texname->get_basename());
-        }
-      }
-      GLint p = bind._id._seqno;
+    if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
+      TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
+      InternalName *texname = stage->get_texcoord_name();
 
-      // Don't apply vertex colors if they are disabled with a ColorAttrib.
-      int num_elements, element_stride, divisor;
-      bool normalized;
-      if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
-          _glgsg->_data_reader->get_array_info(name, array_reader,
-                                               num_values, numeric_type,
-                                               normalized, start, stride, divisor,
-                                               num_elements, element_stride)) {
-        const unsigned char *client_pointer;
-        if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
-          return false;
-        }
-        client_pointer += start;
-
-        for (int i = 0; i < num_elements; ++i) {
-          _glgsg->_glEnableVertexAttribArray(p);
-
-#ifndef OPENGLES
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                            stride, client_pointer);
-          } else
-#endif
-          if (numeric_type == GeomEnums::NT_packed_dabc) {
-            // GL_BGRA is a special accepted value available since OpenGL 3.2.
-            // It requires us to pass GL_TRUE for normalized.
-            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                           GL_TRUE, stride, client_pointer);
-          } else {
-            _glgsg->_glVertexAttribPointer(p, num_values,
-                                           _glgsg->get_numeric_type(numeric_type),
-                                           normalized, stride, client_pointer);
-          }
-
-          if (_glgsg->_supports_vertex_attrib_divisor && divisor > 0) {
-            _glgsg->_glVertexAttribDivisor(p, divisor);
-            _has_divisor = true;
-          }
-
-          ++p;
-          client_pointer += element_stride;
-        }
-      } else {
-        for (int i = 0; i < bind._elements; ++i) {
-          _glgsg->_glDisableVertexAttribArray(p + i);
-        }
-        if (p == _color_attrib_index) {
-          // Vertex colors are disabled or not present.  Apply flat color.
-#ifdef STDFLOAT_DOUBLE
-          _glgsg->_glVertexAttrib4dv(p, color_attrib->get_color().get_data());
-#else
-          _glgsg->_glVertexAttrib4fv(p, color_attrib->get_color().get_data());
-#endif
-        }
+      if (name == InternalName::get_texcoord()) {
+        name = texname;
+      } else if (texname != InternalName::get_texcoord()) {
+        name = name->append(texname->get_basename());
       }
     }
+
+    GLuint p = bind._id._seqno;
+    max_p = max(max_p, p + 1);
+
+    // Don't apply vertex colors if they are disabled with a ColorAttrib.
+    int num_elements, element_stride, divisor;
+    bool normalized;
+    if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
+        _glgsg->_data_reader->get_array_info(name, array_reader,
+                                             num_values, numeric_type,
+                                             normalized, start, stride, divisor,
+                                             num_elements, element_stride)) {
+      const unsigned char *client_pointer;
+      if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
+        return false;
+      }
+      client_pointer += start;
+
+      for (int i = 0; i < num_elements; ++i) {
+        _glgsg->enable_vertex_attrib_array(p);
+
+#ifndef OPENGLES
+        if (bind._integer) {
+          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                          stride, client_pointer);
+        } else
+#endif
+        if (numeric_type == GeomEnums::NT_packed_dabc) {
+          // GL_BGRA is a special accepted value available since OpenGL 3.2.
+          // It requires us to pass GL_TRUE for normalized.
+          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                         GL_TRUE, stride, client_pointer);
+        } else {
+          _glgsg->_glVertexAttribPointer(p, num_values,
+                                         _glgsg->get_numeric_type(numeric_type),
+                                         normalized, stride, client_pointer);
+        }
+
+        if (divisor > 0) {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+
+        ++p;
+        client_pointer += element_stride;
+      }
+    } else {
+      for (int i = 0; i < bind._elements; ++i) {
+        _glgsg->disable_vertex_attrib_array(p + i);
+      }
+      if (p == _color_attrib_index) {
+        // Vertex colors are disabled or not present.  Apply flat color.
+#ifdef STDFLOAT_DOUBLE
+        _glgsg->_glVertexAttrib4dv(p, color_attrib->get_color().get_data());
+#else
+        _glgsg->_glVertexAttrib4fv(p, color_attrib->get_color().get_data());
+#endif
+      }
+    }
+  }
+
+  // Disable attribute arrays we don't use.
+  GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
+  for (GLint p = max_p; p < highest_p; ++p) {
+    _glgsg->disable_vertex_attrib_array(p);
   }
 
   if (_transform_table_index >= 0) {

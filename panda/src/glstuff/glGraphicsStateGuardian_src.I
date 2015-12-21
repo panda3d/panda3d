@@ -240,6 +240,54 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 #endif  // OPENGLES
 }
 
+#ifndef OPENGLES_1
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_vertex_attrib_array(GLuint index) {
+  if (!_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glEnableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.set_bit(index);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+disable_vertex_attrib_array(GLuint index) {
+  if (_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glDisableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.clear_bit(index);
+
+    if (_vertex_attrib_divisors[index] != 0) {
+      _glVertexAttribDivisor(index, 0);
+      _vertex_attrib_divisors[index] = 0;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_vertex_attrib_divisor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
+  if (_supports_vertex_attrib_divisor &&
+      _vertex_attrib_divisors[index] != divisor) {
+    _glVertexAttribDivisor(index, divisor);
+    _vertex_attrib_divisors[index] = divisor;
+  }
+}
+
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_multisample_antialias
 //       Access: Protected

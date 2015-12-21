@@ -102,7 +102,6 @@ private:
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
-  bool _has_divisor;
 
   void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
   void glsl_report_program_errors(GLuint program, bool fatal);

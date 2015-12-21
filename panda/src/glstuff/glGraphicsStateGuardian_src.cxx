@@ -2543,6 +2543,11 @@ reset() {
   _active_color_write_mask = ColorWriteAttrib::C_all;
   _tex_gen_point_sprite = false;
 
+#ifndef OPENGLES_1
+  _enabled_vertex_attrib_arrays.clear();
+  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+#endif
+
 #ifndef OPENGLES
   // Dither is on by default in GL; let's turn it off
   glDisable(GL_DITHER);
@@ -2936,25 +2941,27 @@ clear(DrawableRegion *clearable) {
     mask |= GL_STENCIL_BUFFER_BIT;
   }
 
-  glClear(mask);
+  if (mask != 0) {
+    glClear(mask);
 
-  if (GLCAT.is_spam()) {
-    string clear_flags;
-    if (mask & GL_COLOR_BUFFER_BIT) {
-      clear_flags += " | GL_COLOR_BUFFER_BIT";
+    if (GLCAT.is_spam()) {
+      string clear_flags;
+      if (mask & GL_COLOR_BUFFER_BIT) {
+        clear_flags += " | GL_COLOR_BUFFER_BIT";
+      }
+      if (mask & GL_DEPTH_BUFFER_BIT) {
+        clear_flags += " | GL_DEPTH_BUFFER_BIT";
+      }
+      if (mask & GL_STENCIL_BUFFER_BIT) {
+        clear_flags += " | GL_STENCIL_BUFFER_BIT";
+      }
+  #ifndef OPENGLES
+      if (mask & GL_ACCUM_BUFFER_BIT) {
+        clear_flags += " | GL_ACCUM_BUFFER_BIT";
+      }
+  #endif
+      GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
     }
-    if (mask & GL_DEPTH_BUFFER_BIT) {
-      clear_flags += " | GL_DEPTH_BUFFER_BIT";
-    }
-    if (mask & GL_STENCIL_BUFFER_BIT) {
-      clear_flags += " | GL_STENCIL_BUFFER_BIT";
-    }
-#ifndef OPENGLES
-    if (mask & GL_ACCUM_BUFFER_BIT) {
-      clear_flags += " | GL_ACCUM_BUFFER_BIT";
-    }
-#endif
-    GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
   }
 
   report_my_gl_errors();
@@ -3088,6 +3095,13 @@ void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
 #ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
+#endif
+#ifndef OPENGLES_1
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays();
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (ShaderContext *)NULL;
+  }
 #endif
   unbind_buffers();
 
@@ -3642,7 +3656,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     } else {
 #ifdef SUPPORT_FIXED_FUNCTION
       // Shader.
-      if (_vertex_array_shader_context == 0 || _vertex_array_shader_context->uses_standard_vertex_arrays()) {
+      if (_vertex_array_shader_context == 0 ||
+          _vertex_array_shader_context->uses_standard_vertex_arrays()) {
         // Previous shader used standard arrays.
         if (_current_shader_context->uses_standard_vertex_arrays()) {
           // So does the current, so update them.
@@ -3654,15 +3669,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
           disable_standard_vertex_arrays();
         }
       }
-#endif  // SUPPORT_FIXED_FUNCTION
-      if (_current_shader_context->uses_custom_vertex_arrays()) {
-        // The current shader also uses custom vertex arrays.
-        if (!_current_shader_context->
-            update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
-          return false;
-        }
-      } else {
+#ifdef HAVE_CG
+      else if (_vertex_array_shader_context->is_of_type(CLP(CgShaderContext)::get_class_type())) {
+        // The previous shader was a Cg shader, which can leave a messy
+        // situation.
         _vertex_array_shader_context->disable_shader_vertex_arrays();
+      }
+#endif
+#endif  // SUPPORT_FIXED_FUNCTION
+      // Now update the vertex arrays for the current shader.
+      if (!_current_shader_context->
+          update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
+        return false;
       }
     }
 

@@ -451,6 +451,12 @@ protected:
 
   virtual void free_pointers();
 
+#ifndef OPENGLES_1
+  INLINE void enable_vertex_attrib_array(GLuint index);
+  INLINE void disable_vertex_attrib_array(GLuint index);
+  INLINE void set_vertex_attrib_divisor(GLuint index, GLuint divisor);
+#endif
+
   INLINE void enable_multisample_antialias(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -602,6 +608,9 @@ protected:
   epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
+  BitMask32 _enabled_vertex_attrib_arrays;
+  GLint _vertex_attrib_divisors[32];
+
   PT(Shader) _current_shader;
   ShaderContext *_current_shader_context;
   PT(Shader) _vertex_array_shader;

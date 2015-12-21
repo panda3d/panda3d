@@ -43,7 +43,6 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   _glgsg = glgsg;
   _cg_program = 0;
   _glsl_program = 0;
-  _has_divisor = false;
   _color_attrib_index = CA_color;
   _transform_table_param = 0;
   _slider_table_param = 0;
@@ -780,10 +779,7 @@ disable_shader_vertex_arrays() {
     GLint p = _attributes[i];
 
     if (p >= 0) {
-      _glgsg->_glDisableVertexAttribArray(p);
-      if (_has_divisor) {
-        _glgsg->_glVertexAttribDivisor(p, 0);
-      }
+      _glgsg->disable_vertex_attrib_array(p);
     } else {
 #ifdef SUPPORT_FIXED_FUNCTION
       switch (p) {
@@ -827,10 +823,6 @@ disable_shader_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(CgShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (prev) {
-    prev->disable_shader_vertex_arrays();
-  }
-
   if (!valid()) {
     return true;
   }
@@ -847,6 +839,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
+
+    GLuint max_p = 0;
+
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
       InternalName *name = bind._name;
@@ -878,10 +873,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         client_pointer += start;
 
         // We don't use cgGLSetParameterPointer because it is very buggy and
-        // limited in the options we can set.start
+        // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          _glgsg->_glEnableVertexAttribArray(p);
+          max_p = max(max_p, (GLuint)p + 1);
+
+          _glgsg->enable_vertex_attrib_array(p);
 
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(p, num_values, type,
@@ -896,9 +893,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                            normalized, stride, client_pointer);
           }
 
-          if (_glgsg->_supports_vertex_attrib_divisor) {
-            _glgsg->_glVertexAttribDivisor(p, divisor);
-            _has_divisor = true;
+          if (divisor > 0) {
+            _glgsg->set_vertex_attrib_divisor(p, divisor);
           }
 
         } else {
@@ -950,7 +946,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // to be at 0, but we don't have control over that with Cg.  So, we
           // work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
-          _glgsg->_glEnableVertexAttribArray(0);
+          _glgsg->enable_vertex_attrib_array(0);
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
           } else {
@@ -960,7 +956,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         } else
 #endif  // SUPPORT_FIXED_FUNCTION
         if (p >= 0) {
-          _glgsg->_glDisableVertexAttribArray(p);
+          _glgsg->disable_vertex_attrib_array(p);
 
           if (p == _color_attrib_index) {
 #ifdef STDFLOAT_DOUBLE
@@ -999,6 +995,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 #endif  // SUPPORT_FIXED_FUNCTION
         }
       }
+    }
+
+    // Disable attribute arrays we don't use.
+    GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
+    for (GLint p = max_p; p < highest_p; ++p) {
+      _glgsg->disable_vertex_attrib_array(p);
     }
   }
 
