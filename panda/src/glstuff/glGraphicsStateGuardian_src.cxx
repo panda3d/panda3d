@@ -3066,7 +3066,6 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   }
 
   report_my_gl_errors();
-  do_point_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6264,31 +6263,32 @@ do_issue_antialias() {
   }
 
 #ifndef OPENGLES_2
+  GLenum quality;
   switch (target_antialias->get_mode_quality()) {
   case AntialiasAttrib::M_faster:
-    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
-#endif  // OPENGLES
+    quality = GL_FASTEST;
     break;
 
   case AntialiasAttrib::M_better:
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-#endif  // OPENGLES
+    quality = GL_NICEST;
     break;
 
   default:
-    glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-    glHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-#endif  // OPENGLES
+    quality = GL_DONT_CARE;
     break;
   }
+
+  if (_line_smooth_enabled) {
+    glHint(GL_LINE_SMOOTH_HINT, quality);
+  }
+  if (_point_smooth_enabled) {
+    glHint(GL_POINT_SMOOTH_HINT, quality);
+  }
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glHint(GL_POLYGON_SMOOTH_HINT, quality);
+  }
+#endif
 #endif  // !OPENGLES_2
 
   report_my_gl_errors();
