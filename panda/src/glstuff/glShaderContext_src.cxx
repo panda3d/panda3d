@@ -2366,7 +2366,22 @@ update_shader_texture_bindings(ShaderContext *prev) {
   }
 #endif
 
-  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+  size_t num_textures = _shader->_tex_spec.size();
+  GLuint *textures;
+  GLuint *samplers;
+#ifdef OPENGLES
+  static const bool multi_bind = false;
+#else
+  bool multi_bind = false;
+  if (_glgsg->_supports_multi_bind && _glgsg->_supports_sampler_objects) {
+    // Prepare to multi-bind the textures and samplers.
+    multi_bind = true;
+    textures = (GLuint *)alloca(sizeof(GLuint) * num_textures);
+    samplers = (GLuint *)alloca(sizeof(GLuint) * num_textures);
+  }
+#endif
+
+  for (size_t i = 0; i < num_textures; ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
     const InternalName *id = spec._name;
 
@@ -2377,8 +2392,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader
       // that takes a texture on a model that doesn't have a texture applied.
-      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
-      _glgsg->apply_white_texture();
+      if (multi_bind) {
+        textures[i] = _glgsg->get_white_texture();
+        samplers[i] = 0;
+      } else {
+        _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+        _glgsg->apply_white_texture();
+      }
       continue;
     }
 
@@ -2397,6 +2417,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
     if (gtc == NULL) {
+      if (multi_bind) {
+        textures[i] = 0;
+        samplers[i] = 0;
+      }
       continue;
     }
 
@@ -2412,6 +2436,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (gl_use_bindless_texture && _glgsg->_supports_bindless_texture) {
       // We demand the real texture, since we won't be able
       // to change the texture properties after this point.
+      if (multi_bind) {
+        textures[i] = 0;
+        samplers[i] = 0;
+      }
       if (!_glgsg->update_texture(gtc, true)) {
         continue;
       }
@@ -2439,15 +2467,43 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     // Bindless texturing wasn't supported or didn't work, so
     // let's just bind the texture normally.
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
-    if (!_glgsg->update_texture(gtc, false)) {
-      continue;
+#ifndef OPENGLES
+    if (multi_bind) {
+      // Multi-bind case.
+      if (!_glgsg->update_texture(gtc, false)) {
+        textures[i] = 0;
+      } else {
+        gtc->set_active(true);
+        textures[i] = gtc->_index;
+      }
+
+      SamplerContext *sc = sampler.prepare_now(_glgsg->get_prepared_objects(), _glgsg);
+      if (sc == NULL) {
+        samplers[i] = 0;
+      } else {
+        CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
+        gsc->enqueue_lru(&_glgsg->_prepared_objects->_sampler_object_lru);
+        samplers[i] = gsc->_index;
+      }
+    } else
+#endif  // !OPENGLES
+    {
+      // Non-multibind case.
+      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+      if (!_glgsg->update_texture(gtc, false)) {
+        continue;
+      }
+      _glgsg->apply_texture(gtc);
+      _glgsg->apply_sampler(i, sampler, gtc);
     }
-    _glgsg->apply_texture(gtc);
-    _glgsg->apply_sampler(i, sampler, gtc);
   }
 
 #ifndef OPENGLES
+  if (multi_bind && num_textures > 0) {
+    _glgsg->_glBindTextures(0, num_textures, textures);
+    _glgsg->_glBindSamplers(0, num_textures, samplers);
+  }
+
   if (barriers != 0) {
     // Issue a memory barrier prior to this shader's execution.
     _glgsg->issue_memory_barrier(barriers);

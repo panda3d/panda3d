@@ -10134,6 +10134,20 @@ apply_white_texture() {
                GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_white_texture
+//       Access: Private
+//  Description: Returns a white dummy texture.  This is useful to
+//               bind to a texture slot when a texture is missing.
+////////////////////////////////////////////////////////////////////
+GLuint CLP(GraphicsStateGuardian)::
+get_white_texture() {
+  if (_white_texture == 0) {
+    apply_white_texture();
+  }
+  return _white_texture;
+}
+
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_show_usage_texture_bindings

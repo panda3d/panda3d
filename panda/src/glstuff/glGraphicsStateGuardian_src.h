@@ -529,6 +529,7 @@ protected:
 #endif
 
   void apply_white_texture();
+  GLuint get_white_texture();
 
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
