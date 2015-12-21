@@ -814,7 +814,13 @@ public:
   INLINE bool get_supports_framebuffer_blit();
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+
+#ifndef OPENGLES
   PFNGLCLEARBUFFERFVPROC _glClearBufferfv;
+  PFNGLCLEARBUFFERIVPROC _glClearBufferiv;
+  PFNGLCLEARBUFFERFIPROC _glClearBufferfi;
+#endif
+
   int _max_fb_samples;
   bool _supports_viewport_arrays;
   bool _supports_bindless_texture;

@@ -1954,7 +1954,6 @@ reset() {
 
 #if defined(OPENGLES_1)
   _glDrawBuffers = NULL;
-  _glClearBufferfv = NULL;
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
@@ -1997,8 +1996,15 @@ reset() {
   if (is_at_least_gl_version(3, 0)) {
     _glClearBufferfv = (PFNGLCLEARBUFFERFVPROC)
       get_extension_func("glClearBufferfv");
+    _glClearBufferiv = (PFNGLCLEARBUFFERIVPROC)
+      get_extension_func("glClearBufferiv");
+    _glClearBufferfi = (PFNGLCLEARBUFFERFIPROC)
+      get_extension_func("glClearBufferfi");
+
   } else {
     _glClearBufferfv = NULL;
+    _glClearBufferiv = NULL;
+    _glClearBufferfi = NULL;
   }
 #endif  // !OPENGLES
 
@@ -2798,7 +2804,8 @@ clear(DrawableRegion *clearable) {
     return;
   }
 
-  //XXX rdb: Is this line really necessary?
+  //XXX rdb: Is this line really necessary?  Could we perhaps just
+  // reset the color write mask and other relevant attributes?
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
