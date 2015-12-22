@@ -53,7 +53,7 @@ make_off() {
 //               set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
-make(const Shader *shader) {
+make(const Shader *shader, int priority) {
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
@@ -63,7 +63,7 @@ make(const Shader *shader) {
   if (shader == NULL) {
     return _null_attrib;
   } else {
-    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader);
+    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader, priority);
   }
 }
 
