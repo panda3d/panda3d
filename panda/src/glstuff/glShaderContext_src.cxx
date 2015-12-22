@@ -262,6 +262,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _glgsg = glgsg;
   _glsl_program = 0;
   _uses_standard_vertex_arrays = false;
+  _enabled_attribs.clear();
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
@@ -279,12 +280,30 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     return;
   }
 
-  // Create a buffer the size of the longest uniform name.  Note
-  // that Intel HD drivers report values that are too low.
+  // Process the vertex attributes first.
+  GLint param_count = 0;
   GLint name_buflen = 0;
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buflen);
+  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
+  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_buflen);
   name_buflen = max(64, name_buflen);
   char *name_buffer = (char *)alloca(name_buflen);
+
+  _shader->_var_spec.clear();
+  for (int i = 0; i < param_count; ++i) {
+    reflect_attribute(i, name_buffer, name_buflen);
+  }
+
+  /*if (gl_fixed_vertex_attrib_locations) {
+    // Relink the shader for glBindAttribLocation to take effect.
+    _glgsg->_glLinkProgram(_glsl_program);
+  }*/
+
+  // Create a buffer the size of the longest uniform name.  Note
+  // that Intel HD drivers report values that are too low.
+  name_buflen = 0;
+  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buflen);
+  name_buflen = max(64, name_buflen);
+  name_buffer = (char *)alloca(name_buflen);
 
 #ifndef OPENGLES
   // Get the used uniform blocks.
@@ -316,7 +335,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _glgsg->_glUseProgram(_glsl_program);
 
   // Analyze the uniforms.
-  GLint param_count = 0;
+  param_count = 0;
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
 
   _shader->_ptr_spec.clear();
@@ -324,17 +343,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _shader->_tex_spec.clear();
   for (int i = 0; i < param_count; ++i) {
     reflect_uniform(i, name_buffer, name_buflen);
-  }
-
-  // Now we've processed the uniforms, we'll process the attribs.
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_buflen);
-  name_buflen = max(64, name_buflen);
-  name_buffer = (char *)alloca(name_buflen);
-
-  _shader->_var_spec.clear();
-  for (int i = 0; i < param_count; ++i) {
-    reflect_attribute(i, name_buffer, name_buflen);
   }
 
   _glgsg->report_my_gl_errors();
@@ -468,6 +476,37 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
   default:
     bind._elements = param_size;
     break;
+  }
+
+  // Experimental feature.
+  if (gl_fixed_vertex_attrib_locations) {
+    GLint loc;
+    if (bind._name == InternalName::get_vertex()) {
+      loc = 0;
+    } else if (bind._name == InternalName::get_transform_weight()) {
+      loc = 1;
+    } else if (bind._name == InternalName::get_normal()) {
+      loc = 2;
+    } else if (bind._name == InternalName::get_color()) {
+      loc = 3;
+    } else if (bind._name == InternalName::get_transform_index()) {
+      loc = 7;
+    } else if (bind._name == InternalName::get_texcoord() &&
+               bind._append_uv >= 0 && bind._append_uv < 8) {
+      loc = 8 + bind._append_uv;
+    } else {
+      GLCAT.error()
+        << "Vertex attrib '" << name_buffer << "' not yet supported with "
+           "gl-fixed-vertex-attrib-locations!\n";
+      return;
+    }
+    if (loc != p) {
+      GLCAT.error()
+        << "Vertex attrib '" << name_buffer << "' was bound to the wrong slot!\n";
+      return;
+    }
+    //_glgsg->_glBindAttribLocation(_glsl_program, loc, name_buffer);
+    _enabled_attribs.set_range(loc, bind._elements);
   }
 
   _shader->_var_spec.push_back(bind);
@@ -2045,91 +2084,152 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   _state_rs->get_attrib_def(color_attrib);
 
   const GeomVertexArrayDataHandle *array_reader;
-  Geom::NumericType numeric_type;
-  int start, stride, num_values;
-  size_t nvarying = _shader->_var_spec.size();
-
-  GLuint max_p = 0;
-
-  for (size_t i = 0; i < nvarying; ++i) {
-    const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
-    InternalName *name = bind._name;
-    int texslot = bind._append_uv;
-
-    if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
-      TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
-      InternalName *texname = stage->get_texcoord_name();
-
-      if (name == InternalName::get_texcoord()) {
-        name = texname;
-      } else if (texname != InternalName::get_texcoord()) {
-        name = name->append(texname->get_basename());
-      }
-    }
-
-    GLuint p = bind._id._seqno;
-    max_p = max(max_p, p + 1);
-
-    // Don't apply vertex colors if they are disabled with a ColorAttrib.
-    int num_elements, element_stride, divisor;
-    bool normalized;
-    if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
-        _glgsg->_data_reader->get_array_info(name, array_reader,
-                                             num_values, numeric_type,
-                                             normalized, start, stride, divisor,
-                                             num_elements, element_stride)) {
-      const unsigned char *client_pointer;
-      if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
-        return false;
-      }
-      client_pointer += start;
-
-      for (int i = 0; i < num_elements; ++i) {
-        _glgsg->enable_vertex_attrib_array(p);
 
 #ifndef OPENGLES
-        if (bind._integer) {
-          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                          stride, client_pointer);
-        } else
-#endif
-        if (numeric_type == GeomEnums::NT_packed_dabc) {
-          // GL_BGRA is a special accepted value available since OpenGL 3.2.
-          // It requires us to pass GL_TRUE for normalized.
-          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
-                                         GL_TRUE, stride, client_pointer);
-        } else {
-          _glgsg->_glVertexAttribPointer(p, num_values,
-                                         _glgsg->get_numeric_type(numeric_type),
-                                         normalized, stride, client_pointer);
-        }
+  if (_glgsg->_use_vertex_attrib_binding) {
+    // Use experimental new separated format/binding state.
+    const GeomVertexDataPipelineReader *data_reader = _glgsg->_data_reader;
 
-        if (divisor > 0) {
-          _glgsg->set_vertex_attrib_divisor(p, divisor);
-        }
+    for (int ai = 0; ai < data_reader->get_num_arrays(); ++ai) {
+      array_reader = data_reader->get_array_reader(ai);
 
-        ++p;
-        client_pointer += element_stride;
+      // Make sure the vertex buffer is up-to-date.
+      CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
+        array_reader->prepare_now(_glgsg->get_prepared_objects(), _glgsg));
+      nassertr(gvbc != (CLP(VertexBufferContext) *)NULL, false);
+
+      if (!_glgsg->update_vertex_buffer(gvbc, array_reader, force)) {
+        return false;
       }
-    } else {
-      for (int i = 0; i < bind._elements; ++i) {
-        _glgsg->disable_vertex_attrib_array(p + i);
+
+      GLintptr stride = array_reader->get_array_format()->get_stride();
+
+      // Bind the vertex buffer to the binding index.
+      if (ai >= _glgsg->_current_vertex_buffers.size()) {
+        _glgsg->_current_vertex_buffers.resize(ai + 1, 0);
       }
-      if (p == _color_attrib_index) {
-        // Vertex colors are disabled or not present.  Apply flat color.
-#ifdef STDFLOAT_DOUBLE
-        _glgsg->_glVertexAttrib4dv(p, color_attrib->get_color().get_data());
-#else
-        _glgsg->_glVertexAttrib4fv(p, color_attrib->get_color().get_data());
-#endif
+      if (_glgsg->_current_vertex_buffers[ai] != gvbc->_index) {
+        _glgsg->_glBindVertexBuffer(ai, gvbc->_index, 0, stride);
+        _glgsg->_current_vertex_buffers[ai] = gvbc->_index;
       }
     }
-  }
 
-  // Disable attribute arrays we don't use.
-  GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
-  for (GLint p = max_p; p < highest_p; ++p) {
-    _glgsg->disable_vertex_attrib_array(p);
+    // Figure out which attributes to enable or disable.
+    BitMask32 enabled_attribs = _enabled_attribs;
+    if (_color_attrib_index != -1 &&
+        color_attrib->get_type() != ColorAttrib::T_vertex) {
+      // Vertex colours are disabled.
+      enabled_attribs.clear_bit(_color_attrib_index);
+
+#ifdef STDFLOAT_DOUBLE
+      _glgsg->_glVertexAttrib4dv(_color_attrib_index, color_attrib->get_color().get_data());
+#else
+      _glgsg->_glVertexAttrib4fv(_color_attrib_index, color_attrib->get_color().get_data());
+#endif
+    }
+
+    BitMask32 changed_attribs = enabled_attribs ^ _glgsg->_enabled_vertex_attrib_arrays;
+
+    for (int i = 0; i < 32; ++i) {
+      if (changed_attribs.get_bit(i)) {
+        if (enabled_attribs.get_bit(i)) {
+          _glgsg->_glEnableVertexAttribArray(i);
+        } else {
+          _glgsg->_glDisableVertexAttribArray(i);
+        }
+      }
+    }
+    _glgsg->_enabled_vertex_attrib_arrays = enabled_attribs;
+
+  } else
+#endif
+  {
+    Geom::NumericType numeric_type;
+    int start, stride, num_values;
+    size_t nvarying = _shader->_var_spec.size();
+
+    GLuint max_p = 0;
+
+    for (size_t i = 0; i < nvarying; ++i) {
+      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+      InternalName *name = bind._name;
+      int texslot = bind._append_uv;
+
+      if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
+        TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
+        InternalName *texname = stage->get_texcoord_name();
+
+        if (name == InternalName::get_texcoord()) {
+          name = texname;
+        } else if (texname != InternalName::get_texcoord()) {
+          name = name->append(texname->get_basename());
+        }
+      }
+
+      GLuint p = bind._id._seqno;
+      max_p = max(max_p, p + 1);
+
+      // Don't apply vertex colors if they are disabled with a ColorAttrib.
+      int num_elements, element_stride, divisor;
+      bool normalized;
+      if ((p != _color_attrib_index || color_attrib->get_type() == ColorAttrib::T_vertex) &&
+          _glgsg->_data_reader->get_array_info(name, array_reader,
+                                               num_values, numeric_type,
+                                               normalized, start, stride, divisor,
+                                               num_elements, element_stride)) {
+        const unsigned char *client_pointer;
+        if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
+          return false;
+        }
+        client_pointer += start;
+
+        for (int i = 0; i < num_elements; ++i) {
+          _glgsg->enable_vertex_attrib_array(p);
+
+#ifndef OPENGLES
+          if (bind._integer) {
+            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                            stride, client_pointer);
+          } else
+#endif
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
+            // GL_BGRA is a special accepted value available since OpenGL 3.2.
+            // It requires us to pass GL_TRUE for normalized.
+            _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                           GL_TRUE, stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribPointer(p, num_values,
+                                           _glgsg->get_numeric_type(numeric_type),
+                                           normalized, stride, client_pointer);
+          }
+
+          if (divisor > 0) {
+            _glgsg->set_vertex_attrib_divisor(p, divisor);
+          }
+
+          ++p;
+          client_pointer += element_stride;
+        }
+      } else {
+        for (int i = 0; i < bind._elements; ++i) {
+          _glgsg->disable_vertex_attrib_array(p + i);
+        }
+        if (p == _color_attrib_index) {
+          // Vertex colors are disabled or not present.  Apply flat color.
+#ifdef STDFLOAT_DOUBLE
+          _glgsg->_glVertexAttrib4dv(p, color_attrib->get_color().get_data());
+#else
+          _glgsg->_glVertexAttrib4fv(p, color_attrib->get_color().get_data());
+#endif
+        }
+      }
+    }
+
+    // Disable attribute arrays we don't use.
+    GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
+    for (GLint p = max_p; p < highest_p; ++p) {
+      _glgsg->disable_vertex_attrib_array(p);
+    }
   }
 
   if (_transform_table_index >= 0) {
@@ -2180,7 +2280,7 @@ disable_shader_texture_bindings() {
     }
 #endif
 
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+    _glgsg->set_active_texture_stage(i);
 
     switch (_shader->_tex_spec[i]._desired_type) {
     case Texture::TT_1d_texture:
@@ -2371,7 +2471,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
   static const bool multi_bind = false;
 #else
   bool multi_bind = false;
-  if (_glgsg->_supports_multi_bind && _glgsg->_supports_sampler_objects) {
+  if (num_textures > 1 &&
+      _glgsg->_supports_multi_bind && _glgsg->_supports_sampler_objects) {
     // Prepare to multi-bind the textures and samplers.
     multi_bind = true;
     textures = (GLuint *)alloca(sizeof(GLuint) * num_textures);
@@ -2394,7 +2495,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         textures[i] = _glgsg->get_white_texture();
         samplers[i] = 0;
       } else {
-        _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+        _glgsg->set_active_texture_stage(i);
         _glgsg->apply_white_texture();
       }
       continue;
@@ -2487,7 +2588,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #endif  // !OPENGLES
     {
       // Non-multibind case.
-      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+      _glgsg->set_active_texture_stage(i);
       if (!_glgsg->update_texture(gtc, false)) {
         continue;
       }
@@ -2764,6 +2865,15 @@ glsl_compile_and_link() {
   // help a buggy driver.
   _glgsg->_glBindAttribLocation(_glsl_program, 2, "p3d_Normal");
   _glgsg->_glBindAttribLocation(_glsl_program, 3, "p3d_Color");
+
+  if (gl_fixed_vertex_attrib_locations) {
+    _glgsg->_glBindAttribLocation(_glsl_program, 1, "transform_weight");
+    _glgsg->_glBindAttribLocation(_glsl_program, 2, "normal");
+    _glgsg->_glBindAttribLocation(_glsl_program, 3, "color");
+    _glgsg->_glBindAttribLocation(_glsl_program, 7, "transform_index");
+    _glgsg->_glBindAttribLocation(_glsl_program, 8, "p3d_MultiTexCoord0");
+    _glgsg->_glBindAttribLocation(_glsl_program, 8, "texcoord");
+  }
 
   // If we requested to retrieve the shader, we should indicate that before linking.
 #if !defined(NDEBUG) && !defined(OPENGLES)

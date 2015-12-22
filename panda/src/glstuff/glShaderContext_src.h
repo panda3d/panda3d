@@ -83,6 +83,7 @@ private:
   //typedef pvector<ParamContext> ParamContexts;
   //ParamContexts _params;
 
+  BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
   GLint _transform_table_index;
   GLint _slider_table_index;

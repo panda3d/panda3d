@@ -306,9 +306,9 @@ public:
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  bool apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataHandle *reader,
-                           bool force);
+  bool update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
+                            const GeomVertexArrayDataHandle *reader,
+                            bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   bool setup_array_data(const unsigned char *&client_pointer,
@@ -457,6 +457,8 @@ protected:
   INLINE void set_vertex_attrib_divisor(GLuint index, GLuint divisor);
 #endif
 
+  INLINE void set_active_texture_stage(int i);
+
   INLINE void enable_multisample_antialias(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -532,6 +534,9 @@ protected:
   bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
+#endif
+#ifndef OPENGLES
+  void update_shader_vertex_format(const GeomVertexFormat *format);
 #endif
 
   void apply_white_texture();
@@ -651,6 +656,15 @@ protected:
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
+
+#ifndef OPENGLES
+  pvector<GLuint> _current_vertex_buffers;
+  bool _use_vertex_attrib_binding;
+  CPT(GeomVertexFormat) _current_vertex_format;
+  const GeomVertexColumn *_vertex_attrib_columns[32];
+#endif
+
+  int _active_texture_stage;
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
@@ -735,7 +749,9 @@ public:
 #endif
 #endif
 
+#ifndef OPENGLES_2
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
+#endif
 #ifdef SUPPORT_FIXED_FUNCTION
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
 #endif
@@ -897,6 +913,13 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLBINDVERTEXBUFFERPROC _glBindVertexBuffer;
+  PFNGLBINDVERTEXBUFFERSPROC _glBindVertexBuffers;
+  PFNGLVERTEXATTRIBFORMATPROC _glVertexAttribFormat;
+  PFNGLVERTEXATTRIBIFORMATPROC _glVertexAttribIFormat;
+  PFNGLVERTEXATTRIBLFORMATPROC _glVertexAttribLFormat;
+  PFNGLVERTEXATTRIBBINDINGPROC _glVertexAttribBinding;
+  PFNGLVERTEXBINDINGDIVISORPROC _glVertexBindingDivisor;
   PFNGLGETACTIVEUNIFORMSIVPROC _glGetActiveUniformsiv;
   PFNGLGETACTIVEUNIFORMBLOCKIVPROC _glGetActiveUniformBlockiv;
   PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC _glGetActiveUniformBlockName;

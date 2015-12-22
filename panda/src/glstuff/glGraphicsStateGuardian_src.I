@@ -289,6 +289,23 @@ set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_active_texture_stage
+//       Access: Protected
+//  Description: Calls glActiveTexture.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_active_texture_stage(int i) {
+  if (i != _active_texture_stage) {
+#ifdef OPENGLES_2
+    glActiveTexture(GL_TEXTURE0 + i);
+#else
+    _glActiveTexture(GL_TEXTURE0 + i);
+#endif
+    _active_texture_stage = i;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_multisample_antialias
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for

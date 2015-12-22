@@ -1036,7 +1036,7 @@ disable_shader_texture_bindings() {
     if (p == 0) continue;
 
     int texunit = cgGetParameterResourceIndex(p);
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+    _glgsg->set_active_texture_stage(texunit);
 
     glBindTexture(GL_TEXTURE_1D, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -1099,7 +1099,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader
       // that takes a texture on a model that doesn't have a texture applied.
-      _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+      _glgsg->set_active_texture_stage(i);
       _glgsg->apply_white_texture();
       continue;
     }
@@ -1115,7 +1115,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+    _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
     if (tc == (TextureContext*)NULL) {

@@ -427,6 +427,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _name = DCAST(InternalName, p_list[pi++]);
 
+  // Make sure that old .bam files are corrected to have C_normal
+  // normal columns rather than C_vector.
+  if (manager->get_file_minor_ver() < 38 &&
+      _name == InternalName::get_normal() && _contents == C_vector) {
+    _contents = C_normal;
+  }
+
   return pi;
 }
 
