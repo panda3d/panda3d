@@ -3970,6 +3970,38 @@ unbind_buffers() {
 #endif
 }
 
+#ifdef SUPPORT_FIXED_FUNCTION
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_standard_vertex_arrays
+//       Access: Protected
+//  Description: Used to disable all the standard vertex arrays that
+//               are currently enabled.  glShaderContexts are
+//               responsible for setting up their own vertex arrays,
+//               but before they can do so, the standard vertex
+//               arrays need to be disabled to get them "out of the
+//               way."  Called only from begin_draw_primitives.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+disable_standard_vertex_arrays() {
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) return;
+#endif
+
+  glDisableClientState(GL_NORMAL_ARRAY);
+  glDisableClientState(GL_COLOR_ARRAY);
+  GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
+
+  for (int stage_index=0; stage_index < _last_max_stage_index; stage_index++) {
+    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  }
+  _last_max_stage_index = 0;
+
+  glDisableClientState(GL_VERTEX_ARRAY);
+  report_my_gl_errors();
+}
+#endif  // SUPPORT_FIXED_FUNCTION
+
 #ifndef OPENGLES
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_shader_vertex_format
