@@ -20,10 +20,6 @@
 #include "buffered_datagramwriter.h"
 #include "config_nativenet.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 ////////////////////////////////////////////////////////////////
 // there are 3 states
 //
@@ -85,7 +81,7 @@ PUBLISHED:
   inline Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) ;
   virtual ~Buffered_DatagramConnection(void) ;
   // the reason thsi all exists
-  inline bool SendMessage(const Datagram &msg);
+  bool SendMessage(const Datagram &msg);
   inline bool Flush(void);
   inline void Reset(void);
 
@@ -235,45 +231,6 @@ inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, in
 {
   nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize 
                         << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
-}
-////////////////////////////////////////////////////////////////////
-// Function name    :  Buffered_DatagramConnection::SendMessage
-// Description      : send the message 
-//  
-// Return type      : inline bool 
-// Argument         : DataGram &msg
-////////////////////////////////////////////////////////////////////
-inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
-{
-      if(IsConnected()) {
-//        printf(" DO SendMessage %d\n",msg.get_length()); 
-        int val = 0;        
-        val = _Writer.AddData(msg.get_data(),msg.get_length(),*this);
-        if(val >= 0)
-          return true;
-        // Raise an exception to give us more information at the python level
-        nativenet_cat.warning() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
-        #ifdef HAVE_PYTHON
-        ostringstream s;
-
-#if PY_MAJOR_VERSION >= 3
-        PyObject *exc_type = PyExc_ConnectionError;
-#else
-        PyObject *exc_type = PyExc_StandardError;
-#endif
-        
-        s << endl << "Error sending message: " << endl;
-        msg.dump_hex(s);
-        
-        s << "Message data: " << msg.get_data() << endl;
-        
-        string message = s.str();
-        PyErr_SetString(exc_type, message.c_str());
-        #endif
-    
-        ClearAll();
-      }
-      return false;
 }
 
 inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)

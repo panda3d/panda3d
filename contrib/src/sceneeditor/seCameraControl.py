@@ -290,7 +290,7 @@ class DirectCameraControl(DirectObject):
     def lockCOA(self):
         self.fLockCOA = 1
         SEditor.message('COA Lock On')
-            
+
     def unlockCOA(self):
         self.fLockCOA = 0
         SEditor.message('COA Lock Off')
@@ -456,7 +456,7 @@ class DirectCameraControl(DirectObject):
 
     def centerCam(self):
         self.centerCamIn(1.0)
-        
+
     def centerCamNow(self):
         self.centerCamIn(0.)
 
@@ -493,7 +493,7 @@ class DirectCameraControl(DirectObject):
                                   blendType = 'easeInOut',
                                   task = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
-        
+
     def spawnMoveToView(self, view):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
@@ -527,7 +527,7 @@ class DirectCameraControl(DirectObject):
         self.camManipRef.setPosHpr(self.coaMarker, ZERO_VEC,
                                    hprOffset)
         # Scale center vec by current distance to target
-        offsetDistance = Vec3(SEditor.camera.getPos(self.camManipRef) - 
+        offsetDistance = Vec3(SEditor.camera.getPos(self.camManipRef) -
                               ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * (-1.0 * offsetDistance)
         # Now put the camManipRef at that point
@@ -543,15 +543,15 @@ class DirectCameraControl(DirectObject):
                                      blendType = 'easeInOut',
                                      task = 'manipulateCamera')
         t.uponDeath = self.updateCoaMarkerSizeOnDeath
-        
-        
+
+
     def swingCamAboutWidget(self, degrees, t):
         # Remove existing camera manipulation task
         taskMgr.remove('manipulateCamera')
 
         # Record undo point
         SEditor.pushUndo([SEditor.camera])
-        
+
         # Coincident with widget
         self.camManipRef.setPos(self.coaMarker, ZERO_POINT)
         # But aligned with render space
@@ -584,16 +584,16 @@ class DirectCameraControl(DirectObject):
         # At what distance does the object fill 30% of the screen?
         # Assuming radius of 1 on widget
         camY = SEditor.dr.near * (2.0 * maxScale)/(0.3 * maxDim)
-    
+
         # What is the vector through the center of the screen?
         centerVec = Y_AXIS * camY
-    
+
         # Where is the node relative to the viewpoint
         vWidget2Camera = SEditor.widget.getPos(SEditor.camera)
-    
+
         # How far do you move the camera to be this distance from the node?
         deltaMove = vWidget2Camera - centerVec
-    
+
         # Move a target there
         self.camManipRef.setPos(SEditor.camera, deltaMove)
 
@@ -605,7 +605,7 @@ class DirectCameraControl(DirectObject):
                                         task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
-        fitTask.uponDeath = self.reparentCam                                
+        fitTask.uponDeath = self.reparentCam
 
     def moveToFit(self):
         # How bit is the active widget?
@@ -629,7 +629,7 @@ class DirectCameraControl(DirectObject):
         # Spawn a task to move the widget
         t = SEditor.widget.lerpPos(Point3(centerVec),
                                   CAM_MOVE_DURATION,
-                                  other = SEditor.camera, 
+                                  other = SEditor.camera,
                                   blendType = 'easeInOut',
                                   task = 'moveToFitTask')
         t.uponDeath = lambda state: taskMgr.remove('stickToWidget')

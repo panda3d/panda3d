@@ -629,8 +629,7 @@ remove_all_windows() {
   // a hack, since it's not really related to removing windows, this
   // would nevertheless be a fine time to ensure the model cache (if
   // any) has been flushed to disk.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->flush_index();
+  BamCache::flush_global_index();
 
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
@@ -715,8 +714,7 @@ render_frame() {
 
   // Since this gets called every frame, we should take advantage of
   // the opportunity to flush the cache if necessary.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->consider_flush_index();
+  BamCache::consider_flush_global_index();
 
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
@@ -1482,7 +1480,8 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
-  typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
+  typedef pair<NodePath, int> CullKey;
+  typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
   size_t wlist_size = wlist.size();
@@ -1497,7 +1496,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           DisplayRegionPipelineReader *dr_reader =
             new DisplayRegionPipelineReader(dr, current_thread);
           NodePath camera = dr_reader->get_camera();
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, (DisplayRegion *)NULL)).first;
+          int lens_index = dr_reader->get_lens_index();
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(CullKey(camera, lens_index), (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.

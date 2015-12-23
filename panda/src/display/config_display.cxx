@@ -445,6 +445,12 @@ ConfigVariableDouble pixel_zoom
 ("pixel-zoom", 1.0,
  PRC_DESC("The default pixel_zoom factor for new windows."));
 
+ConfigVariableInt shadow_depth_bits
+("shadow-depth-bits", 24,
+ PRC_DESC("The minimum number of depth buffer bits requested when rendering "
+          "shadow maps.  Set this to 32 for more depth resolution in shadow "
+          "maps."));
+
 ConfigVariableColor background_color
 ("background-color", "0.41 0.41 0.41 0.0",
  PRC_DESC("Specifies the rgb(a) value of the default background color for a "

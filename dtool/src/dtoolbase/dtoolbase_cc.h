@@ -34,7 +34,7 @@ using namespace std;
 #define INLINE inline
 #define ALWAYS_INLINE inline
 #define TYPENAME typename
-#define CONSTEXPR
+#define CONSTEXPR constexpr
 #define NOEXCEPT noexcept
 #define FINAL
 #define OVERRIDE
@@ -48,7 +48,6 @@ using namespace std;
 // this maps to public.
 #define PUBLISHED __published
 
-typedef int streamsize;
 typedef int ios_openmode;
 typedef int ios_fmtflags;
 typedef int ios_iostate;
@@ -100,7 +99,7 @@ typedef basic_string<wchar_t> wstring;
 
 #ifndef HAVE_STREAMSIZE
 // Some C++ libraries (Irix) don't define this.
-typedef int streamsize;
+typedef long streamsize;
 #endif
 
 #ifndef HAVE_IOS_TYPEDEFS
@@ -161,6 +160,14 @@ typedef ios::seekdir ios_seekdir;
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
 // noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
 // GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
+#  define CONSTEXPR constexpr
+#  define NOEXCEPT noexcept
+#  define USE_MOVE_SEMANTICS
+#  define FINAL final
+#  define OVERRIDE override
+#  define MOVE(x) move(x)
+#elif defined(_MSC_VER) && _MSC_VER >= 1900
+// MSVC 2015 supports all of this goodness.
 #  define CONSTEXPR constexpr
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS

@@ -36,7 +36,6 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 #include "renderAttribRegistry.h"
-#include "py_panda.h"
 
 LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
@@ -327,6 +326,31 @@ make(const RenderAttrib *attrib1,
   state->_filled_slots.set_bit(attrib2->get_slot());
   state->_filled_slots.set_bit(attrib3->get_slot());
   state->_filled_slots.set_bit(attrib4->get_slot());
+  return return_new(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::make
+//       Access: Published, Static
+//  Description: Returns a RenderState with five attributes set.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+make(const RenderAttrib *attrib1,
+     const RenderAttrib *attrib2,
+     const RenderAttrib *attrib3,
+     const RenderAttrib *attrib4,
+     const RenderAttrib *attrib5, int override) {
+  RenderState *state = new RenderState;
+  state->_attributes[attrib1->get_slot()].set(attrib1, override);
+  state->_attributes[attrib2->get_slot()].set(attrib2, override);
+  state->_attributes[attrib3->get_slot()].set(attrib3, override);
+  state->_attributes[attrib4->get_slot()].set(attrib4, override);
+  state->_attributes[attrib5->get_slot()].set(attrib5, override);
+  state->_filled_slots.set_bit(attrib1->get_slot());
+  state->_filled_slots.set_bit(attrib2->get_slot());
+  state->_filled_slots.set_bit(attrib3->get_slot());
+  state->_filled_slots.set_bit(attrib4->get_slot());
+  state->_filled_slots.set_bit(attrib5->get_slot());
   return return_new(state);
 }
 
@@ -960,7 +984,7 @@ clear_cache() {
       RenderState *state = (RenderState *)(*ti).p();
 
       int i;
-      int cache_size = state->_composition_cache.get_size();
+      int cache_size = (int)state->_composition_cache.get_size();
       for (i = 0; i < cache_size; ++i) {
         if (state->_composition_cache.has_element(i)) {
           const RenderState *result = state->_composition_cache.get_data(i)._result;
@@ -970,10 +994,10 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = state->_invert_composition_cache.get_size();
+      cache_size = (int)state->_invert_composition_cache.get_size();
       for (i = 0; i < cache_size; ++i) {
         if (state->_invert_composition_cache.has_element(i)) {
           const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
@@ -983,7 +1007,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats.add_total_size(-state->_invert_composition_cache.get_num_entries());
+      _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
       state->_invert_composition_cache.clear();
     }
 

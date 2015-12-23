@@ -26,6 +26,10 @@
 
 #include <tchar.h>
 
+#ifndef WM_DPICHANGED
+#define WM_DPICHANGED 0x02E0
+#endif
+
 TypeHandle WinGraphicsWindow::_type_handle;
 TypeHandle WinGraphicsWindow::WinWindowHandle::_type_handle;
 
@@ -282,6 +286,17 @@ set_properties_now(WindowProperties &properties) {
     wstring title_w = encoder.decode_text(title);
     SetWindowTextW(_hWnd, title_w.c_str());
     properties.clear_title();
+  }
+
+  if (properties.has_icon_filename()) {
+    HICON icon = get_icon(properties.get_icon_filename());
+    if (icon != 0) {
+      ::SendMessage(_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+      ::SendMessage(_hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+
+      _properties.set_icon_filename(properties.get_icon_filename());
+      properties.clear_icon_filename();
+    }
   }
 
   if (properties.has_cursor_hidden()) {
@@ -1261,7 +1276,7 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
         // have focus now, don't move it to the top; it will get moved
         // the next time we get focus.
         ) {
-      order = HWND_TOP;
+      order = HWND_NOTOPMOST;
       do_change = true;
     }
     break;
@@ -2138,6 +2153,28 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     properties.set_foreground(false);
     system_changed_properties(properties);
+    break;
+
+  case WM_DPICHANGED:
+    // The window moved to a monitor of different DPI, or someone changed
+    // the DPI setting in the configuration panel.
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "DPI changed to " << LOWORD(wparam);
+
+      if (LOWORD(wparam) != HIWORD(wparam)) {
+        windisplay_cat.debug(false) << "x" << HIWORD(wparam) << "\n";
+      } else {
+        windisplay_cat.debug(false) << "\n";
+      }
+    }
+    // Resize the window if requested to match the new DPI.
+    // Obviously, don't do this if a fixed size was requested.
+    if (!_properties.get_fixed_size() && dpi_window_resize) {
+      RECT &rect = *(LPRECT)lparam;
+      SetWindowPos(_hWnd, HWND_TOP, rect.left, rect.top,
+                   rect.right - rect.left, rect.bottom - rect.top,
+                   SWP_NOZORDER | SWP_NOACTIVATE);
+    }
     break;
 
 #ifdef HAVE_WIN_TOUCHINPUT

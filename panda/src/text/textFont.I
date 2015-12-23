@@ -87,9 +87,9 @@ set_space_advance(PN_stdfloat space_advance) {
 //               it may still return a printable glyph, or it may
 //               return NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE const TextGlyph *TextFont::
+INLINE CPT(TextGlyph) TextFont::
 get_glyph(int character) {
-  const TextGlyph *glyph = NULL;
+  CPT(TextGlyph) glyph;
   get_glyph(character, glyph);
   return glyph;
 }

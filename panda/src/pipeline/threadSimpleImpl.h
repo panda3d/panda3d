@@ -25,13 +25,6 @@
 #include "pvector.h"
 #include "contextSwitch.h"
 
-#ifdef HAVE_PYTHON
-
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-#endif  // HAVE_PYTHON
-
 class Thread;
 class ThreadSimpleManager;
 class MutexSimpleImpl;

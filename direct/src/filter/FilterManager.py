@@ -44,7 +44,7 @@ class FilterManager(DirectObject):
             FilterManager.notify = directNotify.newCategory("FilterManager")
 
         # Find the appropriate display region.
-        
+
         region = None
         for dr in win.getDisplayRegions():
             drcam = dr.getCamera()
@@ -54,7 +54,7 @@ class FilterManager(DirectObject):
         if region is None:
             self.notify.error('Could not find appropriate DisplayRegion to filter')
             return False
-        
+
         # Instance Variables.
 
         self.win = win
@@ -102,7 +102,7 @@ class FilterManager(DirectObject):
                 (self.region.getRight()  == 1.0) and
                 (self.region.getBottom() == 0.0) and
                 (self.region.getTop()    == 1.0))
-            
+
     def getScaledSize(self, mul, div, align):
 
         """ Calculate the size of the desired window. Not public. """
@@ -213,7 +213,7 @@ class FilterManager(DirectObject):
         lens.setNearFar(-1000, 1000)
         quadcamnode.setLens(lens)
         quadcam = quad.attachNewNode(quadcamnode)
-        
+
         self.region.setCamera(quadcam)
 
         self.setStackedClears(buffer, self.rclears, self.wclears)
@@ -247,7 +247,7 @@ class FilterManager(DirectObject):
         texgroup = (depthtex, colortex, auxtex0, auxtex1)
 
         winx, winy = self.getScaledSize(mul, div, align)
-        
+
         depthbits = bool(depthtex != None)
 
         buffer = self.createBuffer("filter-stage", winx, winy, texgroup, depthbits)
@@ -284,7 +284,7 @@ class FilterManager(DirectObject):
 
         self.buffers.append(buffer)
         self.sizes.append((mul, div, align))
-        
+
         return quad
 
     def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1):

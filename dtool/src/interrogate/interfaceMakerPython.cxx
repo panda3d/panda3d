@@ -37,9 +37,10 @@ void InterfaceMakerPython::
 write_includes(ostream &out) {
   InterfaceMaker::write_includes(out);
   out << "#undef _POSIX_C_SOURCE\n"
+      << "#undef _XOPEN_SOURCE\n"
       << "#define PY_SSIZE_T_CLEAN 1\n\n"
       << "#if PYTHON_FRAMEWORK\n"
-      << "  #include \"Python/Python.h\"\n"
+      << "  #include <Python/Python.h>\n"
       << "#else\n"
       << "  #include \"Python.h\"\n"
       << "#endif\n";

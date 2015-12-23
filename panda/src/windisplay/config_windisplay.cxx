@@ -65,6 +65,20 @@ ConfigVariableBool request_dxdisplay_information
           "you have a specific need for this information and don't mind "
           "having a slow start-up."));
 
+ConfigVariableBool dpi_aware
+("dpi-aware", true,
+ PRC_DESC("The default behavior is for Panda3D to disable DPI-virtualization "
+          "that is introduced in Windows 8.1.  Set this to false if you are "
+          "experiencing problems with this setting."));
+
+ConfigVariableBool dpi_window_resize
+("dpi-window-resize", false,
+ PRC_DESC("Set this to true to let Panda3D resize the window according to the "
+          "DPI settings whenever the window is dragged to a monitor with "
+          "different DPI, or when the DPI setting is changed in the control "
+          "panel.  Only available in Windows 8.1 and later, and requires "
+          "dpi-aware to be set as well."));
+
 ConfigVariableBool swapbuffer_framelock
 ("swapbuffer-framelock", false,
  PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));

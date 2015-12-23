@@ -114,3 +114,17 @@ get_plane(int n) const {
                 get_point(plane_def[n][1]),
                 get_point(plane_def[n][2]));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::set_min_max
+//       Access: Published
+//  Description: Sets the min and max point of the rectangular solid.
+////////////////////////////////////////////////////////////////////
+INLINE_MATHUTIL void BoundingBox::
+set_min_max(const LPoint3 &min, const LPoint3 &max) {
+  nassertv(!min.is_nan() && !max.is_nan());
+  nassertv(_min[0] <= _max[0] && _min[1] <= _max[1] && _min[2] <= _max[2]);
+  _min = min;
+  _max = max;
+  _flags = 0;
+}

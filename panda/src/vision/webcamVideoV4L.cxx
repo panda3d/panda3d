@@ -14,7 +14,7 @@
 
 #include "webcamVideoV4L.h"
 
-#ifdef HAVE_VIDEO4LINUX
+#if defined(HAVE_VIDEO4LINUX) && !defined(CPPPARSER)
 
 #include "webcamVideoCursorV4L.h"
 #include "dcast.h"

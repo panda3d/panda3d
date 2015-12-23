@@ -62,7 +62,7 @@ class seLight(NodePath):
         self.exponent = exponent
         self.lence = lence
         self.active = True
-           
+
         if isinstance(light, Spotlight):
             node = light.upcastToLensNode()
         else:
@@ -75,10 +75,10 @@ class seLight(NodePath):
             self.LightNode.setHpr(self.orientation)
             self.LightNode.setPos(self.position)
         else:
-            self.LightNode.setHpr(self.orientation)     
+            self.LightNode.setHpr(self.orientation)
             self.LightNode.setPos(self.position)
-            
-        
+
+
         self.assign(self.LightNode)
         if(self.type=='spot'):
             self.helpModel = loader.loadModel( "models/misc/Spotlight" )
@@ -99,7 +99,7 @@ class seLight(NodePath):
         # getLight(self)
         # This function will return the light object it contains.
         #################################################################
-        
+
         return self.light
 
     def getLightColor(self):
@@ -108,14 +108,14 @@ class seLight(NodePath):
         # This function will return the color of the light color of this light node.
         #################################################################
         return self.lightcolor
-    
+
     def getName(self):
         #################################################################
         # getName(self)
         # This function will return the name of this light.
         #################################################################
         return self.light.getName()
-    
+
     def rename(self,name):
         #################################################################
         # rename(self, name)
@@ -203,7 +203,7 @@ class seLight(NodePath):
         #################################################################
         self.orientation = self.LightNode.getHpr()
         return self.orientation
-        
+
     def setOrientation(self,orient):
         #################################################################
         # setOrientation(self, orient)
@@ -241,7 +241,7 @@ class seLight(NodePath):
         self.light.setAttenuation(Vec3(value, self.linear, self.quadratic))
         self.constant = value
         return
-    
+
     def setLinearAttenuation(self, value):
         #################################################################
         # setLinearAttenuation(self, value)
@@ -252,7 +252,7 @@ class seLight(NodePath):
         self.light.setAttenuation(Vec3(self.constant, value, self.quadratic))
         self.linear = value
         return
-    
+
     def setQuadraticAttenuation(self, value):
         #################################################################
         # setQuadraticAttenuation(self, value)
@@ -270,7 +270,7 @@ class seLight(NodePath):
         # This function will return the value of the Exponent Attenuation
         # of this light node. (float)
         #################################################################
-        return self.exponent    
+        return self.exponent
 
     def setExponent(self, value):
         #################################################################
@@ -282,7 +282,7 @@ class seLight(NodePath):
         self.light.setExponent(value)
         self.exponent = value
         return
-        
+
 class seLightManager(NodePath):
     #################################################################
     # seLightManager(NodePath)
@@ -307,7 +307,7 @@ class seLightManager(NodePath):
         self.helpModel = loader.loadModel( "models/misc/sphere" )
         self.helpModel.reparentTo(self)
         self.helpModel.hide()
-   
+
 
 
 
@@ -342,7 +342,7 @@ class seLightManager(NodePath):
         ### create the light
 
         lence = None
-        
+
         if type == 'ambient':
             self.ambientCount += 1
             if(name=='DEFAULT_NAME'):
@@ -368,7 +368,7 @@ class seLightManager(NodePath):
                 light = PointLight('point_' + `self.pointCount`)
             else:
                 light = PointLight(name)
-            
+
             light.setColor(lightcolor)
             light.setSpecularColor(specularColor)
             light.setAttenuation(Vec3(constant, linear, quadratic))
@@ -406,7 +406,7 @@ class seLightManager(NodePath):
         self.lightDict[light.getName()] = lightNode
         self.setOn(lightNode)
 
-        
+
         return self.lightDict.keys(),lightNode
 
     def addLight(self, light):
@@ -507,7 +507,7 @@ class seLightManager(NodePath):
         #################################################################
         for name in self.lightDict:
             self.delete(name, removeEntry = False)
-        
+
         self.lightDict.clear()
 
     def isLight(self,name):
@@ -531,7 +531,7 @@ class seLightManager(NodePath):
             return self.lightDict.keys(),lightNode
         else:
             print '----Light Mnager: No such Light!'
-            
+
     def getLightNodeList(self):
         #################################################################
         # getLightNodeList(self)
@@ -612,7 +612,7 @@ class seLightManager(NodePath):
         if render.node().hasAttrib(LightAttrib.getClassType()):
             render.node().setAttrib(self.lightAttrib)
 
-            
+
     def setOff(self, lightNode):
         #################################################################
         # setOff(self, lightNode)

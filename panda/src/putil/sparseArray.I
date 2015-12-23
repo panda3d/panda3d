@@ -514,7 +514,7 @@ is_inverse() const {
 //
 //               Also see is_inverse().
 ////////////////////////////////////////////////////////////////////
-INLINE int SparseArray::
+INLINE size_t SparseArray::
 get_num_subranges() const {
   return _subranges.size();
 }
@@ -528,8 +528,8 @@ get_num_subranges() const {
 //               Also see is_inverse().
 ////////////////////////////////////////////////////////////////////
 INLINE int SparseArray::
-get_subrange_begin(int n) const {
-  nassertr(n >= 0 && n < (int)_subranges.size(), 0);
+get_subrange_begin(size_t n) const {
+  nassertr(n < _subranges.size(), 0);
   return _subranges[n]._begin;
 }
 
@@ -542,8 +542,8 @@ get_subrange_begin(int n) const {
 //               Also see is_inverse().
 ////////////////////////////////////////////////////////////////////
 INLINE int SparseArray::
-get_subrange_end(int n) const {
-  nassertr(n >= 0 && n < (int)_subranges.size(), 0);
+get_subrange_end(size_t n) const {
+  nassertr(n < _subranges.size(), 0);
   return _subranges[n]._end;
 }
 

@@ -72,8 +72,14 @@ PUBLISHED:
   // If the task's status is not S_sleeping, this contains 0.0.
   MAKE_PROPERTY(wake_time, get_wake_time);
 
+  // Alias of wake_time.
+  MAKE_PROPERTY(wakeTime, get_wake_time);
+
   // The delay value that has been set on this task, if any, or None.
   MAKE_PROPERTY(delay_time, get_delay, set_delay);
+
+  // Alias of delay_time.
+  MAKE_PROPERTY(delayTime, get_delay, set_delay);
 
   // The number of frames that have elapsed since the task was
   // started, according to the task manager's clock.

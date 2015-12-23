@@ -14,6 +14,7 @@
 
 
 #include "cppScope.h"
+#include "cppParser.h"
 #include "cppDeclaration.h"
 #include "cppNamespace.h"
 #include "cppTypedefType.h"
@@ -226,9 +227,14 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
       if (other_ext->_type != type->_type) {
         if (error_sink != NULL) {
           ostringstream errstr;
-          errstr << other_ext->_type << " " << type->get_fully_scoped_name()
-                 << " was previously declared as " << other_ext->_type << "\n";
-          error_sink->error(errstr.str());
+          errstr << type->_type << " " << type->get_fully_scoped_name()
+                 << " was previously declared as " << other_ext->_type;
+          error_sink->error(errstr.str(), type->_ident->_loc);
+
+          if (other_ext->_ident != NULL) {
+            error_sink->error("previous declaration is here",
+                              other_ext->_ident->_loc);
+          }
         }
       }
       (*result.first).second = type;
@@ -242,16 +248,30 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
 
         if (error_sink != NULL) {
           ostringstream errstr;
+          if (!cppparser_output_class_keyword) {
+            errstr << type->_type << " ";
+          }
           type->output(errstr, 0, NULL, false);
-          errstr << " has conflicting declaration as ";
+          errstr << " has conflicting definition as ";
           other_type->output(errstr, 0, NULL, true);
-          error_sink->error(errstr.str());
+          error_sink->error(errstr.str(), type->_ident->_loc);
+
+          CPPExtensionType *other_ext = other_type->as_extension_type();
+          if (other_ext != NULL && other_ext->_ident != NULL) {
+            error_sink->error("previous definition is here",
+                              other_ext->_ident->_loc);
+          }
         }
       }
     }
   }
 
   if (type->is_template()) {
+    CPPTemplateScope *scope = type->get_template_scope();
+    if (scope->_parameters._parameters.size() == 0) {
+      return;
+    }
+
     string simple_name = type->get_simple_name();
 
     pair<Templates::iterator, bool> result =
@@ -278,10 +298,15 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-define_namespace(CPPNamespace *scope) {
-  string name = scope->get_simple_name();
+define_namespace(CPPNamespace *ns) {
+  string name = ns->get_simple_name();
 
-  _namespaces[name] = scope;
+  _namespaces[name] = ns;
+
+  if (ns->_is_inline) {
+    // Add an implicit using declaration for an inline namespace.
+    _using.insert(ns->get_scope());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,7 +324,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       _using.insert(scope);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use undefined namespace: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   } else {
@@ -308,7 +333,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
       handle_declaration(decl, global_scope, error_sink);
     } else {
       if (error_sink != NULL) {
-        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name());
+        error_sink->warning("Attempt to use unknown symbol: " + using_decl->_ident->get_fully_scoped_name(), using_decl->_ident->_loc);
       }
     }
   }
@@ -596,9 +621,14 @@ find_scope(const string &name, bool recurse) const {
   ti = _types.find(name);
   if (ti != _types.end()) {
     type = (*ti).second;
-    // Resolve if this is a typedef.
-    while (type->as_typedef_type() != (CPPTypedefType *)NULL) {
-      type = type->as_typedef_type()->_type;
+    // Resolve if this is a typedef or const.
+    while (type->get_subtype() == CPPDeclaration::ST_const ||
+           type->get_subtype() == CPPDeclaration::ST_typedef) {
+      if (type->as_typedef_type() != (CPPType *)NULL) {
+        type = type->as_typedef_type()->_type;
+      } else {
+        type = type->as_const_type()->_wrapped_around;
+      }
     }
 
   } else if (_struct_type != NULL) {
@@ -648,9 +678,14 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
     return NULL;
   }
 
-  // Resolve this if it is a typedef.
-  while (type->get_subtype() == CPPDeclaration::ST_typedef) {
-    type = type->as_typedef_type()->_type;
+  // Resolve if this is a typedef or const.
+  while (type->get_subtype() == CPPDeclaration::ST_const ||
+         type->get_subtype() == CPPDeclaration::ST_typedef) {
+    if (type->as_typedef_type() != (CPPType *)NULL) {
+      type = type->as_typedef_type()->_type;
+    } else {
+      type = type->as_const_type()->_wrapped_around;
+    }
   }
 
   CPPStructType *st = type->as_struct_type();
@@ -1045,10 +1080,6 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
-      // I don't know if this _native_scope assignment is right, but it
-      // fixes some issues with variables in instantiated template scopes
-      // being printed out with an uninstantiated template scope prefix. ~rdb
-      inst->_ident->_native_scope = to_scope;
       anything_changed = true;
     }
   }
@@ -1100,14 +1131,16 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
       // We don't do redefinitions of typedefs.  But we don't complain
       // as long as this is actually a typedef to the previous definition.
       if (other_type != def->_type &&
-          (other_td == NULL || other_td->_type != def->_type)) {
+          (other_td == NULL || !other_td->_type->is_equivalent(*def->_type))) {
 
         if (error_sink != NULL) {
           ostringstream errstr;
           def->output(errstr, 0, NULL, false);
           errstr << " has conflicting declaration as ";
           other_type->output(errstr, 0, NULL, true);
-          error_sink->error(errstr.str());
+          error_sink->error(errstr.str(), def->_ident->_loc);
+          error_sink->error("previous definition is here",
+                            other_td->_ident->_loc);
         }
       }
     } else {

@@ -1064,25 +1064,12 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Write the constructors.
-  if (obj->_constructors.size() == 0) {
-    // There is no constructor - write one that simply outputs an error.
-    out << "static int Dtool_Init_" + ClassName + "(PyObject *, PyObject *, PyObject *) {\n"
-        << "#ifdef NDEBUG\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class\");\n"
-        << "#else\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class " << cClassName << "\");\n"
-        << "#endif\n"
-        << "  return -1;\n"
-        << "}\n\n";
+  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
+    Function *func = (*fi);
+    std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-  } else {
-    for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-      Function *func = (*fi);
-      std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-
-      string expected_params;
-      write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
-    }
+    string expected_params;
+    write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
   }
 
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
@@ -1099,7 +1086,17 @@ write_class_details(ostream &out, Object *obj) {
   // Write make seqs: generated methods that return a sequence of items.
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    write_make_seq(out, obj, ClassName, cClassName, *msi);
+    if (is_function_legal((*msi)->_length_getter) &&
+        is_function_legal((*msi)->_element_getter)) {
+      write_make_seq(out, obj, ClassName, cClassName, *msi);
+    } else {
+      if (!is_function_legal((*msi)->_length_getter)) {
+        cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
+      }
+      if (!is_function_legal((*msi)->_element_getter)) {
+        cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
+      }
+    }
   }
 
   // Determine which external imports we will need.
@@ -1499,6 +1496,8 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << def->module_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) PyInit_" << def->module_name << "();\n"
       << "#else\n"
       << "extern \"C\" PyObject *PyInit_" << def->module_name << "();\n"
       << "#endif\n"
@@ -1512,6 +1511,8 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "\n"
       << "#ifdef _WIN32\n"
       << "extern \"C\" __declspec(dllexport) void init" << def->module_name << "();\n"
+      << "#elif __GNUC__ >= 4\n"
+      << "extern \"C\" __attribute__((visibility(\"default\"))) init" << def->module_name << "();\n"
       << "#else\n"
       << "extern \"C\" void init" << def->module_name << "();\n"
       << "#endif\n"
@@ -1707,23 +1708,27 @@ write_module_class(ostream &out, Object *obj) {
 
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    const string &seq_name = (*msi)->_seq_name;
+    MakeSeq *make_seq = (*msi);
+    if (!is_function_legal(make_seq->_length_getter) ||
+        !is_function_legal(make_seq->_element_getter)) {
+      continue;
+    }
 
-    if ((seq_name.size() > 4 && seq_name.substr(0, 4) == "get_") ||
-        (seq_name.size() > 7 && seq_name.substr(0, 7) == "modify_")) {
+    string seq_name = make_seq->_imake_seq.get_name();
 
-      string flags = "METH_NOARGS";
-      if (obj->is_static_method((*msi)->_element_name)) {
-        flags += " | METH_CLASS";
-      }
-      string name1 = methodNameFromCppName((*msi)->_seq_name, export_class_name, false);
-      string name2 = methodNameFromCppName((*msi)->_seq_name, export_class_name, true);
-      out << "  {\"" << name1
-          << "\", (PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
-      if (name1 != name2) {
-        out << "  { \"" << name2
-            << "\", (PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
-      }
+    string flags = "METH_NOARGS";
+    if (!make_seq->_length_getter->_has_this &&
+        !make_seq->_element_getter->_has_this) {
+      flags += " | METH_STATIC";
+    }
+
+    string name1 = methodNameFromCppName(seq_name, export_class_name, false);
+    string name2 = methodNameFromCppName(seq_name, export_class_name, true);
+    out << "  {\"" << name1
+        << "\", (PyCFunction) &" << make_seq->_name << ", " << flags << ", NULL},\n";
+    if (name1 != name2) {
+      out << "  { \"" << name2
+          << "\", (PyCFunction) &" << make_seq->_name << ", " << flags << ", NULL},\n";
     }
   }
 
@@ -1746,19 +1751,15 @@ write_module_class(ostream &out, Object *obj) {
     }
   }
 
-  std::vector<std::string> bases;
+  std::vector<CPPType*> bases;
   for (di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = obj->_itype.get_derivation(di);
     if (!interrogate_type_is_unpublished(d_type_Index)) {
       const InterrogateType &d_itype = idb->get_type(d_type_Index);
       if (is_cpp_type_legal(d_itype._cpptype)) {
-        bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
+        bases.push_back(d_itype._cpptype);
       }
     }
-  }
-
-  if (bases.empty()) {
-    bases.push_back("DTOOL_SUPER_BASE");
   }
 
   {
@@ -2373,8 +2374,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  " << cClassName << " *local_this = NULL;\n";
           out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
           out << "  if (local_this == NULL) {\n";
-          out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-          out << "    return -1;\n";
+          out << "    return 0;\n";
           out << "  }\n\n";
 
           // Find the remap.  There should be only one.
@@ -2634,7 +2634,7 @@ write_module_class(ostream &out, Object *obj) {
       ++num_getset;
 
       string name1 = methodNameFromCppName(ielem.get_name(), "", false);
-      string name2 = methodNameFromCppName(ielem.get_name(), "", true);
+      //string name2 = methodNameFromCppName(ielem.get_name(), "", true);
 
       string getter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter";
       string setter = "NULL";
@@ -2655,13 +2655,13 @@ write_module_class(ostream &out, Object *obj) {
       // Extra void* argument; we don't make use of it.
       out << "NULL},\n";
 
-      if (name1 != name2 && name1 != "__dict__") {
+      /*if (name1 != name2 && name1 != "__dict__") {
         // Add alternative spelling.
         out << "  {(char *)\"" << name2 << "\", " << getter << ", " << setter
             << ", (char *)\n"
             << "    \"Alias of " << name1 << ", for consistency with old naming conventions.\",\n"
             << "    NULL},\n";
-      }
+      }*/
     }
 
     out << "  {NULL},\n";
@@ -3015,18 +3015,28 @@ write_module_class(ostream &out, Object *obj) {
   out << "    initdone = true;\n";
 
   // Add bases.
+  out << "    // Dependent objects\n";
   if (bases.size() > 0) {
-    out << "    // Dependent objects\n";
     string baseargs;
-    for (vector<string>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
-      baseargs += ", (PyTypeObject *)Dtool_Ptr_" + *bi;
-      string safe_name = make_safe_name(*bi);
+    for (vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
+      string safe_name = make_safe_name((*bi)->get_local_name(&parser));
 
-      out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
-          << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      if (isExportThisRun(*bi)) {
+        baseargs += ", (PyTypeObject *)&Dtool_" + safe_name;
+        out << "    Dtool_PyModuleClassInit_" << safe_name << "(NULL);\n";
+
+      } else {
+        baseargs += ", (PyTypeObject *)Dtool_Ptr_" + safe_name;
+
+        out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
+            << "    assert(Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit != NULL);\n"
+            << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      }
     }
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
+  } else {
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_Ptr_DTOOL_SUPER_BASE;\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -3454,17 +3464,17 @@ write_function_for_name(ostream &out, Object *obj,
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1) {
+  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
     switch (args_type) {
     case AT_keyword_args:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       indent(out, 2) << "if (kwds != NULL) {\n";
-      indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
+      indent(out, 2) << "  parameter_count += (int)PyDict_Size(kwds);\n";
       indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
-      indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
       break;
 
     case AT_single_arg:
@@ -3568,14 +3578,14 @@ write_function_for_name(ostream &out, Object *obj,
       switch (args_type) {
       case AT_keyword_args:
         out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
-        out << "    int parameter_count = PyTuple_Size(args);\n";
+        out << "    int parameter_count = (int)PyTuple_Size(args);\n";
         out << "    if (kwds != NULL) {\n";
-        out << "      parameter_count += PyDict_Size(kwds);\n";
+        out << "      parameter_count += (int)PyDict_Size(kwds);\n";
         out << "    }\n";
         break;
       case AT_varargs:
         out << "  if (PyTuple_Size(args) > 0) {\n";
-        out << "    const int parameter_count = PyTuple_GET_SIZE(args);\n";
+        out << "    const int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
         break;
       case AT_single_arg:
         // Shouldn't happen, but let's handle this case nonetheless.
@@ -3600,9 +3610,9 @@ write_function_for_name(ostream &out, Object *obj,
     } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg
       // in write_function_forset (not using ParseTupleAndKeywords).
-      out << "    int parameter_count = PyTuple_Size(args);\n"
+      out << "    int parameter_count = (int)PyTuple_Size(args);\n"
              "    if (kwds != NULL) {\n"
-             "      parameter_count += PyDict_Size(kwds);\n"
+             "      parameter_count += (int)PyDict_Size(kwds);\n"
              "    }\n"
              "  if (parameter_count != 1) {\n"
              "#ifdef NDEBUG\n";
@@ -3721,7 +3731,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -3759,7 +3769,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           map_sets[i].insert(remap);
         }
 
-        int parameter_size = remap->_parameters.size();
+        size_t parameter_size = remap->_parameters.size();
         map_sets[parameter_size].insert(remap);
       }
     }
@@ -3987,9 +3997,9 @@ collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
       std::set<FunctionRemap *>::iterator sii;
       for (sii = rmi->second.begin(); sii != rmi->second.end(); ++sii) {
         FunctionRemap *remap = (*sii);
-        int pn = rmi->first - 1;
-        if (remap->_has_this && remap->_type != FunctionRemap::T_constructor) {
-          ++pn;
+        size_t pn = (size_t)rmi->first;
+        if (!remap->_has_this || remap->_type == FunctionRemap::T_constructor) {
+          --pn;
         }
         nassertd(pn < remap->_parameters.size()) goto abort_iteration;
 
@@ -4161,6 +4171,11 @@ int get_type_sort(CPPType *type) {
 bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   assert(in1 != NULL);
   assert(in2 != NULL);
+
+  if (in1->_const_method != in2->_const_method) {
+    // Non-const methods should come first.
+    return in2->_const_method;
+  }
 
   if (in1->_parameters.size() != in2->_parameters.size()) {
     return (in1->_parameters.size() > in2->_parameters.size());
@@ -4342,8 +4357,8 @@ write_function_forset(ostream &out,
 
       for (sii = remaps.begin(); sii != remaps.end(); ++sii) {
         remap = (*sii);
-        if (remap->_parameters.size() > (int)remap->_has_this) {
-          ParameterRemap *param = remap->_parameters[(int)remap->_has_this]._remap;
+        if (remap->_parameters.size() > (size_t)remap->_has_this) {
+          ParameterRemap *param = remap->_parameters[(size_t)remap->_has_this]._remap;
           string param_name = param->get_orig_type()->get_local_name(&parser);
 
           if (param_name != "CPT_InternalName" &&
@@ -4598,15 +4613,15 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   if (remap->_has_this) {
     num_params += 1;
   }
-  if (num_params > remap->_parameters.size()) {
+  if (num_params > (int)remap->_parameters.size()) {
     // Limit to how many parameters this remap actually has.
-    num_params = remap->_parameters.size();
+    num_params = (int)remap->_parameters.size();
     max_num_args = num_params;
     if (remap->_has_this) {
       --max_num_args;
     }
   }
-  nassertv(num_params <= remap->_parameters.size());
+  nassertv(num_params <= (int)remap->_parameters.size());
 
   bool only_pyobjects = true;
 
@@ -4718,13 +4733,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "str";
 
       } else if (TypeManager::is_wchar_pointer(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)" << param_name << ", NULL);\n"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString(" << param_name << ", NULL);\n"
           << "#else"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
           << "wchar_t *" << param_name << "_str = (wchar_t *)alloca(sizeof(wchar_t) * (" + param_name + "_len + 1));\n"
@@ -4742,14 +4761,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_wstring(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
@@ -4767,14 +4790,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
@@ -5030,17 +5057,32 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // Windows, where longs are the same size as ints.
       // BUG: does not catch negative values on Windows when going through
       // the PyArg_ParseTuple case.
-      extra_convert
-        << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
-        << "if (" << param_name << " > UINT_MAX) {\n";
+      if (!TypeManager::is_long(type)) {
+        extra_convert
+          << "#if (SIZEOF_LONG > SIZEOF_INT) && !defined(NDEBUG)\n"
+          << "if (" << param_name << " > UINT_MAX) {\n";
 
-      error_raise_return(extra_convert, 2, return_flags, "OverflowError",
-                         "value %lu out of range for unsigned integer",
-                         param_name);
-      extra_convert
-        << "}\n"
-        << "#endif\n";
+        error_raise_return(extra_convert, 2, return_flags, "OverflowError",
+                           "value %lu out of range for unsigned integer",
+                           param_name);
 
+        extra_convert
+          << "}\n"
+          << "#endif\n";
+      }
+      expected_params += "int";
+      only_pyobjects = false;
+
+    } else if (TypeManager::is_long(type)) {
+      // Signed longs are equivalent to Python's int type.
+      if (args_type == AT_single_arg) {
+        pexpr_string = "PyLongOrInt_AS_LONG(arg)";
+        type_check = "PyLongOrInt_Check(arg)";
+      } else {
+        indent(out, indent_level) << "long " << param_name << default_expr << ";\n";
+        format_specifiers += "l";
+        parameter_list += ", &" + param_name;
+      }
       expected_params += "int";
       only_pyobjects = false;
 
@@ -5059,6 +5101,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed integer",
                            "arg_val");
+
         extra_convert
           << "}\n"
           << "#endif\n";
@@ -6174,6 +6217,10 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
     indent(out, indent_level)
       << "return PyBool_FromLong(" << return_expr << ");\n";
 
+  } else if (TypeManager::is_ssize(type)) {
+    indent(out, indent_level)
+      << "return PyLongOrInt_FromSsize_t(" << return_expr << ");\n";
+
   } else if (TypeManager::is_size(type)) {
     indent(out, indent_level)
       << "return PyLongOrInt_FromSize_t(" << return_expr << ");\n";
@@ -6200,22 +6247,12 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_unsigned_integer(type)){
-    out << "#if PY_MAJOR_VERSION >= 3\n";
-    indent(out, indent_level)
-      << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#else\n";
     indent(out, indent_level)
       << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
-    out << "#endif\n";
 
   } else if (TypeManager::is_integer(type)) {
-    out << "#if PY_MAJOR_VERSION >= 3\n";
     indent(out, indent_level)
-      << "return PyLong_FromLong(" << return_expr << ");\n";
-    out << "#else\n";
-    indent(out, indent_level)
-      << "return PyInt_FromLong(" << return_expr << ");\n";
-    out << "#endif\n";
+      << "return PyLongOrInt_FromLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_float(type)) {
     indent(out, indent_level)
@@ -6322,47 +6359,88 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 void InterfaceMakerPythonNative::
 write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                const std::string &cClassName, MakeSeq *make_seq) {
+
   out << "/******************************************************************\n" << " * Python make_seq wrapper\n";
   out << " *******************************************************************/\n";
 
   out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
-  string element_name = methodNameFromCppName(make_seq->_element_name, ClassName, false);
 
-  // This used to be a list.  But it should really be a tuple, I think,
-  // because it probably makes more sense for it to be immutable (as
-  // changes to it won't be visible on the C++ side anyway).
+  // This used to return a list.  But it should really be a tuple, I
+  // think, because it probably makes more sense for it to be immutable
+  // (as changes to it won't be visible on the C++ side anyway).
 
-  out << "  " << cClassName  << " *local_this = NULL;\n"
-      << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "\n"
-      << "  PyObject *getter = PyDict_GetItemString(Dtool_" << ClassName << "._PyType.tp_dict, \"" << element_name << "\");\n"
-      << "  if (getter == (PyObject *)NULL) {\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "\n"
-      << "  Py_ssize_t count = (Py_ssize_t)local_this->" << make_seq->_num_name << "();\n"
-      << "  PyObject *tuple = PyTuple_New(count);\n"
-      << "\n"
-      << "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
-      << "#if PY_MAJOR_VERSION >= 3\n"
-      << "    PyObject *index = PyLong_FromSsize_t(i);\n"
-      << "#else\n"
-      << "    PyObject *index = PyInt_FromSsize_t(i);\n"
-      << "#endif\n"
-      << "    PyObject *value = PyObject_CallFunctionObjArgs(getter, self, index, NULL);\n"
-      << "    PyTuple_SET_ITEM(tuple, i, value);\n"
-      << "    Py_DECREF(index);\n"
-      << "  }\n"
-      << "\n"
-      << "  if (Dtool_CheckErrorOccurred()) {\n"
-      << "    Py_DECREF(tuple);\n"
-      << "    return NULL;\n"
-      << "  }\n"
-      << "  return tuple;\n"
-      << "}\n"
-      << "\n";
+  FunctionRemap *remap = make_seq->_length_getter->_remaps.front();
+  vector_string pexprs;
+
+  if (make_seq->_length_getter->_has_this) {
+    out <<
+      "  " << cClassName  << " *local_this = NULL;\n"
+      "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n"
+      "    return NULL;\n"
+      "  }\n"
+      "  Py_ssize_t count = (Py_ssize_t)" << remap->get_call_str("local_this", pexprs) << ";\n";
+  } else {
+    out << "  Py_ssize_t count = (Py_ssize_t)" << remap->get_call_str("", pexprs) << ";\n";
+  }
+
+  Function *elem_getter = make_seq->_element_getter;
+
+  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    // Fast way to create a temporary tuple to hold only a single item, under
+    // the assumption that the called method doesn't do anything with this tuple
+    // other than unpack it (which is a fairly safe assumption to make).
+    out << "  PyTupleObject args;\n";
+    out << "  PyObject_INIT_VAR(&args, &PyTuple_Type, 1);\n";
+  }
+
+  out <<
+    "  PyObject *tuple = PyTuple_New(count);\n"
+    "\n"
+    "  for (Py_ssize_t i = 0; i < count; ++i) {\n"
+    "#if PY_MAJOR_VERSION >= 3\n"
+    "    PyObject *index = PyLong_FromSsize_t(i);\n"
+    "#else\n"
+    "    PyObject *index = PyInt_FromSsize_t(i);\n"
+    "#endif\n";
+
+  switch (elem_getter->_args_type) {
+  case AT_keyword_args:
+    out << "    PyTuple_SET_ITEM(&args, 0, index);\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args, NULL);\n";
+    break;
+
+  case AT_varargs:
+    out << "    PyTuple_SET_ITEM(&args, 0, index);\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args);\n";
+    break;
+
+  case AT_single_arg:
+    out << "    PyObject *value = " << elem_getter->_name << "(self, index);\n";
+    break;
+
+  default:
+    out << "    PyObject *value = " << elem_getter->_name << "(self, NULL);\n";
+    break;
+  }
+
+  out <<
+    "    PyTuple_SET_ITEM(tuple, i, value);\n"
+    "    Py_DECREF(index);\n"
+    "  }\n"
+    "\n";
+
+  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    out << "  _Py_ForgetReference((PyObject *)&args);\n";
+  }
+
+  out <<
+    "  if (Dtool_CheckErrorOccurred()) {\n"
+    "    Py_DECREF(tuple);\n"
+    "    return NULL;\n"
+    "  }\n"
+    "  return tuple;\n"
+    "}\n"
+    "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6479,6 +6557,21 @@ record_object(TypeIndex type_index) {
       // No use exporting a property without a getter.
       delete property;
     }
+  }
+
+  int num_make_seqs = itype.number_of_make_seqs();
+  for (int msi = 0; msi < num_make_seqs; msi++) {
+    MakeSeqIndex make_seq_index = itype.get_make_seq(msi);
+    const InterrogateMakeSeq &imake_seq = idb->get_make_seq(make_seq_index);
+
+    string class_name = itype.get_scoped_name();
+    string clean_name = InterrogateBuilder::clean_identifier(class_name);
+    string wrapper_name = "MakeSeq_" + clean_name + "_" + imake_seq.get_name();
+
+    MakeSeq *make_seq = new MakeSeq(wrapper_name, imake_seq);
+    make_seq->_length_getter = record_function(itype, imake_seq.get_length_getter());
+    make_seq->_element_getter = record_function(itype, imake_seq.get_element_getter());
+    object->_make_seqs.push_back(make_seq);
   }
 
   object->check_protocols();
@@ -6666,7 +6759,7 @@ is_remap_legal(FunctionRemap *remap) {
   }
 
   // all non-optional params must be legal
-  for (int pn = 0; pn < (int)remap->_parameters.size(); pn++) {
+  for (size_t pn = 0; pn < remap->_parameters.size(); pn++) {
     ParameterRemap *param = remap->_parameters[pn]._remap;
     CPPType *orig_type = param->get_orig_type();
     if (param->get_default_value() == NULL && !is_cpp_type_legal(orig_type)) {
@@ -6754,12 +6847,12 @@ is_remap_coercion_possible(FunctionRemap *remap) {
     return false;
   }
 
-  int pn = 0;
+  size_t pn = 0;
   if (remap->_has_this) {
     // Skip the "this" parameter.  It's never coercible.
     ++pn;
   }
-  while (pn < (int)remap->_parameters.size()) {
+  while (pn < remap->_parameters.size()) {
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
 
     if (TypeManager::is_char_pointer(type)) {

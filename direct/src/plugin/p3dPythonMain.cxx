@@ -150,10 +150,10 @@ main(int argc, char *argv[]) {
     }
   }
 
-  if (!run_p3dpython(program_name, archive_file, input_handle, output_handle, 
-                     NULL, interactive_console)) {
+  int status = run_p3dpython(program_name, archive_file, input_handle,
+                             output_handle, NULL, interactive_console);
+  if (status != 0) {
     cerr << "Failure on startup.\n";
-    return 1;
   }
-  return 0;
+  return status;
 }

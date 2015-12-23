@@ -41,7 +41,7 @@ private:
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const Shader *shader = NULL);
+  static CPT(RenderAttrib) make(const Shader *shader = NULL, int priority = 0);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
 
@@ -49,6 +49,7 @@ PUBLISHED:
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
     F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
     F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
+    F_shader_point_size   = 3,  // Shader provides point size, not RenderModeAttrib
   };
 
   INLINE bool               has_shader() const;
@@ -114,6 +115,7 @@ PUBLISHED:
   static void register_with_read_factory();
 
 public:
+  virtual void output(ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

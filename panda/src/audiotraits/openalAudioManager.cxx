@@ -19,6 +19,7 @@
 #include "config_audio.h"
 #include "config_util.h"
 #include "config_express.h"
+#include "config_openalAudio.h"
 #include "openalAudioManager.h"
 #include "openalAudioSound.h"
 #include "virtualFileSystem.h"
@@ -26,6 +27,14 @@
 #include "reMutexHolder.h"
 
 #include <algorithm>
+
+#ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
+#define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
+#endif
+
+#ifndef ALC_ALL_DEVICES_SPECIFIER
+#define ALC_ALL_DEVICES_SPECIFIER 0x1013
+#endif
 
 TypeHandle OpenALAudioManager::_type_handle;
 
@@ -90,7 +99,7 @@ OpenALAudioManager() {
   _active = audio_active;
   _volume = audio_volume;
   _play_rate = 1.0f;
-  
+
   _cache_limit = audio_cache_limit;
 
   _concurrent_sound_limit = 0;
@@ -116,20 +125,50 @@ OpenALAudioManager() {
   _forward_up[5] = 0;
 
   // Initialization
+  audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    _device = alcOpenDevice(NULL); // select the "preferred device"
-    if (!_device) {
-      // this is a unique kind of error
-      audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
+    _device = NULL;
+    string dev_name = select_audio_device();
+
+    if (!dev_name.empty()) {
+      // Open a specific device by name.
+      audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
+      _device = alcOpenDevice(dev_name.c_str());
+
+      if (_device == NULL) {
+        audio_cat.error()
+          << "Couldn't open OpenAL device \"" << dev_name << "\", falling back to default device\n";
+      }
     } else {
+      audio_cat.info() << "Using default OpenAL device\n";
+    }
+
+    if (_device == NULL) {
+      // Open the default device.
+      _device = alcOpenDevice(NULL);
+
+      if (_device == NULL && dev_name != "OpenAL Soft") {
+        // Try the OpenAL Soft driver instead, which is fairly reliable.
+        _device = alcOpenDevice("OpenAL Soft");
+
+        if (_device == NULL) {
+          audio_cat.error()
+            << "Couldn't open default OpenAL device\n";
+        }
+      }
+    }
+
+    if (_device != NULL) {
+      // We managed to get a device open.
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
-      alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
+      alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
       if (_context != NULL) {
         _openal_active = true;
       }
     }
   }
+
   // We increment _active_managers regardless of possible errors above.
   // The shutdown call will do the right thing when it's called,
   // either way.
@@ -150,15 +189,15 @@ OpenALAudioManager() {
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
 
     if (audio_cat.is_debug()) {
-      audio_cat->debug()
+      audio_cat.debug()
         << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;
     }
   }
 
   if (audio_cat.is_debug()) {
-    audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
-    audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
-    audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+    audio_cat.debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+    audio_cat.debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+    audio_cat.debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
   }
 }
 
@@ -210,6 +249,82 @@ shutdown() {
 bool OpenALAudioManager::
 is_valid() {
   return _is_valid;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioManager::select_audio_device
+//       Access: Private
+//  Description: Enumerate the audio devices, selecting the one that
+//               is most appropriate or has been selected by the user.
+////////////////////////////////////////////////////////////////////
+string OpenALAudioManager::
+select_audio_device() {
+  string selected_device = openal_device;
+
+  const char *devices = NULL;
+
+  // This extension gives us all audio paths on all drivers.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "All OpenAL devices:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATE_ALL_EXT not supported\n";
+  }
+
+  // This extension just gives us generic driver names, like "OpenAL Soft"
+  // and "Generic Software", rather than individual outputs.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "OpenAL drivers:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (selected_device.empty() && device == "OpenAL Soft" &&
+            default_device == "Generic Software") {
+          // Prefer OpenAL Soft over the buggy Generic Software driver.
+          selected_device = "OpenAL Soft";
+        }
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATION_EXT not supported\n";
+  }
+
+  return selected_device;
 }
 
 ////////////////////////////////////////////////////////////////////

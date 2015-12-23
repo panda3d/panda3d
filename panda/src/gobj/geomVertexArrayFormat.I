@@ -165,7 +165,7 @@ INLINE const GeomVertexColumn *GeomVertexArrayFormat::
 get_column(int i) const {
   nassertr(i >= 0 && i < (int)_columns.size(), NULL);
   consider_sort_columns();
-  return _columns[i];
+  return _columns[(size_t)i];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,13 +25,13 @@ PUBLISHED:
 
   INLINE virtual ~Socket_Address();
 
-  INLINE bool set_any_IP(int port);
-  INLINE bool set_port(int port);
-  INLINE bool set_broadcast(int port);
+  INLINE bool set_any_IP(unsigned short port);
+  INLINE bool set_port(unsigned short port);
+  INLINE bool set_broadcast(unsigned short port);
 
-  INLINE bool set_host(const std::string &hostname, int port) ;
+  INLINE bool set_host(const std::string &hostname, unsigned short port) ;
   INLINE bool set_host(const std::string &hostname) ;
-  INLINE bool set_host(unsigned int ip4adr, int port);
+  INLINE bool set_host(unsigned int ip4adr, unsigned short port);
   INLINE void clear();
 
   INLINE unsigned short get_port() const;

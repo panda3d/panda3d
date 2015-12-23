@@ -36,6 +36,8 @@ public:
   virtual void write_prototypes(ostream &out,ostream *out_h);
   virtual void write_functions(ostream &out);
 
+  virtual ParameterRemap *remap_parameter(CPPType *struct_type, CPPType *param_type);
+
   virtual bool synthesize_this_parameter();
 
 protected:

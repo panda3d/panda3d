@@ -326,12 +326,12 @@ class DistributedObject(DistributedObjectBase):
 
 
     #This message was moved out of announce generate
-    #to avoid ordering issues.  
+    #to avoid ordering issues.
     def postGenerateMessage(self):
         if self.activeState != ESGenerated:
             self.activeState = ESGenerated
             messenger.send(self.uniqueName("generate"), [self])
-            
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
@@ -341,7 +341,7 @@ class DistributedObject(DistributedObjectBase):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def updateRequiredOtherFields(self, dclass, di):
         # First, update the required fields
         dclass.receiveUpdateBroadcastRequired(self, di)
@@ -350,7 +350,7 @@ class DistributedObject(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):

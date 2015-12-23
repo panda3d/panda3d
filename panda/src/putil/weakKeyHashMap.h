@@ -48,7 +48,7 @@ public:
 
   INLINE Value &operator [] (const Key *key);
 
-  INLINE int get_size() const;
+  INLINE size_t get_size() const;
   INLINE bool has_element(int n) const;
   INLINE const Key *get_key(int n) const;
   INLINE const Value &get_data(int n) const;
@@ -59,7 +59,7 @@ public:
 #endif
   void remove_element(int n);
 
-  INLINE int get_num_entries() const;
+  INLINE size_t get_num_entries() const;
   INLINE bool is_empty() const;
 
   void output(ostream &out) const;

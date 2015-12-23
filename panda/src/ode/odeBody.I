@@ -95,22 +95,7 @@ set_data(void *data) {
   dBodySetData(_id, data);
 }
 
-#ifdef HAVE_PYTHON
-INLINE void OdeBody::
-set_data(PyObject *data) {
-  Py_XDECREF((PyObject*) dBodyGetData(_id));
-  Py_XINCREF(data);
-  dBodySetData(_id, data);
-}
-
-INLINE PyObject* OdeBody::
-get_data() const {
-  PyObject* data = (PyObject*) dBodyGetData(_id);
-  Py_XINCREF(data);
-  return data;
-}
-#else
-
+#ifndef HAVE_PYTHON
 INLINE void* OdeBody::
 get_data() const {
   return dBodyGetData(_id);
@@ -132,7 +117,7 @@ set_rotation(const LMatrix3f &r) {
   dMatrix3 mat3 = { r(0, 0), r(0, 1), r(0, 2), 0,
                     r(1, 0), r(1, 1), r(1, 2), 0,
                     r(2, 0), r(2, 1), r(2, 2), 0 };
-  
+
   dBodySetRotation(_id, mat3);
 }
 

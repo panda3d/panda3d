@@ -102,6 +102,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt accum_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt shadow_depth_bits;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
 

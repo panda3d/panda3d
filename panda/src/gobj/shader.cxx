@@ -82,12 +82,14 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
   case SAT_mat4x2:    tstr = "mat4x2 "; break;
   case SAT_mat4x3:    tstr = "mat4x3 "; break;
   case SAT_mat4x4:    tstr = "mat4x4 "; break;
-  case SAT_sampler1d: tstr = "sampler1d "; break;
-  case SAT_sampler2d: tstr = "sampler2d "; break;
-  case SAT_sampler3d: tstr = "sampler3d "; break;
-  case SAT_sampler2dArray: tstr = "sampler2dArray "; break;
-  case SAT_samplercube:    tstr = "samplercube "; break;
-  default:                 tstr = "unknown "; break;
+  case SAT_sampler1d: tstr = "sampler1D "; break;
+  case SAT_sampler2d: tstr = "sampler2D "; break;
+  case SAT_sampler3d: tstr = "sampler3D "; break;
+  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
+  case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
+  case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
+  case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
+  default:                    tstr = "unknown "; break;
   }
 
   string cstr = "invalid";
@@ -244,8 +246,10 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
   if ((p._type!=SAT_sampler1d)&&
       (p._type!=SAT_sampler2d)&&
       (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2dArray)&&
-      (p._type!=SAT_samplercube)) {
+      (p._type!=SAT_sampler2d_array)&&
+      (p._type!=SAT_sampler_cube)&&
+      (p._type!=SAT_sampler_buffer)&&
+      (p._type!=SAT_sampler_cube_array)) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -426,7 +430,10 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_clip_x_to_view) ||
       (inp == SMO_view_to_clip_x) ||
       (inp == SMO_apiclip_x_to_view) ||
-      (inp == SMO_view_to_apiclip_x)) {
+      (inp == SMO_view_to_apiclip_x) ||
+      (inp == SMO_dlight_x) ||
+      (inp == SMO_plight_x) ||
+      (inp == SMO_slight_x)) {
     dep |= SSD_transform;
   }
   if ((inp == SMO_texpad_x) ||
@@ -471,6 +478,9 @@ cp_dependency(ShaderMatInput inp) {
   if ((inp == SMO_light_ambient) ||
       (inp == SMO_light_source_i_attrib)) {
     dep |= SSD_light;
+    if (inp == SMO_light_source_i_attrib) {
+      dep |= SSD_transform;
+    }
   }
   if ((inp == SMO_light_product_i_ambient) ||
       (inp == SMO_light_product_i_diffuse) ||
@@ -969,6 +979,17 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._arg[0] = NULL;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
+    } else if (pieces[1] == "ambient") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_light_ambient;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
@@ -1211,12 +1232,15 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._id = p._id;
     bind._name = 0;
     bind._stage = atoi(pieces[1].c_str());
+    bind._part = STO_stage_i;
     switch (p._type) {
     case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
     case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
     case SAT_sampler3d:      bind._desired_type = Texture::TT_3d_texture; break;
-    case SAT_sampler2dArray: bind._desired_type = Texture::TT_2d_texture_array; break;
-    case SAT_samplercube:    bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler2d_array:bind._desired_type = Texture::TT_2d_texture_array; break;
+    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
+    case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
+    case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1225,6 +1249,31 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._suffix = InternalName::make(((string)"-") + pieces[2]);
       shader_cat.warning()
         << "Parameter " << p._id._name << ": use of a texture suffix is deprecated.\n";
+    }
+    _tex_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "shadow") {
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p)) ||
+        (!cp_errchk_parameter_sampler(p)))
+      return false;
+    if (pieces.size() != 2) {
+      cp_report_error(p, "Invalid parameter name");
+      return false;
+    }
+    ShaderTexSpec bind;
+    bind._id = p._id;
+    bind._name = InternalName::make(pieces[1])->append("shadowMap");
+    bind._stage = -1;
+    bind._part = STO_named_input;
+    switch (p._type) {
+    case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
+    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
+    default:
+      cp_report_error(p, "Invalid type for a shadow-parameter");
+      return false;
     }
     _tex_spec.push_back(bind);
     return true;
@@ -1338,6 +1387,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1346,6 +1396,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
       return true;
@@ -1354,23 +1405,44 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_sampler2dArray: {
+    case SAT_sampler2d_array: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_2d_texture_array;
       _tex_spec.push_back(bind);
       return true;
     }
-    case SAT_samplercube: {
+    case SAT_sampler_cube: {
       ShaderTexSpec bind;
       bind._id = p._id;
       bind._name = kinputname;
+      bind._part = STO_named_input;
       bind._desired_type = Texture::TT_cube_map;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_buffer: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._part = STO_named_input;
+      bind._desired_type = Texture::TT_buffer_texture;
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    case SAT_sampler_cube_array: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._part = STO_named_input;
+      bind._desired_type = Texture::TT_cube_map_array;
       _tex_spec.push_back(bind);
       return true;
     }
@@ -1460,8 +1532,10 @@ cg_parameter_type(CGparameter p) {
     case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
     case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
     case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
-    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2dArray;
-    case CG_SAMPLERCUBE:    return Shader::SAT_samplercube;
+    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2d_array;
+    case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
+    case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
+    case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
     // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
     case 1313:              return Shader::SAT_sampler1d;
     case 1314:              return Shader::SAT_sampler2d;
@@ -1577,9 +1651,12 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
   char version_arg[16];
   if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
       cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
-    snprintf(version_arg, 16, "version=%s", cg_glsl_version.c_str());
+
+    string version_arg("version=");
+    version_arg += cg_glsl_version;
+
     compiler_args[nargs++] = "-po";
-    compiler_args[nargs++] = version_arg;
+    compiler_args[nargs++] = version_arg.c_str();
   }
 
   compiler_args[nargs] = 0;
@@ -2017,10 +2094,10 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
   combined_program = cgCombinePrograms(programs.size(), &programs[0]);
 
   // Build a parameter map.
-  int n_mat = (int)_mat_spec.size();
-  int n_tex = (int)_tex_spec.size();
-  int n_var = (int)_var_spec.size();
-  int n_ptr = (int)_ptr_spec.size();
+  size_t n_mat = _mat_spec.size();
+  size_t n_tex = _tex_spec.size();
+  size_t n_var = _var_spec.size();
+  size_t n_ptr = _ptr_spec.size();
 
   map.resize(n_mat + n_tex + n_var + n_ptr);
 
@@ -2033,12 +2110,20 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     programs_by_type[cgGetProgramDomain(program)] = program;
   }
 
-  for (int i = 0; i < n_mat; ++i) {
+  for (size_t i = 0; i < n_mat; ++i) {
     const ShaderArgId &id = _mat_spec[i]._id;
     map[id._seqno] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
+
+    if (shader_cat.is_debug()) {
+      const char *resource = cgGetParameterResourceName(map[id._seqno]);
+      if (resource != NULL) {
+        shader_cat.debug() << "Uniform parameter " << id._name
+                           << " is bound to resource " << resource << "\n";
+      }
+    }
   }
 
-  for (int i = 0; i < n_tex; ++i) {
+  for (size_t i = 0; i < n_tex; ++i) {
     const ShaderArgId &id = _tex_spec[i]._id;
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
@@ -2052,7 +2137,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     map[id._seqno] = p;
   }
 
-  for (int i = 0; i < n_var; ++i) {
+  for (size_t i = 0; i < n_var; ++i) {
     const ShaderArgId &id = _var_spec[i]._id;
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
@@ -2073,9 +2158,17 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     map[id._seqno] = p;
   }
 
-  for (int i = 0; i < n_ptr; ++i) {
+  for (size_t i = 0; i < n_ptr; ++i) {
     const ShaderArgId &id = _ptr_spec[i]._id;
     map[id._seqno] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
+
+    if (shader_cat.is_debug()) {
+      const char *resource = cgGetParameterResourceName(map[id._seqno]);
+      if (resource != NULL) {
+        shader_cat.debug() << "Uniform ptr parameter " << id._name
+                           << " is bound to resource " << resource << "\n";
+      }
+    }
   }
 
   // Transfer ownership of the compiled shader.

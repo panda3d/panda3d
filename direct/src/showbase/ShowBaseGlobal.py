@@ -14,7 +14,10 @@ assert base
 directNotify.setDconfigLevels()
 
 def inspect(anObject):
-    from direct.tkpanels import Inspector
+    # Don't use a regular import, to prevent ModuleFinder from picking
+    # it up as a dependency when building a .p3d package.
+    import importlib
+    Inspector = importlib.import_module('direct.tkpanels.Inspector')
     return Inspector.inspect(anObject)
 
 import __builtin__

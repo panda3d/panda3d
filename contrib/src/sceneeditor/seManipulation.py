@@ -200,7 +200,7 @@ class DirectManipulationControl(DirectObject):
             # Send event to signal start of manipulation
             messenger.send('DIRECT_manipulateObjectStart')
             # Manipulate the real object with the constraint
-            # The constraint is passed as the name of the node 
+            # The constraint is passed as the name of the node
             self.spawnManipulateObjectTask()
 
     def spawnManipulateObjectTask(self):
@@ -314,7 +314,7 @@ class DirectManipulationControl(DirectObject):
             self.fWidgetTop = self.widgetCheck('top?')
             self.rotationCenter = getScreenXY(SEditor.widget)
             self.lastCrankAngle = getCrankAngle(self.rotationCenter)
-            
+
         # Rotate widget based on how far cursor has swung around origin
         newAngle = getCrankAngle(self.rotationCenter)
         deltaAngle = self.lastCrankAngle - newAngle
@@ -528,7 +528,7 @@ class ObjectHandles(NodePath,DirectObject):
         self.xDiscGroup = self.xHandles.find('**/x-disc-group')
         self.xDisc = self.xHandles.find('**/x-disc-visible')
         self.xDiscCollision = self.xHandles.find('**/x-disc')
-        
+
         self.yHandles = self.find('**/Y')
         self.yPostGroup = self.yHandles.find('**/y-post-group')
         self.yPostCollision = self.yHandles.find('**/y-post')
@@ -537,7 +537,7 @@ class ObjectHandles(NodePath,DirectObject):
         self.yDiscGroup = self.yHandles.find('**/y-disc-group')
         self.yDisc = self.yHandles.find('**/y-disc-visible')
         self.yDiscCollision = self.yHandles.find('**/y-disc')
-        
+
         self.zHandles = self.find('**/Z')
         self.zPostGroup = self.zHandles.find('**/z-post-group')
         self.zPostCollision = self.zHandles.find('**/z-post')
@@ -782,7 +782,7 @@ class ObjectHandles(NodePath,DirectObject):
         lines.moveTo(0,0,0)
         lines.drawTo(-1.5,0,0)
         lines.create()
-        
+
         # X ring
         self.xRing = self.xRingGroup.attachNewNode('x-ring-visible')
         lines = LineNodePath(self.xRing)
@@ -794,7 +794,7 @@ class ObjectHandles(NodePath,DirectObject):
                           math.cos(deg2Rad(ang)),
                           math.sin(deg2Rad(ang)))
         lines.create()
-        
+
         # Y post
         self.yPost = self.yPostGroup.attachNewNode('y-post-visible')
         lines = LineNodePath(self.yPost)
@@ -809,7 +809,7 @@ class ObjectHandles(NodePath,DirectObject):
         lines.moveTo(0,0,0)
         lines.drawTo(0,-1.5,0)
         lines.create()
-        
+
         # Y ring
         self.yRing = self.yRingGroup.attachNewNode('y-ring-visible')
         lines = LineNodePath(self.yRing)
@@ -836,7 +836,7 @@ class ObjectHandles(NodePath,DirectObject):
         lines.moveTo(0,0,0)
         lines.drawTo(0,0,-1.5)
         lines.create()
-        
+
         # Z ring
         self.zRing = self.zRingGroup.attachNewNode('z-ring-visible')
         lines = LineNodePath(self.zRing)
@@ -929,12 +929,12 @@ class ObjectHandles(NodePath,DirectObject):
 
         # Calc the xfrom from camera to the nodePath
         mCam2NodePath = SEditor.camera.getMat(nodePath)
-    
+
         # And determine where the viewpoint is relative to widget
         lineOrigin = VBase3(0)
         decomposeMatrix(mCam2NodePath, VBase3(0), VBase3(0), lineOrigin,
                         CSDefault)
-        
+
         # Next we find the vector from viewpoint to the widget through
         # the mouse's position on near plane.
         # This defines the intersection ray

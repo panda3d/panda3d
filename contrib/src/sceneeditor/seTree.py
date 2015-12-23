@@ -54,7 +54,7 @@ class TreeNode:
                         value = i,
                         indicatoron = 0,
                         command = self.popupMenuCommand)
-                    
+
     def destroy(self):
         for key in self.kidKeys:
             c = self.children[key]
@@ -257,7 +257,7 @@ class TreeNode:
         self.canvas.tag_bind(id, "<1>", self.select)
         self.canvas.tag_bind(id, "<Double-1>", self.flip)
         self.canvas.tag_bind(id, "<3>", self.popupMenu)
-        
+
     def drawtext(self, text=None):
         textx = self.x+20-1
         texty = self.y-1
@@ -410,7 +410,7 @@ class TreeItem:
 
     def OnSelect(self):
         """Called when item selected."""
-        
+
     def GetTextForEdit(self):
         """Called before editting the item."""
 

@@ -33,7 +33,7 @@ struct EXPCL_PANDABULLET BulletRayHit {
 PUBLISHED:
   INLINE static BulletRayHit empty();
 
-  const PandaNode *get_node() const;
+  PandaNode *get_node() const;
   LPoint3 get_hit_pos() const;
   LVector3 get_hit_normal() const;
   PN_stdfloat get_hit_fraction() const;

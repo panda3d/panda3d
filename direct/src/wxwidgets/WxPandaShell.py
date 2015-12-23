@@ -20,17 +20,17 @@ ID_LEFT_VIEW = 404
 ID_PERSP_VIEW = 405
 
 class WxPandaShell(WxAppShell):
-    """ Class for Panda3D LevelEditor """ 
+    """ Class for Panda3D LevelEditor """
     frameWidth = 800
     frameHeight = 600
     appversion      = '1.0'
     appname         = 'Panda3D Generic WX Frame'
     copyright       = ('Copyright 2010 Disney Online Studios.' +
                        '\nAll Rights Reserved.')
-    
+
     MENU_TEXTS = {
         ID_FOUR_VIEW : ("Four Views", None),
-        ID_TOP_VIEW : ("Top View", None),        
+        ID_TOP_VIEW : ("Top View", None),
         ID_FRONT_VIEW : ("Front View", None),
         ID_LEFT_VIEW : ("Left View", None),
         ID_PERSP_VIEW : ("Persp View", None),
@@ -63,7 +63,7 @@ class WxPandaShell(WxAppShell):
 
         menuItem = self.menuView.AppendRadioItem(ID_LEFT_VIEW, self.MENU_TEXTS[ID_LEFT_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=2:self.onViewChange(p0, p1), menuItem)
-        
+
         self.perspViewMenuItem = self.menuView.AppendRadioItem(ID_PERSP_VIEW, self.MENU_TEXTS[ID_PERSP_VIEW][0])
         self.Bind(wx.EVT_MENU, lambda p0=None, p1=3:self.onViewChange(p0, p1), self.perspViewMenuItem)
 
@@ -90,15 +90,15 @@ class WxPandaShell(WxAppShell):
         self.leftBarUpPane = wx.Panel(self.leftFrame)
         self.leftBarDownPane = wx.Panel(self.leftFrame)
         self.rightBarUpPane = wx.Panel(self.rightFrame)
-        self.rightBarDownPane = wx.Panel(self.rightFrame)        
+        self.rightBarDownPane = wx.Panel(self.rightFrame)
 
         self.leftFrame.SplitHorizontally(self.leftBarUpPane, self.leftBarDownPane)
         self.rightFrame.SplitHorizontally(self.rightBarUpPane, self.rightBarDownPane)
         self.mainFrame.SplitVertically(self.leftFrame, self.baseFrame, 200)
         self.baseFrame.SplitVertically(self.viewFrame, self.rightFrame, 600)
-        
+
         self.leftFrame.SetSashGravity(0.5)
-        self.rightFrame.SetSashGravity(0.5)        
+        self.rightFrame.SetSashGravity(0.5)
         self.baseFrame.SetSashGravity(1.0)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -178,7 +178,7 @@ class WxPandaShell(WxAppShell):
             base.direct.cameraControl.useMayaCamControls = 1
             base.direct.cameraControl.perspCollPlane = self.perspView.collPlane
             base.direct.cameraControl.perspCollPlane2 = self.perspView.collPlane2
-            
+
             for widget in base.direct.manipulationControl.widgetList:
                 widget.setBin('gui-popup', 0)
                 widget.setDepthTest(0)
@@ -196,7 +196,7 @@ class WxPandaShell(WxAppShell):
         else:
             base.direct=None
         #base.closeWindow(base.win)
-        base.win = base.winList[3]        
+        base.win = base.winList[3]
 
     def wxStep(self, task = None):
         """A step in the WX event loop. You can either call this yourself or use as task."""
@@ -212,7 +212,7 @@ class WxPandaShell(WxAppShell):
         self.oldLoop = wx.EventLoop.GetActive()
         wx.EventLoop.SetActive(self.evtLoop)
         taskMgr.add(self.wxStep, "evtLoopTask")
-                
+
     def onViewChange(self, evt, viewIdx):
         for i in range(4):
             if viewIdx >=0 and\
@@ -222,7 +222,7 @@ class WxPandaShell(WxAppShell):
                 base.winList[i].setActive(1)
 
         self.viewFrame.SetExpanded(viewIdx)
-    
+
     def getCurrentView(self):
         """Function for get the current Viewport"""
         if self.viewFrame._expanded == -1: #four view
@@ -235,7 +235,7 @@ class WxPandaShell(WxAppShell):
             self.currentView = self.leftView
         if self.viewFrame._expanded == 3: #perspect view
             self.currentView = self.perspView
-            
+
         return self.currentView
-        
+
 

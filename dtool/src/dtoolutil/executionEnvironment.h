@@ -44,8 +44,8 @@ PUBLISHED:
 
   static string expand_string(const string &str);
 
-  INLINE static int get_num_args();
-  INLINE static string get_arg(int n);
+  INLINE static size_t get_num_args();
+  INLINE static string get_arg(size_t n);
 
   INLINE static string get_binary_name();
   INLINE static string get_dtool_name();
@@ -62,8 +62,8 @@ private:
   void ns_shadow_environment_variable(const string &var, const string &value);
   void ns_clear_shadow(const string &var);
 
-  int ns_get_num_args() const;
-  string ns_get_arg(int n) const;
+  size_t ns_get_num_args() const;
+  string ns_get_arg(size_t n) const;
 
   string ns_get_binary_name() const;
   string ns_get_dtool_name() const;

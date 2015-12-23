@@ -49,9 +49,11 @@ public:
 PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
+  MAKE_PROPERTY(active, is_active, set_active);
 
   INLINE void set_scene(const NodePath &scene);
   INLINE const NodePath &get_scene() const;
+  MAKE_PROPERTY(scene, get_scene, set_scene);
 
   INLINE int get_num_display_regions() const;
   INLINE DisplayRegionBase *get_display_region(int n) const;
@@ -59,27 +61,35 @@ PUBLISHED:
 
   INLINE void set_camera_mask(DrawMask mask);
   INLINE DrawMask get_camera_mask() const;
+  MAKE_PROPERTY(camera_mask, get_camera_mask, set_camera_mask);
 
   INLINE void set_cull_center(const NodePath &cull_center);
   INLINE const NodePath &get_cull_center() const;
+  MAKE_PROPERTY(cull_center, get_cull_center, set_cull_center);
 
   INLINE void set_cull_bounds(BoundingVolume *cull_bounds);
   INLINE BoundingVolume *get_cull_bounds() const;
+  MAKE_PROPERTY(cull_bounds, get_cull_bounds, set_cull_bounds);
 
   INLINE void set_lod_center(const NodePath &lod_center);
   INLINE const NodePath &get_lod_center() const;
+  MAKE_PROPERTY(lod_center, get_lod_center, set_lod_center);
 
   INLINE void set_initial_state(const RenderState *state);
   INLINE CPT(RenderState) get_initial_state() const;
+  MAKE_PROPERTY(initial_state, get_initial_state, set_initial_state);
 
   INLINE void set_tag_state_key(const string &tag_state_key);
   INLINE const string &get_tag_state_key() const;
+  MAKE_PROPERTY(tag_state_key, get_tag_state_key, set_tag_state_key);
 
   INLINE void set_lod_scale(PN_stdfloat value);
   INLINE PN_stdfloat get_lod_scale() const;
+  MAKE_PROPERTY(lod_scale, get_lod_scale, set_lod_scale);
 
   void set_tag_state(const string &tag_state, const RenderState *state);
   void clear_tag_state(const string &tag_state);
+  void clear_tag_states();
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
 

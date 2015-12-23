@@ -22,18 +22,18 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
 
         if duration == None:
             duration = abs(toT - fromT)
-        
+
         # Generate unique name if necessary
         if (name == None):
             name = 'Mopath-%d' % MopathInterval.mopathNum
-            MopathInterval.mopathNum += 1        
+            MopathInterval.mopathNum += 1
 
         LerpInterval.LerpFunctionInterval.__init__(
             self, self.__doMopath, fromData = fromT, toData = toT,
             duration = duration, blendType = blendType,
             name = name)
-        
-        self.mopath = mopath 
+
+        self.mopath = mopath
         self.node = node
 
     def destroy(self):

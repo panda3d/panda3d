@@ -18,3 +18,13 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<ReferenceCountedVector<LMatrix3f> >;
+template class PointerToArrayBase<LMatrix3f>;
+template class PointerToArray<LMatrix3f>;
+template class ConstPointerToArray<LMatrix3f>;
+
+template class PointerToBase<ReferenceCountedVector<LMatrix3d> >;
+template class PointerToArrayBase<LMatrix3d>;
+template class PointerToArray<LMatrix3d>;
+template class ConstPointerToArray<LMatrix3d>;

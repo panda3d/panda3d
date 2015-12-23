@@ -19,7 +19,7 @@
 //  Description: Returns the number of buttons that this button
 //               mapping specifies.
 ////////////////////////////////////////////////////////////////////
-INLINE int ButtonMap::
+INLINE size_t ButtonMap::
 get_num_buttons() const {
   return _buttons.size();
 }
@@ -31,7 +31,7 @@ get_num_buttons() const {
 //               the nth button.
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle ButtonMap::
-get_raw_button(int i) const {
+get_raw_button(size_t i) const {
   return _buttons[i]->_raw;
 }
 
@@ -42,7 +42,7 @@ get_raw_button(int i) const {
 //               that the nth raw button is mapped to.
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle ButtonMap::
-get_mapped_button(int i) const {
+get_mapped_button(size_t i) const {
   return _buttons[i]->_mapped;
 }
 
@@ -54,7 +54,7 @@ get_mapped_button(int i) const {
 //               button is mapped to.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ButtonMap::
-get_mapped_button_label(int i) const {
+get_mapped_button_label(size_t i) const {
   return _buttons[i]->_label;
 }
 

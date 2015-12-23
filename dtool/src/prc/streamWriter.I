@@ -335,7 +335,7 @@ add_string(const string &str) {
   nassertv(str.length() <= (PN_uint16)0xffff);
 
   // Strings always are preceded by their length
-  add_uint16(str.length());
+  add_uint16((PN_uint16)str.length());
 
   // Add the string
   append_data(str);
@@ -350,7 +350,7 @@ add_string(const string &str) {
 INLINE void StreamWriter::
 add_string32(const string &str) {
   // Strings always are preceded by their length
-  add_uint32(str.length());
+  add_uint32((PN_uint32)str.length());
 
   // Add the string
   append_data(str);
@@ -395,7 +395,7 @@ add_fixed_string(const string &str, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Published
+//       Access: Public
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -406,7 +406,7 @@ append_data(const void *data, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Published
+//       Access: Public
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////

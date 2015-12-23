@@ -69,7 +69,7 @@ private:
   typedef pvector<GLuint> GLSLShaders;
   GLSLShaders _glsl_shaders;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
 
@@ -83,6 +83,7 @@ private:
   //typedef pvector<ParamContext> ParamContexts;
   //ParamContexts _params;
 
+  BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
   GLint _transform_table_index;
   GLint _slider_table_index;
@@ -112,7 +113,6 @@ private:
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
-  bool _has_divisor;
 
   void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
   void glsl_report_program_errors(GLuint program, bool fatal);
@@ -126,9 +126,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    ShaderContext::init_type();
     register_type(_type_handle, CLASSPREFIX_QUOTED "ShaderContext",
-                  TypedObject::get_class_type());
+                  ShaderContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

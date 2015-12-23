@@ -236,40 +236,6 @@ get_done_event() const {
   return _done_event;
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTask::set_python_object
-//       Access: Published
-//  Description: Specifies an arbitrary Python object that will be
-//               piggybacked on the task object.
-////////////////////////////////////////////////////////////////////
-INLINE void AsyncTask::
-set_python_object(PyObject *python_object) {
-  Py_XINCREF(python_object);
-  Py_XDECREF(_python_object);
-  _python_object = python_object;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTask::get_python_object
-//       Access: Published
-//  Description: Returns the Python object that was specified to
-//               set_python_object(), if any, or None if no object was
-//               specified.
-////////////////////////////////////////////////////////////////////
-INLINE PyObject *AsyncTask::
-get_python_object() const {
-  if (_python_object != (PyObject *)NULL) {
-    Py_XINCREF(_python_object);
-    return _python_object;
-  }
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_dt
 //       Access: Published

@@ -89,6 +89,8 @@ protected:
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 
@@ -119,6 +121,7 @@ private:
 
   bool point_is_inside(const LPoint2 &p, const Points &points) const;
   PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
+  void project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const;
 
   void setup_points(const LPoint3 *begin, const LPoint3 *end);
   INLINE LPoint2 to_2d(const LVecBase3 &point3d) const;

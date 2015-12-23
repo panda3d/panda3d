@@ -6,7 +6,7 @@ from direct.directnotify import DirectNotifyGlobal
 class ParticleEffect(NodePath):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
-    pid = 1 
+    pid = 1
 
     def __init__(self, name=None, particles=None):
         """__init__()"""
@@ -143,7 +143,7 @@ class ParticleEffect(NodePath):
     def getParticlesList(self):
         """getParticles()"""
         return self.particlesDict.values()
-    
+
     def getParticlesNamed(self, name):
         """getParticlesNamed(name)"""
         return self.particlesDict.get(name, None)
@@ -186,7 +186,7 @@ class ParticleEffect(NodePath):
         # Save all the particles to file
         num = 0
         for p in self.particlesDict.values():
-            target = 'p%d' % num 
+            target = 'p%d' % num
             num = num + 1
             f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
             p.printParams(f, target)
@@ -240,7 +240,7 @@ class ParticleEffect(NodePath):
         # Save all the particles to file
         num = 0
         for p in self.particlesDict.values():
-            target = 'p%d' % num 
+            target = 'p%d' % num
             num = num + 1
             f.write(i2+"if(mode==0):\n")
             f.write(i2+i1+target + ' = seParticles.Particles(\'%s\')\n' % p.getName())

@@ -23,7 +23,8 @@ INLINE InterrogateMakeSeq::
 InterrogateMakeSeq(InterrogateModuleDef *def) :
   InterrogateComponent(def)
 {
-  _class = 0;
+  _length_getter = 0;
+  _element_getter = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,52 +45,71 @@ InterrogateMakeSeq(const InterrogateMakeSeq &copy) {
 INLINE void InterrogateMakeSeq::
 operator = (const InterrogateMakeSeq &copy) {
   InterrogateComponent::operator = (copy);
-  _class = copy._class;
-  _seq_name = copy._seq_name;
-  _num_name = copy._num_name;
-  _element_name = copy._element_name;
+  _scoped_name = copy._scoped_name;
+  _comment = copy._comment;
+  _length_getter = copy._length_getter;
+  _element_getter = copy._element_getter;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::get_class
+//     Function: InterrogateMakeSeq::has_scoped_name
 //       Access: Public
-//  Description: Return the class that owns the make_seq.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TypeIndex InterrogateMakeSeq::
-get_class() const {
-  return _class;
+INLINE bool InterrogateMakeSeq::
+has_scoped_name() const {
+  return !_scoped_name.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::get_seq_name
+//     Function: InterrogateMakeSeq::get_scoped_name
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateMakeSeq::
-get_seq_name() const {
-  return _seq_name;
+get_scoped_name() const {
+  return _scoped_name;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::get_num_name
+//     Function: InterrogateMakeSeq::has_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateMakeSeq::
+has_comment() const {
+  return !_comment.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateMakeSeq::get_comment
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateMakeSeq::
-get_num_name() const {
-  return _num_name;
+get_comment() const {
+  return _comment;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::get_element_name
+//      Element: InterrogateMakeSeq::get_length_getter
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const string &InterrogateMakeSeq::
-get_element_name() const {
-  return _element_name;
+INLINE FunctionIndex InterrogateMakeSeq::
+get_length_getter() const {
+  return _length_getter;
 }
 
+////////////////////////////////////////////////////////////////////
+//      Element: InterrogateMakeSeq::get_element_getter
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FunctionIndex InterrogateMakeSeq::
+get_element_getter() const {
+  return _element_getter;
+}
 
 INLINE ostream &
 operator << (ostream &out, const InterrogateMakeSeq &make_seq) {

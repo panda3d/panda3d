@@ -550,6 +550,7 @@ INLINE void TextProperties::
 set_text_color(const LColor &text_color) {
   _text_color = text_color;
   _specified |= F_has_text_color;
+  _text_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -562,6 +563,7 @@ INLINE void TextProperties::
 clear_text_color() {
   _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _specified &= ~F_has_text_color;
+  _text_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -603,6 +605,7 @@ INLINE void TextProperties::
 set_shadow_color(const LColor &shadow_color) {
   _shadow_color = shadow_color;
   _specified |= F_has_shadow_color;
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -614,6 +617,7 @@ INLINE void TextProperties::
 clear_shadow_color() {
   _shadow_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _specified &= ~F_has_shadow_color;
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -711,6 +715,8 @@ INLINE void TextProperties::
 set_bin(const string &bin) {
   _bin = bin;
   _specified |= F_has_bin;
+  _text_state.clear();
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -725,6 +731,8 @@ INLINE void TextProperties::
 clear_bin() {
   _bin = string();
   _specified &= ~F_has_bin;
+  _text_state.clear();
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -768,6 +776,8 @@ INLINE int TextProperties::
 set_draw_order(int draw_order) {
   _draw_order = draw_order;
   _specified |= F_has_draw_order;
+  _text_state.clear();
+  _shadow_state.clear();
   return _draw_order + 3;
 }
 
@@ -780,6 +790,8 @@ INLINE void TextProperties::
 clear_draw_order() {
   _draw_order = 1;
   _specified &= ~F_has_draw_order;
+  _text_state.clear();
+  _shadow_state.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

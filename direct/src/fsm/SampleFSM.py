@@ -145,7 +145,7 @@ class ToonEyes(FSM.FSM):
 ## exitRed(self, 'Red', 'Green')
 ## enterGreen(self, 'Red', 'Green')
 ## ('Green',)
-## >>> 
+## >>>
 
 ####
 #### Example of using NewStyle:
@@ -175,7 +175,7 @@ class ToonEyes(FSM.FSM):
 ## exitRed(self, 'Red', 'Green')
 ## enterGreen(self, 'Red', 'Green')
 ## ('Green',)
-## >>> 
+## >>>
 
 ####
 #### Example of using ToonEyes:
@@ -193,4 +193,4 @@ class ToonEyes(FSM.FSM):
 ## swap in eyes surprised model
 ## ('Surprised',)
 ## >>> eyes.request('blink')
-## >>> 
+## >>>

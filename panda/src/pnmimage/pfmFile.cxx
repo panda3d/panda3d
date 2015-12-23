@@ -1440,6 +1440,32 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_1d_lut
+//       Access: Published
+//  Description: Assumes that lut is an X by 1, 1-component PfmFile
+//               whose X axis maps points to target points.  For each
+//               point in this pfm file, computes: p(u, v)[channel] =
+//               lut(p(u, v)[channel] * x_scale, 0)[0]
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+
+      PN_float32 v = get_channel(xi, yi, channel);
+      LPoint3f p;
+      if (!lut.calc_bilinear_point(p, v * x_scale, 0.5)) {
+        continue;
+      }
+      set_channel(xi, yi, channel, p[0]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::merge
 //       Access: Published
 //  Description: Wherever there is missing data in this PfmFile (that

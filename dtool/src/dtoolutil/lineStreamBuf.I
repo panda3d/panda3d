@@ -41,7 +41,7 @@ has_newline() const {
 //               into the memory buffer.
 ////////////////////////////////////////////////////////////////////
 INLINE void LineStreamBuf::
-write_chars(const char *start, int length) {
+write_chars(const char *start, size_t length) {
   if (length > 0) {
     _data += string(start, length);
   }

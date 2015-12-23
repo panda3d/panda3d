@@ -1,6 +1,5 @@
 
 from panda3d.core import *
-from string import lower
 
 class DirectLight(NodePath):
     def __init__(self, light, parent):
@@ -8,7 +7,7 @@ class DirectLight(NodePath):
         NodePath.__init__(self)
         # Record light and name
         self.light = light
-        
+
         # Attach node to self
         self.assign(parent.attachNewNode(self.light))
 
@@ -19,7 +18,10 @@ class DirectLight(NodePath):
         return self.light
 
 class DirectLights(NodePath):
-    def __init__(self, parent = render):
+    def __init__(self, parent = None):
+        if parent is None:
+            parent = base.render
+
         # Initialize the superclass
         NodePath.__init__(self)
         # Create a node for the lights

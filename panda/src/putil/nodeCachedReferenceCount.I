@@ -134,7 +134,7 @@ get_node_ref_count() const {
 #ifdef _DEBUG
   test_ref_count_integrity();
 #endif
-  return AtomicAdjust::get(_node_ref_count);
+  return (int)AtomicAdjust::get(_node_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////

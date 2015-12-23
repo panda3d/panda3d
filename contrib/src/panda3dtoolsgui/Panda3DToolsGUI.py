@@ -62,7 +62,7 @@ UNIT_TYPES = ["mm",
               "cm",
               "m",
               "in",
-              "ft", 
+              "ft",
               "yd"]
 
 
@@ -229,7 +229,7 @@ class OutputDialogPaths(wx.Dialog):
 
         self.Bind(wx.EVT_BUTTON, self.RunPaths, self.paths_done)
         # end wxGlade
-        
+
     def setCallback(self, callback):
         self.callback = callback
 
@@ -286,7 +286,7 @@ class main(wx.Frame):
         self._setupUI()
         #Show the welcome message and the initial panda path
         #NOTE this shoudl eventually check for an install of Panda somewhere
-        
+
         self.ShowInitialEnv()
 
     def _setupUI(self):
@@ -379,7 +379,7 @@ class main(wx.Frame):
         self.pandaPathTxt = wx.TextCtrl(self.console_panel, -1, "", style=wx.TE_READONLY)
         self.loadPandaPathBtn = wx.Button(self.console_panel, ID_CHOOSEPANDA, "Choose..")
         self.ignoreModDates = wx.CheckBox(self.console_panel, -1, "Override export changed maya scene files")
-        
+
 
         # Maya2Egg Tool
         self.maya2egg_panel = wx.Panel(self.tool_options_panel, -1, style=wx.NO_BORDER|wx.TAB_TRAVERSAL)
@@ -694,7 +694,7 @@ class main(wx.Frame):
         self.m2e_exportDestBtn.SetMinSize((-1, 23))
         self.m2e_copyTexPathBtn.SetMinSize((-1, 23))
         self.m2e_pathReplaceBtn.SetMinSize((-1, 23))
-        
+
         self.m2e_startFrameSpin.SetMinSize((-1, 21))
         self.m2e_endFrameSpin.SetMinSize((-1, 21))
         self.m2e_frameRateInSpin.SetMinSize((-1, 21))
@@ -745,7 +745,7 @@ class main(wx.Frame):
         self.e2b_eggFileTxt.SetMinSize((230, 21))
         self.e2b_exportDestTxt.SetMinSize((230, 21))
         self.egg2bam_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
-        
+
         self.e2b_eggFileBtn.SetMinSize((-1, 23))
         self.e2b_exportDestBtn.SetMinSize((-1, 23))
         self.e2b_bamBatchOutputBtn.SetMinSize((-1, 23))
@@ -771,7 +771,7 @@ class main(wx.Frame):
         self.rename_exportDirTxt.SetMinSize((230, 21))
         self.rename_exportFileTxt.SetMinSize((230, 21))
         self.rename_stripPrefixTxt.SetMinSize((260, 21))
-        
+
         self.rename_addEggBtn.SetMinSize((-1, 23))
         self.rename_addFromBatchBtn.SetMinSize((-1, 23))
         self.rename_removeEggBtn.SetMinSize((-1, 23))
@@ -791,7 +791,7 @@ class main(wx.Frame):
         self.optchar_dropJointsTxt.SetMinSize((245, 21))
         self.optchar_exposeJointsTxt.SetMinSize((245, 21))
         self.optchar_flagGeometryTxt.SetMinSize((245, 21))
-        
+
         self.optchar_addEggBtn.SetMinSize((-1, 23))
         self.optchar_addFromBatchBtn.SetMinSize((-1, 23))
         self.optchar_removeEggBtn.SetMinSize((-1, 23))
@@ -1394,7 +1394,7 @@ class main(wx.Frame):
 
     # Simple Export Panel Functions
     ################################
-        
+
     def OnSimpleExport(self,e):
         #This is essentially the same behavior as a batch export
         #build up the dictionary that gets passed to Run Export
@@ -1441,7 +1441,7 @@ class main(wx.Frame):
 
     # Maya2Egg Panel Functions
     ###########################
-    
+
     def OnMaya2EggMayaFile(self, event):
         #choose input maya scene for maya2egg
         filename = ''
@@ -1458,7 +1458,7 @@ class main(wx.Frame):
             self.m2e_mayaFileTxt.SetValue(os.path.join(self.srcProjectFolder + os.sep , filename)) #this is for a text control
         dlg.Destroy() #otherwise just kill the file dialog
         self.statusBar.SetStatusText("Current Scene File is: " + self.srcProjectFolder + os.sep + filename)
-    
+
     def OnMaya2EggExportDest(self, event):
         #choose output egg for maya2egg
         filename = ''
@@ -1501,7 +1501,7 @@ class main(wx.Frame):
             self.m2e_copyTexPathTxt.SetValue(dlg.GetPath())
         dlg.Destroy() #otherwise just kill the file dialog
         #self.statusBar.SetStatusText("Current Egg File is: " + dirname + '\\' + filename)
-        
+
     def OnMaya2EggPathReplace(self,event):
         batchList = self.GetSelectedBatchList()
         for batchItem in batchList:
@@ -1533,7 +1533,7 @@ class main(wx.Frame):
         dlg = wx.FileDialog(self, "Choose an Egg file to load", dirname, "", "*.bam", wx.SAVE)
         if dlg.ShowModal() == wx.ID_OK: #if the user clicked ok then we grabbed a file so load it
             self.filename = dlg.GetFilename()
-            dirname = dlg.GetDirectory()            
+            dirname = dlg.GetDirectory()
             self.e2b_exportDestTxt.SetValue(os.path.join(dirname + os.sep , self.filename)) #this is for a text control duh
         dlg.Destroy() #otherwise just kill the file dialog
 
@@ -1545,7 +1545,7 @@ class main(wx.Frame):
         else:
             self.e2b_eggFileTxt.Disable()
             self.e2b_eggFileBtn.Disable()
-    
+
     def OnEgg2BamBatchOutput(self, event):
         for eggInfo in self.GetOutputFromBatch():
             batchItemInfo = {}
@@ -1622,7 +1622,7 @@ class main(wx.Frame):
             self.rename_eggFilesTree.AppendItem(self.rename_eggFilesRoot, str(index) + ' ' + str(treeitem))
         self.rename_eggFilesTree.ExpandAll()
         self.OnRenameInPlace(None)
-        
+
     def OnRenameInPlace(self, event):
         #check if we want to use a custom egg file or not for egg-rename panel
         if (self.rename_exportInPlaceChk.GetValue()):
@@ -1671,7 +1671,7 @@ class main(wx.Frame):
         dlg.Destroy()
 
 
-            
+
     # Egg-Optchar Panel Functions
     ##############################
 
@@ -1692,7 +1692,7 @@ class main(wx.Frame):
         dlg.Destroy() #otherwise just kill the file dialog
         self.statusBar.SetStatusText("The input egg File is: " + dirname + os.sep + filename)
         self.OnOptcharInPlace(None)
-        
+
     def OnOptcharAddFromBatch(self, event):
         for eggInfo in self.GetOutputFromBatch():
             self.optchar_eggList.append(eggInfo)
@@ -1710,7 +1710,7 @@ class main(wx.Frame):
             self.optchar_eggFilesTree.Delete(item)
             self.UpdateEggOptcharDisplay()
         self.OnOptcharInPlace(None)
-            
+
     def OnOptcharRemoveAllEggs(self, event):
         #remove all input egg files from eggs list in egg-optchar panel
         self.optchar_eggFilesTree.DeleteAllItems()
@@ -1768,7 +1768,7 @@ class main(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK: #if the user clicked ok then we grabbed a file so load it
             self.optchar_exportDirTxt.SetValue(dlg.GetPath())
         dlg.Destroy()
-      
+
 
     # Egg-Palettize Panel Functions
     ################################
@@ -1789,14 +1789,14 @@ class main(wx.Frame):
 
         dlg.Destroy() #otherwise just kill the file dialog
         self.OnPalettizeInPlace(None)
-        
+
     def OnPalettizeAddFromBatch(self, event):
         for eggInfo in self.GetOutputFromBatch():
             self.palettize_eggList.append(eggInfo)
             self.palettize_eggFilesTree.AppendItem(self.palettize_eggFilesRoot, str(len(self.palettize_eggList)) + ' ' + eggInfo)
             self.palettize_eggFilesTree.ExpandAll()
         self.OnPalettizeInPlace(None)
-        
+
     def OnPalettizeRemoveEgg(self,e):
         #remove selected input egg file from multiple eggs panel in egg-palettize panel
         item = self.palettize_eggFilesTree.GetSelection()
@@ -1872,7 +1872,7 @@ class main(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK: #if the user clicked ok then we grabbed a file so load it
             self.palettize_exportTexTxt.SetValue(dlg.GetPath())
         dlg.Destroy()
-        
+
     def OnPalettizeLoadTxa(self, event):
         dirname = ''
         dlg = wx.FileDialog(self, "Choose a .txa file to use", dirname, "", "*.txa", wx.OPEN)
@@ -1954,7 +1954,7 @@ class main(wx.Frame):
 
     # Batch Related Functions
     ##########################
-    
+
     def GetSelectedBatchList(self):
         batchList = []
         selectedItems = self.batchTree.GetSelections()
@@ -1963,7 +1963,7 @@ class main(wx.Frame):
             batchList.append(self.batchList[selectedItemIndex])
         if not len(batchList):
             batchList = self.batchList
-            
+
         return batchList
 
     def GetOutputFromBatch(self, index=-1):
@@ -2226,7 +2226,7 @@ class main(wx.Frame):
         return args
 
     def BuildEgg2BamArgs(self):
-        #Build up all the command line arguments present in the egg2bam panel 
+        #Build up all the command line arguments present in the egg2bam panel
         args = {}
 
         if (self.e2b_flattenChk.GetValue()):
@@ -2271,7 +2271,7 @@ class main(wx.Frame):
         args['dart'] = self.optchar_dartChoice.GetStringSelection()
 
         return args
-        
+
     def BuildEggPalettizeArgs(self):
         args = {}
 
@@ -2355,7 +2355,7 @@ class main(wx.Frame):
 
     def UpdateBatchDisplay(self):
         #update the display of the batch list
-        
+
         #For now just re calculate the entire list order
         self.batchTree.DeleteAllItems()
         self.treeRoot = self.batchTree.AddRoot('Batch Files')
@@ -2372,21 +2372,21 @@ class main(wx.Frame):
         if self.batchList != []:
             self.batchList = []
         self.treeRoot = self.batchTree.AddRoot('Batch Files') #rather than loop through it re-add the root
-        
+
     def OnClearOutput(self, event):
         #clear the console output content
         self.consoleOutputTxt.Clear()
-        
+
     def OnExit(self, e):
         #exit the GUI
         self.Close(True)
-        
+
     def OnLoadPview(self, event):
         #load pview
         path = self.pandaPathTxt.GetValue() + os.sep + 'bin' + os.sep
         self.outpview = OutputDialogpview(self)
         self.outpview.Show()
-        
+
     def OnSortBatch(self, event):
         maya2eggCommands = []
         egg2bamCommands = []
@@ -2435,9 +2435,9 @@ class main(wx.Frame):
             if batchItem['finput'].count(inPrefix):
                 pass
 
-        
+
     def OnSaveBatch(self,event):
-        #save current batch list       
+        #save current batch list
         newdoc = Document()
         top_element = newdoc.createElement('batch')
         newdoc.appendChild(top_element)
@@ -2795,7 +2795,7 @@ class main(wx.Frame):
                 self.optchar_flagGeometryChk.SetValue(batchItem['args'].has_key('flag'))
                 self.optchar_flagGeometryTxt.SetValue('' if not batchItem['args'].has_key('flag') else batchItem['args']['flag'])
                 self.optchar_dartChoice.SetStringSelection(batchItem['args']['dart'])
-                
+
             elif (batchItem['cmd'].count('egg-palettize')):
                 self.toolComboBox.SetStringSelection('egg-palettize')
                 self.OnTool(None)
@@ -2891,7 +2891,7 @@ class main(wx.Frame):
         top_element.appendChild(texitem)
         top_element.appendChild(overitem)
         top_element.appendChild(attributeitem)
-        
+
         pandadir = newdoc.createTextNode(str(self.pandaPathTxt.GetValue()))
         mayaver = newdoc.createTextNode(str(self.m2e_mayaVerComboBox.GetSelection()))
         pandadirElem = newdoc.createElement('pandadir')
@@ -2900,7 +2900,7 @@ class main(wx.Frame):
         mayaverElem.appendChild(mayaver)
         envitem.appendChild(pandadirElem)
         envitem.appendChild(mayaverElem)
-        
+
         inunits = newdoc.createTextNode(str(self.m2e_mayaUnitsComboBox.GetValue()))
         outunits = newdoc.createTextNode(str(self.m2e_pandaUnitsComboBox.GetValue()))
         bface = newdoc.createTextNode(str(int(self.m2e_backfaceChk.GetValue())))
@@ -2909,7 +2909,7 @@ class main(wx.Frame):
         subsetsval = newdoc.createTextNode(str(self.m2e_subsetsTxt.GetValue()))
         excludes = newdoc.createTextNode(str(int(self.m2e_excludesChk.GetValue())))
         excludesval = newdoc.createTextNode(str(self.m2e_excludesTxt.GetValue()))
-        
+
         inunitsElem = newdoc.createElement('inunits')
         outunitsElem = newdoc.createElement('outunits')
         bfaceElem = newdoc.createElement('bface')
@@ -2918,7 +2918,7 @@ class main(wx.Frame):
         subnamesElem = newdoc.createElement('subnames')
         excludesElem = newdoc.createElement('excludes')
         exnamesElem = newdoc.createElement('excludesval')
-        
+
         inunitsElem.appendChild(inunits)
         outunitsElem.appendChild(outunits)
         bfaceElem.appendChild(bface)
@@ -2927,7 +2927,7 @@ class main(wx.Frame):
         subnamesElem.appendChild(subsetsval)
         excludesElem.appendChild(excludes)
         exnamesElem.appendChild(exnamesElem)
-        
+
         genitem.appendChild(inunitsElem)
         genitem.appendChild(outunitsElem)
         genitem.appendChild(bfaceElem)
@@ -2937,7 +2937,7 @@ class main(wx.Frame):
         genitem.appendChild(excludesElem)
         genitem.appendChild(exnamesElem)
 
-        
+
         modeloptsElem = newdoc.createElement('modelopts')
         cnElem = newdoc.createElement('cn')
         charnameElem = newdoc.createElement('charname')
@@ -2960,7 +2960,7 @@ class main(wx.Frame):
         framerangeElem.appendChild(frivalElem)
         framerangeElem.appendChild(froElem)
         framerangeElem.appendChild(frovalElem)
-        
+
         modelopts = newdoc.createTextNode(str(self.m2e_animOptChoice.GetSelection()))
         cn = newdoc.createTextNode(str(int(self.m2e_charNameChk.GetValue())))
         charname = newdoc.createTextNode(str(self.m2e_charNameTxt.GetValue()))
@@ -2968,7 +2968,7 @@ class main(wx.Frame):
         modeloptsElem.appendChild(modelopts)
         cnElem.appendChild(cn)
         charnameElem.appendChild(charname)
-        
+
         sf = newdoc.createTextNode(str(int(self.m2e_startFrameChk.GetValue())))
         sfval = newdoc.createTextNode(str(self.m2e_startFrameSpin.GetValue()))
         ef = newdoc.createTextNode(str(int(self.m2e_endFrameChk.GetValue())))
@@ -2977,7 +2977,7 @@ class main(wx.Frame):
         frival = newdoc.createTextNode(str(self.m2e_frameRateInSpin.GetValue()))
         fro = newdoc.createTextNode(str(int(self.m2e_frameRateOutChk.GetValue())))
         froval = newdoc.createTextNode(str(self.m2e_frameRateOutSpin.GetValue()))
-        
+
         sfElem.appendChild(sf)
         sfvalElem.appendChild(sfval)
         efElem.appendChild(ef)
@@ -2986,30 +2986,30 @@ class main(wx.Frame):
         frivalElem.appendChild(frival)
         froElem.appendChild(fro)
         frovalElem.appendChild(froval)
-        
+
         subroots = newdoc.createTextNode(str(int(self.m2e_subrootsChk.GetValue())))
         subrnames = newdoc.createTextNode(str(self.m2e_subrootsTxt.GetValue()))
         subrootsElem.appendChild(subroots)
         subrnamesElem.appendChild(subrnames)
-        
+
         animitem.appendChild(modeloptsElem)
         animitem.appendChild(cnElem)
         animitem.appendChild(charnameElem)
         animitem.appendChild(framerangeElem)
         animitem.appendChild(subrootsElem)
         animitem.appendChild(subrnamesElem)
-        
+
         legacy_shaderElem = newdoc.createElement('legacy-shader')
         copytexElem = newdoc.createElement('copytex')
         destpathElem = newdoc.createElement('path')
         legacy_shader = newdoc.createTextNode(str(int(self.m2e_legacyShaderChk.GetValue())))
         copytex = newdoc.createTextNode(str(int(self.m2e_copyTexChk.GetValue())))
         destpath = newdoc.createTextNode(str(self.m2e_copyTexPathTxt.GetValue()))
-        
+
         legacy_shaderElem.appendChild(legacy_shader)
         copytexElem.appendChild(copytex)
         destpathElem.appendChild(destpath)
-        
+
         texitem.appendChild(legacy_shaderElem)
         texitem.appendChild(copytexElem)
         texitem.appendChild(destpathElem)
@@ -3033,7 +3033,7 @@ class main(wx.Frame):
         AElem = newdoc.createElement('A')
         marginElem = newdoc.createElement('margin')
         coverageElem = newdoc.createElement('coverage')
-        
+
         imagetypeElem.appendChild(imagetype)
         powertwoElem.appendChild(powertwo)
         RElem.appendChild(R)
@@ -3042,7 +3042,7 @@ class main(wx.Frame):
         AElem.appendChild(A)
         marginElem.appendChild(margin)
         coverageElem.appendChild(coverage)
-        
+
         attributeitem.appendChild(imagetypeElem)
         attributeitem.appendChild(powertwoElem)
         attributeitem.appendChild(RElem)
@@ -3051,7 +3051,7 @@ class main(wx.Frame):
         attributeitem.appendChild(AElem)
         attributeitem.appendChild(marginElem)
         attributeitem.appendChild(coverageElem)
-        
+
         filename = ''
         dirname = ''
         dlg = wx.FileDialog(self, "Choose a location and filename", dirname, "", "*.xml", wx.SAVE)
@@ -3065,7 +3065,7 @@ class main(wx.Frame):
             for line in out:
                 f.writelines(line)
             f.close()
-            
+
     def OnLoadPrefs(self, event): # wxGlade: main.<event_handler>
         #load preferences
         dirname = ''
@@ -3083,14 +3083,14 @@ class main(wx.Frame):
         #parse the file of preferences
         prefsDict = {}
         for list in doc.getElementsByTagName('preferences'):
-            
+
             envlist = list.getElementsByTagName('environment')
             genlist = list.getElementsByTagName('genoptions')
             animlist = list.getElementsByTagName('animoptions')
             texlist = list.getElementsByTagName('textureoptions')
             overlist = list.getElementsByTagName('overridemod')
             attributelist = list.getElementsByTagName('attribute')
-            
+
             for elem in envlist:
                 for nodes in elem.childNodes:
                     for val in nodes.childNodes:
@@ -3112,7 +3112,7 @@ class main(wx.Frame):
             for elem in animlist:
                 for elem2 in elem.childNodes:
                     for elem3 in elem2.childNodes:
-                        data = elem3                       
+                        data = elem3
                         parent =  str(elem3.parentNode.nodeName)
                         if parent == 'framerange':
                             list = data.childNodes
@@ -3134,15 +3134,15 @@ class main(wx.Frame):
                     for val in nodes.childNodes:
                         key = val.parentNode.nodeName
                         data =  str(val.data)
-                        prefsDict[str(key)] = data.strip()  
-                        
+                        prefsDict[str(key)] = data.strip()
+
         return prefsDict
-    
+
     def updateOptions(self,prefs):
         #lots of type conversions since I think XML only stores strings
         #I'm not sure I have to cast the ints to bools
-        #but I don't want to chance it with wxPython 
-        #other than that all we're doing here is 
+        #but I don't want to chance it with wxPython
+        #other than that all we're doing here is
         #setting all the options to the saved ones in the dictionary
         self.pandaPathTxt.SetValue(prefs['pandadir'])
         self.m2e_mayaVerComboBox.SetSelection(int(prefs['mayaver']))
@@ -3180,7 +3180,7 @@ class main(wx.Frame):
         self.palettize_marginTxt.SetValue(int(prefs['margin']))
         self.palettize_coverageTxt.SetValue(prefs['coverage'])
 
-        
+
 if __name__ == "__main__":
     app = wx.App(0)
     wx.InitAllImageHandlers()

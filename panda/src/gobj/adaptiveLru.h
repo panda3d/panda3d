@@ -105,7 +105,7 @@ private:
   size_t _max_size;
 
   unsigned int _current_frame_identifier;
-  double _weight;
+  PN_stdfloat _weight;
   int _max_updates_per_frame;
 
   // This array of linked lists keeps all of the active pages, grouped

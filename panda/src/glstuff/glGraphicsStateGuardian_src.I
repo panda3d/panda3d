@@ -240,6 +240,71 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 #endif  // OPENGLES
 }
 
+#ifndef OPENGLES_1
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_vertex_attrib_array(GLuint index) {
+  if (!_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glEnableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.set_bit(index);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+disable_vertex_attrib_array(GLuint index) {
+  if (_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glDisableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.clear_bit(index);
+
+    if (_vertex_attrib_divisors[index] != 0) {
+      _glVertexAttribDivisor(index, 0);
+      _vertex_attrib_divisors[index] = 0;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_vertex_attrib_divisor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
+  if (_supports_vertex_attrib_divisor &&
+      _vertex_attrib_divisors[index] != divisor) {
+    _glVertexAttribDivisor(index, divisor);
+    _vertex_attrib_divisors[index] = divisor;
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_active_texture_stage
+//       Access: Protected
+//  Description: Calls glActiveTexture.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_active_texture_stage(int i) {
+  if (i != _active_texture_stage) {
+#ifdef OPENGLES_2
+    glActiveTexture(GL_TEXTURE0 + i);
+#else
+    _glActiveTexture(GL_TEXTURE0 + i);
+#endif
+    _active_texture_stage = i;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_multisample_antialias
 //       Access: Protected
@@ -624,10 +689,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 set_color_write_mask(int mask) {
   if (gl_color_mask && _active_color_write_mask != mask) {
     _active_color_write_mask = mask;
-    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+    glColorMask((mask & ColorWriteAttrib::C_red) != 0,
+                (mask & ColorWriteAttrib::C_green) != 0,
+                (mask & ColorWriteAttrib::C_blue) != 0,
+                (mask & ColorWriteAttrib::C_alpha) != 0);
   }
 }
 

@@ -5,7 +5,7 @@ from direct.directnotify import DirectNotifyGlobal
 from MsgTypesCMU import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
-from pandac.PandaModules import UniqueIdAllocator
+from panda3d.core import UniqueIdAllocator
 import types
 
 class ClientRepository(ClientRepositoryBase):
@@ -23,7 +23,7 @@ class ClientRepository(ClientRepositoryBase):
     GameGlobalsId = 0
 
     doNotDeallocateChannel = True
-    
+
     def __init__(self, dcFileNames = None, dcSuffix = '', connectMethod = None,
                  threadedNet = None):
         ClientRepositoryBase.__init__(self, dcFileNames = dcFileNames, dcSuffix = dcSuffix, connectMethod = connectMethod, threadedNet = threadedNet)
@@ -168,7 +168,7 @@ class ClientRepository(ClientRepositoryBase):
         on the network or previously passed through
         createDistributedObject.)  In either case, the new
         DistributedObject is returned from this method.
-        
+
         This method will issue the appropriate network commands to
         make this object appear on all of the other clients.
 
@@ -195,7 +195,7 @@ class ClientRepository(ClientRepositoryBase):
             doId = self.allocateDoId()
         elif reserveDoId:
             self.reserveDoId(doId)
-            
+
         dclass = self.dclassesByName.get(className)
         if not dclass:
             self.notify.error("Unknown distributed class: %s" % (distObj.__class__))
@@ -288,13 +288,13 @@ class ClientRepository(ClientRepositoryBase):
     def isLocalId(self, doId):
         """ Returns true if this doId is one that we're the owner of,
         false otherwise. """
-        
+
         return ((doId >= self.doIdBase) and (doId < self.doIdLast))
 
     def haveCreateAuthority(self):
         """ Returns true if this client has been assigned a range of
         doId's it may use to create objects, false otherwise. """
-        
+
         return (self.doIdLast > self.doIdBase)
 
     def getAvatarIdFromSender(self):
@@ -418,7 +418,7 @@ class ClientRepository(ClientRepositoryBase):
         # Reformat the packed datagram to change the message type and
         # add the target id.
         dgi.getUint16()
-        
+
         dg = PyDatagram()
         dg.addUint16(CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU)
         dg.addUint32(channelId & 0xffffffff)

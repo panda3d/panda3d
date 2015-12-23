@@ -78,8 +78,8 @@ TransformBlendTable::
 //               indicated value.
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
-set_blend(int n, const TransformBlend &blend) {
-  nassertv(n >= 0 && n < (int)_blends.size());
+set_blend(size_t n, const TransformBlend &blend) {
+  nassertv(n < _blends.size());
   _blends[n] = blend;
 }
 
@@ -89,8 +89,8 @@ set_blend(int n, const TransformBlend &blend) {
 //  Description: Removes the blend at the nth position.
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
-remove_blend(int n) {
-  nassertv(n >= 0 && n < (int)_blends.size());
+remove_blend(size_t n) {
+  nassertv(n < _blends.size());
   _blends.erase(_blends.begin() + n);
 }
 
@@ -101,7 +101,7 @@ remove_blend(int n) {
 //               index number.  If there is already an identical blend
 //               in the table, simply returns that number instead.
 ////////////////////////////////////////////////////////////////////
-int TransformBlendTable::
+size_t TransformBlendTable::
 add_blend(const TransformBlend &blend) {
   consider_rebuild_index();
 
@@ -113,7 +113,7 @@ add_blend(const TransformBlend &blend) {
   }
 
   bool needs_realloc = (_blends.size() >= _blends.capacity());
-  int new_position = (int)_blends.size();
+  size_t new_position = _blends.size();
   _blends.push_back(blend);
 
   if (needs_realloc) {
@@ -127,7 +127,7 @@ add_blend(const TransformBlend &blend) {
     const TransformBlend &added_blend = _blends[new_position];
     _blend_index[&added_blend] = new_position;
     _max_simultaneous_transforms = max(_max_simultaneous_transforms,
-                                       blend.get_num_transforms());
+                                       (int)blend.get_num_transforms());
 
     // We can't compute this one as we go, so set it to a special
     // value to indicate it needs to be recomputed.
@@ -144,7 +144,7 @@ add_blend(const TransformBlend &blend) {
 ////////////////////////////////////////////////////////////////////
 void TransformBlendTable::
 write(ostream &out, int indent_level) const {
-  for (int i = 0; i < (int)_blends.size(); i++) {
+  for (size_t i = 0; i < _blends.size(); ++i) {
     indent(out, indent_level)
       << i << ". " << _blends[i] << "\n";
   }
@@ -179,14 +179,14 @@ rebuild_index() {
 
   pset<const VertexTransform *> transforms;
 
-  for (int i = 0; i < (int)_blends.size(); ++i) {
+  for (size_t i = 0; i < _blends.size(); ++i) {
     const TransformBlend &blend = _blends[i];
     _blend_index[&blend] = i;
 
-    for (int ti = 0; ti < blend.get_num_transforms(); ++ti) {
+    for (size_t ti = 0; ti < blend.get_num_transforms(); ++ti) {
       transforms.insert(blend.get_transform(ti));
     }
-    _max_simultaneous_transforms = max(_max_simultaneous_transforms,
+    _max_simultaneous_transforms = max((size_t)_max_simultaneous_transforms,
                                        blend.get_num_transforms());
   }
 

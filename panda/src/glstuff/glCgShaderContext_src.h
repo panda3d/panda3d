@@ -21,8 +21,6 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 
-#include <Cg/cg.h>
-
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
@@ -70,6 +68,7 @@ private:
   CGprogram _cg_program;
   GLuint _glsl_program;
 
+  pvector<GLint> _attributes;
   GLint _color_attrib_index;
   CGparameter _transform_table_param;
   CGparameter _slider_table_param;
@@ -78,14 +77,12 @@ private:
 
   pvector<CGparameter> _cg_parameter_map;
 
-  CPT(RenderState) _state_rs;
+  WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _projection_transform;
   GLint _frame_number;
 
   CLP(GraphicsStateGuardian) *_glgsg;
-
-  bool _has_divisor;
 
   void release_resources();
 
@@ -94,9 +91,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    ShaderContext::init_type();
     register_type(_type_handle, CLASSPREFIX_QUOTED "CgShaderContext",
-                  TypedObject::get_class_type());
+                  ShaderContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -35,7 +35,7 @@ class DirectNodePath(NodePath):
         self.mCoa2Dnp = Mat4(Mat4.identMat())
         if SEditor.coaMode == COA_CENTER:
             self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
-            
+
         # Transform from nodePath to widget
         self.tDnp2Widget = TransformState.makeIdentity()
 
@@ -72,11 +72,11 @@ class SelectedNodePaths(DirectObject):
         if not nodePath:
             print 'Nothing selected!!'
             return None
-        
+
         # Reset selected objects and highlight if multiSelect is false
         if not fMultiSelect:
             self.deselectAll()
-        
+
         # Get this pointer
         id = nodePath.id()
         # First see if its already in the selected dictionary
@@ -199,7 +199,7 @@ class SelectedNodePaths(DirectObject):
         if selected:
             selected.remove()
         __builtins__["last"] = self.last = None
-        
+
     def removeAll(self):
         # Remove all selected nodePaths from the Scene Graph
         self.forEachSelectedNodePathDo(NodePath.remove)
@@ -258,7 +258,7 @@ class DirectBoundingBox:
         # Restore transform
         self.nodePath.setMat(tMat)
         del tMat
-        
+
     def computeBounds(self):
         self.bounds = self.getBounds()
         if self.bounds.isEmpty() or self.bounds.isInfinite():
@@ -269,7 +269,7 @@ class DirectBoundingBox:
             self.radius = self.bounds.getRadius()
         self.min = Point3(self.center - Point3(self.radius))
         self.max = Point3(self.center + Point3(self.radius))
-        
+
     def createBBoxLines(self):
         # Create a line segments object for the bbox
         lines = LineNodePath(hidden)
@@ -283,7 +283,7 @@ class DirectBoundingBox:
         maxX = self.max[0]
         maxY = self.max[1]
         maxZ = self.max[2]
-        
+
         # Bottom face
         lines.moveTo( minX, minY, minZ )
         lines.drawTo( maxX, minY, minZ )
@@ -308,22 +308,22 @@ class DirectBoundingBox:
 
         # Create and return bbox lines
         lines.create()
-        
+
         # Make sure bbox is never lit or drawn in wireframe
         useDirectRenderStyle(lines)
-        
+
         return lines
 
     def updateBBoxLines(self):
         ls = self.lines.lineSegs
-        
+
         minX = self.min[0]
         minY = self.min[1]
         minZ = self.min[2]
         maxX = self.max[0]
         maxY = self.max[1]
         maxZ = self.max[2]
-        
+
         # Bottom face
         ls.setVertex( 0, minX, minY, minZ )
         ls.setVertex( 1, maxX, minY, minZ )
@@ -359,7 +359,7 @@ class DirectBoundingBox:
 
     def hide(self):
         self.lines.reparentTo(hidden)
-        
+
     def getCenter(self):
         return self.center
 
@@ -376,7 +376,7 @@ class DirectBoundingBox:
         return '%.2f %.2f %.2f' % (vec[0], vec[1], vec[2])
 
     def __repr__(self):
-        return (`self.__class__` + 
+        return (`self.__class__` +
                 '\nNodePath:\t%s\n' % self.nodePath.getName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
@@ -533,7 +533,7 @@ class SelectionRay(SelectionQueue):
         # Initialize the superclass
         SelectionQueue.__init__(self, parentNP)
         self.addCollider(CollisionRay())
-    
+
     def pick(self, targetNodePath, xy = None):
         # Determine ray direction based upon the mouse coordinates
         if xy:
@@ -553,7 +553,7 @@ class SelectionRay(SelectionQueue):
         #mx = base.mouseWatcherNode.getMouseX()+1
         #my = base.mouseWatcherNode.getMouseY()+1
         #print base.camNode.getName()
-        #print "Arrived X" + str(mx) + " Arrived Y " + str(my) 
+        #print "Arrived X" + str(mx) + " Arrived Y " + str(my)
         self.collider.setFromLens( base.camNode, mx, my )
 
         self.ct.traverse( targetNodePath )
@@ -587,7 +587,7 @@ class SelectionRay(SelectionQueue):
         self.collider.setDirection( dir )
         self.ct.traverse( targetNodePath )
         self.sortEntries()
-        
+
     def pickGeom3D(self, targetNodePath = render,
                    origin = Point3(0), dir = Vec3(0,0,-1),
                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
@@ -616,7 +616,7 @@ class SelectionSegment(SelectionQueue):
         self.numColliders = 0
         for i in range(numSegments):
             self.addCollider(CollisionSegment())
-    
+
     def addCollider(self, collider):
         # Record new collision object
         self.colliders.append(collider)
@@ -659,30 +659,30 @@ class SelectionSphere(SelectionQueue):
         self.numColliders = 0
         for i in range(numSpheres):
             self.addCollider(CollisionSphere(Point3(0), 1))
-        
+
     def addCollider(self, collider):
         # Record new collision object
         self.colliders.append(collider)
         # Add the collider to the collision Node
         self.collisionNode.addSolid( collider )
         self.numColliders += 1
-    
+
     def setCenter(self, i, center):
         c = self.colliders[i]
         c.setCenter(center)
-    
+
     def setRadius(self, i, radius):
         c = self.colliders[i]
         c.setRadius(radius)
-    
+
     def setCenterRadius(self, i, center, radius):
         c = self.colliders[i]
         c.setCenter(center)
         c.setRadius(radius)
-    
+
     def isEntryBackfacing(self, entry):
         # If dot product of collision point surface normal and
-        # ray from sphere origin to collision point is positive, 
+        # ray from sphere origin to collision point is positive,
         # center is on the backside of the polygon
         fromNodePath = entry.getFromNodePath()
         v = Vec3(entry.getSurfacePoint(fromNodePath) -
@@ -706,7 +706,7 @@ class SelectionSphere(SelectionQueue):
                  skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
         self.collideWithGeom()
         return self.pick(targetNodePath, skipFlags)
-    
+
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = render,
                     skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):

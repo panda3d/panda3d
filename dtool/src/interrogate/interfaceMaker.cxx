@@ -79,11 +79,11 @@ InterfaceMaker::Function::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::MakeSeq::
-MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq) :
+MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
   _name(name),
-  _seq_name(cpp_make_seq->_seq_name),
-  _num_name(cpp_make_seq->_num_name),
-  _element_name(cpp_make_seq->_element_name)
+  _imake_seq(imake_seq),
+  _length_getter(NULL),
+  _element_getter(NULL)
 {
 }
 
@@ -173,30 +173,6 @@ check_protocols() {
 
   if (flags & FunctionRemap::F_iter) {
     _protocol_types |= PT_iter;
-  }
-
-  // Now are there any make_seq requests within this class?
-  if (_itype._cpptype != NULL) {
-    CPPStructType *stype = _itype._cpptype->as_struct_type();
-    if (stype != (CPPStructType *)NULL) {
-      CPPScope *scope = stype->get_scope();
-      if (scope != (CPPScope *)NULL) {
-        CPPScope::Declarations::iterator di;
-        for (di = scope->_declarations.begin(); di != scope->_declarations.end(); ++di) {
-          CPPMakeSeq *cpp_make_seq = (*di)->as_make_seq();
-          if (cpp_make_seq != (CPPMakeSeq *)NULL) {
-            string class_name = _itype.get_scoped_name();
-            string clean_name = InterrogateBuilder::clean_identifier(class_name);
-            string wrapper_name = "MakeSeq_" + clean_name + "_" + cpp_make_seq->_seq_name;
-            MakeSeq *make_seq = new MakeSeq(wrapper_name, cpp_make_seq);
-            _make_seqs.push_back(make_seq);
-
-            // Also add to the interrogate database.
-            builder.get_make_seq(cpp_make_seq, stype);
-          }
-        }
-      }
-    }
   }
 }
 
@@ -412,6 +388,16 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(param_type)) {
         return new ParameterRemapBasicWStringPtrToWString(param_type);
+
+      } else if (TypeManager::is_reference(param_type) ||
+                 TypeManager::is_pointer(param_type)) {
+        // Python strings are immutable, so we can't wrap a non-const
+        // pointer or reference to a string.
+        CPPType *pt_type = TypeManager::unwrap(param_type);
+        if (TypeManager::is_basic_string_char(pt_type) ||
+            TypeManager::is_basic_string_wchar(pt_type)) {
+          return (ParameterRemap *)NULL;
+        }
       }
     }
   }
@@ -627,6 +613,8 @@ get_unique_prefix() {
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::Function *InterfaceMaker::
 record_function(const InterrogateType &itype, FunctionIndex func_index) {
+  assert(func_index != 0);
+
   if (_functions.count(func_index)) {
     // Already exists.
     return _functions[func_index];

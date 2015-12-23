@@ -65,7 +65,7 @@ PUBLISHED:
   INLINE int get_num_geoms() const;
   INLINE int get_num_geom_vertex_datas() const;
   INLINE int get_num_geom_vertex_formats() const;
-  INLINE int get_vertex_data_size() const;
+  INLINE size_t get_vertex_data_size() const;
 
   INLINE int get_num_vertices() const;
   INLINE int get_num_normals() const;

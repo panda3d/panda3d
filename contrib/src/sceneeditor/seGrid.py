@@ -90,7 +90,7 @@ class DirectGrid(NodePath,DirectObject):
         # Now redraw lines
         numLines = int(math.ceil(self.gridSize/self.gridSpacing))
         scaledSize = numLines * self.gridSpacing
- 
+
         center = self.centerLines
         minor = self.minorLines
         major = self.majorLines
@@ -116,7 +116,7 @@ class DirectGrid(NodePath,DirectObject):
         minor.create()
         major.create()
         self.gridBack.setScale(scaledSize)
-        
+
     def setXyzSnap(self, fSnap):
         self.fXyzSnap = fSnap
 
@@ -138,7 +138,7 @@ class DirectGrid(NodePath,DirectObject):
                 ROUND_TO(self.snapPos[0], self.gridSpacing),
                 ROUND_TO(self.snapPos[1], self.gridSpacing),
                 ROUND_TO(self.snapPos[2], self.gridSpacing))
-            
+
         # Move snap marker to this point
         self.snapMarker.setPos(self.snapPos)
 
@@ -157,7 +157,7 @@ class DirectGrid(NodePath,DirectObject):
     def setGridSpacing(self, spacing):
         self.gridSpacing = spacing
         self.updateGrid()
-        
+
     def getGridSpacing(self):
         return self.gridSpacing
 

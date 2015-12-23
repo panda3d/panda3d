@@ -369,6 +369,8 @@ static const UnicodeLatinMap::Entry latin_map[] = {
     UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_reversed },
   { 0x0258, UnicodeLatinMap::CT_lower, 'e', 0, 0x0258, 0x018e,
     UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_reversed },
+  { 0x0259, UnicodeLatinMap::CT_lower, 'e', 0, 0x0259, 0x018f,
+    UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_turned },
   { 0x0066, UnicodeLatinMap::CT_lower, 'f', 0, 0x0066, 0x0046,
     UnicodeLatinMap::AT_none, 0 },
   { 0x0046, UnicodeLatinMap::CT_upper, 'F', 0, 0x0066, 0x0046,
@@ -465,7 +467,9 @@ static const UnicodeLatinMap::Entry latin_map[] = {
     UnicodeLatinMap::AT_line_below, 0 },
   { 0x029c, UnicodeLatinMap::CT_upper, 'H', 0, 0x0068, 0x029c,
     UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_smallcap },
-  { 0x0195, UnicodeLatinMap::CT_lower, 'h', 'v', 0x0195, 0x195,
+  { 0x0195, UnicodeLatinMap::CT_lower, 'h', 'v', 0x0195, 0x01f6,
+    UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_ligature },
+  { 0x01f6, UnicodeLatinMap::CT_upper, 'H', 'v', 0x0195, 0x01f6,
     UnicodeLatinMap::AT_none, UnicodeLatinMap::AF_ligature },
   { 0x0127, UnicodeLatinMap::CT_lower, 'h', 0, 0x0127, 0x0126,
     UnicodeLatinMap::AT_stroke, 0 },
@@ -1299,7 +1303,7 @@ static const UnicodeLatinMap::Entry latin_map[] = {
     UnicodeLatinMap::AT_curl, 0 },
 };
 #ifndef CPPPARSER
-static const int latin_map_length = sizeof(latin_map) / sizeof(UnicodeLatinMap::Entry);
+static const size_t latin_map_length = sizeof(latin_map) / sizeof(UnicodeLatinMap::Entry);
 #endif
 
 
@@ -1338,7 +1342,7 @@ void UnicodeLatinMap::
 init() {
   if (!_initialized) {
     _by_character = new ByCharacter;
-    for (int i = 0; i < latin_map_length; i++) {
+    for (size_t i = 0; i < latin_map_length; i++) {
       const UnicodeLatinMap::Entry *entry = &latin_map[i];
 
       // The first 256 characters are very common in Latin-alphabet

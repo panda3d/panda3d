@@ -259,9 +259,30 @@ get_poly_margin() const {
 //               for the DynamicTextFont.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
+set_page_size(const LVecBase2i &page_size) {
+  _page_size = page_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_page_size
+//       Access: Published
+//  Description: Sets the x, y size of the textures that are created
+//               for the DynamicTextFont.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
 set_page_size(int x_size, int y_size) {
-  _page_x_size = x_size;
-  _page_y_size = y_size;
+  _page_size.set(x_size, y_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_page_size
+//       Access: Published
+//  Description: Returns the size of the textures that are created
+//               for the DynamicTextFont.  See set_page_size().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2i &DynamicTextFont::
+get_page_size() const {
+  return _page_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,7 +293,7 @@ set_page_size(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE int DynamicTextFont::
 get_page_x_size() const {
-  return _page_x_size;
+  return _page_size.get_x();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +304,7 @@ get_page_x_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int DynamicTextFont::
 get_page_y_size() const {
-  return _page_y_size;
+  return _page_size.get_y();
 }
 
 ////////////////////////////////////////////////////////////////////

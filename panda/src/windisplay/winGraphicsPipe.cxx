@@ -32,6 +32,12 @@ TypeHandle WinGraphicsPipe::_type_handle;
 #define MAXIMUM_PROCESSORS 32
 #endif
 
+typedef enum _Process_DPI_Awareness {
+  Process_DPI_Unaware            = 0,
+  Process_System_DPI_Aware       = 1,
+  Process_Per_Monitor_DPI_Aware  = 2
+} Process_DPI_Awareness;
+
 typedef struct _PROCESSOR_POWER_INFORMATION {
   ULONG Number;
   ULONG MaxMhz;
@@ -691,11 +697,31 @@ WinGraphicsPipe() {
   if (_hUser32 != NULL) {
     _pfnTrackMouseEvent =
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
+
+    if (dpi_aware) {
+      typedef HRESULT (WINAPI *PFN_SETPROCESSDPIAWARENESS)(Process_DPI_Awareness);
+      PFN_SETPROCESSDPIAWARENESS pfnSetProcessDpiAwareness =
+        (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(_hUser32, "SetProcessDpiAwarenessInternal");
+
+      if (pfnSetProcessDpiAwareness == NULL) {
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() << "Unable to find SetProcessDpiAwareness in user32.dll.\n";
+        }
+      } else {
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
+        }
+        pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
+      }
+    }
   }
 
 #ifdef HAVE_DX9
   // Use D3D to get display info.  This is disabled by default as it is slow.
   if (request_dxdisplay_information) {
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "Using Direct3D 9 to fetch display information.\n";
+    }
     DisplaySearchParameters display_search_parameters_dx9;
     int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);
     dx9_display_information(display_search_parameters_dx9, _display_information);
@@ -703,6 +729,9 @@ WinGraphicsPipe() {
 #endif
   {
     // Use the Win32 API to query the available display modes.
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "Using EnumDisplaySettings to fetch display information.\n";
+    }
     pvector<DisplayMode> display_modes;
     DEVMODE dm = {0};
     dm.dmSize = sizeof(dm);

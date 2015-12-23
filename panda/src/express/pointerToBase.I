@@ -162,7 +162,7 @@ update_type(To *ptr) {
 //               (Assignment to a NULL pointer also works, of course.)
 ////////////////////////////////////////////////////////////////////
 template<class T>
-INLINE void PointerToBase<T>::
+ALWAYS_INLINE void PointerToBase<T>::
 clear() {
   reassign((To *)NULL);
 }

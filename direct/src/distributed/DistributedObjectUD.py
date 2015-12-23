@@ -213,7 +213,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
@@ -222,7 +222,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
@@ -233,7 +233,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # arguments are newZoneId, oldZoneId
         # includes the quiet zone.
         return 'DOChangeZone-%s' % self.doId
-    
+
     def getLogicalZoneChangeEvent(self):
         # this event is generated whenever this object changes to a
         # non-quiet-zone zone.
@@ -324,7 +324,7 @@ class DistributedObjectUD(DistributedObjectBase):
         self.generate()
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
     def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?

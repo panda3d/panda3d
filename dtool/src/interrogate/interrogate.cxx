@@ -79,6 +79,7 @@ enum CommandOptions {
   CO_promiscuous,
   CO_spam,
   CO_noangles,
+  CO_nomangle,
   CO_help,
 };
 
@@ -106,6 +107,7 @@ static struct option long_options[] = {
   { "promiscuous", no_argument, NULL, CO_promiscuous },
   { "spam", no_argument, NULL, CO_spam },
   { "noangles", no_argument, NULL, CO_noangles },
+  { "nomangle", no_argument, NULL, CO_nomangle },
   { "help", no_argument, NULL, CO_help },
   { NULL }
 };
@@ -284,7 +286,10 @@ void show_help() {
 
     << "  -noangles\n"
     << "        Treat #include <file> the same as #include \"file\".  This means -I\n"
-    << "        and -S are equivalent.\n\n";
+    << "        and -S are equivalent.\n\n"
+
+    << "  -nomangle\n"
+    << "        Do not generate camelCase equivalents of functions.\n\n";
 }
 
 // handle commandline -D options
@@ -300,7 +305,7 @@ predefine_macro(CPPParser& parser, const string& inoption) {
     macro_name = inoption;
   }
 
-  CPPManifest *macro = new CPPManifest(macro_name + " " + macro_def);
+  CPPManifest *macro = new CPPManifest(macro_name, macro_def);
   parser._manifests[macro->_name] = macro;
 }
 
@@ -444,6 +449,10 @@ main(int argc, char **argv) {
 
     case CO_noangles:
       parser._noangles = true;
+      break;
+
+    case CO_nomangle:
+      mangle_names = false;
       break;
 
     case 'h':

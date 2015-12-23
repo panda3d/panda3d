@@ -18,6 +18,7 @@
 #include "wglGraphicsPipe.h"
 #include "pStatTimer.h"
 #include "glgsg.h"
+#include "wglGraphicsStateGuardian.h"
 
 #include <wingdi.h>
 

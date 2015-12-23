@@ -57,14 +57,25 @@ PUBLISHED:
   INLINE const string &get_raw_button_down_event() const;
   INLINE void set_raw_button_up_event(const string &raw_button_up_event);
   INLINE const string &get_raw_button_up_event() const;
+  MAKE_PROPERTY(button_down_event, get_button_down_event, set_button_down_event);
+  MAKE_PROPERTY(button_up_event, get_button_up_event, set_button_up_event);
+  MAKE_PROPERTY(button_repeat_event, get_button_repeat_event, set_button_repeat_event);
+  MAKE_PROPERTY(keystroke_event, get_keystroke_event, set_keystroke_event);
+  MAKE_PROPERTY(candidate_event, get_candidate_event, set_candidate_event);
+  MAKE_PROPERTY(move_event, get_move_event, set_move_event);
+  MAKE_PROPERTY(raw_button_down_event, get_raw_button_down_event, set_raw_button_down_event);
+  MAKE_PROPERTY(raw_button_up_event, get_raw_button_up_event, set_raw_button_up_event);
 
   INLINE void set_prefix(const string &prefix);
   INLINE const string &get_prefix() const;
   INLINE void set_specific_flag(bool specific_flag);
   INLINE bool get_specific_flag() const;
+  MAKE_PROPERTY(prefix, get_prefix, set_prefix);
+  MAKE_PROPERTY(specific_flag, get_specific_flag, set_specific_flag);
 
   INLINE void set_time_flag(bool time_flag);
   INLINE bool get_time_flag() const;
+  MAKE_PROPERTY(time_flag, get_time_flag, set_time_flag);
 
   void add_parameter(const EventParameter &obj);
   int get_num_parameters() const;
@@ -73,9 +84,11 @@ PUBLISHED:
 
   INLINE const ModifierButtons &get_modifier_buttons() const;
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
+  MAKE_PROPERTY(modifier_buttons, get_modifier_buttons, set_modifier_buttons);
 
   INLINE void set_throw_buttons_active(bool flag);
   INLINE bool get_throw_buttons_active() const;
+  MAKE_PROPERTY(throw_buttons_active, get_throw_buttons_active, set_throw_buttons_active);
 
   bool add_throw_button(const ModifierButtons &mods, const ButtonHandle &button);
   bool remove_throw_button(const ModifierButtons &mods, const ButtonHandle &button);

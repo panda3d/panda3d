@@ -11,7 +11,7 @@
 #if defined(ANDROID)
 #include "config_androiddisplay.h"
 #include "androidGraphicsPipe.h"
-#elif defined(HAVE_EGL)
+#else
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
 #endif
@@ -36,7 +36,7 @@ init_libpandagles() {
 
 #if defined(ANDROID)
   init_libandroiddisplay();
-#elif defined(HAVE_EGL)
+#else
   init_libegldisplay();
 #endif
 }
@@ -50,9 +50,7 @@ int
 get_pipe_type_pandagles() {
 #if defined(ANDROID)
   return AndroidGraphicsPipe::get_class_type().get_index();
-#elif defined(HAVE_EGL)
+#else
   return eglGraphicsPipe::get_class_type().get_index();
 #endif
-
-  return 0;
 }

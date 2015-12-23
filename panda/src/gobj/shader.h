@@ -52,7 +52,8 @@ PUBLISHED:
   enum ShaderLanguage {
     SL_none,
     SL_Cg,
-    SL_GLSL
+    SL_GLSL,
+    SL_HLSL,
   };
 
   enum ShaderType {
@@ -97,8 +98,8 @@ PUBLISHED:
                          const string &tess_evaluation = "");
   static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
 
-  INLINE Filename get_filename(const ShaderType &type = ST_none) const;
-  INLINE const string &get_text(const ShaderType &type = ST_none) const;
+  INLINE Filename get_filename(ShaderType type = ST_none) const;
+  INLINE const string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
@@ -196,6 +197,16 @@ public:
     SMO_INVALID
   };
 
+  enum ShaderTexInput {
+    STO_INVALID,
+
+    STO_named_input,
+    STO_named_stage,
+
+    STO_stage_i,
+    STO_light_i_shadow_map,
+  };
+
   enum ShaderArgClass {
     SAC_scalar,
     SAC_vector,
@@ -230,8 +241,10 @@ public:
     SAT_sampler1d,
     SAT_sampler2d,
     SAT_sampler3d,
-    SAT_sampler2dArray,
-    SAT_samplercube,
+    SAT_sampler2d_array,
+    SAT_sampler_cube,
+    SAT_sampler_buffer,
+    SAT_sampler_cube_array,
     SAT_unknown
 };
 
@@ -377,6 +390,7 @@ public:
   struct ShaderTexSpec {
     ShaderArgId       _id;
     PT(InternalName)  _name;
+    ShaderTexInput    _part;
     int               _stage;
     int               _desired_type;
     PT(InternalName)  _suffix;

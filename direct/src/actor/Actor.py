@@ -23,7 +23,9 @@ class Actor(DirectObject, NodePath):
                                        LoaderOptions.LFConvertAnim)
 
     validateSubparts = ConfigVariableBool('validate-subparts', True)
-    
+    mergeLODBundles = ConfigVariableBool('merge-lod-bundles', True)
+    allowAsyncBind = ConfigVariableBool('allow-async-bind', True)
+
     class PartDef:
 
         """Instances of this class are stored within the
@@ -32,7 +34,7 @@ class Actor(DirectObject, NodePath):
         model file is a different PartBundle.  This can include the
         multiple different LOD's, as well as the multiple different
         pieces of a multipart Actor. """
-        
+
         def __init__(self, partBundleNP, partBundleHandle, partModel):
             # We also save the ModelRoot node along with the
             # PartBundle, so that the reference count in the ModelPool
@@ -43,7 +45,7 @@ class Actor(DirectObject, NodePath):
 
         def getBundle(self):
             return self.partBundleHandle.getBundle()
-        
+
         def __repr__(self):
             return 'Actor.PartDef(%s, %s)' % (repr(self.partBundleNP), repr(self.partModel))
 
@@ -57,7 +59,7 @@ class Actor(DirectObject, NodePath):
 
         There is a different AnimDef for each different part or
         sub-part, times each different animation in the AnimDict. """
-        
+
         def __init__(self, filename = None, animBundle = None):
             self.filename = filename
             self.animBundle = None
@@ -84,8 +86,8 @@ class Actor(DirectObject, NodePath):
 
         def makeCopy(self):
             return Actor.SubpartDef(self.truePartName, PartSubset(self.subset))
-            
-        
+
+
         def __repr__(self):
             return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
 
@@ -169,11 +171,11 @@ class Actor(DirectObject, NodePath):
         # When this flag is true, __animControlDict has only one key,
         # ['common']; when it is false, __animControlDict has one key
         # per each LOD name.
-        
-        if mergeLODBundles == None:
+
+        if mergeLODBundles is None:
             # If this isn't specified, it comes from the Config.prc
             # file.
-            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', True)
+            self.mergeLODBundles = Actor.mergeLODBundles.getValue()
         else:
             self.mergeLODBundles = mergeLODBundles
 
@@ -181,8 +183,8 @@ class Actor(DirectObject, NodePath):
         # asynchronous animation binding.  This requires that you have
         # run "egg-optchar -preload" on your animation and models to
         # generate the appropriate AnimPreloadTable.
-        if allowAsyncBind == None:
-            self.allowAsyncBind = base.config.GetBool('allow-async-bind', True)
+        if allowAsyncBind is None:
+            self.allowAsyncBind = Actor.allowAsyncBind.getValue()
         else:
             self.allowAsyncBind = allowAsyncBind
 
@@ -221,7 +223,7 @@ class Actor(DirectObject, NodePath):
                 root.setPreserveTransform(1)
                 self.assign(NodePath(root))
                 self.setGeomNode(self.attachNewNode(ModelNode('actorGeom')))
-                
+
             self.__hasLOD = 0
 
             # load models
@@ -338,7 +340,7 @@ class Actor(DirectObject, NodePath):
     def copyActor(self, other, overwrite=False):
             # act like a copy constructor
             self.gotName = other.gotName
-            
+
             # copy the scene graph elements of other
             if (overwrite):
                 otherCopy = other.copyTo(NodePath())
@@ -368,7 +370,7 @@ class Actor(DirectObject, NodePath):
             self.__copyPartBundles(other)
             self.__copySubpartDict(other)
             self.__subpartsComplete = other.__subpartsComplete
-            
+
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
 
@@ -442,7 +444,7 @@ class Actor(DirectObject, NodePath):
         for lodName, partDict in self.__animControlDict.items():
             if self.mergeLODBundles:
                 lodName = self.__sortedLODNames[0]
-                
+
             partInfo = []
             for partName in partDict.keys():
                 subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
@@ -511,7 +513,7 @@ class Actor(DirectObject, NodePath):
         self.__subpartDict = {}
         self.__sortedLODNames = []
         self.__animControlDict = {}
-        
+
     def flush(self):
         """
         Actor flush function
@@ -523,10 +525,9 @@ class Actor(DirectObject, NodePath):
             self.__LODNode = None
 
         # remove all its children
-        if(self.__geomNode):
-            self.__geomNode.removeChildren()
+        if self.__geomNode:
+            self.__geomNode.getChildren().detach()
 
-        
         self.__hasLOD = 0
 
     # accessing
@@ -543,9 +544,9 @@ class Actor(DirectObject, NodePath):
     def getPartBundles(self, partName = None):
         """ Returns a list of PartBundle objects for the entire Actor,
         or for the indicated part only. """
-        
+
         bundles = []
-        
+
         for lodName, partBundleDict in self.__partBundleDict.items():
             if partName == None:
                 for partDef in partBundleDict.values():
@@ -634,7 +635,7 @@ class Actor(DirectObject, NodePath):
             self.__LODNode = self.__geomNode.attachNewNode(node)
             self.__hasLOD = 1
             self.switches = {}
-        
+
 
     def useLOD(self, lodName):
         """
@@ -645,7 +646,7 @@ class Actor(DirectObject, NodePath):
 ##         sortedKeys = self.switches.keys()
 ##         sortedKeys.sort()
         child = self.__LODNode.find(str(lodName))
-        index = self.__LODNode.node().findChild(child.node())        
+        index = self.__LODNode.node().findChild(child.node())
         self.__LODNode.node().forceSwitch(index)
 
     def printLOD(self):
@@ -704,7 +705,7 @@ class Actor(DirectObject, NodePath):
         safe method (but expensive) for retrieving the child index
         """
         return list(self.__LODNode.getChildren()).index(self.getLOD(lodName))
-        
+
     def getLOD(self, lodName):
         """getLOD(self, string)
         Get the named node under the LOD to which we parent all LOD
@@ -753,7 +754,7 @@ class Actor(DirectObject, NodePath):
         away. """
 
         self.__LODAnimation = (farDistance, nearDistance, delayFactor)
-        
+
         for lodData in self.__partBundleDict.values():
             for partData in lodData.values():
                 char = partData.partBundleNP
@@ -780,7 +781,7 @@ class Actor(DirectObject, NodePath):
 
         If force is True, this will update every joint, even if we
         don't believe it's necessary.
-        
+
         Returns True if any joint has changed as a result of this,
         False otherwise. """
 
@@ -906,7 +907,7 @@ class Actor(DirectObject, NodePath):
         """
         if len(self.__animControlDict.items()) == 0:
             return
-        
+
         lodName, animControlDict = self.__animControlDict.items()[0]
         if partName == None:
             partName, animDict = animControlDict.items()[0]
@@ -1137,7 +1138,7 @@ class Actor(DirectObject, NodePath):
         """ Returns the list of all joints, from the named part or
         from all parts, that match the indicated jointName.  The
         jointName may include pattern characters like *. """
-        
+
         joints=[]
         pattern = GlobPattern(jointName)
 
@@ -1218,7 +1219,7 @@ class Actor(DirectObject, NodePath):
 
         for child in partNode.getChildren():
             self.__getPartJoints(joints, pattern, child, subset, isIncluded)
-    
+
     def getJointTransform(self, partName, jointName, lodName='lodRoot'):
         partBundleDict=self.__partBundleDict.get(lodName)
         if not partBundleDict:
@@ -1277,7 +1278,7 @@ class Actor(DirectObject, NodePath):
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
         anyGood = False
-        for bundleDict in self.__partBundleDict.values():     
+        for bundleDict in self.__partBundleDict.values():
             bundle = bundleDict[trueName].getBundle()
             if node == None:
                 node = self.attachNewNode(ModelNode(jointName))
@@ -1307,20 +1308,20 @@ class Actor(DirectObject, NodePath):
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
         anyGood = False
-        for bundleDict in self.__partBundleDict.values():     
+        for bundleDict in self.__partBundleDict.values():
             if bundleDict[trueName].getBundle().freezeJoint(jointName, transform):
                 anyGood = True
 
         if not anyGood:
             self.notify.warning("Cannot freeze joint %s" % (jointName))
-                
+
     def releaseJoint(self, partName, jointName):
         """Undoes a previous call to controlJoint() or freezeJoint()
         and restores the named joint to its normal animation. """
 
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
-        for bundleDict in self.__partBundleDict.values():     
+        for bundleDict in self.__partBundleDict.values():
             bundleDict[trueName].getBundle().releaseJoint(jointName)
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
@@ -1476,8 +1477,8 @@ class Actor(DirectObject, NodePath):
                         for geomNum in xrange(numGeoms):
                             thisGeom = thisGeomNode.node().getGeom(geomNum)
                             thisGeom.markBoundsStale()
-                        thisGeomNode.node().markInternalBoundsStale()            
-        
+                        thisGeomNode.node().markInternalBoundsStale()
+
     def fixBounds_old(self, part=None):
         """fixBounds(self, nodePath=None)
         Force recomputation of bounding spheres for all geoms
@@ -1531,8 +1532,10 @@ class Actor(DirectObject, NodePath):
 
     # actions
     def animPanel(self):
-        from direct.showbase import TkGlobal
-        from direct.tkpanels import AnimPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        AnimPanel = importlib.import_module('direct.tkpanels.AnimPanel')
         return AnimPanel.AnimPanel(self)
 
     def stop(self, animName=None, partName=None):
@@ -1566,7 +1569,7 @@ class Actor(DirectObject, NodePath):
         is given then try to loop on all parts. NOTE: loops on
         all LOD's
         """
-    
+
         if fromFrame == None:
             for control in self.getAnimControls(animName, partName):
                 control.loop(restart)
@@ -1611,7 +1614,7 @@ class Actor(DirectObject, NodePath):
         The animBlend and frameBlend parameters are boolean flags.
         You may set either or both to True or False.  If you do not
         specify them, they do not change from the previous value.
-        
+
         When animBlend is True, multiple different animations may
         simultaneously be playing on the Actor.  This means you may
         call play(), loop(), or pose() on multiple animations and have
@@ -1680,7 +1683,7 @@ class Actor(DirectObject, NodePath):
         the overall pose.  This controls blending of multiple
         animations; it only makes sense to call this after a previous
         call to setBlend(animBlend = True).
-        """        
+        """
         for control in self.getAnimControls(animName, partName, lodName):
             control.getPart().setControlEffect(control, effect)
 
@@ -1709,7 +1712,7 @@ class Actor(DirectObject, NodePath):
         a given anim and part. If none specified, try the first part and lod.
         Return the animControl if present, or None otherwise.
         """
-    
+
         if not partName:
             partName = 'modelRoot'
 
@@ -1772,7 +1775,7 @@ class Actor(DirectObject, NodePath):
             # is specified, it really means to play the animation on
             # all subparts, not on the overall Actor.
             partName = self.__subpartDict.keys()
-            
+
         controls = []
         # build list of lodNames and corresponding animControlDicts
         # requested.
@@ -1805,7 +1808,7 @@ class Actor(DirectObject, NodePath):
                     partNameList = partName
 
                 animDictItems = []
-                
+
                 for pName in partNameList:
                     animDict = partDict.get(pName)
                     if animDict == None:
@@ -1867,7 +1870,7 @@ class Actor(DirectObject, NodePath):
                                 # Force the animation to load if it's
                                 # not already loaded.
                                 animControl.waitPending()
-                                
+
                             if animControl:
                                 controls.append(animControl)
 
@@ -1897,7 +1900,7 @@ class Actor(DirectObject, NodePath):
                 # If copy = 0, then we should always hit the disk.
                 loaderOptions = LoaderOptions(loaderOptions)
                 loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
-            
+
             # Pass loaderOptions to specify that we want to
             # get the skeleton model.  This only matters to model
             # files (like .mb) for which we can choose to extract
@@ -1911,7 +1914,7 @@ class Actor(DirectObject, NodePath):
             bundleNP = model
         else:
             bundleNP = model.find("**/+Character")
-            
+
         if (bundleNP.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
             model.reparentTo(self.__geomNode)
@@ -2045,7 +2048,7 @@ class Actor(DirectObject, NodePath):
                     joints = self.getOverlappingJoints(partName, otherPartName)
                     if joints:
                         raise StandardError, 'Overlapping joints: %s and %s' % (partName, otherPartName)
-        
+
     def setSubpartsComplete(self, flag):
 
         """Sets the subpartsComplete flag.  This affects the behavior
@@ -2067,7 +2070,7 @@ class Actor(DirectObject, NodePath):
         It makes sense to set this True when the union of all of your
         subparts completely defines the entire Actor.
         """
-        
+
         self.__subpartsComplete = flag
 
         if __dev__ and self.__subpartsComplete and self.validateSubparts.getValue():
@@ -2075,11 +2078,11 @@ class Actor(DirectObject, NodePath):
             # specified all of them.
             if self.__subpartDict:
                 self.verifySubpartsComplete()
-        
+
 
     def getSubpartsComplete(self):
         """See setSubpartsComplete()."""
-        
+
         return self.__subpartsComplete
 
     def verifySubpartsComplete(self, partName = None, lodName = None):
@@ -2125,7 +2128,7 @@ class Actor(DirectObject, NodePath):
                 lodNames[i] = str(lodNames[i])
         else:
             lodNames = [lodName]
-            
+
         assert Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
                                   (anims, partName, lodNames[0]))
 
@@ -2169,7 +2172,7 @@ class Actor(DirectObject, NodePath):
             lodNames = ['common']
         else:
             lodNames = self.__partBundleDict.keys()
-        
+
         for lod in lodNames:
             for part in partNames:
                 self.__animControlDict.setdefault(lod,{})
@@ -2180,9 +2183,9 @@ class Actor(DirectObject, NodePath):
         #    for lod in self.__partBundleDict.keys():
         #        # store the file path only; we will bind it (and produce
         #        # an AnimControl) when it is played
-        #        
+        #
         #        self.__animControlDict[lod][partName][animName] = Actor.AnimDef(filename)
-                
+
     def loadAnimsOnAllLODs(self, anims,partName="modelRoot"):
         """loadAnims(self, string:string{}, string='modelRoot',
         string='lodRoot')
@@ -2195,13 +2198,13 @@ class Actor(DirectObject, NodePath):
             lodNames = ['common']
         else:
             lodNames = self.__partBundleDict.keys()
-        
+
         for animName, filename in anims.items():
             # make sure this lod is in anim control dict
             for lod in lodNames:
                 # store the file path only; we will bind it (and produce
                 # an AnimControl) when it is played
-                
+
                 self.__animControlDict[lod][partName][animName]= Actor.AnimDef(filename)
 
     def postFlatten(self):
@@ -2210,7 +2213,7 @@ class Actor(DirectObject, NodePath):
         especially necessary when mergeLODBundles is true, since this
         kind of actor may be broken after a flatten operation; this
         method should restore proper Actor functionality. """
-        
+
         if self.mergeLODBundles:
             # Re-merge all bundles, and restore the common bundle map.
             self.__commonBundleHandles = {}
@@ -2223,11 +2226,11 @@ class Actor(DirectObject, NodePath):
                         partDef.partBundleHandle = loadedBundleHandle
                     else:
                         self.__commonBundleHandles[partName] = partDef.partBundleHandle
-                        
+
         # Since we may have merged together some bundles, all of
         # our anims are now suspect.  Force them to reload.
         self.unloadAnims()
-        
+
     def unloadAnims(self, anims=None, partName=None, lodName=None):
         """unloadAnims(self, string:string{}, string='modelRoot',
         string='lodRoot')
@@ -2398,7 +2401,7 @@ class Actor(DirectObject, NodePath):
             for partName, partDef in other.__partBundleDict[lodName].items():
                 # We can really only copy from a non-flattened avatar.
                 assert partDef.partBundleNP.node().getNumBundles() == 1
-                
+
                 # find the part in our tree
                 bundleNP = partLod.find("**/%s%s"%(Actor.partPrefix,partName))
                 if (bundleNP != None):
@@ -2495,7 +2498,7 @@ class Actor(DirectObject, NodePath):
                 result.append((lodName, animList))
 
         return result
-    
+
     def printAnimBlends(self, animName=None, partName=None, lodName=None):
         for lodName, animList in self.getAnimBlends(animName, partName, lodName):
             print 'LOD %s:' % (lodName)

@@ -79,7 +79,7 @@ class LineNodePath(NodePath):
 
     def getVertexColor( self ):
         return self.lineSegs.getVertexColor()
-    
+
     def drawArrow(self, sv, ev, arrowAngle, arrowLength):
         """
         Do the work of moving the cursor around to draw an arrow from
@@ -206,12 +206,12 @@ def qSlerp(startQuat, endQuat, t):
     destQuat = Quat.identQuat()
     # Calc dot product
     cosOmega = (startQ.getI() * endQuat.getI() +
-                startQ.getJ() * endQuat.getJ() + 
+                startQ.getJ() * endQuat.getJ() +
                 startQ.getK() * endQuat.getK() +
                 startQ.getR() * endQuat.getR())
     # If the above dot product is negative, it would be better to
     # go between the negative of the initial and the final, so that
-    # we take the shorter path.  
+    # we take the shorter path.
     if ( cosOmega < 0.0 ):
         cosOmega *= -1
         startQ.setI(-1 * startQ.getI())
@@ -227,7 +227,7 @@ def qSlerp(startQuat, endQuat, t):
             startScale = math.sin((1.0 - t) * omega)/sinOmega
             endScale = math.sin(t * omega)/sinOmega
         else:
-            # ends very close 
+            # ends very close
             startScale = 1.0 - t
             endScale = t
         destQuat.setI(startScale * startQ.getI() +

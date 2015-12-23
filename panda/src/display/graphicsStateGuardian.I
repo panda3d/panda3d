@@ -496,6 +496,16 @@ get_supports_buffer_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_cube_map_array
+//       Access: Published
+//  Description: Returns true if this GSG can render cube map arrays.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_cube_map_array() const {
+  return _supports_cube_map_array;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_tex_non_pow2
 //       Access: Published
 //  Description: Returns true if this GSG can handle non power of two
@@ -763,6 +773,17 @@ get_supports_glsl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_hlsl
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               HLSL shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_hlsl() const {
+  return _supports_hlsl;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_stencil
 //       Access: Published
 //  Description: Returns true if this particular GSG supports
@@ -796,6 +817,18 @@ get_supports_two_sided_stencil() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_geometry_instancing() const {
   return _supports_geometry_instancing;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_indirect_draw
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               draw calls for which the information comes from a
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_indirect_draw() const {
+  return _supports_indirect_draw;
 }
 
 ////////////////////////////////////////////////////////////////////

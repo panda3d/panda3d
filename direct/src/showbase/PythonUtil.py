@@ -325,7 +325,10 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     10.0
     """
     # Make sure we enable Tk
-    from direct.tkwidgets import Valuator
+    # Don't use a regular import, to prevent ModuleFinder from picking
+    # it up as a dependency when building a .p3d package.
+    import importlib
+    Valuator = importlib.import_module('direct.tkwidgets.Valuator')
     # Set command if specified
     if command:
         kw['command'] = lambda x: apply(command, x)
@@ -1300,7 +1303,7 @@ class Enum:
         _checkValidIdentifier = staticmethod(_checkValidIdentifier)
 
     def __init__(self, items, start=0):
-        if type(items) == types.StringType:
+        if isinstance(items, str):
             items = items.split(',')
 
         self._stringTable = {}
@@ -1312,7 +1315,7 @@ class Enum:
         i = start
         for item in items:
             # remove leading/trailing whitespace
-            item = string.strip(item)
+            item = item.strip()
             # is there anything left?
             if len(item) == 0:
                 continue
@@ -1420,17 +1423,14 @@ def printListEnum(l):
         pass
 
 # base class for all Panda C++ objects
-# libdtoolconfig doesn't seem to have this, grab it off of PandaNode
+# libdtoolconfig doesn't seem to have this, grab it off of TypedObject
 dtoolSuperBase = None
 
 def _getDtoolSuperBase():
     global dtoolSuperBase
     from panda3d.core import TypedObject
     dtoolSuperBase = TypedObject.__bases__[0]
-    assert repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'libdtoolconfig.DTOOL_SUPPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE111'>" \
-        or repr(dtoolSuperBase) == "<type 'dtoolconfig.DTOOL_SUPER_BASE'>"
+    assert dtoolSuperBase.__name__ == 'DTOOL_SUPER_BASE'
 
 safeReprNotify = None
 
@@ -1993,7 +1993,7 @@ def pstatcollect(scope, level = None):
 
     try:
 
-        if not (__dev__ or config.GetBool('force-pstatcollect', 0)) or \
+        if not (__dev__ or ConfigVariableBool('force-pstatcollect', False)) or \
            not scope:
             return decorator
 

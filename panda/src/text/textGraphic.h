@@ -48,13 +48,16 @@ PUBLISHED:
 
   INLINE NodePath get_model() const;
   INLINE void set_model(const NodePath &model);
+  MAKE_PROPERTY(model, get_model, set_model);
 
   INLINE LVecBase4 get_frame() const;
   INLINE void set_frame(const LVecBase4 &frame);
   INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  MAKE_PROPERTY(frame, get_frame, set_frame);
 
   INLINE bool get_instance_flag() const;
   INLINE void set_instance_flag(bool instance_flag);
+  MAKE_PROPERTY(instance_flag, get_instance_flag, set_instance_flag);
 
 private:
   NodePath _model;

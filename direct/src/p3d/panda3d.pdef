@@ -61,7 +61,7 @@ class panda3d(package):
            'panda3d.physics')
 
     # Include various standard Python encodings.  The rest is in morepy.
-    module('encodings', 'encodings.aliases', 'encodings.undefined,'
+    module('encodings', 'encodings.aliases', 'encodings.undefined',
            'encodings.utf_8', 'encodings.ascii', 'encodings.string_escape',
            'encodings.mbcs', 'encodings.latin_1', 'io')
 
@@ -102,8 +102,6 @@ class panda3d(package):
                   'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
     excludeModule('MySQLdb', '_mysql')
-
-    excludeModule('xml', 'xml.parsers.expat', 'xml.sax')
 
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
@@ -195,7 +193,7 @@ class morepy(package):
            'termios', 'tty', 'pty', 'fcntl', 'pipes', 'posixfile',
            'resource', 'nis', 'syslog', 'commands', 'ic', 'MacOS',
            'macostools', 'findertools', 'EasyDialogs', 'FrameWork',
-           'autoGIL', 'ColorPicker')
+           'autoGIL', 'ColorPicker', 'ast')
 
     # To add the multitude of standard Python string encodings.
     module('encodings', 'encodings.*')
@@ -362,8 +360,16 @@ class rocket(package):
     config(display_name = "Panda3D libRocket support")
     require('panda3d')
 
-    module('panda3d.rocket', required = True)
-    module('_rocketcore', '_rocketcontrols')
+    file('rocket.py', extract = True, text = """
+from _rocketcore import *
+try:
+    from _rocketcontrols import *
+except ImportError:
+    pass
+""")
+
+    module('panda3d.rocket', '_rocketcore', required = True)
+    module('_rocketcontrols')
     file('libp3rocket.dll', required = True)
 
 class vrpn(package):

@@ -18,3 +18,8 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<ReferenceCountedVector<int> >;
+template class PointerToArrayBase<int>;
+template class PointerToArray<int>;
+template class ConstPointerToArray<int>;

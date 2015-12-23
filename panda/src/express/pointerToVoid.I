@@ -50,7 +50,7 @@ PointerToVoid(const PointerToVoid &) {
 //               false otherwise.  (Direct comparison to a NULL
 //               pointer also works.)
 ////////////////////////////////////////////////////////////////////
-INLINE bool PointerToVoid::
+ALWAYS_INLINE bool PointerToVoid::
 is_null() const {
   return (_void_ptr == (void *)NULL);
 }

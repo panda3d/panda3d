@@ -263,3 +263,18 @@ INLINE TypeHandle::
 operator bool () const {
   return (_index != 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::from_index
+//       Access: Public, Static
+//  Description: Creates a TypeHandle from a type index without
+//               error checking, for use by internal functions.
+//
+//               See TypeRegistry::find_type_by_id().
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle TypeHandle::
+from_index(int index) {
+  TypeHandle handle;
+  handle._index = index;
+  return handle;
+}

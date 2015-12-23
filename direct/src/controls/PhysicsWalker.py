@@ -19,7 +19,11 @@ from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.physics import *
+from direct.extensions_native import Mat3_extensions
+from direct.extensions_native import VBase3_extensions
+from direct.extensions_native import VBase4_extensions
 import math
 
 #import LineStream
@@ -27,8 +31,7 @@ import math
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
-    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
+    wantDebugIndicator = ConfigVariableBool('want-avatar-physics-indicator', False)
 
     useLifter = 0
     useHeightRay = 0
@@ -466,12 +469,12 @@ class PhysicsWalker(DirectObject.DirectObject):
         slideLeft = 0#inputState.isSet("slideLeft")
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
-        
+
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-                
+
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or
                 reverse and -self.avatarControlReverseSpeed)

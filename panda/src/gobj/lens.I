@@ -802,7 +802,7 @@ get_last_change() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_adjust_user_flags(CData *cdata, int clear_flags, int set_flags) {
-  cdata->_user_flags = (cdata->_user_flags & ~clear_flags) | set_flags;
+  cdata->_user_flags = (cdata->_user_flags & ~clear_flags) | (short)set_flags;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -813,7 +813,7 @@ do_adjust_user_flags(CData *cdata, int clear_flags, int set_flags) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_adjust_comp_flags(CData *cdata, int clear_flags, int set_flags) {
-  cdata->_comp_flags = (cdata->_comp_flags & ~clear_flags) | set_flags;
+  cdata->_comp_flags = (cdata->_comp_flags & ~clear_flags) | (short)set_flags;
 }
 
 ////////////////////////////////////////////////////////////////////

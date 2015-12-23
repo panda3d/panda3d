@@ -61,6 +61,7 @@ private:
     INLINE bool operator < (const ObjectData &other) const;
     
     CullableObject *_object;
+    const GeomVertexFormat *_format;
   };
 
   typedef pvector<ObjectData> Objects;

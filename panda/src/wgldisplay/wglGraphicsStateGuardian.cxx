@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wglGraphicsStateGuardian.h"
+#include "config_wgldisplay.h"
 #include "wglGraphicsBuffer.h"
+#include "wglGraphicsPipe.h"
 #include "string_utils.h"
 
 TypeHandle wglGraphicsStateGuardian::_type_handle;
@@ -644,8 +646,10 @@ make_context(HDC hdc) {
       attrib_list[n++] = WGL_CONTEXT_FLAGS_ARB;
       attrib_list[n++] = WGL_CONTEXT_DEBUG_BIT_ARB;
     }
+#ifndef SUPPORT_FIXED_FUNCTION
     attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
     attrib_list[n++] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+#endif
     attrib_list[n] = NULL;
 
     _context = _wglCreateContextAttribsARB(hdc, 0, attrib_list);

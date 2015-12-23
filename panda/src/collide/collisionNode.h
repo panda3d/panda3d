@@ -58,6 +58,11 @@ PUBLISHED:
   INLINE CollideMask get_from_collide_mask() const;
   INLINE CollideMask get_into_collide_mask() const;
 
+  MAKE_PROPERTY(from_collide_mask, get_from_collide_mask,
+                                   set_from_collide_mask);
+  MAKE_PROPERTY(into_collide_mask, get_into_collide_mask,
+                                   set_into_collide_mask);
+
   INLINE void clear_solids();
   INLINE int get_num_solids() const;
   INLINE CPT(CollisionSolid) get_solid(int n) const;
@@ -69,6 +74,7 @@ PUBLISHED:
 
   INLINE int get_collider_sort() const;
   INLINE void set_collider_sort(int sort);
+  MAKE_PROPERTY(collider_sort, get_collider_sort, set_collider_sort);
 
   INLINE static CollideMask get_default_collide_mask();
 

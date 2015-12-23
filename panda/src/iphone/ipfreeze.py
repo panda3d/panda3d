@@ -27,7 +27,7 @@ if __name__ == '__main__':
     basename = 'iphone_runappmf'
     #link_all_static = True
     link_all_static = False
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
     except getopt.error, msg:
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         platform = 'IPhoneSimulator'
     else:
         platform = 'IPhoneOS'
-    
+
     version = '2.0'
     dev = '/Developer/Platforms/%s.platform/Developer' % (platform)
     env = 'env MACOSX_DEPLOYMENT_TARGET=10.5 PATH="%s/usr/bin:/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin"' % (dev)

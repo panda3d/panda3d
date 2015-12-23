@@ -17,7 +17,7 @@ class Job(DirectObject):
     # with priority of 100.
     Priorities = ScratchPad(Min=1, Low=100, Normal=1000, High=10000)
     _SerialGen = SerialNumGen()
-    
+
     def __init__(self, name):
         self._name = name
         self._generator = None

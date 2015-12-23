@@ -8,7 +8,8 @@ import marshal
 import imp
 import platform
 import types
-from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
+from StringIO import StringIO
+from distutils.sysconfig import PREFIX, get_python_inc, get_python_version, get_config_var
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -30,14 +31,12 @@ isDebugBuild = (python.lower().endswith('_d'))
 # must be frozen in any main.exe.
 startupModules = [
     'site', 'sitecustomize', 'os', 'encodings.cp1252',
-    'org',
+    'encodings.latin_1', 'encodings.utf_8', 'io', 'org',
     ]
 
 # These are missing modules that we've reported already this session.
 reportedMissing = {}
 
-# Our own Python source trees to watch out for.
-sourceTrees = ['direct']
 
 class CompilationEnvironment:
     """ Create an instance of this class to record the commands to
@@ -63,7 +62,7 @@ class CompilationEnvironment:
         # Paths to Python stuff.
         self.Python = None
         self.PythonIPath = get_python_inc()
-        self.PythonVersion = get_python_version()
+        self.PythonVersion = get_config_var("LDVERSION") or get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -444,7 +443,7 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
 }
 
 %(dllexport)svoid init%(moduleName)s() {
-  extend_frozen_modules(_PyImport_FrozenModules, %(newcount)s);
+  extend_frozen_modules(_PyImport_FrozenModules, sizeof(_PyImport_FrozenModules) / sizeof(struct _frozen));
   Py_InitModule("%(moduleName)s", nullMethods);
 }
 """
@@ -457,7 +456,7 @@ programFile = """
 
 %(moduleDefs)s
 
-static struct _frozen _PyImport_FrozenModules[] = {
+struct _frozen _PyImport_FrozenModules[] = {
 %(moduleList)s
   {NULL, NULL, 0}
 };
@@ -484,7 +483,7 @@ okMissing = [
     'Carbon.Folder', 'Carbon.Folders', 'HouseGlobals', 'Carbon.File',
     'MacOS', '_emx_link', 'ce', 'mac', 'org.python.core', 'os.path',
     'os2', 'posix', 'pwd', 'readline', 'riscos', 'riscosenviron',
-    'riscospath', 'dbm', 'fcntl', 'win32api',
+    'riscospath', 'dbm', 'fcntl', 'win32api', 'usercustomize',
     '_winreg', 'ctypes', 'ctypes.wintypes', 'nt','msvcrt',
     'EasyDialogs', 'SOCKS', 'ic', 'rourl2path', 'termios',
     'OverrideFrom23._Res', 'email', 'email.Utils', 'email.Generator',
@@ -497,7 +496,8 @@ class Freezer:
         def __init__(self, moduleName, filename = None,
                      implicit = False, guess = False,
                      exclude = False, forbid = False,
-                     allowChildren = False, fromSource = None):
+                     allowChildren = False, fromSource = None,
+                     text = None):
             # The Python module name.
             self.moduleName = moduleName
 
@@ -531,6 +531,9 @@ class Freezer:
             # Additional black-box information about where this module
             # record came from, supplied by the caller.
             self.fromSource = fromSource
+
+            # If this is set, it contains Python code of the module.
+            self.text = text
 
             # Some sanity checks.
             if not self.exclude:
@@ -608,20 +611,14 @@ class Freezer:
 
         self.mf = None
 
-        # Make sure we know how to find "direct".
-        for sourceTree in sourceTrees:
-            try:
-                module = __import__(sourceTree)
-            except:
-                pass
-
         # Actually, make sure we know how to find all of the
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
         for moduleName, module in sys.modules.items():
             if module and hasattr(module, '__path__'):
                 path = getattr(module, '__path__')
-                modulefinder.AddPackagePath(moduleName, path[0])
+                if path:
+                    modulefinder.AddPackagePath(moduleName, path[0])
 
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by
@@ -748,7 +745,8 @@ class Freezer:
         return modules
 
     def addModule(self, moduleName, implicit = False, newName = None,
-                  filename = None, guess = False, fromSource = None):
+                  filename = None, guess = False, fromSource = None,
+                  text = None):
         """ Adds a module to the list of modules to be exported by
         this tool.  If implicit is true, it is OK if the module does
         not actually exist.
@@ -804,7 +802,7 @@ class Freezer:
                     # It's actually a regular module.
                     self.modules[newParentName] = self.ModuleDef(
                         parentName, implicit = implicit, guess = guess,
-                        fromSource = fromSource)
+                        fromSource = fromSource, text = text)
 
                 else:
                     # Now get all the py files in the parent directory.
@@ -819,9 +817,9 @@ class Freezer:
             # A normal, explicit module name.
             self.modules[newName] = self.ModuleDef(
                 moduleName, filename = filename, implicit = implicit,
-                guess = guess, fromSource = fromSource)
+                guess = guess, fromSource = fromSource, text = text)
 
-    def done(self, compileToExe = False):
+    def done(self, addStartupModules = False):
         """ Call this method after you have added all modules with
         addModule().  You may then call generateCode() or
         writeMultifile() to dump the resulting output.  After a call
@@ -832,7 +830,9 @@ class Freezer:
 
         # If we are building an exe, we also need to implicitly
         # bring in Python's startup modules.
-        if compileToExe:
+        if addStartupModules:
+            self.modules['_frozen_importlib'] = self.ModuleDef('importlib._bootstrap', implicit = True)
+
             for moduleName in startupModules:
                 if moduleName not in self.modules:
                     self.modules[moduleName] = self.ModuleDef(moduleName, implicit = True)
@@ -970,7 +970,10 @@ class Freezer:
                 stuff = ("", "rb", imp.PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                fp = open(pathname, modulefinder.READ_MODE)
+                if mdef.text:
+                    fp = StringIO(mdef.text)
+                else:
+                    fp = open(pathname, 'U')
                 stuff = ("", "r", imp.PY_SOURCE)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
@@ -1062,8 +1065,12 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + '\0\0\0\0' + \
-                   marshal.dumps(code)
+            data = imp.get_magic() + b'\0\0\0\0'
+
+            if sys.version_info >= (3, 0):
+                data += b'\0\0\0\0'
+
+            data += marshal.dumps(code)
 
             stream = StringStream(data)
             multifile.addSubfile(filename, stream, compressionLevel)
@@ -1136,6 +1143,7 @@ class Freezer:
         elif getattr(module, '__file__', None):
             sourceFilename = Filename.fromOsSpecific(module.__file__)
             sourceFilename.setExtension("py")
+            sourceFilename.setText()
 
         if self.storePythonSource:
             if sourceFilename and sourceFilename.exists():
@@ -1205,22 +1213,9 @@ class Freezer:
         multifile.flush()
         multifile.repack()
 
-    def generateCode(self, basename, compileToExe = False):
-        """ After a call to done(), this freezes all of the
-        accumulated python code into either an executable program (if
-        compileToExe is true) or a dynamic library (if compileToExe is
-        false).  The basename is the name of the file to write,
-        without the extension.
-
-        The return value is the newly-generated filename, including
-        the filename extension.  Additional extension modules are
-        listed in self.extras. """
-
-        if compileToExe:
-            # We must have a __main__ module to make an exe file.
-            if not self.__writingModule('__main__'):
-                message = "Can't generate an executable without a __main__ module."
-                raise StandardError, message
+    def writeCode(self, filename, initCode = ""):
+        """ After a call to done(), this freezes all of the accumulated
+        Python code into a C source file. """
 
         self.__replacePaths()
 
@@ -1238,38 +1233,57 @@ class Freezer:
                 # Allow importing this module.
                 module = self.mf.modules.get(origName, None)
                 code = getattr(module, "__code__", None)
-                if not code and moduleName in startupModules:
+                if code:
+                    code = marshal.dumps(code)
+
+                    mangledName = self.mangleName(moduleName)
+                    moduleDefs.append(self.makeModuleDef(mangledName, code))
+                    moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
+
+                elif moduleName in startupModules:
                     # Forbid the loading of this startup module.
                     moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
+
                 else:
-                    if origName in sourceTrees:
-                        # This is one of Panda3D's own Python source
-                        # trees.  These are a special case: we don't
-                        # compile the __init__.py files within them,
-                        # since their only purpose is to munge the
-                        # __path__ variable anyway.  Instead, we
-                        # pretend the __init__.py files are empty.
-                        code = compile('', moduleName, 'exec')
-
-                    if code:
-                        code = marshal.dumps(code)
-
-                        mangledName = self.mangleName(moduleName)
-                        moduleDefs.append(self.makeModuleDef(mangledName, code))
-                        moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
+                    # This is a module with no associated Python
+                    # code.  It must be an extension module.  Get the
+                    # filename.
+                    extensionFilename = getattr(module, '__file__', None)
+                    if extensionFilename:
+                        self.extras.append((moduleName, extensionFilename))
                     else:
+                        # It doesn't even have a filename; it must
+                        # be a built-in module.  No worries about
+                        # this one, then.
+                        pass
 
-                        # This is a module with no associated Python
-                        # code.  It must be an extension module.  Get the
-                        # filename.
-                        extensionFilename = getattr(module, '__file__', None)
-                        if extensionFilename:
-                            self.extras.append((moduleName, extensionFilename))
-                        else:
-                            # It doesn't even have a filename; it must
-                            # be a built-in module.  No worries about
-                            # this one, then.
-                            pass
+        text = programFile % {
+            'moduleDefs': '\n'.join(moduleDefs),
+            'moduleList': '\n'.join(moduleList),
+            'initCode': initCode
+            }
+
+        if filename is not None:
+            file = open(filename, 'w')
+            file.write(text)
+            file.close()
+
+    def generateCode(self, basename, compileToExe = False):
+        """ After a call to done(), this freezes all of the
+        accumulated python code into either an executable program (if
+        compileToExe is true) or a dynamic library (if compileToExe is
+        false).  The basename is the name of the file to write,
+        without the extension.
+
+        The return value is the newly-generated filename, including
+        the filename extension.  Additional extension modules are
+        listed in self.extras. """
+
+        if compileToExe:
+            # We must have a __main__ module to make an exe file.
+            if not self.__writingModule('__main__'):
+                message = "Can't generate an executable without a __main__ module."
+                raise StandardError, message
 
         filename = basename + self.sourceExtension
 
@@ -1308,21 +1322,12 @@ class Freezer:
 
             initCode = dllInitCode % {
                 'moduleName' : os.path.basename(basename),
-                'newcount' : len(moduleList),
                 'dllexport' : dllexport,
                 'dllimport' : dllimport,
                 }
             compileFunc = self.cenv.compileDll
 
-        text = programFile % {
-            'moduleDefs' : '\n'.join(moduleDefs),
-            'moduleList' : '\n'.join(moduleList),
-            'initCode' : initCode,
-            }
-
-        file = open(filename, 'w')
-        file.write(text)
-        file.close()
+        self.writeCode(filename, initCode=initCode)
 
         try:
             compileFunc(filename, basename)
@@ -1341,7 +1346,10 @@ class Freezer:
         for i in range(0, len(code), 16):
             result += '\n  '
             for c in code[i:i+16]:
-                result += ('%d,' % ord(c))
+                if isinstance(c, int): # Python 3
+                    result += ('%d,' % c)
+                else: # Python 2
+                    result += ('%d,' % ord(c))
         result += '\n};\n'
         return result
 
@@ -1378,9 +1386,13 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
     def __init__(self, *args, **kw):
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
-    def find_module(self, name, path, parent=None):
+    def find_module(self, name, path, *args, **kwargs):
+        if imp.is_frozen(name):
+            # Don't pick up modules that are frozen into p3dpython.
+            raise ImportError("'%s' is a frozen module" % (name))
+
         try:
-            return modulefinder.ModuleFinder.find_module(self, name, path, parent = parent)
+            return modulefinder.ModuleFinder.find_module(self, name, path, *args, **kwargs)
         except ImportError:
             # It wasn't found through the normal channels.  Maybe it's
             # one of ours, or maybe it's frozen?

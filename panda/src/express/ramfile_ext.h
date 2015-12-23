@@ -32,7 +32,11 @@
 template<>
 class Extension<Ramfile> : public ExtensionBase<Ramfile> {
 public:
-  BLOCKING PyObject *readlines();
+  PyObject *read(size_t length);
+  PyObject *readline();
+  PyObject *readlines();
+
+  PyObject *get_data() const;
 };
 
 #endif  // HAVE_PYTHON

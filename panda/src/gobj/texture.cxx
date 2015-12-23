@@ -502,11 +502,14 @@ estimate_texture_memory() const {
   case Texture::F_green:
   case Texture::F_blue:
   case Texture::F_luminance:
+  case Texture::F_sluminance:
+    bpp = 1;
+    break;
+
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-  case Texture::F_sluminance:
   case Texture::F_sluminance_alpha:
-    bpp = 4;
+    bpp = 2;
     break;
 
   case Texture::F_rgba:
@@ -529,13 +532,16 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_depth_stencil:
+    bpp = 4;
+    break;
+
   case Texture::F_depth_component:
-    bpp = 32;
+    bpp = 2;
     break;
 
   case Texture::F_rgba12:
   case Texture::F_rgb12:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_rgba16:
@@ -554,7 +560,7 @@ estimate_texture_memory() const {
     bpp = 4;
     break;
   case Texture::F_rgb16:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_r32i:
@@ -569,6 +575,10 @@ estimate_texture_memory() const {
     break;
   case Texture::F_rgb32:
     bpp = 12;
+    break;
+
+  case Texture::F_r11_g11_b10:
+    bpp = 4;
     break;
 
   default:
@@ -1525,6 +1535,10 @@ write(ostream &out, int indent_level) const {
     out << "cube map, " << cdata->_x_size << " x " << cdata->_y_size;
     break;
 
+  case TT_cube_map_array:
+    out << "cube map array, " << cdata->_x_size << " x " << cdata->_y_size << " x " << cdata->_z_size;
+    break;
+
   case TT_buffer_texture:
     out << "buffer, " << cdata->_x_size;
     break;
@@ -1538,10 +1552,12 @@ write(ostream &out, int indent_level) const {
 
   switch (cdata->_component_type) {
   case T_unsigned_byte:
+  case T_byte:
     out << " bytes";
     break;
 
   case T_unsigned_short:
+  case T_short:
     out << " shorts";
     break;
 
@@ -1690,6 +1706,9 @@ write(ostream &out, int indent_level) const {
     break;
   case F_rgba8i:
     out << "rgba8i";
+    break;
+  case F_r11_g11_b10:
+    out << "r11_g11_b10";
     break;
   }
 
@@ -1928,6 +1947,8 @@ format_texture_type(TextureType tt) {
     return "2d_texture_array";
   case TT_cube_map:
     return "cube_map";
+  case TT_cube_map_array:
+    return "cube_map_array";
   case TT_buffer_texture:
     return "buffer_texture";
   }
@@ -1952,6 +1973,8 @@ string_texture_type(const string &str) {
     return TT_2d_texture_array;
   } else if (cmp_nocase(str, "cube_map") == 0) {
     return TT_cube_map;
+  } else if (cmp_nocase(str, "cube_map_array") == 0) {
+    return TT_cube_map_array;
   } else if (cmp_nocase(str, "buffer_texture") == 0) {
     return TT_buffer_texture;
   }
@@ -1980,6 +2003,10 @@ format_component_type(ComponentType ct) {
     return "unsigned_int_24_8";
   case T_int:
     return "int";
+  case T_byte:
+    return "unsigned_byte";
+  case T_short:
+    return "short";
   }
 
   return "**invalid**";
@@ -2003,6 +2030,10 @@ string_component_type(const string &str) {
     return T_unsigned_int_24_8;
   } else if (cmp_nocase(str, "int") == 0) {
     return T_int;
+  } else if (cmp_nocase(str, "byte") == 0) {
+    return T_byte;
+  } else if (cmp_nocase(str, "short") == 0) {
+    return T_short;
   }
 
   gobj_cat->error()
@@ -2101,6 +2132,8 @@ format_format(Format format) {
     return "rgb8i";
   case F_rgba8i:
     return "rgba8i";
+  case F_r11_g11_b10:
+    return "r11g11b10";
   }
   return "**invalid**";
 }
@@ -2187,6 +2220,8 @@ string_format(const string &str) {
     return F_rg32;
   } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
     return F_rgb32;
+  } else if (cmp_nocase(str, "r11g11b10") == 0) {
+    return F_r11_g11_b10;
   }
 
   gobj_cat->error()
@@ -2384,6 +2419,19 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 PT(Texture) Texture::
 make_texture() {
   return new Texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_unsigned
+//       Access: Public, Static
+//  Description: Returns true if the indicated component type is
+//               unsigned, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_unsigned(Texture::ComponentType ctype) {
+  return (ctype == T_unsigned_byte ||
+          ctype == T_unsigned_short ||
+          ctype == T_unsigned_int_24_8);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4407,7 +4455,7 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
 //               be initialized with this string repeated for
 //               every pixel.
 ////////////////////////////////////////////////////////////////////
-int Texture::
+size_t Texture::
 do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
   nassertr(cdata->_num_components <= 4, 0);
@@ -4496,6 +4544,48 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
         ((int *)into)[0] = (int)cdata->_clear_color[2];
         ((int *)into)[1] = (int)cdata->_clear_color[1];
         ((int *)into)[2] = (int)cdata->_clear_color[0];
+        break;
+      }
+      break;
+    }
+
+  case T_byte:
+    {
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      scaled *= 127;
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (char)scaled[1];
+      case 1:
+        into[0] = (char)scaled[0];
+        break;
+      case 4:
+        into[3] = (char)scaled[3];
+      case 3: // BGR <-> RGB
+        into[0] = (char)scaled[2];
+        into[1] = (char)scaled[1];
+        into[2] = (char)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_short:
+    {
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      scaled *= 32767;
+      switch (cdata->_num_components) {
+      case 2:
+        ((short *)into)[1] = (short)scaled[1];
+      case 1:
+        ((short *)into)[0] = (short)scaled[0];
+        break;
+      case 4:
+        ((short *)into)[3] = (short)scaled[3];
+      case 3: // BGR <-> RGB
+        ((short *)into)[0] = (short)scaled[2];
+        ((short *)into)[1] = (short)scaled[1];
+        ((short *)into)[2] = (short)scaled[0];
         break;
       }
       break;
@@ -4875,11 +4965,17 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     }
 
 #ifndef NDEBUG
-    if (cdata->_texture_type == TT_1d_texture ||
-        cdata->_texture_type == TT_buffer_texture) {
+    switch (cdata->_texture_type) {
+    case TT_1d_texture:
+    case TT_buffer_texture:
       nassertr(y_size == 1, false);
-    } else if (cdata->_texture_type == TT_cube_map) {
+      break;
+    case TT_cube_map:
+    case TT_cube_map_array:
       nassertr(x_size == y_size, false);
+      break;
+    default:
+      break;
     }
 #endif
     if ((cdata->_x_size != x_size)||(cdata->_y_size != y_size)) {
@@ -5074,6 +5170,15 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
     cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
 
+  case TT_cube_map_array:
+    // Cube maps array z_size needs to be a multiple of 6.
+    nassertv(x_size == y_size && z_size % 6 == 0);
+
+    cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
+    break;
+
   case TT_buffer_texture:
     nassertv(y_size == 1 && z_size == 1);
     break;
@@ -5152,6 +5257,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_srgb:
   case F_rgb32:
   case F_rgb8i:
+  case F_r11_g11_b10:
     cdata->_num_components = 3;
     break;
 
@@ -5181,10 +5287,12 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
 
   switch (component_type) {
   case T_unsigned_byte:
+  case T_byte:
     cdata->_component_width = 1;
     break;
 
   case T_unsigned_short:
+  case T_short:
     cdata->_component_width = 2;
     break;
 
@@ -5246,6 +5354,7 @@ do_set_z_size(CData *cdata, int z_size) {
   if (cdata->_z_size != z_size) {
     nassertv((cdata->_texture_type == Texture::TT_3d_texture) ||
              (cdata->_texture_type == Texture::TT_cube_map && z_size == 6) ||
+             (cdata->_texture_type == Texture::TT_cube_map_array && z_size % 6 == 0) ||
              (cdata->_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     cdata->_z_size = z_size;
     cdata->inc_image_modified();
@@ -8113,6 +8222,7 @@ make_this_from_bam(const FactoryParams &params) {
         break;
 
       case TT_2d_texture_array:
+      case TT_cube_map_array:
         me = TexturePool::load_2d_texture_array(filename, has_read_mipmaps, options);
         break;
 

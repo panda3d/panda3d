@@ -170,7 +170,7 @@ cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 PhysxConvexMesh *PhysxKitchen::
 cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookConvexMesh(meshDesc.get_desc(), buffer);
@@ -198,7 +198,7 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 PhysxTriangleMesh *PhysxKitchen::
 cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookTriangleMesh(meshDesc.get_desc(), buffer);
@@ -226,7 +226,7 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 PhysxClothMesh *PhysxKitchen::
 cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), wbuffer);
@@ -255,7 +255,7 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 PhysxSoftBodyMesh *PhysxKitchen::
 cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), false);
+  nassertr_always(meshDesc.is_valid(), NULL);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), wbuffer);

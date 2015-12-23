@@ -144,10 +144,14 @@ extern "C" {
   EXPCL_PYSTUB int PyType_GenericAlloc(...);
   EXPCL_PYSTUB int PyType_IsSubtype(...);
   EXPCL_PYSTUB int PyType_Ready(...);
+  EXPCL_PYSTUB int PyUnicodeUCS2_FromFormat(...);
+  EXPCL_PYSTUB int PyUnicodeUCS2_FromString(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_GetSize(...);
+  EXPCL_PYSTUB int PyUnicodeUCS4_FromFormat(...);
+  EXPCL_PYSTUB int PyUnicodeUCS4_FromString(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_AsWideChar(...);
@@ -175,6 +179,8 @@ extern "C" {
   EXPCL_PYSTUB int _PyObject_CallMethod_SizeT(...);
   EXPCL_PYSTUB int _PyObject_DebugFree(...);
   EXPCL_PYSTUB int _PyObject_Del(...);
+  EXPCL_PYSTUB int _PyUnicode_AsString(...);
+  EXPCL_PYSTUB int _PyUnicode_AsStringAndSize(...);
   EXPCL_PYSTUB int _Py_BuildValue_SizeT(...);
   EXPCL_PYSTUB int _Py_Dealloc(...);
   EXPCL_PYSTUB int _Py_NegativeRefcount(...);
@@ -190,6 +196,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
+  EXPCL_PYSTUB extern void *PyExc_OSError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
   EXPCL_PYSTUB extern void *PyExc_StandardError;
   EXPCL_PYSTUB extern void *PyExc_StopIteration;
@@ -334,10 +341,14 @@ int PyTuple_Type(...) { return 0; };
 int PyType_GenericAlloc(...) { return 0; };
 int PyType_IsSubtype(...) { return 0; }
 int PyType_Ready(...) { return 0; };
+int PyUnicodeUCS2_FromFormat(...) { return 0; }
+int PyUnicodeUCS2_FromString(...) { return 0; }
 int PyUnicodeUCS2_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS2_FromWideChar(...) { return 0; }
 int PyUnicodeUCS2_AsWideChar(...) { return 0; }
 int PyUnicodeUCS2_GetSize(...) { return 0; }
+int PyUnicodeUCS4_FromFormat(...) { return 0; }
+int PyUnicodeUCS4_FromString(...) { return 0; }
 int PyUnicodeUCS4_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS4_FromWideChar(...) { return 0; }
 int PyUnicodeUCS4_AsWideChar(...) { return 0; }
@@ -365,6 +376,8 @@ int _PyObject_CallFunction_SizeT(...) { return 0; };
 int _PyObject_CallMethod_SizeT(...) { return 0; };
 int _PyObject_DebugFree(...) { return 0; };
 int _PyObject_Del(...) { return 0; };
+int _PyUnicode_AsString(...) { return 0; };
+int _PyUnicode_AsStringAndSize(...) { return 0; };
 int _Py_BuildValue_SizeT(...) { return 0; };
 int _Py_Dealloc(...) { return 0; };
 int _Py_NegativeRefcount(...) { return 0; };
@@ -385,6 +398,7 @@ void *PyExc_ConnectionError = (void *)NULL;
 void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
+void *PyExc_OSError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
 void *PyExc_StandardError = (void *)NULL;
 void *PyExc_StopIteration = (void *)NULL;

@@ -278,6 +278,26 @@ is_incomplete() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::get_constructor
+//       Access: Public
+//  Description: Returns the constructor defined for the struct type,
+//               if any, or NULL if no constructor is found.
+////////////////////////////////////////////////////////////////////
+CPPFunctionGroup *CPPStructType::
+get_constructor() const {
+  // Iterate through all the functions that begin with '~' until we
+  // find one that claims to be a destructor.  In theory, there should
+  // only be one such function.
+  CPPScope::Functions::const_iterator fi;
+  fi = _scope->_functions.find(get_simple_name());
+  if (fi != _scope->_functions.end()) {
+    return fi->second;
+  } else {
+    return (CPPFunctionGroup *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::get_destructor
 //       Access: Public
 //  Description: Returns the destructor defined for the struct type,

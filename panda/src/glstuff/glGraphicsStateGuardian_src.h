@@ -222,6 +222,8 @@ typedef GLboolean (APIENTRYP PFNGLISIMAGEHANDLERESIDENTPROC) (GLuint64 handle);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64PROC) (GLuint index, GLuint64EXT x);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VPROC) (GLuint index, const GLuint64EXT *v);
 typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
+typedef void *(APIENTRYP PFNGLMAPBUFFERPROC) (GLenum target, GLenum access);
+typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -310,9 +312,9 @@ public:
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  bool apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataHandle *reader,
-                           bool force);
+  bool update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
+                            const GeomVertexArrayDataHandle *reader,
+                            bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   bool setup_array_data(const unsigned char *&client_pointer,
@@ -455,6 +457,14 @@ protected:
 
   virtual void free_pointers();
 
+#ifndef OPENGLES_1
+  INLINE void enable_vertex_attrib_array(GLuint index);
+  INLINE void disable_vertex_attrib_array(GLuint index);
+  INLINE void set_vertex_attrib_divisor(GLuint index, GLuint divisor);
+#endif
+
+  INLINE void set_active_texture_stage(int i);
+
   INLINE void enable_multisample_antialias(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -531,8 +541,12 @@ protected:
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 #endif
+#ifndef OPENGLES
+  void update_shader_vertex_format(const GeomVertexFormat *format);
+#endif
 
   void apply_white_texture();
+  GLuint get_white_texture();
 
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
@@ -550,9 +564,10 @@ protected:
                             GLenum component_type,
                             bool one_page_only, int z,
                             Texture::CompressionMode image_compression);
+  void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
-  size_t get_texture_memory_size(Texture *tex);
+  size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
@@ -604,6 +619,9 @@ protected:
   epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
+  BitMask32 _enabled_vertex_attrib_arrays;
+  GLint _vertex_attrib_divisors[32];
+
   PT(Shader) _current_shader;
   ShaderContext *_current_shader_context;
   PT(Shader) _vertex_array_shader;
@@ -612,6 +630,10 @@ protected:
   ShaderContext *_texture_binding_shader_context;
 
   static PT(Shader) _default_shader;
+
+#ifndef OPENGLES
+  bool _shader_point_size;
+#endif
 #endif
 
 #ifdef HAVE_CG
@@ -642,6 +664,15 @@ protected:
   GLuint _current_ubuffer_index;
   pvector<GLuint> _current_ubuffer_base;
   GLuint _current_fbo;
+
+#ifndef OPENGLES
+  pvector<GLuint> _current_vertex_buffers;
+  bool _use_vertex_attrib_binding;
+  CPT(GeomVertexFormat) _current_vertex_format;
+  const GeomVertexColumn *_vertex_attrib_columns[32];
+#endif
+
+  int _active_texture_stage;
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
@@ -653,8 +684,6 @@ protected:
   bool _supports_depth24;
   bool _supports_depth32;
 #endif
-
-  int _error_count;
 
   string _gl_vendor;
   string _gl_renderer;
@@ -703,6 +732,11 @@ public:
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
 #endif
 
+  bool _supports_clear_buffer;
+#ifndef OPENGLES
+  PFNGLCLEARBUFFERDATAPROC _glClearBufferData;
+#endif
+
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC _glCompressedTexImage2D;
   PFNGLCOMPRESSEDTEXIMAGE3DPROC _glCompressedTexImage3D;
@@ -717,9 +751,15 @@ public:
 
 #ifdef SUPPORT_FIXED_FUNCTION
   bool _supports_rescale_normal;
+
+#ifndef OPENGLES
+  bool _use_separate_specular_color;
+#endif
 #endif
 
+#ifndef OPENGLES_2
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
+#endif
 #ifdef SUPPORT_FIXED_FUNCTION
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
 #endif
@@ -762,6 +802,11 @@ public:
   PFNGLDELETEVERTEXARRAYSPROC _glDeleteVertexArrays;
   PFNGLGENVERTEXARRAYSPROC _glGenVertexArrays;
 
+#ifndef OPENGLES
+  PFNGLDRAWARRAYSINDIRECTPROC _glDrawArraysIndirect;
+  PFNGLDRAWELEMENTSINDIRECTPROC _glDrawElementsIndirect;
+#endif
+
   bool _supports_framebuffer_object;
   PFNGLISRENDERBUFFEREXTPROC _glIsRenderbuffer;
   PFNGLBINDRENDERBUFFEREXTPROC _glBindRenderbuffer;
@@ -788,6 +833,10 @@ public:
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
 
+#ifndef OPENGLES
+  PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+#endif
+
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_multisample_coverage_nv;
   INLINE bool get_supports_framebuffer_multisample();
@@ -798,7 +847,13 @@ public:
   INLINE bool get_supports_framebuffer_blit();
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+
+#ifndef OPENGLES
   PFNGLCLEARBUFFERFVPROC _glClearBufferfv;
+  PFNGLCLEARBUFFERIVPROC _glClearBufferiv;
+  PFNGLCLEARBUFFERFIPROC _glClearBufferfi;
+#endif
+
   int _max_fb_samples;
   bool _supports_viewport_arrays;
   bool _supports_bindless_texture;
@@ -866,6 +921,13 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLBINDVERTEXBUFFERPROC _glBindVertexBuffer;
+  PFNGLBINDVERTEXBUFFERSPROC _glBindVertexBuffers;
+  PFNGLVERTEXATTRIBFORMATPROC _glVertexAttribFormat;
+  PFNGLVERTEXATTRIBIFORMATPROC _glVertexAttribIFormat;
+  PFNGLVERTEXATTRIBLFORMATPROC _glVertexAttribLFormat;
+  PFNGLVERTEXATTRIBBINDINGPROC _glVertexAttribBinding;
+  PFNGLVERTEXBINDINGDIVISORPROC _glVertexBindingDivisor;
   PFNGLGETACTIVEUNIFORMSIVPROC _glGetActiveUniformsiv;
   PFNGLGETACTIVEUNIFORMBLOCKIVPROC _glGetActiveUniformBlockiv;
   PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC _glGetActiveUniformBlockName;
@@ -903,6 +965,12 @@ public:
   GLenum _mirror_clamp;
   GLenum _mirror_edge_clamp;
   GLenum _mirror_border_clamp;
+
+#ifndef OPENGLES
+  bool _supports_texture_lod;
+  bool _supports_texture_lod_bias;
+#endif
+
 #ifndef OPENGLES_1
   GLsizei _instance_count;
 #endif
@@ -927,6 +995,8 @@ public:
 
   //RenderState::SlotMask _inv_state_mask;
 
+  int _error_count;
+  double _last_error_check;
   bool _check_errors;
   bool _force_flush;
   bool _supports_debug;

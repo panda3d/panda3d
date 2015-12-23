@@ -36,6 +36,7 @@ enum CPPInstanceIdentifierType {
   IIT_scoped_pointer,
   IIT_array,
   IIT_const,
+  IIT_volatile,
   IIT_paren,
   IIT_func,
   IIT_initializer,

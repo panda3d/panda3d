@@ -46,10 +46,11 @@ PUBLISHED:
 
   PUBLISHED:
     INLINE CallbackGraphicsWindow *get_window() const;
-    
+    MAKE_PROPERTY(window, get_window);
+
   protected:
     PT(CallbackGraphicsWindow) _window;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -63,7 +64,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -74,7 +75,7 @@ PUBLISHED:
 
   PUBLISHED:
     virtual void upcall();
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -104,7 +105,7 @@ PUBLISHED:
 
   private:
     WindowProperties &_properties;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -137,9 +138,12 @@ PUBLISHED:
   PUBLISHED:
     INLINE CallbackGraphicsWindow::RenderCallbackType get_callback_type() const;
     INLINE GraphicsOutput::FrameMode get_frame_mode() const;
+    MAKE_PROPERTY(callback_type, get_callback_type);
+    MAKE_PROPERTY(frame_mode, get_frame_mode);
 
     INLINE void set_render_flag(bool render_flag);
     INLINE bool get_render_flag() const;
+    MAKE_PROPERTY(render_flag, get_render_flag, set_render_flag);
 
     virtual void upcall();
 
@@ -147,7 +151,7 @@ PUBLISHED:
     RenderCallbackType _callback_type;
     FrameMode _frame_mode;
     bool _render_flag;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -161,7 +165,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };

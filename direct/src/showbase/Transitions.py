@@ -123,7 +123,7 @@ class Transitions:
         if finishIval:
             transitionIval.append(finishIval)
         return transitionIval
-    
+
     def fadeIn(self, t=0.5, finishIval=None):
         """
         Play a fade in transition over t seconds.
@@ -138,7 +138,7 @@ class Transitions:
             base.graphicsEngine.renderFrame()
             render.prepareScene(gsg)
             render2d.prepareScene(gsg)
-        
+
         if (t == 0):
             # Fade in immediately with no lerp
             #print "transitiosn: fadeIn 0.0"
@@ -166,10 +166,10 @@ class Transitions:
             self.loadFade()
             self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
-        elif base.config.GetBool('no-loading-screen',0):
+        elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
                 self.transitionIval = finishIval
-                self.transitionIval.start()               
+                self.transitionIval.start()
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
@@ -324,18 +324,18 @@ class Transitions:
 
             # Allow DirectLabels to be parented to the letterbox sensibly
             self.letterbox.setBin('unsorted', 0)
-            
+
             # Allow a custom look to the letterbox graphic.
 
             # TODO: This model isn't available everywhere.  We should
             # pass it in as a parameter.
             button = loader.loadModel('models/gui/toplevel_gui',
                                       okMissing = True)
-            
+
             barImage = None
             if button:
                 barImage = button.find('**/generic_button')
-                
+
             self.letterboxTop = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxTop',
@@ -360,7 +360,7 @@ class Transitions:
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
                 pos = (0, 0, -1),
-                image = barImage,         
+                image = barImage,
                 image_scale = (2.25,1,.5),
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
@@ -372,7 +372,7 @@ class Transitions:
             self.letterboxBottom.setBin('sorted',0)
             self.letterbox.reparentTo(render2d, -1)
             self.letterboxOff(0)
-            
+
     def noLetterbox(self):
         """
         Removes any current letterbox tasks and parents the letterbox polygon away

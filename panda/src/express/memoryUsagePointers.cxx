@@ -43,7 +43,7 @@ MemoryUsagePointers::
 //       Access: Published
 //  Description: Returns the number of pointers in the set.
 ////////////////////////////////////////////////////////////////////
-int MemoryUsagePointers::
+size_t MemoryUsagePointers::
 get_num_pointers() const {
   return _entries.size();
 }
@@ -54,8 +54,8 @@ get_num_pointers() const {
 //  Description: Returns the nth pointer of the set.
 ////////////////////////////////////////////////////////////////////
 ReferenceCount *MemoryUsagePointers::
-get_pointer(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), NULL);
+get_pointer(size_t n) const {
+  nassertr(n < get_num_pointers(), NULL);
   return _entries[n]._ref_ptr;
 }
 
@@ -68,8 +68,8 @@ get_pointer(int n) const {
 //               NULL.
 ////////////////////////////////////////////////////////////////////
 TypedObject *MemoryUsagePointers::
-get_typed_pointer(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), NULL);
+get_typed_pointer(size_t n) const {
+  nassertr(n < get_num_pointers(), NULL);
   TypedObject *typed_ptr = _entries[n]._typed_ptr;
 
   if (typed_ptr != (TypedObject *)NULL) {
@@ -106,8 +106,8 @@ get_typed_pointer(int n) const {
 //               known.
 ////////////////////////////////////////////////////////////////////
 TypeHandle MemoryUsagePointers::
-get_type(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), TypeHandle::none());
+get_type(size_t n) const {
+  nassertr(n < get_num_pointers(), TypeHandle::none());
   return _entries[n]._type;
 }
 
@@ -118,8 +118,8 @@ get_type(int n) const {
 //               known.
 ////////////////////////////////////////////////////////////////////
 string MemoryUsagePointers::
-get_type_name(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), "");
+get_type_name(size_t n) const {
+  nassertr(n < get_num_pointers(), "");
   return get_type(n).get_name();
 }
 
@@ -132,8 +132,8 @@ get_type_name(int n) const {
 //               MemoryUsage::get_pointers().
 ////////////////////////////////////////////////////////////////////
 double MemoryUsagePointers::
-get_age(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), 0.0);
+get_age(size_t n) const {
+  nassertr(n < get_num_pointers(), 0.0);
   return _entries[n]._age;
 }
 

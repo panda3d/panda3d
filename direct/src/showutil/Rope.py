@@ -10,15 +10,19 @@ class Rope(NodePath):
     thick lines built from triangle strips.
     """
 
-    showRope = base.config.GetBool('show-rope', 1)
-    
+    showRope = ConfigVariableBool('show-rope', True, \
+      "Set this to false to deactivate the display of ropes.")
+
     def __init__(self, name = 'Rope'):
         self.ropeNode = RopeNode(name)
         self.curve = NurbsCurveEvaluator()
         self.ropeNode.setCurve(self.curve)
         NodePath.__init__(self, self.ropeNode)
         self.name = name
-        
+        self.order = 0
+        self.verts = []
+        self.knots = None
+
     def setup(self, order, verts, knots = None):
         """This must be called to define the shape of the curve
         initially, and may be called again as needed to adjust the
@@ -61,7 +65,7 @@ class Rope(NodePath):
         of the first (order - 1) and last (order - 1) values the
         same, and the intermediate values incrementing by 1.
         """
-        
+
         self.order = order
         self.verts = verts
         self.knots = knots
@@ -72,7 +76,7 @@ class Rope(NodePath):
         """Recomputes the curve after its properties have changed.
         Normally it is not necessary for the user to call this
         directly."""
-        
+
         if not self.showRope:
             return
         numVerts = len(self.verts)
@@ -89,7 +93,7 @@ class Rope(NodePath):
 
         vcd = self.ropeNode.getVertexColorDimension()
         vtd = self.ropeNode.getVertexThicknessDimension()
-        
+
         for i in range(numVerts):
             v = self.verts[i]
             if isinstance(v, types.TupleType):
@@ -101,7 +105,7 @@ class Rope(NodePath):
                 point = v.get('point', defaultPoint)
                 color = v.get('color', defaultColor)
                 thickness = v.get('thickness', defaultThickness)
-                
+
             if isinstance(point, types.TupleType):
                 if (len(point) >= 4):
                     self.curve.setVertex(i, VBase4(point[0], point[1], point[2], point[3]))
@@ -129,7 +133,7 @@ class Rope(NodePath):
         """Returns a list of len points, evenly distributed in
         parametric space on the rope, in the coordinate space of the
         Rope itself."""
-        
+
         result = self.curve.evaluate(self)
         startT = result.getStartT()
         sizeT = result.getEndT() - startT

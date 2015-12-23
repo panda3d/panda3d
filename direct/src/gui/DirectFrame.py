@@ -43,7 +43,7 @@ class DirectFrame(DirectGuiWidget):
 
         # Initialize superclasses
         DirectGuiWidget.__init__(self, parent)
-        
+
         # Call option initialization functions
         self.initialiseoptions(DirectFrame)
 
@@ -69,7 +69,7 @@ class DirectFrame(DirectGuiWidget):
                 text = textList[i]
             except IndexError:
                 text = textList[-1]
-                
+
             if self.hascomponent(component):
                 if text == None:
                     # Destroy component
@@ -92,7 +92,7 @@ class DirectFrame(DirectGuiWidget):
     def setGeom(self):
         # Determine argument type
         geom = self['geom']
-        
+
         if geom == None:
             # Passed in None
             geomList = (None,) * self['numStates']
@@ -103,7 +103,7 @@ class DirectFrame(DirectGuiWidget):
         else:
             # Otherwise, hope that the user has passed in a tuple/list
             geomList = geom
-            
+
         # Create/destroy components
         for i in range(self['numStates']):
             component = 'geom' + repr(i)
@@ -113,7 +113,7 @@ class DirectFrame(DirectGuiWidget):
                 geom = geomList[i]
             except IndexError:
                 geom = geomList[-1]
-                
+
             if self.hascomponent(component):
                 if geom == None:
                     # Destroy component
@@ -161,7 +161,7 @@ class DirectFrame(DirectGuiWidget):
                 image = imageList[i]
             except IndexError:
                 image = imageList[-1]
-                
+
             if self.hascomponent(component):
                 if image == None:
                     # Destroy component

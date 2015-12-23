@@ -25,7 +25,7 @@
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
 #define PY_FROM_FLOATTYPE PyFloat_FromDouble
-#define PY_AS_FLOATTYPE PyFloat_AsDouble
+#define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
 #endif
 
 ////////////////////////////////////////////////////////////////////

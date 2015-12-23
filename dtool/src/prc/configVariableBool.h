@@ -34,15 +34,17 @@ PUBLISHED:
   INLINE void operator = (bool value);
   INLINE operator bool () const;
 
-  INLINE int size() const;
-  INLINE bool operator [] (int n) const;
+  INLINE size_t size() const;
+  INLINE bool operator [] (size_t n) const;
 
   INLINE void set_value(bool value);
   INLINE bool get_value() const;
   INLINE bool get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE bool get_word(int n) const;
-  INLINE void set_word(int n, bool value);
+  INLINE bool get_word(size_t n) const;
+  INLINE void set_word(size_t n, bool value);
 
 private:
   AtomicAdjust::Integer _local_modified;

@@ -227,16 +227,27 @@ class SelectedNodePaths(DirectObject):
         selected = self.last
         # Toggle visibility of selected node paths
         if selected:
-            selected.toggleVis()
+            if selected.isHidden():
+                selected.show()
+            else:
+                selected.hide()
 
     def toggleVisAll(self):
         # Toggle viz for all selected node paths
-        self.forEachSelectedNodePathDo(NodePath.toggleVis)
+        selectedNodePaths = self.getSelectedAsList()
+        for nodePath in selectedNodePaths:
+            if nodePath.isHidden():
+                nodePath.show()
+            else:
+                nodePath.hide()
 
     def isolateSelected(self):
         selected = self.last
         if selected:
-            selected.isolate()
+            selected.showAllDescendents()
+            for sib in selected.getParent().getChildren():
+                if sib.node() != selected.node():
+                    sib.hide()
 
     def getDirectNodePath(self, nodePath):
         # Get this pointer
@@ -605,7 +616,7 @@ class SelectionRay(SelectionQueue):
         if direct:
             self.collider.setFromLens(base.direct.camNode, mx, my)
         else:
-            self.collider.setFromLens(base.camNode, mx, my)            
+            self.collider.setFromLens(base.camNode, mx, my)
         self.ct.traverse(targetNodePath)
         self.sortEntries()
 

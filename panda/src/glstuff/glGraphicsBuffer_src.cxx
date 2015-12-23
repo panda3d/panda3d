@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "depthWriteAttrib.h"
+
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +85,121 @@ CLP(GraphicsBuffer)::
     }
   }
 }
+
+#ifndef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsBuffer::clear
+//       Access: Public, Virtual
+//  Description: Clears the entire framebuffer before rendering,
+//               according to the settings of get_color_clear_active()
+//               and get_depth_clear_active() (inherited from
+//               DrawableRegion).
+//
+//               This function is called only within the draw thread.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+clear(Thread *current_thread) {
+  if (!is_any_clear_active()) {
+    return;
+  }
+
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
+
+  if (glgsg->_glClearBufferfv == NULL) {
+    // We can't efficiently clear the buffer.  Fall back to the
+    // inefficient default implementation for now.
+    GraphicsOutput::clear(current_thread);
+    return;
+  }
+
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "clear(): " << get_type() << " "
+      << get_name() << " " << (void *)this << "\n";
+  }
+
+  PStatGPUTimer timer(glgsg, glgsg->_clear_pcollector);
+
+  // Disable the scissor test, so we can clear the whole buffer.
+  glDisable(GL_SCISSOR_TEST);
+  glgsg->_scissor_enabled = false;
+  glgsg->_scissor_array.clear();
+  glgsg->_scissor_attrib_active = false;
+
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glDisable(GL_SCISSOR_TEST)\n";
+  }
+
+  // Set the buffers into which we'll be indexing with glClearBuffer.
+  int draw_buffer_type = _draw_buffer_type & _fb_properties.get_buffer_mask();
+  draw_buffer_type |= _fb_properties.get_aux_mask();
+  glgsg->_color_write_mask = ColorWriteAttrib::C_all;
+  glgsg->set_draw_buffer(draw_buffer_type);
+
+  int index = 0;
+  if (_fb_properties.get_color_bits() > 0) {
+    if (_fb_properties.is_stereo()) {
+      // Clear both left and right attachments.
+      if (get_clear_active(RTP_color)) {
+        LColorf v = LCAST(float, get_clear_value(RTP_color));
+        glgsg->_glClearBufferfv(GL_COLOR, index, v.get_data());
+        glgsg->_glClearBufferfv(GL_COLOR, index + 1, v.get_data());
+      }
+      index += 2;
+    } else {
+      if (get_clear_active(RTP_color)) {
+        LColorf v = LCAST(float, get_clear_value(RTP_color));
+        glgsg->_glClearBufferfv(GL_COLOR, index, v.get_data());
+      }
+      ++index;
+    }
+  }
+  for (int i = 0; i < _fb_properties.get_aux_rgba(); ++i) {
+    int layerid = RTP_aux_rgba_0 + i;
+    if (get_clear_active(layerid)) {
+      LColorf v = LCAST(float, get_clear_value(layerid));
+      glgsg->_glClearBufferfv(GL_COLOR, index, v.get_data());
+    }
+    ++index;
+  }
+  for (int i = 0; i < _fb_properties.get_aux_hrgba(); ++i) {
+    int layerid = RTP_aux_hrgba_0 + i;
+    if (get_clear_active(layerid)) {
+      LColorf v = LCAST(float, get_clear_value(layerid));
+      glgsg->_glClearBufferfv(GL_COLOR, index, v.get_data());
+    }
+    ++index;
+  }
+  for (int i = 0; i < _fb_properties.get_aux_float(); ++i) {
+    int layerid = RTP_aux_float_0 + i;
+    if (get_clear_active(layerid)) {
+      LColorf v = LCAST(float, get_clear_value(layerid));
+      glgsg->_glClearBufferfv(GL_COLOR, index, v.get_data());
+    }
+    ++index;
+  }
+
+  if (get_clear_depth_active()) {
+    glDepthMask(GL_TRUE);
+    glgsg->_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
+
+    if (get_clear_stencil_active()) {
+      glStencilMask(~0);
+      glgsg->_glClearBufferfi(GL_DEPTH_STENCIL, 0, get_clear_depth(), get_clear_stencil());
+    } else {
+      GLfloat depth = get_clear_depth();
+      glgsg->_glClearBufferfv(GL_DEPTH, 0, &depth);
+    }
+  } else if (get_clear_stencil_active()) {
+    GLint stencil = get_clear_stencil();
+    glgsg->_glClearBufferiv(GL_STENCIL, 0, &stencil);
+  }
+
+  report_my_gl_errors();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::begin_frame
@@ -409,20 +526,19 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
-  _fbo.reserve(num_fbos);
-  for (int layer = 0; layer < num_fbos; ++layer) {
-    if (layer >= _fbo.size()) {
-      _fbo.push_back(0);
-    }
 
+  if (num_fbos > _fbo.size()) {
+    // Generate more FBO handles.
+    int start = _fbo.size();
+    _fbo.resize(num_fbos, 0);
+    glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
+  }
+
+  for (int layer = 0; layer < num_fbos; ++layer) {
     // Bind the FBO
     if (_fbo[layer] == 0) {
-      glgsg->_glGenFramebuffers(1, &_fbo[layer]);
-
-      if (_fbo[layer] == 0) {
-        report_my_gl_errors();
-        return;
-      }
+      report_my_gl_errors();
+      return;
     }
     glgsg->bind_fbo(_fbo[layer]);
 
@@ -430,9 +546,10 @@ rebuild_bitplanes() {
     if (glgsg->_use_object_labels) {
       // Assign a label for OpenGL to use when displaying debug messages.
       if (num_fbos > 1) {
-        GLchar name[128];
-        GLsizei len = snprintf(name, 128, "%s[%d]", _name.c_str(), layer);
-        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], len, name);
+        ostringstream strm;
+        strm << _name << '[' << layer << ']';
+        string name = strm.str();
+        glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], name.size(), name.data());
       } else {
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
       }
@@ -1118,11 +1235,7 @@ generate_mipmaps() {
     CLP(TextureContext) *gtc = *it;
 
     if (gtc->_generate_mipmaps) {
-      glgsg->_state_texture = 0;
-      glgsg->update_texture(gtc, true);
-      glgsg->apply_texture(gtc);
-      glgsg->_glGenerateMipmap(gtc->_target);
-      glBindTexture(gtc->_target, 0);
+      glgsg->generate_mipmaps(gtc);
     }
   }
 
@@ -1277,7 +1390,7 @@ open_buffer() {
 
   // Actually, let's always get a colour buffer for now until we
   // figure out why Intel HD Graphics cards complain otherwise.
-  if (_fb_properties.get_color_bits() == 0) {
+  if (gl_force_fbo_color && _fb_properties.get_color_bits() == 0) {
     _fb_properties.set_color_bits(1);
   }
 
@@ -1626,6 +1739,15 @@ report_my_errors(int line, const char *file) {
 void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
+    _rb_data_size_bytes = 0;
+    if (_rb_context != NULL) {
+      // We must delete this object first, because when the GSG
+      // destructs, so will the tracker that this context is
+      // attached to.
+      _rb_context->update_data_size_bytes(0);
+      delete _rb_context;
+      _rb_context = NULL;
+    }
     _is_valid = false;
     _gsg.clear();
     _host.clear();

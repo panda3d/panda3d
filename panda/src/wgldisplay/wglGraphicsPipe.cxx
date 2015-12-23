@@ -17,6 +17,7 @@
 #include "config_windisplay.h"
 #include "wglGraphicsWindow.h"
 #include "wglGraphicsBuffer.h"
+#include "wglGraphicsStateGuardian.h"
 
 typedef enum {Software, MCD, ICD} OGLDriverType;
 

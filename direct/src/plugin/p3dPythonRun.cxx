@@ -21,6 +21,11 @@
 
 #include "py_panda.h"
 
+extern "C" {
+  // This has been compiled-in by the build system, if all is well.
+  extern struct _frozen _PyImport_FrozenModules[];
+};
+
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
 // instances of this thing.
@@ -54,16 +59,26 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   _interactive_console = interactive_console;
 
   if (program_name != NULL) {
+#if PY_MAJOR_VERSION >= 3
+    // Python 3 case: we have to convert it to a wstring.
+    TextEncoder enc;
+    enc.set_text(program_name);
+    _program_name = enc.get_wtext();
+#else
+    // Python 2 is happy with a regular string.
     _program_name = program_name;
+#endif
   }
   if (archive_file != NULL) {
     _archive_file = Filename::from_os_specific(archive_file);
   }
 
   _py_argc = 1;
-  _py_argv = (char **)malloc(2 * sizeof(char *));
-
+#if PY_MAJOR_VERSION >= 3
+  _py_argv[0] = (wchar_t *)_program_name.c_str();
+#else
   _py_argv[0] = (char *)_program_name.c_str();
+#endif
   _py_argv[1] = NULL;
 
 #ifdef NDEBUG
@@ -75,13 +90,30 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   // Turn off the automatic load of site.py at startup.
   extern int Py_NoSiteFlag;
   Py_NoSiteFlag = 1;
+  Py_NoUserSiteDirectory = 1;
+
+  // Tell Python not to write bytecode files for loaded modules.
+  Py_DontWriteBytecodeFlag = 1;
+
+  // Prevent Python from complaining about finding the standard modules.
+  Py_FrozenFlag = 1;
+
+  // This contains the modules we need in order to call Py_Initialize,
+  // as well as the VFSImporter.
+  PyImport_FrozenModules = _PyImport_FrozenModules;
 
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
+#if PY_MAJOR_VERSION >= 3
+  Py_SetProgramName((wchar_t *)_program_name.c_str());
+  Py_SetPythonHome((wchar_t *)L"");
+#else
   Py_SetProgramName((char *)_program_name.c_str());
+  Py_SetPythonHome((char *)"");
+#endif
   Py_Initialize();
   PyEval_InitThreads();
-  PySys_SetArgv(_py_argc, _py_argv);
+  PySys_SetArgvEx(_py_argc, _py_argv, 0);
 
   // Open the error output before we do too much more.
   if (log_pathname != NULL && *log_pathname != '\0') {
@@ -137,8 +169,10 @@ P3DPythonRun::
 //       Access: Public
 //  Description: Runs the embedded Python process.  This method does
 //               not return until the plugin is ready to exit.
+//
+//               Returns the exit status, which will be 0 on success.
 ////////////////////////////////////////////////////////////////////
-bool P3DPythonRun::
+int P3DPythonRun::
 run_python() {
 #if defined(_WIN32) && defined(USE_DEBUG_PYTHON)
   // On Windows, in a debug build, we have to preload sys.dll_suffix =
@@ -154,36 +188,42 @@ run_python() {
   // setting __path__ of frozen modules properly.
   PyObject *panda3d_module = PyImport_AddModule("panda3d");
   if (panda3d_module == NULL) {
-    nout << "Failed to create panda3d module:\n";
+    nout << "Failed to add panda3d module:\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Set the __path__ such that it can find panda3d/core.pyd, etc.
   Filename panda3d_dir(dir, "panda3d");
   string dir_str = panda3d_dir.to_os_specific();
-  PyObject *panda3d_dict = PyModule_GetDict(panda3d_module);
-  PyObject *panda3d_path = Py_BuildValue("[s#]", dir_str.data(), dir_str.length());
-  PyDict_SetItemString(panda3d_dict, "__path__", panda3d_path);
-  Py_DECREF(panda3d_path);
+  PyModule_AddObject(panda3d_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+  PyModule_AddStringConstant(panda3d_module, "__package__", "panda3d");
 
-  // Now we can load _vfsimporter.pyd.  Since this is a magic frozen
-  // pyd, importing it automatically makes all of its frozen contents
-  // available to import as well.
-  PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
-  if (vfsimporter == NULL) {
-    nout << "Failed to import _vfsimporter:\n";
-    PyErr_Print();
-    return false;
-  }
-  Py_DECREF(vfsimporter);
-
-  // And now we can import the VFSImporter module that was so defined.
-  PyObject *vfsimporter_module = PyImport_ImportModule("VFSImporter");
+  // Import the VFSImporter module that was frozen in.
+  PyObject *vfsimporter_module = PyImport_ImportModule("direct.showbase.VFSImporter");
   if (vfsimporter_module == NULL) {
     nout << "Failed to import VFSImporter:\n";
     PyErr_Print();
-    return false;
+    return 1;
+  }
+
+  // Now repair the "direct" and "direct.showbase" trees, which were
+  // presumably frozen along with the VFSImporter, by setting their
+  // __path__ such that we can still find the other direct modules.
+  Filename direct_dir(dir, "direct");
+  PyObject *direct_module = PyImport_AddModule("direct");
+  if (direct_module != NULL) {
+    dir_str = direct_dir.to_os_specific();
+    PyModule_AddObject(direct_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(direct_module, "__package__", "direct");
+  }
+
+  PyObject *showbase_module = PyImport_AddModule("direct.showbase");
+  if (showbase_module != NULL) {
+    Filename showbase_dir(direct_dir, "showbase");
+    dir_str = showbase_dir.to_os_specific();
+    PyModule_AddObject(showbase_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
+    PyModule_AddStringConstant(showbase_module, "__package__", "direct.showbase");
   }
 
   // And register the VFSImporter.
@@ -191,7 +231,7 @@ run_python() {
   if (result == NULL) {
     nout << "Failed to call VFSImporter.register():\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
   Py_DECREF(vfsimporter_module);
@@ -203,12 +243,12 @@ run_python() {
   PT(Multifile) mf = new Multifile;
   if (!mf->open_read(_archive_file)) {
     nout << "Could not read " << _archive_file << "\n";
-    return false;
+    return 1;
   }
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vfs->mount(mf, dir, VirtualFileSystem::MF_read_only)) {
     nout << "Could not mount " << _archive_file << "\n";
-    return false;
+    return 1;
   }
 
   // And finally, we can import the startup module.
@@ -216,7 +256,7 @@ run_python() {
   if (app_runner_module == NULL) {
     nout << "Failed to import direct.p3d.AppRunner\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the pointers to the objects needed within the module.
@@ -224,7 +264,7 @@ run_python() {
   if (app_runner_class == NULL) {
     nout << "Failed to get AppRunner class\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Construct an instance of AppRunner.
@@ -232,7 +272,7 @@ run_python() {
   if (_runner == NULL) {
     nout << "Failed to construct AppRunner instance\n";
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(app_runner_class);
 
@@ -248,35 +288,35 @@ run_python() {
   _undefined_object_class = PyObject_GetAttrString(javascript_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // And the "Undefined" instance.
   _undefined = PyObject_GetAttrString(javascript_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the ConcreteStruct class.
   _concrete_struct_class = PyObject_GetAttrString(javascript_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the BrowserObject class.
   _browser_object_class = PyObject_GetAttrString(javascript_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Get the global TaskManager.
   _taskMgr = PyObject_GetAttrString(app_runner_module, "taskMgr");
   if (_taskMgr == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   Py_DECREF(app_runner_module);
@@ -290,15 +330,28 @@ run_python() {
       "Send an asynchronous request to the plugin host" },
     { NULL, NULL, 0, NULL }        /* Sentinel */
   };
+
+#if PY_MAJOR_VERSION >= 3
+  static PyModuleDef p3dpython_module = {
+    PyModuleDef_HEAD_INIT,
+    "p3dpython",
+    NULL,
+    -1,
+    p3dpython_methods,
+    NULL, NULL, NULL, NULL
+  };
+  PyObject *p3dpython = PyModule_Create(&p3dpython_module);
+#else
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
+#endif
   if (p3dpython == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   PyObject *request_func = PyObject_GetAttrString(p3dpython, "request_func");
   if (request_func == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Now pass that func pointer back to our AppRunner instance, so it
@@ -306,7 +359,7 @@ run_python() {
   result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"N", request_func);
   if (result == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
 
@@ -326,7 +379,7 @@ run_python() {
   PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
   if (check_comm == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
 
   // Add it to the task manager.  We do this instead of constructing a
@@ -334,7 +387,7 @@ run_python() {
   result = PyObject_CallMethod(_taskMgr, (char *)"add", (char *)"Ns", check_comm, "check_comm");
   if (result == NULL) {
     PyErr_Print();
-    return false;
+    return 1;
   }
   Py_DECREF(result);
 
@@ -342,18 +395,48 @@ run_python() {
   // taskMgr.run()).
   PyObject *done = PyObject_CallMethod(_runner, (char *)"run", (char *)"");
   if (done == NULL) {
+    int status = 1;
+
     // An uncaught application exception, and not handled by
-    // appRunner.exceptionHandler.
-    PyErr_Print();
+    // appRunner.exceptionHandler.  If it is a SystemExit, extract
+    // the exit status that we should return.
+    if (PyErr_ExceptionMatches(PyExc_SystemExit)) {
+      PyObject *ptype, *ptraceback;
+      PyObject *value = NULL;
+      PyErr_Fetch(&ptype, &value, &ptraceback);
+
+      if (value != NULL && PyExceptionInstance_Check(value)) {
+        PyObject *code = PyObject_GetAttrString(value, "code");
+        if (code) {
+          Py_DECREF(value);
+          value = code;
+        }
+      }
+
+      if (value == NULL || value == Py_None) {
+        status = 0;
+#if PY_MAJOR_VERSION >= 3
+      } else if (PyLong_Check(value)) {
+        status = (int)PyLong_AsLong(value);
+#else
+      } else if (PyInt_Check(value)) {
+        status = (int)PyInt_AsLong(value);
+#endif
+      } else {
+        status = 1;
+      }
+    } else {
+      PyErr_Print();
+    }
 
     if (_interactive_console) {
       // Give an interactive user a chance to explore the exception.
       run_interactive_console();
-      return true;
+      return 0;
     }
 
     // We're done.
-    return false;
+    return status;
   }
 
   // A normal exit from the taskManager.  We're presumably done.
@@ -363,7 +446,7 @@ run_python() {
     run_interactive_console();
   }
 
-  return true;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -644,8 +727,11 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
           result = PyBool_FromLong(PyObject_IsTrue(obj));
 
         } else if (strcmp(method_name, "__int__") == 0) {
+#if PY_MAJOR_VERSION >= 3
+          result = PyNumber_Long(obj);
+#else
           result = PyNumber_Int(obj);
-
+#endif
         } else if (strcmp(method_name, "__float__") == 0) {
           result = PyNumber_Float(obj);
 
@@ -1510,10 +1596,12 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "bool");
     xvalue->SetAttribute("value", PyObject_IsTrue(value));
 
+#if PY_MAJOR_VERSION < 3
   } else if (PyInt_Check(value)) {
     // A plain integer value.
     xvalue->SetAttribute("type", "int");
     xvalue->SetAttribute("value", PyInt_AsLong(value));
+#endif
 
   } else if (PyLong_Check(value)) {
     // A long integer value.  This gets converted either as an integer
@@ -1535,9 +1623,21 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "float");
     xvalue->SetDoubleAttribute("value", PyFloat_AsDouble(value));
 
+
   } else if (PyUnicode_Check(value)) {
     // A unicode value.  Convert to utf-8 for the XML encoding.
     xvalue->SetAttribute("type", "string");
+
+#if PY_MAJOR_VERSION >= 3
+    // In Python 3, there are only unicode strings, and there is a
+    // handy function for getting the UTF-8 encoded version.
+    Py_ssize_t length = 0;
+    char *buffer = PyUnicode_AsUTF8AndSize(value, &length);
+    if (buffer != NULL) {
+      string str(buffer, length);
+      xvalue->SetAttribute("value", str);
+    }
+#else
     PyObject *as_str = PyUnicode_AsUTF8String(value);
     if (as_str != NULL) {
       char *buffer;
@@ -1571,6 +1671,7 @@ pyobj_to_xml(PyObject *value) {
       }
       Py_DECREF(ustr);
     }
+#endif  // PY_MAJOR_VERSION
 
   } else if (PyTuple_Check(value)) {
     // An immutable sequence.  Pass it as a concrete.
@@ -1609,7 +1710,11 @@ pyobj_to_xml(PyObject *value) {
             PyObject *as_str;
             if (PyUnicode_Check(a)) {
               // The key is a unicode value.
+#if PY_MAJOR_VERSION >= 3
+              as_str = a;
+#else
               as_str = PyUnicode_AsUTF8String(a);
+#endif
             } else {
               // The key is a string value or something else.  Make it
               // a string.
@@ -1617,7 +1722,12 @@ pyobj_to_xml(PyObject *value) {
             }
             char *buffer;
             Py_ssize_t length;
+#if PY_MAJOR_VERSION >= 3
+            buffer = PyUnicode_AsUTF8AndSize(as_str, &length);
+            if (buffer != NULL) {
+#else
             if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+#endif
               string str(buffer, length);
               xitem->SetAttribute("key", str);
             }
@@ -1702,7 +1812,11 @@ xml_to_pyobj(TiXmlElement *xvalue) {
   } else if (strcmp(type, "int") == 0) {
     int value;
     if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+#if PY_MAJOR_VERSION >= 3
+      return PyLong_FromLong(value);
+#else
       return PyInt_FromLong(value);
+#endif
     }
 
   } else if (strcmp(type, "float") == 0) {

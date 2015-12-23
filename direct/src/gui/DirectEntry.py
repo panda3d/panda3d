@@ -256,7 +256,7 @@ class DirectEntry(DirectFrame):
         """ Changes the text currently showing in the typable region;
         does not change the current cursor position.  Also see
         enterText(). """
-        
+
         self.unicodeText = isinstance(text, types.UnicodeType)
         if self.unicodeText:
             self.guiItem.setWtext(text)

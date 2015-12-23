@@ -48,16 +48,16 @@ class ParticlePanel(AppShell):
             pe = seParticleEffect.ParticleEffect('effect1', particles)
             self.particleEffect = pe
             self.emitter=loader.loadModel("sphere")
-            pe.reparentTo(self.emitter) 
+            pe.reparentTo(self.emitter)
             self.emitter.setName("effect1")
             self.emitter.reparentTo(render)
             pe.enable()
             messenger.send('ParticlePanel_Added_Effect',['effect1',pe,self.emitter])
             self.effectsDict[self.particleEffect.getName()]=self.particleEffect
-        
+
 
         messenger.send('SGE_Update Explorer',[render])
-        
+
         # Initialize application specific info
         AppShell.__init__(self)
 

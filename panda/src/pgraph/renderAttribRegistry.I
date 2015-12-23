@@ -25,7 +25,7 @@ get_slot(TypeHandle type_handle) const {
   if (type_index >= (int)_slots_by_type.size()) {
     return 0;
   }
-  return _slots_by_type[type_index];
+  return _slots_by_type[(size_t)type_index];
 }
 
 ////////////////////////////////////////////////////////////////////

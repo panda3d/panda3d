@@ -166,7 +166,7 @@ has_local_value() const {
 //               variable.  This is not exactly the same as the number
 //               of declarations; see get_reference().
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableCore::
+INLINE size_t ConfigVariableCore::
 get_num_references() const {
   check_sort_declarations();
   return _declarations.size();
@@ -184,9 +184,9 @@ get_num_references() const {
 //               untrusted files.
 ////////////////////////////////////////////////////////////////////
 INLINE const ConfigDeclaration *ConfigVariableCore::
-get_reference(int n) const {
+get_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
@@ -197,7 +197,7 @@ get_reference(int n) const {
 //               reference this variable.  See also
 //               get_num_references().
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableCore::
+INLINE size_t ConfigVariableCore::
 get_num_trusted_references() const {
   check_sort_declarations();
   return _trusted_declarations.size();
@@ -218,9 +218,9 @@ get_num_trusted_references() const {
 //               untrusted ones.
 ////////////////////////////////////////////////////////////////////
 INLINE const ConfigDeclaration *ConfigVariableCore::
-get_trusted_reference(int n) const {
+get_trusted_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_trusted_declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _trusted_declarations.size(), (ConfigDeclaration *)NULL);
   return _trusted_declarations[n];
 }
 
@@ -230,7 +230,7 @@ get_trusted_reference(int n) const {
 //  Description: Returns the number of trusted, unique (by string
 //               value) values there exist for this variable.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableCore::
+INLINE size_t ConfigVariableCore::
 get_num_unique_references() const {
   check_sort_declarations();
   return _unique_declarations.size();
@@ -245,9 +245,9 @@ get_num_unique_references() const {
 //               are removed.
 ////////////////////////////////////////////////////////////////////
 INLINE const ConfigDeclaration *ConfigVariableCore::
-get_unique_reference(int n) const {
+get_unique_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_unique_declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _unique_declarations.size(), (ConfigDeclaration *)NULL);
   return _unique_declarations[n];
 }
 
@@ -263,7 +263,7 @@ check_sort_declarations() const {
   // loaded.  This may unsort the list by adding a bunch more
   // declarations.
   ConfigPageManager::get_global_ptr()->load_implicit_pages();
-  
+
   // Then sort the list if it needs it.
   if (!_declarations_sorted) {
     ((ConfigVariableCore *)this)->sort_declarations();

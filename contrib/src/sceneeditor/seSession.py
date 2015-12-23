@@ -49,7 +49,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         self.useObjectHandles()
         self.grid = DirectGrid()
         self.grid.disable()
-        
+
         # Initialize the collection of selected nodePaths
         self.selected = SelectedNodePaths()
         # Ancestry of currently selected object
@@ -94,19 +94,19 @@ class SeSession(DirectObject):  ### Customized DirectSession
         # Lists for managing undo/redo operations
         self.undoList = []
         self.redoList = []
-        
+
         # One run through the context task to init everything
         self.drList.updateContext()
         for dr in self.drList:
             dr.camUpdate()
 
-        
+
 
         self.modifierEvents = ['control', 'control-up',
                               'shift', 'shift-up',
                               'alt', 'alt-up',
                               ]
-        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down', 
+        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
                           '[', '{', ']', '}',
                           'shift-a', 'b', 'control-f',
                           'l', 'shift-l', 'o', 'p', 'r',
@@ -124,7 +124,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
                             'control-mouse3', 'control-mouse3-up',
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
-            
+
     def enable(self):
         if self.fEnabled:
             return
@@ -361,7 +361,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         elif (input == ']') or (input == '}'):
             self.redo()
 
-        
+
     def getModifiers(self, input, base):
         modifiers = DIRECT_NO_MOD
         modifierString = input[: input.find(base)]
@@ -405,7 +405,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             self.cameraControl.updateCoa(coa)
             # Adjust widgets size
             # This uses the additional scaling factor used to grow and
-            # shrink the widget            
+            # shrink the widget
             self.widget.setScalingFactor(dnp.getRadius())
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
@@ -462,7 +462,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             'Active Reparent Target:' + nodePath.getName())
         # Alert everyone else
         self.activeParentReadout.show()
-        
+
     def reparent(self, nodePath = None, fWrt = 0):
         if (nodePath and self.activeParent and
             self.isNotCycle(nodePath, self.activeParent)):
@@ -486,7 +486,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             return self.isNotCycle(nodePath, parent.getParent())
         else:
             return 1
-        
+
     def fitOnNodePath(self, nodePath = 'None Given'):
         if nodePath == 'None Given':
             # If nothing specified, try selected node path
@@ -553,7 +553,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
                 if (name != 'render') and (name != 'renderTop')and(self.checkTypeNameForAncestry(type, ntype)):
                     self.ancestryIndex = i
                     self.select(np, 0, 0, True)
-            
+
     def checkTypeNameForAncestry(self, type, nextType ):
         if (type=='ModelRoot'):
             if (nextType=='AmbientLight')or(nextType=='PointLight')or(nextType=='DirectionalLight')or(nextType=='Spotlight'):
@@ -620,7 +620,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_undoListEmpty')
         # Return last item
         return undoGroup
-        
+
     def pushRedo(self, nodePathList):
         # Assemble group of changes
         redoGroup = []
@@ -644,7 +644,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_redoListEmpty')
         # Return last item
         return redoGroup
-        
+
     def undo(self):
         if self.undoList:
             # Get last item off of redo list
@@ -736,7 +736,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
         print posE, hprE
         posInterval1 = base.camera.posInterval(time, posE, bakeInStart = 1)
         posInterval2 = base.camera.posInterval(time, posB, bakeInStart = 1)
-        
+
         hprInterval1 = base.camera.hprInterval(time, hprE, bakeInStart = 1)
         hprInterval2 = base.camera.hprInterval(time, hprB, bakeInStart = 1)
 
@@ -744,9 +744,9 @@ class SeSession(DirectObject):  ### Customized DirectSession
         parallel2 = Parallel(posInterval2, hprInterval2)
 
         Sequence(Wait(7), parallel1, Wait(1), parallel2).start()
-        
+
         return
-    
+
 
 class DisplayRegionContext(DirectObject):
     regionCount = 0
@@ -833,14 +833,14 @@ class DisplayRegionContext(DirectObject):
             return prop.getXSize()
         else:
             return 640
-            
+
     def getHeight(self):
         prop = base.win.getProperties()
         if prop.hasSize():
             return prop.getYSize()
         else:
             return 480
-            
+
     def camUpdate(self, lens = None):
         # Window Data
         self.near = self.camLens.getNear()
@@ -885,7 +885,7 @@ class DisplayRegionList(DirectObject):
         else:
             # MRM: Doesn't properly handle multiple camera groups anymore
             # Assumes everything is under main camera
-            
+
                 # This is following the old way of setting up
                 # display regions.  A display region is set up for
                 # each camera node in the scene graph.  This was done
@@ -920,11 +920,11 @@ class DisplayRegionList(DirectObject):
     def setNearFar(self, near, far):
         for dr in self.displayRegionList:
             dr.camLens.setNearFar(near, far)
-    
+
     def setNear(self, near):
         for dr in self.displayRegionList:
             dr.camLens.setNear(near)
-    
+
     def setFar(self, far):
         for dr in self.displayRegionList:
             dr.camLens.setFar(far)

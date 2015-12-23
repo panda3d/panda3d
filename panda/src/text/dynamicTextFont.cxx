@@ -44,6 +44,8 @@
 #include "nurbsCurveResult.h"
 //#include "renderModeAttrib.h"
 //#include "antialiasAttrib.h"
+#include "colorAttrib.h"
+#include "textureAttrib.h"
 
 TypeHandle DynamicTextFont::_type_handle;
 
@@ -110,8 +112,7 @@ DynamicTextFont(const DynamicTextFont &copy) :
   FreetypeFont(copy),
   _texture_margin(copy._texture_margin),
   _poly_margin(copy._poly_margin),
-  _page_x_size(copy._page_x_size),
-  _page_y_size(copy._page_y_size),
+  _page_size(copy._page_size),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
   _anisotropic_degree(copy._anisotropic_degree),
@@ -194,8 +195,8 @@ garbage_collect() {
   Cache new_cache;
   Cache::iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
-    DynamicTextGlyph *glyph = (*ci).second;
-    if (glyph == (DynamicTextGlyph *)NULL || glyph->_geom_count != 0) {
+    TextGlyph *glyph = (*ci).second;
+    if (glyph == (TextGlyph *)NULL || glyph->get_ref_count() > 1) {
       // Keep this one.
       new_cache.insert(new_cache.end(), (*ci));
     } else {
@@ -252,7 +253,7 @@ write(ostream &out, int indent_level) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     int glyph_index = (*ci).first;
-    DynamicTextGlyph *glyph = (*ci).second;
+    TextGlyph *glyph = (*ci).second;
     indent(out, indent_level + 2) 
       << glyph_index;
 
@@ -269,7 +270,7 @@ write(ostream &out, int indent_level) const {
     }
     release_face(face);
 
-    out << ", count = " << glyph->_geom_count << "\n";
+    out << '\n';
   }
 }
 
@@ -285,7 +286,7 @@ write(ostream &out, int indent_level) const {
 //               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool DynamicTextFont::
-get_glyph(int character, const TextGlyph *&glyph) {
+get_glyph(int character, CPT(TextGlyph) &glyph) {
   if (!_is_valid) {
     glyph = (TextGlyph *)NULL;
     return false;
@@ -302,12 +303,12 @@ get_glyph(int character, const TextGlyph *&glyph) {
   if (ci != _cache.end()) {
     glyph = (*ci).second;
   } else {
-    DynamicTextGlyph *dynamic_glyph = make_glyph(character, face, glyph_index);
+    TextGlyph *dynamic_glyph = make_glyph(character, face, glyph_index);
     _cache.insert(Cache::value_type(glyph_index, dynamic_glyph));
     glyph = dynamic_glyph;
   }
 
-  if (glyph == (DynamicTextGlyph *)NULL) {
+  if (glyph == (TextGlyph *)NULL) {
     glyph = get_invalid_glyph();
     glyph_index = 0;
   }
@@ -327,8 +328,7 @@ void DynamicTextFont::
 initialize() {
   _texture_margin = text_texture_margin;
   _poly_margin = text_poly_margin;
-  _page_x_size = text_page_size[0];
-  _page_y_size = text_page_size[1];
+  _page_size.set(text_page_size[0], text_page_size[1]);
 
   // We don't necessarily want to use mipmaps, since we don't want to
   // regenerate those every time the texture changes, but we probably
@@ -442,10 +442,10 @@ determine_tex_format() {
 //               newly-created TextGlyph object, or NULL if the
 //               glyph cannot be created for some reason.
 ////////////////////////////////////////////////////////////////////
-DynamicTextGlyph *DynamicTextFont::
+TextGlyph *DynamicTextFont::
 make_glyph(int character, FT_Face face, int glyph_index) {
   if (!load_glyph(face, glyph_index, false)) {
-    return (DynamicTextGlyph *)NULL;
+    return (TextGlyph *)NULL;
   }
 
   FT_GlyphSlot slot = face->glyph;
@@ -461,6 +461,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   }
 
   PN_stdfloat advance = slot->advance.x / 64.0;
+  advance /= _font_pixels_per_unit;
 
   if (_render_mode != RM_texture && 
       slot->format == ft_glyph_format_outline) {
@@ -520,8 +521,8 @@ make_glyph(int character, FT_Face face, int glyph_index) {
     _contours.clear();
     FT_Outline_Decompose(&slot->outline, &funcs, (void *)this);
 
-    PT(DynamicTextGlyph) glyph = 
-      new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
+    PT(TextGlyph) glyph =
+      new TextGlyph(character, advance);
     switch (_render_mode) {
     case RM_wireframe:
       render_wireframe_contours(glyph);
@@ -553,8 +554,8 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   if (bitmap.width == 0 || bitmap.rows == 0) {
     // If we got an empty bitmap, it's a special case.
 
-    PT(DynamicTextGlyph) glyph = 
-      new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
+    PT(TextGlyph) glyph =
+      new DynamicTextGlyph(character, advance);
     _empty_glyphs.push_back(glyph);
     return glyph;
 
@@ -571,7 +572,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       // If the bitmap produced from the font doesn't require scaling
       // or any other processing before it goes to the texture, we can
       // just copy it directly into the texture.
-      glyph = slot_glyph(character, bitmap.width, bitmap.rows);
+      glyph = slot_glyph(character, bitmap.width, bitmap.rows, advance);
       copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
@@ -599,7 +600,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       int_y_size += outline * 2;
       tex_x_size += outline * 2;
       tex_y_size += outline * 2;
-      glyph = slot_glyph(character, int_x_size, int_y_size);
+      glyph = slot_glyph(character, int_x_size, int_y_size, advance);
 
       if (outline != 0) {
         // Pad the glyph image to make room for the outline.
@@ -612,11 +613,43 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       }
     }
 
-    glyph->make_geom((int)floor(slot->bitmap_top + outline * _scale_factor + 0.5f),
-                     (int)floor(slot->bitmap_left - outline * _scale_factor + 0.5f),
-                     advance, _poly_margin,
-                     tex_x_size, tex_y_size,
-                     _font_pixels_per_unit, _tex_pixels_per_unit);
+    DynamicTextPage *page = glyph->get_page();
+    if (page != NULL) {
+      int bitmap_top = (int)floor(slot->bitmap_top + outline * _scale_factor + 0.5f);
+      int bitmap_left = (int)floor(slot->bitmap_left - outline * _scale_factor + 0.5f);
+
+      tex_x_size += glyph->_margin * 2;
+      tex_y_size += glyph->_margin * 2;
+
+      // Determine the corners of the rectangle in geometric units.
+      PN_stdfloat tex_poly_margin = _poly_margin / _tex_pixels_per_unit;
+      PN_stdfloat origin_y = bitmap_top / _font_pixels_per_unit;
+      PN_stdfloat origin_x = bitmap_left / _font_pixels_per_unit;
+
+      LVecBase4 dimensions(
+        origin_x - tex_poly_margin,
+        origin_y - tex_y_size / _tex_pixels_per_unit - tex_poly_margin,
+        origin_x + tex_x_size / _tex_pixels_per_unit + tex_poly_margin,
+        origin_y + tex_poly_margin);
+
+      // And the corresponding corners in UV units.  We add 0.5f to center
+      // the UV in the middle of its texel, to minimize roundoff errors
+      // when we are close to 1-to-1 pixel size.
+      LVecBase2i page_size = page->get_size();
+      LVecBase4 texcoords(
+        ((PN_stdfloat)(glyph->_x - _poly_margin) + 0.5f) / page_size[0],
+        1.0f - ((PN_stdfloat)(glyph->_y + _poly_margin + tex_y_size) + 0.5f) / page_size[1],
+        ((PN_stdfloat)(glyph->_x + _poly_margin + tex_x_size) + 0.5f) / page_size[0],
+        1.0f - ((PN_stdfloat)(glyph->_y - _poly_margin) + 0.5f) / page_size[1]);
+
+      CPT(RenderState) state;
+      state = RenderState::make(TextureAttrib::make(page),
+                                TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+      state = state->add_attrib(ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 1.0f)), -1);
+
+      glyph->set_quad(dimensions, texcoords, state);
+    }
+
     return glyph;
   }
 }
@@ -835,7 +868,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 //               filled in yet except with its size.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-slot_glyph(int character, int x_size, int y_size) {
+slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
   // Increase the indicated size by the current margin.
   x_size += _texture_margin * 2;
   y_size += _texture_margin * 2;
@@ -850,7 +883,7 @@ slot_glyph(int character, int x_size, int y_size) {
 
     do {
       DynamicTextPage *page = _pages[pi];
-      DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin);
+      DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
       if (glyph != (DynamicTextGlyph *)NULL) {
         // Once we found a page to hold the glyph, that becomes our
         // new preferred page.
@@ -874,7 +907,7 @@ slot_glyph(int character, int x_size, int y_size) {
   // glyphs?
   if (garbage_collect() != 0) {
     // Yes, we just freed up some space.  Try once more, recursively.
-    return slot_glyph(character, x_size, y_size);
+    return slot_glyph(character, x_size, y_size, advance);
 
   } else {
     // No good; all recorded glyphs are actually in use.  We need to
@@ -882,7 +915,7 @@ slot_glyph(int character, int x_size, int y_size) {
     _preferred_page = _pages.size();
     PT(DynamicTextPage) page = new DynamicTextPage(this, _preferred_page);
     _pages.push_back(page);
-    return page->slot_glyph(character, x_size, y_size, _texture_margin);
+    return page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
   }
 }
 
@@ -893,7 +926,7 @@ slot_glyph(int character, int x_size, int y_size) {
 //               geometry, as a wireframe render.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
-render_wireframe_contours(DynamicTextGlyph *glyph) {
+render_wireframe_contours(TextGlyph *glyph) {
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3(),
      Geom::UH_static);
@@ -926,7 +959,7 @@ render_wireframe_contours(DynamicTextGlyph *glyph) {
 //               geometry, as a polygon render.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
-render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
+render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3n3(),
      Geom::UH_static);

@@ -619,18 +619,161 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::test_intersection_from_box
 //       Access: Public, Virtual
 //  Description: Double dispatch point for box as a FROM object
-//               NOT Implemented.
 ////////////////////////////////////////////////////////////////////
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_box(const CollisionEntry &entry) const {
-  return NULL;
-}
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
 
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 diff = wrt_mat.xform_point_general(box->get_center()) - _center;
+  LVector3 from_extents = box->get_dimensions() * 0.5f;
+  LVector3 into_extents = get_dimensions() * 0.5f;
+
+  LVecBase3 box_x = wrt_mat.get_row3(0);
+  LVecBase3 box_y = wrt_mat.get_row3(1);
+  LVecBase3 box_z = wrt_mat.get_row3(2);
+
+  // To make the math simpler, normalize the box basis vectors, instead
+  // applying the scale to the box dimensions.  Note that this doesn't
+  // work for a non-uniform scales applied after a rotation, since that
+  // has the possibility of making the box no longer a box.
+  PN_stdfloat l;
+  l = box_x.length();
+  from_extents[0] *= l;
+  box_x /= l;
+  l = box_y.length();
+  from_extents[1] *= l;
+  box_y /= l;
+  l = box_z.length();
+  from_extents[2] *= l;
+  box_z /= l;
+
+  PN_stdfloat r1, r2;
+
+  // SAT test for the three axes of the into cube.
+  r1 = into_extents[0];
+  r2 = cabs(box_x[0] * from_extents[0]) +
+       cabs(box_y[0] * from_extents[1]) +
+       cabs(box_z[0] * from_extents[2]);
+  if (cabs(diff[0]) > r1 + r2) {
+    return NULL;
+  }
+
+  r1 = into_extents[1];
+  r2 = cabs(box_x[1] * from_extents[0]) +
+       cabs(box_y[1] * from_extents[1]) +
+       cabs(box_z[1] * from_extents[2]);
+  if (cabs(diff[1]) > r1 + r2) {
+    return NULL;
+  }
+
+  r1 = into_extents[2];
+  r2 = cabs(box_x[2] * from_extents[0]) +
+       cabs(box_y[2] * from_extents[1]) +
+       cabs(box_z[2] * from_extents[2]);
+  if (cabs(diff[2]) > r1 + r2) {
+    return NULL;
+  }
+
+  // SAT test for the three axes of the from cube.
+  r1 = cabs(box_x[0] * into_extents[0]) +
+       cabs(box_x[1] * into_extents[1]) +
+       cabs(box_x[2] * into_extents[2]);
+  r2 = from_extents[0];
+  if (cabs(diff.dot(box_x)) > r1 + r2) {
+    return NULL;
+  }
+
+  r1 = cabs(box_y[0] * into_extents[0]) +
+       cabs(box_y[1] * into_extents[1]) +
+       cabs(box_y[2] * into_extents[2]);
+  r2 = from_extents[1];
+  if (cabs(diff.dot(box_y)) > r1 + r2) {
+    return NULL;
+  }
+
+  r1 = cabs(box_z[0] * into_extents[0]) +
+       cabs(box_z[1] * into_extents[1]) +
+       cabs(box_z[2] * into_extents[2]);
+  r2 = from_extents[2];
+  if (cabs(diff.dot(box_z)) > r1 + r2) {
+    return NULL;
+  }
+
+  // SAT test of the nine cross products.
+  r1 = into_extents[1] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[1]);
+  r2 = from_extents[1] * cabs(box_z[0]) + from_extents[2] * cabs(box_y[0]);
+  if (cabs(diff[2] * box_x[1] - diff[1] * box_x[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[1] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[1]);
+  r2 = from_extents[0] * cabs(box_z[0]) + from_extents[2] * cabs(box_x[0]);
+  if (cabs(diff[2] * box_y[1] - diff[1] * box_y[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[1] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[1]);
+  r2 = from_extents[0] * cabs(box_y[0]) + from_extents[1] * cabs(box_x[0]);
+  if (cabs(diff[2] * box_z[1] - diff[1] * box_z[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[0]);
+  r2 = from_extents[1] * cabs(box_z[1]) + from_extents[2] * cabs(box_y[1]);
+  if (cabs(diff[0] * box_x[2] - diff[2] * box_x[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[0]);
+  r2 = from_extents[0] * cabs(box_z[1]) + from_extents[2] * cabs(box_x[1]);
+  if (cabs(diff[0] * box_y[2] - diff[2] * box_y[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[0]);
+  r2 = from_extents[0] * cabs(box_y[1]) + from_extents[1] * cabs(box_x[1]);
+  if (cabs(diff[0] * box_z[2] - diff[2] * box_z[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_x[1]) + into_extents[1] * cabs(box_x[0]);
+  r2 = from_extents[1] * cabs(box_z[2]) + from_extents[2] * cabs(box_y[2]);
+  if (cabs(diff[1] * box_x[0] - diff[0] * box_x[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_y[1]) + into_extents[1] * cabs(box_y[0]);
+  r2 = from_extents[0] * cabs(box_z[2]) + from_extents[2] * cabs(box_x[2]);
+  if (cabs(diff[1] * box_y[0] - diff[0] * box_y[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_z[1]) + into_extents[1] * cabs(box_z[0]);
+  r2 = from_extents[0] * cabs(box_y[2]) + from_extents[1] * cabs(box_x[2]);
+  if (cabs(diff[1] * box_z[0] - diff[0] * box_z[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  if (has_effective_normal() && box->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  }
+
+  return new_entry;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::fill_viz_geom

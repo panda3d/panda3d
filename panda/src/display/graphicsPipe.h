@@ -98,11 +98,16 @@ PUBLISHED:
 
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
+  MAKE_PROPERTY(display_width, get_display_width);
+  MAKE_PROPERTY(display_height, get_display_height);
 
   DisplayInformation *get_display_information();
+  MAKE_PROPERTY(display_information, get_display_information);
+
   virtual void lookup_cpu_data();
 
   virtual string get_interface_name() const=0;
+  MAKE_PROPERTY(interface_name, get_interface_name);
 
 public:
   enum PreferredWindowThread {

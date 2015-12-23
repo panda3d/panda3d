@@ -1,6 +1,6 @@
 
 from direct.showbase.DirectObject import DirectObject
-#from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 class DistributedObjectBase(DirectObject):
     """

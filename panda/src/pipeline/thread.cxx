@@ -20,6 +20,10 @@
 #include "conditionVarDebug.h"
 #include "conditionVarFullDebug.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;

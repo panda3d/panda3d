@@ -57,17 +57,22 @@ int yyparse();
 
 static void
 yyerror(const string &msg) {
-  current_lexer->error(msg);
+  current_lexer->error(msg, current_lexer->_last_token_loc);
+}
+
+static void
+yyerror(YYLTYPE *loc, const string &msg) {
+  current_lexer->error(msg, *loc);
 }
 
 static void
 yyerror(const string &msg, YYLTYPE &loc) {
-  current_lexer->error(msg, loc.first_line, loc.first_column);
+  current_lexer->error(msg, loc);
 }
 
 static void
 yywarning(const string &msg, YYLTYPE &loc) {
-  current_lexer->warning(msg, loc.first_line, loc.first_column);
+  current_lexer->warning(msg, loc);
 }
 
 static int
@@ -194,13 +199,18 @@ pop_struct() {
 
 /* This is a bison-specific declaration to enable recursive calls to
    yyparse().  It changes the calling sequence to yylex(), passing
-   pointers to the current yylval and yylloc. */
-%pure_parser
+   pointers to the current yylval and yylloc.  Bison 2.7 introduces a
+   different syntax that will also pass the current yylloc to yyerror,
+   but we have to support Bison versions as old as 2.5 for now. */
+/*%define api.pure full*/
+%pure-parser
+%locations
 
 %token <u.real> REAL
 %token <u.integer> INTEGER
 %token <u.integer> CHAR_TOK
-%token <str> STRING SIMPLE_IDENTIFIER
+%token <str> SIMPLE_STRING SIMPLE_IDENTIFIER
+%token <u.expr> STRING_LITERAL CUSTOM_LITERAL
 %token <u.identifier> IDENTIFIER TYPENAME_IDENTIFIER SCOPING
 %token <u.type> TYPEDEFNAME
 
@@ -236,6 +246,9 @@ pop_struct() {
 %token LSHIFTEQUAL
 %token RSHIFTEQUAL
 
+%token KW_ALIGNAS
+%token KW_ALIGNOF
+%token KW_AUTO
 %token KW_BEGIN_PUBLISH
 %token KW_BLOCKING
 %token KW_BOOL
@@ -245,6 +258,9 @@ pop_struct() {
 %token KW_CHAR32_T
 %token KW_CLASS
 %token KW_CONST
+%token KW_CONSTEXPR
+%token KW_DECLTYPE
+%token KW_DEFAULT
 %token KW_DELETE
 %token KW_DOUBLE
 %token KW_DYNAMIC_CAST
@@ -271,6 +287,7 @@ pop_struct() {
 %token KW_NAMESPACE
 %token KW_NEW
 %token KW_NOEXCEPT
+%token KW_NULLPTR
 %token KW_OPERATOR
 %token KW_PRIVATE
 %token KW_PROTECTED
@@ -281,6 +298,7 @@ pop_struct() {
 %token KW_SIGNED
 %token KW_SIZEOF
 %token KW_STATIC
+%token KW_STATIC_ASSERT
 %token KW_STATIC_CAST
 %token KW_STRUCT
 %token KW_TEMPLATE
@@ -323,6 +341,7 @@ pop_struct() {
 %type <u.inst_ident> empty_instance_identifier
 %type <u.type> type
 %type <u.decl> type_decl
+%type <u.decl> var_type_decl
 %type <u.type> predefined_type
 %type <u.type> full_type
 %type <u.struct_type> anonymous_struct
@@ -338,7 +357,7 @@ pop_struct() {
 %type <u.type> enum_element_type
 /*%type <u.type> typedefname*/
 %type <u.identifier> name
-%type <str> string
+%type <u.expr> string_literal
 
 /* We need to treat KW_OPERATOR as a scopable keyword. */
 %type <u.identifier> KW_OPERATOR
@@ -484,7 +503,7 @@ declaration:
 
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
   }
 
   CPPMakeProperty *make_property = new CPPMakeProperty($3, getter->as_function_group(), NULL, current_scope, @1.file);
@@ -494,14 +513,14 @@ declaration:
 {
   CPPDeclaration *getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
-    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @1);
+    yyerror("Reference to non-existent or invalid getter: " + $5->get_fully_scoped_name(), @5);
 
   } else {
     CPPDeclaration *setter = $7->find_symbol(current_scope, global_scope, current_lexer);
     CPPFunctionGroup *setter_func = NULL;
 
     if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
-      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @1);
+      yyerror("Reference to non-existent or invalid setter: " + $7->get_fully_scoped_name(), @7);
     } else {
       setter_func = setter->as_function_group();
     }
@@ -511,10 +530,48 @@ declaration:
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
-         | KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
+        | KW_MAKE_SEQ '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
-  CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
-  current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
+  CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
+    length_getter = NULL;
+  }
+
+  CPPDeclaration *element_getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (element_getter == (CPPDeclaration *)NULL || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("reference to non-existent or invalid element method: " + $7->get_fully_scoped_name(), @5);
+    element_getter = NULL;
+  }
+
+  if (length_getter != (CPPDeclaration *)NULL && element_getter != (CPPDeclaration *)NULL) {
+    CPPMakeSeq *make_seq = new CPPMakeSeq($3,
+                                          length_getter->as_function_group(),
+                                          element_getter->as_function_group(),
+                                          current_scope, @1.file);
+    current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
+  }
+}
+        | KW_STATIC_ASSERT '(' const_expr ',' string_literal ')'
+{
+  CPPExpression::Result result = $3->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("static_assert requires a constant expression", @3);
+  } else if (!result.as_boolean()) {
+    stringstream str;
+    str << *$5;
+    yywarning("static_assert failed: " + str.str(), @3);
+  }
+}
+        | KW_STATIC_ASSERT '(' const_expr ')'
+{
+  // This alternative version of static_assert was introduced in C++17.
+  CPPExpression::Result result = $3->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("static_assert requires a constant expression", @3);
+  } else if (!result.as_boolean()) {
+    yywarning("static_assert failed", @3);
+  }
 }
         ;
 
@@ -538,56 +595,60 @@ storage_class:
 {
   $$ = 0;
 }
-        | storage_class KW_EXTERN
+        | KW_EXTERN storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extern;
+  $$ = $2 | (int)CPPInstance::SC_extern;
 }
-        | storage_class KW_EXTERN string
+        | KW_EXTERN SIMPLE_STRING storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extern;
-  if ($3 == "C") {
+  $$ = $3 | (int)CPPInstance::SC_extern;
+  if ($2 == "C") {
     $$ |= (int)CPPInstance::SC_c_binding;
-  } else if ($3 == "C++") {
+  } else if ($2 == "C++") {
     $$ &= ~(int)CPPInstance::SC_c_binding;
   } else {
-    yywarning("Ignoring unknown linkage type \"" + $3 + "\"", @3);
+    yywarning("Ignoring unknown linkage type \"" + $2 + "\"", @2);
   }
 }
-        | storage_class KW_STATIC
+        | KW_STATIC storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_static;
+  $$ = $2 | (int)CPPInstance::SC_static;
 }
-        | storage_class KW_INLINE
+        | KW_INLINE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_inline;
+  $$ = $2 | (int)CPPInstance::SC_inline;
 }
-        | storage_class KW_VIRTUAL
+        | KW_VIRTUAL storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_virtual;
+  $$ = $2 | (int)CPPInstance::SC_virtual;
 }
-        | storage_class KW_EXPLICIT
+        | KW_EXPLICIT storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_explicit;
+  $$ = $2 | (int)CPPInstance::SC_explicit;
 }
-        | storage_class KW_VOLATILE
+        | KW_REGISTER storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_volatile;
+  $$ = $2 | (int)CPPInstance::SC_register;
 }
-        | storage_class KW_MUTABLE
+        | KW_VOLATILE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_mutable;
+  $$ = $2 | (int)CPPInstance::SC_volatile;
 }
-        | storage_class KW_REGISTER
+        | KW_MUTABLE storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_register;
+  $$ = $2 | (int)CPPInstance::SC_mutable;
 }
-        | storage_class KW_BLOCKING
+        | KW_CONSTEXPR storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_blocking;
+  $$ = $2 | (int)CPPInstance::SC_constexpr;
 }
-        | storage_class KW_EXTENSION
+        | KW_BLOCKING storage_class
 {
-  $$ = $1 | (int)CPPInstance::SC_extension;
+  $$ = $2 | (int)CPPInstance::SC_blocking;
+}
+        | KW_EXTENSION storage_class
+{
+  $$ = $2 | (int)CPPInstance::SC_extension;
 }
         ;
 
@@ -616,7 +677,7 @@ type_like_declaration:
         ;
 
 multiple_var_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -631,11 +692,15 @@ multiple_var_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         multiple_const_instance_identifiers
@@ -690,7 +755,7 @@ multiple_const_instance_identifiers:
 
 
 typedef_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -705,11 +770,15 @@ typedef_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         typedef_const_instance_identifiers
@@ -771,16 +840,18 @@ function_prototype:
 }
         formal_parameter_list ')' function_post
 {
-  pop_scope();
   CPPType *type;
-  if ($1->get_simple_name() == current_scope->get_simple_name()) {
+  if ($1->get_simple_name() == current_scope->get_simple_name() ||
+      $1->get_simple_name() == string("~") + current_scope->get_simple_name()) {
     // This is a constructor, and has no return.
     type = new CPPSimpleType(CPPSimpleType::T_void);
   } else {
     // This isn't a constructor, so it has an implicit return type of
     // int.
+    yywarning("function has no return type, assuming int", @1);
     type = new CPPSimpleType(CPPSimpleType::T_int);
   }
+  pop_scope();
 
   CPPInstanceIdentifier *ii = new CPPInstanceIdentifier($1);
   ii->add_func_modifier($4, $6);
@@ -822,7 +893,7 @@ function_prototype:
     yyerror("Invalid destructor name: ~" + $2->get_fully_scoped_name(), @2);
   } else {
     CPPIdentifier *ident =
-      new CPPIdentifier("~" + $2->get_simple_name(), @2.file);
+      new CPPIdentifier("~" + $2->get_simple_name(), @2);
     delete $2;
 
     CPPType *type;
@@ -849,6 +920,9 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
 
   CPPInstanceIdentifier *ii = $4;
@@ -864,6 +938,9 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
 
   CPPInstanceIdentifier *ii = $5;
@@ -897,7 +974,7 @@ function_prototype:
   string name = "operator typecast " + $2->get_simple_name();
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier(name, @1.file);
+    ident = new CPPIdentifier(name, @2);
   } else {
     ident->add_name(name);
   }
@@ -918,7 +995,7 @@ function_prototype:
 
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator typecast", @1.file);
+    ident = new CPPIdentifier("operator typecast", @4);
   } else {
     ident->add_name("operator typecast");
   }
@@ -1138,6 +1215,7 @@ template_declaration:
 {
   pop_scope();
 }
+	| KW_TEMPLATE type_like_declaration
         ;
 
 template_formal_parameters:
@@ -1205,6 +1283,9 @@ template_formal_parameter_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         ;
@@ -1222,9 +1303,24 @@ instance_identifier:
   // like a regular function.
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator "+$2, @2.file);
+    ident = new CPPIdentifier("operator "+$2, @2);
   } else {
     ident->_names.push_back("operator "+$2);
+  }
+
+  $$ = new CPPInstanceIdentifier(ident);
+}
+        | KW_OPERATOR SIMPLE_STRING IDENTIFIER
+{
+  // A C++11 literal operator.
+  if (!$2.empty()) {
+    yyerror("expected empty string", @2);
+  }
+  CPPIdentifier *ident = $1;
+  if (ident == NULL) {
+    ident = new CPPIdentifier("operator \"\" "+$3->get_simple_name(), @3);
+  } else {
+    ident->_names.push_back("operator \"\" "+$3->get_simple_name());
   }
 
   $$ = new CPPInstanceIdentifier(ident);
@@ -1233,6 +1329,11 @@ instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' instance_identifier  %prec UNARY
 {
@@ -1395,19 +1496,21 @@ formal_parameter:
   $$ = new CPPInstance($1, $2, 0, @2.file);
   $$->set_initializer($3);
 }
-        | IDENTIFIER formal_parameter_identifier maybe_initialize
-{
-  yywarning("Not a type: " + $1->get_fully_scoped_name(), @1);
-  CPPType *type =
-    CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
-  $$ = new CPPInstance(type, $2, 0, @2.file);
-  $$->set_initializer($3);
-}
         | KW_CONST type formal_parameter_identifier maybe_initialize
 {
   $3->add_modifier(IIT_const);
   $$ = new CPPInstance($2, $3, 0, @3.file);
   $$->set_initializer($4);
+}
+        | KW_CONST KW_REGISTER type formal_parameter_identifier maybe_initialize
+{
+  $4->add_modifier(IIT_const);
+  $$ = new CPPInstance($3, $4, 0, @3.file);
+  $$->set_initializer($5);
+}
+        | KW_REGISTER formal_parameter
+{
+  $$ = $2;
 }
         | formal_const_expr
 {
@@ -1435,6 +1538,11 @@ not_paren_formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' not_paren_formal_parameter_identifier  %prec UNARY
 {
@@ -1480,6 +1588,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_const);
+}
+        | KW_VOLATILE formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
 }
         | '*' formal_parameter_identifier  %prec UNARY
 {
@@ -1529,6 +1642,11 @@ empty_instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_const);
 }
+        | KW_VOLATILE empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_volatile);
+}
         | '*' empty_instance_identifier  %prec UNARY
 {
   $$ = $2;
@@ -1570,6 +1688,9 @@ type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -1620,6 +1741,19 @@ type:
     $$ = et;
   }
 }
+        | KW_DECLTYPE '(' const_expr ')'
+{
+  $$ = $3->determine_type();
+  if ($$ == (CPPType *)NULL) {
+    stringstream str;
+    str << *$3;
+    yyerror("could not determine type of " + str.str(), @3);
+  }
+}
+        | KW_AUTO
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_auto);
+}
         ;
 
 type_decl:
@@ -1630,6 +1764,9 @@ type_decl:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -1698,6 +1835,19 @@ type_decl:
     $$ = et;
   }
 }
+        | KW_DECLTYPE '(' const_expr ')'
+{
+  $$ = $3->determine_type();
+  if ($$ == (CPPType *)NULL) {
+    stringstream str;
+    str << *$3;
+    yyerror("could not determine type of " + str.str(), @3);
+  }
+}
+        | KW_AUTO
+{
+  $$ = new CPPSimpleType(CPPSimpleType::T_auto);
+}
         ;
 
 predefined_type:
@@ -1708,6 +1858,9 @@ predefined_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if ($$ == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert($$ != NULL);
 }
         | KW_TYPENAME name
@@ -1747,6 +1900,18 @@ predefined_type:
   }
 }
         ;
+
+var_type_decl:
+        type_decl
+{
+  $$ = $1;
+}
+        | IDENTIFIER
+{
+  yyerror(string("unknown type '") + $1->get_fully_scoped_name() + "'", @1);
+
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
+}
 
 full_type:
         type empty_instance_identifier
@@ -1981,7 +2146,31 @@ namespace_declaration:
 {
   pop_scope();
 }
+        | KW_INLINE KW_NAMESPACE name '{'
+{
+  CPPScope *scope = $3->find_scope(current_scope, global_scope, current_lexer);
+  if (scope == NULL) {
+    // This must be a new namespace declaration.
+    CPPScope *parent_scope =
+      $3->get_scope(current_scope, global_scope, current_lexer);
+    if (parent_scope == NULL) {
+      parent_scope = current_scope;
+    }
+    scope = new CPPScope(parent_scope, $3->_names.back(), V_public);
+  }
+
+  CPPNamespace *nspace = new CPPNamespace($3, scope, @2.file);
+  nspace->_is_inline = true;
+  current_scope->add_declaration(nspace, global_scope, current_lexer, @2);
+  current_scope->define_namespace(nspace);
+  push_scope(scope);
+}
+        cpp '}'
+{
+  pop_scope();
+}
         | KW_NAMESPACE '{' cpp '}'
+        | KW_INLINE KW_NAMESPACE '{' cpp '}'
         ;
 
 using_declaration:
@@ -2134,48 +2323,34 @@ code_block:
 
 element:
         REAL
-{
-}
         | INTEGER
-{
-}
-        | STRING
-{
-}
+        | SIMPLE_STRING
+        | STRING_LITERAL
+        | CUSTOM_LITERAL
         | CHAR_TOK
-{
-}
         | IDENTIFIER
-{
-}
         | TYPENAME_IDENTIFIER
-{
-}
         | SCOPING
-{
-}
         | SIMPLE_IDENTIFIER
-{
-}
         | ELLIPSIS | OROR | ANDAND
         | EQCOMPARE | NECOMPARE | LECOMPARE | GECOMPARE
         | LSHIFT | RSHIFT | POINTSAT_STAR | DOT_STAR | POINTSAT
         | SCOPE | PLUSPLUS | MINUSMINUS
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
-        | KW_BOOL | KW_CATCH | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T
-        | KW_WCHAR_T | KW_CLASS | KW_CONST
+        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_CATCH
+        | KW_CHAR | KW_CHAR16_T | KW_CHAR32_T
+        | KW_CLASS | KW_CONST | KW_CONSTEXPR | KW_DECLTYPE | KW_DEFAULT
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
-        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO
-        | KW_IF | KW_INLINE | KW_INT
-        | KW_LONG | KW_MUTABLE | KW_NEW | KW_PRIVATE | KW_PROTECTED
+        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO | KW_IF | KW_INLINE
+        | KW_INT | KW_LONG | KW_MUTABLE | KW_NAMESPACE
+        | KW_NEW | KW_NULLPTR | KW_OPERATOR | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_RETURN
-        | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_CAST
-        | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF | KW_TYPENAME
-        | KW_UNION | KW_UNSIGNED | KW_VIRTUAL | KW_VOID | KW_VOLATILE
-        | KW_WHILE
-        | KW_OPERATOR
+        | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_ASSERT
+        | KW_STATIC_CAST | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY
+        | KW_TYPEDEF | KW_TYPENAME | KW_UNION | KW_UNSIGNED | KW_USING
+        | KW_VIRTUAL | KW_VOID | KW_VOLATILE | KW_WCHAR_T | KW_WHILE
 {
 }
         | '+' | '-' | '*' | '/' | '&' | '|' | '^' | '!' | '~' | '=' | '%'
@@ -2237,6 +2412,10 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | '!' no_angle_bracket_const_expr    %prec UNARY
 {
   $$ = new CPPExpression(UNARY_NOT, $2);
@@ -2247,15 +2426,7 @@ no_angle_bracket_const_expr:
 }
         | '-' no_angle_bracket_const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '*' no_angle_bracket_const_expr    %prec UNARY
 {
@@ -2381,6 +2552,9 @@ const_expr:
 {
   // A constructor call.
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
@@ -2464,6 +2638,10 @@ const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | KW_NEW predefined_type %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::new_op($2));
@@ -2482,15 +2660,7 @@ const_expr:
 }
         | '-' const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '*' const_expr    %prec UNARY
 {
@@ -2623,13 +2793,21 @@ const_operand:
 {
   $$ = new CPPExpression($1);
 }
-        | string
+        | string_literal
 {
-  $$ = new CPPExpression($1);
+  $$ = $1;
+}
+        | CUSTOM_LITERAL
+{
+  $$ = $1;
 }
         | IDENTIFIER
 {
   $$ = new CPPExpression($1, current_scope, global_scope, current_lexer);
+}
+        | KW_NULLPTR
+{
+  $$ = new CPPExpression(CPPExpression::get_nullptr());
 }
         ;
 
@@ -2661,6 +2839,10 @@ formal_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
+        | KW_ALIGNOF '(' full_type ')' %prec UNARY
+{
+  $$ = new CPPExpression(CPPExpression::alignof_func($3));
+}
         | KW_NEW predefined_type %prec UNARY
 {
   $$ = new CPPExpression(CPPExpression::new_op($2));
@@ -2679,15 +2861,7 @@ formal_const_expr:
 }
         | '-' const_expr    %prec UNARY
 {
-  if ($2->_type == CPPExpression::T_integer) {
-    $$ = $2;
-    $$->_u._integer = -$$->_u._integer;
-  } else if ($2->_type == CPPExpression::T_real) {
-    $$ = $2;
-    $$->_u._real = -$$->_u._real;
-  } else {
-    $$ = new CPPExpression(UNARY_MINUS, $2);
-  }
+  $$ = new CPPExpression(UNARY_MINUS, $2);
 }
         | '&' const_expr    %prec UNARY
 {
@@ -2816,9 +2990,21 @@ formal_const_operand:
 {
   $$ = new CPPExpression($1);
 }
-        | string
+        | string_literal
 {
-  $$ = new CPPExpression($1);
+  $$ = $1;
+}
+        | CUSTOM_LITERAL
+{
+  $$ = $1;
+}
+        | IDENTIFIER
+{
+  $$ = new CPPExpression($1, current_scope, global_scope, current_lexer);
+}
+        | KW_NULLPTR
+{
+  $$ = new CPPExpression(CPPExpression::get_nullptr());
 }
         ;
 
@@ -2850,6 +3036,9 @@ typedefname:
         TYPENAME_IDENTIFIER
 {
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == NULL) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
   assert(type != NULL);
   $$ = type;
 }
@@ -2872,14 +3061,29 @@ name:
 }
         ;
 
-string:
-        STRING
+string_literal:
+        SIMPLE_STRING
+{
+  $$ = new CPPExpression($1);
+}
+        | STRING_LITERAL
 {
   $$ = $1;
 }
-        | string STRING
+        | string_literal SIMPLE_STRING
 {
-  $$ = $1 + $2;
+  // The right string takes on the literal type of the left.
+  $$ = $1;
+  $$->_str += $2;
+}
+        | string_literal STRING_LITERAL
+{
+  // We have to check that the two literal types match up.
+  $$ = $1;
+  if ($2->_type != CPPExpression::T_string && $2->_type != $1->_type) {
+    yywarning("cannot concatenate two string literals of different types", @$);
+  }
+  $$->_str += $2->_str;
 }
         ;
 

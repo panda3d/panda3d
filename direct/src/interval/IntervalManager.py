@@ -55,7 +55,7 @@ class IntervalManager(CIntervalManager):
 
     def getIntervalsMatching(self, pattern):
         ivals = []
-        
+
         count = 0
         maxIndex = self.getMaxIndex()
         for index in range(maxIndex):

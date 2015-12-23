@@ -8,10 +8,8 @@
 #define OPENGLES_2
 #include "config_gles2gsg.h"
 
-#ifdef HAVE_EGL
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
-#endif
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpandagles2.so/.dll will fail if they inadvertently
@@ -30,10 +28,7 @@
 void
 init_libpandagles2() {
   init_libgles2gsg();
-
-#ifdef HAVE_EGL
   init_libegldisplay();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,9 +38,5 @@ init_libpandagles2() {
 ////////////////////////////////////////////////////////////////////
 int
 get_pipe_type_pandagles2() {
-#ifdef HAVE_EGL
   return eglGraphicsPipe::get_class_type().get_index();
-#endif
-
-  return 0;
 }

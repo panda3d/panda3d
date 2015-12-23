@@ -15,7 +15,7 @@ class ForceGroup(DirectObject):
         """__init__(self)"""
 
         if (name == None):
-            self.name = 'ForceGroup-%d' % ForceGroup.id 
+            self.name = 'ForceGroup-%d' % ForceGroup.id
             ForceGroup.id += 1
         else:
             self.name = name
@@ -74,7 +74,7 @@ class ForceGroup(DirectObject):
     def getNodePath(self):
         return self.nodePath
 
-    # Utility functions 
+    # Utility functions
     def __getitem__(self, index):
         numForces = self.node.getNumForces()
         if ((index < 0) or (index >= numForces)):

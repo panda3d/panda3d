@@ -47,13 +47,6 @@
 #include "lightReMutex.h"
 #include "extension.h"
 
-#ifdef HAVE_PYTHON
-
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-#endif  // HAVE_PYTHON
-
 class NodePathComponent;
 class CullTraverser;
 class CullTraverserData;
@@ -178,20 +171,24 @@ PUBLISHED:
   void set_state(const RenderState *state, Thread *current_thread = Thread::get_current_thread());
   INLINE CPT(RenderState) get_state(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_state(Thread *current_thread = Thread::get_current_thread());
+  MAKE_PROPERTY(state, get_state, set_state);
 
   void set_effects(const RenderEffects *effects, Thread *current_thread = Thread::get_current_thread());
   INLINE CPT(RenderEffects) get_effects(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_effects(Thread *current_thread = Thread::get_current_thread());
+  MAKE_PROPERTY(effects, get_effects, set_effects);
 
   void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
   INLINE CPT(TransformState) get_transform(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
+  MAKE_PROPERTY(transform, get_transform, set_transform);
 
   void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
   INLINE CPT(TransformState) get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
   void reset_prev_transform(Thread *current_thread = Thread::get_current_thread());
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
+  MAKE_PROPERTY(prev_transform, get_prev_transform);
 
   void set_tag(const string &key, const string &value,
                Thread *current_thread = Thread::get_current_thread());
@@ -308,7 +305,6 @@ PUBLISHED:
     FB_cull_callback        = 0x0040,
   };
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
-
 
 PUBLISHED:
   static PT(PandaNode) decode_from_bam_stream(const string &data, BamReader *reader = NULL);

@@ -48,6 +48,12 @@ ConfigVariableBool gl_support_rescale_normal
             "it even if it appears to be available.  (This appears to be "
             "buggy on some drivers.)"));
 
+ConfigVariableBool gl_support_texture_lod
+  ("gl-support-texture-lod", true,
+   PRC_DESC("Configure this true to enable the use of minmax LOD settings "
+            "and texture LOD bias settings.  Set this to false if you "
+            "suspect a driver bug."));
+
 ConfigVariableBool gl_ignore_filters
   ("gl-ignore-filters", false,
    PRC_DESC("Configure this true to disable any texture filters at all (forcing "
@@ -187,6 +193,12 @@ ConfigVariableBool gl_force_depth_stencil
   ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
+ConfigVariableBool gl_force_fbo_color
+  ("gl-force-fbo-color", true,
+   PRC_DESC("This is set to true to force all FBOs to have at least one "
+            "color attachment.  This is to work around an Intel driver "
+            "issue.  Set to false to allow depth-only FBOs."));
+
 ConfigVariableBool gl_check_errors
   ("gl-check-errors", false,
    PRC_DESC("Regularly call glGetError() to check for OpenGL errors.  "
@@ -264,6 +276,10 @@ ConfigVariableBool gl_vertex_array_objects
             "and vertex-buffers are both set.  This should usually be "
             "true unless you suspect a bug in the implementation. "));
 
+ConfigVariableBool gl_fixed_vertex_attrib_locations
+  ("gl-fixed-vertex-attrib-locations", false,
+   PRC_DESC("Experimental feature."));
+
 ConfigVariableBool gl_support_primitive_restart_index
   ("gl-support-primitive-restart-index", true,
    PRC_DESC("Setting this causes Panda to make use of primitive "
@@ -302,6 +318,9 @@ void CLP(init_classes)() {
   CLP(IndexBufferContext)::init_type();
 #ifndef OPENGLES_1
   CLP(ShaderContext)::init_type();
+#endif
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  CLP(CgShaderContext)::init_type();
 #endif
   CLP(TextureContext)::init_type();
 #ifndef OPENGLES

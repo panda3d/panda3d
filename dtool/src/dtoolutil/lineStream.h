@@ -37,6 +37,10 @@ class EXPCL_DTOOL LineStream : public ostream {
 PUBLISHED:
   INLINE LineStream();
 
+#if _MSC_VER >= 1800
+  INLINE LineStream(const LineStream &copy) = delete;
+#endif
+
   INLINE bool is_text_available() const;
   INLINE string get_line();
   INLINE bool has_newline() const;
