@@ -1943,8 +1943,14 @@ reset() {
   if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
+    _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)
+      get_extension_func("glMapNamedBufferRange");
+    _glUnmapNamedBuffer = (PFNGLUNMAPNAMEDBUFFERPROC)
+      get_extension_func("glUnmapNamedBuffer");
+
+    _supports_dsa = true;
   } else {
-    _glGenerateTextureMipmap = NULL;
+    _supports_dsa = false;
   }
 #endif
 
@@ -5225,7 +5231,7 @@ get_uniform_buffer(const GeomVertexArrayFormat *layout) {
   // Create a new uniform buffer.
   PT(CLP(UniformBufferContext)) ubc = new CLP(UniformBufferContext)(this, layout);
   _glGenBuffers(1, &ubc->_index);
-  GLsizeiptr size = layout->get_pad_to();
+  GLsizeiptr size = layout->get_stride();
 
   if (GLCAT.is_debug()) {
     GLCAT.debug() << "creating new uniform buffer " << ubc->_index
@@ -12142,7 +12148,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
-  if (_glGenerateTextureMipmap != NULL) {
+  if (_supports_dsa) {
     // OpenGL 4.5 offers an easy way to do this without binding.
     _glGenerateTextureMipmap(gtc->_index);
     return;

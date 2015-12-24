@@ -834,7 +834,10 @@ public:
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
 
 #ifndef OPENGLES
+  bool _supports_dsa;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+  PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
+  PFNGLUNMAPNAMEDBUFFERPROC _glUnmapNamedBuffer;
 #endif
 
   bool _supports_framebuffer_multisample;

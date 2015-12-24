@@ -527,7 +527,7 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   // We use a GeomVertexArrayFormat to describe the uniform buffer layout.
   GeomVertexArrayFormat *block_format = new GeomVertexArrayFormat;
-  block_format->set_pad_to(data_size);
+  block_format->set_stride(data_size);
 
   // Get an array containing the indices of all the uniforms in this block.
   GLuint *indices = (GLuint *)alloca(param_count * sizeof(GLint));
@@ -648,7 +648,6 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
                             num_components, numeric_type, contents,
                             offsets[ui], 4, param_size, astrides[ui]);
     block_format->add_column(column);
-    cerr << ui << " = " << column << "\n";
   }
 
   if (GLCAT.is_debug()) {

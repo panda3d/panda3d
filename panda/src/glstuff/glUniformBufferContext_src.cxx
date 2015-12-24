@@ -58,26 +58,32 @@ update_data(const ShaderAttrib *attrib) {
   //}
   _frame = ClockObject::get_global_clock()->get_frame_count();
 
-  // Change the generic buffer binding target for the map operation.
-  if (_glgsg->_current_ubuffer_index != _index) {
-    _glgsg->_glBindBuffer(GL_UNIFORM_BUFFER, _index);
-    _glgsg->_current_ubuffer_index = _index;
-  }
-
   void *buffer;
-  GLsizeiptr size = _layout->get_pad_to();
+  GLsizeiptr size = _layout->get_stride();
 
-  if (_glgsg->_glMapBufferRange != NULL) {
-    // If we have glMapBufferRange, we can tell it we don't need the
-    // previous contents for future draw calls any more, preventing
-    // an unnecessary synchronization.
-    buffer = _glgsg->_glMapBufferRange(GL_UNIFORM_BUFFER, 0, size,
+  // Change the generic buffer binding target for the map operation.
+  if (_glgsg->_supports_dsa) {
+    buffer = _glgsg->_glMapNamedBufferRange(_index, 0, size,
       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
   } else {
-    // This old trick achieves more or less the same effect.
-    _glgsg->_glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STREAM_DRAW);
-    buffer = _glgsg->_glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    if (_glgsg->_current_ubuffer_index != _index) {
+      _glgsg->_glBindBuffer(GL_UNIFORM_BUFFER, _index);
+      _glgsg->_current_ubuffer_index = _index;
+    }
+
+    if (_glgsg->_glMapBufferRange != NULL) {
+      // If we have glMapBufferRange, we can tell it we don't need the
+      // previous contents for future draw calls any more, preventing
+      // an unnecessary synchronization.
+      buffer = _glgsg->_glMapBufferRange(GL_UNIFORM_BUFFER, 0, size,
+        GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+
+    } else {
+      // This old trick achieves more or less the same effect.
+      _glgsg->_glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STREAM_DRAW);
+      buffer = _glgsg->_glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    }
   }
 
   nassertv(buffer != NULL);
@@ -122,7 +128,11 @@ update_data(const ShaderAttrib *attrib) {
     }
   }
 
-  _glgsg->_glUnmapBuffer(GL_UNIFORM_BUFFER);
+  if (_glgsg->_supports_dsa) {
+    _glgsg->_glUnmapNamedBuffer(_index);
+  } else {
+    _glgsg->_glUnmapBuffer(GL_UNIFORM_BUFFER);
+  }
 }
 
 #endif
