@@ -237,7 +237,7 @@ private:
     PN_stdfloat _slantl, _slanth;
     CPT(TextGlyph) _glyph;
   };
-  typedef pvector<QuadDef> QuadDefs;
+  typedef epvector<QuadDef> QuadDefs;
   typedef pmap<CPT(RenderState), QuadDefs> QuadMap;
 
   void generate_quads(GeomNode *geom_node, const QuadMap &quad_map);
