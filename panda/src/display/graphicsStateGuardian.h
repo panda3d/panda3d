@@ -245,7 +245,7 @@ PUBLISHED:
   MAKE_PROPERTY(prepared_objects, get_prepared_objects);
 
   virtual bool set_gamma(PN_stdfloat gamma);
-  PN_stdfloat get_gamma(PN_stdfloat gamma);
+  PN_stdfloat get_gamma() const;
   virtual void restore_gamma();
   MAKE_PROPERTY(gamma, get_gamma, set_gamma);
 

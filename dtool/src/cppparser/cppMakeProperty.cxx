@@ -26,8 +26,30 @@ CPPMakeProperty(CPPIdentifier *ident,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
-  _getter(getter),
-  _setter(setter)
+  _has_function(NULL),
+  _get_function(getter),
+  _set_function(setter),
+  _clear_function(NULL)
+{
+  _ident->_native_scope = current_scope;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPMakeProperty::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPMakeProperty::
+CPPMakeProperty(CPPIdentifier *ident,
+                CPPFunctionGroup *hasser, CPPFunctionGroup *getter,
+                CPPFunctionGroup *setter, CPPFunctionGroup *clearer,
+                CPPScope *current_scope, const CPPFile &file) :
+  CPPDeclaration(file),
+  _ident(ident),
+  _has_function(hasser),
+  _get_function(getter),
+  _set_function(setter),
+  _clear_function(clearer)
 {
   _ident->_native_scope = current_scope;
 }
@@ -69,12 +91,28 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 void CPPMakeProperty::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  out << "__make_property(" << _ident->get_local_name(scope)
-      << ", " << _getter->_name;
+  out << "__make_property";
 
-  if (_setter != NULL) {
-    out << ", " << _setter->_name;
+  if (_has_function != NULL) {
+    out.put('2');
   }
+
+  out << "(" << _ident->get_local_name(scope);
+
+  if (_has_function != NULL) {
+    out << ", " << _has_function->_name;
+  }
+
+  out << ", " << _get_function->_name;
+
+  if (_set_function != NULL) {
+    out << ", " << _set_function->_name;
+  }
+
+  if (_clear_function != NULL) {
+    out << ", " << _clear_function->_name;
+  }
+
   out << ");";
 }
 
