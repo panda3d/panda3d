@@ -25,6 +25,7 @@
 #include "pmap.h"
 #include "pvector.h"
 #include "colorSpace.h"
+#include "lvecBase2.h"
 
 class PNMFileType;
 class PNMReader;
@@ -60,6 +61,7 @@ PUBLISHED:
 
   INLINE ColorType get_color_type() const;
   INLINE int get_num_channels() const;
+  MAKE_PROPERTY(num_channels, get_num_channels);
 
   INLINE static bool is_grayscale(ColorType color_type);
   INLINE bool is_grayscale() const;
@@ -69,16 +71,22 @@ PUBLISHED:
 
   INLINE xelval get_maxval() const;
   INLINE ColorSpace get_color_space() const;
+  MAKE_PROPERTY(maxval, get_maxval);
+  MAKE_PROPERTY(color_space, get_color_space);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
+  INLINE LVecBase2i get_size() const;
+  MAKE_PROPERTY(size, get_size);
 
   INLINE string get_comment() const;
   INLINE void set_comment(const string &comment);
+  MAKE_PROPERTY(comment, get_comment, set_comment);
 
   INLINE bool has_type() const;
   INLINE PNMFileType *get_type() const;
   INLINE void set_type(PNMFileType *type);
+  MAKE_PROPERTY2(type, has_type, get_type);
 
   BLOCKING bool read_header(const Filename &filename, PNMFileType *type = NULL,
                             bool report_unknown_type = true);

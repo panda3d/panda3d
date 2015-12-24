@@ -29,7 +29,9 @@ output(ostream &out) const {
   out << _flags << " "
       << _type << " "
       << _getter << " "
-      << _setter << " ";
+      << _setter << " "
+      << _has_function << " "
+      << _clear_function << " ";
   idf_output_string(out, _scoped_name);
   idf_output_string(out, _comment, '\n');
 }
@@ -44,6 +46,9 @@ void InterrogateElement::
 input(istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _type >> _getter >> _setter;
+  if (InterrogateDatabase::get_file_minor_version() >= 1) {
+    in >> _has_function >> _clear_function;
+  }
   idf_input_string(in, _scoped_name);
   idf_input_string(in, _comment);
 }

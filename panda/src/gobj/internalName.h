@@ -62,6 +62,10 @@ PUBLISHED:
   string join(const string &sep) const;
   INLINE const string &get_basename() const;
 
+  MAKE_PROPERTY(parent, get_parent);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(basename, get_basename);
+
   int find_ancestor(const string &basename) const;
   const InternalName *get_ancestor(int n) const;
   const InternalName *get_top() const;

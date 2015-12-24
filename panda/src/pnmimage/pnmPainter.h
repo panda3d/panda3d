@@ -41,6 +41,9 @@ PUBLISHED:
   INLINE void set_fill(PNMBrush *fill);
   INLINE PNMBrush *get_fill() const;
 
+  MAKE_PROPERTY(pen, get_pen, set_pen);
+  MAKE_PROPERTY(fill, get_fill, set_fill);
+
   INLINE void draw_point(float x, float y);
   void draw_line(float xa, float ya, float xb, float yb);
   void draw_rectangle(float xa, float ya, float xb, float yb);

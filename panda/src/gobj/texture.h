@@ -260,7 +260,10 @@ PUBLISHED:
   INLINE bool has_clear_color() const;
   INLINE LColor get_clear_color() const;
   INLINE void set_clear_color(const LColor &color);
+  INLINE void clear_clear_color();
   INLINE string get_clear_data() const;
+  MAKE_PROPERTY2(clear_color, has_clear_color, get_clear_color,
+                              set_clear_color, clear_clear_color);
 
   BLOCKING bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -301,11 +304,15 @@ PUBLISHED:
   INLINE const Filename &get_filename() const;
   INLINE bool has_alpha_filename() const;
   INLINE const Filename &get_alpha_filename() const;
+  MAKE_PROPERTY2(filename, has_filename, get_filename);
+  MAKE_PROPERTY2(alpha_filename, has_alpha_filename, get_alpha_filename);
 
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
   INLINE bool has_alpha_fullpath() const;
   INLINE const Filename &get_alpha_fullpath() const;
+  MAKE_PROPERTY2(fullpath, has_fullpath, get_fullpath);
+  MAKE_PROPERTY2(alpha_fullpath, has_alpha_fullpath, get_alpha_fullpath);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -318,6 +325,14 @@ PUBLISHED:
   INLINE Format get_format() const;
   INLINE ComponentType get_component_type() const;
   INLINE GeomEnums::UsageHint get_usage_hint() const;
+  MAKE_PROPERTY(num_views, get_num_views);
+  MAKE_PROPERTY(num_pages, get_num_pages);
+  MAKE_PROPERTY(num_components, get_num_components);
+  MAKE_PROPERTY(component_width, get_component_width);
+  MAKE_PROPERTY(texture_type, get_texture_type);
+  MAKE_PROPERTY(format, get_format);
+  MAKE_PROPERTY(component_type, get_component_type);
+  MAKE_PROPERTY(usage_hint, get_usage_hint);
 
   INLINE void set_wrap_u(WrapMode wrap);
   INLINE void set_wrap_v(WrapMode wrap);
@@ -345,10 +360,14 @@ PUBLISHED:
   INLINE bool has_compression() const;
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
+  MAKE_PROPERTY(default_sampler, get_default_sampler, set_default_sampler);
+  MAKE_PROPERTY(compression, get_compression, set_compression);
 
   INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
   INLINE QualityLevel get_effective_quality_level() const;
+  MAKE_PROPERTY(quality_level, get_quality_level, set_quality_level);
+  MAKE_PROPERTY(effective_quality_level, get_effective_quality_level);
 
   INLINE int get_expected_num_mipmap_levels() const;
   INLINE int get_expected_mipmap_x_size(int n) const;
@@ -420,10 +439,15 @@ PUBLISHED:
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
   INLINE UpdateSeq get_simple_image_modified() const;
+  MAKE_PROPERTY(properties_modified, get_properties_modified);
+  MAKE_PROPERTY(image_modified, get_image_modified);
+  MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
 
   INLINE void set_auto_texture_scale(AutoTextureScale scale);
   INLINE AutoTextureScale get_auto_texture_scale() const;
   INLINE bool has_auto_texture_scale() const;
+  MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
+                                    set_auto_texture_scale);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;

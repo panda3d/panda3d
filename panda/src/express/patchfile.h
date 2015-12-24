@@ -57,17 +57,22 @@ PUBLISHED:
              const Filename &target_file);
 
   INLINE PN_stdfloat get_progress() const;
+  MAKE_PROPERTY(progress, get_progress);
 
   INLINE void set_allow_multifile(bool allow_multifile);
   INLINE bool get_allow_multifile();
+  MAKE_PROPERTY(allow_multifile, get_allow_multifile, set_allow_multifile);
 
   INLINE void set_footprint_length(int length);
   INLINE int get_footprint_length();
   INLINE void reset_footprint_length();
+  MAKE_PROPERTY(footprint_length, get_footprint_length, set_footprint_length);
 
   INLINE bool has_source_hash() const;
   INLINE const HashVal &get_source_hash() const;
   INLINE const HashVal &get_result_hash() const;
+  MAKE_PROPERTY2(source_hash, has_source_hash, get_source_hash);
+  MAKE_PROPERTY(result_hash, get_result_hash);
 
 private:
   int internal_read_header(const Filename &patch_file);

@@ -26,6 +26,8 @@ InterrogateElement(InterrogateModuleDef *def) :
   _type = 0;
   _getter = 0;
   _setter = 0;
+  _has_function = 0;
+  _clear_function = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +54,8 @@ operator = (const InterrogateElement &copy) {
   _type = copy._type;
   _getter = copy._getter;
   _setter = copy._setter;
+  _has_function = copy._has_function;
+  _clear_function = copy._clear_function;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,6 +158,46 @@ has_setter() const {
 INLINE FunctionIndex InterrogateElement::
 get_setter() const {
   return _setter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Element: InterrogateElement::has_has_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateElement::
+has_has_function() const {
+  return (_flags & F_has_has_function) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Element: InterrogateElement::get_has_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FunctionIndex InterrogateElement::
+get_has_function() const {
+  return _has_function;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Element: InterrogateElement::has_clear_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateElement::
+has_clear_function() const {
+  return (_flags & F_has_clear_function) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Element: InterrogateElement::get_clear_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FunctionIndex InterrogateElement::
+get_clear_function() const {
+  return _clear_function;
 }
 
 

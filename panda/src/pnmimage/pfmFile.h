@@ -52,9 +52,11 @@ PUBLISHED:
   BLOCKING bool store_mask(PNMImage &pnmimage) const;
 
   INLINE bool is_valid() const;
+  MAKE_PROPERTY(valid, is_valid);
 
   INLINE PN_float32 get_scale() const;
   INLINE void set_scale(PN_float32 scale);
+  MAKE_PROPERTY(scale, get_scale, set_scale);
 
   INLINE bool has_point(int x, int y) const;
   INLINE PN_float32 get_channel(int x, int y, int c) const;

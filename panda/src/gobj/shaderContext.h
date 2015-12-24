@@ -52,6 +52,7 @@ public:
 
 PUBLISHED:
   INLINE Shader *get_shader() const;
+  MAKE_PROPERTY(shader, get_shader);
 
 public:
   Shader *_shader;

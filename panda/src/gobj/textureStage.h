@@ -188,6 +188,24 @@ PUBLISHED:
 
   INLINE static TextureStage *get_default();
 
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_PROPERTY(sort, get_sort, set_sort);
+  MAKE_PROPERTY(priority, get_priority, set_priority);
+
+  MAKE_PROPERTY(texcoord_name, get_texcoord_name, set_texcoord_name);
+  MAKE_PROPERTY(tangent_name, get_tangent_name);
+  MAKE_PROPERTY(binormal_name, get_binormal_name);
+
+  MAKE_PROPERTY(mode, get_mode, set_mode);
+
+  MAKE_PROPERTY(color, get_color, set_color);
+  MAKE_PROPERTY(rgb_scale, get_rgb_scale, set_rgb_scale);
+  MAKE_PROPERTY(alpha_scale, get_alpha_scale, set_alpha_scale);
+  MAKE_PROPERTY(saved_result, get_saved_result, set_saved_result);
+
+  MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
+
 public:
   INLINE static UpdateSeq get_sort_seq();
 

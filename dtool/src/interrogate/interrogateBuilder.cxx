@@ -1927,14 +1927,16 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   CPPInstance *getter = NULL;
   CPPType *return_type = NULL;
 
-  CPPFunctionGroup *fgroup = make_property->_getter;
+  CPPFunctionGroup *fgroup = make_property->_get_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
-      CPPFunctionType *ftype =
-        function->_type->as_function_type();
-      if (ftype != NULL/* && ftype->_parameters->_parameters.size() == 0*/) {
+      CPPFunctionType *ftype = function->_type->as_function_type();
+
+      // The getter must either take no arguments, or all defaults.
+      if (ftype != NULL && (ftype->_parameters->_parameters.size() == 0 ||
+          ftype->_parameters->_parameters[0]->_initializer != NULL)) {
         getter = function;
         return_type = ftype->_return_type;
 
@@ -1948,6 +1950,29 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
 
     if (getter == NULL || return_type == NULL) {
       cerr << "No instance of getter '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  // Find the "hasser".
+  CPPInstance *hasser = NULL;
+
+  fgroup = make_property->_has_function;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL && TypeManager::is_bool(ftype->_return_type)) {
+        hasser = function;
+        break;
+      }
+    }
+
+    if (hasser == NULL || return_type == NULL) {
+      cerr << "No instance of has-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
     }
@@ -1975,6 +2000,18 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._flags |= InterrogateElement::F_has_getter;
     iproperty._getter = get_function(getter, "", struct_type,
                                      struct_type->get_scope(), 0);
+    if (iproperty._getter == 0) {
+      cerr << "failed " << *getter << "\n";
+    }
+  }
+
+  if (hasser != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_has_function;
+    iproperty._has_function = get_function(hasser, "", struct_type,
+                                           struct_type->get_scope(), 0);
+    if (iproperty._has_function == 0) {
+      cerr << "failed " << *hasser << "\n";
+    }
   }
 
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
@@ -1983,7 +2020,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   // Now look for setters.
-  fgroup = make_property->_setter;
+  fgroup = make_property->_set_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
@@ -1991,6 +2028,25 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       iproperty._flags |= InterrogateElement::F_has_setter;
       iproperty._setter = get_function(function, "", struct_type,
                                        struct_type->get_scope(), 0);
+      if (iproperty._setter == 0) {
+        cerr << "failed " << *function << "\n";
+      }
+      break;
+    }
+  }
+
+  fgroup = make_property->_clear_function;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      iproperty._flags |= InterrogateElement::F_has_clear_function;
+      iproperty._clear_function = get_function(function, "", struct_type,
+                                               struct_type->get_scope(), 0);
+      if (iproperty._clear_function == 0) {
+        cerr << "failed " << *function << "\n";
+      }
+      break;
     }
   }
 
