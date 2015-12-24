@@ -44,29 +44,40 @@ PUBLISHED:
   INLINE const LColor &get_ambient() const;
   void set_ambient(const LColor &color);
   INLINE void clear_ambient();
+  MAKE_PROPERTY2(ambient, has_ambient, get_ambient,
+                          set_ambient, clear_ambient);
 
   INLINE bool has_diffuse() const;
   INLINE const LColor &get_diffuse() const;
   void set_diffuse(const LColor &color);
   INLINE void clear_diffuse();
+  MAKE_PROPERTY2(diffuse, has_diffuse, get_diffuse,
+                          set_diffuse, clear_diffuse);
 
   INLINE bool has_specular() const;
   INLINE const LColor &get_specular() const;
   void set_specular(const LColor &color);
   INLINE void clear_specular();
+  MAKE_PROPERTY2(specular, has_specular, get_specular,
+                           set_specular, clear_specular);
 
   INLINE bool has_emission() const;
   INLINE const LColor &get_emission() const;
   void set_emission(const LColor &color);
   INLINE void clear_emission();
+  MAKE_PROPERTY2(emission, has_emission, get_emission,
+                           set_emission, clear_emission);
 
   INLINE PN_stdfloat get_shininess() const;
   INLINE void set_shininess(PN_stdfloat shininess);
+  MAKE_PROPERTY(shininess, get_shininess, set_shininess);
 
   INLINE bool get_local() const;
   INLINE void set_local(bool local);
   INLINE bool get_twoside() const;
   INLINE void set_twoside(bool twoside);
+  MAKE_PROPERTY(local, get_local, set_local);
+  MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
   INLINE bool operator == (const Material &other) const;
   INLINE bool operator != (const Material &other) const;

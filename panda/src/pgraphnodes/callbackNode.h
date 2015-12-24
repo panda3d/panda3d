@@ -32,10 +32,12 @@ PUBLISHED:
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
+  MAKE_PROPERTY(cull_callback, get_cull_callback, set_cull_callback);
 
   INLINE void set_draw_callback(CallbackObject *object);
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
+  MAKE_PROPERTY(draw_callback, get_draw_callback, set_draw_callback);
 
 public:
   CallbackNode(const CallbackNode &copy);

@@ -1932,9 +1932,11 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
-      CPPFunctionType *ftype =
-        function->_type->as_function_type();
-      if (ftype != NULL/* && ftype->_parameters->_parameters.size() == 0*/) {
+      CPPFunctionType *ftype = function->_type->as_function_type();
+
+      // The getter must either take no arguments, or all defaults.
+      if (ftype != NULL && (ftype->_parameters->_parameters.size() == 0 ||
+          ftype->_parameters->_parameters[0]->_initializer != NULL)) {
         getter = function;
         return_type = ftype->_return_type;
 

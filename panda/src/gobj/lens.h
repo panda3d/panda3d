@@ -74,6 +74,8 @@ PUBLISHED:
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
+  MAKE_PROPERTY(coordinate_system, get_coordinate_system,
+                                   set_coordinate_system);
 
   void clear();
 

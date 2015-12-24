@@ -66,6 +66,18 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
+  MAKE_PROPERTY(frame_rate, get_frame_rate);
+  MAKE_PROPERTY(num_frames, get_num_frames);
+
+  MAKE_PROPERTY(frame, get_frame);
+  MAKE_PROPERTY(next_frame, get_next_frame);
+  MAKE_PROPERTY(frac, get_frac);
+  MAKE_PROPERTY(full_frame, get_full_frame);
+  MAKE_PROPERTY(full_fframe, get_full_fframe);
+  MAKE_PROPERTY(playing, is_playing);
+
 protected:
   INLINE void set_frame_rate(double frame_rate);
   INLINE void set_num_frames(int num_frames);

@@ -46,9 +46,12 @@ PUBLISHED:
   INLINE void operator = (const GeomVertexAnimationSpec &other);
 
   INLINE AnimationType get_animation_type() const;
+  MAKE_PROPERTY(animation_type, get_animation_type);
 
   INLINE int get_num_transforms() const;
   INLINE bool get_indexed_transforms() const;
+  MAKE_PROPERTY(num_transforms, get_num_transforms);
+  MAKE_PROPERTY(indexed_transforms, get_indexed_transforms);
 
   INLINE void set_none();
   INLINE void set_panda();
@@ -66,7 +69,7 @@ public:
   void write_datagram(BamWriter *manager, Datagram &dg);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
-private:  
+private:
   AnimationType _animation_type;
 
   int _num_transforms;

@@ -38,6 +38,8 @@ PUBLISHED:
 
   INLINE int get_video_width() const;
   INLINE int get_video_height() const;
+  MAKE_PROPERTY(video_width, get_video_width);
+  MAKE_PROPERTY(video_height, get_video_height);
 
 public:
   virtual bool has_cull_callback() const;

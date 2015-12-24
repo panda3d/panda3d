@@ -43,6 +43,8 @@ PUBLISHED:
   INLINE void set_visible_child(int index);
   virtual int get_visible_child() const;
 
+  MAKE_PROPERTY(visible_child, get_visible_child, set_visible_child);
+
 private:
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

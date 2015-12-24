@@ -53,12 +53,15 @@ public:
 PUBLISHED:
   INLINE PN_stdfloat get_exponent() const FINAL;
   INLINE void set_exponent(PN_stdfloat exponent);
+  MAKE_PROPERTY(exponent, get_exponent, set_exponent);
 
   INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
+  MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
   INLINE const LVecBase3 &get_attenuation() const FINAL;
   INLINE void set_attenuation(const LVecBase3 &attenuation);
+  MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
 
   virtual int get_class_priority() const;
 
