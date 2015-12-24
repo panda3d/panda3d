@@ -98,6 +98,7 @@ private:
   struct UniformBlock {
     CPT(InternalName) _name;
     PT(CLP(UniformBufferContext)) _buffer;
+    GLuint _binding_index;
   };
   typedef pvector<UniformBlock> UniformBlocks;
   UniformBlocks _uniform_blocks;

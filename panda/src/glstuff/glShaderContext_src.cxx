@@ -522,8 +522,10 @@ void CLP(ShaderContext)::
 reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_buflen) {
   GLint data_size = 0;
   GLint param_count = 0;
+  GLint binding_index = 0;
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
   _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
+  _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_BINDING, &binding_index);
 
   // We use a GeomVertexArrayFormat to describe the uniform buffer layout.
   GeomVertexArrayFormat *block_format = new GeomVertexArrayFormat;
@@ -651,7 +653,7 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
   }
 
   if (GLCAT.is_debug()) {
-    GLCAT.debug() << "Active uniform block " << name << " has layout:\n";
+    GLCAT.debug() << "Active uniform block " << name << " with index " << binding_index << " has layout:\n";
     block_format->write(GLCAT.debug(false), 2);
   }
 
@@ -660,6 +662,7 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
   UniformBlock block;
   block._name = InternalName::make(name);
   block._buffer = _glgsg->get_uniform_buffer(layout);
+  block._binding_index = binding_index;
 
   nassertv(i == _uniform_blocks.size());
   _uniform_blocks.push_back(block);
@@ -1832,7 +1835,7 @@ issue_parameters(int altered) {
 
     for (int i = 0; i < _uniform_blocks.size(); ++i) {
       UniformBlock &block = _uniform_blocks[i];
-      _glgsg->apply_uniform_buffer(i, block._buffer, attrib);
+      _glgsg->apply_uniform_buffer(block._binding_index, block._buffer, attrib);
     }
   }
 #endif

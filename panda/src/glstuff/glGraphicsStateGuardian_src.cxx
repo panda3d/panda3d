@@ -5263,7 +5263,7 @@ get_uniform_buffer(const GeomVertexArrayFormat *layout) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_uniform_buffer(int index, CLP(UniformBufferContext) *gubc,
+apply_uniform_buffer(GLuint index, CLP(UniformBufferContext) *gubc,
                      const ShaderAttrib *attrib) {
   nassertr(_supports_uniform_buffers, false);
 

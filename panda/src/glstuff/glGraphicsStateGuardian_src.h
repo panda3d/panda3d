@@ -305,7 +305,7 @@ public:
 
 #ifndef OPENGLES
   PT(CLP(UniformBufferContext)) get_uniform_buffer(const GeomVertexArrayFormat *layout);
-  bool apply_uniform_buffer(int index, CLP(UniformBufferContext) *gubc,
+  bool apply_uniform_buffer(GLuint index, CLP(UniformBufferContext) *gubc,
                             const ShaderAttrib *attrib);
 #endif
 
