@@ -249,7 +249,7 @@ spawn_child_system(BaseParticle *bp) {
 
   if (_spawn_templates.size() == 0) {
     physics_cat.error() << "ParticleSystem::spawn_child_system: "
-                        << "no spawn templates presesnt." << endl;
+                        << "no spawn templates present." << endl;
     return;
   }
 
