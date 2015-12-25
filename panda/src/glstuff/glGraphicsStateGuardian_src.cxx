@@ -12113,6 +12113,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     return false;
 #else
 
+  // Make sure the GL driver does not align textures, otherwise we get corrupt
+  // memory, since we don't take alignment into account.
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract
     // one page at a time.
