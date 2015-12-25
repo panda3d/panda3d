@@ -2535,6 +2535,7 @@ check_keyword(const string &name) {
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
+  if (name == "__make_property2") return KW_MAKE_PROPERTY2;
   if (name == "__make_seq") return KW_MAKE_SEQ;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;

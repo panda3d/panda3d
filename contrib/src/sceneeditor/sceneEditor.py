@@ -87,7 +87,7 @@ class myLevelEditor(AppShell):
     controlType = 'Keyboard'
     keyboardMapDict = {}
     keyboardSpeedDict = {}
-    
+
     Scene=None
     isSelect = False
     nodeSelected = None
@@ -99,9 +99,9 @@ class myLevelEditor(AppShell):
     CurrentFileName=None #Holds the current scene file name
     CurrentDirName=None # Holds the current file name without extension which is the path where file's data gets saved
     Dirty=0 # Keeps track of whether there are any modifications that should be saved
-  
-    
-    
+
+
+
     def __init__(self, parent = None, **kw):
 
         base.setBackgroundColor(0,0,0)
@@ -149,12 +149,12 @@ class myLevelEditor(AppShell):
             text_scale = 0.05,
             text_align = TextNode.ALeft
             )
-        
+
 
         self.initialiseoptions(myLevelEditor)
 
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-        
+
         ######### Set the event handler ##########
         self.dataFlowEvents = [
             ## Event from Side Window
@@ -213,7 +213,7 @@ class myLevelEditor(AppShell):
             ['f11',self.loadFromBam],
             ['f12',self.saveAsBam],
             ]
-        
+
 
         #################################
         ###  Collision detection
@@ -223,7 +223,7 @@ class myLevelEditor(AppShell):
 
         for event in self.dataFlowEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
-        
+
         self.actionEvents = [
             # Scene graph explorer functions
             ['SGE_changeName', self.changeName],
@@ -247,7 +247,7 @@ class myLevelEditor(AppShell):
             ['se_deselectedAll',self.deselectFromScene],
             ]
         ''' All messages starting with "SGE_" are generated in seSceneGraphExplorer'''
-        
+
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
@@ -260,7 +260,7 @@ class myLevelEditor(AppShell):
         # Initialize the application.
         # This function will be called when you call AppShell's constructor
         #################################################################
-        
+
         ### Create SceneEditor Ver. DirectSession
         self.seSession = SeSession()
         self.seSession.enable()
@@ -270,7 +270,7 @@ class myLevelEditor(AppShell):
         self.MopathPanel = None
         self.alignPanelDict = {}
         #self.quadview=QuadView()
-        
+
 
         self.lightingPanel = None
         self.controllerPanel = None
@@ -291,9 +291,9 @@ class myLevelEditor(AppShell):
         self.sideWindowCount = 1
         self.sideWindow.selectPage()
         messenger.send('SGE_Update Explorer',[render]) ## Update the Scene Graph
-        
+
         pass
-        
+
     def getPhotoImage(self,name):
         modpath = ConfigVariableSearchPath("model-path")
         path = modpath.findFile(Filename(name))
@@ -338,11 +338,11 @@ class myLevelEditor(AppShell):
             i += 1
             button = Button(buttonFrame, image = element, command=lambda n=i : self.buttonPushed(n))
             button.pack(fill=X, side = LEFT)
-            
+
 
         buttonFrame.pack(fill=X, side=LEFT,expand=True)
-        
-        
+
+
     def buttonPushed(self, buttonIndex):
         #################################################################
         # buttonPushed(self, buttonNum)
@@ -379,7 +379,7 @@ class myLevelEditor(AppShell):
         elif buttonIndex==9: # Open Particle Panel
             self.openParticlePanel()
             return
-        elif buttonIndex==10: 
+        elif buttonIndex==10:
             self.openInputPanel()
             return
         elif buttonIndex==11: # Help
@@ -412,14 +412,14 @@ class myLevelEditor(AppShell):
         elif buttonIndex==20:
             print "You haven't defined the function for this Button, Number %d."%buttonIndex
             return
-        
+
         return
 
     def createMenuBar(self):
         # Creates default menus.  Can be overridden or simply augmented
         # Using button Add below
         self.menuBar.addmenuitem('Help', 'command',
-                                 'Get information on application', 
+                                 'Get information on application',
                                  label='About...', command=self.showAbout)
         ## Creat stuff inside the "File"
         self.menuBar.addmenuitem('File', 'command', 'Creat New Scene',
@@ -447,7 +447,7 @@ class myLevelEditor(AppShell):
         self.menuBar.addmenuitem('File', 'command', 'Load Actor',
                                 label='Load Actor',
                                 command=self.loadActor)
-        
+
         self.menuBar.addmenuitem('File', 'separator')
 
         self.menuBar.addmenuitem('File', 'command', 'Import a Scene',
@@ -455,7 +455,7 @@ class myLevelEditor(AppShell):
                                 command=self.importScene)
 
         self.menuBar.addmenuitem('File', 'separator')
-        
+
         self.menuBar.addmenuitem('File', 'command', 'Quit this application',
                                 label='Exit',
                                 command=self.quit)
@@ -535,7 +535,7 @@ class myLevelEditor(AppShell):
             self.menuPanel.entryconfig('Animation Panel', state=DISABLED)
             self.menuPanel.entryconfig('Side Window', state=DISABLED)
 
-        
+
     def onDestroy(self, event):
         #################################################################
         # If you have open any thing, please rewrite here!
@@ -599,7 +599,7 @@ class myLevelEditor(AppShell):
         if self.lightingPanel != None:
             self.lightingPanel.updateList(list)
         return
-        
+
     def lightRename(self,oName, nName):
         #################################################################
         # lightRename(self,oName, nName)
@@ -613,7 +613,7 @@ class myLevelEditor(AppShell):
         if self.lightingPanel != None:
             self.lightingPanel.updateList(list,lightNode)
         return
-    
+
     def lightSelect(self,lightName):
         #################################################################
         # lightSelect(self,lightName)
@@ -627,7 +627,7 @@ class myLevelEditor(AppShell):
         if self.lightingPanel != None:
             self.lightingPanel.updateDisplay(lightNode)
         return
-    
+
     def addLight(self, type):
         #################################################################
         # addLight(self, type)
@@ -643,7 +643,7 @@ class myLevelEditor(AppShell):
             self.lightingPanel.updateList(list,lightNode)
         self.makeDirty()
         return
-    
+
     def lightingPanelClose(self):
         #################################################################
         # lightingPanelClose(self)
@@ -654,7 +654,7 @@ class myLevelEditor(AppShell):
         self.menuPanel.entryconfig('Lighting Panel', state=NORMAL)
         self.lightingPanel = None
         return
-    
+
     def openPropertyPanel(self, nodePath = None):
         #################################################################
         # openPropertyPanel(self, nodePath = None)
@@ -714,7 +714,7 @@ class myLevelEditor(AppShell):
         #################################################################
         # addDummyNode(self, nodepath = None)
         # This function will be called when user try to create a dummy node into scene
-        # 
+        #
         # Here we will call dataHolder to create a dummy node
         # and reparent it to the nodePath that user has assigned.
         #
@@ -727,7 +727,7 @@ class myLevelEditor(AppShell):
         #################################################################
         # addCollisionObj(self, nodepath = None)
         # This function will be called when user try to create a collision object into the scene
-        # 
+        #
         # Here we will call collisionWindow to ask user what kind of collision objects they want to have.
         # Then, send the information and generated collision object to dataHolder to finish the whole process
         # and reparent it to the nodePath that user has assigned.
@@ -757,7 +757,7 @@ class myLevelEditor(AppShell):
         #################################################################
         SEditor.reparent(nodepath, fWrt = 1)
         return
-    
+
     def openPlacerPanel(self, nodePath = None):
         #################################################################
         # openPlacerPanel(self, nodePath = None)
@@ -766,7 +766,7 @@ class myLevelEditor(AppShell):
         #################################################################
         if(self.placer==None):
             self.placer = Placer()
-            self.menuPanel.entryconfig('Placer Panel', state=DISABLED)          
+            self.menuPanel.entryconfig('Placer Panel', state=DISABLED)
         return
 
     def closePlacerPanel(self):
@@ -779,7 +779,7 @@ class myLevelEditor(AppShell):
         self.placer = None
         self.menuPanel.entryconfig('Placer Panel', state=NORMAL)
         return
-        
+
     def openAnimPanel(self, nodePath = None):
         #################################################################
         # openAnimPanel(self, nodePath = None)
@@ -819,7 +819,7 @@ class myLevelEditor(AppShell):
         #################################################################
         oName = nodePath.getName() # I need this line in order to check the obj name in the control panel.
         AllScene.rename(nodePath,nName)
-        
+
         # reset the list in the controller panel if it has been opened.
         if (self.controllerPanel) != None:
             list = AllScene.getAllObjNameAsList()
@@ -841,7 +841,7 @@ class myLevelEditor(AppShell):
             currentModName=currentF.getBasenameWoExtension()
             # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
             # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
-            # If there is ever a garbage colleciton bug..this might be a point to look at 
+            # If there is ever a garbage colleciton bug..this might be a point to look at
             if sys.modules.has_key(currentModName):
                 del sys.modules[currentModName]
                 print sys.getrefcount(AllScene.theScene)
@@ -856,14 +856,14 @@ class myLevelEditor(AppShell):
         # openScene(self)
         #################################################################
         # In the future try and provide merging of two scenes
-        
+
         if(self.CurrentFileName or self.Dirty):
             saveScene = tkMessageBox._show("Load scene","Save the current scene?",icon = tkMessageBox.QUESTION,type = tkMessageBox.YESNOCANCEL)
             if (saveScene == "yes"):
                 self.saveScene()
             elif (saveScene == "cancel"):
                 return
-        
+
         self.closeAllSubWindows() ## Close all sub window
         if(self.CurrentFileName):
             currentF=Filename(self.CurrentFileName)
@@ -871,7 +871,7 @@ class myLevelEditor(AppShell):
             currentModName=currentF.getBasenameWoExtension()
             # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
             # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
-            # If there is ever a garbage colleciton bug..this might be a point to look at 
+            # If there is ever a garbage colleciton bug..this might be a point to look at
             if sys.modules.has_key(currentModName):
                 del sys.modules[currentModName]
                 print sys.getrefcount(AllScene.theScene)
@@ -880,7 +880,7 @@ class myLevelEditor(AppShell):
             AllScene.resetAll()
 
         self.CurrentFileName = AllScene.loadScene()
-        
+
         if(self.CurrentFileName==None):
             return
 
@@ -894,7 +894,7 @@ class myLevelEditor(AppShell):
             lightList=AllScene.getList()
             self.lightingPanel.updateList(lightList)
         messenger.send('SGE_Update Explorer',[render])
-        
+
 
         # Close the side window in order to reset all world settings to fit the scene we have loaded.
         self.sideWindow.quit()
@@ -920,7 +920,7 @@ class myLevelEditor(AppShell):
         #################################################################
 
         if(self.CurrentFileName):
-            f=FileSaver()       
+            f=FileSaver()
             f.SaveFile(AllScene,self.CurrentFileName,self.CurrentDirName,1)
             self.Dirty=0
         else:
@@ -1012,7 +1012,7 @@ class myLevelEditor(AppShell):
             title = 'Load New Actor',
             parent = self.parent)
 
-        
+
         if ActorFilename:
             self.makeDirty()
             if not AllScene.loadActor(ActorFilename, Filename.fromOsSpecific(ActorFilename)):
@@ -1028,7 +1028,7 @@ class myLevelEditor(AppShell):
     ## Take care those things under Edit nemu
     def unDo(self):
         pass
-    
+
     def reDo(self):
         pass
 
@@ -1064,7 +1064,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to add a dummy into the scene.
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         #################################################################
         self.addDummyNode(self.nodeSelected)
@@ -1076,7 +1076,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to open the duplication window.
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         #################################################################
         if self.nodeSelected!=None:
@@ -1089,7 +1089,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to remove the current selected node..
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         self.remove(self.nodeSelected)
@@ -1101,11 +1101,11 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to open the property window of current selected node..
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         self.openPropertyPanel(self.nodeSelected)
-        pass 
+        pass
 
     def showCameraSetting(self):
         ################################################################
@@ -1113,7 +1113,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to open the property window of camera..
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         self.openPropertyPanel(camera)
@@ -1145,20 +1145,20 @@ class myLevelEditor(AppShell):
             self.sideWindowCount = 1
             self.menuPanel.entryconfig('Side Window', state=DISABLED)
         return
-    
+
     def openAnimationPanel(self):
         ################################################################
         # openAnimationPanel(self)
         # This function will do nothing but call other function
         # to open the animation window for selected node(if it is an Actor)..
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         if AllScene.isActor(self.nodeSelected):
             self.openAnimPanel(self.nodeSelected)
         pass
-    
+
     def openMopathPanel(self):
         ################################################################
         # openMopathPanel(self)
@@ -1178,7 +1178,7 @@ class myLevelEditor(AppShell):
         self.ParticleEnable = visable
         AllScene.toggleParticleVisable(visable)
         return
-    
+
     def openLightingPanel(self):
         ################################################################
         # openLightingPanel(self)
@@ -1189,7 +1189,7 @@ class myLevelEditor(AppShell):
             self.lightingPanel = lightingPanel(AllScene.getLightList())
             self.menuPanel.entryconfig('Lighting Panel', state=DISABLED)
         return
-    
+
     def addParticleEffect(self,effect_name,effect,node):
         AllScene.particleDict[effect_name]=effect
         AllScene.particleNodes[effect_name]=node
@@ -1215,7 +1215,7 @@ class myLevelEditor(AppShell):
     def closeParticlePanel(self):
         self.particlePanel = None
         return
-    
+
     def openInputPanel(self):
         if self.controllerPanel==None:
             list = AllScene.getAllObjNameAsList()
@@ -1237,10 +1237,10 @@ class myLevelEditor(AppShell):
         # set it back into controller panel
         ################################################################
         node = AllScene.getObjFromSceneByName(name)
-        
+
         if (self.controllerPanel) != None and (node!=None):
             self.controllerPanel.setNodePathIn(node)
-            
+
         return
 
     def setControlSet(self, controlType, dataList):
@@ -1260,7 +1260,7 @@ class myLevelEditor(AppShell):
             # Also this will make sure we won't catch wrong keyboard message
             self.stopControl(controlType)
             self.enableControl = True
-        
+
         self.setControlSet(controlType, dataList)
         self.lastContorlTimer = globalClock.getFrameTime()
         if controlType == 'Keyboard':
@@ -1327,7 +1327,7 @@ class myLevelEditor(AppShell):
         self.controlTarget.setScale(newScale.getX(),newScale.getY(),newScale.getZ())
         self.transNodeKeyboard.setPosHpr(0,0,0,0,0,0)
         return Task.cont
-    
+
     ## Misc
     ##### This one get the event from SGE (Scene Graph Explorer) and Picking
     def selectNode(self, nodePath=None, callBack = True):
@@ -1428,7 +1428,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to delete selected node...
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         self.deSelectNode(self.nodeSelected)
@@ -1444,7 +1444,7 @@ class myLevelEditor(AppShell):
         self.makeDirty()
         AllScene.toggleLight()
         return
-    
+
     def sideWindowClose(self,worldColor,lightEnable,ParticleEnable, basedriveEnable,collision,
                         backface, texture, wireframe, grid, widgetVis, enableAutoCamera):
         ################################################################
@@ -1478,7 +1478,7 @@ class myLevelEditor(AppShell):
         # This function will do nothing but call other function
         # to duplicate selected node...
         #
-        # Ok... this is really redundancy... 
+        # Ok... this is really redundancy...
         #
         ################################################################
         AllScene.duplicateObj(nodePath, pos, hpr, scale, num)
@@ -1685,11 +1685,11 @@ class myLevelEditor(AppShell):
             t.doneColor = doneColor
             # This really does all the work
             t.uponDeath = self.flashDone
-            
+
     def flashDummy(self, state):
         # Real work is done in upon death function
         return Task.done
-        
+
     def flashDone(self,state):
         # Return node Path to original state
         if state.nodePath.isEmpty():
@@ -1701,7 +1701,7 @@ class myLevelEditor(AppShell):
             state.nodePath.clearColor()
 
 
-    
+
 
 editor = myLevelEditor(parent = base.tkRoot)
 

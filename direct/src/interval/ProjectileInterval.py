@@ -36,7 +36,7 @@ class ProjectileInterval(Interval):
         (If startPos is not provided, it will be obtained from the node's
         position at the time that the interval is first started. Note that
         in this case you must provide a duration of some kind.)
-        
+
         # go from startPos to endPos in duration seconds
         startPos, endPos, duration
         # given a starting velocity, go for a specific time period
@@ -46,7 +46,7 @@ class ProjectileInterval(Interval):
         # pass through wayPoint at time 'timeToWayPoint'. Go until
         # you hit a given Z plane
         startPos, wayPoint, timeToWayPoint, endZ
-        
+
         You may alter gravity by providing a multiplier in 'gravityMult'.
         '2.' will make gravity twice as strong, '.5' half as strong.
         '-1.' will reverse gravity
@@ -58,7 +58,7 @@ class ProjectileInterval(Interval):
         be updated automatically as the interval plays.  It will *not*
         be automatically removed from the node when the interval
         finishes.
-        
+
         """
         self.node = node
         self.collNode = collNode
@@ -210,16 +210,16 @@ class ProjectileInterval(Interval):
         self.parabola = LParabola(VBase3(0, 0, 0.5 * self.zAcc),
                                   self.startVel,
                                   self.startPos)
-        
+
         if not self.endPos:
             self.endPos = self.__calcPos(self.duration)
-            
+
         # these are the parameters that we need to know:
         assert self.notify.debug('startPos: %s' % repr(self.startPos))
         assert self.notify.debug('endPos:   %s' % repr(self.endPos))
         assert self.notify.debug('duration: %s' % self.duration)
         assert self.notify.debug('startVel: %s' % repr(self.startVel))
-        assert self.notify.debug('z-accel:  %s' % self.zAcc)            
+        assert self.notify.debug('z-accel:  %s' % self.zAcc)
 
     def __initialize(self):
         if self.implicitStartPos:
@@ -232,7 +232,7 @@ class ProjectileInterval(Interval):
             assert self.notify.error('invalid projectile parameters')
             return False
         return True
-            
+
     def privInitialize(self, t):
         self.__initialize()
         if self.collNode:
@@ -268,17 +268,17 @@ class ProjectileInterval(Interval):
         You must provide a few of the parameters, and the others will be
         computed. The input parameters in question are:
           duration, endZ, endPos, startVel, gravityMult
-          
+
         Valid sets of input parameters (AA),
         (trivially computed/default parameters) (BB),
         non-trivial computed parameters (CC):
         AA && BB => CC
-        
+
         # one parameter
         duration && (startVel, gravityMult) => endZ, endPos
         endZ     && (startVel, gravityMult) => duration, endPos
         endPos   && (endZ, gravityMult    ) => duration, startVel
-        
+
         # two parameters
         duration, endZ        && (endPos, gravityMult) => startVel
         duration, endPos      && (endZ, gravityMult  ) => startVel
@@ -287,14 +287,14 @@ class ProjectileInterval(Interval):
         endZ, startVel        && (gravityMult        ) => duration, endPos
         endZ, gravityMult     && (endPos, startVel   ) => duration
         endPos, gravityMult   && (endZ               ) => duration, startVel
-        
+
         # three parameters
         duration, endZ, startVel        && (      ) => endPos, gravityMult
         duration, endZ, gravityMult     && (endPos) => startVel
         duration, endPos, gravityMult   && (endZ  ) => startVel
         duration, startVel, gravityMult && (      ) => endZ, endPos
         endZ, startVel, gravityMult     && (      ) => duration, endPos
-        
+
         # four parameters
         duration, endZ, startVel, gravityMult && () => endPos
         ##################################################################

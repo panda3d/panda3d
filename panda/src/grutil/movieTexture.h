@@ -62,7 +62,18 @@ PUBLISHED:
   bool   is_playing() const;
   void   synchronize_to(AudioSound *sound);
   void   unsynchronize();
-  
+
+PUBLISHED:
+  MAKE_PROPERTY(video_length, get_video_length);
+  MAKE_PROPERTY(video_width, get_video_width);
+  MAKE_PROPERTY(video_height, get_video_height);
+
+  MAKE_PROPERTY(time, get_time, set_time);
+  MAKE_PROPERTY(loop, get_loop, set_loop);
+  MAKE_PROPERTY(loop_count, get_loop_count, set_loop_count);
+  MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
+  MAKE_PROPERTY(playing, is_playing);
+
 public:
   virtual void ensure_loader_type(const Filename &filename);
 

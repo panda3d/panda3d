@@ -116,7 +116,7 @@ class DevWalker(DirectObject.DirectObject):
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-        
+
         # Determine what the speeds are based on the buttons:
         self.speed=(
                 (forward and self.avatarControlForwardSpeed or
@@ -183,7 +183,7 @@ class DevWalker(DirectObject.DirectObject):
 
     def flushEventHandlers(self):
         pass
-    
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

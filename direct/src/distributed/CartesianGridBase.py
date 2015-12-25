@@ -50,7 +50,7 @@ class CartesianGridBase:
         xMax = abs(spherePos[0])+sphereRadius
         yMax = abs(spherePos[1])+sphereRadius
         sphereRadius = Vec3(xMax,yMax,0).length()
-        
+
         # sphereRadius = max(sphereRadius, gridRadius*cellWidth)
         return max(2 * (sphereRadius // cellWidth), 1)
 

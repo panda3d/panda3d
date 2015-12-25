@@ -50,6 +50,12 @@ PUBLISHED:
   INLINE PN_stdfloat get_w_speed() const;
   INLINE PN_stdfloat get_r_speed() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(u_speed, get_u_speed, set_u_speed);
+  MAKE_PROPERTY(v_speed, get_v_speed, set_v_speed);
+  MAKE_PROPERTY(w_speed, get_w_speed, set_w_speed);
+  MAKE_PROPERTY(r_speed, get_r_speed, set_r_speed);
+
 private:
   PN_stdfloat _u_speed;
   PN_stdfloat _v_speed;

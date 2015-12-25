@@ -136,7 +136,7 @@ class TaskLeakDetectorBase:
         for i in xrange(10):
             taskName = taskName.replace('%s' % i, '')
         return taskName
-    
+
 class _TaskNamePatternLeakDetector(LeakDetector, TaskLeakDetectorBase):
     # tracks the number of each individual task type
     # e.g. are we leaking 'examine-<doId>' tasks
@@ -280,7 +280,7 @@ class MessageTypesLeakDetector(LeakDetector, MessageLeakDetectorBase):
         jobMgr.add(self._createJob)
         # are we leaking message types?
         return len(self._msgName2detector)
-    
+
 class _MessageListenerTypeLeakDetector(LeakDetector):
     # tracks the number of each object type that is listening for events
     def __init__(self, typeName):

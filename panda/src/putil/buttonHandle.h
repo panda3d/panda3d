@@ -58,6 +58,8 @@ PUBLISHED:
 
   MAKE_PROPERTY(index, get_index);
   MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY2(ascii_equivalent, has_ascii_equivalent,
+                                   get_ascii_equivalent);
   MAKE_PROPERTY(alias, get_alias);
 
 private:

@@ -48,14 +48,14 @@ class DirectObject:
         kwargs['owner']=self
         task = taskMgr.add(*args, **kwargs)
         return task
-    
+
     def doMethodLater(self, *args, **kwargs):
         if(not hasattr(self,"_taskList")):
             self._taskList ={}
-        kwargs['owner']=self            
+        kwargs['owner']=self
         task = taskMgr.doMethodLater(*args, **kwargs)
         return task
-    
+
     def removeTask(self, taskOrName):
         if type(taskOrName) == type(''):
             # we must use a copy, since task.remove will modify self._taskList
@@ -63,7 +63,7 @@ class DirectObject:
                 taskListValues = self._taskList.values()
                 for task in taskListValues:
                     if task.name == taskOrName:
-                        task.remove()            
+                        task.remove()
         else:
             taskOrName.remove()
 
@@ -76,15 +76,15 @@ class DirectObject:
         self._taskList[task.id] = task
 
     def _clearTask(self, task):
-        del self._taskList[task.id]        
-        
+        del self._taskList[task.id]
+
     def detectLeaks(self):
         if not __dev__:
             return
-        
+
         # call this after the DirectObject instance has been destroyed
         # if it's leaking, will notify user
-        
+
         # make sure we're not still listening for messenger events
         events = messenger.getAllAccepting(self)
         # make sure we're not leaking tasks

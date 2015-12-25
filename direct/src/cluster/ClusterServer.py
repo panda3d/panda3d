@@ -138,7 +138,7 @@ class ClusterServer(DirectObject.DirectObject):
     def setControlMappingOffset(self,objectName,offset):
         if (objectName in self.controlMappings):
             self.controlOffsets[objectName] = offset
-    
+
 
     def removeControlMapping(self,name):
         if (name in self.controlMappings):
@@ -146,7 +146,7 @@ class ClusterServer(DirectObject.DirectObject):
             self.controlPriorities.pop(name)
         self.redoSortedPriorities()
 
-            
+
     def startControlObjectTask(self):
         self.notify.debug("moving control objects")
         taskMgr.add(self.controlObjectTask,"controlObjectTask",50)
@@ -155,7 +155,7 @@ class ClusterServer(DirectObject.DirectObject):
         #print "running control object task"
         for pair in self.sortedControlPriorities:
             object = pair[1]
-            name   = self.controlMappings[object] 
+            name   = self.controlMappings[object]
             if (object in self.objectMappings):
                 self.moveObject(self.objectMappings[object],name,self.controlOffsets[object],
                                 self.objectHasColor[object])
@@ -169,7 +169,7 @@ class ClusterServer(DirectObject.DirectObject):
         self.notify.debug("named movement done")
         datagram = self.msgHandler.makeNamedMovementDone()
         self.cw.send(datagram,self.lastConnection)
-    
+
     def moveObject(self, nodePath, object, offset, hasColor):
         self.notify.debug('moving object '+object)
         #print "moving object",object
@@ -322,7 +322,7 @@ class ClusterServer(DirectObject.DirectObject):
         """ Update cameraJig position to reflect latest position """
         (x, y, z, h, p, r) = self.msgHandler.parseCamMovementDatagram(dgi)
         self.cameraJig.setPosHpr(render, x, y, z, h, p, r)
-        self.fPosReceived = 1        
+        self.fPosReceived = 1
 
     def handleSelectedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """

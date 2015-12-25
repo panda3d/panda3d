@@ -86,14 +86,18 @@ PUBLISHED:
   INLINE void set_dimensions(int i, PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
   INLINE void set_dimensions(const LVecBase4 &dimensions);
   virtual void set_dimensions(int i, const LVecBase4 &dimensions);
+  MAKE_PROPERTY(dimensions, get_dimensions, set_dimensions);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
   virtual bool is_stereo() const;
+  MAKE_PROPERTY(window, get_window);
+  MAKE_PROPERTY(pipe, get_pipe);
+  MAKE_PROPERTY(stereo, is_stereo);
 
   virtual void set_camera(const NodePath &camera);
   INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
-  MAKE_PROPERTY(camear, get_camera, set_camera);
+  MAKE_PROPERTY(camera, get_camera, set_camera);
 
   virtual void set_active(bool active);
   INLINE bool is_active() const;
@@ -140,13 +144,17 @@ PUBLISHED:
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
+  MAKE_PROPERTY(cull_callback, get_cull_callback, set_cull_callback);
 
   INLINE void set_draw_callback(CallbackObject *object);
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
+  MAKE_PROPERTY(draw_callback, get_draw_callback, set_draw_callback);
 
   INLINE int get_pixel_width(int i = 0) const;
   INLINE int get_pixel_height(int i = 0) const;
+  INLINE LVecBase2i get_pixel_size(int i = 0) const;
+  MAKE_PROPERTY(pixel_size, get_pixel_size);
 
   virtual void output(ostream &out) const;
 

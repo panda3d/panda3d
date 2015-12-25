@@ -162,7 +162,7 @@ class OnscreenText(DirectObject, NodePath):
         self.pos = pos
         self.roll = roll
         self.wordwrap = wordwrap
-        
+
         if decal:
             textNode.setCardDecal(1)
 
@@ -334,7 +334,7 @@ class OnscreenText(DirectObject, NodePath):
 
     def setWordwrap(self, wordwrap):
         self.wordwrap = wordwrap
-        
+
         if wordwrap:
             self.textNode.setWordwrap(wordwrap)
         else:
@@ -342,7 +342,7 @@ class OnscreenText(DirectObject, NodePath):
 
     def getWordwrap(self):
         return self.wordwrap
-    
+
     def setFg(self, fg):
         self.textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
 

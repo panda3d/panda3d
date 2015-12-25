@@ -71,9 +71,11 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexFormat *format);
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexArrayFormat *format);
+  MAKE_PROPERTY(registered, is_registered);
 
   INLINE const GeomVertexAnimationSpec &get_animation() const;
   INLINE void set_animation(const GeomVertexAnimationSpec &animation);
+  MAKE_PROPERTY(animation, get_animation, set_animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
   CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;

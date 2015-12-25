@@ -155,13 +155,13 @@ def closeCode():
         print >> code, '};'
         code.close()
 
-    
+
 def openCode(count):
     """ Open the code file appropriate to the current segment.  We
     write out the generated code into a series of smaller files,
     instead of one mammoth file, just to make it easier on the
     compiler. """
-    
+
     global code, codeSeg, fnameList
 
     seg = int(NumSegments * count / OptionsCount) + 1
@@ -171,7 +171,7 @@ def openCode(count):
 
         codeSeg = seg
         fnameList = []
-        
+
         # Open a new file.
         code = open('ztriangle_code_%s.h' % (codeSeg), 'wb')
         print >> code, '/* This file is generated code--do not edit.  See ztriangle.py. */'
@@ -241,7 +241,7 @@ def writeTableEntry(ops):
     indent = '  ' * (len(ops) + 1)
     i = len(ops)
     numOps = len(FullOptions[i])
-    
+
     if i + 1 == len(FullOptions):
         # The last level: write out the actual function names.
         for j in range(numOps - 1):

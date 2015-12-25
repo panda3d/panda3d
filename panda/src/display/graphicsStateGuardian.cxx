@@ -434,7 +434,7 @@ set_gamma(PN_stdfloat gamma) {
 //  Description: Get the current gamma setting.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat GraphicsStateGuardian::
-get_gamma(PN_stdfloat gamma) {
+get_gamma() const {
   return _gamma;
 }
 

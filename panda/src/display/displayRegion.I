@@ -499,6 +499,18 @@ get_pixel_height(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_size
+//       Access: Published
+//  Description: Returns the size of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i DisplayRegion::
+get_pixel_size(int i) const {
+  CDReader cdata(_cycler);
+  return LVecBase2i(cdata->_regions[i]._pixels[1] - cdata->_regions[i]._pixels[0],
+                    cdata->_regions[i]._pixels[3] - cdata->_regions[i]._pixels[2]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_pixels
 //       Access: Public
 //  Description: Retrieves the coordinates of the DisplayRegion within

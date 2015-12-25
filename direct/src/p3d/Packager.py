@@ -397,7 +397,7 @@ class Packager:
                 total = sum([x for x in self.ignoredDirFiles.values()])
                 self.notify.warning("excluded %s files not marked for inclusion: %s" \
                                     % (total, ", ".join(["'" + ext + "'" for ext in exts])))
-                
+
             if not self.host:
                 self.host = self.packager.host
 
@@ -2220,7 +2220,7 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
-        
+
         # Set this to true to verbosely log files ignored by dir().
         self.verbosePrint = False
 
@@ -2439,12 +2439,12 @@ class Packager:
 
         # Files for which warnings should be suppressed when they are
         # not handled by dir()
-        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
-                                             'p3d', 'pdef', 
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo',
+                                             'p3d', 'pdef',
                                              'c', 'C', 'cxx', 'cpp', 'h', 'H',
                                              'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
                                              'o', 'obj', 'a', 'lib', 'bc', 'll']
-         
+
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -3677,17 +3677,17 @@ class Packager:
         self.currentPackage.excludeFile(filename)
 
 
-    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
-                         imageExtensions = None, textExtensions = None, 
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None,
+                         imageExtensions = None, textExtensions = None,
                          uncompressibleExtensions = None, unprocessedExtensions = None,
                          suppressWarningForExtensions = None):
         """ Ensure that dir() will include files with the given extensions.
         The extensions should not have '.' prefixes.
-        
+
         All except 'suppressWarningForExtensions' allow the given kinds of files
         to be packaged with their respective semantics (read the source).
-        
-        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored,
         so no warnings will be emitted for them.
         """
         if executableExtensions:
@@ -3791,9 +3791,9 @@ class Packager:
             elif not ext in self.suppressWarningForExtensions:
                 newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
                 self.currentPackage.ignoredDirFiles[ext] = newCount
-                
+
                 if self.verbosePrint:
-                    self.notify.warning("ignoring file %s" % filename) 
+                    self.notify.warning("ignoring file %s" % filename)
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of

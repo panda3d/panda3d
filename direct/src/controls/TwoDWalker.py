@@ -9,7 +9,7 @@ from panda3d.core import ConfigVariableBool
 class TwoDWalker(GravityWalker):
     """
     The TwoDWalker is primarily for a 2D Scroller game environment. Eg - Toon Blitz minigame.
-    TODO: This class is still work in progress. 
+    TODO: This class is still work in progress.
     Currently Toon Blitz is using this only for jumping.
     Moving the Toon left to right is handled by toontown/src/minigame/TwoDDrive.py.
     I eventually want this class to control all the 2 D movements, possibly with a
@@ -26,13 +26,13 @@ class TwoDWalker(GravityWalker):
         assert self.notify.debugStateCall(self)
         self.notify.debug('Constructing TwoDWalker')
         GravityWalker.__init__(self)
-    
+
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
-        """                
+        """
         # get the button states:
-        jump = inputState.isSet("forward")            
+        jump = inputState.isSet("forward")
         if self.lifter.isOnGround():
             if self.isAirborne:
                 self.isAirborne = 0
@@ -45,9 +45,9 @@ class TwoDWalker(GravityWalker):
             if self.isAirborne == 0:
                 assert self.debugPrint("isAirborne 1 due to isOnGround() false")
             self.isAirborne = 1
-            
+
         return Task.cont
-    
+
     def jumpPressed(self):
         """This function should be called from TwoDDrive when the jump key is pressed."""
         if self.lifter.isOnGround():

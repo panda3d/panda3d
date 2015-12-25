@@ -53,6 +53,7 @@ class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public
   static PT(MovieAudio) get(const Filename &name);
 
   INLINE const Filename &get_filename() const;
+  MAKE_PROPERTY(filename, get_filename);
 
  protected:
   Filename _filename;

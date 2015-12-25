@@ -36,12 +36,12 @@ class BattleWalker(GravityWalker.GravityWalker):
         slideLeft = inputState.isSet("slideLeft")
         slideRight = inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
-        
+
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-        
+
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
@@ -58,7 +58,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25
-            
+
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0

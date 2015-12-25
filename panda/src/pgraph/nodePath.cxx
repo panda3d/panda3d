@@ -4860,9 +4860,9 @@ get_fog() const {
 void NodePath::
 set_render_mode_wireframe(int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, rma->get_thickness(), rma->get_perspective()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4875,9 +4875,9 @@ set_render_mode_wireframe(int priority) {
 void NodePath::
 set_render_mode_filled(int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, rma->get_thickness(), rma->get_perspective()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4891,9 +4891,9 @@ set_render_mode_filled(int priority) {
 void NodePath::
 set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, thickness, perspective, wireframe_color), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, rma->get_thickness(), rma->get_perspective(), wireframe_color), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4914,9 +4914,9 @@ set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
 void NodePath::
 set_render_mode_perspective(bool perspective, int priority) {
   nassertv_always(!is_empty());
-  RenderModeAttrib::Mode mode = get_render_mode();
-  PN_stdfloat thickness = get_render_mode_thickness();
-  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(rma->get_mode(), rma->get_thickness(), perspective, rma->get_wireframe_color()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4935,9 +4935,9 @@ set_render_mode_perspective(bool perspective, int priority) {
 void NodePath::
 set_render_mode_thickness(PN_stdfloat thickness, int priority) {
   nassertv_always(!is_empty());
-  RenderModeAttrib::Mode mode = get_render_mode();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(rma->get_mode(), thickness, rma->get_perspective(), rma->get_wireframe_color()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////

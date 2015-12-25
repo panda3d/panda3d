@@ -34,7 +34,7 @@ class DirectLabel(DirectFrame):
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
-        
+
         # Call option initialization functions
         self.initialiseoptions(DirectLabel)
 

@@ -4,7 +4,7 @@ from direct.task import Task
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
-        
+
 class TimeManager(DistributedObject.DistributedObject):
     """
     This DistributedObject lives on the AI and on the client side, and
@@ -113,7 +113,7 @@ class TimeManager(DistributedObject.DistributedObject):
         self.synchronize("clock error")
 
     ### Synchronization methods ###
-        
+
     def synchronize(self, description):
         """synchronize(self, string description)
 
@@ -132,7 +132,7 @@ class TimeManager(DistributedObject.DistributedObject):
         if now - self.lastAttempt < self.minWait:
             self.notify.debug("Not resyncing (too soon): %s" % (description))
             return 0
-            
+
         self.talkResult = 0
         self.thisContext = self.nextContext
         self.attemptCount = 0
@@ -144,7 +144,7 @@ class TimeManager(DistributedObject.DistributedObject):
 
         return 1
 
-    
+
     def serverTime(self, context, timestamp):
         """serverTime(self, int8 context, int32 timestamp)
 
@@ -162,7 +162,7 @@ class TimeManager(DistributedObject.DistributedObject):
         if context != self.thisContext:
             self.notify.info("Ignoring TimeManager response for old context %d" % (context))
             return
-        
+
         elapsed = end - self.start
         self.attemptCount += 1
         self.notify.info("Clock sync roundtrip took %0.3f ms" % (elapsed * 1000.0))
@@ -181,7 +181,7 @@ class TimeManager(DistributedObject.DistributedObject):
                 self.sendUpdate("requestServerTime", [self.thisContext])
                 return
             self.notify.info("Giving up on uncertainty requirement.")
-        
+
         messenger.send("gotTimeSync", taskChain = 'default')
         messenger.send(self.cr.uniqueName("gotTimeSync"), taskChain = 'default')
 

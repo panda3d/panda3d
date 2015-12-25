@@ -84,8 +84,6 @@ private:
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
-  bool _has_divisor;
-
   void release_resources();
 
 public:

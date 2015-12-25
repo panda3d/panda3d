@@ -1045,22 +1045,8 @@ write_class_details(ostream &out, Object *obj) {
   Properties::const_iterator pit;
   for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
     Property *property = (*pit);
-    const InterrogateElement &ielem = property->_ielement;
-    string expected_params;
 
-    if (property->_getter != NULL) {
-      std::string fname = "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *)";
-      write_function_for_name(out, obj, property->_getter->_remaps,
-                              fname, expected_params, true,
-                              AT_no_args, RF_pyobject | RF_err_null);
-    }
-
-    if (property->_setter != NULL) {
-      std::string fname = "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *)";
-      write_function_for_name(out, obj, property->_setter->_remaps,
-                              fname, expected_params, true,
-                              AT_single_arg, RF_int);
-    }
+    write_getset(out, obj, property);
   }
 
   // Write the constructors.
@@ -6444,6 +6430,86 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonName::write_getset
+//       Access: Public
+//  Description: Generates the synthetic method described by the
+//               MAKE_PROPERTY() macro.
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+write_getset(ostream &out, Object *obj, Property *property) {
+
+  string ClassName = make_safe_name(obj->_itype.get_scoped_name());
+  std::string cClassName = obj->_itype.get_true_name();
+
+  const InterrogateElement &ielem = property->_ielement;
+
+  if (property->_getter != NULL) {
+    FunctionRemap *remap = property->_getter->_remaps.front();
+
+    out << "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
+    if (remap->_const_method) {
+      out << "  const " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+    } else {
+      out << "  " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+    }
+    out << "    return NULL;\n";
+    out << "  }\n\n";
+
+    if (property->_has_function != NULL) {
+      out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "()) {\n"
+          << "    Py_INCREF(Py_None);\n"
+          << "    return Py_None;\n"
+          << "  }\n";
+    }
+
+    std::set<FunctionRemap*> remaps;
+    remaps.insert(remap);
+
+    string expected_params;
+    write_function_forset(out, remaps, 0, 0,
+                          expected_params, 2, false, true, AT_no_args,
+                          RF_pyobject | RF_err_null, false, false);
+    out << "}\n\n";
+  }
+
+  if (property->_setter != NULL) {
+    out << "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *) {\n";
+    out << "  " << cClassName  << " *local_this = NULL;\n";
+    out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+        << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+    out << "    return -1;\n";
+    out << "  }\n\n";
+
+    if (property->_clear_function != NULL) {
+      out << "  if (arg == Py_None) {\n"
+          << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n"
+          << "    return 0;\n"
+          << "  }\n";
+    }
+
+    std::set<FunctionRemap*> remaps;
+    remaps.insert(property->_setter->_remaps.begin(),
+                  property->_setter->_remaps.end());
+
+    string expected_params;
+    write_function_forset(out, remaps, 1, 1,
+                          expected_params, 2, true, true, AT_single_arg,
+                          RF_int, false, false);
+
+    out << "  if (!_PyErr_OCCURRED()) {\n";
+    out << "    Dtool_Raise_BadArgumentsError(\n";
+    output_quoted(out, 6, expected_params);
+    out << ");\n";
+    out << "  }\n";
+    out << "  return -1;\n";
+    out << "}\n\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::record_object
 //       Access: Protected
 //  Description: Records the indicated type, which may be a struct
@@ -6548,6 +6614,22 @@ record_object(TypeIndex type_index) {
       Function *getter = record_function(itype, func_index);
       if (is_function_legal(getter)) {
         property->_getter = getter;
+      }
+    }
+
+    if (ielement.has_has_function()) {
+      FunctionIndex func_index = ielement.get_has_function();
+      Function *has_function = record_function(itype, func_index);
+      if (is_function_legal(has_function)) {
+        property->_has_function = has_function;
+      }
+    }
+
+    if (ielement.has_clear_function()) {
+      FunctionIndex func_index = ielement.get_clear_function();
+      Function *clear_function = record_function(itype, func_index);
+      if (is_function_legal(clear_function)) {
+        property->_clear_function = clear_function;
       }
     }
 

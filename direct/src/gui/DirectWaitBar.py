@@ -15,7 +15,7 @@ d = DirectWaitBar(borderWidth=(0, 0))
 class DirectWaitBar(DirectFrame):
     """ DirectWaitBar - A DirectWidget that shows progress completed
     towards a task.  """
-    
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:

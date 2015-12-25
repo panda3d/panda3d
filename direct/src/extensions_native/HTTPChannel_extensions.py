@@ -1,5 +1,5 @@
 ####################################################################
-#Dtool_funcToMethod(func, class)        
+#Dtool_funcToMethod(func, class)
 #del func
 #####################################################################
 
@@ -32,7 +32,7 @@ if hasattr(core, 'HTTPChannel'):
     Dtool_funcToMethod(spawnTask, core.HTTPChannel)
 del spawnTask
 #####################################################################
-        
+
 def doTask(self, task):
         from direct.task import Task
         if self.run():

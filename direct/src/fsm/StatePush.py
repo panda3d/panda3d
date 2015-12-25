@@ -249,7 +249,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
         if self._initialized:
             self._func(*self._bakedArgs, **self._bakedKargs)
             PushesStateChanges._handleStateChange(self)
-        
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -351,7 +351,7 @@ class Pulse(PushesStateChanges):
     def sendPulse(self):
         self._handlePotentialStateChange(True)
         self._handlePotentialStateChange(False)
-    
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -393,7 +393,7 @@ class EventArgument(PushesStateChanges, DirectObject):
         self.ignoreAll()
         del self._index
         PushesStateChanges.destroy(self)
-        
+
     def _handleEvent(self, *args):
         self._handlePotentialStateChange(args[self._index])
 

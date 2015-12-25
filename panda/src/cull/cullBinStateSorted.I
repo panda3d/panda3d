@@ -33,7 +33,8 @@ CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg,
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinStateSorted::ObjectData::
 ObjectData(CullableObject *object) :
-  _object(object)
+  _object(object),
+  _format(object->_munged_data->get_format())
 {
 }
 
@@ -45,16 +46,30 @@ ObjectData(CullableObject *object) :
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullBinStateSorted::ObjectData::
 operator < (const ObjectData &other) const {
-  // First group objects by transform, since transform changes are
-  // supposed to be expensive.
+  // Group by state changes, in approximate order from heaviest
+  // change to lightest change.
+  const RenderState *sa = _object->_state;
+  const RenderState *sb = other._object->_state;
+  int compare = sa->compare_sort(*sb);
+  if (compare != 0) {
+    return compare < 0;
+  }
+
+  // Vertex format changes are also fairly slow.
+  if (_format != other._format) {
+    return _format < other._format;
+  }
+
+  // Prevent unnecessary vertex buffer rebinds.
+  if (_object->_munged_data != other._object->_munged_data) {
+    return _object->_munged_data < other._object->_munged_data;
+  }
+
+  // Uniform updates are actually pretty fast.
   if (_object->_internal_transform != other._object->_internal_transform) {
     return _object->_internal_transform < other._object->_internal_transform;
   }
 
-  // Then group by other state changes, in approximate order from
-  // heaviest change to lightest change.
-  const RenderState *sa = _object->_state;
-  const RenderState *sb = other._object->_state;
-  return sa->compare_sort(*sb) < 0;
+  return 0;
 }
 

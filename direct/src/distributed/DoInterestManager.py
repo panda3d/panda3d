@@ -173,14 +173,14 @@ class DoInterestManager(DirectObject.DirectObject):
                         'addInterest: no setParentingRules defined in the DC for object %s (%s)'
                         '' % (parentId, parent.__class__.__name__))
 
-                    
-        
+
+
         if event:
             contextId = self._getNextContextId()
         else:
             contextId = 0
             # event = self._getAnonymousEvent('addInterest')
-            
+
         DoInterestManager._interests[handle] = InterestState(
             description, InterestState.StateActive, contextId, event, parentId, zoneIdList, self._completeEventCount)
         if self.__verbose():
@@ -273,7 +273,7 @@ class DoInterestManager(DirectObject.DirectObject):
                 "removeInterest: handle not found: %s" % (handle))
         assert self.printInterestsIfDebug()
         return existed
-    
+
     def removeAutoInterest(self, handle):
         """
         Stop looking in a (set of) zone(s)
@@ -352,7 +352,7 @@ class DoInterestManager(DirectObject.DirectObject):
 
             contextId = self._getNextContextId()
             DoInterestManager._interests[handle].context = contextId
-            DoInterestManager._interests[handle].parentId = parentId            
+            DoInterestManager._interests[handle].parentId = parentId
             DoInterestManager._interests[handle].zoneIdList = zoneIdList
             DoInterestManager._interests[handle].addEvent(event)
 
@@ -421,7 +421,7 @@ class DoInterestManager(DirectObject.DirectObject):
         Consider whether we should cull the interest set.
         """
         assert DoInterestManager.notify.debugCall()
-        
+
         if handle in DoInterestManager._interests:
             if DoInterestManager._interests[handle].isPendingDelete():
                 # make sure there is no pending event for this interest
@@ -454,12 +454,12 @@ class DoInterestManager(DirectObject.DirectObject):
                 print format % tuple(i)
             print "Note: interests with a Context of 0 do not get" \
                 " done/finished notices."
-            
+
         def printInterestSets(self):
             print "******************* Interest Sets **************"
             format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %11s %11s %8s %8s %8s'
             print format % (
-                "Handle", "Description", 
+                "Handle", "Description",
                 "ParentId", "ZoneIdList",
                 "State", "Context",
                 "Event")
@@ -479,7 +479,7 @@ class DoInterestManager(DirectObject.DirectObject):
         def printInterests(self):
             self.printInterestHistory()
             self.printInterestSets()
-            
+
     def _sendAddInterest(self, handle, contextId, parentId, zoneIdList, description,
                          action=None):
         """

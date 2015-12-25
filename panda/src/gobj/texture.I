@@ -335,6 +335,19 @@ set_clear_color(const LColor &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::clear_clear_color
+//       Access: Published
+//  Description: The opposite of set_clear_color.  If the image is
+//               cleared after setting this, its contents may be
+//               undefined (or may in fact not be cleared at all).
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+clear_clear_color() {
+  CDWriter cdata(_cycler, true);
+  cdata->_has_clear_color = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_clear_data
 //       Access: Published
 //  Description: Returns the raw image data for a single pixel if

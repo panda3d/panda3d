@@ -44,7 +44,7 @@ while 1==1:
     ##for x in range(120000):
     while MyConection.GetMessage():
         None
-        
+
     MyConection.Flush();
     time.sleep(1)
     print "loop"

@@ -16,7 +16,7 @@ class controllerWindow(AppShell):
     # This will open a talk window for user to set the control mechanism
     # In here, user can choose to control what object by keyboard or other inputs.
     #################################################################
-    
+
     # Override class variables
     appname = 'Controller Panel'
     frameWidth  = 500
@@ -27,11 +27,11 @@ class controllerWindow(AppShell):
     # setup the type of controller we handle here.
     controllerList = ['Keyboard',
                       'Tracker']
-    
+
     # Default Keyboard setting
     keyboardMapDict = {}
     keyboardSpeedDict = {}
-    
+
     def __init__(self, listOfObj, controlType , dataList, parent = None, **kw):
         if controlType == 'Keyboard':
             self.nodePath = dataList[0] # Default setting -> mainly used for Keyboard control now.
@@ -41,10 +41,10 @@ class controllerWindow(AppShell):
             self.keyboardMapDict = dataList[1]
             self.keyboardSpeedDict.clear()
             self.keyboardSpeedDict = dataList[2]
-            
+
         self.listOfObj = listOfObj
         self.keepControl = False
-        
+
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',               self.appname,       None),
@@ -63,9 +63,9 @@ class controllerWindow(AppShell):
         # Handle to the toplevels interior
         interior = self.interior()
         menuBar = self.menuBar
-        
+
         # We don't need menu bar here
-        self.menuBar.destroy() 
+        self.menuBar.destroy()
 
         # Create a frame to hold all stuff
         mainFrame = Frame(interior)
@@ -81,7 +81,7 @@ class controllerWindow(AppShell):
         self.cotrollerTypeEntry.pack(side=Tkinter.LEFT)
         frame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=False, pady = 3)
         self.cotrollerTypeEntry.selectitem('Keyboard', setentry=True)
-        
+
         self.inputZone = Pmw.Group(mainFrame, tag_pyclass = None)
         self.inputZone.pack(fill='both',expand=1)
         settingFrame = self.inputZone.interior()
@@ -124,11 +124,11 @@ class controllerWindow(AppShell):
         inputZone = Pmw.Group(assignFrame, tag_pyclass = None)
         inputZone.pack(fill='both',expand=1)
         settingFrame = inputZone.interior()
-        
+
         Interior = Frame(settingFrame)
         widget = Label(Interior, text = 'Assign a Key For:').pack(side=Tkinter.LEFT, expand = False)
         Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True,pady = 6 )
-        
+
         Interior = Frame(settingFrame)
         widget = Label(Interior, text = 'Forward   :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
         widget = self.createcomponent(
@@ -531,7 +531,7 @@ class controllerWindow(AppShell):
 
         assignFrame.pack(side=Tkinter.TOP, expand=True, fill = Tkinter.X)
         keyboardPage.pack(side=Tkinter.TOP, expand=True, fill = Tkinter.X)
-        
+
         ####################################################################
         ####################################################################
         # End of Keyboard control page
@@ -613,7 +613,7 @@ class controllerWindow(AppShell):
             self.objNotebook.selectpage('Keyboard')
         elif self.controllType=='Tracker':
             self.objNotebook.selectpage('Tracker')
-            
+
         return
 
     def updateControlInfo(self, page=None):
@@ -692,4 +692,4 @@ class controllerWindow(AppShell):
             messenger.send('ControlW_saveSetting', ['Keyboard', [self.nodePath, self.keyboardMapDict, self.keyboardSpeedDict]])
         return
 
-    
+

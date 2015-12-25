@@ -64,7 +64,7 @@ generate() {
            (InternalName::get_vertex(), 3,
             GeomEnums::NT_stdfloat, GeomEnums::C_point,
             InternalName::get_normal(), 3,
-            GeomEnums::NT_stdfloat, GeomEnums::C_vector,
+            GeomEnums::NT_stdfloat, GeomEnums::C_normal,
             InternalName::get_texcoord(), 3,
             GeomEnums::NT_stdfloat, GeomEnums::C_texcoord));
       } else {

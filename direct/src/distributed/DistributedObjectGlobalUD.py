@@ -14,11 +14,11 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
     def __init__(self, air):
         DistributedObjectUD.__init__(self, air)
         self.ExecNamespace = {"self":self}
-    
+
     def announceGenerate(self):
         self.air.registerForChannel(self.doId)
         DistributedObjectUD.announceGenerate(self)
-    
+
     def delete(self):
         self.air.unregisterForChannel(self.doId)
         ## self.air.removeDOFromTables(self)
@@ -26,7 +26,7 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
 
     def execCommand(self, command, mwMgrId, avId, zoneId):
         text = str(self.__execMessage(command))[:config.GetInt("ai-debug-length",300)]
-        
+
         dclass = uber.air.dclassesByName.get("PiratesMagicWordManagerAI")
         dg = dclass.aiFormatUpdate(
             "setMagicWordResponse", mwMgrId, (1<<32)+avId, uber.air.ourChannel, [text])

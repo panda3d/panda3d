@@ -416,6 +416,7 @@ typedef struct _object PyObject;
 #define END_PUBLISH __end_publish
 #define BLOCKING __blocking
 #define MAKE_PROPERTY(property_name, ...) __make_property(property_name, __VA_ARGS__)
+#define MAKE_PROPERTY2(property_name, ...) __make_property2(property_name, __VA_ARGS__)
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #undef USE_STL_ALLOCATOR  /* Don't try to parse these template classes in interrogate. */
 #define EXTENSION(x) __extension x
@@ -425,6 +426,7 @@ typedef struct _object PyObject;
 #define END_PUBLISH
 #define BLOCKING
 #define MAKE_PROPERTY(property_name, ...)
+#define MAKE_PROPERTY2(property_name, ...)
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define EXTENSION(x)
 #define EXTEND

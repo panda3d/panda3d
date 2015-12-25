@@ -55,6 +55,11 @@ PUBLISHED:
   INLINE time_t get_source_timestamp() const;
   INLINE time_t get_recorded_time() const;
 
+  MAKE_PROPERTY(source_pathname, get_source_pathname);
+  MAKE_PROPERTY(cache_filename, get_cache_filename);
+  MAKE_PROPERTY(source_timestamp, get_source_timestamp);
+  MAKE_PROPERTY(recorded_time, get_recorded_time);
+
   INLINE int get_num_dependent_files() const;
   INLINE const Filename &get_dependent_pathname(int n) const;
 

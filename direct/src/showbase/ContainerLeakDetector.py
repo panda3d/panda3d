@@ -280,7 +280,7 @@ class ObjectRef:
 
         # TODO: check that this is still the object we originally pointed to
         yield self._getContainerByEval(evalStr, curObj=curObj)
-        
+
     def getEvalStrGen(self, getInstance=False):
         str = ''
         prevIndirection = None
@@ -392,7 +392,7 @@ class FindContainers(Job):
             return len(startObj)
         except:
             return 1
-    
+
     def _isDeadEnd(self, obj, objName=None):
         if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
                          types.BuiltinMethodType, types.ComplexType,
@@ -667,7 +667,7 @@ class CheckContainers(Job):
     Job to check container sizes and find potential leaks; sub-job of ContainerLeakDetector
     """
     ReprItems = 5
-    
+
     def __init__(self, name, leakDetector, index):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -681,7 +681,7 @@ class CheckContainers(Job):
 
     def getPriority(self):
         return Job.Priorities.Normal
-    
+
     def run(self):
         try:
             self._leakDetector._index2containerId2len[self._index] = {}
@@ -826,10 +826,10 @@ class FPTObjsOfType(Job):
 
     def _handleLDDestroy(self):
         self.destroy()
-        
+
     def getPriority(self):
         return Job.Priorities.High
-    
+
     def run(self):
         ids = self._leakDetector.getContainerIds()
         try:
@@ -886,10 +886,10 @@ class FPTObjsNamed(Job):
 
     def _handleLDDestroy(self):
         self.destroy()
-        
+
     def getPriority(self):
         return Job.Priorities.High
-    
+
     def run(self):
         ids = self._leakDetector.getContainerIds()
         try:
@@ -937,7 +937,7 @@ class PruneObjectRefs(Job):
 
     def getPriority(self):
         return Job.Priorities.Normal
-    
+
     def run(self):
         try:
             ids = self._leakDetector.getContainerIds()
@@ -1039,7 +1039,7 @@ class ContainerLeakDetector(Job):
     def _getDestroyEvent(self):
         # sent when leak detector is about to be destroyed
         return 'cldDestroy-%s' % self._serialNum
-        
+
     def getLeakEvent(self):
         # sent when a leak is detected
         # passes description string as argument
@@ -1094,12 +1094,12 @@ class ContainerLeakDetector(Job):
         j =  FPTObjsOfType(name, self, ot, doneCallback)
         jobMgr.add(j)
         return j
-        
+
     def getPathsToContainersNamed(self, name, on, doneCallback=None):
         j =  FPTObjsNamed(name, self, on, doneCallback)
         jobMgr.add(j)
         return j
-        
+
     def _scheduleNextLeakCheck(self):
         taskMgr.doMethodLater(self._nextCheckDelay, self._checkForLeaks,
                               self._getCheckTaskName())

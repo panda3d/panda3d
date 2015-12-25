@@ -39,6 +39,7 @@ public:
 PUBLISHED:
   INLINE void set_user_mat(const LMatrix4 &user_mat);
   INLINE const LMatrix4 &get_user_mat() const;
+  MAKE_PROPERTY(user_mat, get_user_mat, set_user_mat);
 
   INLINE void set_left_eye_mat(const LMatrix4 &user_mat);
   INLINE void clear_left_eye_mat();

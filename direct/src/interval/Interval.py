@@ -181,7 +181,7 @@ class Interval(DirectObject):
         already started, this changes its speed on-the-fly.  Note that
         since playRate is a parameter to start() and loop(), the next
         call to start() or loop() will reset this parameter. """
-        
+
         if self.isPlaying():
             self.pause()
             self.__playRate = playRate

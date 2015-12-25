@@ -9,7 +9,7 @@ import ObjectGlobals as OG
 
 class FileMgr:
     """ To handle data file """
-    
+
     def __init__(self, editor=None):
         self.editor = editor
 

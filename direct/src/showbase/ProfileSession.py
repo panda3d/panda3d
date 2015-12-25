@@ -84,11 +84,11 @@ class ProfileSession:
     # 'profile' module
     #
     # defers formatting of profile results until they are requested
-    # 
+    #
     # implementation sidesteps memory leak in Python profile module,
     # and redirects file output to RAM file for efficiency
     TrueClock = TrueClock.getGlobalPtr()
-    
+
     notify = directNotify.newCategory("ProfileSession")
 
     def __init__(self, name, func=None, logAfterProfile=False):
@@ -210,7 +210,7 @@ class ProfileSession:
             del __builtin__.__dict__['globalProfileSessionResult']
 
             self._successfulProfiles += 1
-            
+
             if self._logAfterProfile:
                 self.notify.info(self.getResults())
 
@@ -254,7 +254,7 @@ class ProfileSession:
         self._logAfterProfile = logAfterProfile
     def getLogAfterProfile(self):
         return self._logAfterProfile
-    
+
     def setLines(self, lines):
         self._lines = lines
     def getLines(self):
@@ -300,7 +300,7 @@ class ProfileSession:
                 self._restoreRamFile(filename)
                 self._stats.add(filename)
                 self._discardRamFile(filename)
-        
+
         if statsChanged:
             self._stats.strip_dirs()
             # throw out any cached result strings
@@ -324,7 +324,7 @@ class ProfileSession:
                 callInfo = self._callInfo
             if totalTime is Default:
                 totalTime = self._totalTime
-            
+
             self._compileStats()
 
             if totalTime is None:
@@ -366,4 +366,4 @@ class ProfileSession:
                 self._resultCache[k] = output
 
         return output
-    
+

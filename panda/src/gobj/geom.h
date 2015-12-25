@@ -75,9 +75,13 @@ PUBLISHED:
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;
   INLINE int get_geom_rendering() const;
+  MAKE_PROPERTY(primitive_type, get_primitive_type);
+  MAKE_PROPERTY(shade_model, get_shade_model);
+  MAKE_PROPERTY(geom_rendering, get_geom_rendering);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE CPT(GeomVertexData) get_vertex_data(Thread *current_thread = Thread::get_current_thread()) const;
   PT(GeomVertexData) modify_vertex_data();
@@ -118,6 +122,8 @@ PUBLISHED:
 
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(num_bytes, get_num_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   bool request_resident() const;
 
@@ -132,6 +138,7 @@ PUBLISHED:
   INLINE BoundingVolume::BoundsType get_bounds_type() const;
   INLINE void set_bounds(const BoundingVolume *volume);
   INLINE void clear_bounds();
+  MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

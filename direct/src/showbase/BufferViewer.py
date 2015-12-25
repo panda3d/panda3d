@@ -365,10 +365,10 @@ class BufferViewer(DirectObject):
             if (v_sizey < sizey) or (v_sizex < sizex):
                 sizey = v_sizey
                 sizex = v_sizex
-                
+
             adjustment = 2
             h_sizex = float (base.win.getXSize() - adjustment) / float (cols)
-            
+
             h_sizex -= bordersize
             if (h_sizex < 1.0):
                 h_sizex = 1.0
@@ -384,7 +384,7 @@ class BufferViewer(DirectObject):
             if (sizey == 0): sizey = (sizex*aspecty) // aspectx
 
         # Convert from pixels to render2d-units.
-        fsizex = (2.0 * sizex) / float(base.win.getXSize())        
+        fsizex = (2.0 * sizex) / float(base.win.getXSize())
         fsizey = (2.0 * sizey) / float(base.win.getYSize())
         fpixelx = 2.0 / float(base.win.getXSize())
         fpixely = 2.0 / float(base.win.getYSize())
@@ -416,9 +416,9 @@ class BufferViewer(DirectObject):
                 index = c + r*cols
                 if (index < ncards):
                     index = (index + self.cardindex) % len(cards)
-                    
+
                     posx = dirx * (1.0 - ((c + 0.5) * (fsizex + fpixelx * bordersize))) - (fpixelx * dirx)
-                    posy = diry * (1.0 - ((r + 0.5) * (fsizey + fpixely * bordersize))) - (fpixely * diry)                    
+                    posy = diry * (1.0 - ((r + 0.5) * (fsizey + fpixely * bordersize))) - (fpixely * diry)
                     placer = NodePath("card-structure")
                     placer.setPos(Point3.rfu(posx, 0, posy))
                     placer.setScale(Vec3.rfu(fsizex*0.5, 1.0, fsizey*0.5))

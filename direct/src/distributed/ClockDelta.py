@@ -192,7 +192,7 @@ class ClockDelta(DirectObject.DirectObject):
         oldUncertainty = self.getUncertainty()
         if oldUncertainty != None:
             self.notify.info(
-                'previous delta at %.3f s, +/- %.3f s.' % 
+                'previous delta at %.3f s, +/- %.3f s.' %
                 (self.delta, oldUncertainty))
             self.notify.info(
                 'new delta at %.3f s, +/- %.3f s.' %

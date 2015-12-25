@@ -65,11 +65,11 @@ WITHOUT = PGButton.getWithoutPrefix()
 B1CLICK = PGButton.getClickPrefix() + MouseButton.one().getName() + '-'
 B2CLICK = PGButton.getClickPrefix() + MouseButton.two().getName() + '-'
 B3CLICK = PGButton.getClickPrefix() + MouseButton.three().getName() + '-'
-B1PRESS = PGButton.getPressPrefix() + MouseButton.one().getName() + '-'  
-B2PRESS = PGButton.getPressPrefix() + MouseButton.two().getName() + '-'  
+B1PRESS = PGButton.getPressPrefix() + MouseButton.one().getName() + '-'
+B2PRESS = PGButton.getPressPrefix() + MouseButton.two().getName() + '-'
 B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
-B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'  
-B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'  
+B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
+B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()

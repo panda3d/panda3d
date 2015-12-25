@@ -80,7 +80,7 @@ class ParentMgr:
             # there is no longer any valid place for the child in the
             # scenegraph; put it under hidden
             child.reparentTo(hidden)
-            
+
     def registerParent(self, token, parent):
         if token in self.token2nodepath:
             self.notify.error(

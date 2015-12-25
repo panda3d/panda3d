@@ -90,6 +90,13 @@ PUBLISHED:
   INLINE BamTextureMode get_file_texture_mode() const;
   INLINE void set_file_texture_mode(BamTextureMode file_texture_mode);
 
+PUBLISHED:
+  MAKE_PROPERTY(target, get_target, set_target);
+  MAKE_PROPERTY(filename, get_filename);
+  MAKE_PROPERTY(file_endian, get_file_endian);
+  MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
+  MAKE_PROPERTY(file_texture_mode, get_file_texture_mode);
+
 public:
   // Functions to support classes that write themselves to the Bam.
 

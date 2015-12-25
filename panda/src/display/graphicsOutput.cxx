@@ -1262,7 +1262,7 @@ set_size_and_recalc(int x, int y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::clear
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Clears the entire framebuffer before rendering,
 //               according to the settings of get_color_clear_active()
 //               and get_depth_clear_active() (inherited from

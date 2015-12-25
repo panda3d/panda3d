@@ -37,6 +37,8 @@ PUBLISHED:
 
   INLINE const PandaNode *get_node() const;
   INLINE const VertexTransform *get_prev() const;
+  MAKE_PROPERTY(node, get_node);
+  MAKE_PROPERTY(prev, get_prev);
 
   virtual void get_matrix(LMatrix4 &matrix) const;
 

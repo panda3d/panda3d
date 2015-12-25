@@ -24,6 +24,6 @@ MsgName2Id = {
 
 # create id->name table for debugging
 MsgId2Names = invertDictLossless(MsgName2Id)
-    
+
 # put msg names in module scope, assigned to msg value
 globals().update(MsgName2Id)
