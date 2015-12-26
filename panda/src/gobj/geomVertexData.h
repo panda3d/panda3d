@@ -156,6 +156,7 @@ PUBLISHED:
   void clear_animated_vertices();
   void transform_vertices(const LMatrix4 &mat);
   void transform_vertices(const LMatrix4 &mat, int begin_row, int end_row);
+  void transform_vertices(const LMatrix4 &mat, const SparseArray &rows);
 
   PT(GeomVertexData)
     replace_column(InternalName *name, int num_components,
