@@ -60,6 +60,7 @@ PUBLISHED:
 
   INLINE void set_clock(ClockObject *clock);
   INLINE ClockObject *get_clock();
+  MAKE_PROPERTY(clock, get_clock, set_clock);
 
   int get_num_task_chains() const;
   AsyncTaskChain *get_task_chain(int n) const;

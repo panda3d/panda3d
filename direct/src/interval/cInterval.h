@@ -124,6 +124,20 @@ PUBLISHED:
   void setup_resume_until(double end_t);
   bool step_play();
 
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(duration, get_duration);
+  MAKE_PROPERTY(open_ended, get_open_ended);
+  MAKE_PROPERTY(state, get_state);
+  MAKE_PROPERTY(stopped, is_stopped);
+  MAKE_PROPERTY(done_event, get_done_event, set_done_event);
+  MAKE_PROPERTY(t, get_t, set_t);
+  MAKE_PROPERTY(auto_pause, get_auto_pause, set_auto_pause);
+  MAKE_PROPERTY(auto_finish, get_auto_finish, set_auto_finish);
+  MAKE_PROPERTY(manager, get_manager, set_manager);
+  MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
+  MAKE_PROPERTY(playing, is_playing);
+
 public:
   void mark_dirty();
   INLINE bool check_t_callback();
