@@ -2487,6 +2487,7 @@ reset() {
 
 #ifndef OPENGLES
   _supports_get_program_binary = false;
+  _program_binary_formats.clear();
 
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
@@ -2494,8 +2495,20 @@ reset() {
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteri");
 
+    GLint num_binary_formats = 0;
     if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
+      glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
+    }
+
+    if (num_binary_formats > 0) {
       _supports_get_program_binary = true;
+
+      GLenum *binary_formats = (GLenum *)alloca(sizeof(GLenum) * num_binary_formats);
+      glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, (GLint *)binary_formats);
+
+      for (int i = 0; i < num_binary_formats; ++i) {
+        _program_binary_formats.insert(binary_formats[i]);
+      }
     }
   }
 #endif
@@ -2682,6 +2695,23 @@ reset() {
   _error_count = 0;
 
   report_my_gl_errors();
+
+#ifndef OPENGLES
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Supported shader binary formats:\n";
+    GLCAT.debug() << " ";
+
+    pset<GLenum>::const_iterator it;
+    for (it = _program_binary_formats.begin();
+         it != _program_binary_formats.end(); ++it) {
+      char number[16];
+      sprintf(number, "0x%04X", *it);
+      GLCAT.debug(false) << " " << number << "";
+    }
+    GLCAT.debug(false) << "\n";
+  }
+#endif
 
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {

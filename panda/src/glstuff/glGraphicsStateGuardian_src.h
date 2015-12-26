@@ -671,6 +671,7 @@ protected:
   GLint _max_image_units;
   bool _supports_multi_bind;
   bool _supports_get_program_binary;
+  pset<GLenum> _program_binary_formats;
 
 #ifdef OPENGLES
   bool _supports_depth24;
