@@ -108,11 +108,6 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
     (*this) = invert(quat_h * quat_p * quat_r);
   }
 
-  if (!temp_hpr_fix) {
-    // Compute the old, broken hpr.
-    (*this) = quat_p * quat_h * invert(quat_r);
-  }
-
 #ifndef NDEBUG
   if (paranoid_hpr_quat) {
     FLOATNAME(LMatrix3) mat;
@@ -137,19 +132,6 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr(CoordinateSystem cs) const {
-  if (!temp_hpr_fix) {
-    // With the old, broken hpr code in place, just go through the
-    // existing matrix decomposition code.  Not particularly speedy,
-    // but I don't want to bother with working out how to do it
-    // directly for code that hopefully won't need to last much
-    // longer.
-    FLOATNAME(LMatrix3) mat;
-    extract_to_matrix(mat);
-    FLOATNAME(LVecBase3) scale, hpr;
-    decompose_matrix(mat, scale, hpr, cs);
-    return hpr;
-  }
-
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }

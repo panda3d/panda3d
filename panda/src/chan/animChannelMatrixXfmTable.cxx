@@ -381,7 +381,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 
   me.add_bool(compress_channels);
-  me.add_bool(temp_hpr_fix);
+
+  // We now always use the new HPR conventions.
+  me.add_bool(true);
 
   if (!compress_channels) {
     // Write out everything uncompressed, as a stream of floats.
@@ -443,6 +445,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   bool wrote_compressed = scan.get_bool();
 
+  // If this is false, the file still uses the old HPR conventions,
+  // and we'll have to convert the HPR values to the new convention.
   bool new_hpr = scan.get_bool();
 
   if (!wrote_compressed) {
@@ -457,7 +461,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _tables[i] = ind_table;
     }
 
-    if ((!new_hpr && temp_hpr_fix) || (new_hpr && !temp_hpr_fix)) {
+    if (!new_hpr) {
       // Convert between the old HPR form and the new HPR form.
       size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
                             _tables[8].size());
@@ -482,12 +486,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         PN_stdfloat p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
         PN_stdfloat r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
 
-        LVecBase3 hpr;
-        if (temp_hpr_fix) {
-          hpr = old_to_new_hpr(LVecBase3(h, p, r));
-        } else {
-          hpr = new_to_old_hpr(LVecBase3(h, p, r));
-        }
+        LVecBase3 hpr = old_to_new_hpr(LVecBase3(h, p, r));
         h_table[hi] = hpr[0];
         p_table[hi] = hpr[1];
         r_table[hi] = hpr[2];
@@ -525,16 +524,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     PTA_stdfloat r_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
 
     for (i = 0; i < (int)hprs.size(); i++) {
-      if (!new_hpr && temp_hpr_fix) {
+      if (!new_hpr) {
         // Convert the old HPR form to the new HPR form.
         LVecBase3 hpr = old_to_new_hpr(hprs[i]);
-        h_table[i] = hpr[0];
-        p_table[i] = hpr[1];
-        r_table[i] = hpr[2];
-
-      } else if (new_hpr && !temp_hpr_fix) {
-        // Convert the new HPR form to the old HPR form.
-        LVecBase3 hpr = new_to_old_hpr(hprs[i]);
         h_table[i] = hpr[0];
         p_table[i] = hpr[1];
         r_table[i] = hpr[2];
