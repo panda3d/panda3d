@@ -88,6 +88,8 @@ public:
   Includes _quote_includes;
   Includes _angle_includes;
 
+  set<Filename> _explicit_files;
+
   // This is normally true, to indicate that the preprocessor should
   // decode identifiers like foo::bar<snarf> into a single IDENTIFIER,
   // TYPENAME_IDENTIFIER, or SCOPING token for yacc's convenience.

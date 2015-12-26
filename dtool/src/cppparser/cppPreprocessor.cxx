@@ -1715,6 +1715,12 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
     } else {
       _last_c = '\0';
 
+      // If it was explicitly named on the command-line, mark it S_local.
+      filename.make_absolute();
+      if (_explicit_files.count(filename)) {
+        source = CPPFile::S_local;
+      }
+
       CPPFile file(filename, filename_as_referenced, source);
 
       // Don't include it if we included it before and it had #pragma once.
