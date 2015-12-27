@@ -1047,7 +1047,16 @@ get_egg_material(Material *mat) {
       temp.set_emit(mat->get_emission());
     }
 
-    temp.set_shininess(mat->get_shininess());
+    if (mat->has_roughness()) {
+      temp.set_roughness(mat->get_roughness());
+    } else {
+      temp.set_shininess(mat->get_shininess());
+    }
+
+    if (mat->has_metallic()) {
+      temp.set_metallic(mat->get_metallic());
+    }
+
     temp.set_local(mat->get_local());
 
     return _materials.create_unique_material(temp, ~EggMaterial::E_mref_name);

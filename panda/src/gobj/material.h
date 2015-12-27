@@ -44,40 +44,38 @@ PUBLISHED:
   INLINE const LColor &get_ambient() const;
   void set_ambient(const LColor &color);
   INLINE void clear_ambient();
-  MAKE_PROPERTY2(ambient, has_ambient, get_ambient,
-                          set_ambient, clear_ambient);
 
   INLINE bool has_diffuse() const;
   INLINE const LColor &get_diffuse() const;
   void set_diffuse(const LColor &color);
   INLINE void clear_diffuse();
-  MAKE_PROPERTY2(diffuse, has_diffuse, get_diffuse,
-                          set_diffuse, clear_diffuse);
 
   INLINE bool has_specular() const;
   INLINE const LColor &get_specular() const;
   void set_specular(const LColor &color);
   INLINE void clear_specular();
-  MAKE_PROPERTY2(specular, has_specular, get_specular,
-                           set_specular, clear_specular);
 
   INLINE bool has_emission() const;
   INLINE const LColor &get_emission() const;
   void set_emission(const LColor &color);
   INLINE void clear_emission();
-  MAKE_PROPERTY2(emission, has_emission, get_emission,
-                           set_emission, clear_emission);
 
   INLINE PN_stdfloat get_shininess() const;
-  INLINE void set_shininess(PN_stdfloat shininess);
-  MAKE_PROPERTY(shininess, get_shininess, set_shininess);
+  void set_shininess(PN_stdfloat shininess);
+
+  INLINE bool has_roughness() const;
+  PN_stdfloat get_roughness() const;
+  void set_roughness(PN_stdfloat roughness);
+
+  INLINE bool has_metallic() const;
+  INLINE PN_stdfloat get_metallic() const;
+  void set_metallic(PN_stdfloat metallic);
+  INLINE void clear_metallic();
 
   INLINE bool get_local() const;
   INLINE void set_local(bool local);
   INLINE bool get_twoside() const;
   INLINE void set_twoside(bool twoside);
-  MAKE_PROPERTY(local, get_local, set_local);
-  MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
   INLINE bool operator == (const Material &other) const;
   INLINE bool operator != (const Material &other) const;
@@ -91,12 +89,31 @@ PUBLISHED:
   INLINE bool is_attrib_locked() const;
   INLINE void set_attrib_lock();
 
+PUBLISHED:
+  MAKE_PROPERTY2(ambient, has_ambient, get_ambient,
+                          set_ambient, clear_ambient);
+  MAKE_PROPERTY2(diffuse, has_diffuse, get_diffuse,
+                          set_diffuse, clear_diffuse);
+  MAKE_PROPERTY2(specular, has_specular, get_specular,
+                           set_specular, clear_specular);
+  MAKE_PROPERTY2(emission, has_emission, get_emission,
+                           set_emission, clear_emission);
+
+  MAKE_PROPERTY(shininess, get_shininess, set_shininess);
+  MAKE_PROPERTY(roughness, get_roughness, set_roughness);
+  MAKE_PROPERTY(metallic, get_metallic, set_metallic);
+
+  MAKE_PROPERTY(local, get_local, set_local);
+  MAKE_PROPERTY(twoside, get_twoside, set_twoside);
+
 private:
   LColor _ambient;
   LColor _diffuse;
   LColor _specular;
   LColor _emission;
   PN_stdfloat _shininess;
+  PN_stdfloat _roughness;
+  PN_stdfloat _metallic;
 
   static PT(Material) _default;
 
@@ -107,7 +124,9 @@ private:
     F_emission    = 0x008,
     F_local       = 0x010,
     F_twoside     = 0x020,
-    F_attrib_lock = 0x040
+    F_attrib_lock = 0x040,
+    F_roughness   = 0x080,
+    F_metallic    = 0x100,
   };
   int _flags;
 

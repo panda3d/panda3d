@@ -3004,6 +3004,12 @@ yyreduce:
   } else if (cmp_nocase_uh(name, "shininess") == 0) {
     material->set_shininess(value);
 
+  } else if (cmp_nocase_uh(name, "roughness") == 0) {
+    material->set_roughness(value);
+
+  } else if (cmp_nocase_uh(name, "metallic") == 0) {
+    material->set_metallic(value);
+
   } else if (cmp_nocase_uh(name, "local") == 0) {
     material->set_local(value != 0.0);
 

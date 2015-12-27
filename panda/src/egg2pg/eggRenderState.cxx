@@ -513,6 +513,12 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   if (egg_mat->has_shininess()) {
     mat->set_shininess(egg_mat->get_shininess());
   }
+  if (egg_mat->has_roughness()) {
+    mat->set_roughness(egg_mat->get_roughness());
+  }
+  if (egg_mat->has_metallic()) {
+    mat->set_metallic(egg_mat->get_metallic());
+  }
   if (egg_mat->has_local()) {
     mat->set_local(egg_mat->get_local());
   }

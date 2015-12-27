@@ -24,7 +24,9 @@ Material(const string &name) : Namable(name) {
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
   _specular.set(0.0f, 0.0f, 0.0f, 1.0f);
   _emission.set(0.0f, 0.0f, 0.0f, 1.0f);
-  _shininess = 0.0;
+  _shininess = 0;
+  _roughness = 1;
+  _metallic = 0;
   _flags = 0;
 }
 
@@ -219,18 +221,50 @@ get_shininess() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::set_shininess
+//     Function: Material::has_metallic
 //       Access: Published
-//  Description: Sets the shininess exponent of the material.  This
-//               controls the size of the specular highlight spot.  In
-//               general, larger number produce a smaller specular
-//               highlight, which makes the object appear shinier.
-//               Smaller numbers produce a larger highlight, which
-//               makes the object appear less shiny.
+//  Description: Returns true if the metallic has been explicitly
+//               set for this material, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Material::
+has_metallic() const {
+  return (_flags & F_metallic) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::get_metallic
+//       Access: Published
+//  Description: Returns the metallic setting, if it has been set.
+//               Returns 0 if it has not been set.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Material::
+get_metallic() const {
+  return _metallic;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::clear_metallic
+//       Access: Published
+//  Description: Removes the explicit metallic setting from the material.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
-set_shininess(PN_stdfloat shininess) {
-  _shininess = shininess;
+clear_metallic() {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
+  _flags &= ~F_metallic;
+  _metallic = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::has_roughness
+//       Access: Published
+//  Description: Returns true if the roughness has been explicitly
+//               set for this material, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Material::
+has_roughness() const {
+  return (_flags & F_roughness) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

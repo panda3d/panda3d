@@ -36,6 +36,8 @@ operator = (const Material &copy) {
   _specular = copy._specular;
   _emission = copy._emission;
   _shininess = copy._shininess;
+  _roughness = copy._roughness;
+  _metallic = copy._metallic;
   _flags = copy._flags & (~F_attrib_lock);
 }
 
@@ -137,6 +139,93 @@ set_emission(const LColor &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Material::set_shininess
+//       Access: Published
+//  Description: Sets the shininess exponent of the material.  This
+//               controls the size of the specular highlight spot.  In
+//               general, larger number produce a smaller specular
+//               highlight, which makes the object appear shinier.
+//               Smaller numbers produce a larger highlight, which
+//               makes the object appear less shiny.
+//
+//               This is usually in the range 0..128.
+//
+//               Setting a shininess value removes any previous
+//               roughness assignment.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_shininess(PN_stdfloat shininess) {
+  _shininess = shininess;
+  _flags &= ~F_roughness;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::get_roughness
+//       Access: Published
+//  Description: Returns the roughness previously specified by
+//               set_roughness.  If none was previously set, this
+//               value is computed from the shininess value.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat Material::
+get_roughness() const {
+  if ((_flags & F_roughness) == 0) {
+    // Calculate roughness from blinn-phong shininess.
+    return csqrt(csqrt(2 / (_shininess + 2)));
+  } else {
+    return _roughness;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_roughness
+//       Access: Published
+//  Description: Sets the roughness exponent of the material, where
+//               0 is completely shiny (infinite shininess), and
+//               1 is a completely dull object (0 shininess).  This
+//               is a different, more perceptually intuitive way of
+//               controlling the size of the specular spot, and more
+//               commonly used in physically-based rendering.
+//
+//               Setting a roughness recalculates the shininess value.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_roughness(PN_stdfloat roughness) {
+  _roughness = roughness;
+  _flags |= F_roughness;
+
+  // Calculate the specular exponent from the roughness as it is used
+  // in Blinn-Phong shading model.  We use the popular Disney method
+  // of squaring the roughness to get a more perceptually linear scale.
+  // From: http://graphicrants.blogspot.de/2013/08/specular-brdf-reference.html
+  if (roughness <= 0 || IS_NEARLY_ZERO(roughness)) {
+    _shininess = make_inf((PN_stdfloat)0);
+  } else {
+    PN_stdfloat alpha = roughness * roughness;
+    _shininess = 2 / (alpha * alpha) - 2;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_metallic
+//       Access: Published
+//  Description: Sets the metallic setting of the material, which is
+//               is used for physically-based rendering models.
+//               This is usually 0 for dielectric materials and 1
+//               for metals.  It usually does not make sense to set
+//               this to a value other than 0 or 1.
+////////////////////////////////////////////////////////////////////
+void Material::
+set_metallic(PN_stdfloat metallic) {
+  if (enforce_attrib_lock) {
+    if ((_flags & F_metallic) == 0) {
+      nassertv(!is_attrib_locked());
+    }
+  }
+  _metallic = metallic;
+  _flags |= F_metallic;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Material::compare_to
 //       Access: Published
 //  Description: Returns a number less than zero if this material
@@ -189,8 +278,15 @@ output(ostream &out) const {
   if (has_emission()) {
     out << " e(" << get_emission() << ")";
   }
-  out << " s" << get_shininess()
-      << " l" << get_local()
+  if (_flags & F_roughness) {
+    out << " r" << get_roughness();
+  } else {
+    out << " s" << get_shininess();
+  }
+  if (has_metallic()) {
+    out << " m" << _metallic;
+  }
+  out << " l" << get_local()
       << " t" << get_twoside();
 }
 
@@ -214,7 +310,14 @@ write(ostream &out, int indent_level) const {
   if (has_emission()) {
     indent(out, indent_level + 2) << "emission = " << get_emission() << "\n";
   }
-  indent(out, indent_level + 2) << "shininess = " << get_shininess() << "\n";
+  if (_flags & F_roughness) {
+    indent(out, indent_level + 2) << "roughness = " << get_roughness() << "\n";
+  } else {
+    indent(out, indent_level + 2) << "shininess = " << get_shininess() << "\n";
+  }
+  if (has_metallic()) {
+    indent(out, indent_level + 2) << "metallic = " << get_metallic() << "\n";
+  }
   indent(out, indent_level + 2) << "local = " << get_local() << "\n";
   indent(out, indent_level + 2) << "twoside = " << get_twoside() << "\n";
 }
@@ -245,7 +348,18 @@ write_datagram(BamWriter *manager, Datagram &me) {
   _specular.write_datagram(me);
   _emission.write_datagram(me);
   me.add_stdfloat(_shininess);
+
+  if (_flags & F_roughness) {
+    me.add_stdfloat(_roughness);
+  } else {
+    me.add_stdfloat(_shininess);
+  }
+
   me.add_int32(_flags);
+
+  if (_flags & F_metallic) {
+    me.add_stdfloat(_metallic);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,4 +395,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _emission.read_datagram(scan);
   _shininess = scan.get_stdfloat();
   _flags = scan.get_int32();
+
+  if (_flags & F_roughness) {
+    // The shininess we read is actually a roughness value.
+    set_roughness(_shininess);
+  }
+
+  if (_flags & F_metallic) {
+    _metallic = scan.get_stdfloat();
+  }
 }

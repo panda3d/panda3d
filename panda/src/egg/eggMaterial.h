@@ -65,10 +65,31 @@ PUBLISHED:
   INLINE bool has_shininess() const;
   INLINE double get_shininess() const;
 
+  INLINE void set_roughness(double roughness);
+  INLINE void clear_roughness();
+  INLINE bool has_roughness() const;
+  INLINE double get_roughness() const;
+
+  INLINE void set_metallic(double metallic);
+  INLINE void clear_metallic();
+  INLINE bool has_metallic() const;
+  INLINE double get_metallic() const;
+
   INLINE void set_local(bool local);
   INLINE void clear_local();
   INLINE bool has_local() const;
   INLINE bool get_local() const;
+
+PUBLISHED:
+  MAKE_PROPERTY2(diff, has_diff, get_diff, set_diff, clear_diff);
+  MAKE_PROPERTY2(amb, has_amb, get_amb, set_amb, clear_amb);
+  MAKE_PROPERTY2(emit, has_emit, get_emit, set_emit, clear_emit);
+  MAKE_PROPERTY2(spec, has_spec, get_spec, set_spec, clear_spec);
+  MAKE_PROPERTY2(shininess, has_shininess, get_shininess, set_shininess, clear_shininess);
+  MAKE_PROPERTY2(roughness, has_roughness, get_roughness, set_roughness, clear_roughness);
+  MAKE_PROPERTY2(metallic, has_metallic, get_metallic, set_metallic, clear_metallic);
+
+  MAKE_PROPERTY2(local, has_local, get_local, set_local, clear_local);
 
 private:
   enum Flags {
@@ -77,7 +98,9 @@ private:
     F_emit      = 0x004,
     F_spec      = 0x008,
     F_shininess = 0x010,
-    F_local     = 0x020
+    F_roughness = 0x020,
+    F_metallic  = 0x040,
+    F_local     = 0x080
   };
 
   LColor _diff;
@@ -85,6 +108,8 @@ private:
   LColor _emit;
   LColor _spec;
   double _shininess;
+  double _roughness;
+  double _metallic;
   bool _local;
   int _flags;
 
