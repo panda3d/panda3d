@@ -5925,6 +5925,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level)
         << "return DTool_PyInit_Finalize(self, (void *)" << return_expr << ", &" << CLASS_PREFIX << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
+    } else if (TypeManager::is_bool(orig_type)) {
+      // It's an error return boolean, I guess.  Return 0 on success.
+      indent(out, indent_level) << "return (" << return_expr << ") ? 0 : -1;\n";
+
     } else if (TypeManager::is_integer(orig_type)) {
       if ((return_flags & RF_compare) == RF_compare) {
         // Make sure it returns -1, 0, or 1, or Python complains with:
