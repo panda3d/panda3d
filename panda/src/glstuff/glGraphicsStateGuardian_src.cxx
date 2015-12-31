@@ -11419,7 +11419,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES // OpenGL ES doesn't have GL_TEXTURE_MAX_LEVEL.
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       // By the time we get here, we have a pretty good prediction for
       // the number of mipmaps we're going to have, so tell the GL that's
       // all it's going to get.
@@ -11934,7 +11934,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
 #ifndef OPENGLES
-            if (_supports_texture_lod) {
+            if (is_at_least_gl_version(1, 2)) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
@@ -12154,7 +12154,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps() && _supports_texture_lod) {
+  if (tex->uses_mipmaps() && is_at_least_gl_version(1, 2)) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 #endif
@@ -12820,7 +12820,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
 #ifndef OPENGLES
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
     }

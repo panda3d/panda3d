@@ -298,100 +298,50 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
   DCAST_INTO_R(box, entry.get_from(), 0);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+  // Instead of transforming the box into the sphere's coordinate space,
+  // we do it the other way around.  It's easier that way.
+  const LMatrix4 &wrt_mat = entry.get_inv_wrt_mat();
 
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
+  LPoint3 center = wrt_mat.xform_point(_center);
+  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, _radius)).length_squared();
 
-  CollisionBox local_b( *box );
-  local_b.xform( wrt_mat );
+  LPoint3 box_min = box->get_min();
+  LPoint3 box_max = box->get_max();
 
-  LPoint3 from_center = local_b.get_center();
+  // Arvo's algorithm.
+  PN_stdfloat d = 0;
+  PN_stdfloat s;
 
-  LPoint3 orig_center = get_center();
-  LPoint3 to_center = orig_center;
-  LPoint3 contact_point(from_center);
-  PN_stdfloat actual_t = 1.0f;
+  if (center[0] < box_min[0]) {
+    s = center[0] - box_min[0];
+    d += s * s;
 
-  PN_stdfloat to_radius = get_radius();
-  PN_stdfloat to_radius_2 = to_radius * to_radius;
-
-  int ip;
-  PN_stdfloat max_dist = 0.0f;
-  PN_stdfloat dist = 0.0f; // initial assignment to squelch silly compiler warning
-  bool intersect;
-  LPlane plane;
-  LVector3 normal;
-
-  for (ip = 0, intersect=false; ip < 6 && !intersect; ip++) {
-    plane = local_b.get_plane( ip );
-    if (local_b.get_plane_points(ip).size() < 3) {
-      continue;
-    }
-    normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : plane.get_normal();
-    
-    #ifndef NDEBUG
-    /*
-    if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
-      collide_cat.info()
-      << "polygon being collided with " << entry.get_into_node_path()
-      << " has normal " << normal << " of length " << normal.length()
-      << "\n";
-      normal.normalize();
-    }
-    */
-    #endif
-
-    // The nearest point within the plane to our center is the
-    // intersection of the line (center, center - normal) with the plane.
-
-    if (!plane.intersects_line(dist, to_center, -(plane.get_normal()))) {
-      // No intersection with plane?  This means the plane's effective
-      // normal was within the plane itself.  A useless polygon.
-      continue;
-    }
-
-    if (dist > to_radius || dist < -to_radius) {
-      // No intersection with the plane.
-      continue;
-    }
-
-    LPoint2 p = local_b.to_2d(to_center - dist * plane.get_normal(), ip);
-    PN_stdfloat edge_dist = 0.0f;
-
-    edge_dist = local_b.dist_to_polygon(p, local_b.get_plane_points(ip));
-
-    if(edge_dist < 0) {
-      intersect = true;
-      continue;
-    }
-
-    if((edge_dist > 0) && 
-      ((edge_dist * edge_dist + dist * dist) > to_radius_2)) {
-      // No intersection; the circle is outside the polygon.
-      continue;
-    }
-
-    // The sphere appears to intersect the polygon.  If the edge is less
-    // than to_radius away, the sphere may be resting on an edge of
-    // the polygon.  Determine how far the center of the sphere must
-    // remain from the plane, based on its distance from the nearest
-    // edge.
-
-    max_dist = to_radius;
-    if (edge_dist >= 0.0f) {
-      PN_stdfloat max_dist_2 = max(to_radius_2 - edge_dist * edge_dist, (PN_stdfloat)0.0);
-      max_dist = csqrt(max_dist_2);
-    }
-
-    if (dist > max_dist) {
-      // There's no intersection: the sphere is hanging off the edge.
-      continue;
-    }
-    intersect = true;
+  } else if (center[0] > box_max[0]) {
+    s = center[0] - box_max[0];
+    d += s * s;
   }
-  if( !intersect )
+
+  if (center[1] < box_min[1]) {
+    s = center[1] - box_min[1];
+    d += s * s;
+
+  } else if (center[1] > box_max[1]) {
+    s = center[1] - box_max[1];
+    d += s * s;
+  }
+
+  if (center[2] < box_min[2]) {
+    s = center[2] - box_min[2];
+    d += s * s;
+
+  } else if (center[2] > box_max[2]) {
+    s = center[2] - box_max[2];
+    d += s * s;
+  }
+
+  if (d > radius_sq) {
     return NULL;
+  }
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -401,14 +351,17 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  PN_stdfloat into_depth = max_dist - dist;
+  // To get the interior point, clamp the sphere center to the AABB.
+  LPoint3 interior = entry.get_wrt_mat().xform_point(center.fmax(box_min).fmin(box_max));
+  new_entry->set_interior_point(interior);
 
-  new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(to_center - normal * dist);
-  new_entry->set_interior_point(to_center - normal * (dist + into_depth));
-  new_entry->set_contact_pos(contact_point);
-  new_entry->set_contact_normal(plane.get_normal());
-  new_entry->set_t(actual_t);
+  // Now extrapolate the surface point and normal from that.
+  LVector3 normal = interior - _center;
+  normal.normalize();
+  new_entry->set_surface_point(_center + normal * _radius);
+  new_entry->set_surface_normal(
+    (has_effective_normal() && box->get_respect_effective_normal())
+    ? get_effective_normal() : normal);
 
   return new_entry;
 }
