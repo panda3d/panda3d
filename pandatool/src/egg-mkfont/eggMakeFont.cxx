@@ -95,7 +95,8 @@ EggMakeFont() : EggWriter(true, false) {
      "by commas and hyphens to indicate ranges, e.g. '32-126,0xfa0-0xfff'.  "
      "It also may specify ranges of ASCII characters by enclosing them "
      "within square brackets, e.g. '[A-Za-z0-9]'.  If this is not specified, "
-     "the default is the set of ASCII characters.",
+     "the default set has all ASCII characters and an assorted set of "
+     "latin-1 characters, diacritics and punctuation marks.",
      &EggMakeFont::dispatch_range, NULL, &_range);
 
   add_option
@@ -327,9 +328,44 @@ run() {
   }
 
   if (_range.is_empty()) {
-    // If there's no specified range, the default is the entire ASCII
-    // set.
+    // If there's no specified range, the default is the entire ASCII set.
     _range.add_range(0x20, 0x7e);
+
+    _range.add_singleton(0xa1); // Upside down exclamation mark
+    _range.add_singleton(0xa9); // Copyright sign
+    _range.add_singleton(0xab); // Left double angle quote
+    //_range.add_singleton(0xae); // Registered sign
+    _range.add_singleton(0xb0); // Degree symbol
+    _range.add_singleton(0xb5); // Mu/micro
+    _range.add_singleton(0xb8); // Cedilla
+    _range.add_singleton(0xbb); // Right double angle quote
+    _range.add_singleton(0xbf); // Upside down question mark
+
+    _range.add_singleton(0xc6); // AE ligature
+    _range.add_singleton(0xc7); // C cedilla
+    //_range.add_singleton(0xd0); // Upper-case Eth
+    //_range.add_singleton(0xd8); // Upper-case O with line
+    //_range.add_singleton(0xde); // Upper-case Thorn
+    _range.add_singleton(0xdf); // German Eszet
+    _range.add_singleton(0xe6); // ae ligature
+    _range.add_singleton(0xe7); // c cedilla
+    _range.add_singleton(0xf0); // Lower-case Eth
+    _range.add_singleton(0xf8); // Lower-case O with line
+    _range.add_singleton(0xfe); // Lower-case Thorn
+
+    //_range.add_singleton(0x03c0); // pi
+
+    // Dotless i and j, for combining purposes.
+    _range.add_singleton(0x0131);
+    _range.add_singleton(0x0237);
+
+    // And general punctuation.  These don't take up much space anyway.
+    _range.add_range(0x2018, 0x201f);
+
+    _range.add_singleton(0x2026); // Ellipses
+
+    // Also add all the combining diacritic marks.
+    _range.add_range(0x0300, 0x030f);
   }
   if (_output_glyph_pattern.empty()) {
     // Create a default texture filename pattern.
