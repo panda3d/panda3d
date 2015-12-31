@@ -660,30 +660,45 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   box_z /= l;
 
   PN_stdfloat r1, r2;
+  PN_stdfloat min_pen = 0;
+  PN_stdfloat pen;
+  int axis = 0;
 
   // SAT test for the three axes of the into cube.
   r1 = into_extents[0];
   r2 = cabs(box_x[0] * from_extents[0]) +
        cabs(box_y[0] * from_extents[1]) +
        cabs(box_z[0] * from_extents[2]);
-  if (cabs(diff[0]) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff[0]);
+  if (pen < 0) {
     return NULL;
   }
+  min_pen = pen;
 
   r1 = into_extents[1];
   r2 = cabs(box_x[1] * from_extents[0]) +
        cabs(box_y[1] * from_extents[1]) +
        cabs(box_z[1] * from_extents[2]);
-  if (cabs(diff[1]) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff[1]);
+  if (pen < 0) {
     return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+    axis = 1;
   }
 
   r1 = into_extents[2];
   r2 = cabs(box_x[2] * from_extents[0]) +
        cabs(box_y[2] * from_extents[1]) +
        cabs(box_z[2] * from_extents[2]);
-  if (cabs(diff[2]) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff[2]);
+  if (pen < 0) {
     return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+    axis = 2;
   }
 
   // SAT test for the three axes of the from cube.
@@ -691,24 +706,36 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_x[1] * into_extents[1]) +
        cabs(box_x[2] * into_extents[2]);
   r2 = from_extents[0];
-  if (cabs(diff.dot(box_x)) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff.dot(box_x));
+  if (pen < 0) {
     return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
   }
 
   r1 = cabs(box_y[0] * into_extents[0]) +
        cabs(box_y[1] * into_extents[1]) +
        cabs(box_y[2] * into_extents[2]);
   r2 = from_extents[1];
-  if (cabs(diff.dot(box_y)) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff.dot(box_y));
+  if (pen < 0) {
     return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
   }
 
   r1 = cabs(box_z[0] * into_extents[0]) +
        cabs(box_z[1] * into_extents[1]) +
        cabs(box_z[2] * into_extents[2]);
   r2 = from_extents[2];
-  if (cabs(diff.dot(box_z)) > r1 + r2) {
+  pen = r1 + r2 - cabs(diff.dot(box_z));
+  if (pen < 0) {
     return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
   }
 
   // SAT test of the nine cross products.
@@ -773,8 +800,29 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
+  // This isn't always the correct surface point.  However, it seems to
+  // be enough to let the pusher do the right thing.
+  LPoint3 surface(
+    min(max(diff[0], -into_extents[0]), into_extents[0]),
+    min(max(diff[1], -into_extents[1]), into_extents[1]),
+    min(max(diff[2], -into_extents[2]), into_extents[2]));
+
+  // Create the normal along the axis of least penetration.
+  LVector3 normal(0);
+  PN_stdfloat diff_axis = diff[axis];
+  int sign = (diff_axis >= 0) ? 1 : -1;
+  normal[axis] = sign;
+  surface[axis] = into_extents[axis] * sign;
+
+  new_entry->set_surface_point(surface + _center);
+
+  // Does not generate the correct depth.  Needs fixing.
+  new_entry->set_interior_point(surface + _center + normal * -min_pen);
+
   if (has_effective_normal() && box->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
   }
 
   return new_entry;
