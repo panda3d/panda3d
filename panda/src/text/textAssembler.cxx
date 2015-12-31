@@ -2232,28 +2232,34 @@ tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
           has_mat = false;
         }
 
+        PN_stdfloat total_margin = font->get_total_poly_margin();
+
         LPoint3 accent_centroid = (min_accent + max_accent) / 2.0f;
-        PN_stdfloat accent_height = max_accent[2] - min_accent[2];
+        PN_stdfloat accent_height = max_accent[2] - min_accent[2] - total_margin * 2;
+        PN_stdfloat accent_x = centroid[0] - accent_centroid[0];
         PN_stdfloat accent_y = 0;
+        PN_stdfloat min_y = min_vert[2] + total_margin;
+        PN_stdfloat max_y = max_vert[2] - total_margin;
+
         switch (position) {
         case CP_above:
           // A little above the character.
-          accent_y = max_vert[2] - accent_centroid[2] + accent_height * 0.5f;
+          accent_y = max_y - accent_centroid[2] + accent_height * 0.75f;
           break;
 
         case CP_below:
           // A little below the character.
-          accent_y = min_vert[2] - accent_centroid[2] - accent_height * 0.5f;
+          accent_y = min_y - accent_centroid[2] - accent_height * 0.75f;
           break;
 
         case CP_top:
           // Touching the top of the character.
-          accent_y = max_vert[2] - accent_centroid[2];
+          accent_y = max_y - accent_centroid[2];
           break;
 
         case CP_bottom:
           // Touching the bottom of the character.
-          accent_y = min_vert[2] - accent_centroid[2];
+          accent_y = min_y - accent_centroid[2];
           break;
 
         case CP_within:
@@ -2262,7 +2268,7 @@ tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
           break;
         }
 
-        placement._xpos += placement._scale * (centroid[0] - accent_centroid[0] + placement._slant * accent_y);
+        placement._xpos += placement._scale * (accent_x + placement._slant * accent_y);
         placement._ypos += placement._scale * accent_y;
 
         if (has_mat) {

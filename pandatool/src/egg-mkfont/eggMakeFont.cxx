@@ -115,7 +115,7 @@ EggMakeFont() : EggWriter(true, false) {
      "generated texture map that are used for each onscreen unit (or each "
      "10 points of font; see -ps).  Setting this number larger results in "
      "an easier-to-read font, but at the cost of more texture memory.  "
-     "The default is 30.",
+     "The default is 40.",
      &EggMakeFont::dispatch_double, NULL, &_pixels_per_unit);
 
   add_option
@@ -124,6 +124,12 @@ EggMakeFont() : EggWriter(true, false) {
      "apparent size of the font when it is rendered onscreen.  By convention, "
      "a 10 point font is 1 screen unit high, so the default is 10.",
      &EggMakeFont::dispatch_double, NULL, &_point_size);
+
+  add_option
+    ("sdf", "", 0,
+     "If this is set, a signed distance field will be generated, which "
+     "results in crisp text even when the text is enlarged or zoomed in.",
+     &EggMakeFont::dispatch_true, NULL, &_generate_distance_field);
 
   add_option
     ("pm", "n", 0,
@@ -216,13 +222,14 @@ EggMakeFont() : EggWriter(true, false) {
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(1.0, 1.0, 1.0, 0.0);
   _interior.set(1.0, 1.0, 1.0, 1.0);
-  _pixels_per_unit = 30.0;
+  _pixels_per_unit = 40.0;
   _point_size = 10.0;
   _poly_margin = 1.0;
   _tex_margin = 2;
   _render_margin = 0.0;
-  _palette_size[0] = _palette_size[1] = 256;
+  _palette_size[0] = _palette_size[1] = 512;
   _face_index = 0;
+  _generate_distance_field = false;
 
   _text_maker = NULL;
   _vpool = NULL;
@@ -275,7 +282,9 @@ run() {
   if (!_got_scale_factor) {
     // The default scale factor is 4 if we are not using FreeType's
     // antialias, or 2 if we are.
-    if (_no_native_aa) {
+    if (_generate_distance_field) {
+      _scale_factor = 1.0;
+    } else if (_no_native_aa) {
       _scale_factor = 4.0;
     } else {
       _scale_factor = 2.0;
@@ -410,7 +419,7 @@ run() {
       _num_channels = 1;
       _format = EggTexture::F_luminance;
     }
-  }      
+  }
 
   // Create a global Palettizer object.  We'll use this even if the
   // user specified -nopal, if nothing else just to hold all of the
@@ -449,10 +458,24 @@ run() {
   _group->set_switch_flag(true);
   _group->set_switch_fps(2.0);
 
-  // Also create an egg group indicating the font's design size.
+  double margin = _poly_margin;
+  if (_generate_distance_field) {
+    // Distance fields are always rendered with binary alpha.
+    _group->set_alpha_mode(EggRenderMode::AM_binary);
+
+    // Fudged to make most fonts fit on 512x256.
+    if (_poly_margin >= 1) {
+      margin += 3.5;
+      _poly_margin -= 0.5;
+    }
+
+    _text_maker->set_distance_field_radius(4);
+  }
+
+  // Also create an egg group indicating the font's design size and poly margin.
   EggGroup *ds_group = new EggGroup("ds");
   _group->add_child(ds_group);
-  EggVertex *vtx = make_vertex(LPoint2d(0.0, _text_maker->get_line_height()));
+  EggVertex *vtx = make_vertex(LPoint2d(margin / _pixels_per_unit, _text_maker->get_line_height()));
   EggPoint *point = new EggPoint;
   ds_group->add_child(point);
   point->add_vertex(vtx);

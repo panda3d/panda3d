@@ -125,6 +125,29 @@ get_interior() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::set_distance_field_radius
+//       Access: Published
+//  Description: If this is set to something other than 0, Panda
+//               will generate a signed distance field with the
+//               given radius.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMTextMaker::
+set_distance_field_radius(int distance_field_radius) {
+  _distance_field_radius = distance_field_radius;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMTextMaker::get_distance_field_radius
+//       Access: Published
+//  Description: Returns the radius previously set with
+//               set_distance_field_radius, or 0 otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE int PNMTextMaker::
+get_distance_field_radius() const {
+  return _distance_field_radius;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::generate_into
 //       Access: Public
 //  Description: Generates a single line of text into the indicated
