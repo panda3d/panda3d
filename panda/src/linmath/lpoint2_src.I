@@ -14,49 +14,21 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LPoint2::Default Constructor
+//     Function: LPoint2::Constructor
 //       Access: Public
-//  Description:
+//  Description: Constructs a new LPoint2 from a LVecBase2
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
-FLOATNAME(LPoint2)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint2::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint2)::
-FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy) : FLOATNAME(LVecBase2)(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint2::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint2) &FLOATNAME(LPoint2)::
-operator = (const FLOATNAME(LVecBase2) &copy) {
-  FLOATNAME(LVecBase2)::operator = (copy);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint2::Copy Fill Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint2) &FLOATNAME(LPoint2)::
-operator = (FLOATTYPE fill_value) {
-  FLOATNAME(LVecBase2)::operator = (fill_value);
-  return *this;
+FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2)& copy) :
+  FLOATNAME(LVecBase2)(copy)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Constructor
 //       Access: Public
-//  Description:
+//  Description: Constructs a new LPoint2 all components set to the
+//               fill value.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
 FLOATNAME(LPoint2)(FLOATTYPE fill_value) :
@@ -67,7 +39,7 @@ FLOATNAME(LPoint2)(FLOATTYPE fill_value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Constructor
 //       Access: Public
-//  Description:
+//  Description: Constructs a new LPoint2 with the given components
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
 FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y) :
@@ -186,6 +158,18 @@ operator / (FLOATTYPE scalar) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint2::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
+normalized() const {
+  return FLOATNAME(LVecBase2)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::project
 //       Access: Published
