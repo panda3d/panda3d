@@ -954,6 +954,28 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         _shader->_mat_spec.push_back(bind);
         _shader->_mat_deps |= bind._dep[0];
         return;
+
+      } else if (noprefix == "Material.roughness") {
+        if (param_type != GL_FLOAT) {
+          GLCAT.error()
+            << "p3d_Material.roughness should be float\n";
+        }
+        bind._part[0] = Shader::SMO_attr_material2;
+        bind._piece = Shader::SMP_cell15;
+        _shader->_mat_spec.push_back(bind);
+        _shader->_mat_deps |= bind._dep[0];
+        return;
+
+      } else if (noprefix == "Material.metallic") {
+        if (param_type != GL_FLOAT && param_type != GL_BOOL) {
+          GLCAT.error()
+            << "p3d_Material.metallic should be bool or float\n";
+        }
+        bind._part[0] = Shader::SMO_attr_material2;
+        bind._piece = Shader::SMP_row3x1;
+        _shader->_mat_spec.push_back(bind);
+        _shader->_mat_deps |= bind._dep[0];
+        return;
       }
     }
     if (noprefix == "ColorScale") {

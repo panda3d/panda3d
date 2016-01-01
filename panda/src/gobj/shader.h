@@ -194,6 +194,9 @@ public:
 
     SMO_inv_texmat_i,
 
+    // Additional properties for PBR materials
+    SMO_attr_material2,
+
     SMO_INVALID
   };
 

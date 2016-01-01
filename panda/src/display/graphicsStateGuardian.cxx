@@ -1067,6 +1067,17 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
                   spc[0],spc[1],spc[2],spc[3]);
     return &t;
   }
+  case Shader::SMO_attr_material2: {
+    const MaterialAttrib *target_material = (const MaterialAttrib *)
+      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
+    if (target_material->is_off()) {
+      t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+      return &t;
+    }
+    Material *m = target_material->get_material();
+    t.set_row(3, LVecBase4(m->get_metallic(), 0, 0, m->get_roughness()));
+    return &t;
+  }
   case Shader::SMO_attr_color: {
     const ColorAttrib *target_color = (const ColorAttrib *)
       _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
