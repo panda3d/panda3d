@@ -560,7 +560,10 @@ load_mesh(size_t index) {
   if (character) {
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
       const aiBone &bone = *mesh.mBones[i];
-      CPT(JointVertexTransform) jvt = new JointVertexTransform(character->find_joint(bone.mName.C_Str()));
+      CharacterJoint *joint = character->find_joint(bone.mName.C_Str());
+      nassertd(joint != NULL) continue;
+
+      CPT(JointVertexTransform) jvt = new JointVertexTransform(joint);
 
       for (size_t j = 0; j < bone.mNumWeights; ++j) {
           const aiVertexWeight &weight = bone.mWeights[j];
