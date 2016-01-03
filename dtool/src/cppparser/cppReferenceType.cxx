@@ -114,6 +114,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPReferenceType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPReferenceType::
+is_default_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPReferenceType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPReferenceType::
+is_copy_constructible() const {
+  return (_value_category == VC_lvalue);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it

@@ -80,6 +80,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_default_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_copy_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter

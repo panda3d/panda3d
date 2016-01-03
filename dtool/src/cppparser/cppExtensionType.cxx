@@ -115,6 +115,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_default_constructible() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_copy_constructible() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::substitute_decl
 //       Access: Public, Virtual
 //  Description:
