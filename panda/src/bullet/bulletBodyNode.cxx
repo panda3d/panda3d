@@ -644,7 +644,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
     // CollisionBox
     else if (CollisionBox::get_class_type() == type) {
       CPT(CollisionBox) box = DCAST(CollisionBox, solid);
-      CPT(TransformState) ts = TransformState::make_pos(box->get_approx_center());
+      CPT(TransformState) ts = TransformState::make_pos(box->get_center());
 
       add_shape(BulletBoxShape::make_from_solid(box), ts);
     }

@@ -131,6 +131,26 @@ get_center() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionBox::get_min
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3 &CollisionBox::
+get_min() const {
+  return _min;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionBox::get_max
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3 &CollisionBox::
+get_max() const {
+  return _max;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::get_dimensions
 //       Access: Published
 //  Description:
@@ -141,21 +161,11 @@ get_dimensions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_radius
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat CollisionBox::
-get_radius() const {
-  return _radius;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::get_num_points
 //       Access: Published
 //  Description: Returns 8: the number of vertices of a rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL int CollisionBox::
+INLINE int CollisionBox::
 get_num_points() const {
   return 8;
 }
@@ -165,7 +175,7 @@ get_num_points() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the OBB.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPoint3 CollisionBox::
+INLINE LPoint3 CollisionBox::
 get_point(int n) const {
   nassertr(n >= 0 && n < 8, LPoint3::zero());
   return _vertex[n];
@@ -177,7 +187,7 @@ get_point(int n) const {
 //       Access: Published
 //  Description: Returns the nth vertex of the Axis Aligned Bounding Box.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPoint3 CollisionBox::
+INLINE LPoint3 CollisionBox::
 get_point_aabb(int n) const {
   nassertr(n >= 0 && n < 8, LPoint3::zero());
   
@@ -192,7 +202,7 @@ get_point_aabb(int n) const {
 //       Access: Published
 //  Description: Returns 6: the number of faces of a rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL int CollisionBox::
+INLINE int CollisionBox::
 get_num_planes() const {
   return 6;
 }
@@ -202,7 +212,7 @@ get_num_planes() const {
 //       Access: Published
 //  Description: Returns the nth face of the rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPlane CollisionBox::
+INLINE LPlane CollisionBox::
 get_plane(int n) const {
   nassertr(n >= 0 && n < 6, LPlane());
   return _planes[n];
@@ -213,7 +223,7 @@ get_plane(int n) const {
 //       Access: Published
 //  Description: Creates the nth face of the rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPlane CollisionBox::
+INLINE LPlane CollisionBox::
 set_plane(int n) const {
   nassertr(n >= 0 && n < 6, LPlane());
   return LPlane(get_point(plane_def[n][0]),
