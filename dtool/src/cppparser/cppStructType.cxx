@@ -190,6 +190,11 @@ is_trivial() const {
         return false;
       }
 
+      // The following checks don't apply for defaulted functions.
+      if (inst->_storage_class & CPPInstance::SC_defaulted) {
+        continue;
+      }
+
       assert(inst->_type != (CPPType *)NULL);
       CPPFunctionType *ftype = inst->_type->as_function_type();
       assert(ftype != (CPPFunctionType *)NULL);
@@ -197,7 +202,8 @@ is_trivial() const {
       if (ftype->_flags & (CPPFunctionType::F_destructor |
                            CPPFunctionType::F_move_constructor |
                            CPPFunctionType::F_copy_constructor)) {
-        // User-provided destructors and copy/move constructors are not trivial.
+        // User-provided destructors and copy/move constructors are not
+        // trivial unless they are defaulted (and not virtual).
         return false;
       }
 
@@ -584,7 +590,10 @@ get_virtual_funcs(VFunctions &funcs) const {
     CPPFunctionType *base_ftype = inst->_type->as_function_type();
     assert(base_ftype != (CPPFunctionType *)NULL);
 
-    if ((base_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
+    if (inst->_storage_class & CPPInstance::SC_deleted) {
+      // Ignore deleted functions.
+
+    } else if ((base_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
       // Match destructor-for-destructor; don't try to match
       // destructors up by name.
       CPPInstance *destructor = get_destructor();
@@ -646,7 +655,8 @@ get_virtual_funcs(VFunctions &funcs) const {
          ii != fgroup->_instances.end();
          ++ii) {
       CPPInstance *inst = (*ii);
-      if ((inst->_storage_class & CPPInstance::SC_virtual) != 0) {
+      if ((inst->_storage_class & CPPInstance::SC_virtual) != 0 &&
+          (inst->_storage_class & CPPInstance::SC_deleted) == 0) {
         // Here's a virtual function.
         funcs.push_back(inst);
       }

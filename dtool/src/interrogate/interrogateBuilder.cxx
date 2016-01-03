@@ -1134,8 +1134,8 @@ scan_function(CPPInstance *function) {
     return;
   }
 
-  if ((function->_storage_class & CPPInstance::SC_static) != 0) {
-    // The function is static, so can't be exported.
+  if ((function->_storage_class & (CPPInstance::SC_static | CPPInstance::SC_deleted)) != 0) {
+    // The function is static or deleted, so can't be exported.
     return;
   }
 
@@ -2818,6 +2818,11 @@ define_method(CPPInstance *function, InterrogateType &itype,
 
   if (function->is_template()) {
     // The function is a template function, not a true function.
+    return;
+  }
+
+  if (function->_storage_class & CPPInstance::SC_deleted) {
+    // It was explicitly marked as deleted.
     return;
   }
 
