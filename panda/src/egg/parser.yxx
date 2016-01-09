@@ -757,7 +757,24 @@ material_body:
   string name = $3;
   double value = $<_number>5;
 
-  if (cmp_nocase_uh(name, "diffr") == 0) {
+  if (cmp_nocase_uh(name, "baser") == 0) {
+    LColor base = material->get_base();
+    base[0] = value;
+    material->set_base(base);
+  } else if (cmp_nocase_uh(name, "baseg") == 0) {
+    LColor base = material->get_base();
+    base[1] = value;
+    material->set_base(base);
+  } else if (cmp_nocase_uh(name, "baseb") == 0) {
+    LColor base = material->get_base();
+    base[2] = value;
+    material->set_base(base);
+  } else if (cmp_nocase_uh(name, "basea") == 0) {
+    LColor base = material->get_base();
+    base[3] = value;
+    material->set_base(base);
+
+  } else if (cmp_nocase_uh(name, "diffr") == 0) {
     LColor diff = material->get_diff();
     diff[0] = value;
     material->set_diff(diff);
@@ -833,6 +850,9 @@ material_body:
 
   } else if (cmp_nocase_uh(name, "metallic") == 0) {
     material->set_metallic(value);
+
+  } else if (cmp_nocase_uh(name, "ior") == 0) {
+    material->set_ior(value);
 
   } else if (cmp_nocase_uh(name, "local") == 0) {
     material->set_local(value != 0.0);
