@@ -914,7 +914,19 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[1] = NULL;
       bind._dep[1] = Shader::SSD_NONE;
 
-      if (noprefix == "Material.ambient") {
+      if (noprefix == "Material.baseColor") {
+        if (param_type != GL_FLOAT_VEC4) {
+          GLCAT.error()
+            << "p3d_Material.baseColor should be vec4\n";
+        }
+        bind._part[0] = Shader::SMO_attr_material2;
+        bind._piece = Shader::SMP_row0;
+        bind._dep[0] |= Shader::SSD_color;
+        _shader->_mat_spec.push_back(bind);
+        _shader->_mat_deps |= bind._dep[0];
+        return;
+
+      } else if (noprefix == "Material.ambient") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.ambient should be vec4\n";
@@ -982,6 +994,17 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         }
         bind._part[0] = Shader::SMO_attr_material2;
         bind._piece = Shader::SMP_row3x1;
+        _shader->_mat_spec.push_back(bind);
+        _shader->_mat_deps |= bind._dep[0];
+        return;
+
+      } else if (noprefix == "Material.refractiveIndex") {
+        if (param_type != GL_FLOAT) {
+          GLCAT.error()
+            << "p3d_Material.refractiveIndex should be float\n";
+        }
+        bind._part[0] = Shader::SMO_attr_material2;
+        bind._piece = Shader::SMP_cell13;
         _shader->_mat_spec.push_back(bind);
         _shader->_mat_deps |= bind._dep[0];
         return;
@@ -2012,6 +2035,12 @@ issue_parameters(int altered) {
         }
       case Shader::SMP_cell15:
         _glgsg->_glUniform1fv(p, 1, data+15);
+        continue;
+      case Shader::SMP_cell14:
+        _glgsg->_glUniform1fv(p, 1, data+14);
+        continue;
+      case Shader::SMP_cell13:
+        _glgsg->_glUniform1fv(p, 1, data+13);
         continue;
       }
     }

@@ -77,6 +77,70 @@ is_ambient_light() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Light::set_color_temperature
+//       Access: Published
+//  Description: Sets the color temperature of the light in kelvins.
+//               This will recalculate the light's color.
+//
+//               The default value is 6500 K, corresponding to a
+//               perfectly white light assuming a D65 white point.
+////////////////////////////////////////////////////////////////////
+void Light::
+set_color_temperature(PN_stdfloat temperature) {
+  if (_has_color_temperature && _color_temperature == temperature) {
+    return;
+  }
+
+  _has_color_temperature = true;
+  _color_temperature = temperature;
+
+  // Recalculate the color.
+  PN_stdfloat x, y;
+
+  if (temperature == 6500) {
+    // sRGB D65 white point.
+    x = 0.31271;
+    y = 0.32902;
+
+  } else {
+    PN_stdfloat mm = 1000.0 / temperature;
+    PN_stdfloat mm2 = mm * mm;
+    PN_stdfloat mm3 = mm2 * mm;
+
+    if (temperature < 4000) {
+      x = -0.2661239 * mm3 - 0.2343580 * mm2 + 0.8776956 * mm + 0.179910;
+    } else {
+      x = -3.0258469 * mm3 + 2.1070379 * mm2 + 0.2226347 * mm + 0.240390;
+    }
+
+    PN_stdfloat x2 = x * x;
+    PN_stdfloat x3 = x2 * x;
+    if (temperature < 2222) {
+      y = -1.1063814 * x3 - 1.34811020 * x2 + 2.18555832 * x - 0.20219683;
+    } else if (temperature < 4000) {
+      y = -0.9549476 * x3 - 1.37418593 * x2 + 2.09137015 * x - 0.16748867;
+    } else {
+      y =  3.0817580 * x3 - 5.87338670 * x2 + 3.75112997 * x - 0.37001483;
+    }
+  }
+
+  // xyY to XYZ, assuming Y=1.
+  LVecBase3 xyz(x / y, 1, (1 - x - y) / y);
+
+  // Convert XYZ to linearized sRGB.
+  const static LMatrix3 xyz_to_rgb(
+    3.2406255, -0.9689307, 0.0557101,
+    -1.537208, 1.8757561, -0.2040211,
+    -0.4986286, 0.0415175, 1.0569959);
+
+  LColor color(xyz_to_rgb.xform(xyz), 1);
+
+  CDWriter cdata(_cycler);
+  cdata->_color = color;
+  mark_viz_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Light::get_exponent
 //       Access: Public, Virtual
 //  Description: For spotlights, returns the exponent that controls
@@ -175,7 +239,12 @@ fill_viz_geom(GeomNode *) {
 ////////////////////////////////////////////////////////////////////
 void Light::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  manager->write_cdata(dg, _cycler);
+  dg.add_bool(_has_color_temperature);
+  if (_has_color_temperature) {
+    dg.add_stdfloat(_color_temperature);
+  } else {
+    manager->write_cdata(dg, _cycler);
+  }
   dg.add_int32(_priority);
 }
 
@@ -188,6 +257,15 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 void Light::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  manager->read_cdata(scan, _cycler);
+  if (manager->get_file_minor_ver() >= 39) {
+    _has_color_temperature = scan.get_bool();
+  } else {
+    _has_color_temperature = false;
+  }
+  if (_has_color_temperature) {
+    set_color_temperature(scan.get_stdfloat());
+  } else {
+    manager->read_cdata(scan, _cycler);
+  }
   _priority = scan.get_int32();
 }

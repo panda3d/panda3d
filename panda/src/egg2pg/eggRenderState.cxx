@@ -495,6 +495,9 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   // Ok, this is the first time we've seen this particular
   // EggMaterial.  Create a new Material that matches it.
   PT(Material) mat = new Material(egg_mat->get_name());
+  if (egg_mat->has_base()) {
+    mat->set_base_color(egg_mat->get_base());
+  }
   if (egg_mat->has_diff()) {
     mat->set_diffuse(egg_mat->get_diff());
     // By default, ambient is the same as diffuse, if diffuse is
@@ -518,6 +521,9 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   }
   if (egg_mat->has_metallic()) {
     mat->set_metallic(egg_mat->get_metallic());
+  }
+  if (egg_mat->has_ior()) {
+    mat->set_refractive_index(egg_mat->get_ior());
   }
   if (egg_mat->has_local()) {
     mat->set_local(egg_mat->get_local());
