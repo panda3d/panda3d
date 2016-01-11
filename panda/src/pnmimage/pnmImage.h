@@ -236,6 +236,9 @@ PUBLISHED:
   BLOCKING void fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border);
   BLOCKING void fill_distance_outside(const PNMImage &mask, float threshold, int radius);
 
+  void indirect_1d_lookup(const PNMImage &index_image, int channel,
+                          const PNMImage &pixel_values);
+
   void rescale(float min_val, float max_val);
 
   void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
