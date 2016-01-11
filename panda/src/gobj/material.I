@@ -67,7 +67,7 @@ get_default() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::has_base_color
 //       Access: Published
-//  Description: Returns true if the base_color color has been explicitly
+//  Description: Returns true if the base color has been explicitly
 //               set for this material, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Material::
@@ -79,12 +79,16 @@ has_base_color() const {
 //     Function: Material::get_base_color
 //       Access: Published
 //  Description: Returns the base_color color setting, if it has been
-//               set.  Returns (0,0,0,0) if the base_color color has not
-//               been set.
+//               set.  If neither the base color nor the metallic
+//               have been set, this returns the diffuse color.
 ////////////////////////////////////////////////////////////////////
 INLINE const LColor &Material::
 get_base_color() const {
-  return _base_color;
+  if (!has_base_color() && !has_metallic()) {
+    return _diffuse;
+  } else {
+    return _base_color;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
