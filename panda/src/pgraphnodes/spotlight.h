@@ -57,6 +57,7 @@ PUBLISHED:
 
   INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
+  INLINE void clear_specular_color();
   MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
   INLINE const LVecBase3 &get_attenuation() const FINAL;
@@ -79,6 +80,8 @@ private:
   CPT(RenderState) get_viz_state();
 
 private:
+  bool _has_specular_color;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

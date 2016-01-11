@@ -54,6 +54,9 @@ PUBLISHED:
   INLINE bool has_center() const;
   INLINE bool has_contact() const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(center, has_center, get_center, set_center, clear_center);
+
 protected:
   bool _has_contact; // Are we in contact with anything?
 

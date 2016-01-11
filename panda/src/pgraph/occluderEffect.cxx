@@ -169,8 +169,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the on occluders pointers if any
   Occluders::const_iterator nti;
   for (nti = _on_occluders.begin(); nti != _on_occluders.end(); ++nti) {
-    NodePath occluder = (*nti);
-    manager->write_pointer(dg, occluder.node());
+    (*nti).write_datagram(manager, dg);
   }
 }
 
@@ -186,19 +185,32 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderEffect::complete_pointers(p_list, manager);
   AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
-  Occluders::iterator ci;
-  ci = _on_occluders.begin();
-  while (ci != _on_occluders.end()) {
-    PandaNode *node;
-    DCAST_INTO_R(node, p_list[pi++], pi);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < _on_occluders.size(); ++i) {
+      pi += _on_occluders[i].complete_pointers(p_list + pi, manager);
 
-    int ni = areg->find_node(node->get_type(), node->get_name());
-    if (ni != -1) {
-      (*ci) = areg->get_node(ni);
-    } else {
-      (*ci) = NodePath(node);
+      int n = areg->find_node(_on_occluders[i]);
+      if (n != -1) {
+        // If it's in the registry, replace it.
+        _on_occluders[i] = areg->get_node(n);
+      }
     }
-    ++ci;
+
+  } else {
+    Occluders::iterator ci;
+    ci = _on_occluders.begin();
+    while (ci != _on_occluders.end()) {
+      PandaNode *node;
+      DCAST_INTO_R(node, p_list[pi++], pi);
+
+      int ni = areg->find_node(node->get_type(), node->get_name());
+      if (ni != -1) {
+        (*ci) = areg->get_node(ni);
+      } else {
+        (*ci) = NodePath(node);
+      }
+      ++ci;
+    }
   }
   _on_occluders.sort();
 
@@ -250,13 +262,16 @@ make_from_bam(const FactoryParams &params) {
 void OccluderEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
-    
+
   // Push back an empty NodePath for each Occluder for now, until we
   // get the actual list of pointers later in complete_pointers().
   int num_on_occluders = scan.get_uint16();
-  _on_occluders.reserve(num_on_occluders);
-  for (int i = 0; i < num_on_occluders; i++) {
-    manager->read_pointer(scan);
-    _on_occluders.push_back(NodePath());
+  _on_occluders.resize(num_on_occluders);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < num_on_occluders; i++) {
+      _on_occluders[i].fillin(scan, manager);
+    }
+  } else {
+    manager->read_pointers(scan, num_on_occluders);
   }
 }

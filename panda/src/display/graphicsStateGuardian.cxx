@@ -1067,6 +1067,18 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
                   spc[0],spc[1],spc[2],spc[3]);
     return &t;
   }
+  case Shader::SMO_attr_material2: {
+    const MaterialAttrib *target_material = (const MaterialAttrib *)
+      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
+    if (target_material->is_off()) {
+      t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+      return &t;
+    }
+    Material *m = target_material->get_material();
+    t.set_row(0, m->get_base_color());
+    t.set_row(3, LVecBase4(m->get_metallic(), m->get_refractive_index(), 0, m->get_roughness()));
+    return &t;
+  }
   case Shader::SMO_attr_color: {
     const ColorAttrib *target_color = (const ColorAttrib *)
       _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
@@ -1483,6 +1495,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
 const LMatrix4 *GraphicsStateGuardian::
 fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t) {
   // This system is not ideal.  It will be improved in the future.
+  static const CPT_InternalName IN_color("color");
   static const CPT_InternalName IN_ambient("ambient");
   static const CPT_InternalName IN_diffuse("diffuse");
   static const CPT_InternalName IN_specular("specular");
@@ -1498,7 +1511,15 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
   static const CPT_InternalName IN_shadowMatrix("shadowMatrix");
 
-  if (attrib == IN_ambient) {
+  if (attrib == IN_color) {
+    Light *light = np.node()->as_light();
+    nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
+    LColor c = light->get_color();
+    c.componentwise_mult(_light_color_scale);
+    t.set_row(3, c);
+    return &t;
+
+  } else if (attrib == IN_ambient) {
     Light *light = np.node()->as_light();
     nassertr(light != (Light *)NULL, &LMatrix4::ident_mat());
     if (np.node()->is_of_type(AmbientLight::get_class_type())) {

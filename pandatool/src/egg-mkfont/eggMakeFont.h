@@ -78,6 +78,7 @@ private:
   bool _no_native_aa;
   bool _no_palettize;
   int _palette_size[2];
+  bool _generate_distance_field;
 
   double _palettize_scale_factor;
   Filename _input_font_filename;

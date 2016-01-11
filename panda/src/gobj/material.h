@@ -30,6 +30,18 @@ class FactoryParams;
 // Description : Defines the way an object appears in the presence of
 //               lighting.  A material is only necessary if lighting
 //               is to be enabled; otherwise, the material isn't used.
+//
+//               There are two workflows that are supported: the
+//               "classic" workflow of providing separate ambient,
+//               diffuse and specular colors, and the "metalness"
+//               workflow, in which a base color is specified along
+//               with a "metallic" value that indicates whether the
+//               material is a metal or a dielectric.
+//
+//               The size of the specular highlight can be specified
+//               by either specifying the specular exponent (shininess)
+//               or by specifying a roughness value that in perceptually
+//               linear in the range of 0-1.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
@@ -39,6 +51,11 @@ PUBLISHED:
   INLINE ~Material();
 
   INLINE static Material *get_default();
+
+  INLINE bool has_base_color() const;
+  INLINE const LColor &get_base_color() const;
+  void set_base_color(const LColor &color);
+  void clear_base_color();
 
   INLINE bool has_ambient() const;
   INLINE const LColor &get_ambient() const;
@@ -53,7 +70,7 @@ PUBLISHED:
   INLINE bool has_specular() const;
   INLINE const LColor &get_specular() const;
   void set_specular(const LColor &color);
-  INLINE void clear_specular();
+  void clear_specular();
 
   INLINE bool has_emission() const;
   INLINE const LColor &get_emission() const;
@@ -70,7 +87,11 @@ PUBLISHED:
   INLINE bool has_metallic() const;
   INLINE PN_stdfloat get_metallic() const;
   void set_metallic(PN_stdfloat metallic);
-  INLINE void clear_metallic();
+  void clear_metallic();
+
+  INLINE bool has_refractive_index() const;
+  INLINE PN_stdfloat get_refractive_index() const;
+  void set_refractive_index(PN_stdfloat refractive_index);
 
   INLINE bool get_local() const;
   INLINE void set_local(bool local);
@@ -90,6 +111,8 @@ PUBLISHED:
   INLINE void set_attrib_lock();
 
 PUBLISHED:
+  MAKE_PROPERTY2(base_color, has_base_color, get_base_color,
+                             set_base_color, clear_base_color);
   MAKE_PROPERTY2(ambient, has_ambient, get_ambient,
                           set_ambient, clear_ambient);
   MAKE_PROPERTY2(diffuse, has_diffuse, get_diffuse,
@@ -102,11 +125,14 @@ PUBLISHED:
   MAKE_PROPERTY(shininess, get_shininess, set_shininess);
   MAKE_PROPERTY(roughness, get_roughness, set_roughness);
   MAKE_PROPERTY(metallic, get_metallic, set_metallic);
+  MAKE_PROPERTY(refractive_index, get_refractive_index,
+                                  set_refractive_index);
 
   MAKE_PROPERTY(local, get_local, set_local);
   MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
 private:
+  LColor _base_color;
   LColor _ambient;
   LColor _diffuse;
   LColor _specular;
@@ -114,6 +140,7 @@ private:
   PN_stdfloat _shininess;
   PN_stdfloat _roughness;
   PN_stdfloat _metallic;
+  PN_stdfloat _refractive_index;
 
   static PT(Material) _default;
 
@@ -127,6 +154,8 @@ private:
     F_attrib_lock = 0x040,
     F_roughness   = 0x080,
     F_metallic    = 0x100,
+    F_base_color  = 0x200,
+    F_refractive_index = 0x400,
   };
   int _flags;
 

@@ -341,7 +341,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, tex);
+    record->set_data(tex);
     cache->store(record);
   }
 
@@ -473,7 +473,7 @@ ns_load_texture(const Filename &orig_filename,
 
   if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, tex);
+    record->set_data(tex);
     cache->store(record);
   }
 
@@ -585,7 +585,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
 
   if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, tex);
+    record->set_data(tex);
     cache->store(record);
   }
 
@@ -691,7 +691,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
 
   if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, tex);
+    record->set_data(tex);
     cache->store(record);
   }
 
@@ -790,7 +790,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 
   if (store_record && tex->is_cacheable()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, tex);
+    record->set_data(tex);
     cache->store(record);
   }
 
@@ -1166,7 +1166,7 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
                   // from the cache.  To keep the cache current,
                   // rewrite it to the cache now, in its newly
                   // compressed form.
-                  record->set_data(tex, tex);
+                  record->set_data(tex);
                   cache->store(record);
                   compressed_cache_record = true;
                 }

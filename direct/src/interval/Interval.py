@@ -399,7 +399,6 @@ class Interval(DirectObject):
         return (space + self.name + ' dur: %.2f' % self.duration)
 
     open_ended = property(getOpenEnded)
-    loop = property(getLoop, setLoop)
     stopped = property(isStopped)
     t = property(getT, setT)
     play_rate = property(getPlayRate, setPlayRate)

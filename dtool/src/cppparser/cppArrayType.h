@@ -41,6 +41,8 @@ public:
                                 CPPScope *global_scope);
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
   virtual bool is_equivalent(const CPPType &other) const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,

@@ -61,6 +61,10 @@ PUBLISHED:
   bool is_valid() const;
   bool is_concave() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(valid, is_valid);
+  MAKE_PROPERTY(concave, is_concave);
+
 public:
   virtual void xform(const LMatrix4 &mat);
 

@@ -33,9 +33,13 @@ CullBinStateSorted(const string &name, GraphicsStateGuardianBase *gsg,
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinStateSorted::ObjectData::
 ObjectData(CullableObject *object) :
-  _object(object),
-  _format(object->_munged_data->get_format())
+  _object(object)
 {
+  if (object->_munged_data == NULL) {
+    _format = NULL;
+  } else {
+    _format = object->_munged_data->get_format();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

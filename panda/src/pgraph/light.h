@@ -52,6 +52,12 @@ PUBLISHED:
   INLINE void set_color(const LColor &color);
   MAKE_PROPERTY(color, get_color, set_color);
 
+  INLINE bool has_color_temperature() const;
+  INLINE PN_stdfloat get_color_temperature() const;
+  void set_color_temperature(PN_stdfloat temperature);
+  MAKE_PROPERTY(color_temperature, get_color_temperature,
+                                   set_color_temperature);
+
   virtual PN_stdfloat get_exponent() const;
   virtual const LColor &get_specular_color() const;
   virtual const LVecBase3 &get_attenuation() const;
@@ -97,6 +103,11 @@ private:
   // LightAttribs.
   int _priority;
   static UpdateSeq _sort_seq;
+
+  // The color temperature is not cycled either, because we only need
+  // to pass down the computed color anyway.
+  bool _has_color_temperature;
+  PN_stdfloat _color_temperature;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPH CData : public CycleData {

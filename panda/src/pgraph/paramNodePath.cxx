@@ -48,15 +48,7 @@ register_with_read_factory() {
 void ParamNodePath::
 write_datagram(BamWriter *manager, Datagram &dg) {
   ParamValueBase::write_datagram(manager, dg);
-
-  // We can't store a NodePath, so we store a pointer to the
-  // underlying node, and pray that there is an unambiguous path
-  // from the root to it.
-  if (_node_path.is_empty()) {
-    manager->write_pointer(dg, NULL);
-  } else {
-    manager->write_pointer(dg, _node_path.node());
-  }
+  _node_path.write_datagram(manager, dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +61,12 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int ParamNodePath::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = ParamValueBase::complete_pointers(p_list, manager);
-  _node_path = NodePath(DCAST(PandaNode, p_list[pi++]));
+
+  if (manager->get_file_minor_ver() >= 40) {
+    pi += _node_path.complete_pointers(p_list + pi, manager);
+  } else {
+    _node_path = NodePath(DCAST(PandaNode, p_list[pi++]));
+  }
 
   return pi;
 }
@@ -104,5 +101,10 @@ make_from_bam(const FactoryParams &params) {
 void ParamNodePath::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ParamValueBase::fillin(scan, manager);
-  manager->read_pointer(scan);
+
+  if (manager->get_file_minor_ver() >= 40) {
+    _node_path.fillin(scan, manager);
+  } else {
+    manager->read_pointer(scan);
+  }
 }

@@ -20,6 +20,11 @@
 #include "config_util.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "nurbsCurveEvaluator.h"
+#include "nurbsCurveResult.h"
+
+#undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
+#include FT_OUTLINE_H
 
 // This constant determines how big a particular point size font
 // appears to be.  By convention, 10 points is 1 unit (e.g. 1 foot)
@@ -44,6 +49,7 @@ FreetypeFont() {
   _requested_scale_factor = text_scale_factor;
   _scale_factor = text_scale_factor;
   _native_antialias = text_native_antialias;
+  _winding_order = WO_default;
 
   _line_height = 1.0f;
   _space_advance = 0.25f;
@@ -69,6 +75,7 @@ FreetypeFont(const FreetypeFont &copy) :
   _scale_factor(copy._scale_factor),
   _native_antialias(copy._native_antialias),
   _font_pixels_per_unit(copy._font_pixels_per_unit),
+  _winding_order(copy._winding_order),
   _line_height(copy._line_height),
   _space_advance(copy._space_advance),
   _face(copy._face),
@@ -191,6 +198,26 @@ load_font(const char *font_data, int data_length, int face_index) {
 void FreetypeFont::
 unload_font() {
   _face = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::string_winding_order
+//       Access: Public
+//  Description: Returns the WindingOrder value associated with the given
+//               string representation, or WO_invalid if the string
+//               does not match any known WindingOrder value.
+////////////////////////////////////////////////////////////////////
+FreetypeFont::WindingOrder FreetypeFont::
+string_winding_order(const string &string) {
+  if (cmp_nocase_uh(string, "default") == 0) {
+    return WO_default;
+  } else if (cmp_nocase_uh(string, "left") == 0) {
+    return WO_left;
+  } else if (cmp_nocase_uh(string, "right") == 0) {
+    return WO_right;
+  } else {
+    return WO_invalid;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,5 +409,409 @@ reset_scale() {
   _face->release_face(face);
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::render_distance_field
+//       Access: Private
+//  Description: Renders a signed distance field to the PNMImage
+//               based on the contours.
+////////////////////////////////////////////////////////////////////
+void FreetypeFont::
+render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
+  Contours::const_iterator ci;
+
+  PN_stdfloat offset_x = -outline / _tex_pixels_per_unit;
+  PN_stdfloat offset_y = (image.get_y_size() - 1 - outline) / _tex_pixels_per_unit;;
+
+  offset_x += min_x / (64.0f * _font_pixels_per_unit);
+  offset_y += min_y / (64.0f * _font_pixels_per_unit);
+
+  PN_stdfloat scale = _tex_pixels_per_unit / (outline * 2);
+
+  for (int y = 0; y < image.get_y_size(); ++y) {
+    LPoint2 p(0, offset_y - (y / _tex_pixels_per_unit));
+
+    for (int x = 0; x < image.get_x_size(); ++x) {
+      p[0] = offset_x + (x / _tex_pixels_per_unit);
+
+      PN_stdfloat min_dist_sq = 100000000;
+      int winding_number = 0;
+
+      for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
+        // Find the shortest distance between this point and the contour.
+        // Also keep track of the winding number, so we will know whether
+        // this point is inside or outside the polygon.
+        const Contour &contour = (*ci);
+
+        for (size_t i = 1; i < contour._points.size(); ++i) {
+          const LPoint2 &begin = contour._points[i - 1]._p;
+          const LPoint2 &end = contour._points[i]._p;
+          PN_stdfloat radius = contour._points[i]._radius;
+
+          LVector2 v = end - begin;
+          PN_stdfloat length_sq = v.length_squared();
+          PN_stdfloat dist_sq;
+
+          if (length_sq == 0) {
+            dist_sq = (p - begin).length_squared();
+
+          } else if (radius != 0) {
+            // Circular arc approximation.
+            LVector2 v1 = begin - contour._points[i]._center;
+            LVector2 v2 = end - contour._points[i]._center;
+            LVector2 vp = p - contour._points[i]._center;
+            PN_stdfloat dist_to_center = vp.length();
+            vp /= dist_to_center;
+            v1 /= radius;
+            v2 /= radius;
+            PN_stdfloat range = v1.dot(v2);
+            if (vp.dot(v1) > range && vp.dot(v2) > range) {
+              dist_sq = dist_to_center - radius;
+              bool inside = dist_sq < 0;
+              dist_sq *= dist_sq;
+
+              //if (v1[0] * vp[1] - vp[0] * v1[1] < 0 && v2[0] * vp[1] - vp[0] * v2[1] < 0) {
+              //if (v1.signed_angle_deg(vp) < v1.signed_angle_deg(v2) && v1.signed_angle_deg(vp) > 0) {
+              if (begin[1] <= p[1]) {
+                if (end[1] > p[1]) {
+                  if (inside != (v[0] * v1[1] > v[1] * v1[0])) {
+                    ++winding_number;
+                  }
+                }
+              } else {
+                if (end[1] <= p[1]) {
+                  if (inside == (v[0] * v1[1] > v[1] * v1[0])) {
+                    --winding_number;
+                  }
+                }
+              }
+
+            } else {
+              dist_sq = min((p - begin).length_squared(), (p - end).length_squared());
+              if (begin[1] <= p[1]) {
+                if (end[1] > p[1]) {
+                  if ((v[0] * (p[1] - begin[1]) > v[1] * (p[0] - begin[0]))) {
+                    ++winding_number;
+                  }
+                }
+              } else {
+                if (end[1] <= p[1]) {
+                  if ((v[0] * (p[1] - begin[1]) < v[1] * (p[0] - begin[0]))) {
+                    --winding_number;
+                  }
+                }
+              }
+            }
+
+          } else {
+            // Just a straight line.
+            if (begin[1] <= p[1]) {
+              if (end[1] > p[1]) {
+                if ((v[0] * (p[1] - begin[1]) > v[1] * (p[0] - begin[0]))) {
+                  ++winding_number;
+                }
+              }
+            } else {
+              if (end[1] <= p[1]) {
+                if ((v[0] * (p[1] - begin[1]) < v[1] * (p[0] - begin[0]))) {
+                  --winding_number;
+                }
+              }
+            }
+
+            PN_stdfloat t = v.dot(p - begin) / length_sq;
+            if (t <= 0.0) {
+              dist_sq = (p - begin).length_squared();
+            } else if (t >= 1.0) {
+              dist_sq = (p - end).length_squared();
+            } else {
+              dist_sq = (p - (begin + v * t)).length_squared();
+            }
+          }
+
+          min_dist_sq = min(min_dist_sq, dist_sq);
+        }
+      }
+      // Determine the sign based on whether we're inside the contour.
+      int sign = (winding_number != 0) ? 1 : -1;
+
+      PN_stdfloat signed_dist = csqrt(min_dist_sq) * sign;
+      image.set_gray(x, y, signed_dist * scale + (PN_stdfloat)0.5);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::decompose_outline
+//       Access: Protected
+//  Description: Ask FreeType to extract the contours out of the
+//               outline description.
+////////////////////////////////////////////////////////////////////
+void FreetypeFont::
+decompose_outline(FT_Outline &outline) {
+  FT_Outline_Funcs funcs;
+  memset(&funcs, 0, sizeof(funcs));
+  funcs.move_to = (FT_Outline_MoveTo_Func)outline_move_to;
+  funcs.line_to = (FT_Outline_LineTo_Func)outline_line_to;
+  funcs.conic_to = (FT_Outline_ConicTo_Func)outline_conic_to;
+  funcs.cubic_to = (FT_Outline_CubicTo_Func)outline_cubic_to;
+
+  WindingOrder wo = _winding_order;
+  if (wo == WO_default) {
+    // If we weren't told an explicit winding order, ask FreeType to
+    // figure it out.  Sometimes it appears to guess wrong.
+#ifdef FT_ORIENTATION_FILL_RIGHT
+    if (FT_Outline_Get_Orientation(&outline) == FT_ORIENTATION_FILL_RIGHT) {
+      wo = WO_right;
+    } else {
+      wo = WO_left;
+    }
+#else
+    // Hmm.  Assign a right-winding (TTF) orientation if FreeType
+    // can't tell us.
+    wo = WO_right;
+#endif  // FT_ORIENTATION_FILL_RIGHT
+  }
+
+  if (wo != WO_left) {
+    FT_Outline_Reverse(&outline);
+  }
+
+  _contours.clear();
+  FT_Outline_Decompose(&outline, &funcs, (void *)this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::outline_move_to
+//       Access: Private, Static
+//  Description: A callback from FT_Outline_Decompose().  It marks the
+//               beginning of a new contour.
+////////////////////////////////////////////////////////////////////
+int FreetypeFont::
+outline_move_to(const FT_Vector *to, void *user) {
+  FreetypeFont *self = (FreetypeFont *)user;
+
+  // Convert from 26.6 pixel units to Panda units.
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
+
+  if (self->_contours.empty() ||
+      !self->_contours.back()._points.empty()) {
+    self->_contours.push_back(Contour());
+  }
+  self->_q = p;
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::outline_line_to
+//       Access: Private, Static
+//  Description: A callback from FT_Outline_Decompose().  It marks a
+//               straight line in the contour.
+////////////////////////////////////////////////////////////////////
+int FreetypeFont::
+outline_line_to(const FT_Vector *to, void *user) {
+  FreetypeFont *self = (FreetypeFont *)user;
+  nassertr(!self->_contours.empty(), 1);
+
+  // Convert from 26.6 pixel units to Panda units.
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
+
+  // Compute the tangent: this is just the vector from the last point.
+  LVector2 t = (p - self->_q);
+  t.normalize();
+
+  if (self->_contours.back()._points.empty()) {
+    self->_contours.back()._points.push_back(ContourPoint(self->_q, LVector2::zero(), t));
+  } else {
+    self->_contours.back()._points.back().connect_to(t);
+  }
+
+  self->_contours.back()._points.push_back(ContourPoint(p, t, LVector2::zero()));
+  self->_q = p;
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::outline_conic_to
+//       Access: Private, Static
+//  Description: A callback from FT_Outline_Decompose().  It marks a
+//               parabolic (3rd-order) Bezier curve in the contour.
+////////////////////////////////////////////////////////////////////
+int FreetypeFont::
+outline_conic_to(const FT_Vector *control,
+                 const FT_Vector *to, void *user) {
+  FreetypeFont *self = (FreetypeFont *)user;
+  nassertr(!self->_contours.empty(), 1);
+
+  // Convert from 26.6 pixel units to Panda units.
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+
+  LPoint2 c = LPoint2(control->x, control->y) * scale;
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
+
+  // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
+  NurbsCurveEvaluator nce;
+  nce.local_object();
+  nce.set_order(3);
+  nce.reset(3);
+  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
+  nce.set_vertex(1, LVecBase3(c[0], c[1], 0.0f));
+  nce.set_vertex(2, LVecBase3(p[0], p[1], 0.0f));
+
+  self->_q = p;
+
+  PT(NurbsCurveResult) ncr = nce.evaluate();
+  return self->outline_nurbs(ncr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::outline_cubic_to
+//       Access: Private, Static
+//  Description: A callback from FT_Outline_Decompose().  It marks a
+//               cubic (4th-order) Bezier curve in the contour.
+////////////////////////////////////////////////////////////////////
+int FreetypeFont::
+outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
+                 const FT_Vector *to, void *user) {
+  FreetypeFont *self = (FreetypeFont *)user;
+  nassertr(!self->_contours.empty(), 1);
+
+  // Convert from 26.6 pixel units to Panda units.
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+
+  LPoint2 c1 = LPoint2(control1->x, control1->y) * scale;
+  LPoint2 c2 = LPoint2(control2->x, control2->y) * scale;
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
+
+  // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
+  NurbsCurveEvaluator nce;
+  nce.local_object();
+  nce.set_order(4);
+  nce.reset(4);
+  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
+  nce.set_vertex(1, LVecBase3(c1[0], c1[1], 0.0f));
+  nce.set_vertex(2, LVecBase3(c2[0], c2[1], 0.0f));
+  nce.set_vertex(3, LVecBase3(p[0], p[1], 0.0f));
+
+  self->_q = p;
+
+  PT(NurbsCurveResult) ncr = nce.evaluate();
+  return self->outline_nurbs(ncr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::outline_nurbs
+//       Access: Private
+//  Description: Called internally by outline_cubic_to() and
+//               outline_conic_to().
+////////////////////////////////////////////////////////////////////
+int FreetypeFont::
+outline_nurbs(NurbsCurveResult *ncr) {
+  // Sample it down so that the lines approximate the curve to within
+  // a "pixel."
+  ncr->adaptive_sample(1.0f / _font_pixels_per_unit);
+
+  int num_samples = ncr->get_num_samples();
+
+  bool needs_connect = false;
+  int start = 1;
+  if (_contours.back()._points.empty()) {
+    // If we haven't got the first point of this contour yet, we must
+    // add it now.
+    start = 0;
+  } else {
+    needs_connect = true;
+  }
+
+  for (int i = start; i < num_samples; ++i) {
+    PN_stdfloat st = ncr->get_sample_t(i);
+    const LPoint3 &p = ncr->get_sample_point(i);
+
+    PN_stdfloat st0 = st, st1 = st;
+    if (i > 0) {
+      PN_stdfloat last_t = ncr->get_sample_t(i - 1);
+      st0 = ncr->get_sample_t(i - 1) * 0.1f + st * 0.9f;
+    }
+    if (i < num_samples - 1) {
+      st1 = ncr->get_sample_t(i + 1) * 0.1f + st * 0.9f;
+    }
+    // Compute the tangent by deltaing nearby points.  Don't evaluate
+    // the tangent from the NURBS, since that doesn't appear to be
+    // reliable.
+    LPoint3 p0, p1;
+    ncr->eval_point(st0, p0);
+    ncr->eval_point(st1, p1);
+    LVector3 t = p1 - p0;
+    t.normalize();
+
+    if (needs_connect) {
+      _contours.back()._points.back().connect_to(LVector2(t[0], t[1]));
+      needs_connect = false;
+    }
+
+    _contours.back()._points.push_back(ContourPoint(p[0], p[1], t[0], t[1]));
+
+    if (i > 0) {
+      // Approximate the curve using a circular arc.  This is used in the
+      // signed distance field generation code.  We do this by sampling a
+      // point in the middle of the segment and calculating the circle that
+      // goes through the three points.
+      LPoint2 v1 = ncr->get_sample_point(i - 1).get_xy();
+      LPoint3 v2;
+      ncr->eval_point((ncr->get_sample_t(i - 1) + ncr->get_sample_t(i)) / 2, v2);
+      PN_stdfloat temp = v1.length_squared();
+      PN_stdfloat bc = (v2[0]*v2[0] + v2[1]*v2[1] - temp) * (PN_stdfloat)0.5f;
+      PN_stdfloat cd = (temp - p[0]*p[0] - p[1]*p[1]) * (PN_stdfloat)0.5f;
+      PN_stdfloat det = (v2[0]-v1[0])*(v1[1]-p[1])-(v1[0]-p[0])*(v2[1]-v1[1]);
+      if (!IS_NEARLY_ZERO(det)) {
+        LPoint2 center;
+        center[0] = (bc*(v1[1]-p[1])-cd*(v2[1]-v1[1]));
+        center[1] = ((v2[0]-v1[0])*cd-(v1[0]-p[0])*bc);
+        center /= det;
+        _contours.back()._points.back()._center = center;
+        _contours.back()._points.back()._radius = (center - v1).length();
+      }
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::WindingOrder output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, FreetypeFont::WindingOrder wo) {
+  switch (wo) {
+  case FreetypeFont::WO_default:
+    return out << "default";
+  case FreetypeFont::WO_left:
+    return out << "left";
+  case FreetypeFont::WO_right:
+    return out << "right";
+
+  case FreetypeFont::WO_invalid:
+    return out << "invalid";
+  }
+
+  return out << "(**invalid FreetypeFont::WindingOrder(" << (int)wo << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::WindingOrder input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, FreetypeFont::WindingOrder &wo) {
+  string word;
+  in >> word;
+
+  wo = FreetypeFont::string_winding_order(word);
+  return in;
+}
+
 
 #endif  // HAVE_FREETYPE

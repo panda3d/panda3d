@@ -194,6 +194,9 @@ public:
 
     SMO_inv_texmat_i,
 
+    // Additional properties for PBR materials
+    SMO_attr_material2,
+
     SMO_INVALID
   };
 
@@ -272,6 +275,8 @@ public:
     SMP_upper3x3,
     SMP_transpose3x3,
     SMP_cell15,
+    SMP_cell14,
+    SMP_cell13,
   };
 
   enum ShaderStateDep {

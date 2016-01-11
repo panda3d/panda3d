@@ -219,6 +219,8 @@ public:
 
   INLINE void push_back(const VALUE_TYPE &key);
   INLINE void pop_back();
+  INLINE void resize(SIZE_TYPE n);
+  INLINE void resize(SIZE_TYPE n, const VALUE_TYPE &value);
 
 private:
   INLINE ITERATOR nci(CONST_ITERATOR i);

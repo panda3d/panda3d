@@ -52,6 +52,8 @@ public:
   static CPPExpression raw_literal(const string &raw, CPPInstance *lit_op);
 
   static const CPPExpression &get_nullptr();
+  static const CPPExpression &get_default();
+  static const CPPExpression &get_delete();
 
   ~CPPExpression();
 
@@ -124,6 +126,10 @@ public:
     T_trinary_operation,
     T_literal,
     T_raw_literal,
+
+    // These are used when parsing =default and =delete methods.
+    T_default,
+    T_delete,
   };
 
   Type _type;

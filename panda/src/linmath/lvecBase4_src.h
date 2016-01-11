@@ -39,14 +39,10 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase4)();
-  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector);
@@ -58,29 +54,38 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_z();
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_w();
 
-  INLINE_LINMATH ~FLOATNAME(LVecBase4)();
-
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  INLINE_LINMATH static int size();
+  CONSTEXPR static int size();
 
   INLINE_LINMATH bool is_nan() const;
 
   INLINE_LINMATH FLOATTYPE get_cell(int i) const;
+  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+
   INLINE_LINMATH FLOATTYPE get_x() const;
   INLINE_LINMATH FLOATTYPE get_y() const;
   INLINE_LINMATH FLOATTYPE get_z() const;
   INLINE_LINMATH FLOATTYPE get_w() const;
 
-  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+  INLINE_LINMATH FLOATNAME(LVecBase3) get_xyz() const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_xy() const;
+
   INLINE_LINMATH void set_x(FLOATTYPE value);
   INLINE_LINMATH void set_y(FLOATTYPE value);
   INLINE_LINMATH void set_z(FLOATTYPE value);
   INLINE_LINMATH void set_w(FLOATTYPE value);
+
+PUBLISHED:
+  MAKE_PROPERTY(x, get_x, set_x);
+  MAKE_PROPERTY(y, get_y, set_y);
+  MAKE_PROPERTY(z, get_z, set_z);
+  MAKE_PROPERTY(xy, get_xy);
+  MAKE_PROPERTY(xyz, get_xyz);
 
   // These next functions add to an existing value.
   // i.e. foo.set_x(foo.get_x() + value)
@@ -93,7 +98,7 @@ PUBLISHED:
   INLINE_LINMATH void add_w(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
+  CONSTEXPR static int get_num_components();
   INLINE_LINMATH void extract_data(float*){};
 
 public:
@@ -113,6 +118,7 @@ PUBLISHED:
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATTYPE length() const;
   INLINE_LINMATH bool normalize();
+  INLINE_LINMATH FLOATNAME(LVecBase4) normalized() const;
   INLINE_LINMATH FLOATNAME(LVecBase4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 
@@ -223,21 +229,18 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)();
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &operator = (const FLOATNAME(UnalignedLVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
   INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  INLINE_LINMATH static int size();
+  CONSTEXPR static int size();
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
+  CONSTEXPR static int get_num_components();
 
 public:
   typedef FLOATTYPE numeric_type;

@@ -995,6 +995,11 @@ private:
   static PStatCollector _verify_complete_pcollector;
 
 public:
+  void write_datagram(BamWriter *manager, Datagram &dg) const;
+  int complete_pointers(TypedWritable **plist, BamReader *manager);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

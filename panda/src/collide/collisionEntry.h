@@ -97,6 +97,17 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(from, get_from);
+  MAKE_PROPERTY(into, get_into);
+  MAKE_PROPERTY(from_node, get_from_node);
+  MAKE_PROPERTY(into_node, get_into_node);
+  MAKE_PROPERTY(from_node_path, get_from_node_path);
+  MAKE_PROPERTY(into_node_path, get_into_node_path);
+
+  MAKE_PROPERTY(t, get_t, set_t);
+  MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform);
+
 public:
   INLINE CPT(TransformState) get_wrt_space() const;
   INLINE CPT(TransformState) get_inv_wrt_space() const;

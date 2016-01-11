@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Material::
 Material(const string &name) : Namable(name) {
+  _base_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _ambient.set(1.0f, 1.0f, 1.0f, 1.0f);
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
   _specular.set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -27,6 +28,7 @@ Material(const string &name) : Namable(name) {
   _shininess = 0;
   _roughness = 1;
   _metallic = 0;
+  _refractive_index = 1;
   _flags = 0;
 }
 
@@ -63,6 +65,33 @@ get_default() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Material::has_base_color
+//       Access: Published
+//  Description: Returns true if the base color has been explicitly
+//               set for this material, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Material::
+has_base_color() const {
+  return (_flags & F_base_color) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::get_base_color
+//       Access: Published
+//  Description: Returns the base_color color setting, if it has been
+//               set.  If neither the base color nor the metallic
+//               have been set, this returns the diffuse color.
+////////////////////////////////////////////////////////////////////
+INLINE const LColor &Material::
+get_base_color() const {
+  if (!has_base_color() && !has_metallic()) {
+    return _diffuse;
+  } else {
+    return _base_color;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Material::has_ambient
 //       Access: Published
 //  Description: Returns true if the ambient color has been explicitly
@@ -96,7 +125,7 @@ clear_ambient() {
     nassertv(!is_attrib_locked());
   }
   _flags &= ~F_ambient;
-  _ambient.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _ambient = _base_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +162,7 @@ clear_diffuse() {
     nassertv(!is_attrib_locked());
   }
   _flags &= ~F_diffuse;
-  _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _diffuse = _base_color * (1 - _metallic);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,20 +186,6 @@ has_specular() const {
 INLINE const LColor &Material::
 get_specular() const {
   return _specular;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Material::clear_specular
-//       Access: Published
-//  Description: Removes the explicit specular color from the material.
-////////////////////////////////////////////////////////////////////
-INLINE void Material::
-clear_specular() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
-  }
-  _flags &= ~F_specular;
-  _specular.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +236,17 @@ get_shininess() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Material::has_roughness
+//       Access: Published
+//  Description: Returns true if the roughness has been explicitly
+//               set for this material, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Material::
+has_roughness() const {
+  return (_flags & F_roughness) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Material::has_metallic
 //       Access: Published
 //  Description: Returns true if the metallic has been explicitly
@@ -243,28 +269,25 @@ get_metallic() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::clear_metallic
+//     Function: Material::has_refractive_index
 //       Access: Published
-//  Description: Removes the explicit metallic setting from the material.
+//  Description: Returns true if a refractive index has explicitly
+//               been specified for this material.
 ////////////////////////////////////////////////////////////////////
-INLINE void Material::
-clear_metallic() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
-  }
-  _flags &= ~F_metallic;
-  _metallic = 0;
+INLINE bool Material::
+has_refractive_index() const {
+  return (_flags & F_refractive_index) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::has_roughness
+//     Function: Material::get_refractive_index
 //       Access: Published
-//  Description: Returns true if the roughness has been explicitly
-//               set for this material, false otherwise.
+//  Description: Returns the index of refraction, or 1 if none has
+//               been set for this material.
 ////////////////////////////////////////////////////////////////////
-INLINE bool Material::
-has_roughness() const {
-  return (_flags & F_roughness) != 0;
+INLINE PN_stdfloat Material::
+get_refractive_index() const {
+  return _refractive_index;
 }
 
 ////////////////////////////////////////////////////////////////////

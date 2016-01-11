@@ -34,6 +34,9 @@ PUBLISHED:
   INLINE void set_horizontal(bool flag);
   INLINE bool get_horizontal() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(horizontal, get_horizontal, set_horizontal);
+
 protected:
   virtual bool handle_entries();
   virtual void apply_net_shove(

@@ -405,7 +405,7 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_INVALID) {
     return SSD_NONE;
   }
-  if (inp == SMO_attr_material) {
+  if (inp == SMO_attr_material || inp == SMO_attr_material2) {
     dep |= SSD_material;
   }
   if (inp == SMO_attr_color) {

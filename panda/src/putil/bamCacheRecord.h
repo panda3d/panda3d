@@ -72,7 +72,11 @@ PUBLISHED:
   INLINE TypedWritable *get_data() const;
   INLINE bool extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
   INLINE void set_data(TypedWritable *ptr, ReferenceCount *ref_ptr);
+  INLINE void set_data(TypedWritable *ptr);
+  INLINE void set_data(TypedWritableReferenceCount *ptr);
   INLINE void set_data(TypedWritable *ptr, int dummy);
+
+  MAKE_PROPERTY2(data, has_data, get_data, set_data, clear_data);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
