@@ -604,7 +604,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _emission.read_datagram(scan);
 
     if (_flags & F_roughness) {
-      set_roughness(_shininess);
+      set_roughness(scan.get_stdfloat());
     } else {
       _shininess = scan.get_stdfloat();
     }
