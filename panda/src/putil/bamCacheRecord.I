@@ -209,6 +209,28 @@ set_data(TypedWritable *ptr, ReferenceCount *ref_ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::set_data
 //       Access: Published
+//  Description: This variant on set_data() is provided to easily
+//               pass objects deriving from TypedWritable.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCacheRecord::
+set_data(TypedWritable *ptr) {
+  set_data(ptr, ptr->as_reference_count());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::set_data
+//       Access: Published
+//  Description: This variant on set_data() is provided to easily
+//               pass objects deriving from TypedWritableReferenceCount.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCacheRecord::
+set_data(TypedWritableReferenceCount *ptr) {
+  set_data((TypedWritable *)ptr, (ReferenceCount *)ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::set_data
+//       Access: Published
 //  Description: This variant on set_data() is provided just to allow
 //               Python code to pass a 0 as the second parameter.
 ////////////////////////////////////////////////////////////////////

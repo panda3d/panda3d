@@ -6345,6 +6345,10 @@ write_bam_file(const Filename &filename) const {
   bool okflag = false;
 
   if (bam_file.open_write(filename)) {
+    // Tell the BamWriter which node is the root node, for making
+    // NodePaths relative to when writing them out to the file.
+    bam_file.get_writer()->set_root_node(node());
+
     if (bam_file.write_object(node())) {
       okflag = true;
     }
@@ -6368,6 +6372,10 @@ write_bam_stream(ostream &out) const {
   bool okflag = false;
 
   if (bam_file.open_write(out)) {
+    // Tell the BamWriter which node is the root node, for making
+    // NodePaths relative to when writing them out to the file.
+    bam_file.get_writer()->set_root_node(node());
+
     if (bam_file.write_object(node())) {
       okflag = true;
     }
@@ -6433,6 +6441,10 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
     // In this case--no BamWriter--we only write the bottom node.
     num_nodes = 1;
   }
+
+  // Tell the BamWriter which node is the root node, for making
+  // NodePaths relative to when writing them out to the file.
+  writer->set_root_node(node());
 
   // Write an initial Datagram to represent the error type and
   // number of nodes.
@@ -7451,3 +7463,125 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  PandaNode *root = DCAST(PandaNode, manager->get_root_node());
+
+  // We have no root node to measure from.
+  if (root == (PandaNode *)NULL || root == node()) {
+    manager->write_pointer(dg, node());
+    manager->write_pointer(dg, NULL);
+    return;
+  }
+
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  // Record the chain of nodes from the root to this node.
+  pvector<PandaNode *> path;
+  NodePathComponent *comp = _head;
+  while (comp != NULL) {
+    PandaNode *node = comp->get_node();
+    path.push_back(node);
+
+    if (node == root) {
+      break;
+    }
+
+    comp = comp->get_next(pipeline_stage, current_thread);
+  }
+
+  if (comp == (NodePathComponent *)NULL) {
+    // We did not encounter the root node.  Not much we can do.
+    manager->write_pointer(dg, node());
+    manager->write_pointer(dg, NULL);
+    return;
+  }
+
+  // Write out the nodes in reverse order, for fast reconstructing.
+  for (int i = path.size() - 1; i >= 0; --i) {
+    manager->write_pointer(dg, path[i]);
+  }
+  manager->write_pointer(dg, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::complete_pointers
+//       Access: Public
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = 0;
+  PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
+  if (node.is_null()) {
+    // An empty NodePath.
+    _head = (NodePathComponent *)NULL;
+    return pi;
+  }
+
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  // Take an arbitrary path to the root of the NodePath.  This probably
+  // won't be ambiguous, as this is usually the root of the model or scene
+  // we are currently loading.
+  PT(NodePathComponent) comp = node->get_generic_component(false, pipeline_stage, current_thread);
+  nassertd(!comp.is_null()) {
+    while (p_list[pi++]) {}
+    return pi;
+  }
+
+  // Build up the chain of NodePathComponents leading up to this node.
+  while (p_list[pi] != NULL) {
+    PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
+
+    LightReMutexHolder holder(node->_paths_lock);
+
+    // First, walk through the list of NodePathComponents we already
+    // have on the child, looking for one that already exists,
+    // referencing the indicated parent component.
+    PandaNode::Paths::const_iterator it;
+    for (it = node->_paths.begin(); it != node->_paths.end(); ++it) {
+      if ((*it)->get_next(pipeline_stage, current_thread) == comp) {
+        // If we already have such a component, use that.
+        comp = (*it);
+        break;
+      }
+    }
+
+    if (it == node->_paths.end()) {
+      // We don't already have a NodePathComponent referring to this
+      // parent-child relationship.  Create a new one.  Note that we can't
+      // verify that they are actually related because we may not have
+      // completed the node's pointers yet, so we trust that the .bam is right.
+      comp = new NodePathComponent(node, comp, pipeline_stage, current_thread);
+      node->_paths.insert(comp);
+    }
+  }
+  // One more for the final NULL node.
+  ++pi;
+
+  _head = comp;
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  while(manager->read_pointer(scan)) {};
+}

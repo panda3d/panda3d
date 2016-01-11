@@ -960,12 +960,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the off planes pointers if any
   Planes::const_iterator fi;
   for (fi = _off_planes.begin(); fi != _off_planes.end(); ++fi) {
-    NodePath plane = (*fi);
-
-    // Since we can't write out a NodePath, we write out just the
-    // plain PandaNode.  The user can use the AttribNodeRegistry on
-    // re-read if there is any ambiguity that needs to be resolved.
-    manager->write_pointer(dg, plane.node());
+    (*fi).write_datagram(manager, dg);
   }
 
   // write the number of on planes
@@ -973,8 +968,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the on planes pointers if any
   Planes::const_iterator nti;
   for (nti = _on_planes.begin(); nti != _on_planes.end(); ++nti) {
-    NodePath plane = (*nti);
-    manager->write_pointer(dg, plane.node());
+    (*nti).write_datagram(manager, dg);
   }
 }
 
@@ -990,38 +984,62 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
   AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
-  Planes::iterator ci = _off_planes.begin();
-  while (ci != _off_planes.end()) {
-    PandaNode *node;
-    DCAST_INTO_R(node, p_list[pi++], pi);
-    
-    // We go through some effort to look up the node in the registry
-    // without creating a NodePath around it first (which would up,
-    // and then down, the reference count, possibly deleting the
-    // node).
-    int ni = areg->find_node(node->get_type(), node->get_name());
-    if (ni != -1) {
-      (*ci) = areg->get_node(ni);
-    } else {
-      (*ci) = NodePath(node);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < _off_planes.size(); ++i) {
+      pi += _off_planes[i].complete_pointers(p_list + pi, manager);
+
+      int n = areg->find_node(_off_planes[i]);
+      if (n != -1) {
+        // If it's in the registry, replace it.
+        _off_planes[i] = areg->get_node(n);
+      }
     }
-    ++ci;
+
+    for (int i = 0; i < _on_planes.size(); ++i) {
+      pi += _on_planes[i].complete_pointers(p_list + pi, manager);
+
+      int n = areg->find_node(_on_planes[i]);
+      if (n != -1) {
+        // If it's in the registry, replace it.
+        _on_planes[i] = areg->get_node(n);
+      }
+    }
+
+  } else {
+    Planes::iterator ci = _off_planes.begin();
+    while (ci != _off_planes.end()) {
+      PandaNode *node;
+      DCAST_INTO_R(node, p_list[pi++], pi);
+
+      // We go through some effort to look up the node in the registry
+      // without creating a NodePath around it first (which would up,
+      // and then down, the reference count, possibly deleting the
+      // node).
+      int ni = areg->find_node(node->get_type(), node->get_name());
+      if (ni != -1) {
+        (*ci) = areg->get_node(ni);
+      } else {
+        (*ci) = NodePath(node);
+      }
+      ++ci;
+    }
+
+    ci = _on_planes.begin();
+    while (ci != _on_planes.end()) {
+      PandaNode *node;
+      DCAST_INTO_R(node, p_list[pi++], pi);
+
+      int ni = areg->find_node(node->get_type(), node->get_name());
+      if (ni != -1) {
+        (*ci) = areg->get_node(ni);
+      } else {
+        (*ci) = NodePath(node);
+      }
+      ++ci;
+    }
   }
+
   _off_planes.sort();
-
-  ci = _on_planes.begin();
-  while (ci != _on_planes.end()) {
-    PandaNode *node;
-    DCAST_INTO_R(node, p_list[pi++], pi);
-
-    int ni = areg->find_node(node->get_type(), node->get_name());
-    if (ni != -1) {
-      (*ci) = areg->get_node(ni);
-    } else {
-      (*ci) = NodePath(node);
-    }
-    ++ci;
-  }
   _on_planes.sort();
 
   return pi;
@@ -1073,31 +1091,28 @@ void ClipPlaneAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  // We cheat a little bit here.  In the middle of bam version 4.10,
-  // we completely redefined the bam storage definition for
-  // ClipPlaneAttribs, without bothering to up the bam version or even to
-  // attempt to read the old definition.  We get away with this,
-  // knowing that the egg loader doesn't create ClipPlaneAttribs, and
-  // hence no old bam files have the old definition for ClipPlaneAttrib
-  // within them.
-
   _off_all_planes = scan.get_bool();
 
   int num_off_planes = scan.get_uint16();
-    
+
   // Push back an empty NodePath for each off Plane for now, until we
   // get the actual list of pointers later in complete_pointers().
-  _off_planes.reserve(num_off_planes);
-  int i;
-  for (i = 0; i < num_off_planes; i++) {
-    manager->read_pointer(scan);
-    _off_planes.push_back(NodePath());
+  _off_planes.resize(num_off_planes);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < num_off_planes; i++) {
+      _off_planes[i].fillin(scan, manager);
+    }
+  } else {
+    manager->read_pointers(scan, num_off_planes);
   }
-    
+
   int num_on_planes = scan.get_uint16();
-  _on_planes.reserve(num_on_planes);
-  for (i = 0; i < num_on_planes; i++) {
-    manager->read_pointer(scan);
-    _on_planes.push_back(NodePath());
+  _on_planes.resize(num_on_planes);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < num_on_planes; i++) {
+      manager->read_pointer(scan);
+    }
+  } else {
+    manager->read_pointers(scan, num_on_planes);
   }
 }

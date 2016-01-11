@@ -695,6 +695,34 @@ pop_back() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::resize
+//       Access: Public
+//  Description: Resizes the vector to contain n elements.  This
+//               should not be used except to populate the vector
+//               for the first time.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare, class Vector>
+INLINE void ordered_vector<Key, Compare, Vector>::
+resize(SIZE_TYPE n) {
+  TAU_PROFILE("ordered_vector::resize()", " ", TAU_USER);
+  _vector.resize(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::resize
+//       Access: Public
+//  Description: Resizes the vector to contain n elements.  This
+//               should not be used except to populate the vector
+//               for the first time.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare, class Vector>
+INLINE void ordered_vector<Key, Compare, Vector>::
+resize(SIZE_TYPE n, const VALUE_TYPE &value) {
+  TAU_PROFILE("ordered_vector::resize()", " ", TAU_USER);
+  _vector.resize(n, value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::nci
 //       Access: Private
 //  Description: I.e. "non-const iterator".  This function is used to

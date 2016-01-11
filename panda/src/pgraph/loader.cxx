@@ -357,7 +357,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     if (result != (PandaNode *)NULL) {
       if (record != (BamCacheRecord *)NULL) {
         // Store the loaded model in the model cache.
-        record->set_data(result, result);
+        record->set_data(result);
         cache->store(record);
       }
 

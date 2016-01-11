@@ -258,6 +258,12 @@ store(BamCacheRecord *record) {
       writer.set_file_texture_mode(BamWriter::BTM_fullpath);
     }
 
+    // This is necessary for relative NodePaths to work.
+    TypeHandle node_type = type_registry->find_type("PandaNode");
+    if (record->get_data()->is_of_type(node_type)) {
+      writer.set_root_node(record->get_data());
+    }
+
     if (!writer.write_object(record)) {
       util_cat.error()
         << "Unable to write object to " << temp_pathname << "\n";
