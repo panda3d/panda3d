@@ -74,6 +74,12 @@ BamCache() :
               "by the GSG.  This may be set in conjunction with "
               "model-cache-textures, or it may be independent."));
 
+  ConfigVariableBool model_cache_compiled_shaders
+    ("model-cache-compiled-shaders", false,
+     PRC_DESC("If this is set to true, compiled shaders will be cached "
+              "in the model cache, in their binary form as downloaded "
+              "by the GSG."));
+
   ConfigVariableInt model_cache_max_kbytes
     ("model-cache-max-kbytes", 10485760,
      PRC_DESC("This is the maximum size of the model cache, in kilobytes."));
@@ -81,6 +87,7 @@ BamCache() :
   _cache_models = model_cache_models;
   _cache_textures = model_cache_textures;
   _cache_compressed_textures = model_cache_compressed_textures;
+  _cache_compiled_shaders = model_cache_compiled_shaders;
 
   _flush_time = model_cache_flush;
   _max_kbytes = model_cache_max_kbytes;

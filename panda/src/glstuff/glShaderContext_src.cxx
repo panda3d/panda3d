@@ -25,7 +25,7 @@
 #include "fogAttrib.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
-#include "ambientLight.h"
+#include "bamCache.h"
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
@@ -2872,6 +2872,32 @@ glsl_compile_and_link() {
     _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
   }
 
+#ifndef OPENGLES
+  // Do we have a compiled program?  Try to load that.
+  unsigned int format;
+  string binary;
+  if (_shader->get_compiled(format, binary)) {
+    _glgsg->_glProgramBinary(_glsl_program, format, binary.data(), binary.size());
+
+    GLint status;
+    _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
+    if (status == GL_TRUE) {
+      // Hooray, the precompiled shader worked.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Loaded precompiled binary for GLSL shader "
+                      << _shader->get_filename() << "\n";
+      }
+      return true;
+    }
+
+    // Bummer, it didn't work..  Oh well, just recompile the shader.
+    if (GLCAT.is_debug()) {
+      GLCAT.debug() << "Failure loading precompiled binary for GLSL shader "
+                    << _shader->get_filename() << "\n";
+    }
+  }
+#endif
+
   bool valid = true;
 
   if (!_shader->get_text(Shader::ST_vertex).empty()) {
@@ -2936,8 +2962,17 @@ glsl_compile_and_link() {
   }
 
   // If we requested to retrieve the shader, we should indicate that before linking.
-#if !defined(NDEBUG) && !defined(OPENGLES)
-  if (gl_dump_compiled_shaders && _glgsg->_supports_get_program_binary) {
+#ifndef OPENGLES
+  bool retrieve_binary = false;
+  if (_glgsg->_supports_get_program_binary) {
+    retrieve_binary = _shader->get_cache_compiled_shader();
+
+#ifndef NDEBUG
+    if (gl_dump_compiled_shaders) {
+      retrieve_binary = true;
+    }
+#endif
+
     _glgsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
   }
 #endif
@@ -2961,33 +2996,38 @@ glsl_compile_and_link() {
   // Report any warnings.
   glsl_report_program_errors(_glsl_program, false);
 
-  // Dump the binary if requested.
-#if !defined(NDEBUG) && !defined(OPENGLES)
-  if (gl_dump_compiled_shaders && _glgsg->_supports_get_program_binary) {
+#ifndef OPENGLES
+  if (retrieve_binary) {
     GLint length = 0;
     _glgsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
     length += 2;
 
-    char filename[64];
-    static int gl_dump_count = 0;
-    sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
-
-    char *binary = new char[length];
+    char *binary = (char *)alloca(length);
     GLenum format;
-    GLsizei num_bytes;
+    GLsizei num_bytes = 0;
     _glgsg->_glGetProgramBinary(_glsl_program, length, &num_bytes, &format, (void*)binary);
 
-    pofstream s;
-    s.open(filename, ios::out | ios::binary | ios::trunc);
-    s.write(binary, num_bytes);
-    s.close();
+    _shader->set_compiled(format, binary, num_bytes);
 
-    GLCAT.info()
-      << "Dumped " << num_bytes << " bytes of program binary with format 0x"
-      << hex << format << dec << "  to " << filename << "\n";
-    delete[] binary;
-  }
+#ifndef NDEBUG
+    // Dump the binary if requested.
+    if (gl_dump_compiled_shaders) {
+      char filename[64];
+      static int gl_dump_count = 0;
+      sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
+
+      pofstream s;
+      s.open(filename, ios::out | ios::binary | ios::trunc);
+      s.write(binary, num_bytes);
+      s.close();
+
+      GLCAT.info()
+        << "Dumped " << num_bytes << " bytes of program binary with format 0x"
+        << hex << format << dec << "  to " << filename << "\n";
+    }
 #endif  // NDEBUG
+  }
+#endif  // OPENGLES
 
   _glgsg->report_my_gl_errors();
   return true;

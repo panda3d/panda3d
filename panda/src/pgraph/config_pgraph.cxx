@@ -504,7 +504,6 @@ init_libpgraph() {
   ShadeModelAttrib::register_with_read_factory();
   ShaderInput::register_with_read_factory();
   ShaderAttrib::register_with_read_factory();
-  Shader::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TexProjectorEffect::register_with_read_factory();

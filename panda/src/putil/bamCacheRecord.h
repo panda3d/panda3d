@@ -26,6 +26,7 @@ class Datagram;
 class DatagramIterator;
 class FactoryParams;
 class BamCacheRecord;
+class VirtualFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamCacheRecord
@@ -66,6 +67,7 @@ PUBLISHED:
   bool dependents_unchanged() const;
   void clear_dependent_files();
   void add_dependent_file(const Filename &pathname);
+  void add_dependent_file(const VirtualFile *file);
 
   INLINE bool has_data() const;
   INLINE void clear_data();

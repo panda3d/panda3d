@@ -2492,11 +2492,15 @@ reset() {
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
       get_extension_func("glGetProgramBinary");
+    _glProgramBinary = (PFNGLPROGRAMBINARYPROC)
+      get_extension_func("glProgramBinary");
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteri");
 
     GLint num_binary_formats = 0;
-    if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
+    if (_glGetProgramBinary != NULL &&
+        _glProgramBinary != NULL &&
+        _glProgramParameteri != NULL) {
       glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
     }
 

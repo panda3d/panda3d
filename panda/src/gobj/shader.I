@@ -102,49 +102,6 @@ get_error_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::set_shader_utilization
-//       Access: Published, Static
-//  Description: Set this flag to SUT_none, SUT_basic, or
-//               SUT_advanced to limit panda's automatic shader
-//               generation facilities.
-////////////////////////////////////////////////////////////////////
-INLINE void Shader::
-set_shader_utilization(ShaderUtilization sut) {
-  _shader_utilization = sut;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_shader_utilization
-//       Access: Published, Static
-//  Description: This flag returns SUT_none, SUT_basic, or
-//               SUT_advanced and controls the automatic generation
-//               of shaders.  It is initialized from the config
-//               variable of the same name, but it can be
-//               subsequently adjusted.
-////////////////////////////////////////////////////////////////////
-INLINE ShaderUtilization Shader::
-get_shader_utilization() {
-  if (_shader_utilization == SUT_unspecified) {
-    return shader_utilization;
-  } else {
-    return _shader_utilization;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::have_shader_utilization
-//       Access: Published, Static
-//  Description: If true, then get_shader_utilization has been
-//               set using set_shader_utilization.
-//               If false, then get_shader_utilization simply
-//               returns the config variable of the same name.
-////////////////////////////////////////////////////////////////////
-INLINE bool Shader::
-have_shader_utilization() {
-  return (_shader_utilization != SUT_unspecified);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Shader::get_language
 //       Access: Published
 //  Description: Returns the shader language in which this shader
@@ -153,6 +110,58 @@ have_shader_utilization() {
 INLINE Shader::ShaderLanguage Shader::
 get_language() const {
   return _language;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::has_fullpath
+//       Access: Published
+//  Description: Returns true if the fullpath has been set and
+//               is available.  See set_fullpath().
+////////////////////////////////////////////////////////////////////
+INLINE bool Shader::
+has_fullpath() const {
+  return !_fullpath.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_fullpath
+//       Access: Published
+//  Description: Returns the fullpath that has been set.  This is
+//               the full path to the file as it was found along the
+//               model-path.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &Shader::
+get_fullpath() const {
+  return _fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_cache_compiled_shader
+//       Access: Public
+//  Description: Returns the setting of the cache_compiled_shader
+//               flag.  See set_cache_compiled_shader().
+////////////////////////////////////////////////////////////////////
+INLINE bool Shader::
+get_cache_compiled_shader() const {
+  return _cache_compiled_shader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::set_cache_compiled_shader
+//       Access: Public
+//  Description: Sets the cache_compiled_shader flag.  When this is
+//               set, the next time the Shader is loaded on a GSG, it
+//               will automatically extract the compiled shader from
+//               the GSG and save it to the global BamCache.
+//
+//               This is used to store compiled shaders in the
+//               BamCache.  This flag should not be set explicitly; it
+//               is set automatically by the ShaderPool when
+//               model-cache-compiled-shaders is set true.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::
+set_cache_compiled_shader(bool flag) {
+  _cache_compiled_shader = flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -802,6 +811,7 @@ INLINE void Shader::ShaderFile::
 read_datagram(DatagramIterator &scan) {
   short count = scan.get_uint8();
   if (count > 0) {
+    _separate = true;
     if (count-- > 0) _vertex = scan.get_string();
     if (count-- > 0) _fragment = scan.get_string();
     if (count-- > 0) _geometry = scan.get_string();
@@ -812,6 +822,7 @@ read_datagram(DatagramIterator &scan) {
       scan.get_string();
     }
   } else {
+    _separate = false;
     _shared = scan.get_string();
   }
 }
