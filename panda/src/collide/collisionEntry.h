@@ -98,8 +98,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
-  MAKE_PROPERTY(from, get_from);
-  MAKE_PROPERTY(into, get_into);
+  MAKE_PROPERTY(from_solid, get_from);
+  MAKE_PROPERTY(into_solid, get_into);
   MAKE_PROPERTY(from_node, get_from_node);
   MAKE_PROPERTY(into_node, get_into_node);
   MAKE_PROPERTY(from_node_path, get_from_node_path);

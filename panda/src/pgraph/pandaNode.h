@@ -233,12 +233,15 @@ PUBLISHED:
   INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
   INLINE void set_overall_hidden(bool overall_hidden);
+  MAKE_PROPERTY(overall_hidden, is_overall_hidden, set_overall_hidden);
 
   void adjust_draw_mask(DrawMask show_mask,
                         DrawMask hide_mask,
                         DrawMask clear_mask);
   INLINE DrawMask get_draw_control_mask() const;
   INLINE DrawMask get_draw_show_mask() const;
+  MAKE_PROPERTY(draw_control_mask, get_draw_control_mask);
+  MAKE_PROPERTY(draw_show_mask, get_draw_show_mask);
 
   DrawMask get_net_draw_control_mask() const;
   DrawMask get_net_draw_show_mask() const;
@@ -246,6 +249,8 @@ PUBLISHED:
   void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_into_collide_mask() const;
   virtual CollideMask get_legal_collide_mask() const;
+  MAKE_PROPERTY(into_collide_mask, get_into_collide_mask, set_into_collide_mask);
+  MAKE_PROPERTY(legal_collide_mask, get_legal_collide_mask);
 
   CollideMask get_net_collide_mask(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(RenderAttrib) get_off_clip_planes(Thread *current_thread = Thread::get_current_thread()) const;
@@ -273,6 +278,7 @@ PUBLISHED:
   // way the user thinks about nodes and bounding volumes.
   void set_bounds_type(BoundingVolume::BoundsType bounds_type);
   BoundingVolume::BoundsType get_bounds_type() const;
+  MAKE_PROPERTY(bounds_type, get_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
   void set_bound(const BoundingVolume *volume);
@@ -282,13 +288,18 @@ PUBLISHED:
   int get_nested_vertices(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE CPT(BoundingVolume) get_internal_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int get_internal_vertices(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(nested_vertices, get_nested_vertices);
+  MAKE_PROPERTY(internal_bounds, get_internal_bounds);
+  MAKE_PROPERTY(internal_vertices, get_internal_vertices);
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
   void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
   INLINE bool is_bounds_stale() const;
+  MAKE_PROPERTY(bounds_stale, is_bounds_stale);
 
   INLINE void set_final(bool flag);
   INLINE bool is_final(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(final, is_final, set_final);
 
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;

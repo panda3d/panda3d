@@ -78,6 +78,13 @@ PUBLISHED:
   BamReader *get_reader();
   BamWriter *get_writer();
 
+PUBLISHED:
+  MAKE_PROPERTY(file_endian, get_file_endian);
+  MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
+
+  MAKE_PROPERTY(reader, get_reader);
+  MAKE_PROPERTY(writer, get_writer);
+
 private:
   bool continue_open_read(const string &bam_filename, bool report_errors);
   bool continue_open_write(const string &bam_filename, bool report_errors);

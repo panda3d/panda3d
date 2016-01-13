@@ -26,6 +26,8 @@ extern EXPCL_PANDA_PNMIMAGE const unsigned char to_srgb8_table[256];
 extern EXPCL_PANDA_PNMIMAGE const unsigned char to_linear_uchar_table[256];
 extern EXPCL_PANDA_PNMIMAGE const float to_linear_float_table[256];
 
+BEGIN_PUBLISH
+
 EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(unsigned char val);
 EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(float val);
 EXPCL_PANDA_PNMIMAGE INLINE unsigned char decode_sRGB_uchar(unsigned char val);
@@ -35,6 +37,8 @@ EXPCL_PANDA_PNMIMAGE INLINE float encode_sRGB_float(unsigned char val);
 EXPCL_PANDA_PNMIMAGE INLINE float encode_sRGB_float(float val);
 EXPCL_PANDA_PNMIMAGE INLINE unsigned char encode_sRGB_uchar(unsigned char val);
 EXPCL_PANDA_PNMIMAGE INLINE unsigned char encode_sRGB_uchar(float val);
+
+END_PUBLISH
 
 // These functions convert more than one component in one go,
 // which can be faster due to vectorization.

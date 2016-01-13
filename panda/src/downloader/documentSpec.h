@@ -79,6 +79,14 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(url, get_url, set_url);
+  MAKE_PROPERTY2(tag, has_tag, get_tag, set_tag, clear_tag);
+  MAKE_PROPERTY2(date, has_date, get_date, set_date, clear_date);
+
+  MAKE_PROPERTY(request_mode, get_request_mode, set_request_mode);
+  MAKE_PROPERTY(cache_control, get_cache_control, set_cache_control);
+
 private:
   URLSpec _url;
   HTTPEntityTag _tag;
