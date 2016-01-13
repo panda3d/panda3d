@@ -37,13 +37,18 @@ public:
 PUBLISHED:
   INLINE void set_fade_time(PN_stdfloat t);
   INLINE PN_stdfloat get_fade_time() const;
+  MAKE_PROPERTY(fade_time, get_fade_time, set_fade_time);
 
   void set_fade_bin(const string &name, int draw_order);
   INLINE const string &get_fade_bin_name() const;
   INLINE int get_fade_bin_draw_order() const;
+  MAKE_PROPERTY(fade_bin_name, get_fade_bin_name);
+  MAKE_PROPERTY(fade_bin_draw_order, get_fade_bin_draw_order);
 
   void set_fade_state_override(int override);
   INLINE int get_fade_state_override() const;
+  MAKE_PROPERTY(fade_state_override, get_fade_state_override,
+                                     set_fade_state_override);
 
 private:
   CPT(RenderState) get_fade_1_old_state();

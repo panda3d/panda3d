@@ -1134,8 +1134,8 @@ scan_function(CPPInstance *function) {
     return;
   }
 
-  if ((function->_storage_class & CPPInstance::SC_static) != 0) {
-    // The function is static, so can't be exported.
+  if ((function->_storage_class & (CPPInstance::SC_static | CPPInstance::SC_deleted)) != 0) {
+    // The function is static or deleted, so can't be exported.
     return;
   }
 
@@ -1927,14 +1927,16 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   CPPInstance *getter = NULL;
   CPPType *return_type = NULL;
 
-  CPPFunctionGroup *fgroup = make_property->_getter;
+  CPPFunctionGroup *fgroup = make_property->_get_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
-      CPPFunctionType *ftype =
-        function->_type->as_function_type();
-      if (ftype != NULL/* && ftype->_parameters->_parameters.size() == 0*/) {
+      CPPFunctionType *ftype = function->_type->as_function_type();
+
+      // The getter must either take no arguments, or all defaults.
+      if (ftype != NULL && (ftype->_parameters->_parameters.size() == 0 ||
+          ftype->_parameters->_parameters[0]->_initializer != NULL)) {
         getter = function;
         return_type = ftype->_return_type;
 
@@ -1948,6 +1950,29 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
 
     if (getter == NULL || return_type == NULL) {
       cerr << "No instance of getter '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  // Find the "hasser".
+  CPPInstance *hasser = NULL;
+
+  fgroup = make_property->_has_function;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype =
+        function->_type->as_function_type();
+      if (ftype != NULL && TypeManager::is_bool(ftype->_return_type)) {
+        hasser = function;
+        break;
+      }
+    }
+
+    if (hasser == NULL || return_type == NULL) {
+      cerr << "No instance of has-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
     }
@@ -1975,6 +2000,18 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._flags |= InterrogateElement::F_has_getter;
     iproperty._getter = get_function(getter, "", struct_type,
                                      struct_type->get_scope(), 0);
+    if (iproperty._getter == 0) {
+      cerr << "failed " << *getter << "\n";
+    }
+  }
+
+  if (hasser != NULL) {
+    iproperty._flags |= InterrogateElement::F_has_has_function;
+    iproperty._has_function = get_function(hasser, "", struct_type,
+                                           struct_type->get_scope(), 0);
+    if (iproperty._has_function == 0) {
+      cerr << "failed " << *hasser << "\n";
+    }
   }
 
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
@@ -1983,7 +2020,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   // Now look for setters.
-  fgroup = make_property->_setter;
+  fgroup = make_property->_set_function;
   if (fgroup != NULL) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
@@ -1991,6 +2028,25 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       iproperty._flags |= InterrogateElement::F_has_setter;
       iproperty._setter = get_function(function, "", struct_type,
                                        struct_type->get_scope(), 0);
+      if (iproperty._setter == 0) {
+        cerr << "failed " << *function << "\n";
+      }
+      break;
+    }
+  }
+
+  fgroup = make_property->_clear_function;
+  if (fgroup != NULL) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      iproperty._flags |= InterrogateElement::F_has_clear_function;
+      iproperty._clear_function = get_function(function, "", struct_type,
+                                               struct_type->get_scope(), 0);
+      if (iproperty._clear_function == 0) {
+        cerr << "failed " << *function << "\n";
+      }
+      break;
     }
   }
 
@@ -2628,6 +2684,52 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     }
   }
 
+  // See if we need to generate an implicit default constructor.
+  CPPFunctionGroup *constructor = cpptype->get_constructor();
+  if (constructor == (CPPFunctionGroup *)NULL && cpptype->is_default_constructible()) {
+    // Make a default constructor.
+    CPPType *void_type = TypeManager::get_void_type();
+    CPPParameterList *params = new CPPParameterList;
+    CPPFunctionType *ftype = new CPPFunctionType(void_type, params, CPPFunctionType::F_constructor);
+
+    // Now make up an instance for the default constructor.
+    CPPInstance *function = new CPPInstance(ftype, cpptype->get_simple_name());
+    function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
+    function->_vis = V_published;
+
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    if (find(itype._constructors.begin(), itype._constructors.end(),
+             index) == itype._constructors.end()) {
+      itype._constructors.push_back(index);
+    }
+  }
+
+  // See if we need to generate an implicit copy constructor.
+  CPPInstance *copy_constructor = cpptype->get_copy_constructor();
+  if (copy_constructor == (CPPInstance *)NULL &&
+      cpptype->is_copy_constructible()) {
+    // Make an implicit copy constructor.
+    CPPType *const_ref_type = TypeManager::wrap_const_reference(cpptype);
+    CPPInstance *param = new CPPInstance(const_ref_type, NULL);
+
+    CPPType *void_type = TypeManager::get_void_type();
+    CPPParameterList *params = new CPPParameterList;
+    params->_parameters.push_back(param);
+    const int flags = CPPFunctionType::F_constructor | CPPFunctionType::F_copy_constructor;
+    CPPFunctionType *ftype = new CPPFunctionType(void_type, params, flags);
+
+    // Now make up an instance for the copy constructor.
+    CPPInstance *function = new CPPInstance(ftype, cpptype->get_simple_name());
+    function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
+    function->_vis = V_published;
+
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    if (find(itype._constructors.begin(), itype._constructors.end(),
+             index) == itype._constructors.end()) {
+      itype._constructors.push_back(index);
+    }
+  }
+
   if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
     // If we have inherited our virtual destructor from our base
     // class, go ahead and assign the same function index.
@@ -2762,6 +2864,11 @@ define_method(CPPInstance *function, InterrogateType &itype,
 
   if (function->is_template()) {
     // The function is a template function, not a true function.
+    return;
+  }
+
+  if (function->_storage_class & CPPInstance::SC_deleted) {
+    // It was explicitly marked as deleted.
     return;
   }
 

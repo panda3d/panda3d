@@ -60,6 +60,10 @@ public:
     // And this is for methods tagged with __extension, which declares
     // extension methods defined separately from the source code.
     SC_extension    = 0x2000,
+
+    // These are for =default and =delete functions.
+    SC_defaulted    = 0x4000,
+    SC_deleted      = 0x8000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);

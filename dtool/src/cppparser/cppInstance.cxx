@@ -251,12 +251,20 @@ void CPPInstance::
 set_initializer(CPPExpression *initializer) {
   if (_type->as_function_type() != (CPPFunctionType *)NULL) {
     // This is a function declaration.
-    if (initializer == (CPPExpression *)NULL) {
-      _storage_class &= ~SC_pure_virtual;
-    } else {
-      _storage_class |= SC_pure_virtual;
-    }
+    _storage_class &= ~(SC_pure_virtual | SC_defaulted | SC_deleted);
     _initializer = (CPPExpression *)NULL;
+
+    if (initializer != (CPPExpression *)NULL) {
+      if (initializer->_type == CPPExpression::T_integer) { // = 0
+        _storage_class |= SC_pure_virtual;
+
+      } else if (initializer->_type == CPPExpression::T_default) {
+        _storage_class |= SC_defaulted;
+
+      } else if (initializer->_type == CPPExpression::T_delete) {
+        _storage_class |= SC_deleted;
+      }
+    }
   } else {
     _initializer = initializer;
   }
@@ -621,6 +629,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
 
   if (_storage_class & SC_pure_virtual) {
     out << " = 0";
+  }
+  if (_storage_class & SC_defaulted) {
+    out << " = default";
+  }
+  if (_storage_class & SC_deleted) {
+    out << " = delete";
   }
   if (_initializer != NULL) {
     out << " = " << *_initializer;

@@ -78,11 +78,13 @@ class ShowBase(DirectObject.DirectObject):
 
         ## The directory containing the main Python file of this application.
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
+        self.main_dir = self.mainDir
 
         ## This contains the global appRunner instance, as imported from
         ## AppRunnerGlobal.  This will be None if we are not running in the
         ## runtime environment (ie. from a .p3d file).
         self.appRunner = AppRunnerGlobal.appRunner
+        self.app_runner = self.appRunner
 
         #debug running multiplier
         self.debugRunningMultiplier = 4
@@ -215,6 +217,7 @@ class ShowBase(DirectObject.DirectObject):
 
         ## The global graphics engine, ie. GraphicsEngine.getGlobalPtr()
         self.graphicsEngine = GraphicsEngine.getGlobalPtr()
+        self.graphics_engine = self.graphicsEngine
         self.setupRender()
         self.setupRender2d()
         self.setupDataGraph()
@@ -283,6 +286,7 @@ class ShowBase(DirectObject.DirectObject):
         self.bboard = bulletinBoard
         ## The global task manager, as imported from TaskManagerGlobal.
         self.taskMgr = taskMgr
+        self.task_mgr = taskMgr
         ## The global job manager, as imported from JobManagerGlobal.
         self.jobMgr = jobMgr
 
@@ -992,9 +996,9 @@ class ShowBase(DirectObject.DirectObject):
         else:
             # Spawn it after igloop (at the end of each frame)
             self.taskMgr.remove('clientSleep')
-            self.taskMgr.add(self.sleepCycleTask, 'clientSleep', sort = 55)
+            self.taskMgr.add(self.__sleepCycleTask, 'clientSleep', sort = 55)
 
-    def sleepCycleTask(self, task):
+    def __sleepCycleTask(self, task):
         Thread.sleep(self.clientSleep)
         #time.sleep(self.clientSleep)
         return Task.cont
@@ -1785,12 +1789,14 @@ class ShowBase(DirectObject.DirectObject):
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadSfx(self, name):
+        self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadMusic(self, name):
+        self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
         return self.loader.loadMusic(name)
 
     def playSfx(
@@ -2983,6 +2989,74 @@ class ShowBase(DirectObject.DirectObject):
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()
+
+
+    # Snake-case aliases, for people who prefer these.  We're in the process
+    # of migrating everyone to use the snake-case alternatives.
+    make_default_pipe = makeDefaultPipe
+    make_module_pipe = makeModulePipe
+    make_all_pipes = makeAllPipes
+    open_window = openWindow
+    close_window = closeWindow
+    open_default_window = openDefaultWindow
+    open_main_window = openMainWindow
+    set_sleep = setSleep
+    set_frame_rate_meter = setFrameRateMeter
+    set_scene_graph_analyzer_meter = setSceneGraphAnalyzerMeter
+    setup_window_controls = setupWindowControls
+    setup_render = setupRender
+    setup_render2d = setupRender2d
+    setup_render2dp = setupRender2dp
+    set_aspect_ratio = setAspectRatio
+    get_aspect_ratio = getAspectRatio
+    get_size = getSize
+    make_camera = makeCamera
+    make_camera2d = makeCamera2d
+    make_camera2dp = makeCamera2dp
+    setup_data_graph = setupDataGraph
+    setup_mouse = setupMouse
+    setup_mouse_cb = setupMouseCB
+    enable_software_mouse_pointer = enableSoftwareMousePointer
+    add_angular_integrator = addAngularIntegrator
+    enable_particles = enableParticles
+    disable_particles = disableParticles
+    toggle_particles = toggleParticles
+    create_stats = createStats
+    add_sfx_manager = addSfxManager
+    enable_music = enableMusic
+    enable_sound_effects = enableSoundEffects
+    disable_all_audio = disableAllAudio
+    enable_all_audio = enableAllAudio
+    init_shadow_trav = initShadowTrav
+    get_background_color = getBackgroundColor
+    set_background_color = setBackgroundColor
+    toggle_backface = toggleBackface
+    backface_culling_on = backfaceCullingOn
+    backface_culling_off = backfaceCullingOff
+    toggle_texture = toggleTexture
+    texture_on = textureOn
+    texture_off = textureOff
+    toggle_wireframe = toggleWireframe
+    wireframe_on = wireframeOn
+    wireframe_off = wireframeOff
+    disable_mouse = disableMouse
+    enable_mouse = enableMouse
+    silence_input = silenceInput
+    revive_input = reviveInput
+    set_mouse_on_node = setMouseOnNode
+    change_mouse_interface = changeMouseInterface
+    use_drive = useDrive
+    use_trackball = useTrackball
+    toggle_tex_mem = toggleTexMem
+    toggle_show_vertices = toggleShowVertices
+    oobe_cull = oobeCull
+    show_camera_frustum = showCameraFrustum
+    remove_camera_frustum = removeCameraFrustum
+    save_cube_map = saveCubeMap
+    save_sphere_map = saveSphereMap
+    start_wx = startWx
+    start_tk = startTk
+    start_direct = startDirect
 
 
 # A class to encapsulate information necessary for multiwindow support.

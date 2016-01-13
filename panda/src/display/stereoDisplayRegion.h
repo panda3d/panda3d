@@ -68,6 +68,8 @@ PUBLISHED:
 
   INLINE DisplayRegion *get_left_eye();
   INLINE DisplayRegion *get_right_eye();
+  MAKE_PROPERTY(left_eye, get_left_eye);
+  MAKE_PROPERTY(right_eye, get_right_eye);
 
 private:
   PT(DisplayRegion) _left_eye;

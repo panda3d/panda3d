@@ -81,7 +81,8 @@ PUBLISHED:
   INLINE void transform_point(LPoint3d &point, Thread *current_thread) const;
   INLINE void transform_vector(LVector3d &point, Thread *current_thread) const;
 
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(modified, get_modified);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;

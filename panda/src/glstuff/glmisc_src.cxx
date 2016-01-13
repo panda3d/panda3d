@@ -276,6 +276,10 @@ ConfigVariableBool gl_vertex_array_objects
             "and vertex-buffers are both set.  This should usually be "
             "true unless you suspect a bug in the implementation. "));
 
+ConfigVariableBool gl_fixed_vertex_attrib_locations
+  ("gl-fixed-vertex-attrib-locations", false,
+   PRC_DESC("Experimental feature."));
+
 ConfigVariableBool gl_support_primitive_restart_index
   ("gl-support-primitive-restart-index", true,
    PRC_DESC("Setting this causes Panda to make use of primitive "

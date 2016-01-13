@@ -45,7 +45,9 @@ CData(const Light::CData &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE Light::
 Light() :
-  _priority(0)
+  _priority(0),
+  _has_color_temperature(true),
+  _color_temperature(6500)
 {
 }
 
@@ -57,6 +59,8 @@ Light() :
 INLINE Light::
 Light(const Light &copy) :
   _priority(copy._priority),
+  _has_color_temperature(copy._has_color_temperature),
+  _color_temperature(copy._color_temperature),
   _cycler(copy._cycler)
 {
 }
@@ -81,7 +85,32 @@ INLINE void Light::
 set_color(const LColor &color) {
   CDWriter cdata(_cycler);
   cdata->_color = color;
+  _has_color_temperature = false;
   mark_viz_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::has_color_temperature
+//       Access: Published
+//  Description: Returns true if the color was specified as a
+//               temperature in kelvins, and get_color_temperature
+//               is defined.
+////////////////////////////////////////////////////////////////////
+INLINE bool Light::
+has_color_temperature() const {
+  return _has_color_temperature;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_color_temperature
+//       Access: Published
+//  Description: Returns the basic color temperature of the light,
+//               assuming has_color_temperature() returns true.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Light::
+get_color_temperature() const {
+  nassertr(_has_color_temperature, _color_temperature);
+  return _color_temperature;
 }
 
 ////////////////////////////////////////////////////////////////////

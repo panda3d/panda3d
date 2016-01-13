@@ -190,6 +190,11 @@ is_trivial() const {
         return false;
       }
 
+      // The following checks don't apply for defaulted functions.
+      if (inst->_storage_class & CPPInstance::SC_defaulted) {
+        continue;
+      }
+
       assert(inst->_type != (CPPType *)NULL);
       CPPFunctionType *ftype = inst->_type->as_function_type();
       assert(ftype != (CPPFunctionType *)NULL);
@@ -197,7 +202,8 @@ is_trivial() const {
       if (ftype->_flags & (CPPFunctionType::F_destructor |
                            CPPFunctionType::F_move_constructor |
                            CPPFunctionType::F_copy_constructor)) {
-        // User-provided destructors and copy/move constructors are not trivial.
+        // User-provided destructors and copy/move constructors are not
+        // trivial unless they are defaulted (and not virtual).
         return false;
       }
 
@@ -224,6 +230,193 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPStructType::
+is_default_constructible() const {
+  return is_default_constructible(V_public);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPStructType::
+is_copy_constructible() const {
+  return is_copy_constructible(V_public);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::is_default_constructible
+//       Access: Public
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPStructType::
+is_default_constructible(CPPVisibility min_vis) const {
+  CPPInstance *constructor = get_default_constructor();
+  if (constructor != (CPPInstance *)NULL) {
+    // It has a default constructor.
+    if (constructor->_vis > min_vis) {
+      // Inaccessible default constructor.
+      return false;
+    }
+
+    if (constructor->_storage_class & CPPInstance::SC_deleted) {
+      // Deleted default constructor.
+      return false;
+    }
+
+    return true;
+  }
+
+  // Does it have constructors at all?  If so, no implicit one is generated.
+  if (get_constructor() != (CPPFunctionGroup *)NULL) {
+    return false;
+  }
+
+  // Implicit default constructor.  Check if the implicit default
+  // constructor is deleted.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL) {
+      if (!base->is_default_constructible(V_protected)) {
+        return false;
+      }
+    }
+  }
+
+  // Make sure all members are default-constructible or have default values.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    if (instance->_initializer != (CPPExpression *)NULL) {
+      // It has a default value.
+      continue;
+    }
+
+    if (!instance->_type->is_default_constructible()) {
+      return false;
+    }
+  }
+
+  // Check that we don't have pure virtual methods.
+  CPPScope::Functions::const_iterator fi;
+  for (fi = _scope->_functions.begin();
+       fi != _scope->_functions.end();
+       ++fi) {
+    CPPFunctionGroup *fgroup = (*fi).second;
+    CPPFunctionGroup::Instances::const_iterator ii;
+    for (ii = fgroup->_instances.begin();
+         ii != fgroup->_instances.end();
+         ++ii) {
+      CPPInstance *inst = (*ii);
+      if (inst->_storage_class & CPPInstance::SC_pure_virtual) {
+        // Here's a pure virtual function.
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::is_copy_constructible
+//       Access: Public
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPStructType::
+is_copy_constructible(CPPVisibility min_vis) const {
+  CPPInstance *constructor = get_copy_constructor();
+  if (constructor != (CPPInstance *)NULL) {
+    // It has a copy constructor.
+    if (constructor->_vis > min_vis) {
+      // Inaccessible copy constructor.
+      return false;
+    }
+
+    if (constructor->_storage_class & CPPInstance::SC_deleted) {
+      // Deleted copy constructor.
+      return false;
+    }
+
+    return true;
+  }
+
+  CPPInstance *destructor = get_destructor();
+  if (destructor != (CPPInstance *)NULL) {
+    if (destructor->_vis > min_vis) {
+      // Inaccessible destructor.
+      return false;
+    }
+
+    if (destructor->_storage_class & CPPInstance::SC_deleted) {
+      // Deleted destructor.
+      return false;
+    }
+  }
+
+  // Implicit copy constructor.  Check if the implicit copy
+  // constructor is deleted.
+  Derivation::const_iterator di;
+  for (di = _derivation.begin(); di != _derivation.end(); ++di) {
+    CPPStructType *base = (*di)._base->as_struct_type();
+    if (base != NULL) {
+      if (!base->is_copy_constructible(V_protected)) {
+        return false;
+      }
+    }
+  }
+
+  // Make sure all members are copy-constructible.
+  CPPScope::Variables::const_iterator vi;
+  for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
+    CPPInstance *instance = (*vi).second;
+    assert(instance != NULL);
+
+    if (instance->_storage_class & CPPInstance::SC_static) {
+      // Static members don't count.
+      continue;
+    }
+
+    if (!instance->_type->is_copy_constructible()) {
+      return false;
+    }
+  }
+
+  // Check that we don't have pure virtual methods.
+  CPPScope::Functions::const_iterator fi;
+  for (fi = _scope->_functions.begin();
+       fi != _scope->_functions.end();
+       ++fi) {
+    CPPFunctionGroup *fgroup = (*fi).second;
+    CPPFunctionGroup::Instances::const_iterator ii;
+    for (ii = fgroup->_instances.begin();
+         ii != fgroup->_instances.end();
+         ++ii) {
+      CPPInstance *inst = (*ii);
+      if (inst->_storage_class & CPPInstance::SC_pure_virtual) {
+        // Here's a pure virtual function.
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::check_virtual
 //       Access: Public
 //  Description: Ensures all functions are correctly marked with the
@@ -244,7 +437,7 @@ is_trivial() const {
 //               virtual function pointer), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CPPStructType::
-check_virtual() {
+check_virtual() const {
   VFunctions funcs;
   get_virtual_funcs(funcs);
   return !funcs.empty();
@@ -285,9 +478,7 @@ is_incomplete() const {
 ////////////////////////////////////////////////////////////////////
 CPPFunctionGroup *CPPStructType::
 get_constructor() const {
-  // Iterate through all the functions that begin with '~' until we
-  // find one that claims to be a destructor.  In theory, there should
-  // only be one such function.
+  // Just look for the function with the same name as the class.
   CPPScope::Functions::const_iterator fi;
   fi = _scope->_functions.find(get_simple_name());
   if (fi != _scope->_functions.end()) {
@@ -295,6 +486,101 @@ get_constructor() const {
   } else {
     return (CPPFunctionGroup *)NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::get_default_constructor
+//       Access: Public
+//  Description: Returns the default constructor defined for the
+//               struct type, or NULL if there is none.
+////////////////////////////////////////////////////////////////////
+CPPInstance *CPPStructType::
+get_default_constructor() const {
+  CPPFunctionGroup *fgroup = get_constructor();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    return (CPPInstance *)NULL;
+  }
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = fgroup->_instances.begin();
+       ii != fgroup->_instances.end();
+       ++ii) {
+    CPPInstance *inst = (*ii);
+    assert(inst->_type != (CPPType *)NULL);
+
+    CPPFunctionType *ftype = inst->_type->as_function_type();
+    assert(ftype != (CPPFunctionType *)NULL);
+
+    if (ftype->_parameters->_parameters.size() == 0 ||
+        ftype->_parameters->_parameters.front()->_initializer != NULL) {
+      // It takes 0 parameters (or all parameters have default values).
+      return inst;
+    }
+  }
+
+  return (CPPInstance *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::get_copy_constructor
+//       Access: Public
+//  Description: Returns the copy constructor defined for the struct
+//               type, or NULL if no copy constructor exists.
+////////////////////////////////////////////////////////////////////
+CPPInstance *CPPStructType::
+get_copy_constructor() const {
+  CPPFunctionGroup *fgroup = get_constructor();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    return (CPPInstance *)NULL;
+  }
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = fgroup->_instances.begin();
+       ii != fgroup->_instances.end();
+       ++ii) {
+    CPPInstance *inst = (*ii);
+    assert(inst->_type != (CPPType *)NULL);
+
+    CPPFunctionType *ftype = inst->_type->as_function_type();
+    assert(ftype != (CPPFunctionType *)NULL);
+
+    if ((ftype->_flags & CPPFunctionType::F_copy_constructor) != 0) {
+      return inst;
+    }
+  }
+
+  return (CPPInstance *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPStructType::get_move_constructor
+//       Access: Public
+//  Description: Returns the move constructor defined for the struct
+//               type, or NULL if no move constructor exists.
+////////////////////////////////////////////////////////////////////
+CPPInstance *CPPStructType::
+get_move_constructor() const {
+  CPPFunctionGroup *fgroup = get_constructor();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    return (CPPInstance *)NULL;
+  }
+
+  CPPFunctionGroup::Instances::const_iterator ii;
+  for (ii = fgroup->_instances.begin();
+       ii != fgroup->_instances.end();
+       ++ii) {
+    CPPInstance *inst = (*ii);
+    assert(inst->_type != (CPPType *)NULL);
+
+    CPPFunctionType *ftype = inst->_type->as_function_type();
+    assert(ftype != (CPPFunctionType *)NULL);
+
+    if ((ftype->_flags & CPPFunctionType::F_move_constructor) != 0) {
+      return inst;
+    }
+  }
+
+  return (CPPInstance *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -584,7 +870,10 @@ get_virtual_funcs(VFunctions &funcs) const {
     CPPFunctionType *base_ftype = inst->_type->as_function_type();
     assert(base_ftype != (CPPFunctionType *)NULL);
 
-    if ((base_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
+    if (inst->_storage_class & CPPInstance::SC_deleted) {
+      // Ignore deleted functions.
+
+    } else if ((base_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
       // Match destructor-for-destructor; don't try to match
       // destructors up by name.
       CPPInstance *destructor = get_destructor();
@@ -646,7 +935,8 @@ get_virtual_funcs(VFunctions &funcs) const {
          ii != fgroup->_instances.end();
          ++ii) {
       CPPInstance *inst = (*ii);
-      if ((inst->_storage_class & CPPInstance::SC_virtual) != 0) {
+      if ((inst->_storage_class & CPPInstance::SC_virtual) != 0 &&
+          (inst->_storage_class & CPPInstance::SC_deleted) == 0) {
         // Here's a virtual function.
         funcs.push_back(inst);
       }

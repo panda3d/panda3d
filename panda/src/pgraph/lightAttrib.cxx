@@ -990,12 +990,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the off lights pointers if any
   Lights::const_iterator fi;
   for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
-    NodePath light = (*fi);
-
-    // Since we can't write out a NodePath, we write out just the
-    // plain PandaNode.  The user can use the AttribNodeRegistry on
-    // re-read if there is any ambiguity that needs to be resolved.
-    manager->write_pointer(dg, light.node());
+    (*fi).write_datagram(manager, dg);
   }
 
   // write the number of on lights
@@ -1003,8 +998,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the on lights pointers if any
   Lights::const_iterator nti;
   for (nti = _on_lights.begin(); nti != _on_lights.end(); ++nti) {
-    NodePath light = (*nti);
-    manager->write_pointer(dg, light.node());
+    (*nti).write_datagram(manager, dg);
   }
 }
 
@@ -1019,22 +1013,33 @@ int LightAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
-  BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-  nassertr(aux != NULL, pi);
+  if (manager->get_file_minor_ver() >= 40) {
+    for (int i = 0; i < _off_lights.size(); ++i) {
+      pi += _off_lights[i].complete_pointers(p_list + pi, manager);
+    }
 
-  int i;
-  aux->_off_list.reserve(aux->_num_off_lights);
-  for (i = 0; i < aux->_num_off_lights; ++i) {
-    PandaNode *node;
-    DCAST_INTO_R(node, p_list[pi++], pi);
-    aux->_off_list.push_back(node);
-  }
+    for (int i = 0; i < _on_lights.size(); ++i) {
+      pi += _on_lights[i].complete_pointers(p_list + pi, manager);
+    }
 
-  aux->_on_list.reserve(aux->_num_on_lights);
-  for (i = 0; i < aux->_num_on_lights; ++i) {
-    PandaNode *node;
-    DCAST_INTO_R(node, p_list[pi++], pi);
-    aux->_on_list.push_back(node);
+  } else {
+    BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
+    nassertr(aux != NULL, pi);
+
+    int i;
+    aux->_off_list.reserve(aux->_num_off_lights);
+    for (i = 0; i < aux->_num_off_lights; ++i) {
+      PandaNode *node;
+      DCAST_INTO_R(node, p_list[pi++], pi);
+      aux->_off_list.push_back(node);
+    }
+
+    aux->_on_list.reserve(aux->_num_on_lights);
+    for (i = 0; i < aux->_num_on_lights; ++i) {
+      PandaNode *node;
+      DCAST_INTO_R(node, p_list[pi++], pi);
+      aux->_on_list.push_back(node);
+    }
   }
 
   return pi;
@@ -1049,43 +1054,68 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void LightAttrib::
 finalize(BamReader *manager) {
-  // Now it's safe to convert our saved PandaNodes into NodePaths.
-  BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-  nassertv(aux != NULL);
-  nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
-  nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
+  if (manager->get_file_minor_ver() >= 40) {
+    AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
-  AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
+    // Check if any of the nodes we loaded are mentioned in the
+    // AttribNodeRegistry.  If so, replace them.
+    for (int i = 0; i < _off_lights.size(); ++i) {
+      int n = areg->find_node(_off_lights[i]);
+      if (n != -1) {
+        // If it's in the registry, replace it.
+        _off_lights[i] = areg->get_node(n);
+      }
+    }
 
-  _off_lights.reserve(aux->_off_list.size());
-  NodeList::iterator ni;
-  for (ni = aux->_off_list.begin(); ni != aux->_off_list.end(); ++ni) {
-    PandaNode *node = (*ni);
-    int n = areg->find_node(node->get_type(), node->get_name());
-    if (n != -1) {
-      // If it's in the registry, add that NodePath.
-      _off_lights.push_back(areg->get_node(n));
-    } else {
-      // Otherwise, add any arbitrary NodePath.  Complain if it's
-      // ambiguous.
-      _off_lights.push_back(NodePath(node));
+    for (int i = 0; i < _on_lights.size(); ++i) {
+      int n = areg->find_node(_on_lights[i]);
+      if (n != -1) {
+        // If it's in the registry, replace it.
+        _on_lights[i] = areg->get_node(n);
+      }
+    }
+
+  } else {
+    // Now it's safe to convert our saved PandaNodes into NodePaths.
+    BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
+    nassertv(aux != NULL);
+    nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
+    nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
+
+    AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
+
+    _off_lights.reserve(aux->_off_list.size());
+    NodeList::iterator ni;
+    for (ni = aux->_off_list.begin(); ni != aux->_off_list.end(); ++ni) {
+      PandaNode *node = (*ni);
+      int n = areg->find_node(node->get_type(), node->get_name());
+      if (n != -1) {
+        // If it's in the registry, add that NodePath.
+        _off_lights.push_back(areg->get_node(n));
+      } else {
+        // Otherwise, add any arbitrary NodePath.  Complain if it's
+        // ambiguous.
+        _off_lights.push_back(NodePath(node));
+      }
+    }
+
+    _on_lights.reserve(aux->_on_list.size());
+    for (ni = aux->_on_list.begin(); ni != aux->_on_list.end(); ++ni) {
+      PandaNode *node = (*ni);
+      int n = areg->find_node(node->get_type(), node->get_name());
+      if (n != -1) {
+        // If it's in the registry, add that NodePath.
+        _on_lights.push_back(areg->get_node(n));
+      } else {
+        // Otherwise, add any arbitrary NodePath.  Complain if it's
+        // ambiguous.
+        _on_lights.push_back(NodePath(node));
+      }
     }
   }
+
+  // Now that the NodePaths have been filled in, we can sort the list.
   _off_lights.sort();
-
-  _on_lights.reserve(aux->_on_list.size());
-  for (ni = aux->_on_list.begin(); ni != aux->_on_list.end(); ++ni) {
-    PandaNode *node = (*ni);
-    int n = areg->find_node(node->get_type(), node->get_name());
-    if (n != -1) {
-      // If it's in the registry, add that NodePath.
-      _on_lights.push_back(areg->get_node(n));
-    } else {
-      // Otherwise, add any arbitrary NodePath.  Complain if it's
-      // ambiguous.
-      _on_lights.push_back(NodePath(node));
-    }
-  }
   _on_lights.sort();
 }
 
@@ -1124,12 +1154,24 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _off_all_lights = scan.get_bool();
 
-  BamAuxData *aux = new BamAuxData;
-  manager->set_aux_data(this, "lights", aux);
+  if (manager->get_file_minor_ver() >= 40) {
+    _off_lights.resize(scan.get_uint16());
+    for (int i = 0; i < _off_lights.size(); ++i) {
+      _off_lights[i].fillin(scan, manager);
+    }
 
-  aux->_num_off_lights = scan.get_uint16();
-  manager->read_pointers(scan, aux->_num_off_lights);
-    
-  aux->_num_on_lights = scan.get_uint16();
-  manager->read_pointers(scan, aux->_num_on_lights);
+    _on_lights.resize(scan.get_uint16());
+    for (int i = 0; i < _on_lights.size(); ++i) {
+      _on_lights[i].fillin(scan, manager);
+    }
+  } else {
+    BamAuxData *aux = new BamAuxData;
+    manager->set_aux_data(this, "lights", aux);
+
+    aux->_num_off_lights = scan.get_uint16();
+    manager->read_pointers(scan, aux->_num_off_lights);
+
+    aux->_num_on_lights = scan.get_uint16();
+    manager->read_pointers(scan, aux->_num_on_lights);
+  }
 }

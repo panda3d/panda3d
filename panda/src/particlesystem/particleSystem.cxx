@@ -247,6 +247,12 @@ spawn_child_system(BaseParticle *bp) {
     return;
   }
 
+  if (_spawn_templates.size() == 0) {
+    physics_cat.error() << "ParticleSystem::spawn_child_system: "
+                        << "no spawn templates present." << endl;
+    return;
+  }
+
   NodePath physical_np = get_physical_node_path();
   NodePath parent_np = physical_np.get_parent();
 

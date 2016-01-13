@@ -50,26 +50,29 @@ public:
   virtual PStatCollector &get_test_pcollector();
 
   virtual void output(ostream &out) const;
-  
-  virtual LPoint3 get_approx_center() const;
-  virtual LPoint3 get_min() const;
-  virtual LPoint3 get_max() const;
 
   INLINE static void flush_level();
   void setup_box();
 
 PUBLISHED:
-  INLINE_MATHUTIL int get_num_points() const;
-  INLINE_MATHUTIL LPoint3 get_point_aabb(int n) const;
-  INLINE_MATHUTIL LPoint3 get_point(int n) const;
-  INLINE_MATHUTIL int get_num_planes() const;
-  INLINE_MATHUTIL LPlane set_plane(int n) const;
-  INLINE_MATHUTIL LPlane get_plane(int n) const;
+  INLINE int get_num_points() const;
+  INLINE LPoint3 get_point_aabb(int n) const;
+  INLINE LPoint3 get_point(int n) const;
+  INLINE int get_num_planes() const;
+  INLINE LPlane set_plane(int n) const;
+  INLINE LPlane get_plane(int n) const;
   INLINE void set_center(const LPoint3 &center);
   INLINE void set_center(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   INLINE const LPoint3 &get_center() const;
+  INLINE const LPoint3 &get_min() const;
+  INLINE const LPoint3 &get_max() const;
   INLINE LVector3 get_dimensions() const;
-  INLINE PN_stdfloat get_radius() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(center, get_center);
+  MAKE_PROPERTY(min, get_min);
+  MAKE_PROPERTY(max, get_max);
+  MAKE_PROPERTY(dimensions, get_dimensions);
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;

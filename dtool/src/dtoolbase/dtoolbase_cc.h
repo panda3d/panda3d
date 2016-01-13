@@ -39,6 +39,7 @@ using namespace std;
 #define FINAL
 #define OVERRIDE
 #define MOVE(x) x
+#define DEFAULT_CTOR = default
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -136,59 +137,83 @@ typedef ios::seekdir ios_seekdir;
 #if defined(__has_extension) // Clang magic.
 #  if __has_extension(cxx_constexpr)
 #    define CONSTEXPR constexpr
-#  else
-#    define CONSTEXPR INLINE
 #  endif
 #  if __has_extension(cxx_noexcept)
 #    define NOEXCEPT noexcept
-#  else
-#    define NOEXCEPT
 #  endif
 #  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
 #    define USE_MOVE_SEMANTICS
 #    define MOVE(x) move(x)
-#  else
-#    define MOVE(x) x
 #  endif
 #  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
 #    define FINAL final
 #    define OVERRIDE override
-#  else
-#    define FINAL
-#    define OVERRIDE
 #  endif
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
-// noexcept was introduced in GCC 4.6, constexpr in GCC 4.7, rvalue refs in
-// GCC 4.3.  However, GCC only started defining __cplusplus properly in 4.7.
+#  if __has_extension(cxx_defaulted_functions)
+#     define DEFAULT_CTOR = default
+#  endif
+#elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
+
+// GCC defines several macros which we can query.
+// List of all supported builtin macros: https://gcc.gnu.org/projects/cxx0x.html
+#  if __cpp_constexpr >= 200704
+#    define CONSTEXPR constexpr
+#  endif
+
+// Starting at GCC 4.4
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+#  define DEFAULT_CTOR = default
+#  endif
+
+// Starting at GCC 4.6
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    define NOEXCEPT noexcept
+#    define USE_MOVE_SEMANTICS
+#    define FINAL final
+#    define MOVE(x) move(x)
+#  endif
+
+// Starting at GCC 4.7
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#    define OVERRIDE override
+#  endif
+
+#elif defined(_MSC_VER) && _MSC_VER >= 1900 // Visual Studio 2015
 #  define CONSTEXPR constexpr
 #  define NOEXCEPT noexcept
 #  define USE_MOVE_SEMANTICS
 #  define FINAL final
 #  define OVERRIDE override
 #  define MOVE(x) move(x)
-#elif defined(_MSC_VER) && _MSC_VER >= 1900
-// MSVC 2015 supports all of this goodness.
-#  define CONSTEXPR constexpr
-#  define NOEXCEPT noexcept
-#  define USE_MOVE_SEMANTICS
-#  define FINAL final
-#  define OVERRIDE override
-#  define MOVE(x) move(x)
-#elif defined(_MSC_VER) && _MSC_VER >= 1600
-// MSVC 2010 has move semantics.  Not much else.
-#  define CONSTEXPR INLINE
+#  define DEFAULT_CTOR = default
+#elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
 #  define NOEXCEPT throw()
+#  define OVERRIDE override
 #  define USE_MOVE_SEMANTICS
-#  define FINAL
-#  define OVERRIDE
+#  define FINAL sealed
 #  define MOVE(x) move(x)
-#else
+#endif
+
+// Fallbacks if features are not supported
+#ifndef CONSTEXPR
 #  define CONSTEXPR INLINE
+#endif
+#ifndef NOEXCEPT
 #  define NOEXCEPT
-#  define FINAL
-#  define OVERRIDE
+#endif
+#ifndef MOVE
 #  define MOVE(x) x
 #endif
+#ifndef FINAL
+#  define FINAL
+#endif
+#ifndef OVERRIDE
+#  define OVERRIDE
+#endif
+#ifndef DEFAULT_CTOR
+#  define DEFAULT_CTOR {}
+#endif
+
 
 #if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
 // This macro must be used to export an instantiated template class

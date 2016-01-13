@@ -57,6 +57,10 @@ PUBLISHED:
 
   INLINE void flip();
 
+PUBLISHED:
+  MAKE_PROPERTY(normal, get_normal);
+  MAKE_PROPERTY(plane, get_plane, set_plane);
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

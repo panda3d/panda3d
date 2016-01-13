@@ -24,10 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LVector3)();
+  INLINE_LINMATH FLOATNAME(LVector3)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy);
-  INLINE_LINMATH FLOATNAME(LVector3) &operator = (const FLOATNAME(LVecBase3) &copy);
-  INLINE_LINMATH FLOATNAME(LVector3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
   INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
@@ -55,6 +53,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) cross(const FLOATNAME(LVecBase3) &other) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LVector3) normalized() const;
   INLINE_LINMATH FLOATNAME(LVector3) project(const FLOATNAME(LVecBase3) &onto) const;
   INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LVector3) &other) const;

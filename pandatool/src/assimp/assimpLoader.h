@@ -27,6 +27,8 @@
 class Character;
 class CharacterJointBundle;
 class PartGroup;
+class AnimBundle;
+class AnimGroup;
 
 struct char_cmp {
   bool operator () (const char *a, const char *b) const {
@@ -76,6 +78,7 @@ private:
   void load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr);
   void load_material(size_t index);
   void create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node);
+  void create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *parent, const aiNode &node);
   void load_mesh(size_t index);
   void load_node(const aiNode &node, PandaNode *parent);
   void load_light(const aiLight &light);

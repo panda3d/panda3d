@@ -1086,9 +1086,7 @@ reset() {
     has_extension("GL_ARB_texture_non_power_of_two");
 #endif
 
-#ifdef OPENGLES_2
-  _glActiveTexture = glActiveTexture;
-#else
+#ifndef OPENGLES_2
   bool supports_multitexture = false;
   if (is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1)) {
     supports_multitexture = true;
@@ -1641,6 +1639,28 @@ reset() {
   _glVertexAttribLPointer = NULL;
 #endif
 
+#ifndef OPENGLES
+  _use_vertex_attrib_binding = false;
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_vertex_attrib_binding")) {
+    _glBindVertexBuffer = (PFNGLBINDVERTEXBUFFERPROC)
+      get_extension_func("glBindVertexBuffer");
+    _glVertexAttribFormat = (PFNGLVERTEXATTRIBFORMATPROC)
+      get_extension_func("glVertexAttribFormat");
+    _glVertexAttribIFormat = (PFNGLVERTEXATTRIBIFORMATPROC)
+      get_extension_func("glVertexAttribIFormat");
+    _glVertexAttribLFormat = (PFNGLVERTEXATTRIBLFORMATPROC)
+      get_extension_func("glVertexAttribLFormat");
+    _glVertexAttribBinding = (PFNGLVERTEXATTRIBBINDINGPROC)
+      get_extension_func("glVertexAttribBinding");
+    _glVertexBindingDivisor = (PFNGLVERTEXBINDINGDIVISORPROC)
+      get_extension_func("glVertexBindingDivisor");
+
+    if (gl_fixed_vertex_attrib_locations) {
+      _use_vertex_attrib_binding = true;
+    }
+  }
+#endif
+
   // We need to have a default shader to apply in case
   // something didn't happen to have a shader applied, or
   // if it failed to compile. This default shader just outputs
@@ -1954,7 +1974,6 @@ reset() {
 
 #if defined(OPENGLES_1)
   _glDrawBuffers = NULL;
-  _glClearBufferfv = NULL;
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
@@ -1997,8 +2016,15 @@ reset() {
   if (is_at_least_gl_version(3, 0)) {
     _glClearBufferfv = (PFNGLCLEARBUFFERFVPROC)
       get_extension_func("glClearBufferfv");
+    _glClearBufferiv = (PFNGLCLEARBUFFERIVPROC)
+      get_extension_func("glClearBufferiv");
+    _glClearBufferfi = (PFNGLCLEARBUFFERFIPROC)
+      get_extension_func("glClearBufferfi");
+
   } else {
     _glClearBufferfv = NULL;
+    _glClearBufferiv = NULL;
+    _glClearBufferfi = NULL;
   }
 #endif  // !OPENGLES
 
@@ -2338,6 +2364,7 @@ reset() {
     }
   }
 
+  _active_texture_stage = -1;
   _num_active_texture_stages = 0;
 
   // Check availability of anisotropic texture filtering.
@@ -2401,18 +2428,22 @@ reset() {
 
   // Check availability of multi-bind functions.
   _supports_multi_bind = false;
+#ifndef OPENGLES
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_multi_bind")) {
     _glBindTextures = (PFNGLBINDTEXTURESPROC)
       get_extension_func("glBindTextures");
     _glBindImageTextures = (PFNGLBINDIMAGETEXTURESPROC)
       get_extension_func("glBindImageTextures");
 
-#ifndef OPENGLES
     if (_supports_sampler_objects) {
       _glBindSamplers = (PFNGLBINDSAMPLERSPROC)
         get_extension_func("glBindSamplers");
     }
-#endif  // OPENGLES
+
+    if (_use_vertex_attrib_binding) {
+      _glBindVertexBuffers = (PFNGLBINDVERTEXBUFFERSPROC)
+        get_extension_func("glBindVertexBuffers");
+    }
 
     if (_glBindTextures != NULL && _glBindImageTextures != NULL) {
       _supports_multi_bind = true;
@@ -2421,6 +2452,7 @@ reset() {
         << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
   }
+#endif  // OPENGLES
 
   if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_internalformat_query2")) {
     _glGetInternalformativ = (PFNGLGETINTERNALFORMATIVPROC)
@@ -2455,6 +2487,7 @@ reset() {
 
 #ifndef OPENGLES
   _supports_get_program_binary = false;
+  _program_binary_formats.clear();
 
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
@@ -2462,8 +2495,20 @@ reset() {
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteri");
 
+    GLint num_binary_formats = 0;
     if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
+      glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
+    }
+
+    if (num_binary_formats > 0) {
       _supports_get_program_binary = true;
+
+      GLenum *binary_formats = (GLenum *)alloca(sizeof(GLenum) * num_binary_formats);
+      glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, (GLint *)binary_formats);
+
+      for (int i = 0; i < num_binary_formats; ++i) {
+        _program_binary_formats.insert(binary_formats[i]);
+      }
     }
   }
 #endif
@@ -2537,6 +2582,11 @@ reset() {
   _active_color_write_mask = ColorWriteAttrib::C_all;
   _tex_gen_point_sprite = false;
 
+#ifndef OPENGLES_1
+  _enabled_vertex_attrib_arrays.clear();
+  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+#endif
+
 #ifndef OPENGLES
   // Dither is on by default in GL; let's turn it off
   glDisable(GL_DITHER);
@@ -2605,6 +2655,12 @@ reset() {
   _point_size = 1.0f;
   _point_perspective = false;
 
+#ifndef OPENGLES
+  _current_vertex_buffers.clear();
+  _current_vertex_format.clear();
+  memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+#endif
+
   report_my_gl_errors();
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -2639,6 +2695,23 @@ reset() {
   _error_count = 0;
 
   report_my_gl_errors();
+
+#ifndef OPENGLES
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Supported shader binary formats:\n";
+    GLCAT.debug() << " ";
+
+    pset<GLenum>::const_iterator it;
+    for (it = _program_binary_formats.begin();
+         it != _program_binary_formats.end(); ++it) {
+      char number[16];
+      sprintf(number, "0x%04X", *it);
+      GLCAT.debug(false) << " " << number << "";
+    }
+    GLCAT.debug(false) << "\n";
+  }
+#endif
 
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
@@ -2798,7 +2871,8 @@ clear(DrawableRegion *clearable) {
     return;
   }
 
-  //XXX rdb: Is this line really necessary?
+  //XXX rdb: Is this line really necessary?  Could we perhaps just
+  // reset the color write mask and other relevant attributes?
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
@@ -2929,25 +3003,27 @@ clear(DrawableRegion *clearable) {
     mask |= GL_STENCIL_BUFFER_BIT;
   }
 
-  glClear(mask);
+  if (mask != 0) {
+    glClear(mask);
 
-  if (GLCAT.is_spam()) {
-    string clear_flags;
-    if (mask & GL_COLOR_BUFFER_BIT) {
-      clear_flags += " | GL_COLOR_BUFFER_BIT";
+    if (GLCAT.is_spam()) {
+      string clear_flags;
+      if (mask & GL_COLOR_BUFFER_BIT) {
+        clear_flags += " | GL_COLOR_BUFFER_BIT";
+      }
+      if (mask & GL_DEPTH_BUFFER_BIT) {
+        clear_flags += " | GL_DEPTH_BUFFER_BIT";
+      }
+      if (mask & GL_STENCIL_BUFFER_BIT) {
+        clear_flags += " | GL_STENCIL_BUFFER_BIT";
+      }
+  #ifndef OPENGLES
+      if (mask & GL_ACCUM_BUFFER_BIT) {
+        clear_flags += " | GL_ACCUM_BUFFER_BIT";
+      }
+  #endif
+      GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
     }
-    if (mask & GL_DEPTH_BUFFER_BIT) {
-      clear_flags += " | GL_DEPTH_BUFFER_BIT";
-    }
-    if (mask & GL_STENCIL_BUFFER_BIT) {
-      clear_flags += " | GL_STENCIL_BUFFER_BIT";
-    }
-#ifndef OPENGLES
-    if (mask & GL_ACCUM_BUFFER_BIT) {
-      clear_flags += " | GL_ACCUM_BUFFER_BIT";
-    }
-#endif
-    GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
   }
 
   report_my_gl_errors();
@@ -3066,7 +3142,6 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   }
 
   report_my_gl_errors();
-  do_point_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3083,12 +3158,19 @@ clear_before_callback() {
 #ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
 #endif
+#ifndef OPENGLES_1
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays();
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (ShaderContext *)NULL;
+  }
+#endif
   unbind_buffers();
 
   // Some callbacks may quite reasonably assume that the active
   // texture stage is still set to stage 0.  CEGUI, in particular,
   // makes this assumption.
-  _glActiveTexture(GL_TEXTURE0);
+  set_active_texture_stage(0);
 #ifdef SUPPORT_FIXED_FUNCTION
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
@@ -3355,6 +3437,9 @@ end_frame(Thread *current_thread) {
   }
 #endif
 
+  // Respecify the active texture next frame, for good measure.
+  _active_texture_stage = -1;
+
   // Calling glFlush() at the end of the frame is particularly
   // necessary if this is a single-buffered visual, so that the frame
   // will be finished drawing before we return to the application.
@@ -3616,6 +3701,15 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   _use_sender = !vertex_arrays;
 #endif
 
+#ifndef OPENGLES
+  if (_use_vertex_attrib_binding) {
+    const GeomVertexFormat *format = data_reader->get_format();
+    if (format != _current_vertex_format) {
+      update_shader_vertex_format(format);
+    }
+  }
+#endif
+
   {
     //PStatGPUTimer timer(this, _vertex_array_update_pcollector);
 #ifdef OPENGLES_1
@@ -3636,7 +3730,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     } else {
 #ifdef SUPPORT_FIXED_FUNCTION
       // Shader.
-      if (_vertex_array_shader_context == 0 || _vertex_array_shader_context->uses_standard_vertex_arrays()) {
+      if (_vertex_array_shader_context == 0 ||
+          _vertex_array_shader_context->uses_standard_vertex_arrays()) {
         // Previous shader used standard arrays.
         if (_current_shader_context->uses_standard_vertex_arrays()) {
           // So does the current, so update them.
@@ -3648,15 +3743,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
           disable_standard_vertex_arrays();
         }
       }
-#endif  // SUPPORT_FIXED_FUNCTION
-      if (_current_shader_context->uses_custom_vertex_arrays()) {
-        // The current shader also uses custom vertex arrays.
-        if (!_current_shader_context->
-            update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
-          return false;
-        }
-      } else {
+#ifdef HAVE_CG
+      else if (_vertex_array_shader_context->is_of_type(CLP(CgShaderContext)::get_class_type())) {
+        // The previous shader was a Cg shader, which can leave a messy
+        // situation.
         _vertex_array_shader_context->disable_shader_vertex_arrays();
+      }
+#endif
+#endif  // SUPPORT_FIXED_FUNCTION
+      // Now update the vertex arrays for the current shader.
+      if (!_current_shader_context->
+          update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
+        return false;
       }
     }
 
@@ -3884,6 +3982,19 @@ unbind_buffers() {
     _current_ibuffer_index = 0;
   }
 
+#ifndef OPENGLES
+  if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
+    _glBindVertexBuffers(0, _current_vertex_buffers.size(), NULL, NULL, NULL);
+  } else {
+    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+      if (_current_vertex_buffers[i] != 0) {
+        _glBindVertexBuffer(i, 0, 0, 0);
+      }
+    }
+  }
+  _current_vertex_buffers.clear();
+#endif
+
 #ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
 #endif
@@ -3920,6 +4031,80 @@ disable_standard_vertex_arrays() {
   report_my_gl_errors();
 }
 #endif  // SUPPORT_FIXED_FUNCTION
+
+#ifndef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_shader_vertex_format
+//       Access: Protected
+//  Description: Updates the vertex format used by the shader.  This
+//               is still an experimental feature.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+update_shader_vertex_format(const GeomVertexFormat *format) {
+  size_t num_columns = format->get_num_columns();
+  for (size_t ci = 0; ci < num_columns; ++ci) {
+    GLuint binding = format->get_array_with(ci);
+    const GeomVertexColumn *column = format->get_column(ci);
+
+    // Needs improvement, obviously.
+    const InternalName *name = column->get_name();
+    GLuint loc;
+    if (name == InternalName::get_vertex()) {
+      loc = 0;
+    } else if (name == InternalName::get_transform_weight()) {
+      loc = 1;
+    } else if (name == InternalName::get_normal()) {
+      loc = 2;
+    } else if (name == InternalName::get_color()) {
+      loc = 3;
+    } else if (name == InternalName::get_transform_index()) {
+      loc = 7;
+    } else if (name == InternalName::get_texcoord()) {
+      loc = 8;
+    } else {
+      // Not yet supported, ignore for now.  This system will be improved.
+      continue;
+    }
+
+    if (_vertex_attrib_columns[loc] != NULL &&
+        _vertex_attrib_columns[loc]->compare_to(*column) == 0) {
+      continue;
+    }
+    _vertex_attrib_columns[loc] = column;
+
+    GLuint offset = column->get_start();
+    GLenum type = get_numeric_type(column->get_numeric_type());
+    GLboolean normalized = (column->get_contents() == GeomEnums::C_color);
+    GLint size = column->get_num_values();
+
+    if (column->get_numeric_type() == GeomEnums::NT_packed_dabc) {
+      // GL_BGRA is a special accepted value available since OpenGL 3.2.
+      // It requires us to pass GL_TRUE for normalized.
+      size = GL_BGRA;
+      normalized = GL_TRUE;
+    }
+
+    for (int i = 0; i < column->get_num_elements(); ++i) {
+      if (loc == 7) { // Temp hack
+        _glVertexAttribIFormat(loc, size, type, offset);
+      } else {
+        _glVertexAttribFormat(loc, size, type, normalized, offset);
+      }
+      _glVertexAttribBinding(loc, binding);
+
+      offset += column->get_element_stride();
+      ++loc;
+    }
+  }
+
+  size_t num_arrays = format->get_num_arrays();
+  for (size_t ai = 0; ai < num_arrays; ++ai) {
+    _glVertexBindingDivisor(ai, format->get_array(ai)->get_divisor());
+  }
+
+  _current_vertex_format = format;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_triangles
@@ -5088,7 +5273,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     }
 
     report_my_gl_errors();
-    apply_vertex_buffer(gvbc, data->get_handle(), false);
+    update_vertex_buffer(gvbc, data->get_handle(), false);
     return gvbc;
   }
 
@@ -5096,31 +5281,22 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_vertex_buffer
+//     Function: GLGraphicsStateGuardian::update_vertex_buffer
 //       Access: Public
-//  Description: Makes the data the currently available data for
-//               rendering.
+//  Description: Makes sure that the data in the vertex buffer is
+//               up-to-date.  This may bind it to the GL_ARRAY_BUFFER
+//               binding point if necessary.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataHandle *reader, bool force) {
+update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
+                     const GeomVertexArrayDataHandle *reader, bool force) {
   nassertr(_supports_buffers, false);
   if (reader->get_modified() == UpdateSeq::initial()) {
     // No need to re-apply.
     return true;
   }
 
-  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
-
-  if (_current_vbuffer_index != gvbc->_index) {
-    if (GLCAT.is_spam() && gl_debug_buffers) {
-      GLCAT.spam()
-        << "binding vertex buffer " << (int)gvbc->_index << "\n";
-    }
-    _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
-    _current_vbuffer_index = gvbc->_index;
-    gvbc->set_active(true);
-  }
+  gvbc->set_active(true);
 
   if (gvbc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
@@ -5136,6 +5312,15 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       }
 
       PStatGPUTimer timer(this, _load_vertex_buffer_pcollector, reader->get_current_thread());
+      if (_current_vbuffer_index != gvbc->_index) {
+        if (GLCAT.is_spam() && gl_debug_buffers) {
+          GLCAT.spam()
+            << "binding vertex buffer " << (int)gvbc->_index << "\n";
+        }
+        _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+        _current_vbuffer_index = gvbc->_index;
+      }
+
       if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
@@ -5239,10 +5424,21 @@ setup_array_data(const unsigned char *&client_pointer,
   }
 
   // Prepare the buffer object and bind it.
-  VertexBufferContext *vbc = array_reader->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, false);
-  if (!apply_vertex_buffer(vbc, array_reader, force)) {
+  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
+    array_reader->prepare_now(get_prepared_objects(), this));
+
+  nassertr(gvbc != (CLP(VertexBufferContext) *)NULL, false);
+  if (!update_vertex_buffer(gvbc, array_reader, force)) {
     return false;
+  }
+
+  if (_current_vbuffer_index != gvbc->_index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding vertex buffer " << (int)gvbc->_index << "\n";
+    }
+    _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+    _current_vbuffer_index = gvbc->_index;
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -6264,31 +6460,32 @@ do_issue_antialias() {
   }
 
 #ifndef OPENGLES_2
+  GLenum quality;
   switch (target_antialias->get_mode_quality()) {
   case AntialiasAttrib::M_faster:
-    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
-#endif  // OPENGLES
+    quality = GL_FASTEST;
     break;
 
   case AntialiasAttrib::M_better:
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-#endif  // OPENGLES
+    quality = GL_NICEST;
     break;
 
   default:
-    glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-    glHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-#endif  // OPENGLES
+    quality = GL_DONT_CARE;
     break;
   }
+
+  if (_line_smooth_enabled) {
+    glHint(GL_LINE_SMOOTH_HINT, quality);
+  }
+  if (_point_smooth_enabled) {
+    glHint(GL_POINT_SMOOTH_HINT, quality);
+  }
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glHint(GL_POLYGON_SMOOTH_HINT, quality);
+  }
+#endif
 #endif  // !OPENGLES_2
 
   report_my_gl_errors();
@@ -6552,7 +6749,7 @@ do_issue_material() {
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
-  glMaterialf(face, GL_SHININESS, min(material->get_shininess(), (PN_stdfloat)128.0));
+  glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
@@ -9291,6 +9488,14 @@ void CLP(GraphicsStateGuardian)::
 reissue_transforms() {
   prepare_lens();
   do_issue_transform();
+
+  _active_texture_stage = -1;
+
+#ifndef OPENGLES
+  // Might also want to reissue the vertex format, for good measure.
+  _current_vertex_format.clear();
+  memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+#endif
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -9567,7 +9772,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 #ifndef SUPPORT_FIXED_FUNCTION
-  else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+  else if (_current_shader == NULL) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
@@ -9920,7 +10125,7 @@ update_standard_texture_bindings() {
     nassertv(texture != (Texture *)NULL);
 
     // Issue the texture on stage i.
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 
     // First, turn off the previous texture mode.
     glDisable(GL_TEXTURE_2D);
@@ -10089,7 +10294,7 @@ update_standard_texture_bindings() {
 
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
     glDisable(GL_TEXTURE_2D);
     if (_supports_cube_map) {
       glDisable(GL_TEXTURE_CUBE_MAP);
@@ -10132,6 +10337,20 @@ apply_white_texture() {
   unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
                GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_white_texture
+//       Access: Private
+//  Description: Returns a white dummy texture.  This is useful to
+//               bind to a texture slot when a texture is missing.
+////////////////////////////////////////////////////////////////////
+GLuint CLP(GraphicsStateGuardian)::
+get_white_texture() {
+  if (_white_texture == 0) {
+    apply_white_texture();
+  }
+  return _white_texture;
 }
 
 #ifndef NDEBUG
@@ -10178,7 +10397,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
 #ifdef SUPPORT_FIXED_FUNCTION
   // Disable all texture stages.
   for (i = 0; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 #ifndef OPENGLES
     glDisable(GL_TEXTURE_1D);
 #endif  // OPENGLES
@@ -10210,7 +10429,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
     nassertv(texture != (Texture *)NULL);
 
     // Choose the corresponding usage texture and apply it.
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 #ifdef SUPPORT_FIXED_FUNCTION
     glEnable(GL_TEXTURE_2D);
 #endif
@@ -10327,7 +10546,7 @@ void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 #ifndef OPENGLES
     glDisable(GL_TEXTURE_1D);
 #endif  // OPENGLES
@@ -10360,7 +10579,7 @@ do_issue_tex_matrix() {
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 
     glMatrixMode(GL_TEXTURE);
 
@@ -10413,7 +10632,7 @@ do_issue_tex_gen() {
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
     if (_supports_point_sprite) {
 #ifdef OPENGLES
       glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_FALSE);
@@ -10870,7 +11089,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     // We don't support sampler objects.  We'll have to bind the
     // texture and change the texture parameters if they don't match.
     if (gtc->_active_sampler != sampler) {
-      _glActiveTexture(GL_TEXTURE0 + unit);
+      set_active_texture_stage(unit);
       apply_texture(gtc);
       specify_texture(gtc, sampler);
     }
@@ -11200,7 +11419,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES // OpenGL ES doesn't have GL_TEXTURE_MAX_LEVEL.
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       // By the time we get here, we have a pretty good prediction for
       // the number of mipmaps we're going to have, so tell the GL that's
       // all it's going to get.
@@ -11715,7 +11934,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
 #ifndef OPENGLES
-            if (_supports_texture_lod) {
+            if (is_at_least_gl_version(1, 2)) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
@@ -11935,7 +12154,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps() && _supports_texture_lod) {
+  if (tex->uses_mipmaps() && is_at_least_gl_version(1, 2)) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 #endif
@@ -12601,7 +12820,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
 #ifndef OPENGLES
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
     }
@@ -12634,6 +12853,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     nassertr(false, false);
     return false;
 #else
+
+  // Make sure the GL driver does not align textures, otherwise we get corrupt
+  // memory, since we don't take alignment into account.
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract

@@ -34,19 +34,15 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase2)();
-  INLINE_LINMATH FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase2)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y);
+
   ALLOC_DELETED_CHAIN(FLOATNAME(LVecBase2));
 
   INLINE_LINMATH static const FLOATNAME(LVecBase2) &zero();
   INLINE_LINMATH static const FLOATNAME(LVecBase2) &unit_x();
   INLINE_LINMATH static const FLOATNAME(LVecBase2) &unit_y();
-
-  INLINE_LINMATH ~FLOATNAME(LVecBase2)();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
@@ -54,17 +50,21 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  INLINE_LINMATH static int size();
+  CONSTEXPR static int size();
 
   INLINE_LINMATH bool is_nan() const;
 
   INLINE_LINMATH FLOATTYPE get_cell(int i) const;
+  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+
   INLINE_LINMATH FLOATTYPE get_x() const;
   INLINE_LINMATH FLOATTYPE get_y() const;
-
-  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
   INLINE_LINMATH void set_x(FLOATTYPE value);
   INLINE_LINMATH void set_y(FLOATTYPE value);
+
+PUBLISHED:
+  MAKE_PROPERTY(x, get_x, set_x);
+  MAKE_PROPERTY(y, get_y, set_y);
 
   // These next functions add to an existing value.
   // i.e. foo.set_x(foo.get_x() + value)
@@ -75,7 +75,7 @@ PUBLISHED:
   INLINE_LINMATH void add_y(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
+  CONSTEXPR static int get_num_components();
 
 public:
   INLINE_LINMATH iterator begin();
@@ -94,6 +94,7 @@ PUBLISHED:
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATTYPE length() const;
   INLINE_LINMATH bool normalize();
+  INLINE_LINMATH FLOATNAME(LVecBase2) normalized() const;
   INLINE_LINMATH FLOATNAME(LVecBase2) project(const FLOATNAME(LVecBase2) &onto) const;
 #endif
 

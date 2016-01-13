@@ -57,16 +57,10 @@ PUBLISHED:
     // combination of RM_extruded and RM_polygon
     RM_solid,
 
+    RM_distance_field,
+
     // Returned by string_render_mode() for an invalid match.
     RM_invalid,
-  };
-
-  enum WindingOrder {
-    WO_default,
-    WO_left,
-    WO_right,
-
-    WO_invalid,
   };
 
   virtual PT(TextFont) make_copy() const=0;
@@ -87,11 +81,12 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
+  INLINE PN_stdfloat get_total_poly_margin() const;
+
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph)=0;
   TextGlyph *get_invalid_glyph();
 
   static RenderMode string_render_mode(const string &string);
-  static WindingOrder string_winding_order(const string &string);
 
 private:
   void make_invalid_glyph();
@@ -100,6 +95,7 @@ protected:
   bool _is_valid;
   PN_stdfloat _line_height;
   PN_stdfloat _space_advance;
+  PN_stdfloat _total_poly_margin;
   PT(TextGlyph) _invalid_glyph;
 
 public:
@@ -122,8 +118,6 @@ private:
 
 EXPCL_PANDA_TEXT ostream &operator << (ostream &out, TextFont::RenderMode rm);
 EXPCL_PANDA_TEXT istream &operator >> (istream &in, TextFont::RenderMode &rm);
-EXPCL_PANDA_TEXT ostream &operator << (ostream &out, TextFont::WindingOrder wo);
-EXPCL_PANDA_TEXT istream &operator >> (istream &in, TextFont::WindingOrder &wo);
 
 #include "textFont.I"
 

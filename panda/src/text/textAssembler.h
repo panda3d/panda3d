@@ -107,6 +107,13 @@ PUBLISHED:
   static bool has_character(wchar_t character, const TextProperties &properties);
   static bool is_whitespace(wchar_t character, const TextProperties &properties);
 
+PUBLISHED:
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
+  MAKE_PROPERTY(max_rows, get_max_rows, set_max_rows);
+  MAKE_PROPERTY(dynamic_merge, get_dynamic_merge, set_dynamic_merge);
+  MAKE_PROPERTY(multiline_mode, get_multiline_mode, set_multiline_mode);
+  MAKE_PROPERTY(properties, get_properties, set_properties);
+
 private:
   class ComputedProperties : public ReferenceCount {
   public:
@@ -230,7 +237,7 @@ private:
     PN_stdfloat _slantl, _slanth;
     CPT(TextGlyph) _glyph;
   };
-  typedef pvector<QuadDef> QuadDefs;
+  typedef epvector<QuadDef> QuadDefs;
   typedef pmap<CPT(RenderState), QuadDefs> QuadMap;
 
   void generate_quads(GeomNode *geom_node, const QuadMap &quad_map);
@@ -308,7 +315,7 @@ private:
                  const LPoint3 &centroid,
                  const TextProperties *properties, GlyphPlacement &placement) const;
   bool 
-  tack_on_accent(char accent_mark, CheesyPosition position,
+  tack_on_accent(wchar_t accent_mark, CheesyPosition position,
                  CheesyTransform transform,
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
                  const LPoint3 &centroid,

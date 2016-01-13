@@ -233,6 +233,30 @@ get_points_per_inch() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::set_winding_order
+//       Access: Published
+//  Description: Specifies an explicitly winding order on this
+//               particular font.  This is only necessary if the
+//               render_mode is RM_polygon or RM_solid, and only if
+//               FreeType appears to guess wrong on this font.
+//               Normally, you should leave this at WO_default.
+////////////////////////////////////////////////////////////////////
+INLINE void FreetypeFont::
+set_winding_order(WindingOrder winding_order) {
+  _winding_order = winding_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::get_winding_order
+//       Access: Published
+//  Description: Returns the winding order set via set_winding_order().
+////////////////////////////////////////////////////////////////////
+INLINE FreetypeFont::WindingOrder FreetypeFont::
+get_winding_order() const {
+  return _winding_order;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FreetypeFont::acquire_face
 //       Access: Protected
 //  Description: Retrieves the internal freetype face, and also
@@ -258,4 +282,47 @@ INLINE void FreetypeFont::
 release_face(FT_Face face) const {
   nassertv(_face != NULL);
   _face->release_face(face);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::ContourPoint::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FreetypeFont::ContourPoint::
+ContourPoint(const LPoint2 &p, const LVector2 &in, const LVector2 &out) :
+  _p(p), _in(in), _out(out), _radius(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::ContourPoint::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FreetypeFont::ContourPoint::
+ContourPoint(PN_stdfloat px, PN_stdfloat py, PN_stdfloat tx, PN_stdfloat ty) :
+  _p(px, py), _in(tx, ty), _out(tx, ty), _radius(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::connect_to
+//       Access: Public
+//  Description: Connects the indicated point to the next point, whose
+//               tangent is given.  The given tangent becomes the out
+//               tangent at this point.  If the in tangent and out
+//               tangent are sufficiently close, they will be smoothed
+//               together.
+////////////////////////////////////////////////////////////////////
+INLINE void FreetypeFont::ContourPoint::
+connect_to(const LVector2 &out) {
+  _out = out;
+  if (_in.dot(_out) > 0.7071) {
+    // Less than 45 degrees of difference: smooth them.
+    LVector2 av = (_in + _out) * 0.5f;
+    av.normalize();
+    _in = av;
+    _out = av;
+  }
 }

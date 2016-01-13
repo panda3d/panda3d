@@ -34,6 +34,7 @@ TextFont() {
   _is_valid = false;
   _line_height = 1.0f;
   _space_advance = 0.25f;
+  _total_poly_margin = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +47,8 @@ TextFont(const TextFont &copy) :
   Namable(copy),
   _is_valid(copy._is_valid),
   _line_height(copy._line_height),
-  _space_advance(copy._space_advance)
+  _space_advance(copy._space_advance),
+  _total_poly_margin(copy._total_poly_margin)
 {
 }
 
@@ -112,28 +114,10 @@ string_render_mode(const string &string) {
     return RM_extruded;
   } else if (cmp_nocase_uh(string, "solid") == 0) {
     return RM_solid;
+  } else if (cmp_nocase_uh(string, "distance_field") == 0) {
+    return RM_distance_field;
   } else {
     return RM_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::string_winding_order
-//       Access: Public
-//  Description: Returns the WindingOrder value associated with the given
-//               string representation, or WO_invalid if the string
-//               does not match any known WindingOrder value.
-////////////////////////////////////////////////////////////////////
-TextFont::WindingOrder TextFont::
-string_winding_order(const string &string) {
-  if (cmp_nocase_uh(string, "default") == 0) {
-    return WO_default;
-  } else if (cmp_nocase_uh(string, "left") == 0) {
-    return WO_left;
-  } else if (cmp_nocase_uh(string, "right") == 0) {
-    return WO_right;
-  } else {
-    return WO_invalid;
   }
 }
 
@@ -184,6 +168,8 @@ operator << (ostream &out, TextFont::RenderMode rm) {
     return out << "extruded";
   case TextFont::RM_solid:
     return out << "solid";
+  case TextFont::RM_distance_field:
+    return out << "distance-field";
 
   case TextFont::RM_invalid:
     return out << "invalid";
@@ -202,39 +188,5 @@ operator >> (istream &in, TextFont::RenderMode &rm) {
   in >> word;
 
   rm = TextFont::string_render_mode(word);
-  return in;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::WindingOrder output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, TextFont::WindingOrder wo) {
-  switch (wo) {
-  case TextFont::WO_default:
-    return out << "default";
-  case TextFont::WO_left:
-    return out << "left";
-  case TextFont::WO_right:
-    return out << "right";
-
-  case TextFont::WO_invalid:
-    return out << "invalid";
-  }
-
-  return out << "(**invalid TextFont::WindingOrder(" << (int)wo << ")**)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::WindingOrder input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
-istream &
-operator >> (istream &in, TextFont::WindingOrder &wo) {
-  string word;
-  in >> word;
-
-  wo = TextFont::string_winding_order(word);
   return in;
 }

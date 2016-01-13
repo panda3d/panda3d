@@ -167,7 +167,7 @@ class Loader(DirectObject):
 
             if not okMissing and None in result:
                 message = 'Could not load model file(s): %s' % (modelList,)
-                raise IOError, message
+                raise IOError(message)
 
             if gotList:
                 return result
@@ -503,7 +503,7 @@ class Loader(DirectObject):
         if font == None:
             if not okMissing:
                 message = 'Could not load font file: %s' % (modelPath)
-                raise IOError, message
+                raise IOError(message)
             # If we couldn't load the model, at least return an
             # empty font.
             font = StaticTextFont(PandaNode("empty"))
@@ -620,7 +620,7 @@ class Loader(DirectObject):
             texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load texture: %s' % (texturePath)
-            raise IOError, message
+            raise IOError(message)
 
         if minfilter is not None:
             texture.setMinfilter(minfilter)
@@ -677,7 +677,7 @@ class Loader(DirectObject):
         texture = TexturePool.load3dTexture(texturePattern, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load 3-D texture: %s' % (texturePattern)
-            raise IOError, message
+            raise IOError(message)
 
         if minfilter is not None:
             texture.setMinfilter(minfilter)
@@ -730,7 +730,7 @@ class Loader(DirectObject):
         texture = TexturePool.loadCubeMap(texturePattern, readMipmaps, loaderOptions)
         if not texture and not okMissing:
             message = 'Could not load cube map: %s' % (texturePattern)
-            raise IOError, message
+            raise IOError(message)
 
         if minfilter is not None:
             texture.setMinfilter(minfilter)
@@ -838,7 +838,7 @@ class Loader(DirectObject):
                 cb.requests[request] = True
             return cb
 
-    def unloadSfx (self, sfx):
+    def unloadSfx(self, sfx):
         if (sfx):
             if(self.base.sfxManagerList):
                 self.base.sfxManagerList[0].uncacheSound (sfx.getName())
@@ -852,11 +852,11 @@ class Loader(DirectObject):
 ##             nodeCount += 1
 ##             self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
-    def loadShader (self, shaderPath, okMissing = False):
+    def loadShader(self, shaderPath, okMissing = False):
         shader = ShaderPool.loadShader (shaderPath)
         if not shader and not okMissing:
             message = 'Could not load shader file: %s' % (shaderPath)
-            raise IOError, message
+            raise IOError(message)
         return shader
 
     def unloadShader(self, shaderPath):
@@ -948,3 +948,21 @@ class Loader(DirectObject):
             object = request.getSuccess()
 
         cb.gotObject(i, object)
+
+    load_model = loadModel
+    cancel_request = cancelRequest
+    is_request_pending = isRequestPending
+    unload_model = unloadModel
+    save_model = saveModel
+    load_font = loadFont
+    load_texture = loadTexture
+    load_3d_texture = load3DTexture
+    load_cube_map = loadCubeMap
+    unload_texture = unloadTexture
+    load_sfx = loadSfx
+    load_music = loadMusic
+    load_sound = loadSound
+    unload_sfx = unloadSfx
+    load_shader = loadShader
+    unload_shader = unloadShader
+    async_flatten_strong = asyncFlattenStrong

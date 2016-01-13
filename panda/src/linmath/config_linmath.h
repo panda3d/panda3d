@@ -23,7 +23,6 @@
 NotifyCategoryDecl(linmath, EXPCL_PANDA_LINMATH, EXPTP_PANDA_LINMATH);
 
 extern EXPCL_PANDA_LINMATH ConfigVariableBool paranoid_hpr_quat;
-extern EXPCL_PANDA_LINMATH ConfigVariableBool temp_hpr_fix;
 extern EXPCL_PANDA_LINMATH ConfigVariableBool no_singular_invert;
 
 extern EXPCL_PANDA_LINMATH void init_liblinmath();

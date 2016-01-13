@@ -57,7 +57,8 @@ PUBLISHED:
   INLINE const SparseArray &find_sliders(const InternalName *name) const;
   INLINE bool has_slider(const InternalName *name) const;
   INLINE bool is_empty() const;
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(modified, get_modified);
 
   void set_slider(size_t n, const VertexSlider *slider);
   void set_slider_rows(size_t n, const SparseArray &rows);

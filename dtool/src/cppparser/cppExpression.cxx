@@ -495,6 +495,30 @@ get_nullptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::get_default
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+const CPPExpression &CPPExpression::
+get_default() {
+  static CPPExpression expr(0);
+  expr._type = T_default;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::get_delete
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+const CPPExpression &CPPExpression::
+get_delete() {
+  static CPPExpression expr(0);
+  expr._type = T_delete;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Destructor
 //       Access: Public
 //  Description:
@@ -1617,6 +1641,14 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
       assert(name.substr(0, 12) == "operator \"\" ");
       out << name.substr(12);
     }
+    break;
+
+  case T_default:
+    out << "default";
+    break;
+
+  case T_delete:
+    out << "delete";
     break;
 
   default:

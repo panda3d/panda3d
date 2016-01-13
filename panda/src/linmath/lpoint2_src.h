@@ -19,10 +19,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LPoint2)();
-  INLINE_LINMATH FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint2) &operator = (FLOATTYPE fill_value);
+
+  INLINE_LINMATH FLOATNAME(LPoint2)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2)& copy);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y);
 
@@ -51,6 +50,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2) operator / (FLOATTYPE scalar) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LPoint2) normalized() const;
   INLINE_LINMATH FLOATNAME(LPoint2) project(const FLOATNAME(LVecBase2) &onto) const;
 #endif
 

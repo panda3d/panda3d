@@ -65,6 +65,11 @@ PUBLISHED:
   INLINE void set_radius(PN_stdfloat radius);
   INLINE PN_stdfloat get_radius() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(point_a, get_point_a, set_point_a);
+  MAKE_PROPERTY(point_b, get_point_b, set_point_b);
+  MAKE_PROPERTY(radius, get_radius, set_radius);
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

@@ -113,6 +113,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPConstType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPConstType::
+is_default_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPConstType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPConstType::
+is_copy_constructible() const {
+  return _wrapped_around->is_copy_constructible();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it
