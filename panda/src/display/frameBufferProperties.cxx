@@ -710,19 +710,20 @@ setup_color_texture(Texture *tex) const {
   // generated dynamically by the GSG to reflect the formats that
   // are supported for render-to-texture.
 
-  static const int num_formats = 12;
+  static const int num_formats = 13;
   static const struct {
     unsigned char color_bits, red_bits, green_bits, blue_bits, alpha_bits;
     bool has_float;
     Texture::Format format;
   } formats[num_formats] = {
-  //{  1,  1,  0,  0,  0, F_red},
+  //{  1,  1,  0,  0,  0, false, Texture::F_red},
     {  1,  1,  1,  1,  0, false, Texture::F_rgb },
     {  1,  1,  1,  1,  1, false, Texture::F_rgba },
     { 24,  8,  8,  8,  0, false, Texture::F_rgb8 },
     { 24,  8,  8,  8,  8, false, Texture::F_rgba8 },
     { 16, 16,  0,  0,  0,  true, Texture::F_r16 },
     { 32, 16, 16,  0,  0,  true, Texture::F_rg16 },
+    { 32, 11, 11, 10,  0,  true, Texture::F_r11_g11_b10 },
     { 48, 16, 16, 16,  0,  true, Texture::F_rgb16 },
     { 48, 16, 16, 16, 16,  true, Texture::F_rgba16 },
     { 32, 32,  0,  0,  0,  true, Texture::F_r32 },
