@@ -505,6 +505,47 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FunctionRemap::get_min_num_args
+//       Access: Private
+//  Description: Returns the minimum number of arguments that needs
+//               to be passed to this function.
+////////////////////////////////////////////////////////////////////
+int FunctionRemap::
+get_min_num_args() const {
+  int min_num_args = 0;
+  Parameters::const_iterator pi;
+  pi = _parameters.begin();
+  if (_has_this && pi != _parameters.end()) {
+    ++pi;
+  }
+  for (; pi != _parameters.end(); ++pi) {
+    ParameterRemap *param = (*pi)._remap;
+    if (param->get_default_value() != (CPPExpression *)NULL) {
+      // We've reached the first parameter that takes a default value.
+      break;
+    } else {
+      ++min_num_args;
+    }
+  }
+  return min_num_args;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FunctionRemap::get_max_num_args
+//       Access: Private
+//  Description: Returns the maximum number of arguments that can
+//               be passed to this function.
+////////////////////////////////////////////////////////////////////
+int FunctionRemap::
+get_max_num_args() const {
+  int max_num_args = _parameters.size();
+  if (_has_this && _type != FunctionRemap::T_constructor) {
+    --max_num_args;
+  }
+  return max_num_args;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FunctionRemap::get_parameter_expr
 //       Access: Private
 //  Description: Returns a string that represents the expression
