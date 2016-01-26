@@ -489,7 +489,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 size_t Texture::
 estimate_texture_memory() const {
   CDReader cdata(_cycler);
-  size_t pixels = cdata->_x_size * cdata->_y_size;
+  size_t pixels = cdata->_x_size * cdata->_y_size * cdata->_z_size;
 
   size_t bpp = 4;
   switch (cdata->_format) {
@@ -503,22 +503,25 @@ estimate_texture_memory() const {
   case Texture::F_blue:
   case Texture::F_luminance:
   case Texture::F_sluminance:
+  case Texture::F_r8i:
     bpp = 1;
     break;
 
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
   case Texture::F_sluminance_alpha:
+  case Texture::F_rgba4:
+  case Texture::F_rgb5:
+  case Texture::F_rgba5:
     bpp = 2;
     break;
 
   case Texture::F_rgba:
-  case Texture::F_rgba4:
   case Texture::F_rgbm:
   case Texture::F_rgb:
-  case Texture::F_rgb5:
-  case Texture::F_rgba5:
   case Texture::F_srgb:
+    // Most of the above formats have only 3 bytes, but they are most likely to
+    // get padded by the driver
     bpp = 4;
     break;
 
@@ -536,7 +539,13 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_depth_component:
+  case Texture::F_depth_component16:
     bpp = 2;
+    break;
+
+  case Texture::F_depth_component24: // Gets padded
+  case Texture::F_depth_component32:
+    bpp = 4;
     break;
 
   case Texture::F_rgba12:
@@ -552,7 +561,6 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
-  case Texture::F_r8i:
   case Texture::F_rg8i:
     bpp = 2;
     break;
@@ -564,15 +572,14 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r32i:
-    bpp = 4;
-    break;
-
   case Texture::F_r32:
     bpp = 4;
     break;
+
   case Texture::F_rg32:
     bpp = 8;
     break;
+
   case Texture::F_rgb32:
     bpp = 12;
     break;

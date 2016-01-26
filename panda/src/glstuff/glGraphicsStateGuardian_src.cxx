@@ -10854,6 +10854,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_width = width;
       gtc->_height = height;
       gtc->_depth = depth;
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
+
       needs_reload = false;
     }
   } else {
