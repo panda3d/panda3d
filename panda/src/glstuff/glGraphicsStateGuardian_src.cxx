@@ -10526,9 +10526,13 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying
     // to sample it with mipmaps.  We will need to reload it.
+    GLCAT.info()
+      << "reloading texture " << gtc->get_texture()->get_name()
+      << " with mipmaps\n";
+
     apply_texture(tc);
     gtc->mark_needs_reload();
     bool okflag = upload_texture(gtc, false, true);
