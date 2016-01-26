@@ -720,7 +720,7 @@ setup_color_texture(Texture *tex) const {
     {  1,  1,  1,  1,  0, false, Texture::F_rgb },
     {  1,  1,  1,  1,  1, false, Texture::F_rgba },
     { 24,  8,  8,  8,  0, false, Texture::F_rgb8 },
-    { 24,  8,  8,  8,  8, false, Texture::F_rgba8 },
+    { 32,  8,  8,  8,  8, false, Texture::F_rgba8 },
     { 16, 16,  0,  0,  0,  true, Texture::F_r16 },
     { 32, 16, 16,  0,  0,  true, Texture::F_rg16 },
     { 32, 11, 11, 10,  0,  true, Texture::F_r11_g11_b10 },

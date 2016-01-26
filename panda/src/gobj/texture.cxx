@@ -510,15 +510,15 @@ estimate_texture_memory() const {
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
   case Texture::F_sluminance_alpha:
+  case Texture::F_rgba4:
+  case Texture::F_rgb5:
+  case Texture::F_rgba5:
     bpp = 2;
     break;
 
   case Texture::F_rgba:
-  case Texture::F_rgba4:
   case Texture::F_rgbm:
   case Texture::F_rgb:
-  case Texture::F_rgb5:
-  case Texture::F_rgba5:
   case Texture::F_srgb:
     // Most of the above formats have only 3 bytes, but they are most likely to
     // get padded by the driver

@@ -4465,6 +4465,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   set_fancy_bit(FB_effects, !_effects->is_empty());
   set_fancy_bit(FB_tag, !_tag_data.empty());
 
+  // Mark the bounds stale.
+  ++_next_update;
+
   return pi;
 }
 
