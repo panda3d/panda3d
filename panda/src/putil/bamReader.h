@@ -143,9 +143,9 @@ PUBLISHED:
 
   INLINE const LoaderOptions &get_loader_options() const;
   INLINE void set_loader_options(const LoaderOptions &options);
-  
-  TypedWritable *read_object();
-  bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+
+  BLOCKING TypedWritable *read_object();
+  BLOCKING bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
 
   INLINE bool is_eof() const;
   bool resolve();
