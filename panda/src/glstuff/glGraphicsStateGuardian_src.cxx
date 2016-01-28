@@ -1035,6 +1035,16 @@ reset() {
         break;
       }
     }
+
+#ifndef OPENGLES
+    // The OpenGL spec states that these are not reported by the above
+    // mechanism, so we have to check for the extension ourselves.
+    if (is_at_least_gl_version(3, 0) ||
+        has_extension("GL_ARB_texture_compression_rgtc") ||
+        has_extension("GL_EXT_texture_compression_rgtc")) {
+      _compressed_texture_formats.set_bit(Texture::CM_rgtc);
+    }
+#endif
   }
 
 #ifdef OPENGLES_2
@@ -8115,6 +8125,8 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_BYTE;
   case Texture::T_short:
     return GL_SHORT;
+  case Texture::T_half_float:
+    return GL_HALF_FLOAT;
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -8144,6 +8156,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
       case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
         break;
@@ -8156,6 +8169,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
@@ -8181,6 +8195,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
+      case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
       case Texture::F_rg32:
@@ -8274,6 +8289,20 @@ get_external_image_format(Texture *tex) const {
       break;
 #endif  // OPENGLES
 
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -8315,6 +8344,7 @@ get_external_image_format(Texture *tex) const {
 #endif
 
 #ifndef OPENGLES_1
+  case Texture::F_rg:
   case Texture::F_rg16:
   case Texture::F_rg32:
     return GL_RG;
@@ -8328,6 +8358,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb32:
   case Texture::F_srgb:
   case Texture::F_r11_g11_b10:
+  case Texture::F_rgb9_e5:
 #ifdef OPENGLES
     return GL_RGB;
 #else
@@ -8342,6 +8373,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
+  case Texture::F_rgb10_a2:
 #ifdef OPENGLES_2
     return GL_RGBA;
 #else
@@ -8427,10 +8459,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgba8i:
       case Texture::F_r32i:
       case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
         break;
 
       case Texture::F_rgbm:
+      case Texture::F_rgb10_a2:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         }
@@ -8512,7 +8546,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
-        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RED_RGTC1;
+        } else if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
 #ifndef OPENGLES
@@ -8523,9 +8559,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
         break;
 
+      case Texture::F_rg:
       case Texture::F_rg16:
       case Texture::F_rg32:
-        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RG_RGTC2;
+        } else if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
 #ifndef OPENGLES
@@ -8656,6 +8695,20 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     case Texture::CM_pvr1_4bpp:
       break;
 #endif
+
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else if (tex->get_num_components() == 2) {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
 
     case Texture::CM_default:
     case Texture::CM_off:
@@ -8942,6 +8995,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_RG8 : GL_RG;
 #endif
 
+  case Texture::F_rg:
+    return force_sized ? GL_RG8 : GL_RG;
+
 #ifndef OPENGLES_1
   case Texture::F_srgb:
 #ifndef OPENGLES
@@ -8965,6 +9021,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifndef OPENGLES
   case Texture::F_r11_g11_b10:
     return GL_R11F_G11F_B10F;
+
+  case Texture::F_rgb9_e5:
+    return GL_RGB9_E5;
+
+  case Texture::F_rgb10_a2:
+    return GL_RGB10_A2;
 #endif
 
   default:
@@ -9018,8 +9080,19 @@ is_compressed_format(GLenum format) {
   case GL_COMPRESSED_RGB_FXT1_3DFX:
   case GL_COMPRESSED_RGBA_FXT1_3DFX:
 
+  case GL_COMPRESSED_RED_RGTC1:
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+  case GL_COMPRESSED_RG_RGTC2:
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+
   case GL_COMPRESSED_RGB:
+  case GL_COMPRESSED_SRGB_EXT:
   case GL_COMPRESSED_RGBA:
+  case GL_COMPRESSED_SRGB_ALPHA_EXT:
   case GL_COMPRESSED_ALPHA:
   case GL_COMPRESSED_LUMINANCE:
   case GL_COMPRESSED_LUMINANCE_ALPHA:
@@ -11170,6 +11243,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (!get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
+
+    // If this triggers, Panda cannot decompress the texture.  Compile
+    // with libsquish support or precompress the texture.
+    nassertr(!image.is_null(), false);
   }
 
   int mipmap_bias = 0;
@@ -12620,6 +12697,16 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_float;
     format = Texture::F_r11_g11_b10;
     break;
+
+  case GL_RGB9_E5:
+    type = Texture::T_float;
+    format = Texture::F_rgb9_e5;
+    break;
+
+  case GL_RGB10_A2:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb10_a2;
+    break;
 #endif
 
 #ifdef OPENGLES_2
@@ -12789,6 +12876,32 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_COMPRESSED_RGBA_FXT1_3DFX:
     format = Texture::F_rgba;
     compression = Texture::CM_fxt1;
+    break;
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+    format = Texture::F_luminance;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+    format = Texture::F_luminance_alpha;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RED_RGTC1:
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+    type = Texture::T_byte;
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RG_RGTC2:
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+    type = Texture::T_byte;
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
     break;
 #endif
   default:
