@@ -8125,8 +8125,12 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_BYTE;
   case Texture::T_short:
     return GL_SHORT;
+
+#ifndef OPENGLES
   case Texture::T_half_float:
     return GL_HALF_FLOAT;
+#endif
+
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -8546,9 +8550,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
+#ifndef OPENGLES
         if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
           return GL_COMPRESSED_RED_RGTC1;
-        } else if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+        }
+#endif
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
 #ifndef OPENGLES
@@ -8562,9 +8569,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rg:
       case Texture::F_rg16:
       case Texture::F_rg32:
+#ifndef OPENGLES
         if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
           return GL_COMPRESSED_RG_RGTC2;
-        } else if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+        }
+#endif
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
 #ifndef OPENGLES
@@ -8995,8 +9005,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_RG8 : GL_RG;
 #endif
 
+#ifndef OPENGLES
   case Texture::F_rg:
     return force_sized ? GL_RG8 : GL_RG;
+#endif
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
