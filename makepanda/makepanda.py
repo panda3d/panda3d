@@ -4968,6 +4968,21 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3showbase_igate.obj', input='libp3showbase.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: direct/src/motiontrail/
+#
+
+if (PkgSkip("DIRECT")==0):
+  OPTS=['DIR:direct/src/motiontrail', 'BUILDING:DIRECT']
+  TargetAdd('p3motiontrail_cMotionTrail.obj', opts=OPTS, input='cMotionTrail.cxx')
+  TargetAdd('p3motiontrail_config_motiontrail.obj', opts=OPTS, input='config_motiontrail.cxx')
+
+  OPTS=['DIR:direct/src/motiontrail']
+  IGATEFILES=GetDirectoryContents('direct/src/motiontrail', ["*.h", "cMotionTrail.cxx"])
+  TargetAdd('libp3motiontrail.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3motiontrail.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3motiontrail', 'SRCDIR:direct/src/motiontrail'])
+  TargetAdd('libp3motiontrail_igate.obj', input='libp3motiontrail.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: direct/metalibs/direct/
 #
 
@@ -4989,6 +5004,8 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
   TargetAdd('libp3direct.dll', input='p3distributed_cConnectionRepository.obj')
   TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
+  TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
+  TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
@@ -4998,6 +5015,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct_module.obj', input='libp3deadrec.in')
   TargetAdd('direct_module.obj', input='libp3interval.in')
   TargetAdd('direct_module.obj', input='libp3distributed.in')
+  TargetAdd('direct_module.obj', input='libp3motiontrail.in')
   TargetAdd('direct_module.obj', opts=OPTS)
   TargetAdd('direct_module.obj', opts=['IMOD:panda3d.direct', 'ILIB:direct', 'IMPORT:panda3d.core'])
 
@@ -5006,6 +5024,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
   TargetAdd('direct.pyd', input='libp3interval_igate.obj')
   TargetAdd('direct.pyd', input='libp3distributed_igate.obj')
+  TargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
 
   TargetAdd('direct.pyd', input='direct_module.obj')
   TargetAdd('direct.pyd', input='libp3direct.dll')
