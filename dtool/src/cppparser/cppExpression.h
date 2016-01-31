@@ -30,6 +30,7 @@ class CPPFunctionGroup;
 ////////////////////////////////////////////////////////////////////
 class CPPExpression : public CPPDeclaration {
 public:
+  CPPExpression(bool value);
   CPPExpression(unsigned long long value);
   CPPExpression(int value);
   CPPExpression(const string &value);
@@ -104,6 +105,7 @@ public:
 
   enum Type {
     T_nullptr,
+    T_boolean,
     T_integer,
     T_real,
     T_string,
@@ -135,6 +137,7 @@ public:
   Type _type;
   string _str;
   union {
+    bool _boolean;
     unsigned long long _integer;
     long double _real;
     CPPInstance *_variable;
