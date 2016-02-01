@@ -247,7 +247,7 @@ find_type(const string &name) const {
 //               id number (as returned by TypeHandle::get_index()).
 //               Returns its TypeHandle if it exists, or
 //               TypeHandle::none() if there is no such type.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 TypeHandle TypeRegistry::
 find_type_by_id(int id) const {
   if (id < 0 ||id >= (int)_handle_registry.size()) {
@@ -774,7 +774,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: get_best_parent_from_Set
 //       Access: Private
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 extern "C" int
 get_best_parent_from_Set(int id, const std::set<int> &this_set) {
   // most common case..

@@ -20,7 +20,7 @@ TypeHandle PhysxSphereShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
 link(NxShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphereShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxSphereShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
 save_to_desc(PhysxSphereShapeDesc &shapeDesc) const {
@@ -66,7 +66,7 @@ save_to_desc(PhysxSphereShapeDesc &shapeDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereShape::set_radius
 //       Access: Published
-//  Description: Sets the sphere radius. 
+//  Description: Sets the sphere radius.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereShape::
 set_radius(float radius) {

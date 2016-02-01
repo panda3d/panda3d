@@ -1,4 +1,4 @@
-// Filename: iPhoneGraphicsStateGuardian.cxx
+// Filename: iPhoneGraphicsStateGuardian.mm
 // Created by:  drose (08Apr09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ TypeHandle IPhoneGraphicsStateGuardian::_type_handle;
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *IPhoneGraphicsStateGuardian::
-get_extension_func(const char *prefix, const char *name) {      
+get_extension_func(const char *prefix, const char *name) {
   return NULL;
 }
 

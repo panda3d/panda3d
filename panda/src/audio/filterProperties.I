@@ -14,9 +14,9 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::clear
-//      Access: Published
-// Description: Removes all DSP postprocessing.
+//     Function: FilterProperties::clear
+//       Access: Published
+//  Description: Removes all DSP postprocessing.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 clear() {
@@ -24,9 +24,9 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::apply_lowpass
-//      Access: Published
-// Description: Add a lowpass filter to the end of the DSP chain.
+//     Function: FilterProperties::apply_lowpass
+//       Access: Published
+//  Description: Add a lowpass filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_lowpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
@@ -34,9 +34,9 @@ add_lowpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_highpass
-//      Access: Published
-// Description: Add a highpass filter to the end of the DSP chain.
+//     Function: FilterProperties::add_highpass
+//       Access: Published
+//  Description: Add a highpass filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_highpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
@@ -44,9 +44,9 @@ add_highpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_echo
-//      Access: Published
-// Description: Add a echo filter to the end of the DSP chain.
+//     Function: FilterProperties::add_echo
+//       Access: Published
+//  Description: Add a echo filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_echo(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat delay, PN_stdfloat decayratio) {
@@ -54,9 +54,9 @@ add_echo(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat delay, PN_stdfloat 
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_flange
-//      Access: Published
-// Description: Add a flange filter to the end of the DSP chain.
+//     Function: FilterProperties::add_flange
+//       Access: Published
+//  Description: Add a flange filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_flange(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat depth, PN_stdfloat rate) {
@@ -64,9 +64,9 @@ add_flange(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat depth, PN_stdfloa
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_distort
-//      Access: Published
-// Description: Add a distort filter to the end of the DSP chain.
+//     Function: FilterProperties::add_distort
+//       Access: Published
+//  Description: Add a distort filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_distort(PN_stdfloat level) {
@@ -74,9 +74,9 @@ add_distort(PN_stdfloat level) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_normalize
-//      Access: Published
-// Description: Add a normalize filter to the end of the DSP chain.
+//     Function: FilterProperties::add_normalize
+//       Access: Published
+//  Description: Add a normalize filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_normalize(PN_stdfloat fadetime, PN_stdfloat threshold, PN_stdfloat maxamp) {
@@ -84,9 +84,9 @@ add_normalize(PN_stdfloat fadetime, PN_stdfloat threshold, PN_stdfloat maxamp) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_parameq
-//      Access: Published
-// Description: Add a parameq filter to the end of the DSP chain.
+//     Function: FilterProperties::add_parameq
+//       Access: Published
+//  Description: Add a parameq filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_parameq(PN_stdfloat center_freq, PN_stdfloat bandwidth, PN_stdfloat gain) {
@@ -94,9 +94,9 @@ add_parameq(PN_stdfloat center_freq, PN_stdfloat bandwidth, PN_stdfloat gain) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_pitchshift
-//      Access: Published
-// Description: Add a pitchshift filter to the end of the DSP chain.
+//     Function: FilterProperties::add_pitchshift
+//       Access: Published
+//  Description: Add a pitchshift filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap) {
@@ -104,9 +104,9 @@ add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_chorus
-//      Access: Published
-// Description: Add a chorus filter to the end of the DSP chain.
+//     Function: FilterProperties::add_chorus
+//       Access: Published
+//  Description: Add a chorus filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth) {
@@ -114,9 +114,9 @@ add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat w
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_sfxreverb
-//      Access: Published
-// Description: Add a reverb filter to the end of the DSP chain.
+//     Function: FilterProperties::add_sfxreverb
+//       Access: Published
+//  Description: Add a reverb filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_sfxreverb(PN_stdfloat drylevel, PN_stdfloat room, PN_stdfloat roomhf, PN_stdfloat decaytime,
@@ -128,9 +128,9 @@ add_sfxreverb(PN_stdfloat drylevel, PN_stdfloat room, PN_stdfloat roomhf, PN_std
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_compress
-//      Access: Published
-// Description: Add a compress filter to the end of the DSP chain.
+//     Function: FilterProperties::add_compress
+//       Access: Published
+//  Description: Add a compress filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
 add_compress(PN_stdfloat threshold, PN_stdfloat attack, PN_stdfloat release, PN_stdfloat gainmakeup) {
@@ -138,9 +138,9 @@ add_compress(PN_stdfloat threshold, PN_stdfloat attack, PN_stdfloat release, PN_
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::get_config
-//      Access: Published
-// Description: Intended for use by AudioManager and AudioSound
+//     Function: FilterProperties::get_config
+//       Access: Published
+//  Description: Intended for use by AudioManager and AudioSound
 //              implementations: allows access to the config vector.
 ////////////////////////////////////////////////////////////////////
 INLINE const FilterProperties::ConfigVector &FilterProperties::

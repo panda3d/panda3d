@@ -1,4 +1,4 @@
-// Filename: DXFToEggConverter.h
+// Filename: dxfToEggConverter.h
 // Created by:  drose (04May04)
 //
 ////////////////////////////////////////////////////////////////////

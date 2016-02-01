@@ -47,11 +47,9 @@ private:
   // CUSTOM EMISSION PARAMETERS
   // none
 
-  ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
   PN_stdfloat _x;
   PN_stdfloat _y;
-  ///////////////////////////////
 
   virtual void assign_initial_position(LPoint3& pos);
   virtual void assign_initial_velocity(LVector3& vel);

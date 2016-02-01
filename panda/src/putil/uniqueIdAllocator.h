@@ -11,7 +11,6 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
-// 
 
 #ifndef _UNIQUEIDALLOCATOR_H //[
 #define _UNIQUEIDALLOCATOR_H
@@ -55,7 +54,7 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out) const;
 
-public:  
+public:
   static const PN_uint32 IndexEnd;
   static const PN_uint32 IndexAllocated;
 

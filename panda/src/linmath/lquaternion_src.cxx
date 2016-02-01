@@ -1,5 +1,5 @@
 // Filename: lquaternion_src.cxx
-// Created by:  
+// Created by:
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -23,7 +23,7 @@ const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::pure_imaginary_quat
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
@@ -76,7 +76,7 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::set_hpr
-//       Access: public
+//       Access: Public
 //  Description: Sets the quaternion as the unit quaternion that
 //               is equivalent to these Euler angles.
 //               (from Real-time Rendering, p.49)
@@ -126,7 +126,7 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::get_hpr
-//       Access: public
+//       Access: Public
 //  Description: Extracts the equivalent Euler angles from the unit
 //               quaternion.
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ get_hpr(CoordinateSystem cs) const {
     FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
     FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
     FLOATTYPE cr, sr, cp, sp, ch, sh;
-    
+
     xs = _v(1) * s;   ys = _v(2) * s;   zs = _v(3) * s;
     wx = _v(0) * xs;  wy = _v(0) * ys;  wz = _v(0) * zs;
     xx = _v(1) * xs;  xy = _v(1) * ys;  xz = _v(1) * zs;
@@ -156,7 +156,7 @@ get_hpr(CoordinateSystem cs) const {
     c2 = 1.0f - (xx + yy);
     c3 = 1.0f - (yy + zz);
     c4 = xy + wz;
-    
+
     if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90)
       if (c2 >= 0.0f) {
         hpr[2] = 0.0f;
@@ -214,7 +214,7 @@ get_hpr(CoordinateSystem cs) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::set_from_matrix
-//       Access: public
+//       Access: Public
 //  Description: Sets the quaternion according to the rotation
 //               represented by the matrix.  Originally we tried an
 //               algorithm presented by Do-While Jones, but that
@@ -298,7 +298,7 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::init_type
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::

@@ -32,7 +32,7 @@ TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 //     Function: AnimChannelMatrixXfmTable::Constructor
 //       Access: Protected
 //  Description: Used only for bam loader.
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable() {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -49,7 +49,7 @@ AnimChannelMatrixXfmTable() {
 //               called by make_copy() only.
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) : 
+AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy) :
   AnimChannelMatrix(parent, copy)
 {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -64,7 +64,7 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &co
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
-  : AnimChannelMatrix(parent, name) 
+  : AnimChannelMatrix(parent, name)
 {
   for (int i = 0; i < num_matrix_components; i++) {
     _tables[i] = CPTA_stdfloat(get_class_type());
@@ -74,8 +74,8 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::Destructor
 //       Access: Public, Virtual
-//  Description: 
-/////////////////////////////////////////////////////////////
+//  Description:
+////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 ~AnimChannelMatrixXfmTable() {
 }
@@ -90,7 +90,7 @@ AnimChannelMatrixXfmTable::
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixXfmTable::
-has_changed(int last_frame, double last_frac, 
+has_changed(int last_frame, double last_frac,
             int this_frame, double this_frac) {
   if (last_frame != this_frame) {
     for (int i = 0; i < num_matrix_components; i++) {

@@ -41,9 +41,9 @@ BulletBodyNode(const char *name) : PandaNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::get_legal_collide_mask
-//       Access: Public, virtual
+//       Access: Public, Virtual
 //  Description: Returns the subset of CollideMask bits that may be
-//               set for this particular type of PandaNode.  For 
+//               set for this particular type of PandaNode.  For
 //               BodyNodes this returns all bits on.
 ////////////////////////////////////////////////////////////////////
 CollideMask BulletBodyNode::
@@ -146,7 +146,7 @@ safe_to_flatten_below() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
 output(ostream &out) const {
@@ -201,7 +201,7 @@ add_shape(BulletShape *bullet_shape, const TransformState *ts) {
       next = shape;
     }
     else {
-      // After adding the shape we will have a total of one shape, without 
+      // After adding the shape we will have a total of one shape, without
       // local transform. We can set the shape directly.
       next = new btCompoundShape();
       ((btCompoundShape *)next)->addChildShape(trans, shape);
@@ -297,7 +297,7 @@ remove_shape(BulletShape *shape) {
 
       nassertv(compound->getNumChildShapes() == 1);
 
-      // The compound is no longer required if the remaining shape 
+      // The compound is no longer required if the remaining shape
       // has no transform
       btTransform trans = compound->getChildTransform(0);
       if (is_identity(trans)) {
@@ -332,7 +332,7 @@ is_identity(btTransform &trans) {
 
   btVector3 null(0, 0, 0);
 
-  return (trans.getOrigin() == null 
+  return (trans.getOrigin() == null
        && trans.getRotation().getAxis() == null);
 }
 
@@ -685,8 +685,8 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
 //  Description: This method enforces an update of the Bullet
 //               transform, that is copies the scene graph transform
 //               to the Bullet transform.
-//               This is achieved by alling the protected PandaNode 
-//               hook 'transform_changed'. 
+//               This is achieved by alling the protected PandaNode
+//               hook 'transform_changed'.
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
 set_transform_dirty() {

@@ -1,7 +1,7 @@
-// Filename: textMaker.cxx
+// Filename: pnmTextMaker.cxx
 // Created by:  drose (03Apr02)
 //
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
@@ -95,7 +95,7 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels.
   int width = calc_width(text);
 
-  int xp = x; 
+  int xp = x;
   int yp = y;
 
   switch (_align) {

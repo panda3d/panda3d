@@ -164,7 +164,7 @@ append_data(const void *data, size_t size) {
   // reallocate itself with *every* call to append_data!
   //  _data.reserve(_data.size() + size);
 
-  _data.v().insert(_data.v().end(), (const unsigned char *)data, 
+  _data.v().insert(_data.v().end(), (const unsigned char *)data,
                    (const unsigned char *)data + size);
 }
 
@@ -177,17 +177,17 @@ append_data(const void *data, size_t size) {
 void Datagram::
 assign(const void *data, size_t size) {
   nassertv((int)size >= 0);
-  
+
   _data = PTA_uchar::empty_array(0);
   _data.v().insert(_data.v().end(), (const unsigned char *)data,
                    (const unsigned char *)data + size);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Datagram::output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: Datagram::output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Datagram::
 output(ostream &out) const {
@@ -197,10 +197,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Datagram::write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: Datagram::write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Datagram::
 write(ostream &out, unsigned int indent) const {

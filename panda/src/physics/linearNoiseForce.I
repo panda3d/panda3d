@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : prn_lookup
-//      Access : Private
-// Description : Returns a valid entry in the prn table
+//     Function: prn_lookup
+//       Access: Private
+//  Description: Returns a valid entry in the prn table
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
 prn_lookup(int index) const {
@@ -23,9 +23,9 @@ prn_lookup(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_prn_entry
-//      Access : Private
-// Description : Hashes a point, returns a prn
+//     Function: get_prn_entry
+//       Access: Private
+//  Description: Hashes a point, returns a prn
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
 get_prn_entry(const LPoint3& point) const {
@@ -33,9 +33,9 @@ get_prn_entry(const LPoint3& point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_prn_entry
-//      Access : Private
-// Description : Hashes a point, returns a prn (piecewise)
+//     Function: get_prn_entry
+//       Access: Private
+//  Description: Hashes a point, returns a prn (piecewise)
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
 get_prn_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) const {
@@ -43,9 +43,9 @@ get_prn_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) con
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_lattice_entry
-//      Access : Private
-// Description : Hashes a point, returns a gradient vector
+//     Function: get_lattice_entry
+//       Access: Private
+//  Description: Hashes a point, returns a gradient vector
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3& LinearNoiseForce::
 get_lattice_entry(const LPoint3& point) {
@@ -53,9 +53,9 @@ get_lattice_entry(const LPoint3& point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_lattice_entry
-//      Access : Private
-// Description : Hashes a point, returns a gradient vector (piecewise)
+//     Function: get_lattice_entry
+//       Access: Private
+//  Description: Hashes a point, returns a gradient vector (piecewise)
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3& LinearNoiseForce::
 get_lattice_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) {
@@ -63,9 +63,9 @@ get_lattice_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z)
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : cubic_step
-//      Access : Private
-// Description : Smooths a parameterized interpolation using
+//     Function: cubic_step
+//       Access: Private
+//  Description: Smooths a parameterized interpolation using
 //               2x^3 - 3x^2
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat LinearNoiseForce::
@@ -74,9 +74,9 @@ cubic_step(const PN_stdfloat x) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : vlerp
-//      Access : Private
-// Description : Vector linear interpolation
+//     Function: vlerp
+//       Access: Private
+//  Description: Vector linear interpolation
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 LinearNoiseForce::
 vlerp(const PN_stdfloat t, const LVector3& v0, const LVector3& v1) const {

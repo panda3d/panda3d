@@ -1,6 +1,6 @@
-// Filename: parser.y
+// Filename: parser.yxx
 // Created by:  drose (16Jan99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 %{
@@ -128,7 +128,7 @@ egg_cleanup_parser() {
         eggyyerror("Undefined vertex pool " + pool->get_name());
       } else {
         eggyyerror("Undefined vertices in pool " + pool->get_name());
-        
+
         egg_cat.error(false)
           << "Undefined vertex index numbers:";
         EggVertexPool::const_iterator vi;
@@ -139,7 +139,7 @@ egg_cleanup_parser() {
               << " " << vertex->get_index();
           }
         }
-        egg_cat.error(false) 
+        egg_cat.error(false)
           << "\n";
       }
     }
@@ -166,14 +166,14 @@ egg_cleanup_parser() {
 %token COORDSYSTEM CV DART
 %token DNORMAL DRGBA DUV DXYZ DCS DISTANCE DTREF
 %token DYNAMICVERTEXPOOL EXTERNAL_FILE
-%token GROUP DEFAULTPOSE 
+%token GROUP DEFAULTPOSE
 %token JOINT KNOTS INCLUDE
 %token INSTANCE LINE LOOP MATERIAL MATRIX3 MATRIX4 MODEL MREF NORMAL
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
 %token OUTTANGENT PATCH POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
 %token TABLE TABLE_V TAG TANGENT TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
-%token TREF TRIANGLEFAN TRIANGLESTRIP 
+%token TREF TRIANGLEFAN TRIANGLESTRIP
 %token TRIM TXT UKNOTS UV AUX VKNOTS VERTEX VERTEXANIM
 %token VERTEXPOOL VERTEXREF
 %token XFMANIM XFMSANIM
@@ -269,7 +269,7 @@ node:
         | external_reference
         | vertex_pool
         | group
-        | joint 
+        | joint
         | instance
         | polygon
         | trianglefan
@@ -655,7 +655,7 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
-    EggRenderMode::DepthWriteMode m = 
+    EggRenderMode::DepthWriteMode m =
       EggRenderMode::string_depth_write_mode(strval);
     if (m == EggRenderMode::DWM_unspecified) {
       eggyywarning("Unknown depth-write mode " + strval);
@@ -664,7 +664,7 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_test") == 0) {
-    EggRenderMode::DepthTestMode m = 
+    EggRenderMode::DepthTestMode m =
       EggRenderMode::string_depth_test_mode(strval);
     if (m == EggRenderMode::DTM_unspecified) {
       eggyywarning("Unknown depth-test mode " + strval);
@@ -673,7 +673,7 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "visibility") == 0) {
-    EggRenderMode::VisibilityMode m = 
+    EggRenderMode::VisibilityMode m =
       EggRenderMode::string_visibility_mode(strval);
     if (m == EggRenderMode::VM_unspecified) {
       eggyywarning("Unknown visibility mode " + strval);
@@ -862,7 +862,7 @@ material_body:
   }
 }
         ;
-  
+
 
 /*
  * external_reference
@@ -1324,7 +1324,7 @@ group_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
-    EggRenderMode::DepthWriteMode m = 
+    EggRenderMode::DepthWriteMode m =
       EggRenderMode::string_depth_write_mode(strval);
     if (m == EggRenderMode::DWM_unspecified) {
       eggyywarning("Unknown depth-write mode " + strval);
@@ -1333,7 +1333,7 @@ group_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_test") == 0) {
-    EggRenderMode::DepthTestMode m = 
+    EggRenderMode::DepthTestMode m =
       EggRenderMode::string_depth_test_mode(strval);
     if (m == EggRenderMode::DTM_unspecified) {
       eggyywarning("Unknown depth-test mode " + strval);
@@ -1342,7 +1342,7 @@ group_body:
     }
 
   } else if (cmp_nocase_uh(name, "visibility") == 0) {
-    EggRenderMode::VisibilityMode m = 
+    EggRenderMode::VisibilityMode m =
       EggRenderMode::string_visibility_mode(strval);
     if (m == EggRenderMode::VM_unspecified) {
       eggyywarning("Unknown visibility mode " + strval);
@@ -1741,7 +1741,7 @@ matrix3:
         MATRIX3 '{' matrix3_body '}'
         ;
 
-matrix3_body: 
+matrix3_body:
           empty
         | real real real
           real real real
@@ -1758,12 +1758,12 @@ matrix4:
         MATRIX4 '{' matrix4_body '}'
         ;
 
-matrix4_body: 
+matrix4_body:
           empty
         | real real real real
-          real real real real 
-          real real real real 
-          real real real real 
+          real real real real
+          real real real real
+          real real real real
 {
   egg_top_transform->add_matrix4
     (LMatrix4d($1, $2, $3, $4,
@@ -1795,7 +1795,7 @@ group_vertex_ref:
       EggVertex *vertex = pool->get_forward_vertex(index);
       if (vertex == NULL) {
         ostringstream errmsg;
-        errmsg << "No vertex " << index << " in pool " << pool->get_name() 
+        errmsg << "No vertex " << index << " in pool " << pool->get_name()
                << ends;
         eggyyerror(errmsg);
       } else {
@@ -1824,7 +1824,7 @@ group_vertex_membership:
   string name = $3;
   double value = $<_number>5;
   double result = $1;
-  
+
   if (cmp_nocase_uh(name, "membership") == 0) {
     result = value;
   } else {
@@ -1856,12 +1856,12 @@ switchcondition:
  *
  */
 switchcondition_body:
-        DISTANCE '{' real real VERTEX '{' real real real '}' '}' 
+        DISTANCE '{' real real VERTEX '{' real real real '}' '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance($3, $4, LPoint3d($7, $8, $9)));
 }
-        | DISTANCE '{' real real real VERTEX '{' real real real '}' '}' 
+        | DISTANCE '{' real real real VERTEX '{' real real real '}' '}'
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   group->set_lod(EggSwitchConditionDistance($3, $4, LPoint3d($8, $9, $10), $5));
@@ -2045,7 +2045,7 @@ primitive_component_body:
  */
 primitive_body:
         empty
-        | primitive_body COMPONENT integer '{' 
+        | primitive_body COMPONENT integer '{'
 {
   if (!egg_stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
     eggyyerror("Not a composite primitive; components are not allowed here.");
@@ -2079,7 +2079,7 @@ primitive_body:
   string name = $3;
   double value = $<_number>5;
   string strval = $<_string>5;
-  
+
   if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {
@@ -2088,7 +2088,7 @@ primitive_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
-    EggRenderMode::DepthWriteMode m = 
+    EggRenderMode::DepthWriteMode m =
       EggRenderMode::string_depth_write_mode(strval);
     if (m == EggRenderMode::DWM_unspecified) {
       eggyywarning("Unknown depth-write mode " + strval);
@@ -2097,7 +2097,7 @@ primitive_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_test") == 0) {
-    EggRenderMode::DepthTestMode m = 
+    EggRenderMode::DepthTestMode m =
       EggRenderMode::string_depth_test_mode(strval);
     if (m == EggRenderMode::DTM_unspecified) {
       eggyywarning("Unknown depth-test mode " + strval);
@@ -2106,7 +2106,7 @@ primitive_body:
     }
 
   } else if (cmp_nocase_uh(name, "visibility") == 0) {
-    EggRenderMode::VisibilityMode m = 
+    EggRenderMode::VisibilityMode m =
       EggRenderMode::string_visibility_mode(strval);
     if (m == EggRenderMode::VM_unspecified) {
       eggyywarning("Unknown visibility mode " + strval);
@@ -2172,7 +2172,7 @@ nurbs_surface_body:
   string name = $3;
   double value = $<_number>5;
   string strval = $<_string>5;
-  
+
   if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {
@@ -2181,7 +2181,7 @@ nurbs_surface_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
-    EggRenderMode::DepthWriteMode m = 
+    EggRenderMode::DepthWriteMode m =
       EggRenderMode::string_depth_write_mode(strval);
     if (m == EggRenderMode::DWM_unspecified) {
       eggyywarning("Unknown depth-write mode " + strval);
@@ -2190,7 +2190,7 @@ nurbs_surface_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_test") == 0) {
-    EggRenderMode::DepthTestMode m = 
+    EggRenderMode::DepthTestMode m =
       EggRenderMode::string_depth_test_mode(strval);
     if (m == EggRenderMode::DTM_unspecified) {
       eggyywarning("Unknown depth-test mode " + strval);
@@ -2199,7 +2199,7 @@ nurbs_surface_body:
     }
 
   } else if (cmp_nocase_uh(name, "visibility") == 0) {
-    EggRenderMode::VisibilityMode m = 
+    EggRenderMode::VisibilityMode m =
       EggRenderMode::string_visibility_mode(strval);
     if (m == EggRenderMode::VM_unspecified) {
       eggyywarning("Unknown visibility mode " + strval);
@@ -2248,7 +2248,7 @@ nurbs_curve_body:
   string name = $3;
   double value = $<_number>5;
   string strval = $<_string>5;
-  
+
   if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
     if (a == EggRenderMode::AM_unspecified) {
@@ -2257,7 +2257,7 @@ nurbs_curve_body:
       primitive->set_alpha_mode(a);
     }
   } else if (cmp_nocase_uh(name, "depth_write") == 0) {
-    EggRenderMode::DepthWriteMode m = 
+    EggRenderMode::DepthWriteMode m =
       EggRenderMode::string_depth_write_mode(strval);
     if (m == EggRenderMode::DWM_unspecified) {
       eggyywarning("Unknown depth-write mode " + strval);
@@ -2266,7 +2266,7 @@ nurbs_curve_body:
     }
 
   } else if (cmp_nocase_uh(name, "depth_test") == 0) {
-    EggRenderMode::DepthTestMode m = 
+    EggRenderMode::DepthTestMode m =
       EggRenderMode::string_depth_test_mode(strval);
     if (m == EggRenderMode::DTM_unspecified) {
       eggyywarning("Unknown depth-test mode " + strval);
@@ -2275,7 +2275,7 @@ nurbs_curve_body:
     }
 
   } else if (cmp_nocase_uh(name, "visibility") == 0) {
-    EggRenderMode::VisibilityMode m = 
+    EggRenderMode::VisibilityMode m =
       EggRenderMode::string_visibility_mode(strval);
     if (m == EggRenderMode::VM_unspecified) {
       eggyywarning("Unknown visibility mode " + strval);
@@ -2298,7 +2298,7 @@ nurbs_curve_body:
     } else {
       primitive->set_curve_type(a);
     }
-    
+
   } else {
     eggyywarning("Unknown scalar " + name);
   }
@@ -2352,7 +2352,7 @@ primitive_texture_body:
     // The texture already existed.  Use it.
     texture = (*vpi).second;
     if (filename != texture->get_filename()) {
-      eggyywarning(string("Using previous path: ") + 
+      eggyywarning(string("Using previous path: ") +
                    texture->get_filename().get_fullpath());
     }
   }
@@ -2475,7 +2475,7 @@ primitive_vertex_ref:
       EggVertex *vertex = pool->get_forward_vertex(index);
       if (vertex == NULL) {
         ostringstream errmsg;
-        errmsg << "No vertex " << index << " in pool " << pool->get_name() 
+        errmsg << "No vertex " << index << " in pool " << pool->get_name()
                << ends;
         eggyyerror(errmsg);
       } else {
@@ -2579,7 +2579,7 @@ nurbs_surface_trim_loop_body:
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, egg_stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
   nassertr(!nurbs->_trims.back().empty(), 0);
-  EggNurbsCurve *curve = DCAST(EggNurbsCurve, $2); 
+  EggNurbsCurve *curve = DCAST(EggNurbsCurve, $2);
   nurbs->_trims.back().back().push_back(curve);
 }
         ;
@@ -2743,7 +2743,7 @@ sanim_body:
         | sanim_body TABLE_V '{' real_list '}'
 {
   DCAST(EggSAnimData, egg_stack.back())->set_data($4);
-}  
+}
         ;
 
 /*
@@ -2796,7 +2796,7 @@ xfmanim_body:
         | xfmanim_body TABLE_V '{' real_list '}'
 {
   DCAST(EggXfmAnimData, egg_stack.back())->set_data($4);
-}  
+}
         ;
 
 /*
@@ -2900,7 +2900,7 @@ anim_preload_body:
 /*
  * integer_list
  *
- * enter: 
+ * enter:
  * exit: returns a list of parsed integers.
  *
  */
@@ -2918,7 +2918,7 @@ integer_list:
 /*
  * real_list
  *
- * enter: 
+ * enter:
  * exit: returns a list of parsed reals.
  *
  */
@@ -2936,7 +2936,7 @@ real_list:
 /*
  * texture_name
  *
- * enter: 
+ * enter:
  * exit: Returns an EggTexture pointer, or NULL.
  *
  */
@@ -2957,7 +2957,7 @@ texture_name:
 /*
  * material_name
  *
- * enter: 
+ * enter:
  * exit: Returns an EggMaterial pointer, or NULL.
  *
  */
@@ -2978,7 +2978,7 @@ material_name:
 /*
  * vertex_pool_name
  *
- * enter: 
+ * enter:
  * exit: Returns an EggVertexPool pointer, or NULL.
  *
  */
@@ -3003,7 +3003,7 @@ vertex_pool_name:
 /*
  * group_name
  *
- * enter: 
+ * enter:
  * exit: Returns an EggGroup pointer, or NULL.
  *
  */
@@ -3024,7 +3024,7 @@ group_name:
 /*
  * required_name
  *
- * enter: 
+ * enter:
  * exit: Returns a nonempty string as the name of an EggObject.
  *
  */
@@ -3041,7 +3041,7 @@ required_name:
 /*
  * optional_name
  *
- * enter: 
+ * enter:
  * exit: Returns a possibly-empty string as the name of an EggObject.
  *
  */
@@ -3053,7 +3053,7 @@ optional_name:
 /*
  * required_string
  *
- * enter: 
+ * enter:
  * exit: Returns a nonempty string.
  *
  */
@@ -3069,7 +3069,7 @@ required_string:
 /*
  * optional_string
  *
- * enter: 
+ * enter:
  * exit: Returns a possibly-empty string.
  *
  */
@@ -3084,7 +3084,7 @@ optional_string:
 /*
  * string
  *
- * enter: 
+ * enter:
  * exit: Returns a nonempty string.  This is different from required_string
  *       in that the grammar requires it to be nonempty, so that: (a)
  *       error messages are more obtuse, and (b) the grammar is less
@@ -3106,7 +3106,7 @@ string:
 /*
  * repeated_string
  *
- * enter: 
+ * enter:
  * exit: Returns a possibly-empty string, which might consist of a number
  *       of strings or numbers in a row, concatenated together with an
  *       implicit newline between.
@@ -3126,7 +3126,7 @@ repeated_string:
 /*
  * repeated_string_body
  *
- * enter: 
+ * enter:
  * exit: Returns a nonempty string, which might consist of a number
  *       of strings or numbers in a row, concatenated together with an
  *       implicit newline between.
@@ -3146,7 +3146,7 @@ repeated_string_body:
 /*
  * real
  *
- * enter: 
+ * enter:
  * exit: Returns an integer or floating-pointer number.
  *
  */
@@ -3161,7 +3161,7 @@ real:
 /*
  * real_or_string
  *
- * enter: 
+ * enter:
  * exit: Returns a number as ($<_number>1) or as an unsigned long
  * ($<_ulong>1) or a string (as $<_string>1).
  *
@@ -3191,7 +3191,7 @@ real_or_string:
 /*
  * integer
  *
- * enter: 
+ * enter:
  * exit: Returns an integer number (stored in a double value).
  *
  */

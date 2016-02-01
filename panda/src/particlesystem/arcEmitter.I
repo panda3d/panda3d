@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_start_angle
-//      Access : public
-// Description : start angle set
+//     Function: set_start_angle
+//       Access: Public
+//  Description: start angle set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
@@ -24,9 +24,9 @@ set_start_angle(PN_stdfloat angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_end_angle
-//      Access : public
-// Description : end angle set
+//     Function: set_end_angle
+//       Access: Public
+//  Description: end angle set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
@@ -35,9 +35,9 @@ set_end_angle(PN_stdfloat angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_arc
-//      Access : public
-// Description : arc sweep set
+//     Function: set_arc
+//       Access: Public
+//  Description: arc sweep set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
@@ -47,9 +47,9 @@ set_arc(PN_stdfloat startAngle, PN_stdfloat endAngle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_start_angle
-//      Access : public
-// Description : get start angle
+//     Function: get_start_angle
+//       Access: Public
+//  Description: get start angle
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat ArcEmitter::
@@ -58,9 +58,9 @@ get_start_angle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_end_angle
-//      Access : public
-// Description : get end angle
+//     Function: get_end_angle
+//       Access: Public
+//  Description: get end angle
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat ArcEmitter::

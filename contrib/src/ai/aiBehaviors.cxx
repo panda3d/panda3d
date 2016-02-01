@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : aiBehaviors.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  8 Sep 09
+// Filename: aiBehaviors.cxx
+// Created by: Deepak, John, Navin (08Sep09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -48,15 +47,12 @@ AIBehaviors::~AIBehaviors() {
 
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : is_conflict
-// Description : Checks for conflict between steering forces.
-//                If there is a conflict it returns 'true' and sets _conflict to 'true'.
-//                If there is no conflict it returns 'false' and sets _conflict to 'false'.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: is_conflict
+//  Description: Checks for conflict between steering forces.
+//               If there is a conflict it returns 'true' and sets _conflict to 'true'.
+//               If there is no conflict it returns 'false' and sets _conflict to 'false'.
+////////////////////////////////////////////////////////////////////
 bool AIBehaviors::is_conflict() {
   int value = int(is_on(_seek)) + int(is_on(_flee)) + int(is_on(_pursue)) + int(is_on(_evade)) + int(is_on(_wander)) + int(is_on(_flock))+ int(is_on(_obstacle_avoidance));
 
@@ -102,14 +98,12 @@ bool AIBehaviors::is_conflict() {
   return false;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : accumulate_force
-// Description : This function updates the individual steering forces for each of the ai characters.
-//                These accumulated forces are eventually what comprise the resultant
-//                steering force of the character.
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: accumulate_force
+//  Description: This function updates the individual steering forces for each of the ai characters.
+//               These accumulated forces are eventually what comprise the resultant
+//               steering force of the character.
+////////////////////////////////////////////////////////////////////
 
 void AIBehaviors::accumulate_force(string force_type, LVecBase3 force) {
 
@@ -159,15 +153,13 @@ void AIBehaviors::accumulate_force(string force_type, LVecBase3 force) {
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : calculate_prioritized
-// Description : This function updates the main steering force for the ai character using
-//                the accumulate function and checks for max force and arrival force.
-//                It finally returns this steering force which is accessed by the update
-//                function in the AICharacter class.
-
-//////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: calculate_prioritized
+//  Description: This function updates the main steering force for the ai character using
+//               the accumulate function and checks for max force and arrival force.
+//               It finally returns this steering force which is accessed by the update
+//               function in the AICharacter class.
+////////////////////////////////////////////////////////////////////
 
 LVecBase3 AIBehaviors::calculate_prioritized() {
   LVecBase3 force;
@@ -313,14 +305,10 @@ LVecBase3 AIBehaviors::calculate_prioritized() {
   return _steering_force;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : remove_ai
-// Description : This function removes individual or all the AIs.
-
-/////////////////////////////////////////////////////////////////////////////////
-
-//add for path follow
+////////////////////////////////////////////////////////////////////
+//     Function: remove_ai
+//  Description: This function removes individual or all the AIs.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::remove_ai(string ai_type) {
   switch(char_to_int(ai_type)) {
     case 0: {
@@ -434,14 +422,10 @@ void AIBehaviors::remove_ai(string ai_type) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : pause_ai
-// Description : This function pauses individual or all the AIs.
-
-/////////////////////////////////////////////////////////////////////////////////
-
-//add for path follow
+////////////////////////////////////////////////////////////////////
+//     Function: pause_ai
+//  Description: This function pauses individual or all the AIs.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::pause_ai(string ai_type) {
   switch(char_to_int(ai_type)) {
     case 0: {
@@ -537,13 +521,10 @@ void AIBehaviors::pause_ai(string ai_type) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : resume_ai
-// Description : This function resumes individual or all the AIs
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: resume_ai
+//  Description: This function resumes individual or all the AIs
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::resume_ai(string ai_type) {
   switch(char_to_int(ai_type)) {
     case 0: {
@@ -634,15 +615,12 @@ void AIBehaviors::resume_ai(string ai_type) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : seek
-// Description : This function activates seek and makes an object of the Seek class.
-//                This is the function we want the user to call for seek to be done.
-//                This function is overloaded to accept a NodePath or an LVecBase3.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: seek
+//  Description: This function activates seek and makes an object of the Seek class.
+//               This is the function we want the user to call for seek to be done.
+//               This function is overloaded to accept a NodePath or an LVecBase3.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::seek(NodePath target_object, float seek_wt) {
   _seek_obj = new Seek(_ai_char, target_object, seek_wt);
   turn_on("seek");
@@ -653,14 +631,11 @@ void AIBehaviors::seek(LVecBase3 pos, float seek_wt) {
   turn_on("seek");
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flee
-// Description : This function activates flee_activate and creates an object of the Flee class.
-//                This function is overloaded to accept a NodePath or an LVecBase3.
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: flee
+//  Description: This function activates flee_activate and creates an object of the Flee class.
+//               This function is overloaded to accept a NodePath or an LVecBase3.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::flee(NodePath target_object, double panic_distance, double relax_distance, float flee_wt) {
   _flee_obj = new Flee(_ai_char, target_object, panic_distance, relax_distance, flee_wt);
   _flee_list.insert(_flee_list.end(), *_flee_obj);
@@ -675,27 +650,21 @@ void AIBehaviors::flee(LVecBase3 pos, double panic_distance, double relax_distan
   turn_on("flee_activate");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : pursue
-// Description : This function activates pursue.
-//                This is the function we want the user to call for pursue to be done.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: pursue
+//  Description: This function activates pursue.
+//               This is the function we want the user to call for pursue to be done.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::pursue(NodePath target_object, float pursue_wt) {
   _pursue_obj = new Pursue(_ai_char, target_object, pursue_wt);
 
   turn_on("pursue");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : evade
-// Description : This function activates evade_activate.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: evade
+//  Description: This function activates evade_activate.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::evade(NodePath target_object, double panic_distance, double relax_distance, float evade_wt) {
   _evade_obj = new Evade(_ai_char, target_object, panic_distance, relax_distance, evade_wt);
   _evade_list.insert(_evade_list.end(), *_evade_obj);
@@ -703,14 +672,11 @@ void AIBehaviors::evade(NodePath target_object, double panic_distance, double re
   turn_on("evade_activate");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : arrival
-// Description : This function activates arrival.
-//                This is the function we want the user to call for arrival to be done.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: arrival
+//  Description: This function activates arrival.
+//               This is the function we want the user to call for arrival to be done.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::arrival(double distance) {
   if(_pursue_obj) {
     _arrival_obj = new Arrival(_ai_char, distance);
@@ -727,14 +693,11 @@ void AIBehaviors::arrival(double distance) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flock
-// Description : This function activates flock.
-//                This is the function we want the user to call for flock to be done.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: flock
+//  Description: This function activates flock.
+//               This is the function we want the user to call for flock to be done.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::flock(float flock_wt) {
   _flock_weight = flock_wt;
 
@@ -742,14 +705,11 @@ void AIBehaviors::flock(float flock_wt) {
   turn_on("flock_activate");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flock_activate
-// Description : This function checks whether any other behavior exists to work with flock.
-//                When this is true, it calls the do_flock function.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: flock_activate
+//  Description: This function checks whether any other behavior exists to work with flock.
+//               When this is true, it calls the do_flock function.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::flock_activate() {
   if(is_on(_seek) || is_on(_flee) || is_on(_pursue) || is_on(_evade) || is_on(_wander)) {
       turn_off("flock_activate");
@@ -757,18 +717,15 @@ void AIBehaviors::flock_activate() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_flock
-// Description : This function contains the logic for flocking behavior. This is
-//                an emergent behavior and is obtained by combining three other
-//                behaviors which are separation, cohesion and alignment based on
-//                Craig Reynold's algorithm. Also, this behavior does not work by
-//                itself. It works only when combined with other steering behaviors
-//                such as wander, pursue, evade, seek and flee.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: do_flock
+//  Description: This function contains the logic for flocking behavior. This is
+//               an emergent behavior and is obtained by combining three other
+//               behaviors which are separation, cohesion and alignment based on
+//               Craig Reynold's algorithm. Also, this behavior does not work by
+//               itself. It works only when combined with other steering behaviors
+//               such as wander, pursue, evade, seek and flee.
+////////////////////////////////////////////////////////////////////
 LVecBase3 AIBehaviors::do_flock() {
 
   //! Initialize variables required to compute the flocking force on the ai char.
@@ -839,141 +796,109 @@ LVecBase3 AIBehaviors::do_flock() {
     + cohesion_force * _flock_group->_cohesion_wt);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : wander
-// Description : This function activates wander.
+////////////////////////////////////////////////////////////////////
+//     Function: wander
+//  Description: This function activates wander.
 //               This is the function we want the user to call for flock to be done.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::wander(double wander_radius, int flag, double aoe, float wander_weight) {
   _wander_obj = new Wander(_ai_char, wander_radius, flag, aoe, wander_weight);
   turn_on("wander");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : obstacle avoidance
-// Description : This function activates obstacle avoidance for a given character.
+////////////////////////////////////////////////////////////////////
+//     Function: obstacle avoidance
+//  Description: This function activates obstacle avoidance for a given character.
 //               This is the function we want the user to call for
 //               obstacle avoidance to be performed.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::obstacle_avoidance(float obstacle_avoidance_weight) {
   _obstacle_avoidance_obj = new ObstacleAvoidance(_ai_char, obstacle_avoidance_weight);
   turn_on("obstacle_avoidance_activate");
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : path_follow
-// Description : This function activates path following.
-//                This is the function we want the user to call for path following.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: path_follow
+//  Description: This function activates path following.
+//               This is the function we want the user to call for path following.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::path_follow(float follow_wt) {
   _path_follow_obj = new PathFollow(_ai_char, follow_wt);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_to_path
-// Description : This function adds positions to the path to follow.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: add_to_path
+//  Description: This function adds positions to the path to follow.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::add_to_path(LVecBase3 pos) {
   _path_follow_obj->add_to_path(pos);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : start_follow
-// Description : This function starts the path follower.
-
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: start_follow
+//  Description: This function starts the path follower.
+////////////////////////////////////////////////////////////////////
 
 void AIBehaviors::start_follow(string type) {
   _path_follow_obj->start(type);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: init_path_find
+//  Description: This function activates path finding in the character.
+//               This function accepts the meshdata in .csv format.
 //
-// Function : init_path_find
-// Description : This function activates path finding in the character.
-//                This function accepts the meshdata in .csv format.
-//
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::init_path_find(const char* navmesh_filename) {
   _path_find_obj = new PathFind(_ai_char);
   _path_find_obj->set_path_find(navmesh_filename);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : path_find_to (for pathfinding towards a  static position)
-// Description : This function checks for the source and target in the navigation mesh
-//                for its availability and then finds the best path via the A* algorithm
-//                Then it calls the path follower to make the object follow the path.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: path_find_to (for pathfinding towards a  static position)
+//  Description: This function checks for the source and target in the navigation mesh
+//               for its availability and then finds the best path via the A* algorithm
+//               Then it calls the path follower to make the object follow the path.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::path_find_to(LVecBase3 pos, string type) {
   _path_find_obj->path_find(pos, type);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : path_find_to (for pathfinding towards a moving target (a NodePath))
-// Description : This function checks for the source and target in the navigation mesh
-//                for its availability and then finds the best path via the A* algorithm
-//                Then it calls the path follower to make the object follow the path.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: path_find_to (for pathfinding towards a moving target (a NodePath))
+//  Description: This function checks for the source and target in the navigation mesh
+//               for its availability and then finds the best path via the A* algorithm
+//               Then it calls the path follower to make the object follow the path.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::path_find_to(NodePath target, string type) {
   _path_find_obj->path_find(target, type);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_static_obstacle
-// Description : This function allows the user to dynamically add obstacles to the
-//                game environment. The function will update the nodes within the
-//                bounding volume of the obstacle as non-traversable. Hence will not be
-//                considered by the pathfinding algorithm.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: add_static_obstacle
+//  Description: This function allows the user to dynamically add obstacles to the
+//               game environment. The function will update the nodes within the
+//               bounding volume of the obstacle as non-traversable. Hence will not be
+//               considered by the pathfinding algorithm.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::add_static_obstacle(NodePath obstacle) {
   _path_find_obj->add_obstacle_to_mesh(obstacle);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : add_dynamic_obstacle
-// Description : This function starts the pathfinding obstacle navigation for the
-//                passed in obstacle.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: add_dynamic_obstacle
+//  Description: This function starts the pathfinding obstacle navigation for the
+//               passed in obstacle.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::add_dynamic_obstacle(NodePath obstacle) {
   _path_find_obj->dynamic_avoid(obstacle);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : behavior_status
-// Description : This function returns the status of an AI Type whether it is active,
-//                paused or disabled. It returns -1 if an invalid string is passed.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: behavior_status
+//  Description: This function returns the status of an AI Type whether it is active,
+//               paused or disabled. It returns -1 if an invalid string is passed.
+////////////////////////////////////////////////////////////////////
 string AIBehaviors::behavior_status(string ai_type) {
   switch(char_to_int(ai_type)) {
     case 1:
@@ -1188,14 +1113,11 @@ string AIBehaviors::behavior_status(string ai_type) {
     }
   }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : char_to_int
-// Description : This function is used to derive int values from the ai types strings.
-//                Returns -1 if an invalid string is passed.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: char_to_int
+//  Description: This function is used to derive int values from the ai types strings.
+//               Returns -1 if an invalid string is passed.
+////////////////////////////////////////////////////////////////////
 int AIBehaviors::char_to_int(string ai_type) {
   if(ai_type == "all") {
     return 0;
@@ -1252,13 +1174,10 @@ int AIBehaviors::char_to_int(string ai_type) {
   return -1;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : turn_on
-// Description : This function turns on any aiBehavior which is passed as a string.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: turn_on
+//  Description: This function turns on any aiBehavior which is passed as a string.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::turn_on(string ai_type) {
   switch(char_to_int(ai_type)) {
     case 1:  {
@@ -1318,13 +1237,10 @@ void AIBehaviors::turn_on(string ai_type) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : turn_off
-// Description : This function turns off any aiBehavior which is passed as a string.
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: turn_off
+//  Description: This function turns off any aiBehavior which is passed as a string.
+////////////////////////////////////////////////////////////////////
 void AIBehaviors::turn_off(string ai_type) {
 switch(char_to_int(ai_type)) {
     case 1:  {
@@ -1426,24 +1342,18 @@ switch(char_to_int(ai_type)) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : is_on
-// Description : This function returns true if an aiBehavior is on
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: is_on
+//  Description: This function returns true if an aiBehavior is on
+////////////////////////////////////////////////////////////////////
 bool AIBehaviors::is_on(_behavior_type bt)  {
   return (_behaviors_flags & bt) == bt;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : is_on
-// Description : This function returns true if pathfollow or pathfinding is on
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: is_on
+//  Description: This function returns true if pathfollow or pathfinding is on
+////////////////////////////////////////////////////////////////////
 bool AIBehaviors::is_on(string ai_type) {
   if(ai_type == "pathfollow") {
     if(_path_follow_obj) {
@@ -1466,24 +1376,18 @@ bool AIBehaviors::is_on(string ai_type) {
   return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : is_off
-// Description : This function returns true if an aiBehavior is off
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: is_off
+//  Description: This function returns true if an aiBehavior is off
+////////////////////////////////////////////////////////////////////
 bool AIBehaviors::is_off(_behavior_type bt)  {
   return ((_behaviors_flags | bt) == bt);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : is_off
-// Description : This function returns true if pathfollow or pathfinding is off
-
-///////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: is_off
+//  Description: This function returns true if pathfollow or pathfinding is off
+////////////////////////////////////////////////////////////////////
 bool AIBehaviors::is_off(string ai_type) {
   if(ai_type == "pathfollow") {
     if(_path_follow_obj && _path_follow_obj->_start) {

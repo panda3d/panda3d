@@ -42,7 +42,7 @@ enum CPPInstanceIdentifierType {
   IIT_initializer,
 };
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPInstanceIdentifier
 // Description : This class is used in parser.y to build up a variable
 //               instance definition.  An instance is something like

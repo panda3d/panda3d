@@ -18,33 +18,33 @@
 #include "config_physics.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearEulerIntegrator
-//       Access : Public
-//  Description : constructor
+//     Function: LinearEulerIntegrator
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LinearEulerIntegrator::
 LinearEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearEulerIntegrator
-//       Access : Public
-//  Description : destructor
+//     Function: LinearEulerIntegrator
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearEulerIntegrator::
 ~LinearEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Integrate
-//       Access : Public
-//  Description : Integrate a step of motion (based on dt) by
+//     Function: Integrate
+//       Access: Public
+//  Description: Integrate a step of motion (based on dt) by
 //                applying every force in force_vec to every object
 //                in obj_vec.
-//                
+//
 //                physical,
 //                    The objects being acted upon and the
-//                    set of local forces that are applied 
+//                    set of local forces that are applied
 //                    after the global forces.
 //                forces,
 //                    Global forces to be applied first.
@@ -90,16 +90,16 @@ child_integrate(Physical *physical,
     if (current_object == (PhysicsObject *) NULL) {
       continue;
     }
-    
+
     if (current_object->get_active() == false) {
       continue;
     }
-    
+
     LVector3 md_accum_vec; // mass dependent accumulation vector.
     LVector3 non_md_accum_vec;
     LVector3 accel_vec;
     LVector3 vel_vec;
-    
+
     // reset the accumulation vectors for this object
     md_accum_vec.set(0.0f, 0.0f, 0.0f);
     non_md_accum_vec.set(0.0f, 0.0f, 0.0f);
@@ -181,15 +181,15 @@ child_integrate(Physical *physical,
     pos += vel_vec * dt;
     #else //][
     assert(current_object->get_position()==current_object->get_last_position());
-    
+
     accel_vec*=viscosityDamper;
-    
+
     // x = x + v * t + 0.5 * a * t * t
     pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
     // v = v + a * t
     vel_vec += accel_vec * dt;
     #endif //]
-    
+
     // and store them back.
     if (!pos.is_nan()) {
       current_object->set_position(pos);
@@ -201,10 +201,10 @@ child_integrate(Physical *physical,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 output(ostream &out) const {
@@ -214,10 +214,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 write(ostream &out, unsigned int indent) const {

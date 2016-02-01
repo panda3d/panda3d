@@ -1188,7 +1188,6 @@ transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
 }
 
 ////////////////////////////////////////////////////////////////////
-
 //     Function: GeomVertexData::transform_vertices
 //       Access: Published
 //  Description: Applies the indicated transform matrix to all of the

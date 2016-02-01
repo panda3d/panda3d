@@ -702,7 +702,7 @@ create_texture(DXScreenData &scrn) {
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
-  ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
  found_matching_format:
   // We found a suitable format that matches the texture's format.
@@ -1706,7 +1706,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: calculate_row_byte_length
-//       Access: Private, hidden
+//       Access: Private, Hidden
 //  Description: local helper function, which calculates the
 //               'row_byte_length' or 'pitch' needed for calling
 //               D3DXLoadSurfaceFromMemory.

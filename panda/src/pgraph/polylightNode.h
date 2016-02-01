@@ -1,4 +1,4 @@
-// Filename: PolylightNode.h
+// Filename: polylightNode.h
 // Created by:  sshodhan (02Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -34,8 +34,8 @@ class EXPCL_PANDA_PGRAPH PolylightNode : public PandaNode{
 
 PUBLISHED:
   /*
-  // This was the old constructor... interrogate would generate a 
-  // separate wrapper for each parameter... so its better to 
+  // This was the old constructor... interrogate would generate a
+  // separate wrapper for each parameter... so its better to
   // have a simpler constructor and require the programmer
   // to use set_* methods.
   PolylightNode(const string &name, PN_stdfloat x = 0.0, PN_stdfloat y = 0.0, PN_stdfloat z = 0.0,
@@ -119,7 +119,7 @@ private:
   PN_stdfloat _sin_freq;
   //PN_stdfloat _speed;
   //PN_stdfloat fixed_points
-  
+
 
 public:
   static void register_with_read_factory();

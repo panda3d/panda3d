@@ -17,9 +17,9 @@
 TypeHandle AngularForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularForce
-//      Access : protected
-// Description : constructor
+//     Function: AngularForce
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 AngularForce::
 AngularForce() :
@@ -27,9 +27,9 @@ AngularForce() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularForce
-//      Access : protected
-// Description : copy constructor
+//     Function: AngularForce
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 AngularForce::
 AngularForce(const AngularForce &copy) :
@@ -37,18 +37,18 @@ AngularForce(const AngularForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~AngularForce
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~AngularForce
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 AngularForce::
 ~AngularForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_quat
-//      Access : public
-// Description : access query
+//     Function: get_quat
+//       Access: Public
+//  Description: access query
 ////////////////////////////////////////////////////////////////////
 LRotation AngularForce::
 get_quat(const PhysicsObject *po) {
@@ -57,9 +57,9 @@ get_quat(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : is_linear
-//      Access : public
-// Description : access query
+//     Function: is_linear
+//       Access: Public
+//  Description: access query
 ////////////////////////////////////////////////////////////////////
 bool AngularForce::
 is_linear() const {
@@ -67,10 +67,10 @@ is_linear() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularForce::
 output(ostream &out) const {
@@ -80,10 +80,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularForce::
 write(ostream &out, unsigned int indent) const {

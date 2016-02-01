@@ -1,4 +1,4 @@
-// Filename: CollisionHandlerGravity.I
+// Filename: collisionHandlerGravity.I
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -104,9 +104,9 @@ get_impact_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : CollisionHandlerGravity::get_contact_normal
-//      Access : Public
-// Description : 
+//     Function: CollisionHandlerGravity::get_contact_normal
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3 &CollisionHandlerGravity::
 get_contact_normal() const {

@@ -120,7 +120,7 @@ poll() {
 
     reader->poll();
     reader->idle();
-    
+
     ri = rnext;
   }
 }
@@ -290,7 +290,7 @@ find_user_guide_bar(double from_height, double to_height) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatServer::user_guide_bars_changed
-//       Access: Priate
+//       Access: Private
 //  Description: Called when the user guide bars have been changed.
 ////////////////////////////////////////////////////////////////////
 void PStatServer::

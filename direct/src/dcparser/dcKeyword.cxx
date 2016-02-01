@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DCKeyword::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCKeyword::
 DCKeyword(const string &name, int historical_flag) :
@@ -74,10 +74,10 @@ clear_historical_flag() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCKeyword::output
-//       Access : Public, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCKeyword::output
+//       Access: Public, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCKeyword::
 output(ostream &out, bool brief) const {
@@ -87,7 +87,7 @@ output(ostream &out, bool brief) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCKeyword::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DCKeyword::
 write(ostream &out, bool, int indent_level) const {

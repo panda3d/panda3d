@@ -431,7 +431,7 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   return DDENUMRET_OK;
 }
 
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow9::find_best_depth_format
 //       Access: Private
 //  Description:

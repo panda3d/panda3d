@@ -30,9 +30,9 @@ BulletBaseCharacterControllerNode(const char *name) : PandaNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBaseCharacterControllerNode::get_legal_collide_mask
-//       Access: Public, virtual
+//       Access: Public, Virtual
 //  Description: Returns the subset of CollideMask bits that may be
-//               set for this particular type of PandaNode.  For 
+//               set for this particular type of PandaNode.  For
 //               CharacterControllerNodes this returns all bits on.
 ////////////////////////////////////////////////////////////////////
 CollideMask BulletBaseCharacterControllerNode::

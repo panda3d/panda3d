@@ -24,11 +24,11 @@
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PortalNode 
-//       Description : A node in the scene graph that can hold a 
-//                     Portal Polygon, which is a rectangle. Other 
+//       Class : PortalNode
+// Description : A node in the scene graph that can hold a
+//                     Portal Polygon, which is a rectangle. Other
 //                     types of polygons are not supported for
-//                     now. It also holds a PT(PandaNode) Cell that 
+//                     now. It also holds a PT(PandaNode) Cell that
 //                     this portal is connected to
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
@@ -44,7 +44,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
 
   virtual void enable_clipping_planes();
 

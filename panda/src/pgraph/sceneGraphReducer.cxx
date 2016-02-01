@@ -1,4 +1,4 @@
-// Filename: SceneGraphReducer.cxx
+// Filename: sceneGraphReducer.cxx
 // Created by:  drose (14Mar02)
 //
 ////////////////////////////////////////////////////////////////////

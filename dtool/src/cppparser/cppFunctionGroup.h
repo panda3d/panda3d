@@ -21,7 +21,7 @@
 
 class CPPInstance;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPFunctionGroup
 // Description : This class is simply a container for one or more
 //               CPPInstances for functions of the same name.  It's

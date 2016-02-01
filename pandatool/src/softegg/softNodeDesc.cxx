@@ -25,7 +25,7 @@ TypeHandle SoftNodeDesc::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc::
 SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
@@ -52,11 +52,11 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   numTexLoc = 0;
   numTexGlb = 0;
 
-  uScale = NULL; 
+  uScale = NULL;
   vScale = NULL;
   uOffset = NULL;
   vOffset = NULL;
-  
+
   valid;
   uv_swap;
   //  SAA_Boolean visible;
@@ -70,7 +70,7 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc::
 ~SoftNodeDesc() {
@@ -112,7 +112,7 @@ set_parent(SoftNodeDesc *parent) {
     if (_parent == parent)
       softegg_cat.spam() << " parent already set\n";
     else {
-      softegg_cat.spam() << " current parent " << _parent->get_name() << " new parent " 
+      softegg_cat.spam() << " current parent " << _parent->get_name() << " new parent "
            << parent << endl;
     }
     */
@@ -137,7 +137,7 @@ force_set_parent(SoftNodeDesc *parent) {
     softegg_cat.spam() << " current parent " << _parent->get_name();
 
   _parent = parent;
-  
+
   if (_parent)
     softegg_cat.spam() << " new parent " << _parent->get_name() << endl;
 
@@ -245,7 +245,7 @@ mark_joint_parent() {
   }
   else
     softegg_cat.spam() << " ?parent " << get_name() << " joint type " << _joint_type;
-  
+
   if (_parent != (SoftNodeDesc *)NULL) {
     _parent->mark_joint_parent();
   }
@@ -271,13 +271,13 @@ check_joint_parent() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::check_junk
 //       Access: Public
-//  Description: check to see if this is a branch we don't want to 
-//               descend - this will prevent creating geometry for 
+//  Description: check to see if this is a branch we don't want to
+//               descend - this will prevent creating geometry for
 //               animation control structures
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 check_junk(bool parent_junk) {
   const char *name = get_name().c_str();
@@ -286,10 +286,10 @@ check_junk(bool parent_junk) {
     _joint_type = JT_junk;
     softegg_cat.spam() << "junk node " << get_name() << endl;
   }
-  if ( (strstr(name, "con-") != NULL) || 
-       (strstr(name, "con_") != NULL) || 
-       (strstr(name, "fly_") != NULL) || 
-       (strstr(name, "fly-") != NULL) || 
+  if ( (strstr(name, "con-") != NULL) ||
+       (strstr(name, "con_") != NULL) ||
+       (strstr(name, "fly_") != NULL) ||
+       (strstr(name, "fly-") != NULL) ||
        (strstr(name, "camRIG") != NULL) ||
        (strstr(name, "cam_rig") != NULL) ||
        (strstr(name, "bars") != NULL) )
@@ -311,13 +311,13 @@ check_junk(bool parent_junk) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::is_partial
 //       Access: Public
-//  Description: check to see if this is a selected branch we want to 
-//               descend - this will prevent creating geometry for 
+//  Description: check to see if this is a selected branch we want to
+//               descend - this will prevent creating geometry for
 //               other parts
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 bool SoftNodeDesc::
 is_partial(char *search_prefix) {
   const char *name = fullname;
@@ -333,19 +333,19 @@ is_partial(char *search_prefix) {
   // if name is not search_prefix, look in its parent
   if (strstr(name, search_prefix) == NULL) {
     softegg_cat.debug() << "node " << name << " ";
-    if (_parent) 
+    if (_parent)
       return _parent->is_partial(search_prefix);
   }
   // neither name nor its parent is search_prefix
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::set_parentJoint
 //       Access: Public
-//  Description: Go through the ancestors and figure out who is the 
+//  Description: Go through the ancestors and figure out who is the
 //               immediate _parentJoint of this node
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
   if (is_junk())
@@ -361,7 +361,7 @@ set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
   SAA_Boolean isSkeleton = false;
   if (has_model())
     SAA_modelIsSkeleton( scene, get_model(), &isSkeleton );
-  
+
   // if  already a joint or name has "joint" in it
   const char *name = get_name().c_str();
   if (is_joint() || isSkeleton || strstr(name, "joint") != NULL) {
@@ -477,7 +477,7 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
     softegg_cat.debug() << _parentJoint->get_name() << endl;
   else
     softegg_cat.debug() << _parentJoint << endl;
-    
+
 
   softegg_cat.spam() << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
   softegg_cat.spam() << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
@@ -527,32 +527,32 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
       softegg_cat.debug() << "using local matrix\n";
 
       //get SAA orientation
-      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                             &p, &h, &r );
 
       //get SAA translation
-      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                                &x, &y, &z );
-      
+
       //get SAA scaling
-      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                            &i, &j, &k );
     } else {
       softegg_cat.debug() << " using global matrix\n";
 
       //get SAA orientation
-      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                             &p, &h, &r );
 
       //get SAA translation
-      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                                &x, &y, &z );
 
       //get SAA scaling
-      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                            &i, &j, &k );
     }
-    
+
     softegg_cat.spam() << "\nanim data: " << i << " " << j << " " << k << endl;
     softegg_cat.spam() << "\t" << p << " " << h << " " << r << endl;
     softegg_cat.spam() << "\t" << x << " " << y << " " << z << endl;
@@ -589,41 +589,41 @@ void SoftNodeDesc::
 load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
   SI_Error result;
   const char *name = get_name().c_str();
-  
+
   int i;
   int id = 0;
 
   // if making a pose - get deformed geometry
   if ( stec.make_pose )
     gtype = SAA_GEOM_DEFORMED;
-        
+
   // If the model is a PATCH in soft, set its step before tesselating
   else if ( type == SAA_MPTCH )
     SAA_patchSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
-  
-  // Get the number of triangles    
+
+  // Get the number of triangles
   result = SAA_modelGetNbTriangles( scene, _model, gtype, id, &numTri);
   softegg_cat.spam() << "triangles: " << numTri << "\n";
-  
+
   if ( result != SI_SUCCESS ) {
     softegg_cat.spam() << "Error: couldn't get number of triangles!\n";
     softegg_cat.debug() << "\tbailing on model: " << name << "\n";
-    return;    
+    return;
   }
-  
+
   // check to see if surface is also skeleton...
   SAA_Boolean isSkeleton = FALSE;
-  
+
   SAA_modelIsSkeleton( scene, _model, &isSkeleton );
-  
+
   // check to see if this surface is used as a skeleton
   // or is animated via constraint only ( these nodes are
   // tagged by the animator with the keyword "joint"
   // somewhere in the nodes name)
   softegg_cat.spam() << "is Skeleton? " << isSkeleton << "\n";
-  
+
   /*************************************************************************************/
-  
+
   // model is not a null and has no triangles!
   if ( !numTri ) {
     softegg_cat.spam() << "no triangles!\n";
@@ -638,12 +638,12 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
     // triangulate model and read the triangles into array
     SAA_modelGetTriangles( scene, _model, gtype, id, numTri, triangles );
     softegg_cat.spam() << "got triangles\n";
-    
+
     /***********************************************************************************/
-    
+
     // allocate array of materials (Asad: it gives a warning if try to get one triangle
     //                                    at a time...investigate later
-    // read each triangle's material into array  
+    // read each triangle's material into array
     materials = (SAA_Elem*) new SAA_Elem[numTri];
     SAA_triangleGetMaterials( scene, _model, numTri, triangles, materials );
     if (!materials) {
@@ -651,29 +651,29 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
       exit(1);
     }
     softegg_cat.spam() << "got materials\n";
-    
+
     /***********************************************************************************/
-    
+
     // allocate array of textures per triangle
     numTexTri = new int[numTri];
     const void *relinfo;
-    
+
     // find out how many local textures per triangle
-    for (i = 0; i < numTri; i++) {    
-      result = SAA_materialRelationGetT2DLocNbElements( scene, &materials[i], FALSE, 
+    for (i = 0; i < numTri; i++) {
+      result = SAA_materialRelationGetT2DLocNbElements( scene, &materials[i], FALSE,
                                                         &relinfo, &numTexTri[i] );
-      // polytex    
+      // polytex
       if ( result == SI_SUCCESS )
         numTexLoc += numTexTri[i];
     }
-    
+
     // don't need this anymore...
-    //free( numTexTri ); 
-    
+    //free( numTexTri );
+
     // get local textures if present
     if ( numTexLoc ) {
       softegg_cat.spam() << "numTexLoc = " << numTexLoc << endl;
-      
+
       // allocate arrays of texture info
       uScale = new PN_stdfloat[numTri];
       vScale = new PN_stdfloat[numTri];
@@ -682,10 +682,10 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
       texNameArray = new char *[numTri];
       uRepeat = new int[numTri];
       vRepeat = new int[numTri];
-      
+
       // ASSUME only one texture per material
       textures = new SAA_Elem[numTri];
-      
+
       for ( i = 0; i < numTri; i++ ) {
         // and read all referenced local textures into array
         SAA_materialRelationGetT2DLocElements( scene, &materials[i],
@@ -695,38 +695,38 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
         texNameArray[i] = NULL;
         // initialize the repeats
         uRepeat[i] = vRepeat[i] = 0;
-        
+
         // see if this triangle has texture info
         if (numTexTri[i] == 0)
           continue;
 
         // check to see if texture is present
         result = SAA_elementIsValid( scene, &textures[i], &valid );
-        
+
         if ( result != SI_SUCCESS )
           softegg_cat.spam() << "SAA_elementIsValid failed!!!!\n";
-        
-        // texture present - get the name and uv info 
+
+        // texture present - get the name and uv info
         if ( valid ) {
           // according to drose, we don't need to convert .pic files to .rgb,
           // panda can now read the .pic files.
           texNameArray[i] = stec.GetTextureName(scene, &textures[i]);
-          
+
           softegg_cat.spam() << " tritex[" << i << "] named: " << texNameArray[i] << endl;
-          
+
           SAA_texture2DGetUVSwap( scene, &textures[i], &uv_swap );
-          
+
           if ( uv_swap == TRUE )
             softegg_cat.spam() << " swapping u and v...\n" ;
-          
+
           SAA_texture2DGetUScale( scene, &textures[i], &uScale[i] );
           SAA_texture2DGetVScale( scene, &textures[i], &vScale[i] );
           SAA_texture2DGetUOffset( scene, &textures[i], &uOffset[i] );
           SAA_texture2DGetVOffset( scene, &textures[i], &vOffset[i] );
-          
+
           softegg_cat.spam() << "tritex[" << i << "] uScale: " << uScale[i] << " vScale: " << vScale[i] << endl;
           softegg_cat.spam() << " uOffset: " << uOffset[i] << " vOffset: " << vOffset[i] << endl;
-          
+
           SAA_texture2DGetRepeats( scene, &textures[i], &uRepeat[i], &vRepeat[i] );
           softegg_cat.spam() << "uRepeat = " << uRepeat[i] << ", vRepeat = " << vRepeat[i] << endl;
         }
@@ -743,17 +743,17 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
         // ASSUME only one texture per model
         textures = new SAA_Elem;
         // get the referenced texture
-        SAA_modelRelationGetT2DGlbElements( scene, _model, 
-                                            TEX_PER_MAT, textures ); 
+        SAA_modelRelationGetT2DGlbElements( scene, _model,
+                                            TEX_PER_MAT, textures );
         softegg_cat.spam() << "numTexGlb = " << numTexGlb << endl;
         // check to see if texture is present
         SAA_elementIsValid( scene, textures, &valid );
-        if ( valid ) {  // texture present - get the name and uv info 
+        if ( valid ) {  // texture present - get the name and uv info
           SAA_texture2DGetUVSwap( scene, textures, &uv_swap );
-          
+
           if ( uv_swap == TRUE )
             softegg_cat.spam() << " swapping u and v...\n";
-          
+
           // according to drose, we don't need to convert .pic files to .rgb,
           // panda can now read the .pic files.
           texNameArray = new char *[1];
@@ -761,23 +761,23 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
 
           uRepeat = new int;
           vRepeat = new int;
-          
+
           softegg_cat.spam() << " global tex named: " << *texNameArray << endl;
-          
+
           // allocate arrays of texture info
           uScale = new PN_stdfloat;
           vScale = new PN_stdfloat;
           uOffset = new PN_stdfloat;
           vOffset = new PN_stdfloat;
-          
+
           SAA_texture2DGetUScale( scene, textures, uScale );
           SAA_texture2DGetVScale( scene, textures, vScale );
           SAA_texture2DGetUOffset( scene, textures, uOffset );
           SAA_texture2DGetVOffset( scene, textures, vOffset );
-          
+
           softegg_cat.spam() << " global tex uScale: " << *uScale << " vScale: " << *vScale << endl;
           softegg_cat.spam() << "            uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
-          
+
           SAA_texture2DGetRepeats(  scene, textures, uRepeat, vRepeat );
           softegg_cat.spam() << "uRepeat = " << *uRepeat << ", vRepeat = " << *vRepeat << endl;
         }
@@ -801,15 +801,15 @@ void SoftNodeDesc::
 load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
   SI_Error result;
   const char *name = get_name().c_str();
-  
+
   // if making a pose - get deformed geometry
   if ( stec.make_pose )
     gtype = SAA_GEOM_DEFORMED;
-        
+
   // If the model is a NURBS in soft, set its step before tesselating
   if ( type == SAA_MNSRF )
     SAA_nurbsSurfaceSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
-  
+
   // get the materials
   /***********************************************************************************/
   const void *relinfo;
@@ -825,49 +825,49 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
       softegg_cat.info() << "Out Of Memory on allocating materials\n";
       exit(1);
     }
-    
-    SAA_modelRelationGetMatElements( scene, get_model(), relinfo, 
-                                     numNurbMats, materials ); 
-    
+
+    SAA_modelRelationGetMatElements( scene, get_model(), relinfo,
+                                     numNurbMats, materials );
+
     softegg_cat.spam() << "got materials\n";
 
     // get the textures
     /***********************************************************************************/
     numNurbTexLoc = 0;
     numNurbTexGlb = 0;
-    
+
     // find out how many local textures per NURBS surface
     // ASSUME it only has one material
     SAA_materialRelationGetT2DLocNbElements( scene, &materials[0], FALSE, &relinfo, &numNurbTexLoc );
-    
+
     // if present, get local textures
     if ( numNurbTexLoc ) {
       softegg_cat.spam() << name << " had " << numNurbTexLoc << " local tex\n";
       nassertv(numNurbTexLoc == 1);
-      
+
       textures = new SAA_Elem[numNurbTexLoc];
-      
+
       // get the referenced texture
       SAA_materialRelationGetT2DLocElements( scene, &materials[0], TEX_PER_MAT, &textures[0] );
-      
+
     }
     // if no locals, try to get globals
     else {
       SAA_modelRelationGetT2DGlbNbElements( scene, get_model(), FALSE, &relinfo, &numNurbTexGlb );
-      
+
       if ( numNurbTexGlb ) {
         softegg_cat.spam() << name << " had " << numNurbTexGlb << " global tex\n";
         nassertv(numNurbTexGlb == 1);
-        
+
         textures = new SAA_Elem[numNurbTexGlb];
-        
+
         // get the referenced texture
         SAA_modelRelationGetT2DGlbElements( scene, get_model(), TEX_PER_MAT, &textures[0] );
       }
     }
-    
+
     if ( numNurbTexLoc || numNurbTexGlb) {
-      
+
       // allocate the texture name array
       texNameArray = new char *[1];
       // allocate arrays of texture info
@@ -877,34 +877,34 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
       vOffset = new PN_stdfloat;
       uRepeat = new int;
       vRepeat = new int;
-      
+
       // check to see if texture is present
       result = SAA_elementIsValid( scene, &textures[0], &valid );
-      
+
       if ( result != SI_SUCCESS )
         softegg_cat.spam() << "SAA_elementIsValid failed!!!!\n";
-      
-      // texture present - get the name and uv info 
+
+      // texture present - get the name and uv info
       if ( valid ) {
         // according to drose, we don't need to convert .pic files to .rgb,
         // panda can now read the .pic files.
         texNameArray[0] = stec.GetTextureName(scene, &textures[0]);
-        
+
         softegg_cat.spam() << " tritex[0] named: " << texNameArray[0] << endl;
-        
+
         SAA_texture2DGetUVSwap( scene, &textures[0], &uv_swap );
-        
+
         if ( uv_swap == TRUE )
           softegg_cat.spam() << " swapping u and v...\n" ;
-        
+
         SAA_texture2DGetUScale( scene, &textures[0], uScale );
         SAA_texture2DGetVScale( scene, &textures[0], vScale );
         SAA_texture2DGetUOffset( scene, &textures[0], uOffset );
         SAA_texture2DGetVOffset( scene, &textures[0], vOffset );
-        
+
         softegg_cat.spam() << "tritex[0] uScale: " << *uScale << " vScale: " << *vScale << endl;
         softegg_cat.spam() << " uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
-        
+
         SAA_texture2DGetRepeats( scene, &textures[0], uRepeat, vRepeat );
         softegg_cat.spam() << "uRepeat = " << *uRepeat << ", vRepeat = " << *vRepeat << endl;
       }
@@ -913,7 +913,7 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
         softegg_cat.spam() << " tritex[0] named: (null)\n";
       }
     }
-    
+
     softegg_cat.spam() << "got textures\n";
   }
 }
@@ -929,8 +929,8 @@ find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert) {
   int i, found = 0;
 
   for (i = 0; i < numVert && !found ; i++) {
-    if ((p3d[0] == vertices[i].x) && 
-        (p3d[1] == vertices[i].y) && 
+    if ((p3d[0] == vertices[i].x) &&
+        (p3d[1] == vertices[i].y) &&
         (p3d[2] == vertices[i].z)) {
       found = 1;
       softegg_cat.spam() << "found shape vert at index " << i << endl;
@@ -947,11 +947,11 @@ find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_vertex_offsets
-//       Access: Public 
+//       Access: Public
 //  Description: Given a scene, a model , the vertices of its original
-//               shape and its name find the difference between the 
-//               geometry of its key shapes and the models original 
-//               geometry and add morph vertices to the egg data to 
+//               shape and its name find the difference between the
+//               geometry of its key shapes and the models original
+//               geometry and add morph vertices to the egg data to
 //               reflect these changes.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
@@ -994,16 +994,16 @@ make_vertex_offsets(int numShapes) {
 
   // iterate through for each key shape (except original)
   for ( i = 1; i < numShapes; i++ ) {
-    
+
     sprintf(tableName, "%s.%d", get_name().c_str(), i);
 
     softegg_cat.spam() << "\nMaking geometry offsets for " << tableName << "...\n";
 
     if ((type == SAA_MNSRF) && stec.make_nurbs)
       softegg_cat.spam() << "calculating NURBS morphs...\n";
-    else 
+    else
       softegg_cat.spam() << "calculating triangle morphs...\n";
-    
+
     // get the shape verts
     shapeVerts = new SAA_DVector[numCV];
     SAA_modelGetVertices( scene, model, SAA_GEOM_SHAPE, i+1, numCV, shapeVerts );
@@ -1011,26 +1011,26 @@ make_vertex_offsets(int numShapes) {
     for ( j=0; j < numCV; j++ ) {
       // convert vertices to global
       _VCT_X_MAT( shapeVerts[j], shapeVerts[j], matrix);
-    
-      softegg_cat.spam() << "shapeVerts[" << j << "] = " << shapeVerts[j].x << " " 
+
+      softegg_cat.spam() << "shapeVerts[" << j << "] = " << shapeVerts[j].x << " "
            << shapeVerts[j].y << " " << shapeVerts[j].z << endl;
     }
     softegg_cat.spam() << endl;
 
     // for every original vertex, compare to the corresponding
-    // key shape vertex and see if a vertex offset is needed 
+    // key shape vertex and see if a vertex offset is needed
     j = 0;
     for (vi = vpool->begin(); vi != vpool->end(); ++vi, ++j) {
 
       double dx, dy, dz;
       EggVertex *vert = (*vi);
       LPoint3d p3d = vert->get_pos3();
-      
+
       softegg_cat.spam() << "oVert[" << j << "] = " <<  p3d[0] << " " <<  p3d[1] << " " <<  p3d[2] << endl;
       if ((type == SAA_MNSRF) && stec.make_nurbs) {
-        dx = shapeVerts[j].x - p3d[0]; 
-        dy = shapeVerts[j].y - p3d[1]; 
-        dz = shapeVerts[j].z - p3d[2]; 
+        dx = shapeVerts[j].x - p3d[0];
+        dy = shapeVerts[j].y - p3d[1];
+        dz = shapeVerts[j].z - p3d[2];
 
         softegg_cat.spam() << "global shapeVerts[" << j << "] = " << shapeVerts[j].x << " "
              << shapeVerts[j].y << " " << shapeVerts[j].z << " " << shapeVerts[j].w << endl;
@@ -1040,9 +1040,9 @@ make_vertex_offsets(int numShapes) {
         // to triangle shape vertices here
         offset = find_shape_vert(p3d, uniqueVerts, numCV);
 
-        dx = shapeVerts[offset].x - p3d[0]; 
-        dy = shapeVerts[offset].y - p3d[1]; 
-        dz = shapeVerts[offset].z - p3d[2]; 
+        dx = shapeVerts[offset].x - p3d[0];
+        dy = shapeVerts[offset].y - p3d[1];
+        dz = shapeVerts[offset].z - p3d[2];
 
         softegg_cat.spam() << "global shapeVerts[" << offset << "] = " << shapeVerts[offset].x << " "
              << shapeVerts[offset].y << " " << shapeVerts[offset].z << endl;
@@ -1050,7 +1050,7 @@ make_vertex_offsets(int numShapes) {
 
       softegg_cat.spam() << j << ": dx = " << dx << ", dy = " << dy << ", dz = " << dz << endl;
 
-      // if change isn't negligible, make a morph vertex entry 
+      // if change isn't negligible, make a morph vertex entry
       double total = fabs(dx)+fabs(dy)+fabs(dz);
       if ( total > 0.00001 ) {
         if ( vpool != NULL ) {
@@ -1061,8 +1061,8 @@ make_vertex_offsets(int numShapes) {
           vert->_dxyzs.insert(*dxyz);
         }
         else
-          softegg_cat.spam() << "Error: couldn't find vertex pool " << vpool_name << endl; 
-                
+          softegg_cat.spam() << "Error: couldn't find vertex pool " << vpool_name << endl;
+
       } // if total
     } //for j
   } //for i
@@ -1070,7 +1070,7 @@ make_vertex_offsets(int numShapes) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_morph_table
-//       Access: Public 
+//       Access: Public
 //  Description: Given a scene, a model, a name and a frame time,
 //               determine what type of shape interpolation is
 //               used and call the appropriate function to extract
@@ -1082,10 +1082,10 @@ make_morph_table(  PN_stdfloat time ) {
   SAA_Elem *model = NULL;
   SAA_AnimInterpType type;
   SAA_Scene *scene = &stec.scene;
-  
+
   if (has_model())
     model = get_model();
-  else 
+  else
     return;
 
   // Get the number of key shapes
@@ -1114,14 +1114,14 @@ make_morph_table(  PN_stdfloat time ) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_linear_morph_table
-//       Access: Public 
+//       Access: Public
 //  Description: Given a scene, a model, its name, and the time,
 //               get the shape fcurve for the model and determine
 //               the shape weights for the given time and use them
 //               to populate the morph table.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-make_linear_morph_table(int numShapes, PN_stdfloat time) {    
+make_linear_morph_table(int numShapes, PN_stdfloat time) {
   int i;
   PN_stdfloat curveVal;
   char tableName[_MAX_PATH];
@@ -1135,8 +1135,8 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
 
   SAA_modelFcurveGetShape( scene, model, &fcurve );
 
-  SAA_fcurveEval( scene, &fcurve, time, &curveVal );    
-    
+  SAA_fcurveEval( scene, &fcurve, time, &curveVal );
+
   softegg_cat.spam() << "at time " << time << ", fcurve for " << get_name() << " = " << curveVal << endl;
 
   PN_stdfloat nextVal = 0.0f;
@@ -1154,7 +1154,7 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
     if ( anim != NULL ) {
       if ( i == (int)curveVal ) {
         if ( curveVal - i == 0 ) {
-          anim->add_data(1.0f ); 
+          anim->add_data(1.0f );
           softegg_cat.spam() << "adding element 1.0f\n";
         }
         else {
@@ -1174,7 +1174,7 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
           softegg_cat.spam() << "adding element 0.0f\n";
         }
       }
-      
+
       softegg_cat.spam() <<" to '" << tableName << "'\n";
     }
     else
@@ -1184,9 +1184,9 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_weighted_morph_table
-//       Access: Public 
+//       Access: Public
 //  Description: Given a scene, a model, a list of all models in the
-//               scene, the number of models in the scece, the number 
+//               scene, the number of models in the scece, the number
 //               of key shapes for this model, the name of the model
 //               and the current time, determine what method of
 //               controlling the shape weights is used and call the
@@ -1204,31 +1204,31 @@ make_weighted_morph_table(int numShapes, PN_stdfloat time) {
   SAA_Scene *scene = &stec.scene;
 
   // allocate array of weight curves (one for each shape)
-  weightCurves = new SAA_Elem[numShapes]; 
+  weightCurves = new SAA_Elem[numShapes];
 
   result = SAA_modelFcurveGetShapeWeights(scene, model, numShapes, weightCurves);
 
   if ( result == SI_SUCCESS ) {
     for ( int i = 1; i < numShapes; i++ ) {
-      SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );    
+      SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );
 
       // make sure soft gave us a reasonable number
       //if (!isNum(curveVal))
       //curveVal = 0.0f;
-      
+
       softegg_cat.spam() << "at time " << time << ", weightCurve[" << i << "] for " << get_name() << " = " << curveVal << endl;
-      
+
       // derive table name from the model name
       sprintf(tableName, "%s.%d", get_name().c_str(), i);
-      
+
       // find and populate shape table
       softegg_cat.spam() << "Weight: looking for table '" << tableName << "'\n";
-      
+
       //find the morph table associated with this key shape
       anim = stec.find_morph_table(tableName);
-      
-      if ( anim != NULL ) {    
-        anim->add_data(curveVal); 
+
+      if ( anim != NULL ) {
+        anim->add_data(curveVal);
         softegg_cat.spam() << "adding element " << curveVal << endl;
       }
       else
@@ -1239,15 +1239,15 @@ make_weighted_morph_table(int numShapes, PN_stdfloat time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_expression_morph_table
-//       Access: Public 
+//       Access: Public
 //  Description: Given a scene, a model and its number of key shapes
 //               generate a morph table describing transitions btwn
 //               the key shapes by evaluating the positions of the
-//               controlling sliders. 
+//               controlling sliders.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 make_expression_morph_table(int numShapes, PN_stdfloat time)
-{    
+{
   //int j;
   int numExp;
   char *track;
@@ -1286,7 +1286,7 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
                 {
                 // debug see what we got
                 int numvars;
-        
+
                 SAA_expressionGetNbVars( scene, &expressions[j], &numvars );
 
                 int *varnamelen;
@@ -1297,9 +1297,9 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
                 varstrlen = (int *)malloc(sizeof(int)*numvars);
 
                 SAA_expressionGetStringLengths( scene, &expressions[j],
-                    numvars, varnamelen, varstrlen, &expstrlen );    
+                    numvars, varnamelen, varstrlen, &expstrlen );
 
-                int *varnamesizes;    
+                int *varnamesizes;
                 int *varstrsizes;
 
                 varnamesizes = (int *)malloc(sizeof(int)*numvars);
@@ -1310,7 +1310,7 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
                     varnamesizes[k] = varnamelen[k] + 1;
                     varstrsizes[k] = varstrlen[k] + 1;
                 }
-    
+
                 int expstrsize = expstrlen + 1;
 
                 char **varnames;
@@ -1327,34 +1327,34 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
                     varstrs[k] = (char *)malloc(sizeof(char)*
                         varstrsizes[k]);
                 }
-        
-                char *expstr = (char *)malloc(sizeof(char)* expstrsize );    
+
+                char *expstr = (char *)malloc(sizeof(char)* expstrsize );
 
                 SAA_expressionGetStrings( scene, &expressions[j], numvars,
                     varnamesizes, varstrsizes, expstrsize, varnames,
                     varstrs, expstr );
-                
+
                 if ( verbose >= 2 )
                 {
                     fprintf( outStream, "expression = '%s'\n", expstr );
                     fprintf( outStream, "has %d variables\n", numvars );
                 }
                 } //if verbose
-                
+
                 if ( verbose >= 2 )
                     fprintf( outStream, "evaling expression...\n" );
 
-                SAA_expressionEval( scene, &expressions[j], time, &expVal ); 
+                SAA_expressionEval( scene, &expressions[j], time, &expVal );
 
                 if ( verbose >= 2 )
-                    fprintf( outStream, "time %f: exp val %f\n", 
+                    fprintf( outStream, "time %f: exp val %f\n",
                         time, expVal );
 
                 // derive table name from the model name
                 tableName = MakeTableName( name, j );
 
                 if ( verbose >= 2 )
-                    fprintf( outStream, "Exp: looking for table '%s'\n", 
+                    fprintf( outStream, "Exp: looking for table '%s'\n",
                         tableName );
 
                 //find the morph table associated with this key shape
@@ -1362,17 +1362,17 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
                     (morphRoot->FindDescendent( tableName ));
 
                 if ( anim != NULL )
-                {    
-                    anim->AddElement( expVal ); 
-                    if ( verbose >= 1 )    
+                {
+                    anim->AddElement( expVal );
+                    if ( verbose >= 1 )
                         fprintf( outStream, "%d: adding element %f to %s\n",
                             j, expVal, tableName );
                     fflush( outStream );
                 }
                 else
                 {
-                    fprintf( outStream, "%d: Couldn't find table '%s'", j, 
-                            tableName ); 
+                    fprintf( outStream, "%d: Couldn't find table '%s'", j,
+                            tableName );
 
                     fprintf( outStream, " for value %f\n", expVal );
                 }

@@ -15,9 +15,9 @@
 #include "boxEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BoxEmitter
-//      Access : Public
-// Description : constructor
+//     Function: BoxEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 BoxEmitter::
 BoxEmitter() :
@@ -27,9 +27,9 @@ BoxEmitter() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BoxEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: BoxEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 BoxEmitter::
 BoxEmitter(const BoxEmitter &copy) :
@@ -39,18 +39,18 @@ BoxEmitter(const BoxEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~BoxEmitter
-//      Access : Public
-// Description : destructor
+//     Function: ~BoxEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 BoxEmitter::
 ~BoxEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *BoxEmitter::
 make_copy() {
@@ -58,9 +58,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BoxEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: BoxEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void BoxEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -78,9 +78,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BoxEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: BoxEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void BoxEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -88,10 +88,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BoxEmitter::
 output(ostream &out) const {
@@ -101,10 +101,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BoxEmitter::
 write(ostream &out, int indent) const {

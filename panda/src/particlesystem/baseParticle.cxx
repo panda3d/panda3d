@@ -15,9 +15,9 @@
 #include "baseParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticle
-//      Access : Public
-// Description : Default Constructor
+//     Function: BaseParticle
+//       Access: Public
+//  Description: Default Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
 BaseParticle(PN_stdfloat lifespan, bool alive) :
@@ -25,9 +25,9 @@ BaseParticle(PN_stdfloat lifespan, bool alive) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticle
-//      Access : Public
-// Description : Copy Constructor
+//     Function: BaseParticle
+//       Access: Public
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
 BaseParticle(const BaseParticle &copy) :
@@ -38,18 +38,18 @@ BaseParticle(const BaseParticle &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~BaseParticle
-//      Access : Public
-// Description : Default Destructor
+//     Function: ~BaseParticle
+//       Access: Public
+//  Description: Default Destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
 ~BaseParticle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_theta
-//      Access : Public
-// Description : for spriteParticleRenderer
+//     Function: get_theta
+//       Access: Public
+//  Description: for spriteParticleRenderer
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat BaseParticle::
 get_theta() const {
@@ -57,10 +57,10 @@ get_theta() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticle::
 output(ostream &out) const {
@@ -70,10 +70,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticle::
 write(ostream &out, int indent) const {

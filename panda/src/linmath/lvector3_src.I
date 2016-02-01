@@ -259,7 +259,7 @@ angle_deg(const FLOATNAME(LVector3) &other) const {
 //               normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
-signed_angle_rad(const FLOATNAME(LVector3) &other, 
+signed_angle_rad(const FLOATNAME(LVector3) &other,
                  const FLOATNAME(LVector3) &ref) const {
   FLOATTYPE angle = angle_rad(other);
   if (cross(other).dot(ref) < 0.0f) {
@@ -271,7 +271,7 @@ signed_angle_rad(const FLOATNAME(LVector3) &other,
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector::signed_angle_deg
 //       Access: Published
-//  Description: Returns the signed angle between two vectors. 
+//  Description: Returns the signed angle between two vectors.
 //               The angle is positive if the rotation from this
 //               vector to other is clockwise when looking in the
 //               direction of the ref vector.
@@ -435,7 +435,6 @@ back(CoordinateSystem cs) {
 //               forward, and up components, in whatever way the
 //               coordinate system represents that vector.
 ////////////////////////////////////////////////////////////////////
-//INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     CoordinateSystem cs) {

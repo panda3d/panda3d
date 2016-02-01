@@ -165,8 +165,8 @@ set_cache_compiled_shader(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderCapabilities Constructor
-//  Access: Public
+//     Function: Shader::ShaderCapabilities Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderCaps::
@@ -175,8 +175,8 @@ ShaderCaps() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderCapabilities::operator ==
-//  Access: Public
+//     Function: Shader::ShaderCapabilities::operator ==
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Shader::ShaderCaps::
@@ -195,8 +195,8 @@ operator == (const ShaderCaps &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -209,8 +209,8 @@ ShaderPtrData() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -224,8 +224,8 @@ ShaderPtrData(const PTA_float &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -239,8 +239,8 @@ ShaderPtrData(const PTA_LMatrix4f &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -254,8 +254,8 @@ ShaderPtrData(const PTA_LMatrix3f &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -269,8 +269,8 @@ ShaderPtrData(const PTA_LVecBase4f &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -284,8 +284,8 @@ ShaderPtrData(const PTA_LVecBase3f &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -299,8 +299,8 @@ ShaderPtrData(const PTA_LVecBase2f &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -317,8 +317,8 @@ ShaderPtrData(const LVecBase4f &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -335,8 +335,8 @@ ShaderPtrData(const LVecBase3f &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -353,8 +353,8 @@ ShaderPtrData(const LVecBase2f &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -371,8 +371,8 @@ ShaderPtrData(const LMatrix4f &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -389,8 +389,8 @@ ShaderPtrData(const LMatrix3f &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -404,8 +404,8 @@ ShaderPtrData(const PTA_double &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -419,8 +419,8 @@ ShaderPtrData(const PTA_LMatrix4d &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -434,8 +434,8 @@ ShaderPtrData(const PTA_LMatrix3d &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -449,8 +449,8 @@ ShaderPtrData(const PTA_LVecBase4d &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -464,8 +464,8 @@ ShaderPtrData(const PTA_LVecBase3d &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -479,8 +479,8 @@ ShaderPtrData(const PTA_LVecBase2d &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -497,8 +497,8 @@ ShaderPtrData(const LVecBase4d &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -515,8 +515,8 @@ ShaderPtrData(const LVecBase3d &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -533,8 +533,8 @@ ShaderPtrData(const LVecBase2d &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -551,8 +551,8 @@ ShaderPtrData(const LMatrix4d &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -569,8 +569,8 @@ ShaderPtrData(const LMatrix3d &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -584,8 +584,8 @@ ShaderPtrData(const PTA_int &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -599,8 +599,8 @@ ShaderPtrData(const PTA_LVecBase4i &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -614,8 +614,8 @@ ShaderPtrData(const PTA_LVecBase3i &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -629,8 +629,8 @@ ShaderPtrData(const PTA_LVecBase2i &ptr):
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -647,8 +647,8 @@ ShaderPtrData(const LVecBase4i &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::
@@ -665,8 +665,8 @@ ShaderPtrData(const LVecBase3i &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::ShaderPtrData Constructor
-//  Access:
+//     Function: Shader::ShaderPtrData Constructor
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Shader::ShaderPtrData::

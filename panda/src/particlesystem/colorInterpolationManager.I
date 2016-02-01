@@ -12,12 +12,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionConstant::get_color_a
-//      Access : public
-// Description : Returns the primary color of the function.
+//     Function: ColorInterpolationFunctionConstant::get_color_a
+//       Access: Public
+//  Description: Returns the primary color of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE LColor ColorInterpolationFunctionConstant::
@@ -26,9 +26,9 @@ get_color_a() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionConstant::set_color_a
-//      Access : public
-// Description : Sets the primary color of the function.
+//     Function: ColorInterpolationFunctionConstant::set_color_a
+//       Access: Public
+//  Description: Sets the primary color of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionConstant::
@@ -37,9 +37,9 @@ set_color_a(const LColor &c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionLinear::get_color_b
-//      Access : public
-// Description : Returns the secondary color of the function.
+//     Function: ColorInterpolationFunctionLinear::get_color_b
+//       Access: Public
+//  Description: Returns the secondary color of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE LColor ColorInterpolationFunctionLinear::
@@ -48,9 +48,9 @@ get_color_b() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionLinear::set_color_b
-//      Access : public
-// Description : Sets the secondary color of the function.
+//     Function: ColorInterpolationFunctionLinear::set_color_b
+//       Access: Public
+//  Description: Sets the secondary color of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionLinear::
@@ -59,9 +59,9 @@ set_color_b(const LColor &c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionStepwave::get_width_a
-//      Access : public
-// Description : Returns the primary width of the function.
+//     Function: ColorInterpolationFunctionStepwave::get_width_a
+//       Access: Public
+//  Description: Returns the primary width of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat ColorInterpolationFunctionStepwave::
@@ -70,9 +70,9 @@ get_width_a() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionStepwave::get_width_b
-//      Access : public
-// Description : Returns the secondary width of the function.
+//     Function: ColorInterpolationFunctionStepwave::get_width_b
+//       Access: Public
+//  Description: Returns the secondary width of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat ColorInterpolationFunctionStepwave::
@@ -81,9 +81,9 @@ get_width_b() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionStepwave::set_width_a
-//      Access : public
-// Description : Sets the primary width of the function.
+//     Function: ColorInterpolationFunctionStepwave::set_width_a
+//       Access: Public
+//  Description: Sets the primary width of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionStepwave::
@@ -92,9 +92,9 @@ set_width_a(const PN_stdfloat w) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionStepwave::set_width_b
-//      Access : public
-// Description : Sets the secondary width of the function.
+//     Function: ColorInterpolationFunctionStepwave::set_width_b
+//       Access: Public
+//  Description: Sets the secondary width of the function.
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionStepwave::
@@ -104,9 +104,9 @@ set_width_b(const PN_stdfloat w) {
 
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionSinusoid::get_period
-//      Access : public
-// Description : Returns the time to transition from A to B then back
+//     Function: ColorInterpolationFunctionSinusoid::get_period
+//       Access: Public
+//  Description: Returns the time to transition from A to B then back
 //               to A again.
 ////////////////////////////////////////////////////////////////////
 
@@ -116,9 +116,9 @@ get_period() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationFunctionSinusoid::set_period
-//      Access : public
-// Description : Sets the time to transition from A to B then back
+//     Function: ColorInterpolationFunctionSinusoid::set_period
+//       Access: Public
+//  Description: Sets the time to transition from A to B then back
 //               to A again.
 ////////////////////////////////////////////////////////////////////
 
@@ -128,9 +128,9 @@ set_period(const PN_stdfloat p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::get_function
-//      Access : public
-// Description : Returns a reference to the function object 
+//     Function: ColorInterpolationSegment::get_function
+//       Access: Public
+//  Description: Returns a reference to the function object
 //               corresponding to this segment.
 ////////////////////////////////////////////////////////////////////
 
@@ -140,9 +140,9 @@ get_function() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::get_time_begin
-//      Access : public
-// Description : Returns the point in the particle's lifetime at which
+//     Function: ColorInterpolationSegment::get_time_begin
+//       Access: Public
+//  Description: Returns the point in the particle's lifetime at which
 //               this segment begins its effect.  It is an interpolated
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
@@ -153,9 +153,9 @@ get_time_begin() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::get_time_end
-//      Access : public
-// Description : Returns the point in the particle's lifetime at which
+//     Function: ColorInterpolationSegment::get_time_end
+//       Access: Public
+//  Description: Returns the point in the particle's lifetime at which
 //               this segment's effect stops.  It is an interpolated
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
@@ -166,9 +166,9 @@ get_time_end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::is_modulated
-//      Access : public
-// Description : Returns whether the function is additive or modulated.
+//     Function: ColorInterpolationSegment::is_modulated
+//       Access: Public
+//  Description: Returns whether the function is additive or modulated.
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool ColorInterpolationSegment::
@@ -177,9 +177,9 @@ is_modulated() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::is_enabled()
-//      Access : public
-// Description : Returns whether the segments effects are being applied.
+//     Function: ColorInterpolationSegment::is_enabled()
+//       Access: Public
+//  Description: Returns whether the segments effects are being applied.
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool ColorInterpolationSegment::
@@ -188,9 +188,9 @@ is_enabled() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::get_id
-//      Access : public
-// Description : Returns the id assigned to this segment by the
+//     Function: ColorInterpolationSegment::get_id
+//       Access: Public
+//  Description: Returns the id assigned to this segment by the
 //               manager that created it.
 ////////////////////////////////////////////////////////////////////
 
@@ -200,9 +200,9 @@ get_id() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::set_function
-//      Access : public
-// Description : Sets the function that the segment will use for 
+//     Function: ColorInterpolationSegment::set_function
+//       Access: Public
+//  Description: Sets the function that the segment will use for
 //               its interpolation calculations.
 ////////////////////////////////////////////////////////////////////
 
@@ -212,9 +212,9 @@ set_function(ColorInterpolationFunction* function) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::set_time_begin
-//      Access : public
-// Description : Sets the point in the particle's lifetime at which
+//     Function: ColorInterpolationSegment::set_time_begin
+//       Access: Public
+//  Description: Sets the point in the particle's lifetime at which
 //               this segment begins its effect.  It is an interpolated
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
@@ -226,9 +226,9 @@ set_time_begin(const PN_stdfloat time) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::set_time_end
-//      Access : public
-// Description : Sets the point in the particle's lifetime at which
+//     Function: ColorInterpolationSegment::set_time_end
+//       Access: Public
+//  Description: Sets the point in the particle's lifetime at which
 //               this segment's effect ends.  It is an interpolated
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
@@ -240,9 +240,9 @@ set_time_end(const PN_stdfloat time) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::set_is_modulated
-//      Access : public
-// Description : Sets how the function is applied to the final color.
+//     Function: ColorInterpolationSegment::set_is_modulated
+//       Access: Public
+//  Description: Sets how the function is applied to the final color.
 //               If true, the value is multiplied. If false, the value
 //               is simply added. Default is true.
 ////////////////////////////////////////////////////////////////////
@@ -253,9 +253,9 @@ set_is_modulated(const bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationSegment::set_enabled()
-//      Access : public
-// Description : Sets whether the segments effects should be applied.
+//     Function: ColorInterpolationSegment::set_enabled()
+//       Access: Public
+//  Description: Sets whether the segments effects should be applied.
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationSegment::
@@ -264,9 +264,9 @@ set_enabled(const bool enabled) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::set_default_color
-//      Access : public
-// Description : Sets the color to used if no segments are present
+//     Function: ColorInterpolationManager::set_default_color
+//       Access: Public
+//  Description: Sets the color to used if no segments are present
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationManager::
@@ -275,9 +275,9 @@ set_default_color(const LColor &c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::get_segment
-//      Access : public
-// Description : Returns the segment that corresponds to 'seg_id'.
+//     Function: ColorInterpolationManager::get_segment
+//       Access: Public
+//  Description: Returns the segment that corresponds to 'seg_id'.
 ////////////////////////////////////////////////////////////////////
 
 INLINE ColorInterpolationSegment* ColorInterpolationManager::
@@ -292,9 +292,9 @@ get_segment(const int seg_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ColorInterpolationManager::get_segment_id_list
-//      Access : public
-// Description : Returns a space delimited list of all of the ids
+//     Function: ColorInterpolationManager::get_segment_id_list
+//       Access: Public
+//  Description: Returns a space delimited list of all of the ids
 //               in the manager at the time.
 ////////////////////////////////////////////////////////////////////
 

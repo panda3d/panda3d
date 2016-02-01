@@ -1,4 +1,4 @@
-// Filename: wdxGraphicsBuffer8.cxx
+// Filename: wdxGraphicsBuffer9.cxx
 // Created by:  drose (08Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (_debug) {
     cout << "+++++ wdxGraphicsBuffer9 constructor " << this << " " << this -> get_name ( ) << "\n";
   }
-  
+
   if (_gsg) {
     // save to GSG list to handle device lost issues
     DXGraphicsStateGuardian9 *dxgsg;
@@ -95,7 +95,7 @@ wdxGraphicsBuffer9::
   }
 
   // unshare shared depth buffer if any
-  this -> unshare_depth_buffer();  
+  this -> unshare_depth_buffer();
 
   // unshare all buffers that are sharing this object's depth buffer
   {
@@ -105,14 +105,14 @@ wdxGraphicsBuffer9::
     graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     while (graphics_buffer_iterator != _shared_depth_buffer_list.end( )) {
       graphics_buffer = (*graphics_buffer_iterator);
-      if (graphics_buffer) {      
+      if (graphics_buffer) {
         // this call removes the entry from the list
         graphics_buffer -> unshare_depth_buffer();
-      }      
+      }
       graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     }
-  }  
-  
+  }
+
   this -> close_buffer ( );
 }
 
@@ -187,7 +187,7 @@ bool wdxGraphicsBuffer9::
 save_bitplanes() {
   HRESULT hr;
   DWORD render_target_index;
-  
+
   render_target_index = 0;
 
   hr = _dxgsg -> _d3d_device -> GetRenderTarget (render_target_index, &_saved_color_buffer);
@@ -195,7 +195,7 @@ save_bitplanes() {
     dxgsg9_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
     return false;
   }
-  
+
   _saved_depth_buffer = 0;
   hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_saved_depth_buffer);
   if (hr == D3DERR_NOTFOUND) {
@@ -223,7 +223,7 @@ restore_bitplanes() {
 
   HRESULT hr;
   DWORD render_target_index;
-  
+
   render_target_index = 0;
 
   hr = dxgsg -> _d3d_device ->
@@ -237,7 +237,7 @@ restore_bitplanes() {
       dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
     }
   }
-  
+
   // clear all render targets, except for the main render target
   for (int i = 1; i<count_textures(); i++) {
     hr = _dxgsg -> _d3d_device -> SetRenderTarget (i, NULL);
@@ -355,7 +355,7 @@ rebuild_bitplanes() {
       _color_backing_store = NULL;
     }
     if (!_color_backing_store) {
-      hr = _dxgsg->_d3d_device->CreateRenderTarget(bitplane_x, bitplane_y, 
+      hr = _dxgsg->_d3d_device->CreateRenderTarget(bitplane_x, bitplane_y,
                                                    _saved_color_desc.Format,
                                                    _saved_color_desc.MultiSampleType,
                                                    _saved_color_desc.MultiSampleQuality,
@@ -409,8 +409,8 @@ rebuild_bitplanes() {
   }
 
   bool release_depth;
-  
-  release_depth = true;  
+
+  release_depth = true;
   if (depth_tex_index < 0) {
     if (_shared_depth_buffer) {
       if (_shared_depth_buffer -> _depth_backing_store) {
@@ -563,7 +563,7 @@ rebuild_bitplanes() {
 
       default:
         break;
-    }    
+    }
   }
 
   // Decrement the reference counts on these surfaces. The refcounts
@@ -578,7 +578,7 @@ rebuild_bitplanes() {
       depth_surf->Release();
     }
   }
-  
+
   return true;
 }
 
@@ -595,7 +595,7 @@ void wdxGraphicsBuffer9::
 select_target_tex_page(int page) {
 
   DWORD render_target_index;
-  
+
   render_target_index = 0;
 
   _cube_map_index = page;
@@ -706,7 +706,7 @@ select_target_tex_page(int page) {
 
       default:
         break;
-    }    
+    }
   }
 }
 
@@ -774,7 +774,7 @@ open_buffer() {
     //_gsg = _dxgsg;
     return false;
   }
-   
+
   DCAST_INTO_R(_dxgsg, _gsg, false);
 
   if (!save_bitplanes()) {
@@ -835,17 +835,17 @@ process_1_event() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer9::share_depth_buffer
-//       Access: Published 
+//       Access: Published
 //  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly 
-//               the same. 
+//               graphics_output. The buffer sizes must be exactly
+//               the same.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer9::
 share_depth_buffer(GraphicsOutput *graphics_output) {
 
   bool state;
   wdxGraphicsBuffer9 *input_graphics_output;
-  
+
   state = false;
   input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
   if (this != input_graphics_output && input_graphics_output) {
@@ -858,35 +858,35 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
     }
 
     // check buffer sizes
-    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {    
+    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {
       if (_debug) {
         printf ("ERROR: share_depth_buffer: non matching width \n");
       }
-      state = false;    
+      state = false;
     }
 
-    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {     
+    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {
       if (_debug) {
         printf ("ERROR: share_depth_buffer: non matching height \n");
       }
-      state = false;    
+      state = false;
     }
 
-    if (state) {    
-      // let the input GraphicsOutput know that there is an object 
-      // sharing its depth buffer      
+    if (state) {
+      // let the input GraphicsOutput know that there is an object
+      // sharing its depth buffer
       input_graphics_output -> register_shared_depth_buffer(this);
       _shared_depth_buffer = input_graphics_output;
       state = true;
     }
   }
-  
+
   return state;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsBuffer9::unshare_depth_buffer
-//       Access: Published 
+//       Access: Published
 //  Description: Discontinue sharing the depth buffer.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
@@ -895,10 +895,10 @@ unshare_depth_buffer() {
     if (_debug) {
       printf ("wdxGraphicsBuffer9 unshare_depth_buffer \n");
     }
-    
+
     // let the GraphicsOutput know that this object is no longer
     // sharing its depth buffer
-    _shared_depth_buffer -> unregister_shared_depth_buffer(this);  
+    _shared_depth_buffer -> unregister_shared_depth_buffer(this);
     _shared_depth_buffer = 0;
   }
 }
@@ -911,10 +911,10 @@ unshare_depth_buffer() {
 void wdxGraphicsBuffer9::
 register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   wdxGraphicsBuffer9 *input_graphics_output;
-  
+
   input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
   if (input_graphics_output) {
-    // add to list  
+    // add to list
     _shared_depth_buffer_list.push_back(input_graphics_output);
   }
 }
@@ -927,10 +927,10 @@ register_shared_depth_buffer(GraphicsOutput *graphics_output) {
 void wdxGraphicsBuffer9::
 unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   wdxGraphicsBuffer9 *input_graphics_output;
-  
+
   input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
   if (input_graphics_output) {
-    // remove from list  
+    // remove from list
     _shared_depth_buffer_list.remove(input_graphics_output);
   }
 }

@@ -1,4 +1,4 @@
-// Filename: CollisionHandlerGravity.h
+// Filename: collisionHandlerGravity.h
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////

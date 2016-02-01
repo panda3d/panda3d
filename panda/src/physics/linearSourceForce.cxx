@@ -17,9 +17,9 @@
 TypeHandle LinearSourceForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSourceForce
-//      Access : Public
-// Description : Simple constructor
+//     Function: LinearSourceForce
+//       Access: Public
+//  Description: Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a,
@@ -28,9 +28,9 @@ LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSourceForce
-//      Access : Public
-// Description : Simple constructor
+//     Function: LinearSourceForce
+//       Access: Public
+//  Description: Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 LinearSourceForce() :
@@ -39,9 +39,9 @@ LinearSourceForce() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSourceForce
-//      Access : Public
-// Description : copy constructor
+//     Function: LinearSourceForce
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 LinearSourceForce(const LinearSourceForce &copy) :
@@ -49,18 +49,18 @@ LinearSourceForce(const LinearSourceForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearSourceForce
-//      Access : Public
-// Description : Simple destructor
+//     Function: ~LinearSourceForce
+//       Access: Public
+//  Description: Simple destructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 ~LinearSourceForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearSourceForce::
 make_copy() {
@@ -68,9 +68,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : Public
-// Description : virtual force query
+//     Function: get_child_vector
+//       Access: Public
+//  Description: virtual force query
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearSourceForce::
 get_child_vector(const PhysicsObject *po) {
@@ -78,10 +78,10 @@ get_child_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSourceForce::
 output(ostream &out) const {
@@ -91,10 +91,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSourceForce::
 write(ostream &out, unsigned int indent) const {

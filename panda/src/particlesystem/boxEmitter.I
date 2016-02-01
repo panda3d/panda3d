@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_min_bound
-//      Access : Public
-// Description : boundary assignment
+//     Function: set_min_bound
+//       Access: Public
+//  Description: boundary assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BoxEmitter::
 set_min_bound(const LPoint3& vmin) {
@@ -23,9 +23,9 @@ set_min_bound(const LPoint3& vmin) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_max_bound
-//      Access : Public
-// Description : boundary assignment
+//     Function: set_max_bound
+//       Access: Public
+//  Description: boundary assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BoxEmitter::
 set_max_bound(const LPoint3& vmax) {
@@ -33,9 +33,9 @@ set_max_bound(const LPoint3& vmax) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_min_bound
-//      Access : Public
-// Description : boundary accessor
+//     Function: get_min_bound
+//       Access: Public
+//  Description: boundary accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 BoxEmitter::
 get_min_bound() const {
@@ -43,9 +43,9 @@ get_min_bound() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_max_bound
-//      Access : Public
-// Description : boundary accessor
+//     Function: get_max_bound
+//       Access: Public
+//  Description: boundary accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 BoxEmitter::
 get_max_bound() const {

@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : arrival.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  24 Oct 09
+// Filename: arrival.cxx
+// Created by: Deepak, John, Navin (24Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -25,17 +24,14 @@ Arrival::Arrival(AICharacter *ai_ch, double distance) {
 Arrival::~Arrival() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_arrival
-// Description : This function performs the arrival and returns an arrival force which is used
-//                in the calculate_prioritized function.
-//                In case the steering force = 0, it resets to arrival_activate.
-//                The arrival behavior works only when seek or pursue is active.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: do_arrival
+//  Description: This function performs the arrival and returns an arrival force which is used
+//               in the calculate_prioritized function.
+//               In case the steering force = 0, it resets to arrival_activate.
+//               The arrival behavior works only when seek or pursue is active.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 LVecBase3 Arrival::do_arrival() {
   LVecBase3 direction_to_target;
   double distance;
@@ -88,15 +84,12 @@ LVecBase3 Arrival::do_arrival() {
   return(LVecBase3(0.0, 0.0, 0.0));
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : arrival_activate
-// Description : This function checks for whether the target is within the arrival distance.
-//                When this is true, it calls the do_arrival function and sets the arrival direction.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: arrival_activate
+//  Description: This function checks for whether the target is within the arrival distance.
+//               When this is true, it calls the do_arrival function and sets the arrival direction.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 void Arrival::arrival_activate() {
   LVecBase3 dirn;
   if(_arrival_type) {

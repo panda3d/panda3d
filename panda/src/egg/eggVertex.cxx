@@ -382,7 +382,7 @@ set_aux_obj(EggVertexAux *aux) {
 //       Access: Published
 //  Description: Removes the named UV coordinate pair from the vertex,
 //               along with any UV morphs.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void EggVertex::
 clear_uv(const string &name) {
   _uv_map.erase(EggVertexUV::filter_name(name));
@@ -392,7 +392,7 @@ clear_uv(const string &name) {
 //     Function: EggVertex::clear_aux
 //       Access: Published
 //  Description: Removes the named auxiliary data from the vertex.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void EggVertex::
 clear_aux(const string &name) {
   _aux_map.erase(name);
@@ -408,7 +408,7 @@ clear_aux(const string &name) {
 //               Both vertices need to be either in no pool, or in
 //               the same pool.  In the latter case, the new vertex
 //               will be placed in that pool.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PT(EggVertex) EggVertex::
 make_average(const EggVertex *first, const EggVertex *second) {
   PT(EggVertexPool) pool = first->get_pool();
@@ -518,7 +518,7 @@ make_average(const EggVertex *first, const EggVertex *second) {
   return middle;
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : GroupRefEntry
 // Description : A temporary class used in EggVertex::write(), below,
 //               to hold the groups that reference each vertex prior

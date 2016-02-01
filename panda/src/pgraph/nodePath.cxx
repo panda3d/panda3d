@@ -4723,7 +4723,7 @@ has_material() const {
 //               applied to the geometry at or below this level, as
 //               another material at a higher or lower level may
 //               override.
-
+//
 //               See also find_material().
 ////////////////////////////////////////////////////////////////////
 PT(Material) NodePath::

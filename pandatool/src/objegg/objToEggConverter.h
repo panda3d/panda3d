@@ -1,4 +1,4 @@
-// Filename: ObjToEggConverter.h
+// Filename: objToEggConverter.h
 // Created by:  drose (07Dec10)
 //
 ////////////////////////////////////////////////////////////////////

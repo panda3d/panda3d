@@ -1,4 +1,4 @@
-// Filename: modelNode.cxx
+// Filename: uvScrollNode.cxx
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 bool UvScrollNode::
 cull_callback(CullTraverser * trav, CullTraverserData &data) {
-  double elapsed = ClockObject::get_global_clock()->get_frame_time() - _start_time; 
+  double elapsed = ClockObject::get_global_clock()->get_frame_time() - _start_time;
   CPT(TransformState) ts = TransformState::make_pos_hpr(
     LVecBase3(cmod(elapsed * _u_speed, 1.0) / 1.0,
               cmod(elapsed * _v_speed, 1.0) / 1.0,

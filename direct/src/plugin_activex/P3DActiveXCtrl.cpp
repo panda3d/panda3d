@@ -1,5 +1,3 @@
-// P3DActiveXCtrl.cpp : Implementation of the CP3DActiveXCtrl ActiveX Control class.
-
 // Filename: P3DActiveXCtrl.cpp
 // Created by:  atrestman (14Sept09)
 //
@@ -13,6 +11,8 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+// P3DActiveXCtrl.cpp : Implementation of the CP3DActiveXCtrl ActiveX Control class.
 
 #include "stdafx.h"
 #include "P3DActiveX.h"
@@ -159,7 +159,7 @@ BOOL CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry(BOOL bRegister)
 
 // CP3DActiveXCtrl::CP3DActiveXCtrl - Constructor
 
-CP3DActiveXCtrl::CP3DActiveXCtrl() : m_instance( *this ), m_pPandaObject( NULL ) 
+CP3DActiveXCtrl::CP3DActiveXCtrl() : m_instance( *this ), m_pPandaObject( NULL )
 {
     InitializeIIDs(&IID_DP3DActiveX, &IID_DP3DActiveXEvents);
     // TODO: Initialize your control's instance data here.
@@ -194,7 +194,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
       {
         _state = S_loading;
         // The first time we get the Draw message, we know we're
-        // sufficiently set up to start downloading the instance.  
+        // sufficiently set up to start downloading the instance.
         m_instance.read_tokens();
         get_twirl_bitmaps();
 
@@ -261,20 +261,20 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
       // using to paint
       CDC dcMemory;
       dcMemory.CreateCompatibleDC(pdc);
-      
+
       // Select the bitmap into the in-memory DC
       dcMemory.SelectObject(&_twirl_bitmaps[step]);
-      
+
       // Find a centerpoint for the bitmap in the client area
       CRect rect;
       GetClientRect(&rect);
       int nX = rect.left + (rect.Width() - twirl_width) / 2;
       int nY = rect.top + (rect.Height() - twirl_height) / 2;
-      
+
       // Copy the bits from the in-memory DC into the on-screen DC to
       // actually do the painting. Use the centerpoint we computed for
       // the target offset.
-      pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory, 
+      pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory,
                   0, 0, SRCCOPY);
     }
 }
@@ -286,10 +286,10 @@ void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
     // Make sure the init thread has finished.
     if (_state == S_loading) {
       nout << "Waiting for thread stop\n" << flush;
-      ::WaitForSingleObject( _init_not_running.m_hObject, INFINITE ); 
+      ::WaitForSingleObject( _init_not_running.m_hObject, INFINITE );
       nout << "Done waiting for thread stop\n" << flush;
     }
-    
+
 	COleControl::OnClose( dwSaveOption );
 }
 
@@ -302,7 +302,7 @@ void CP3DActiveXCtrl::DoPropExchange(CPropExchange* pPX)
     COleControl::DoPropExchange(pPX);
 
     // TODO: Call PX_ functions for each persistent custom property.
-    
+
     ExchangeProperties( pPX );
 }
 
@@ -384,21 +384,21 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return ( error = -1 );
     }
-    CComPtr<IOleContainer> pOleContainer; 
-    HRESULT hr = m_spClientSite->GetContainer( &pOleContainer ); 
+    CComPtr<IOleContainer> pOleContainer;
+    HRESULT hr = m_spClientSite->GetContainer( &pOleContainer );
     if ( FAILED( hr ) || !pOleContainer )
     {
         return ( error = -1 );
     }
-    CComPtr<IHTMLDocument2> pHtml2Doc; 
-    hr = pOleContainer->QueryInterface( IID_IHTMLDocument, ( void** )&pHtml2Doc ); 
-    if ( FAILED( hr ) || !pHtml2Doc ) 
+    CComPtr<IHTMLDocument2> pHtml2Doc;
+    hr = pOleContainer->QueryInterface( IID_IHTMLDocument, ( void** )&pHtml2Doc );
+    if ( FAILED( hr ) || !pHtml2Doc )
     {
         return ( error = -1 );
     }
     BSTR url;
     hr = pHtml2Doc->get_URL( &url );
-    if ( FAILED( hr ) ||  !url ) 
+    if ( FAILED( hr ) ||  !url )
     {
         return ( error = -1 );
     }
@@ -422,10 +422,10 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if ( collectionLength < 1 )
     {
         // javascript engine was not specified on the page.
-        // hence we need to initialize it by infusing javascript 
+        // hence we need to initialize it by infusing javascript
         // element tags
 
-        CComPtr<IHTMLElement> spHtmlElement; 
+        CComPtr<IHTMLElement> spHtmlElement;
         hr = pHtml2Doc->createElement( CComBSTR( "script" ), &spHtmlElement );
         if ( SUCCEEDED( hr ) && spHtmlElement )
         {
@@ -443,7 +443,7 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
                         CComPtr<IHTMLDOMNode> newNode;
                         hr = spHtmlDomNode->appendChild( spElementDomNode, &newNode );
                     }
-                }                    
+                }
             }
         }
     }
@@ -594,7 +594,7 @@ get_twirl_bitmaps() {
 
   for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
-                   m_instance._fgcolor_r, m_instance._fgcolor_g, m_instance._fgcolor_b, 
+                   m_instance._fgcolor_r, m_instance._fgcolor_g, m_instance._fgcolor_b,
                    m_instance._bgcolor_r, m_instance._bgcolor_g, m_instance._bgcolor_b);
 
     // Expand out the RGB channels into RGBA.

@@ -897,7 +897,7 @@ clear(DrawableRegion *clearable) {
 //     Function: DXGraphicsStateGuardian9::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
-//       scissor region and viewport)
+//               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 prepare_display_region(DisplayRegionPipelineReader *dr) {

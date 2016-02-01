@@ -21,8 +21,8 @@
 #include "baseForce.h"
 
 ////////////////////////////////////////////////////////////////////
-//        Class : ForceNode
-//  Description : A force that lives in the scene graph and is
+//       Class : ForceNode
+// Description : A force that lives in the scene graph and is
 //                therefore subject to local coordinate systems.
 //                An example of this would be simulating gravity
 //                in a rotating space station.  or something.
@@ -39,7 +39,7 @@ PUBLISHED:
   void add_forces_from(const ForceNode &other);
   void remove_force(BaseForce *f);
   void remove_force(int index);
-  
+
   virtual void output(ostream &out) const;
   virtual void write_forces(ostream &out, unsigned int indent=0) const;
   virtual void write(ostream &out, unsigned int indent=0) const;

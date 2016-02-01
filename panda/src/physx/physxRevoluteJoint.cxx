@@ -23,7 +23,7 @@ TypeHandle PhysxRevoluteJoint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxRevoluteJoint::
 link(NxJoint *jointPtr) {
@@ -41,7 +41,7 @@ link(NxJoint *jointPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxRevoluteJoint::
 unlink() {
@@ -54,10 +54,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxRevoluteJoint::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the joint object to a 
-//                descriptor.
+//     Function: PhysxRevoluteJoint::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the joint object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxRevoluteJoint::
 save_to_desc(PhysxRevoluteJointDesc &jointDesc) const {
@@ -67,10 +67,10 @@ save_to_desc(PhysxRevoluteJointDesc &jointDesc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxRevoluteJoint::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the joint from a 
-//                descriptor with a single call.
+//     Function: PhysxRevoluteJoint::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the joint from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxRevoluteJoint::
 load_from_desc(const PhysxRevoluteJointDesc &jointDesc) {
@@ -82,7 +82,7 @@ load_from_desc(const PhysxRevoluteJointDesc &jointDesc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::get_angle
 //       Access: Published
-//  Description: Retrieves the current revolute joint angle. 
+//  Description: Retrieves the current revolute joint angle.
 //
 //               The relative orientation of the bodies is stored
 //               when the joint is created, or when set_axis() or
@@ -173,7 +173,7 @@ get_flag(PhysxRevoluteJointFlag flag) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::set_spring
 //       Access: Published
-//  Description: Sets spring parameters. 
+//  Description: Sets spring parameters.
 //
 //               The spring is implicitly integrated so no
 //               instability should result for arbitrary spring and
@@ -209,7 +209,7 @@ set_spring(const PhysxSpringDesc &spring) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::set_motor
 //       Access: Published
-//  Description: Sets motor parameters for the joint. 
+//  Description: Sets motor parameters for the joint.
 //
 //               For a positive velTarget, the motor pulls the first
 //               body towards its pulley, for a negative velTarget,
@@ -222,18 +222,18 @@ set_spring(const PhysxSpringDesc &spring) {
 //               velocity, the motor will actually try to brake. If
 //               you set this to infinity then the motor will keep
 //               speeding up, unless there is some sort of
-//               resistance on the attached bodies. 
+//               resistance on the attached bodies.
 //
 //               maxForce - the maximum force the motor can exert.
 //               Zero disables the motor. Default is 0, should
 //               be >= 0. Setting this to a very large value if
 //               velTarget is also very large may not be a good
-//               idea. 
+//               idea.
 //
 //               freeSpin - if this flag is set, and if the joint
 //               is moving faster than velTarget, then neither
 //               braking nor additional acceleration will result.
-//               default: false. 
+//               default: false.
 //
 //               This automatically enables the motor.
 ////////////////////////////////////////////////////////////////////
@@ -247,7 +247,7 @@ set_motor(const PhysxMotorDesc &motor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::set_limits
 //       Access: Published
-//  Description: Sets angular joint limits. 
+//  Description: Sets angular joint limits.
 //
 //               If either of these limits are set, any planar
 //               limits in PhysxJoint are ignored. The limits are
@@ -288,7 +288,7 @@ set_limits(const PhysxJointLimitDesc &low, const PhysxJointLimitDesc &high) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::get_motor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxMotorDesc PhysxRevoluteJoint::
 get_motor() const {
@@ -296,14 +296,14 @@ get_motor() const {
   nassertr(_error_type == ET_ok, NULL);
 
   PhysxMotorDesc value;
-  _ptr->getMotor(value._desc);  
+  _ptr->getMotor(value._desc);
   return value;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxRevoluteJoint::get_spring
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxSpringDesc PhysxRevoluteJoint::
 get_spring() const {
@@ -311,7 +311,7 @@ get_spring() const {
   nassertr(_error_type == ET_ok, NULL);
 
   PhysxSpringDesc value;
-  _ptr->getSpring(value._desc);  
+  _ptr->getSpring(value._desc);
   return value;
 }
 

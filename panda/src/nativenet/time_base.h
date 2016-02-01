@@ -1,6 +1,6 @@
 #ifndef __TIME_BASE_H__
-#define __TIME_BASE_H__ 
-/////////////////////////////////////////////////////////////////////
+#define __TIME_BASE_H__
+////////////////////////////////////////////////////////////////////
 //  Functions To support General Time Managment. And to allow for cross platform use.
 //
 //
@@ -24,7 +24,7 @@
 //      Windows 2k and Linux  are really slow (~250k a sec) at returning the current system time ??
 //       So use time functions that grab the current system time sparingly ??
 //
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 #ifdef WIN32
 #include <winsock2.h>
 #include <wtypes.h>
@@ -38,48 +38,39 @@
 #include <assert.h>
 
 enum { USEC = 1000000 };
-//////////////////////////////////////////////////////////////
-// Function name : NormalizeTime
-// Description     :
-// Return type  : inline void
-// Argument         : timeval &in
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: NormalizeTime
+//  Description:
+////////////////////////////////////////////////////////////////////
 inline void NormalizeTime(timeval &in)
 {
-    while (in.tv_usec >= USEC) 
+    while (in.tv_usec >= USEC)
     {
         in.tv_usec -= USEC;
         in.tv_sec++;
     }
-    
-    while (in.tv_usec < 0) 
+
+    while (in.tv_usec < 0)
     {
         in.tv_usec += USEC;
         in.tv_sec--;
     }
 }
-//////////////////////////////////////////////////////////////
-// Function name : TimeDif
-// Description     :
-// Return type  : inline void
-// Argument         : const struct timeval &start
-// Argument         : const struct timeval &fin
-// Argument         : struct timeval &answer
-//////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: TimeDif
+//  Description:
+////////////////////////////////////////////////////////////////////
 inline void TimeDif(const struct timeval &start, const struct timeval &fin, struct timeval &answer)
 {
     answer.tv_usec = fin.tv_usec - start.tv_usec;
     answer.tv_sec = fin.tv_sec - start.tv_sec;
     NormalizeTime(answer);
 }
-//////////////////////////////////////////////////////////////
-// Function name : TimeAdd
-// Description     :
-// Return type  : inline void
-// Argument         : const struct timeval &start
-// Argument         : const struct timeval &delta
-// Argument         : struct timeval &answer
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: TimeAdd
+//  Description:
+////////////////////////////////////////////////////////////////////
 inline void TimeAdd(const struct timeval &start, const struct timeval &delta, struct timeval &answer)
 {
     answer.tv_usec = start.tv_usec + delta.tv_usec;
@@ -87,18 +78,13 @@ inline void TimeAdd(const struct timeval &start, const struct timeval &delta, st
     NormalizeTime(answer);
 }
 
-#ifdef WIN32 
-////////////////////////////////////////////////////////////////
-//
+#ifdef WIN32
 // Lets make Windows think it is a unix machine :)
-//
-//////////////////////////////////////////////////////////////
-// Function name : gettimeofday
-// Description     :
-// Return type  : inline int
-// Argument         : struct timeval *tv
-// Argument         : void * trash
-//////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: gettimeofday
+//  Description:
+////////////////////////////////////////////////////////////////////
 inline int gettimeofday(struct timeval *tv, void * trash)
 {
     struct timeb timeb;

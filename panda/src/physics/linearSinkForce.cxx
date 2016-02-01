@@ -17,9 +17,9 @@
 TypeHandle LinearSinkForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSinkForce
-//      Access : Public
-// Description : Simple constructor
+//     Function: LinearSinkForce
+//       Access: Public
+//  Description: Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
 LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a,
@@ -28,9 +28,9 @@ LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSinkForce
-//      Access : Public
-// Description : Simple constructor
+//     Function: LinearSinkForce
+//       Access: Public
+//  Description: Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
 LinearSinkForce() :
@@ -39,9 +39,9 @@ LinearSinkForce() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearSinkForce
-//      Access : Public
-// Description : copy constructor
+//     Function: LinearSinkForce
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
 LinearSinkForce(const LinearSinkForce &copy) :
@@ -49,18 +49,18 @@ LinearSinkForce(const LinearSinkForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearSinkForce
-//      Access : Public
-// Description : Simple destructor
+//     Function: ~LinearSinkForce
+//       Access: Public
+//  Description: Simple destructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
 ~LinearSinkForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearSinkForce::
 make_copy() {
@@ -68,9 +68,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : Public
-// Description : virtual force query
+//     Function: get_child_vector
+//       Access: Public
+//  Description: virtual force query
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearSinkForce::
 get_child_vector(const PhysicsObject *po) {
@@ -78,10 +78,10 @@ get_child_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSinkForce::
 output(ostream &out) const {
@@ -91,10 +91,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSinkForce::
 write(ostream &out, unsigned int indent) const {
