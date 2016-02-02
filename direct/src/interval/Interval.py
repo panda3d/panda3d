@@ -5,6 +5,7 @@ __all__ = ['Interval']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task, TaskManager
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import *
 from panda3d.direct import *
 from direct.extensions_native import CInterval_extensions
@@ -289,13 +290,13 @@ class Interval(DirectObject):
             self.__endT = endT
             self.__endTAtEnd = 0
 
-        self.__clockStart = globalClock.getFrameTime()
+        self.__clockStart = ClockObject.getGlobalClock().getFrameTime()
         self.__playRate = playRate
         self.__doLoop = doLoop
         self.__loopCount = 0
 
     def setupResume(self):
-        now = globalClock.getFrameTime()
+        now = ClockObject.getGlobalClock().getFrameTime()
         if self.__playRate > 0:
             self.__clockStart = now - ((self.getT() - self.__startT) / self.__playRate)
         elif self.__playRate < 0:
@@ -303,7 +304,7 @@ class Interval(DirectObject):
         self.__loopCount = 0
 
     def stepPlay(self):
-        now = globalClock.getFrameTime()
+        now = ClockObject.getGlobalClock().getFrameTime()
         if self.__playRate >= 0:
             t = (now - self.__clockStart) * self.__playRate + self.__startT
 

@@ -4,6 +4,7 @@ __all__ = ['Transitions']
 
 from panda3d.core import *
 from direct.gui.DirectGui import *
+from direct.gui import DirectGuiGlobals as DGG
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
 from direct.interval.MetaInterval import Sequence, Parallel
 from direct.interval.FunctionInterval import Func
@@ -91,7 +92,7 @@ class Transitions:
         """
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
-        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
@@ -112,7 +113,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        transitionIval = Sequence(Func(self.fade.reparentTo,aspect2d,FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo,aspect2d,DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
@@ -164,7 +165,7 @@ class Transitions:
             # Fade out immediately with no lerp
             self.noTransitions()
             self.loadFade()
-            self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
+            self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
@@ -188,7 +189,7 @@ class Transitions:
         #print "transitiosn: fadeScreen"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(self.alphaOn[0],
                            self.alphaOn[1],
                            self.alphaOn[2],
@@ -203,7 +204,7 @@ class Transitions:
         #print "transitiosn: fadeScreenColor"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(color)
 
     def noFade(self):
@@ -245,7 +246,7 @@ class Transitions:
         if (t == 0):
             self.iris.detachNode()
         else:
-            self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
+            self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.18,
@@ -272,7 +273,7 @@ class Transitions:
             self.iris.detachNode()
             self.fadeOut(0)
         else:
-            self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
+            self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
 
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.01,

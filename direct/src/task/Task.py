@@ -707,12 +707,12 @@ class TaskManager:
     def _getRandomTask(self):
         # Figure out when the next frame is likely to expire, so we
         # won't grab any tasks that are sleeping for a long time.
-        now = globalClock.getFrameTime()
-        avgFrameRate = globalClock.getAverageFrameRate()
+        now = self.globalClock.getFrameTime()
+        avgFrameRate = self.globalClock.getAverageFrameRate()
         if avgFrameRate < .00001:
             avgFrameDur = 0.
         else:
-            avgFrameDur = (1. / globalClock.getAverageFrameRate())
+            avgFrameDur = (1. / self.globalClock.getAverageFrameRate())
         next = now + avgFrameDur
 
         # Now grab a task at random, until we find one that we like.
