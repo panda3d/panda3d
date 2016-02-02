@@ -190,6 +190,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPTypedefType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPTypedefType::
+is_default_constructible() const {
+  return _type->is_default_constructible();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPTypedefType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPTypedefType::
+is_copy_constructible() const {
+  return _type->is_copy_constructible();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPTypedefType::is_fully_specified
 //       Access: Public, Virtual
 //  Description: Returns true if this declaration is an actual,
@@ -381,7 +401,7 @@ is_equal(const CPPDeclaration *other) const {
   const CPPTypedefType *ot = ((CPPDeclaration *)other)->as_typedef_type();
   assert(ot != NULL);
 
-  return (_type == ot->_type) && (*_ident == *ot->_ident);
+  return (*_type == *ot->_type) && (*_ident == *ot->_ident);
 }
 
 ////////////////////////////////////////////////////////////////////

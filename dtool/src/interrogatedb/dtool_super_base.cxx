@@ -30,7 +30,7 @@ PyMethodDef Dtool_Methods_DTOOL_SUPER_BASE[] = {
   { NULL, NULL }
 };
 
-EXPCL_DTOOLCONFIG void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
+EXPCL_INTERROGATEDB void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   static bool initdone = false;
   if (!initdone) {
 
@@ -62,7 +62,8 @@ inline void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyType
 }
 
 int Dtool_Init_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) {
-  PyErr_SetString(PyExc_TypeError, "cannot init super base");
+  assert(self != NULL);
+  PyErr_Format(PyExc_TypeError, "cannot init constant class %s", Py_TYPE(self)->tp_name);
   return -1;
 }
 

@@ -813,6 +813,19 @@ compute_tube_vertices(GeomVertexData *vdata,
       compute_tangent(tangent, segment, j, result);
 
       LVector3 norm = cross(tangent, up);
+
+      // In case the tangent is linear dependent on the up vector, we might get invalid
+      // results, so check that
+      if (IS_NEARLY_ZERO(norm.length_squared())) {
+
+        if (IS_NEARLY_ZERO(tangent.get_y()) && IS_NEARLY_ZERO(tangent.get_z())) {
+          // Vector is linear dependent on (1, 0, 0), use (0, 1, 0) as base
+          norm = cross(tangent, LVector3(0, 1, 0));
+        } else {
+          norm = cross(tangent, LVector3(1, 0, 0));
+        }
+      }
+
       norm.normalize();
       up = cross(norm, tangent);
 
@@ -885,6 +898,13 @@ compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment,
   } else {
     tangent = segment[j + 1]._p - segment[j - 1]._p;
   }
+
+  // Avoid empty tangents, these lead to crashes. Instead, use an arbitrary
+  // tangent.
+  if (IS_NEARLY_ZERO(tangent.length_squared())) {
+    tangent.set(0, 0, 1);
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////

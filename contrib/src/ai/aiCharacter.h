@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : aiCharacter.h
-// Created by  : Deepak, John, Navin
-// Date        :  8 Sep 09
+// Filename: aiCharacter.h
+// Created by: Deepak, John, Navin (08Sep09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -23,15 +22,14 @@
 
 #include "aiBehaviors.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Class : AICharacter
-//  Description : This class is used for creating the ai characters. It assigns both physics and ai
-//                attributes to the character. It also has an update function which updates the physics and ai
-//                of the character. This update function is called by the AIWorld update.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//       Class : AICharacter
+// Description : This class is used for creating the AI characters.
+//               It assigns both physics and AI attributes to the
+//               character.  It also has an update function which
+//               updates the physics and AI of the character.
+//               This update function is called by the AIWorld update.
+////////////////////////////////////////////////////////////////////
 class AIBehaviors;
 class AIWorld;
 

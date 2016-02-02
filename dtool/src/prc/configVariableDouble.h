@@ -36,15 +36,17 @@ PUBLISHED:
   INLINE void operator = (double value);
   INLINE operator double () const;
 
-  INLINE int size() const;
-  INLINE double operator [] (int n) const;
+  INLINE size_t size() const;
+  INLINE double operator [] (size_t n) const;
 
   INLINE void set_value(double value);
   INLINE double get_value() const;
   INLINE double get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE double get_word(int n) const;
-  INLINE void set_word(int n, double value);
+  INLINE double get_word(size_t n) const;
+  INLINE void set_word(size_t n, double value);
 
 private:
   void set_default_value(double default_value);

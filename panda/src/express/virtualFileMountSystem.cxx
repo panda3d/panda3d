@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileMountSystem.h"
+#include "virtualFileSystem.h"
 
 TypeHandle VirtualFileMountSystem::_type_handle;
 

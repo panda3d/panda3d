@@ -1,3 +1,5 @@
+// Filename: osxGraphicsPipe.cxx
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -17,6 +19,7 @@
 #include "pnmImage.h"
 #include "subprocessWindow.h"
 #include "nativeWindowHandle.h"
+#include "displayInformation.h"
 #import <Carbon/Carbon.h>
 
 // some macros to make code more readable.
@@ -34,7 +37,7 @@ Boolean GetDictionaryBoolean(CFDictionaryRef theDict, const void* key) {
   CFBooleanRef boolRef;
   boolRef = (CFBooleanRef)CFDictionaryGetValue(theDict, key);
   if (boolRef != NULL)
-    value = CFBooleanGetValue(boolRef);   
+    value = CFBooleanGetValue(boolRef);
   return value;
 }
 
@@ -44,7 +47,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key) {
   CFNumberRef numRef;
   numRef = (CFNumberRef)CFDictionaryGetValue(theDict, key);
   if (numRef != NULL)
-    CFNumberGetValue(numRef, kCFNumberLongType, &value);   
+    CFNumberGetValue(numRef, kCFNumberLongType, &value);
   return value;
 }
 
@@ -53,37 +56,37 @@ static CFComparisonResult CompareModes (const void *val1,const void *val2,void *
 #pragma unused(context)
   CFDictionaryRef thisMode = (CFDictionaryRef)val1;
   CFDictionaryRef otherMode = (CFDictionaryRef)val2;
-   
+
   long width = GetModeWidth(thisMode);
   long otherWidth = GetModeWidth(otherMode);
   long height = GetModeHeight(thisMode);
   long otherHeight = GetModeHeight(otherMode);
-   
+
   // sort modes in screen size order
   if (width * height < otherWidth * otherHeight) {
     return kCFCompareLessThan;
   } else if (width * height > otherWidth * otherHeight) {
     return kCFCompareGreaterThan;
   }
-   
+
   // sort modes by bits per pixel
   long bitsPerPixel = GetModeBitsPerPixel(thisMode);
-  long otherBitsPerPixel = GetModeBitsPerPixel(otherMode);   
+  long otherBitsPerPixel = GetModeBitsPerPixel(otherMode);
   if (bitsPerPixel < otherBitsPerPixel) {
     return kCFCompareLessThan;
   } else if (bitsPerPixel > otherBitsPerPixel) {
     return kCFCompareGreaterThan;
   }
-   
+
   // sort modes by refresh rate.
   long refreshRate = GetModeRefreshRate(thisMode);
-  long otherRefreshRate = GetModeRefreshRate(otherMode);   
+  long otherRefreshRate = GetModeRefreshRate(otherMode);
   if (refreshRate < otherRefreshRate) {
     return kCFCompareLessThan;
   } else if (refreshRate > otherRefreshRate) {
     return kCFCompareGreaterThan;
   }
-     
+
   return kCFCompareEqualTo;
 }
 
@@ -91,18 +94,18 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
   // get a list of all possible display modes for this system.
   CFArrayRef availableModes = CGDisplayAvailableModes(display);
   unsigned int numberOfAvailableModes = CFArrayGetCount(availableModes);
- 
+
   // creat mutable array to hold the display modes we are interested int.
   CFMutableArrayRef usefulModes = CFArrayCreateMutable(kCFAllocatorDefault, numberOfAvailableModes, NULL);
- 
+
   // get the current bits per pixel.
   long currentModeBitsPerPixel = GetModeBitsPerPixel(CGDisplayCurrentMode(display));
- 
+
   unsigned int i;
   for (i= 0; i<numberOfAvailableModes; ++i) {
     // look at each mode in the available list
     CFDictionaryRef mode = (CFDictionaryRef)CFArrayGetValueAtIndex(availableModes, i);
-     
+
     // we are only interested in modes with the same bits per pixel as current.
     //   to allow for switching from fullscreen to windowed modes.
     // that are safe for this hardward
@@ -110,27 +113,27 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
     long bitsPerPixel = GetModeBitsPerPixel(mode);
     Boolean safeForHardware = GetModeSafeForHardware(mode);
     Boolean stretched = GetModeStretched(mode);
-   
+
     if ((bitsPerPixel != currentModeBitsPerPixel) || (!safeForHardware) || (stretched)) {
       continue; // skip this mode
     }
-     
+
     long width = GetModeWidth(mode);
     long height = GetModeHeight(mode);
-    long refreshRate = GetModeRefreshRate(mode);     
+    long refreshRate = GetModeRefreshRate(mode);
     Boolean replaced = false;
     Boolean skipped = false;
-     
+
     // now check to see if we already added a mode like this one.
     //   we want the highest refresh rate for this width/height
     unsigned int j;
     unsigned int currentNumberOfUsefulModes =  CFArrayGetCount(usefulModes);
     for (j = 0; j < currentNumberOfUsefulModes; ++j) {
-      CFDictionaryRef otherMode = (CFDictionaryRef)CFArrayGetValueAtIndex(usefulModes, j);       
+      CFDictionaryRef otherMode = (CFDictionaryRef)CFArrayGetValueAtIndex(usefulModes, j);
       long otherWidth = GetModeWidth(otherMode);
-      long otherHeight = GetModeHeight(otherMode);       
+      long otherHeight = GetModeHeight(otherMode);
       if ((otherWidth == width) && (otherHeight == height)) {
-        long otherRefreshRate = GetModeRefreshRate(otherMode);         
+        long otherRefreshRate = GetModeRefreshRate(otherMode);
         if (otherRefreshRate < refreshRate) {
           // replace lower refresh rate.
           const void* value = mode;
@@ -143,58 +146,58 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
           break;
         }
       }
-    }     
+    }
     // this is a useful mode so add it to the array.
     if (!replaced && !skipped) {
       CFArrayAppendValue(usefulModes, mode);
-    }     
-  }   
+    }
+  }
   // now sort the useful mode array, using the comparison callback.
   CFArraySortValues( usefulModes,
     CFRangeMake(0, CFArrayGetCount(usefulModes)),
-    (CFComparatorFunction) CompareModes, NULL); 
+    (CFComparatorFunction) CompareModes, NULL);
   // return the CFArray of the useful display modes.
   return usefulModes;
 }
 
 TypeHandle osxGraphicsPipe::_type_handle;
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsPipe::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 osxGraphicsPipe::
 osxGraphicsPipe() {
   CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
   _display_width = CGRectGetWidth(display_bounds);
   _display_height = CGRectGetHeight(display_bounds);
- 
+
   CGDirectDisplayID display, displayArray[MAX_DISPLAYS] ;
   CGDisplayCount numDisplays;
-  CFDictionaryRef displayMode; 
+  CFDictionaryRef displayMode;
   CFArrayRef displayModeArray;
-  int number, i; 
+  int number, i;
   CGGetActiveDisplayList (MAX_DISPLAYS, displayArray, &numDisplays);
   display = displayArray [numDisplays - 1];
-  displayModeArray = GSCGDisplayAvailableModesUsefulForOpenGL( display );   
+  displayModeArray = GSCGDisplayAvailableModesUsefulForOpenGL( display );
   number = CFArrayGetCount( displayModeArray );
-  DisplayMode *displays = new DisplayMode[ number ]; 
-  for(i = 0; i < number; i++) {     
+  DisplayMode *displays = new DisplayMode[ number ];
+  for(i = 0; i < number; i++) {
      displayMode = (CFDictionaryRef) CFArrayGetValueAtIndex (displayModeArray, i);
-     _display_information -> _total_display_modes++;     
+     _display_information -> _total_display_modes++;
      displays[i].width = (signed int)GetModeWidth (displayMode);
      displays[i].height = (signed int)GetModeHeight (displayMode);
      displays[i].bits_per_pixel = (signed int)GetModeBitsPerPixel (displayMode);
      displays[i].refresh_rate = (signed int)GetModeRefreshRate (displayMode);
-  }   
+  }
   _display_information -> _display_mode_array = displays;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsPipe::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 osxGraphicsPipe::
 ~osxGraphicsPipe() {
@@ -235,7 +238,7 @@ pipe_constructor() {
 //               performed: typically either the app thread (e.g. X)
 //               or the draw thread (Windows).
 ////////////////////////////////////////////////////////////////////
-GraphicsPipe::PreferredWindowThread 
+GraphicsPipe::PreferredWindowThread
 osxGraphicsPipe::get_preferred_window_thread() const {
   return PWT_app;
 }
@@ -332,7 +335,7 @@ create_cg_image(const PNMImage &pnm_image) {
   }
   nassertr((void *)dp == (void *)(char_array + num_bytes), NULL);
 
-  CGDataProviderRef provider = 
+  CGDataProviderRef provider =
     CGDataProviderCreateWithData(NULL, char_array, num_bytes, release_data);
   nassertr(provider != NULL, NULL);
 
@@ -378,7 +381,7 @@ make_output(const string &name,
   if (!_is_valid) {
     return NULL;
   }
-  
+
   osxGraphicsStateGuardian *osxgsg = 0;
   if (gsg != 0) {
     DCAST_INTO_R(osxgsg, gsg, NULL);
@@ -402,7 +405,7 @@ make_output(const string &name,
         << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
       WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-      if (os_handle != NULL && 
+      if (os_handle != NULL &&
           os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
                                     flags, gsg, host);
@@ -441,7 +444,7 @@ make_output(const string &name,
     }
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
-  
+
   // Third thing to try: an osxGraphicsBuffer
   if (retry == 2) {
     if ((!support_render_texture)||

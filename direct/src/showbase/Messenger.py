@@ -7,7 +7,6 @@ from PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
 
-from panda3d.core import ConfigVariableBool, Thread, Mutex
 from direct.stdpy.threading import Lock
 
 class Messenger:

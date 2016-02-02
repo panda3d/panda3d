@@ -57,14 +57,14 @@ PUBLISHED:
   void operator = (const TransformBlendTable &copy);
   virtual ~TransformBlendTable();
 
-  INLINE int get_num_blends() const;
-  INLINE const TransformBlend &get_blend(int n) const;
+  INLINE size_t get_num_blends() const;
+  INLINE const TransformBlend &get_blend(size_t n) const;
   MAKE_SEQ(get_blends, get_num_blends, get_blend);
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
-  void set_blend(int n, const TransformBlend &blend);
-  void remove_blend(int n);
-  int add_blend(const TransformBlend &blend);
+  void set_blend(size_t n, const TransformBlend &blend);
+  void remove_blend(size_t n);
+  size_t add_blend(const TransformBlend &blend);
 
   INLINE int get_num_transforms() const;
   INLINE int get_max_simultaneous_transforms() const;

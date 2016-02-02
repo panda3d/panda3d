@@ -1,10 +1,32 @@
 language: cpp
-compiler:
-  - gcc
-  - clang
-before_script:
-  - sudo apt-get install python-dev libpng-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libjpeg-dev libopenal-dev libode-dev nvidia-cg-toolkit
-script: python makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT --installer --threads 2
+sudo: false
+matrix:
+  include:
+    - compiler: gcc
+      env: PYTHONV=python2.7
+    - compiler: clang
+      env: PYTHONV=python3
+addons:
+  apt:
+    packages:
+    - bison
+    - flex
+    - libfreetype6-dev
+    - libgl1-mesa-dev
+    - libjpeg-dev
+    - libode-dev
+    - libopenal-dev
+    - libpng-dev
+    - libssl-dev
+    - libvorbis-dev
+    - libx11-dev
+    - libxcursor-dev
+    - libxrandr-dev
+    - nvidia-cg-toolkit
+    - python-dev
+    - python3-dev
+    - zlib1g-dev
+script: $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT --installer --threads 4 && LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
 notifications:
   irc:
     channels:

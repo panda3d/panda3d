@@ -55,6 +55,10 @@
 #pragma warning (disable : 4355)
 /* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
 #pragma warning (disable : 4244)
+/* C4267: 'var' : conversion from 'size_t' to 'type', possible loss of data */
+#pragma warning (disable : 4267)
+/* C4577: 'noexcept' used with no exception handling mode specified */
+#pragma warning (disable : 4577)
 
 #if _MSC_VER >= 1300
  #if _MSC_VER >= 1310
@@ -113,9 +117,10 @@
 #endif
 
 #ifdef HAVE_PYTHON
-#undef _POSIX_C_SOURCE
-#undef _XOPEN_SOURCE
-#include "pyconfig.h"
+// Instead of including the Python headers, which will implicitly
+// add a linker flag to link in Python, we'll just excerpt the
+// forward declaration of PyObject.
+typedef struct _object PyObject;
 #endif
 
 #ifndef HAVE_EIGEN
@@ -250,8 +255,6 @@
 #define TAU_TRACK_MEMORY_HERE()
 #define TAU_ENABLE_TRACKING_MEMORY()
 #define TAU_DISABLE_TRACKING_MEMORY()
-#define TAU_TRACK_MEMORY()
-#define TAU_TRACK_MEMORY_HERE()
 #define TAU_ENABLE_TRACKING_MUSE_EVENTS()
 #define TAU_DISABLE_TRACKING_MUSE_EVENTS()
 #define TAU_TRACK_MUSE_EVENTS()
@@ -413,6 +416,7 @@
 #define END_PUBLISH __end_publish
 #define BLOCKING __blocking
 #define MAKE_PROPERTY(property_name, ...) __make_property(property_name, __VA_ARGS__)
+#define MAKE_PROPERTY2(property_name, ...) __make_property2(property_name, __VA_ARGS__)
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #undef USE_STL_ALLOCATOR  /* Don't try to parse these template classes in interrogate. */
 #define EXTENSION(x) __extension x
@@ -422,6 +426,7 @@
 #define END_PUBLISH
 #define BLOCKING
 #define MAKE_PROPERTY(property_name, ...)
+#define MAKE_PROPERTY2(property_name, ...)
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define EXTENSION(x)
 #define EXTEND
@@ -431,17 +436,30 @@
 #if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __declspec(dllexport)
 #define IMPORT_CLASS __declspec(dllimport)
+#elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#define EXPORT_CLASS __attribute__((visibility("default")))
+#define IMPORT_CLASS
 #else
 #define EXPORT_CLASS
 #define IMPORT_CLASS
 #endif
+
 /* "extern template" is now part of the C++11 standard. */
-#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if defined(CPPPARSER) || defined(LINK_ALL_STATIC)
+#define EXPORT_TEMPL
+#define IMPORT_TEMPL
+#elif defined(_MSC_VER)
+/* Nowadays, we'd define both of these as "extern" in all cases, so that
+   the header file always marks the symbol as "extern" and the .cxx file
+   explicitly instantiates it.  However, MSVC versions before 2013 break
+   the spec by explicitly disallowing it, so we have to instantiate the
+   class from the header file.  Fortunately, its linker is okay with the
+   duplicate template instantiations that this causes. */
 #define EXPORT_TEMPL
 #define IMPORT_TEMPL extern
 #else
-#define EXPORT_TEMPL
-#define IMPORT_TEMPL
+#define EXPORT_TEMPL extern
+#define IMPORT_TEMPL extern
 #endif
 
 #ifdef __cplusplus

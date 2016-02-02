@@ -34,11 +34,11 @@ TypeHandle MovieTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::Constructor
 //       Access: Published
-//  Description: Creates a blank movie texture.  Movies must be 
+//  Description: Creates a blank movie texture.  Movies must be
 //               added using do_read_one or do_load_one.
 ////////////////////////////////////////////////////////////////////
 MovieTexture::
-MovieTexture(const string &name) : 
+MovieTexture(const string &name) :
   Texture(name)
 {
 }
@@ -49,7 +49,7 @@ MovieTexture(const string &name) :
 //  Description: Creates a texture playing the specified movie.
 ////////////////////////////////////////////////////////////////////
 MovieTexture::
-MovieTexture(MovieVideo *video) : 
+MovieTexture(MovieVideo *video) :
   Texture(video->get_name())
 {
   Texture::CDWriter cdata_tex(Texture::_cycler, true);
@@ -58,7 +58,7 @@ MovieTexture(MovieVideo *video) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::CData::Constructor
-//       Access: public
+//       Access: Public
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 MovieTexture::CData::
@@ -76,7 +76,7 @@ CData() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::CData::Copy Constructor
-//       Access: public
+//       Access: Public
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 MovieTexture::CData::
@@ -95,7 +95,7 @@ CData(const CData &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::CData::make_copy
-//       Access: public
+//       Access: Public
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 CycleData *MovieTexture::CData::
@@ -110,7 +110,7 @@ make_copy() const {
 //               an existing MovieTexture.
 ////////////////////////////////////////////////////////////////////
 MovieTexture::
-MovieTexture(const MovieTexture &copy) : 
+MovieTexture(const MovieTexture &copy) :
   Texture(copy)
 {
   nassertv(false);
@@ -201,15 +201,15 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
   cdata->_video_length = len;
 
   do_adjust_this_size(cdata_tex, x_max, y_max, get_name(), true);
-  
-  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3, 
+
+  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3,
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
   cdata_tex->_orig_file_x_size = cdata->_video_width;
   cdata_tex->_orig_file_y_size = cdata->_video_height;
 
-  do_set_pad_size(cdata_tex, 
-                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0), 
+  do_set_pad_size(cdata_tex,
+                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
                   max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
                   0);
 }
@@ -251,14 +251,14 @@ do_read_one(Texture::CData *cdata_tex,
     return false;
   }
   nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
-  
+
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
   }
 
   PT(MovieVideoCursor) color;
   PT(MovieVideoCursor) alpha;
-  
+
   color = MovieVideo::get(fullpath)->open();
   if (color == 0) {
     return false;
@@ -269,7 +269,7 @@ do_read_one(Texture::CData *cdata_tex,
       return false;
     }
   }
-  
+
   if (z == 0) {
     if (!has_name()) {
       set_name(fullpath.get_basename_wo_extension());
@@ -279,18 +279,18 @@ do_read_one(Texture::CData *cdata_tex,
       cdata_tex->_filename = fullpath;
       cdata_tex->_alpha_filename = alpha_fullpath;
     }
-    
+
     cdata_tex->_fullpath = fullpath;
     cdata_tex->_alpha_fullpath = alpha_fullpath;
   }
 
   cdata_tex->_primary_file_num_channels = primary_file_num_channels;
   cdata_tex->_alpha_file_channel = alpha_file_channel;
-  
+
   if (!do_load_one(cdata_tex, color, alpha, z, options)) {
     return false;
   }
-  
+
   cdata_tex->_loaded_from_image = true;
   set_loop(true);
   play();
@@ -316,7 +316,7 @@ do_load_one(Texture::CData *cdata_tex,
   // padded textures.
   PTA_uchar image = make_ram_image();
   memset(image.p(), 0, image.size());
-  
+
   return true;
 }
 
@@ -366,7 +366,7 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::cull_callback
 //       Access: Public, Virtual
-//  Description: This function will be called during the cull 
+//  Description: This function will be called during the cull
 //               traversal to update the MovieTexture.  This update
 //               consists of fetching the next video frame from the
 //               underlying MovieVideo sources.  The MovieVideo
@@ -413,15 +413,15 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       MovieVideoCursor *color = page._color;
       MovieVideoCursor *alpha = page._alpha;
       size_t i = pi - cdata->_pages.begin();
-      
+
       if (color != NULL && alpha != NULL) {
         color->apply_to_texture_rgb(page._cbuffer, (MovieTexture*)this, i);
         alpha->apply_to_texture_alpha(page._abuffer, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
-        
+
       } else if (color != NULL) {
         color->apply_to_texture(page._cbuffer, (MovieTexture*)this, i);
       }
-      
+
       ((VideoPage &)page)._cbuffer.clear();
       ((VideoPage &)page)._abuffer.clear();
     }
@@ -429,7 +429,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     // Clear the cached offset so we can update the frame next time.
     ((CData *)cdata.p())->_has_offset = false;
   }
-    
+
   return true;
 }
 
@@ -441,7 +441,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 //               as a separate texture from the original, so it will
 //               be duplicated in texture memory (and may be
 //               independently modified if desired).
-//               
+//
 //               If the Texture is a MovieTexture, the resulting
 //               duplicate may be animated independently of the
 //               original.
@@ -464,7 +464,7 @@ make_copy_impl() {
 //  Description: Implements make_copy().
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy, 
+do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
           const CData *cdata_copy, const Texture::CData *cdata_copy_tex) {
   Texture::do_assign(cdata_tex, copy, cdata_copy_tex);
 
@@ -476,7 +476,7 @@ do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
     color[i] = cdata_copy->_pages[i]._color;
     alpha[i] = cdata_copy->_pages[i]._alpha;
   }
-  
+
   cdata->_pages.resize(color.size());
   for (int i=0; i<(int)(color.size()); i++) {
     if (color[i]) {
@@ -492,8 +492,8 @@ do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::reload_ram_image
 //       Access: Protected, Virtual
-//  Description: A MovieTexture must always keep its ram image, 
-//               since there is no way to reload it from the 
+//  Description: A MovieTexture must always keep its ram image,
+//               since there is no way to reload it from the
 //               source MovieVideo.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
@@ -505,8 +505,8 @@ do_reload_ram_image(Texture::CData *cdata, bool allow_compression) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::get_keep_ram_image
 //       Access: Published, Virtual
-//  Description: A MovieTexture must always keep its ram image, 
-//               since there is no way to reload it from the 
+//  Description: A MovieTexture must always keep its ram image,
+//               since there is no way to reload it from the
 //               source MovieVideo.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
@@ -623,8 +623,8 @@ set_time(double t) {
 //  Description: Returns the current value of the movie's cursor.
 //               If the movie's loop count is greater than one, then
 //               its length is effectively multiplied for the
-//               purposes of this function.  In other words, 
-//               the return value will be in the range 0.0 
+//               purposes of this function.  In other words,
+//               the return value will be in the range 0.0
 //               to (length * loopcount).
 ////////////////////////////////////////////////////////////////////
 double MovieTexture::
@@ -700,7 +700,7 @@ set_play_rate(double rate) {
     cdata->_clock -= (now * cdata->_play_rate);
   } else {
     cdata->_play_rate = rate;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

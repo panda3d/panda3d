@@ -78,6 +78,18 @@ set_space_advance(PN_stdfloat space_advance) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextFont::get_total_poly_margin
+//       Access: Public
+//  Description: Returns the total margin between the edge of the
+//               glyph and the edge of the cards.  This includes
+//               _poly_margin and any additional outline.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat TextFont::
+get_total_poly_margin() const {
+  return _total_poly_margin;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_glyph
 //       Access: Public, Virtual
 //  Description: Gets the glyph associated with the given character
@@ -87,9 +99,9 @@ set_space_advance(PN_stdfloat space_advance) {
 //               it may still return a printable glyph, or it may
 //               return NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE const TextGlyph *TextFont::
+INLINE CPT(TextGlyph) TextFont::
 get_glyph(int character) {
-  const TextGlyph *glyph = NULL;
+  CPT(TextGlyph) glyph;
   get_glyph(character, glyph);
   return glyph;
 }

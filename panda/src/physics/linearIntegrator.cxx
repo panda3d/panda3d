@@ -22,27 +22,27 @@ ConfigVariableDouble LinearIntegrator::_max_linear_dt
 
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseLinearIntegrator
-//      Access : Protected
-// Description : constructor
+//     Function: BaseLinearIntegrator
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LinearIntegrator::
 LinearIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearIntegrator
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~LinearIntegrator
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearIntegrator::
 ~LinearIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : integrate
-//      Access : public
-// Description : parent integration routine, hands off to child
+//     Function: integrate
+//       Access: Public
+//  Description: parent integration routine, hands off to child
 //               virtual.
 ////////////////////////////////////////////////////////////////////
 void LinearIntegrator::
@@ -59,7 +59,7 @@ integrate(Physical *physical, LinearForceVector &forces,
   for (; current_object_iter != physical->get_object_vector().end();
        ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
-    
+
     // bail out if this object doesn't exist or doesn't want to be
     // processed.
     if (current_object == (PhysicsObject *) NULL) {
@@ -73,10 +73,10 @@ integrate(Physical *physical, LinearForceVector &forces,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearIntegrator::
 output(ostream &out) const {
@@ -86,10 +86,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearIntegrator::
 write(ostream &out, unsigned int indent) const {

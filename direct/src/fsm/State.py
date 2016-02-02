@@ -4,7 +4,6 @@ __all__ = ['State']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
-import types
 
 
 class State(DirectObject):
@@ -24,7 +23,7 @@ class State(DirectObject):
         @classmethod
         def replaceMethod(self, oldFunction, newFunction):
             import types
-            count = 0        
+            count = 0
             for state in self.States:
                 # Note: you can only replace methods currently
                 enterFunc = state.getEnterFunc()
@@ -100,7 +99,7 @@ class State(DirectObject):
     def isTransitionDefined(self, otherState):
         if self.transitionsToAny():
             return 1
-        
+
         # if we're given a state object, get its name instead
         if type(otherState) != type(''):
             otherState = otherState.getName()

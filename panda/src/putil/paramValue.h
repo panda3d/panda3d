@@ -72,6 +72,8 @@ PUBLISHED:
   INLINE virtual TypeHandle get_value_type() const;
   INLINE TypedReferenceCount *get_value() const;
 
+  MAKE_PROPERTY(value, get_value);
+
   virtual void output(ostream &out) const;
 
 private:
@@ -118,6 +120,8 @@ PUBLISHED:
   INLINE void set_value(const Type &value);
   INLINE const Type &get_value() const;
 
+  MAKE_PROPERTY(value, get_value, set_value);
+
   INLINE virtual void output(ostream &out) const;
 
 private:
@@ -152,6 +156,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "paramValue.I"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::string>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::wstring>);
@@ -210,8 +216,6 @@ typedef ParamVecBase4f ParamVecBase4;
 typedef ParamMatrix3f ParamMatrix3;
 typedef ParamMatrix4f ParamMatrix4;
 #endif
-
-#include "paramValue.I"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

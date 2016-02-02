@@ -165,21 +165,25 @@ typedef enum {
     L8_FLAG =           FLG(15),
     A8L8_FLAG =         FLG(16),
     A4L4_FLAG =         FLG(17),
-    V8U8_FLAG =         FLG(18),
-    L6V5U5_FLAG =       FLG(19),
-    X8L8V8U8_FLAG =     FLG(20),
-    Q8W8V8U8_FLAG =     FLG(21),
-    V16U16_FLAG =       FLG(22),
+    D16_FLAG =          FLG(18),
+    D24X8_FLAG =        FLG(19),
+    D24S8_FLAG =        FLG(20),
+    D32_FLAG =          FLG(21),
+    INTZ_FLAG =         FLG(22),
     W11V11U10_FLAG =    FLG(23),
     A2W10V10U10_FLAG =  FLG(24),
-    UYVY_FLAG =         FLG(25),
-    YUY2_FLAG =         FLG(26),
+    ATI1_FLAG =         FLG(25),
+    ATI2_FLAG =         FLG(26),
     DXT1_FLAG =         FLG(27),
     DXT2_FLAG =         FLG(28),
     DXT3_FLAG =         FLG(29),
     DXT4_FLAG =         FLG(30),
     DXT5_FLAG =         FLG(31)
 } D3DFORMAT_FLAG;
+
+#define D3DFMT_INTZ ((D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'))
+#define D3DFMT_ATI1 ((D3DFORMAT)MAKEFOURCC('A', 'T', 'I', '1'))
+#define D3DFMT_ATI2 ((D3DFORMAT)MAKEFOURCC('A', 'T', 'I', '2'))
 
 // this is only used in conjunction w/rendertgt fmts, so just make it something that can never be a rtgt
 #define DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG DXT1_FLAG

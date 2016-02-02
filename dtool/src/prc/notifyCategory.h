@@ -43,6 +43,9 @@ PUBLISHED:
   INLINE string get_basename() const;
   INLINE NotifySeverity get_severity() const;
   INLINE void set_severity(NotifySeverity severity);
+  MAKE_PROPERTY(fullname, get_fullname);
+  MAKE_PROPERTY(basename, get_basename);
+  MAKE_PROPERTY(severity, get_severity, set_severity);
 
   INLINE bool is_on(NotifySeverity severity) const;
 
@@ -72,8 +75,9 @@ PUBLISHED:
   INLINE ostream &error(bool prefix = true) const;
   INLINE ostream &fatal(bool prefix = true) const;
 
-  int get_num_children() const;
-  NotifyCategory *get_child(int i) const;
+  size_t get_num_children() const;
+  NotifyCategory *get_child(size_t i) const;
+  MAKE_SEQ(get_children, get_num_children, get_child);
 
   static void set_server_delta(long delta);
 

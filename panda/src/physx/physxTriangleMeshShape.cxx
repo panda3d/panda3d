@@ -20,7 +20,7 @@ TypeHandle PhysxTriangleMeshShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxTriangleMeshShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshShape::
 link(NxShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxTriangleMeshShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxTriangleMeshShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxTriangleMeshShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxTriangleMeshShape::
 save_to_desc(PhysxTriangleMeshShapeDesc &shapeDesc) const {

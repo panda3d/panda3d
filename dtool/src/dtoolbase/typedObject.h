@@ -108,6 +108,7 @@ PUBLISHED:
   // Derived classes should override this function to return
   // get_class_type().
   virtual TypeHandle get_type() const=0;
+  MAKE_PROPERTY(type, get_type);
 
   INLINE int get_type_index() const;
   INLINE bool is_of_type(TypeHandle handle) const;

@@ -52,6 +52,9 @@ PUBLISHED:
   INLINE void ref() const;
   virtual INLINE bool unref() const;
 
+  // The current reference count.
+  MAKE_PROPERTY(ref_count, get_ref_count);
+
   INLINE bool test_ref_count_integrity() const;
   INLINE bool test_ref_count_nonzero() const;
 

@@ -489,7 +489,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 size_t Texture::
 estimate_texture_memory() const {
   CDReader cdata(_cycler);
-  size_t pixels = cdata->_x_size * cdata->_y_size;
+  size_t pixels = cdata->_x_size * cdata->_y_size * cdata->_z_size;
 
   size_t bpp = 4;
   switch (cdata->_format) {
@@ -502,20 +502,27 @@ estimate_texture_memory() const {
   case Texture::F_green:
   case Texture::F_blue:
   case Texture::F_luminance:
+  case Texture::F_sluminance:
+  case Texture::F_r8i:
+    bpp = 1;
+    break;
+
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-  case Texture::F_sluminance:
   case Texture::F_sluminance_alpha:
-    bpp = 4;
+  case Texture::F_rgba4:
+  case Texture::F_rgb5:
+  case Texture::F_rgba5:
+  case Texture::F_rg:
+    bpp = 2;
     break;
 
   case Texture::F_rgba:
-  case Texture::F_rgba4:
   case Texture::F_rgbm:
   case Texture::F_rgb:
-  case Texture::F_rgb5:
-  case Texture::F_rgba5:
   case Texture::F_srgb:
+    // Most of the above formats have only 3 bytes, but they are most likely to
+    // get padded by the driver
     bpp = 4;
     break;
 
@@ -529,13 +536,22 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_depth_stencil:
+    bpp = 4;
+    break;
+
   case Texture::F_depth_component:
-    bpp = 32;
+  case Texture::F_depth_component16:
+    bpp = 2;
+    break;
+
+  case Texture::F_depth_component24: // Gets padded
+  case Texture::F_depth_component32:
+    bpp = 4;
     break;
 
   case Texture::F_rgba12:
   case Texture::F_rgb12:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_rgba16:
@@ -546,7 +562,6 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_r16:
-  case Texture::F_r8i:
   case Texture::F_rg8i:
     bpp = 2;
     break;
@@ -554,24 +569,31 @@ estimate_texture_memory() const {
     bpp = 4;
     break;
   case Texture::F_rgb16:
-    bpp = 6;
+    bpp = 8;
     break;
 
   case Texture::F_r32i:
-    bpp = 4;
-    break;
-
   case Texture::F_r32:
     bpp = 4;
     break;
+
   case Texture::F_rg32:
     bpp = 8;
     break;
+
   case Texture::F_rgb32:
-    bpp = 12;
+    bpp = 16;
+    break;
+
+  case Texture::F_r11_g11_b10:
+  case Texture::F_rgb9_e5:
+  case Texture::F_rgb10_a2:
+    bpp = 4;
     break;
 
   default:
+    gobj_cat.warning() << "Unhandled format in estimate_texture_memory(): "
+                       << cdata->_format << "\n";
     break;
   }
 
@@ -1525,6 +1547,10 @@ write(ostream &out, int indent_level) const {
     out << "cube map, " << cdata->_x_size << " x " << cdata->_y_size;
     break;
 
+  case TT_cube_map_array:
+    out << "cube map array, " << cdata->_x_size << " x " << cdata->_y_size << " x " << cdata->_z_size;
+    break;
+
   case TT_buffer_texture:
     out << "buffer, " << cdata->_x_size;
     break;
@@ -1538,13 +1564,17 @@ write(ostream &out, int indent_level) const {
 
   switch (cdata->_component_type) {
   case T_unsigned_byte:
+  case T_byte:
     out << " bytes";
     break;
 
   case T_unsigned_short:
+  case T_short:
     out << " shorts";
     break;
 
+  case T_half_float:
+    out << " half";
   case T_float:
     out << " floats";
     break;
@@ -1690,6 +1720,19 @@ write(ostream &out, int indent_level) const {
     break;
   case F_rgba8i:
     out << "rgba8i";
+    break;
+  case F_r11_g11_b10:
+    out << "r11_g11_b10";
+    break;
+  case F_rgb9_e5:
+    out << "rgb9_e5";
+    break;
+  case F_rgb10_a2:
+    out << "rgb10_a2";
+    break;
+
+  case F_rg:
+    out << "rg";
     break;
   }
 
@@ -1928,6 +1971,8 @@ format_texture_type(TextureType tt) {
     return "2d_texture_array";
   case TT_cube_map:
     return "cube_map";
+  case TT_cube_map_array:
+    return "cube_map_array";
   case TT_buffer_texture:
     return "buffer_texture";
   }
@@ -1952,6 +1997,8 @@ string_texture_type(const string &str) {
     return TT_2d_texture_array;
   } else if (cmp_nocase(str, "cube_map") == 0) {
     return TT_cube_map;
+  } else if (cmp_nocase(str, "cube_map_array") == 0) {
+    return TT_cube_map_array;
   } else if (cmp_nocase(str, "buffer_texture") == 0) {
     return TT_buffer_texture;
   }
@@ -1980,6 +2027,12 @@ format_component_type(ComponentType ct) {
     return "unsigned_int_24_8";
   case T_int:
     return "int";
+  case T_byte:
+    return "unsigned_byte";
+  case T_short:
+    return "short";
+  case T_half_float:
+    return "half_float";
   }
 
   return "**invalid**";
@@ -2003,6 +2056,12 @@ string_component_type(const string &str) {
     return T_unsigned_int_24_8;
   } else if (cmp_nocase(str, "int") == 0) {
     return T_int;
+  } else if (cmp_nocase(str, "byte") == 0) {
+    return T_byte;
+  } else if (cmp_nocase(str, "short") == 0) {
+    return T_short;
+  } else if (cmp_nocase(str, "half_float") == 0) {
+    return T_half_float;
   }
 
   gobj_cat->error()
@@ -2101,6 +2160,14 @@ format_format(Format format) {
     return "rgb8i";
   case F_rgba8i:
     return "rgba8i";
+  case F_r11_g11_b10:
+    return "r11g11b10";
+  case F_rgb9_e5:
+    return "rgb9_e5";
+  case F_rgb10_a2:
+    return "rgb10_a2";
+  case F_rg:
+    return "rg";
   }
   return "**invalid**";
 }
@@ -2187,6 +2254,14 @@ string_format(const string &str) {
     return F_rg32;
   } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
     return F_rgb32;
+  } else if (cmp_nocase(str, "r11g11b10") == 0) {
+    return F_r11_g11_b10;
+  } else if (cmp_nocase(str, "rgb9_e5") == 0) {
+    return F_rgb9_e5;
+  } else if (cmp_nocase_uh(str, "rgb10_a2") == 0 || cmp_nocase(str, "r10g10b10a2") == 0) {
+    return F_rgb10_a2;
+  } else if (cmp_nocase_uh(str, "rg") == 0) {
+    return F_rg;
   }
 
   gobj_cat->error()
@@ -2225,6 +2300,8 @@ format_compression_mode(CompressionMode cm) {
     return "pvr1_2bpp";
   case CM_pvr1_4bpp:
     return "pvr1_4bpp";
+  case CM_rgtc:
+    return "rgtc";
   }
 
   return "**invalid**";
@@ -2260,6 +2337,8 @@ string_compression_mode(const string &str) {
     return CM_pvr1_2bpp;
   } else if (cmp_nocase_uh(str, "pvr1_4bpp") == 0) {
     return CM_pvr1_4bpp;
+  } else if (cmp_nocase_uh(str, "rgtc") == 0) {
+    return CM_rgtc;
   }
 
   gobj_cat->error()
@@ -2387,6 +2466,19 @@ make_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_unsigned
+//       Access: Public, Static
+//  Description: Returns true if the indicated component type is
+//               unsigned, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_unsigned(Texture::ComponentType ctype) {
+  return (ctype == T_unsigned_byte ||
+          ctype == T_unsigned_short ||
+          ctype == T_unsigned_int_24_8);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::is_specific
 //       Access: Public, Static
 //  Description: Returns true if the indicated compression mode is one
@@ -2427,6 +2519,8 @@ has_alpha(Format format) {
   case F_luminance_alphamask:
   case F_srgb_alpha:
   case F_sluminance_alpha:
+  case F_rgba8i:
+  case F_rgb10_a2:
     return true;
 
   default:
@@ -3517,11 +3611,196 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
   ReadDDSLevelFunc func = NULL;
 
   Format format = F_rgb;
+  ComponentType component_type = T_unsigned_byte;
 
   do_clear_ram_image(cdata);
   CompressionMode compression = CM_off;
 
-  if (header.pf.pf_flags & DDPF_FOURCC) {
+  if ((header.pf.pf_flags & DDPF_FOURCC) != 0 &&
+      header.pf.four_cc == 0x30315844) {   // 'DX10'
+    // A DirectX 10 style texture, which has an additional header.
+    func = read_dds_level_generic_uncompressed;
+    unsigned int format = dds.get_uint32();
+    unsigned int dimension = dds.get_uint32();
+    unsigned int misc_flag = dds.get_uint32();
+    unsigned int array_size = dds.get_uint32();
+    unsigned int alpha_mode = dds.get_uint32();
+
+    switch (format) {
+    case 2:    // DXGI_FORMAT_R32G32B32A32_FLOAT
+      format = F_rgba32;
+      component_type = T_float;
+      func = read_dds_level_abgr32;
+      break;
+    case 10:   // DXGI_FORMAT_R16G16B16A16_FLOAT
+      format = F_rgba16;
+      component_type = T_half_float;
+      func = read_dds_level_abgr16;
+      break;
+    case 11:   // DXGI_FORMAT_R16G16B16A16_UNORM
+      format = F_rgba16;
+      component_type = T_unsigned_short;
+      func = read_dds_level_abgr16;
+      break;
+    case 27:   // DXGI_FORMAT_R8G8B8A8_TYPELESS
+    case 28:   // DXGI_FORMAT_R8G8B8A8_UNORM
+      format = F_rgba8;
+      func = read_dds_level_abgr8;
+      break;
+    case 29:   // DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+      format = F_srgb_alpha;
+      func = read_dds_level_abgr8;
+      break;
+    case 30:   // DXGI_FORMAT_R8G8B8A8_UINT
+      format = F_rgba8i;
+      func = read_dds_level_abgr8;
+      break;
+    case 31:   // DXGI_FORMAT_R8G8B8A8_SNORM
+      format = F_rgba8;
+      component_type = T_byte;
+      func = read_dds_level_abgr8;
+      break;
+    case 32:   // DXGI_FORMAT_R8G8B8A8_SINT
+      format = F_rgba8i;
+      component_type = T_byte;
+      func = read_dds_level_abgr8;
+      break;
+    case 48:   // DXGI_FORMAT_R8G8_TYPELESS
+    case 49:   // DXGI_FORMAT_R8G8_UNORM
+      format = F_rg;
+      break;
+    case 50:   // DXGI_FORMAT_R8G8_UINT
+      format = F_rg8i;
+      break;
+    case 51:   // DXGI_FORMAT_R8G8_SNORM
+      format = F_rg;
+      component_type = T_byte;
+      break;
+    case 52:   // DXGI_FORMAT_R8G8_SINT
+      format = F_rg8i;
+      component_type = T_byte;
+      break;
+    case 60:   // DXGI_FORMAT_R8_TYPELESS
+    case 61:   // DXGI_FORMAT_R8_UNORM
+      format = F_red;
+      break;
+    case 62:   // DXGI_FORMAT_R8_UINT
+      format = F_r8i;
+      break;
+    case 63:   // DXGI_FORMAT_R8_SNORM
+      format = F_red;
+      component_type = T_byte;
+      break;
+    case 64:   // DXGI_FORMAT_R8_SINT
+      format = F_r8i;
+      component_type = T_byte;
+      break;
+    case 65:   // DXGI_FORMAT_A8_UNORM
+      format = F_alpha;
+      break;
+    case 70:   // DXGI_FORMAT_BC1_TYPELESS
+    case 71:   // DXGI_FORMAT_BC1_UNORM
+      format = F_rgb;
+      compression = CM_dxt1;
+      func = read_dds_level_bc1;
+      break;
+    case 72:   // DXGI_FORMAT_BC1_UNORM_SRGB
+      format = F_srgb;
+      compression = CM_dxt1;
+      func = read_dds_level_bc1;
+      break;
+    case 73:   // DXGI_FORMAT_BC2_TYPELESS
+    case 74:   // DXGI_FORMAT_BC2_UNORM
+      format = F_rgba;
+      compression = CM_dxt3;
+      func = read_dds_level_bc2;
+      break;
+    case 75:   // DXGI_FORMAT_BC2_UNORM_SRGB
+      format = F_srgb_alpha;
+      compression = CM_dxt3;
+      func = read_dds_level_bc2;
+      break;
+    case 76:   // DXGI_FORMAT_BC3_TYPELESS
+    case 77:   // DXGI_FORMAT_BC3_UNORM
+      format = F_rgba;
+      compression = CM_dxt5;
+      func = read_dds_level_bc3;
+      break;
+    case 78:   // DXGI_FORMAT_BC3_UNORM_SRGB
+      format = F_srgb_alpha;
+      compression = CM_dxt5;
+      func = read_dds_level_bc3;
+      break;
+    case 79:   // DXGI_FORMAT_BC4_TYPELESS
+    case 80:   // DXGI_FORMAT_BC4_UNORM
+      format = F_red;
+      compression = CM_rgtc;
+      func = read_dds_level_bc4;
+      break;
+      break;
+    case 82:   // DXGI_FORMAT_BC5_TYPELESS
+    case 83:   // DXGI_FORMAT_BC5_UNORM
+      format = F_rg;
+      compression = CM_rgtc;
+      func = read_dds_level_bc5;
+      break;
+    case 87:   // DXGI_FORMAT_B8G8R8A8_UNORM
+    case 90:   // DXGI_FORMAT_B8G8R8A8_TYPELESS
+      format = F_rgba8;
+      break;
+    case 88:   // DXGI_FORMAT_B8G8R8X8_UNORM
+    case 92:   // DXGI_FORMAT_B8G8R8X8_TYPELESS
+      format = F_rgb8;
+      break;
+    case 91:   // DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
+      format = F_srgb_alpha;
+      break;
+    case 93:   // DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
+      format = F_srgb;
+      break;
+    case 115:  // DXGI_FORMAT_B4G4R4A4_UNORM
+      format = F_rgba4;
+      break;
+    default:
+      gobj_cat.error()
+        << filename << ": unsupported DXGI format " << format << ".\n";
+      return false;
+    }
+
+    switch (dimension) {
+    case 2:  // DDS_DIMENSION_TEXTURE1D
+      texture_type = TT_1d_texture;
+      header.depth = 1;
+      break;
+    case 3:  // DDS_DIMENSION_TEXTURE2D
+      if (misc_flag & 0x4) {  // DDS_RESOURCE_MISC_TEXTURECUBE
+        if (array_size > 1) {
+          texture_type = TT_cube_map_array;
+          header.depth = array_size * 6;
+        } else {
+          texture_type = TT_cube_map;
+          header.depth = 6;
+        }
+      } else {
+        if (array_size > 1) {
+          texture_type = TT_2d_texture_array;
+          header.depth = array_size;
+        } else {
+          texture_type = TT_2d_texture;
+          header.depth = 1;
+        }
+      }
+      break;
+    case 4:  // DDS_DIMENSION_TEXTURE3D
+      texture_type = TT_3d_texture;
+      break;
+    default:
+      gobj_cat.error()
+        << filename << ": unsupported dimension.\n";
+      return false;
+    }
+
+  } else if (header.pf.pf_flags & DDPF_FOURCC) {
     // Some compressed texture format.
     if (texture_type == TT_3d_texture) {
       gobj_cat.error()
@@ -3529,30 +3808,68 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       return false;
     }
 
-    if (header.pf.four_cc == 0x31545844) {   // 'DXT1', little-endian.
+    // Most of the compressed formats support alpha.
+    format = F_rgba;
+    switch (header.pf.four_cc) {
+    case 0x31545844:   // 'DXT1', little-endian.
       compression = CM_dxt1;
-      func = read_dds_level_dxt1;
-    } else if (header.pf.four_cc == 0x32545844) {   // 'DXT2'
+      func = read_dds_level_bc1;
+      format = F_rgbm;
+      break;
+    case 0x32545844:   // 'DXT2'
       compression = CM_dxt2;
-      func = read_dds_level_dxt23;
-    } else if (header.pf.four_cc == 0x33545844) {   // 'DXT3'
+      func = read_dds_level_bc2;
+      break;
+    case 0x33545844:   // 'DXT3'
       compression = CM_dxt3;
-      func = read_dds_level_dxt23;
-    } else if (header.pf.four_cc == 0x34545844) {   // 'DXT4'
+      func = read_dds_level_bc2;
+      break;
+    case 0x34545844:   // 'DXT4'
       compression = CM_dxt4;
-      func = read_dds_level_dxt45;
-    } else if (header.pf.four_cc == 0x35545844) {   // 'DXT5'
+      func = read_dds_level_bc3;
+      break;
+    case 0x35545844:   // 'DXT5'
       compression = CM_dxt5;
-      func = read_dds_level_dxt45;
-    } else {
+      func = read_dds_level_bc3;
+      break;
+    case 0x31495441:   // 'ATI1'
+    case 0x55344342:   // 'BC4U'
+      compression = CM_rgtc;
+      func = read_dds_level_bc4;
+      format = F_red;
+      break;
+    case 0x32495441:   // 'ATI2'
+    case 0x55354342:   // 'BC5U'
+      compression = CM_rgtc;
+      func = read_dds_level_bc5;
+      format = F_rg;
+      break;
+    case 36:   // D3DFMT_A16B16G16R16
+      func = read_dds_level_abgr16;
+      format = F_rgba16;
+      component_type = T_unsigned_short;
+      break;
+    case 110:  // D3DFMT_Q16W16V16U16
+      func = read_dds_level_abgr16;
+      format = F_rgba16;
+      component_type = T_short;
+      break;
+    case 113:  // D3DFMT_A16B16G16R16F
+      func = read_dds_level_abgr16;
+      format = F_rgba16;
+      component_type = T_half_float;
+      break;
+    case 116:  // D3DFMT_A32B32G32R32F
+      func = read_dds_level_abgr32;
+      format = F_rgba32;
+      component_type = T_float;
+      break;
+    default:
       gobj_cat.error()
-        << filename << ": unsupported texture compression.\n";
+        << filename << ": unsupported texture compression (FourCC: 0x"
+        << hex << header.pf.four_cc << dec << ").\n";
       return false;
     }
-
-    // All of the compressed formats support alpha, even DXT1 (to some
-    // extent, at least).
-    format = F_rgba;
 
   } else {
     // An uncompressed texture format.
@@ -3603,7 +3920,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
   }
 
   do_setup_texture(cdata, texture_type, header.width, header.height, header.depth,
-                   T_unsigned_byte, format);
+                   component_type, format);
 
   cdata->_orig_file_x_size = cdata->_x_size;
   cdata->_orig_file_y_size = cdata->_y_size;
@@ -3680,6 +3997,44 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
             int fz = level_remap[z];
             nassertr(pages[fz][n].size() == page_size, false);
             memcpy(imagep + z * page_size, pages[fz][n].p(), page_size);
+          }
+
+          do_set_ram_mipmap_image(cdata, n, image, page_size);
+        }
+      }
+      break;
+
+    case TT_2d_texture_array:
+    case TT_cube_map_array: //TODO: rearrange cube map array faces?
+      {
+        // Texture arrays store all the mipmap levels for layer 0, then
+        // all the mipmap levels for layer 1, and so on.
+        pvector<pvector<PTA_uchar> > pages;
+        pages.reserve(header.depth);
+        int z, n;
+        for (z = 0; z < (int)header.depth; ++z) {
+          pages.push_back(pvector<PTA_uchar>());
+          pvector<PTA_uchar> &levels = pages.back();
+          levels.reserve(header.num_levels);
+
+          for (n = 0; n < (int)header.num_levels; ++n) {
+            PTA_uchar image = func(this, cdata, header, n, in);
+            if (image.is_null()) {
+              return false;
+            }
+            levels.push_back(image);
+          }
+        }
+
+        // Now, for each level, reassemble the pages into one big
+        // image.
+        for (n = 0; n < (int)header.num_levels; ++n) {
+          size_t page_size = pages[0][n].size();
+          PTA_uchar image = PTA_uchar::empty_array(page_size * header.depth);
+          unsigned char *imagep = (unsigned char *)image.p();
+          for (z = 0; z < (int)header.depth; ++z) {
+            nassertr(pages[z][n].size() == page_size, false);
+            memcpy(imagep + z * page_size, pages[z][n].p(), page_size);
           }
 
           do_set_ram_mipmap_image(cdata, n, image, page_size);
@@ -4407,7 +4762,7 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
 //               be initialized with this string repeated for
 //               every pixel.
 ////////////////////////////////////////////////////////////////////
-int Texture::
+size_t Texture::
 do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
   nassertr(cdata->_num_components <= 4, 0);
@@ -4500,6 +4855,48 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
       }
       break;
     }
+
+  case T_byte:
+    {
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      scaled *= 127;
+      switch (cdata->_num_components) {
+      case 2:
+        into[1] = (char)scaled[1];
+      case 1:
+        into[0] = (char)scaled[0];
+        break;
+      case 4:
+        into[3] = (char)scaled[3];
+      case 3: // BGR <-> RGB
+        into[0] = (char)scaled[2];
+        into[1] = (char)scaled[1];
+        into[2] = (char)scaled[0];
+        break;
+      }
+      break;
+    }
+
+  case T_short:
+    {
+      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      scaled *= 32767;
+      switch (cdata->_num_components) {
+      case 2:
+        ((short *)into)[1] = (short)scaled[1];
+      case 1:
+        ((short *)into)[0] = (short)scaled[0];
+        break;
+      case 4:
+        ((short *)into)[3] = (short)scaled[3];
+      case 3: // BGR <-> RGB
+        ((short *)into)[0] = (short)scaled[2];
+        ((short *)into)[1] = (short)scaled[1];
+        ((short *)into)[2] = (short)scaled[0];
+        break;
+      }
+      break;
+    }
   }
 
   return cdata->_num_components * cdata->_component_width;
@@ -4574,6 +4971,10 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
                       GraphicsStateGuardianBase *gsg) {
   nassertr(compression != CM_off, false);
 
+  if (cdata->_ram_images.empty() || cdata->_ram_image_compression != CM_off) {
+    return false;
+  }
+
   if (compression == CM_on) {
     // Select an appropriate compression mode automatically.
     switch (cdata->_format) {
@@ -4586,6 +4987,7 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rgb332:
     case Texture::F_rgb16:
     case Texture::F_rgb32:
+    case Texture::F_rgb10_a2:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt1)) {
         compression = CM_dxt1;
       } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
@@ -4613,6 +5015,13 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
       }
       break;
 
+    case Texture::F_red:
+    case Texture::F_rg:
+      if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_rgtc)) {
+        compression = CM_rgtc;
+      }
+      break;
+
     default:
       break;
     }
@@ -4624,6 +5033,77 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
   }
   if (quality_level == Texture::QL_default) {
     quality_level = texture_quality_level;
+  }
+
+  if (compression == CM_rgtc) {
+    // We should compress RGTC ourselves, as squish does not support it.
+    if (cdata->_component_type != T_unsigned_byte) {
+      return false;
+    }
+
+    if (!do_has_all_ram_mipmap_images(cdata)) {
+      // If we're about to compress the RAM image, we should ensure that
+      // we have all of the mipmap levels first.
+      do_generate_ram_mipmap_images(cdata);
+    }
+
+    RamImages compressed_ram_images;
+    compressed_ram_images.resize(cdata->_ram_images.size());
+
+    for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
+      const RamImage *uncompressed_image = &cdata->_ram_images[n];
+
+      int x_size = do_get_expected_mipmap_x_size(cdata, n);
+      int y_size = do_get_expected_mipmap_y_size(cdata, n);
+      int num_pages = do_get_expected_mipmap_num_pages(cdata, n);
+
+      // It is important that we handle image sizes that aren't a multiple
+      // of the block size, since this method may be used to compress
+      // mipmaps, which go all the way to 1x1.  Pad the image if necessary.
+      RamImage temp_image;
+      if ((x_size | y_size) & 0x3) {
+        int virtual_x_size = x_size;
+        int virtual_y_size = y_size;
+        x_size = (x_size + 3) & ~0x3;
+        y_size = (y_size + 3) & ~0x3;
+
+        temp_image._page_size = x_size * y_size * cdata->_num_components;
+        temp_image._image = PTA_uchar::empty_array(temp_image._page_size * num_pages);
+
+        for (int z = 0; z < num_pages; ++z) {
+          unsigned char *dest = temp_image._image.p() + z * temp_image._page_size;
+          unsigned const char *src = uncompressed_image->_image.p() + z * uncompressed_image->_page_size;
+
+          for (int y = 0; y < virtual_y_size; ++y) {
+            memcpy(dest, src, virtual_x_size);
+            src += virtual_x_size;
+            dest += x_size;
+          }
+        }
+
+        uncompressed_image = &temp_image;
+      }
+
+      // Create a new image to hold the compressed texture pages.
+      RamImage &compressed_image = compressed_ram_images[n];
+      compressed_image._page_size = (x_size * y_size * cdata->_num_components) >> 1;
+      compressed_image._image = PTA_uchar::empty_array(compressed_image._page_size * num_pages);
+
+      if (cdata->_num_components == 1) {
+        do_compress_ram_image_bc4(*uncompressed_image, compressed_image,
+                                  x_size, y_size, num_pages);
+      } else if (cdata->_num_components == 2) {
+        do_compress_ram_image_bc5(*uncompressed_image, compressed_image,
+                                  x_size, y_size, num_pages);
+      } else {
+        // Invalid.
+        return false;
+      }
+    }
+
+    cdata->_ram_images.swap(compressed_ram_images);
+    cdata->_ram_image_compression = CM_rgtc;
+    return true;
   }
 
 #ifdef HAVE_SQUISH
@@ -4686,6 +5166,39 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_uncompress_ram_image(CData *cdata) {
+  nassertr(!cdata->_ram_images.empty(), false);
+
+  if (cdata->_ram_image_compression == CM_rgtc) {
+    // We should decompress RGTC ourselves, as squish doesn't support it.
+    RamImages uncompressed_ram_images;
+    uncompressed_ram_images.resize(cdata->_ram_images.size());
+
+    for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
+      const RamImage &compressed_image = cdata->_ram_images[n];
+
+      int x_size = do_get_expected_mipmap_x_size(cdata, n);
+      int y_size = do_get_expected_mipmap_y_size(cdata, n);
+      int num_pages = do_get_expected_mipmap_num_pages(cdata, n);
+
+      RamImage &uncompressed_image = uncompressed_ram_images[n];
+      uncompressed_image._page_size = do_get_expected_ram_mipmap_page_size(cdata, n);
+      uncompressed_image._image = PTA_uchar::empty_array(uncompressed_image._page_size * num_pages);
+
+      if (cdata->_num_components == 1) {
+        do_uncompress_ram_image_bc4(compressed_image, uncompressed_image,
+                                    x_size, y_size, num_pages);
+      } else if (cdata->_num_components == 2) {
+        do_uncompress_ram_image_bc5(compressed_image, uncompressed_image,
+                                    x_size, y_size, num_pages);
+      } else {
+        // Invalid.
+        return false;
+      }
+    }
+    cdata->_ram_images.swap(uncompressed_ram_images);
+    cdata->_ram_image_compression = CM_off;
+    return true;
+  }
 
 #ifdef HAVE_SQUISH
   if (cdata->_texture_type != TT_3d_texture &&
@@ -4718,6 +5231,441 @@ do_uncompress_ram_image(CData *cdata) {
   }
 #endif  // HAVE_SQUISH
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_compress_ram_image_bc4
+//       Access: Protected, Static
+//  Description: Compresses a RAM image using BC4 compression.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_compress_ram_image_bc4(const RamImage &uncompressed_image,
+                          RamImage &compressed_image,
+                          int x_size, int y_size, int num_pages) {
+  int x_blocks = (x_size >> 2);
+  int y_blocks = (y_size >> 2);
+
+  //NB. This algorithm isn't fully optimal, since it doesn't try to make
+  // use of the secondary interpolation mode supported by BC4.  This is
+  // not important for most textures, but it may be added in the future.
+
+  nassertv(x_blocks * y_blocks * 4 * 4 <= uncompressed_image._page_size);
+  nassertv(x_size * y_size == uncompressed_image._page_size);
+
+  static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
+
+  for (int z = 0; z < num_pages; ++z) {
+    unsigned char *dest = compressed_image._image.p() + z * compressed_image._page_size;
+    unsigned const char *src = uncompressed_image._image.p() + z * uncompressed_image._page_size;
+
+    // Convert one 4 x 4 block at a time.
+    for (int y = 0; y < y_blocks; ++y) {
+      for (int x = 0; x < x_blocks; ++x) {
+        int a, b, c, d;
+        float fac, add;
+        unsigned char minv, maxv;
+        unsigned const char *blk = src;
+
+        // Find the minimum and maximum value in the block.
+        minv = blk[0];
+        maxv = blk[0];
+        minv = min(blk[1], minv); maxv = max(blk[1], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[3], minv); maxv = max(blk[3], maxv);
+        blk += x_size;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[1], minv); maxv = max(blk[1], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[3], minv); maxv = max(blk[3], maxv);
+        blk += x_size;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[1], minv); maxv = max(blk[1], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[3], minv); maxv = max(blk[3], maxv);
+        blk += x_size;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[1], minv); maxv = max(blk[1], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[3], minv); maxv = max(blk[3], maxv);
+
+        // Now calculate the index for each pixel.
+        blk = src;
+        if (maxv > minv) {
+          fac = 7.5f / (maxv - minv);
+        } else {
+          fac = 0;
+        }
+        add = -minv * fac;
+        a = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[1] * fac + add)] << 3)
+          | (remap[(int)(blk[2] * fac + add)] << 6)
+          | (remap[(int)(blk[3] * fac + add)] << 9);
+        blk += x_size;
+        b = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[1] * fac + add)] << 7)
+          | (remap[(int)(blk[2] * fac + add)] << 10)
+          | (remap[(int)(blk[3] * fac + add)] << 13);
+        blk += x_size;
+        c = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[1] * fac + add)] << 3)
+          | (remap[(int)(blk[2] * fac + add)] << 6)
+          | (remap[(int)(blk[3] * fac + add)] << 9);
+        blk += x_size;
+        d = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[1] * fac + add)] << 7)
+          | (remap[(int)(blk[2] * fac + add)] << 10)
+          | (remap[(int)(blk[3] * fac + add)] << 13);
+
+        *(dest++) = maxv;
+        *(dest++) = minv;
+        *(dest++) = a & 0xff;
+        *(dest++) = (a >> 8) | (b & 0xf0);
+        *(dest++) = b >> 8;
+        *(dest++) = c & 0xff;
+        *(dest++) = (c >> 8) | (d & 0xf0);
+        *(dest++) = d >> 8;
+
+        // Advance to the beginning of the next 4x4 block.
+        src += 4;
+      }
+      src += x_size * 3;
+    }
+    Thread::consider_yield();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_compress_ram_image_bc5
+//       Access: Protected, Static
+//  Description: Compresses a RAM image using BC5 compression.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_compress_ram_image_bc5(const RamImage &uncompressed_image,
+                          RamImage &compressed_image,
+                          int x_size, int y_size, int num_pages) {
+  int x_blocks = (x_size >> 2);
+  int y_blocks = (y_size >> 2);
+  int stride = x_size * 2;
+
+  // BC5 uses the same compression algorithm as BC4, except repeated
+  // for two channels.
+
+  nassertv(x_blocks * y_blocks * 4 * 4 * 2 <= uncompressed_image._page_size);
+  nassertv(stride * y_size == uncompressed_image._page_size);
+
+  static const int remap[] = {1, 7, 6, 5, 4, 3, 2, 0};
+
+  for (int z = 0; z < num_pages; ++z) {
+    unsigned char *dest = compressed_image._image.p() + z * compressed_image._page_size;
+    unsigned const char *src = uncompressed_image._image.p() + z * uncompressed_image._page_size;
+
+    // Convert one 4 x 4 block at a time.
+    for (int y = 0; y < y_blocks; ++y) {
+      for (int x = 0; x < x_blocks; ++x) {
+        int a, b, c, d;
+        float fac, add;
+        unsigned char minv, maxv;
+        unsigned const char *blk = src;
+
+        // Find the minimum and maximum red value in the block.
+        minv = blk[0];
+        maxv = blk[0];
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+
+        // Now calculate the index for each pixel.
+        if (maxv > minv) {
+          fac = 7.5f / (maxv - minv);
+        } else {
+          fac = 0;
+        }
+        add = -minv * fac;
+        blk = src;
+        a = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[2] * fac + add)] << 3)
+          | (remap[(int)(blk[4] * fac + add)] << 6)
+          | (remap[(int)(blk[6] * fac + add)] << 9);
+        blk += stride;
+        b = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[2] * fac + add)] << 7)
+          | (remap[(int)(blk[4] * fac + add)] << 10)
+          | (remap[(int)(blk[6] * fac + add)] << 13);
+        blk += stride;
+        c = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[2] * fac + add)] << 3)
+          | (remap[(int)(blk[4] * fac + add)] << 6)
+          | (remap[(int)(blk[6] * fac + add)] << 9);
+        blk += stride;
+        d = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[2] * fac + add)] << 7)
+          | (remap[(int)(blk[4] * fac + add)] << 10)
+          | (remap[(int)(blk[6] * fac + add)] << 13);
+
+        *(dest++) = maxv;
+        *(dest++) = minv;
+        *(dest++) = a & 0xff;
+        *(dest++) = (a >> 8) | (b & 0xf0);
+        *(dest++) = b >> 8;
+        *(dest++) = c & 0xff;
+        *(dest++) = (c >> 8) | (d & 0xf0);
+        *(dest++) = d >> 8;
+
+        // Find the minimum and maximum green value in the block.
+        blk = src + 1;
+        minv = blk[0];
+        maxv = blk[0];
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+        blk += stride;
+        minv = min(blk[0], minv); maxv = max(blk[0], maxv);
+        minv = min(blk[2], minv); maxv = max(blk[2], maxv);
+        minv = min(blk[4], minv); maxv = max(blk[4], maxv);
+        minv = min(blk[6], minv); maxv = max(blk[6], maxv);
+
+        // Now calculate the index for each pixel.
+        if (maxv > minv) {
+          fac = 7.5f / (maxv - minv);
+        } else {
+          fac = 0;
+        }
+        add = -minv * fac;
+        blk = src + 1;
+        a = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[2] * fac + add)] << 3)
+          | (remap[(int)(blk[4] * fac + add)] << 6)
+          | (remap[(int)(blk[6] * fac + add)] << 9);
+        blk += stride;
+        b = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[2] * fac + add)] << 7)
+          | (remap[(int)(blk[4] * fac + add)] << 10)
+          | (remap[(int)(blk[6] * fac + add)] << 13);
+        blk += stride;
+        c = (remap[(int)(blk[0] * fac + add)])
+          | (remap[(int)(blk[2] * fac + add)] << 3)
+          | (remap[(int)(blk[4] * fac + add)] << 6)
+          | (remap[(int)(blk[6] * fac + add)] << 9);
+        blk += stride;
+        d = (remap[(int)(blk[0] * fac + add)] << 4)
+          | (remap[(int)(blk[2] * fac + add)] << 7)
+          | (remap[(int)(blk[4] * fac + add)] << 10)
+          | (remap[(int)(blk[6] * fac + add)] << 13);
+
+        *(dest++) = maxv;
+        *(dest++) = minv;
+        *(dest++) = a & 0xff;
+        *(dest++) = (a >> 8) | (b & 0xf0);
+        *(dest++) = b >> 8;
+        *(dest++) = c & 0xff;
+        *(dest++) = (c >> 8) | (d & 0xf0);
+        *(dest++) = d >> 8;
+
+        // Advance to the beginning of the next 4x4 block.
+        src += 8;
+      }
+      src += stride * 3;
+    }
+    Thread::consider_yield();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_uncompress_ram_image_bc4
+//       Access: Protected, Static
+//  Description: Decompresses a RAM image compressed using BC4.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_uncompress_ram_image_bc4(const RamImage &compressed_image,
+                            RamImage &uncompressed_image,
+                            int x_size, int y_size, int num_pages) {
+  int x_blocks = (x_size >> 2);
+  int y_blocks = (y_size >> 2);
+
+  for (int z = 0; z < num_pages; ++z) {
+    unsigned char *dest = uncompressed_image._image.p() + z * uncompressed_image._page_size;
+    unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
+
+    // Unconvert one 4 x 4 block at a time.
+    PN_uint8 tbl[8];
+    for (int y = 0; y < y_blocks; ++y) {
+      for (int x = 0; x < x_blocks; ++x) {
+        unsigned char *blk = dest;
+        tbl[0] = src[0];
+        tbl[1] = src[1];
+        if (tbl[0] > tbl[1]) {
+          tbl[2] = (tbl[0] * 6 + tbl[1] * 1) / 7.0f;
+          tbl[3] = (tbl[0] * 5 + tbl[1] * 2) / 7.0f;
+          tbl[4] = (tbl[0] * 4 + tbl[1] * 3) / 7.0f;
+          tbl[5] = (tbl[0] * 3 + tbl[1] * 4) / 7.0f;
+          tbl[6] = (tbl[0] * 2 + tbl[1] * 5) / 7.0f;
+          tbl[7] = (tbl[0] * 1 + tbl[1] * 6) / 7.0f;
+        } else {
+          tbl[2] = (tbl[0] * 4 + tbl[1] * 1) / 5.0f;
+          tbl[3] = (tbl[0] * 3 + tbl[1] * 2) / 5.0f;
+          tbl[4] = (tbl[0] * 2 + tbl[1] * 3) / 5.0f;
+          tbl[5] = (tbl[0] * 1 + tbl[1] * 4) / 5.0f;
+          tbl[6] = 0;
+          tbl[7] = 255;
+        }
+        int v = src[2] + (src[3] << 8) + (src[4] << 16);
+        blk[0] = tbl[v & 0x7];
+        blk[1] = tbl[(v & 0x000038) >> 3];
+        blk[2] = tbl[(v & 0x0001c0) >> 6];
+        blk[3] = tbl[(v & 0x000e00) >> 9];
+        blk += x_size;
+        blk[0] = tbl[(v & 0x007000) >> 12];
+        blk[1] = tbl[(v & 0x038000) >> 15];
+        blk[2] = tbl[(v & 0x1c0000) >> 18];
+        blk[3] = tbl[(v & 0xe00000) >> 21];
+        blk += x_size;
+        v = src[5] + (src[6] << 8) + (src[7] << 16);
+        blk[0] = tbl[v & 0x7];
+        blk[1] = tbl[(v & 0x000038) >> 3];
+        blk[2] = tbl[(v & 0x0001c0) >> 6];
+        blk[3] = tbl[(v & 0x000e00) >> 9];
+        blk += x_size;
+        blk[0] = tbl[(v & 0x007000) >> 12];
+        blk[1] = tbl[(v & 0x038000) >> 15];
+        blk[2] = tbl[(v & 0x1c0000) >> 18];
+        blk[3] = tbl[(v & 0xe00000) >> 21];
+        src += 8;
+        dest += 4;
+      }
+      dest += x_size * 3;
+    }
+    Thread::consider_yield();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_uncompress_ram_image_bc5
+//       Access: Protected, Static
+//  Description: Decompresses a RAM image compressed using BC5.
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_uncompress_ram_image_bc5(const RamImage &compressed_image,
+                            RamImage &uncompressed_image,
+                            int x_size, int y_size, int num_pages) {
+  int x_blocks = (x_size >> 2);
+  int y_blocks = (y_size >> 2);
+  int stride = x_size * 2;
+
+  for (int z = 0; z < num_pages; ++z) {
+    unsigned char *dest = uncompressed_image._image.p() + z * uncompressed_image._page_size;
+    unsigned const char *src = compressed_image._image.p() + z * compressed_image._page_size;
+
+    // Unconvert one 4 x 4 block at a time.
+    PN_uint8 red[8];
+    PN_uint8 grn[8];
+    for (int y = 0; y < y_blocks; ++y) {
+      for (int x = 0; x < x_blocks; ++x) {
+        unsigned char *blk = dest;
+        red[0] = src[0];
+        red[1] = src[1];
+        if (red[0] > red[1]) {
+          red[2] = (red[0] * 6 + red[1] * 1) / 7.0f;
+          red[3] = (red[0] * 5 + red[1] * 2) / 7.0f;
+          red[4] = (red[0] * 4 + red[1] * 3) / 7.0f;
+          red[5] = (red[0] * 3 + red[1] * 4) / 7.0f;
+          red[6] = (red[0] * 2 + red[1] * 5) / 7.0f;
+          red[7] = (red[0] * 1 + red[1] * 6) / 7.0f;
+        } else {
+          red[2] = (red[0] * 4 + red[1] * 1) / 5.0f;
+          red[3] = (red[0] * 3 + red[1] * 2) / 5.0f;
+          red[4] = (red[0] * 2 + red[1] * 3) / 5.0f;
+          red[5] = (red[0] * 1 + red[1] * 4) / 5.0f;
+          red[6] = 0;
+          red[7] = 255;
+        }
+        grn[0] = src[8];
+        grn[1] = src[9];
+        if (grn[0] > grn[1]) {
+          grn[2] = (grn[0] * 6 + grn[1] * 1) / 7.0f;
+          grn[3] = (grn[0] * 5 + grn[1] * 2) / 7.0f;
+          grn[4] = (grn[0] * 4 + grn[1] * 3) / 7.0f;
+          grn[5] = (grn[0] * 3 + grn[1] * 4) / 7.0f;
+          grn[6] = (grn[0] * 2 + grn[1] * 5) / 7.0f;
+          grn[7] = (grn[0] * 1 + grn[1] * 6) / 7.0f;
+        } else {
+          grn[2] = (grn[0] * 4 + grn[1] * 1) / 5.0f;
+          grn[3] = (grn[0] * 3 + grn[1] * 2) / 5.0f;
+          grn[4] = (grn[0] * 2 + grn[1] * 3) / 5.0f;
+          grn[5] = (grn[0] * 1 + grn[1] * 4) / 5.0f;
+          grn[6] = 0;
+          grn[7] = 255;
+        }
+        int r = src[2] + (src[3] << 8) + (src[4] << 16);
+        int g = src[10] + (src[11] << 8) + (src[12] << 16);
+        blk[0] = red[r & 0x7];
+        blk[1] = grn[g & 0x7];
+        blk[2] = red[(r & 0x000038) >> 3];
+        blk[3] = grn[(g & 0x000038) >> 3];
+        blk[4] = red[(r & 0x0001c0) >> 6];
+        blk[5] = grn[(g & 0x0001c0) >> 6];
+        blk[6] = red[(r & 0x000e00) >> 9];
+        blk[7] = grn[(g & 0x000e00) >> 9];
+        blk += stride;
+        blk[0] = red[(r & 0x007000) >> 12];
+        blk[1] = grn[(g & 0x007000) >> 12];
+        blk[2] = red[(r & 0x038000) >> 15];
+        blk[3] = grn[(g & 0x038000) >> 15];
+        blk[4] = red[(r & 0x1c0000) >> 18];
+        blk[5] = grn[(g & 0x1c0000) >> 18];
+        blk[6] = red[(r & 0xe00000) >> 21];
+        blk[7] = grn[(g & 0xe00000) >> 21];
+        blk += stride;
+        r = src[5] + (src[6] << 8) + (src[7] << 16);
+        g = src[13] + (src[14] << 8) + (src[15] << 16);
+        blk[0] = red[r & 0x7];
+        blk[1] = grn[g & 0x7];
+        blk[2] = red[(r & 0x000038) >> 3];
+        blk[3] = grn[(g & 0x000038) >> 3];
+        blk[4] = red[(r & 0x0001c0) >> 6];
+        blk[5] = grn[(g & 0x0001c0) >> 6];
+        blk[6] = red[(r & 0x000e00) >> 9];
+        blk[7] = grn[(g & 0x000e00) >> 9];
+        blk += stride;
+        blk[0] = red[(r & 0x007000) >> 12];
+        blk[1] = grn[(g & 0x007000) >> 12];
+        blk[2] = red[(r & 0x038000) >> 15];
+        blk[3] = grn[(g & 0x038000) >> 15];
+        blk[4] = red[(r & 0x1c0000) >> 18];
+        blk[5] = grn[(g & 0x1c0000) >> 18];
+        blk[6] = red[(r & 0xe00000) >> 21];
+        blk[7] = grn[(g & 0xe00000) >> 21];
+        src += 16;
+        dest += 8;
+      }
+      dest += stride * 3;
+    }
+    Thread::consider_yield();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4875,11 +5823,17 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     }
 
 #ifndef NDEBUG
-    if (cdata->_texture_type == TT_1d_texture ||
-        cdata->_texture_type == TT_buffer_texture) {
+    switch (cdata->_texture_type) {
+    case TT_1d_texture:
+    case TT_buffer_texture:
       nassertr(y_size == 1, false);
-    } else if (cdata->_texture_type == TT_cube_map) {
+      break;
+    case TT_cube_map:
+    case TT_cube_map_array:
       nassertr(x_size == y_size, false);
+      break;
+    default:
+      break;
     }
 #endif
     if ((cdata->_x_size != x_size)||(cdata->_y_size != y_size)) {
@@ -5074,6 +6028,15 @@ do_setup_texture(CData *cdata, Texture::TextureType texture_type,
     cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
     break;
 
+  case TT_cube_map_array:
+    // Cube maps array z_size needs to be a multiple of 6.
+    nassertv(x_size == y_size && z_size % 6 == 0);
+
+    cdata->_default_sampler.set_wrap_u(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_v(SamplerState::WM_clamp);
+    cdata->_default_sampler.set_wrap_w(SamplerState::WM_clamp);
+    break;
+
   case TT_buffer_texture:
     nassertv(y_size == 1 && z_size == 1);
     break;
@@ -5140,6 +6103,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_sluminance_alpha:
   case F_rg32:
   case F_rg8i:
+  case F_rg:
     cdata->_num_components = 2;
     break;
 
@@ -5152,6 +6116,8 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_srgb:
   case F_rgb32:
   case F_rgb8i:
+  case F_r11_g11_b10:
+  case F_rgb9_e5:
     cdata->_num_components = 3;
     break;
 
@@ -5165,6 +6131,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgba32:
   case F_srgb_alpha:
   case F_rgba8i:
+  case F_rgb10_a2:
     cdata->_num_components = 4;
     break;
   }
@@ -5181,10 +6148,13 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
 
   switch (component_type) {
   case T_unsigned_byte:
+  case T_byte:
     cdata->_component_width = 1;
     break;
 
   case T_unsigned_short:
+  case T_short:
+  case T_half_float:
     cdata->_component_width = 2;
     break;
 
@@ -5246,6 +6216,7 @@ do_set_z_size(CData *cdata, int z_size) {
   if (cdata->_z_size != z_size) {
     nassertv((cdata->_texture_type == Texture::TT_3d_texture) ||
              (cdata->_texture_type == Texture::TT_cube_map && z_size == 6) ||
+             (cdata->_texture_type == Texture::TT_cube_map_array && z_size % 6 == 0) ||
              (cdata->_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     cdata->_z_size = z_size;
     cdata->inc_image_modified();
@@ -6425,6 +7396,64 @@ read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header, int n,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_abgr16
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in ABGR16 format.
+////////////////////////////////////////////////////////////////////
+PTA_uchar Texture::
+read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+  // This is laid out in order R, G, B, A.
+  int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
+
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(cdata, n);
+  size_t row_bytes = x_size * 8;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    in.read((char *)p, row_bytes);
+
+    PN_uint16 *pw = (PN_uint16 *)p;
+    for (int x = 0; x < x_size; ++x) {
+      swap(pw[0], pw[2]);
+      pw += 4;
+    }
+    nassertr((unsigned char *)pw <= image.p() + size, PTA_uchar());
+  }
+
+  return image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_abgr32
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in ABGR32 format.
+////////////////////////////////////////////////////////////////////
+PTA_uchar Texture::
+read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+  // This is laid out in order R, G, B, A.
+  int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
+
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(cdata, n);
+  size_t row_bytes = x_size * 16;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    in.read((char *)p, row_bytes);
+
+    PN_uint32 *pw = (PN_uint32 *)p;
+    for (int x = 0; x < x_size; ++x) {
+      swap(pw[0], pw[2]);
+      pw += 4;
+    }
+    nassertr((unsigned char *)pw <= image.p() + size, PTA_uchar());
+  }
+
+  return image;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::read_dds_level_generic_uncompressed
 //       Access: Private, Static
 //  Description: Called by read_dds for a DDS file whose format isn't
@@ -6613,12 +7642,12 @@ read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata, const DDSHeade
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::read_dds_level_dxt1
+//     Function: Texture::read_dds_level_bc1
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT1 file format.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
-read_dds_level_dxt1(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+read_dds_level_bc1(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
   int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
   int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
 
@@ -6684,12 +7713,12 @@ read_dds_level_dxt1(Texture *tex, CData *cdata, const DDSHeader &header, int n, 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::read_dds_level_dxt23
+//     Function: Texture::read_dds_level_bc2
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT2 or DXT3 file format.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
-read_dds_level_dxt23(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+read_dds_level_bc2(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
   int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
   int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
 
@@ -6773,12 +7802,12 @@ read_dds_level_dxt23(Texture *tex, CData *cdata, const DDSHeader &header, int n,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::read_dds_level_dxt45
+//     Function: Texture::read_dds_level_bc3
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT4 or DXT5 file format.
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
-read_dds_level_dxt45(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+read_dds_level_bc3(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
   int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
   int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
 
@@ -6866,6 +7895,173 @@ read_dds_level_dxt45(Texture *tex, CData *cdata, const DDSHeader &header, int n,
       cells[3] = w;
 
       p += block_bytes;
+    }
+
+  } else if (y_size >= 1) {
+    // No need to invert a one-pixel-high image.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+  }
+
+  return image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_bc4
+//       Access: Private, Static
+//  Description: Called by read_dds for ATI1 compression.
+////////////////////////////////////////////////////////////////////
+PTA_uchar Texture::
+read_dds_level_bc4(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
+
+  static const int div = 4;
+  static const int block_bytes = 8;
+
+  // The ATI1 (BC4) format uses the same compression mechanism as the
+  // alpha channel of DXT5.
+  int num_cols = max(div, x_size) / div;
+  int num_rows = max(div, y_size) / div;
+  int row_length = num_cols * block_bytes;
+  int linear_size = row_length * num_rows;
+
+  if (n == 0) {
+    if (header.dds_flags & DDSD_LINEARSIZE) {
+      nassertr(linear_size == (int)header.pitch, PTA_uchar());
+    }
+  }
+
+  PTA_uchar image = PTA_uchar::empty_array(linear_size);
+
+  if (y_size >= 4) {
+    // We have to flip the image as we read it, because of DirectX's
+    // inverted sense of up.  That means we (a) reverse the order of the
+    // rows of blocks . . .
+    for (int ri = num_rows - 1; ri >= 0; --ri) {
+      unsigned char *p = image.p() + row_length * ri;
+      in.read((char *)p, row_length);
+
+      for (int ci = 0; ci < num_cols; ++ci) {
+        // . . . and (b) within each block, we reverse the 4 individual
+        // rows of 4 pixels.
+        // The block is one 16-bit word of reference values, followed by
+        // six words of pixel values, in 12-bit rows.  Tricky to invert.
+        unsigned char p2 = p[2];
+        unsigned char p3 = p[3];
+        unsigned char p4 = p[4];
+        unsigned char p5 = p[5];
+        unsigned char p6 = p[6];
+        unsigned char p7 = p[7];
+
+        p[2] = ((p7 & 0xf) << 4) | ((p6 & 0xf0) >> 4);
+        p[3] = ((p5 & 0xf) << 4) | ((p7 & 0xf0) >> 4);
+        p[4] = ((p6 & 0xf) << 4) | ((p5 & 0xf0) >> 4);
+        p[5] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+        p[6] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+        p[7] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+        p += block_bytes;
+      }
+    }
+
+  } else if (y_size >= 2) {
+    // To invert a two-pixel high image, we just flip two rows within a cell.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+
+    for (int ci = 0; ci < num_cols; ++ci) {
+      unsigned char p2 = p[2];
+      unsigned char p3 = p[3];
+      unsigned char p4 = p[4];
+
+      p[2] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+      p[3] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+      p[4] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+      p += block_bytes;
+    }
+
+  } else if (y_size >= 1) {
+    // No need to invert a one-pixel-high image.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+  }
+
+  return image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_bc5
+//       Access: Private, Static
+//  Description: Called by read_dds for ATI2 compression.
+////////////////////////////////////////////////////////////////////
+PTA_uchar Texture::
+read_dds_level_bc5(Texture *tex, CData *cdata, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = tex->do_get_expected_mipmap_y_size(cdata, n);
+
+  // The ATI2 (BC5) format uses the same compression mechanism as the
+  // ATI1 (BC4) format, but doubles the channels.
+  int num_cols = max(4, x_size) / 2;
+  int num_rows = max(4, y_size) / 4;
+  int row_length = num_cols * 8;
+  int linear_size = row_length * num_rows;
+
+  if (n == 0) {
+    if (header.dds_flags & DDSD_LINEARSIZE) {
+      nassertr(linear_size == (int)header.pitch, PTA_uchar());
+    }
+  }
+
+  PTA_uchar image = PTA_uchar::empty_array(linear_size);
+
+  if (y_size >= 4) {
+    // We have to flip the image as we read it, because of DirectX's
+    // inverted sense of up.  That means we (a) reverse the order of the
+    // rows of blocks . . .
+    for (int ri = num_rows - 1; ri >= 0; --ri) {
+      unsigned char *p = image.p() + row_length * ri;
+      in.read((char *)p, row_length);
+
+      for (int ci = 0; ci < num_cols; ++ci) {
+        // . . . and (b) within each block, we reverse the 4 individual
+        // rows of 4 pixels.
+        // The block is one 16-bit word of reference values, followed by
+        // six words of pixel values, in 12-bit rows.  Tricky to invert.
+        unsigned char p2 = p[2];
+        unsigned char p3 = p[3];
+        unsigned char p4 = p[4];
+        unsigned char p5 = p[5];
+        unsigned char p6 = p[6];
+        unsigned char p7 = p[7];
+
+        p[2] = ((p7 & 0xf) << 4) | ((p6 & 0xf0) >> 4);
+        p[3] = ((p5 & 0xf) << 4) | ((p7 & 0xf0) >> 4);
+        p[4] = ((p6 & 0xf) << 4) | ((p5 & 0xf0) >> 4);
+        p[5] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+        p[6] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+        p[7] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+        p += 8;
+      }
+    }
+
+  } else if (y_size >= 2) {
+    // To invert a two-pixel high image, we just flip two rows within a cell.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+
+    for (int ci = 0; ci < num_cols; ++ci) {
+      unsigned char p2 = p[2];
+      unsigned char p3 = p[3];
+      unsigned char p4 = p[4];
+
+      p[2] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+      p[3] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+      p[4] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+      p += 8;
     }
 
   } else if (y_size >= 1) {
@@ -7577,10 +8773,6 @@ filter_3d_float(unsigned char *&p, const unsigned char *&q,
 bool Texture::
 do_squish(CData *cdata, Texture::CompressionMode compression, int squish_flags) {
 #ifdef HAVE_SQUISH
-  if (cdata->_ram_images.empty() || cdata->_ram_image_compression != CM_off) {
-    return false;
-  }
-
   if (!do_has_all_ram_mipmap_images(cdata)) {
     // If we're about to compress the RAM image, we should ensure that
     // we have all of the mipmap levels first.
@@ -7675,9 +8867,6 @@ do_squish(CData *cdata, Texture::CompressionMode compression, int squish_flags) 
 bool Texture::
 do_unsquish(CData *cdata, int squish_flags) {
 #ifdef HAVE_SQUISH
-  if (cdata->_ram_images.empty()) {
-    return false;
-  }
   RamImages uncompressed_ram_images;
   uncompressed_ram_images.reserve(cdata->_ram_images.size());
   for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
@@ -8113,6 +9302,7 @@ make_this_from_bam(const FactoryParams &params) {
         break;
 
       case TT_2d_texture_array:
+      case TT_cube_map_array:
         me = TexturePool::load_2d_texture_array(filename, has_read_mipmaps, options);
         break;
 

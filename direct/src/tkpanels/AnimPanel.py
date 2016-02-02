@@ -11,7 +11,7 @@ from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askfloat
 from Tkinter import *
-import Pmw, string, math, types
+import Pmw, string, types
 from direct.task import Task
 
 FRAMES = 0
@@ -56,7 +56,7 @@ class AnimPanel(AppShell):
 
 
         # Execute option callbacks
-        self.initialiseoptions(AnimPanel)                
+        self.initialiseoptions(AnimPanel)
         # We need to know when AnimPanel is closed
         self.destroyCallBack = None
 
@@ -131,7 +131,7 @@ class AnimPanel(AppShell):
             width = 4,
             command = self.resetAllToZero)
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.toPreviousFrameButton = self.createcomponent(
             'toPreviousFrame', (), None,
             Button, (controlFrame,),
@@ -153,7 +153,7 @@ class AnimPanel(AppShell):
             text = 'Stop', width = 8,
             command = self.stopActorControls)
         self.stopButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.toNextFrameButton = self.createcomponent(
             'toNextFrame', (), None,
             Button, (controlFrame,),
@@ -194,7 +194,7 @@ class AnimPanel(AppShell):
 
         controlFrame.pack(fill = X)
 
-    def createActorControls(self): 
+    def createActorControls(self):
         # Create a frame to hold all the actor controls
         self.actorFrame = Frame(self.interior())
         # Create a control for each actor
@@ -351,24 +351,24 @@ class AnimPanel(AppShell):
     def resetAllToEnd(self):
         for actorControl in self.actorControlList:
             actorControl.resetToEnd()
-    
+
     def nextFrame(self):
         for actorControl in self.actorControlList:
             actorControl.nextFrame()
-      
+
     def previousFrame(self):
         for actorControl in self.actorControlList:
             actorControl.previousFrame()
-                        
-    def setDestroyCallBack(self, callBack):    
+
+    def setDestroyCallBack(self, callBack):
         self.destroyCallBack = callBack
-                        
-    def destroy(self):    
-        # First clean up 
-        taskMgr.remove(self.id + '_UpdateTask')        
-        self.destroyCallBack()        
+
+    def destroy(self):
+        # First clean up
+        taskMgr.remove(self.id + '_UpdateTask')
+        self.destroyCallBack()
         self.destroyCallBack = None
-        AppShell.destroy(self)    
+        AppShell.destroy(self)
 
 class ActorControl(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
@@ -437,7 +437,7 @@ class ActorControl(Pmw.MegaWidget):
                               command = self.resetToZero)
         labelMenu.add_command(label = 'Jump To End Time',
                               command = self.resetToEnd)
-                              
+
         # Now associate menu with menubutton
         self._label['menu'] = labelMenu
         self._label.pack(side = LEFT, fill = X)
@@ -598,7 +598,7 @@ class ActorControl(Pmw.MegaWidget):
             self.currT = self.currT + deltaT
             if fLoop and self.duration:
                 # If its looping compute modulo
-                loopT = self.currT % self.duration                
+                loopT = self.currT % self.duration
                 self.goToT(loopT)
             else:
                 if (self.currT > self.maxSeconds):
@@ -645,7 +645,7 @@ class ActorControl(Pmw.MegaWidget):
         # This flag forces self.currT to be updated to new value
         self.fOneShot = 1
         self.goToT(self.duration)
-        
+
     def nextFrame(self):
         """
         There needed to be a better way to select an exact frame number
@@ -653,7 +653,7 @@ class ActorControl(Pmw.MegaWidget):
         """
         self.fOneShot = 1
         self.goToT((self.currT+(1/self.fps))%self.duration)
-    
+
     def previousFrame(self):
         """
         There needed to be a better way to select an exact frame number

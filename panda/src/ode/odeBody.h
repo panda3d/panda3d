@@ -22,9 +22,6 @@
 #include "ode_includes.h"
 #include "odeWorld.h"
 #include "odeMass.h"
-#ifdef HAVE_PYTHON
-#include "Python.h"
-#endif
 
 class OdeJoint;
 class OdeGeom;
@@ -57,7 +54,7 @@ PUBLISHED:
   INLINE void set_auto_disable_defaults();
   INLINE void set_data(void *data);
 #ifdef HAVE_PYTHON
-  INLINE void set_data(PyObject *data);
+  void set_data(PyObject *data);
 #endif
 
   INLINE void set_position(dReal x, dReal y, dReal z);
@@ -77,7 +74,7 @@ PUBLISHED:
   INLINE dReal get_auto_disable_time() const;
   INLINE int   get_auto_disable_flag() const;
 #ifdef HAVE_PYTHON
-  INLINE PyObject* get_data() const;
+  PyObject* get_data() const;
 #else
   INLINE void* get_data() const;
 #endif

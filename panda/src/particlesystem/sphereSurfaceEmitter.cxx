@@ -15,9 +15,9 @@
 #include "sphereSurfaceEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SphereSurfaceEmitter
-//      Access : Public
-// Description : constructor
+//     Function: SphereSurfaceEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 SphereSurfaceEmitter::
 SphereSurfaceEmitter() {
@@ -25,9 +25,9 @@ SphereSurfaceEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SphereSurfaceEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: SphereSurfaceEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 SphereSurfaceEmitter::
 SphereSurfaceEmitter(const SphereSurfaceEmitter &copy) :
@@ -36,18 +36,18 @@ SphereSurfaceEmitter(const SphereSurfaceEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~SphereSurfaceEmitter
-//      Access : Public
-// Description : destructor
+//     Function: ~SphereSurfaceEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 SphereSurfaceEmitter::
 ~SphereSurfaceEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *SphereSurfaceEmitter::
 make_copy() {
@@ -55,9 +55,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SphereSurfaceEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: SphereSurfaceEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -71,9 +71,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SphereSurfaceEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: SphereSurfaceEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -81,10 +81,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
 output(ostream &out) const {
@@ -94,10 +94,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
 write(ostream &out, int indent) const {

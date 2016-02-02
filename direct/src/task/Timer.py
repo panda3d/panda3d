@@ -2,7 +2,6 @@
 
 __all__ = ['Timer']
 
-from pandac.PandaModules import *
 import Task
 
 class Timer:
@@ -32,7 +31,7 @@ class Timer:
     def startCallback(self, t, callback):
         if (self.started):
             self.stop()
-        self.callback = callback 
+        self.callback = callback
         self.finalT = t
         self.startT = globalClock.getFrameTime()
         self.currT = 0.0
@@ -71,7 +70,7 @@ class Timer:
 
     def __timerTask(self, task):
         t = globalClock.getFrameTime()
-        te = t - self.startT 
+        te = t - self.startT
         self.currT = te
         if (te >= self.finalT):
             if (self.callback != None):

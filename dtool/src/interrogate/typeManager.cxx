@@ -20,6 +20,7 @@
 #include "cppEnumType.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
+#include "cppIdentifier.h"
 #include "cppParameterList.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
@@ -639,6 +640,40 @@ is_unsigned_char(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_signed_char
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is signed char,
+//               but not unsigned or 'plain' char.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_signed_char(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_signed_char(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return
+          (simple_type->_type == CPPSimpleType::T_char) &&
+          (simple_type->_flags & CPPSimpleType::F_signed) != 0;
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_signed_char(type->as_typedef_type()->_type);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_char_pointer
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is char * or const
@@ -1142,6 +1177,9 @@ is_size(CPPType *type) {
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is the "ssize_t"
 //               type, or a const ssize_t, or a typedef to either.
+//               ptrdiff_t and streamsize are also accepted, since
+//               they are usually also defined as the signed
+//               counterpart to size_t.
 ////////////////////////////////////////////////////////////////////
 bool TypeManager::
 is_ssize(CPPType *type) {
@@ -1151,11 +1189,45 @@ is_ssize(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     if (type->get_simple_name() == "Py_ssize_t" ||
-        type->get_simple_name() == "ssize_t") {
+        type->get_simple_name() == "ssize_t" ||
+        type->get_simple_name() == "ptrdiff_t" ||
+        type->get_simple_name() == "streamsize") {
       return is_integer(type->as_typedef_type()->_type);
     } else {
       return is_ssize(type->as_typedef_type()->_type);
     }
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_long
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is the "long"
+//               type, whether signed or unsigned.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_long(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_long(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return (simple_type->_type == CPPSimpleType::T_int &&
+                (simple_type->_flags & CPPSimpleType::F_long) != 0);
+      }
+    }
+    break;
+
+  case CPPDeclaration::ST_typedef:
+    return is_long(type->as_typedef_type()->_type);
 
   default:
     break;
@@ -1787,6 +1859,31 @@ is_Py_buffer(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_handle
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is TypeHandle
+//               or a class with identical semantics like ButtonHandle.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_handle(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_handle(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "TypeHandle" ||
+            type->get_local_name(&parser) == "ButtonHandle");
+
+  case CPPDeclaration::ST_typedef:
+    return is_handle(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_ostream
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is PyObject.
@@ -2198,7 +2295,7 @@ get_basic_string_char_type() {
   static bool got_type = false;
   static CPPType *type = (CPPType *)NULL;
   if (!got_type) {
-    type = parser.parse_type("basic_string<char>");
+    type = parser.parse_type("std::basic_string<char>");
     got_type = true;
   }
   return type;
@@ -2215,7 +2312,7 @@ get_basic_string_wchar_type() {
   static bool got_type = false;
   static CPPType *type = (CPPType *)NULL;
   if (!got_type) {
-    type = parser.parse_type("basic_string<wchar_t>");
+    type = parser.parse_type("std::basic_string<wchar_t>");
     got_type = true;
   }
   return type;
@@ -2597,7 +2694,7 @@ is_trivial(CPPType *source_type) {
     return is_trivial(source_type->as_typedef_type()->_type);
 
   default:
-    if (source_type->is_trivial()) {
+    if (source_type->is_trivial() || is_handle(source_type)) {
       return true;
     } else {
       // This is a bit of a hack.  is_trivial() returns false for types that

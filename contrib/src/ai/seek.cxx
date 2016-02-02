@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : seek.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  24 Oct 09
+// Filename: seek.cxx
+// Created by: Deepak, John, Navin (24Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -42,15 +41,12 @@ Seek::Seek(AICharacter *ai_ch, LVecBase3 pos, float seek_wt) {
 Seek::~Seek() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_seek
-// Description : This function performs the seek and returns a seek force which is used
-//                in the calculate_prioritized function.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: do_seek
+//  Description: This function performs the seek and returns a seek force which is used
+//               in the calculate_prioritized function.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 LVecBase3 Seek::do_seek() {
   double target_distance = (_seek_position - _ai_char->_ai_char_np.get_pos(_ai_char->_window_render)).length();
 

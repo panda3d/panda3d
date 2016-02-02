@@ -1,4 +1,4 @@
-// Filename: physxSceneStats2.cxx
+// Filename: physxSceneStats2.I
 // Created by:  enn0x (20Oct09)
 //
 ////////////////////////////////////////////////////////////////////

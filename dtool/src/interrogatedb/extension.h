@@ -17,14 +17,14 @@
 
 #include "dtoolbase.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ExtensionBase
 // Description : This is where all extensions should derive from.
 //               It defines the _self and _this members that can
 //               be used from the extension method.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-class EXPCL_DTOOLCONFIG ExtensionBase {
+class EXPCL_INTERROGATEDB ExtensionBase {
 public:
   T * _this;
 };
@@ -36,12 +36,12 @@ public:
 //               a specialization of this class template.
 ////////////////////////////////////////////////////////////////////
 template<class T>
-class EXPCL_DTOOLCONFIG Extension : public ExtensionBase<T> {
+class EXPCL_INTERROGATEDB Extension : public ExtensionBase<T> {
 };
 
 ////////////////////////////////////////////////////////////////////
-//    Function : invoke_extension
-// Description : Creates a new extension object for the given
+//     Function: invoke_extension
+//  Description: Creates a new extension object for the given
 //               pointer that can then be used to call extension
 //               methods, as follows:
 //               invoke_extension((MyClass) *ptr).method()
@@ -55,8 +55,8 @@ invoke_extension(T *ptr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : invoke_extension
-// Description : The const version of the above function.
+//     Function: invoke_extension
+//  Description: The const version of the above function.
 ////////////////////////////////////////////////////////////////////
 template<class T>
 inline const Extension<T>

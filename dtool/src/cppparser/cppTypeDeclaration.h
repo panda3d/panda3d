@@ -19,7 +19,7 @@
 
 #include "cppInstance.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPTypeDeclaration
 // Description : A CPPTypeDeclaration is a special declaration that
 //               represents the top-level declaration of a type in a

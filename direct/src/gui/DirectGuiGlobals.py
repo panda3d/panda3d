@@ -7,13 +7,14 @@ __all__ = []
 Global definitions used by Direct Gui Classes and handy constants
 that can be used during widget construction
 """
-from pandac.PandaModules import *
+from panda3d.core import *
 
 defaultFont = None
 defaultFontFunc = TextNode.getDefaultFont
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
+defaultDialogRelief = PGFrameStyle.TBevelOut
 drawOrder = 100
 panel = None
 
@@ -64,11 +65,11 @@ WITHOUT = PGButton.getWithoutPrefix()
 B1CLICK = PGButton.getClickPrefix() + MouseButton.one().getName() + '-'
 B2CLICK = PGButton.getClickPrefix() + MouseButton.two().getName() + '-'
 B3CLICK = PGButton.getClickPrefix() + MouseButton.three().getName() + '-'
-B1PRESS = PGButton.getPressPrefix() + MouseButton.one().getName() + '-'  
-B2PRESS = PGButton.getPressPrefix() + MouseButton.two().getName() + '-'  
+B1PRESS = PGButton.getPressPrefix() + MouseButton.one().getName() + '-'
+B2PRESS = PGButton.getPressPrefix() + MouseButton.two().getName() + '-'
 B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
-B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'  
-B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'  
+B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
+B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
@@ -132,13 +133,16 @@ def setDefaultFontFunc(newFontFunc):
 
 def getDefaultDialogGeom():
     global defaultDialogGeom
-    if defaultDialogGeom == None:
-        defaultDialogGeom = loader.loadModel('models/gui/dialog_box_gui', okMissing = True)
     return defaultDialogGeom
 
-def setDefaultDialogGeom(newDialogGeom):
-    global defaultDialogGeom
+def getDefaultDialogRelief():
+    global defaultDialogRelief
+    return defaultDialogRelief
+
+def setDefaultDialogGeom(newDialogGeom, relief=None):
+    global defaultDialogGeom, defaultDialogRelief
     defaultDialogGeom = newDialogGeom
+    defaultDialogRelief = relief
 
 def getDefaultDrawOrder():
     return drawOrder

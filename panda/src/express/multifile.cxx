@@ -114,7 +114,7 @@ Multifile() :
               "application), on the assumption that the files from a multifile must "
               "be loaded quickly, without paying the cost of an expensive hash on "
               "each subfile in order to decrypt it."));
-  
+
   _read = (IStreamWrapper *)NULL;
   _write = (ostream *)NULL;
   _offset = 0;
@@ -468,10 +468,10 @@ set_scale_factor(size_t scale_factor) {
 //               is replaced without examining its contents (but see
 //               also update_subfile).
 //
-//               Filename::set_binary() or set_text() must have been
-//               called previously to specify the nature of the source
-//               file.  If set_text() was called, the text flag will
-//               be set on the subfile.
+//               Either Filename:::set_binary() or set_text() must
+//               have been called previously to specify the nature of
+//               the source file.  If set_text() was called, the text
+//               flag will be set on the subfile.
 //
 //               Returns the subfile name on success (it might have
 //               been modified slightly), or empty string on failure.
@@ -499,7 +499,7 @@ add_subfile(const string &subfile_name, const Filename &filename,
     if (fname.is_text()) {
       subfile->_flags |= SF_text;
     }
-    
+
     add_new_subfile(subfile, compression_level);
   }
 
@@ -555,10 +555,10 @@ add_subfile(const string &subfile_name, istream *subfile_data,
 //               replaced only if it is different; otherwise, the
 //               multifile is left unchanged.
 //
-//               Filename::set_binary() or set_text() must have been
-//               called previously to specify the nature of the source
-//               file.  If set_text() was called, the text flag will
-//               be set on the subfile.
+//               Either Filename:::set_binary() or set_text() must
+//               have been called previously to specify the nature of
+//               the source file.  If set_text() was called, the text
+//               flag will be set on the subfile.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 update_subfile(const string &subfile_name, const Filename &filename,
@@ -962,14 +962,14 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
 
   if (!X509_check_private_key(cert_chain[0]._cert, pkey)) {
     express_cat.info()
-      << "Private key does not match certificate.\n"; 
+      << "Private key does not match certificate.\n";
     return false;
   }
-  
+
   // Now encode that list of certs to a stream in DER form.
   stringstream der_stream;
   StreamWriter der_writer(der_stream);
-  der_writer.add_uint32(cert_chain.size());
+  der_writer.add_uint32((PN_uint32)cert_chain.size());
 
   CertChain::const_iterator ci;
   for (ci = cert_chain.begin(); ci != cert_chain.end(); ++ci) {
@@ -996,7 +996,7 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
   nassertr(_new_subfiles.empty(), false);
   _new_subfiles.push_back(subfile);
   bool result = flush();
-  
+
   delete subfile;
 
   return result;
@@ -1088,7 +1088,7 @@ get_signature_subject_name(int n) const {
 //               most meaningful part of the subject name.  It returns
 //               the emailAddress, if it is defined; otherwise, it
 //               returns the commonName.
-
+//
 //               See the comments in get_num_signatures().
 ////////////////////////////////////////////////////////////////////
 string Multifile::
@@ -1123,7 +1123,7 @@ get_signature_friendly_name(int n) const {
             // these incomplete docs.
             BIO *mbio = BIO_new(BIO_s_mem());
             ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
-            
+
             char *pp;
             long pp_size = BIO_get_mem_data(mbio, &pp);
             string name(pp, pp_size);
@@ -1363,7 +1363,7 @@ flush() {
 
     _write->seekp(_next_index);
     nassertr(_next_index == _write->tellp(), false);
-    
+
     // Ok, here we are at the end of the file.  Write out the
     // recently-added subfiles here.  First, count up the index size.
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
@@ -1374,7 +1374,7 @@ flush() {
       _next_index = pad_to_streampos(_next_index);
       nassertr(_next_index == _write->tellp(), false);
     }
-    
+
     // Now we're at the end of the index.  Write a 0 here to mark the
     // end.
     StreamWriter writer(_write, false);
@@ -1408,7 +1408,7 @@ flush() {
       }
       nassertr(_next_index == _write->tellp(), false);
     }
-    
+
     // Now go back and fill in the proper addresses for the data start.
     // We didn't do it in the first pass, because we don't really want
     // to keep all those file handles open, and so we didn't have to
@@ -1427,7 +1427,7 @@ flush() {
     static const size_t timestamp_pos = _header_prefix.size() + _header_size + 2 + 2 + 4;
     _write->seekp(timestamp_pos);
     nassertr(!_write->fail(), false);
-    
+
     StreamWriter writer(*_write);
     if (_record_timestamp) {
       writer.add_uint32(_timestamp);
@@ -1530,7 +1530,7 @@ repack() {
 
   if (!open_read_write(orig_name)) {
     express_cat.info()
-      << "Unable to read newly repacked " << _multifile_name 
+      << "Unable to read newly repacked " << _multifile_name
       << ".\n";
     return false;
   }
@@ -1898,7 +1898,7 @@ bool Multifile::
 extract_subfile(int index, const Filename &filename) {
   nassertr(is_read_valid(), false);
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
-  
+
   Filename fname = filename;
   if (multifile_always_binary) {
     fname.set_binary();
@@ -2033,7 +2033,7 @@ compare_subfile(int index, const Filename &filename) {
     // Check the file size.
     in2.seekg(0, ios::end);
     streampos file_size = in2.tellg();
-    
+
     if (file_size != (streampos)get_subfile_length(index)) {
       // The files have different sizes.
       close_read_subfile(in1);
@@ -2047,7 +2047,7 @@ compare_subfile(int index, const Filename &filename) {
   int byte2 = in2.get();
   while (!in1->fail() && !in1->eof() &&
          !in2.fail() && !in2.eof()) {
-    if (byte1 != byte2) { 
+    if (byte1 != byte2) {
       close_read_subfile(in1);
       return false;
     }
@@ -2066,7 +2066,7 @@ compare_subfile(int index, const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 output(ostream &out) const {
@@ -2116,12 +2116,12 @@ set_header_prefix(const string &header_prefix) {
     if (new_header_prefix[0] != '#') {
       new_header_prefix = string("#") + new_header_prefix;
     }
-    
+
     // It must end with a newline.
     if (new_header_prefix[new_header_prefix.size() - 1] != '\n') {
       new_header_prefix += string("\n");
     }
-    
+
     // Embedded newlines must be followed by a hash mark.
     size_t newline = new_header_prefix.find('\n');
     while (newline < new_header_prefix.size() - 1) {
@@ -2137,8 +2137,8 @@ set_header_prefix(const string &header_prefix) {
     _needs_repack = true;
   }
 }
-  
-  
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::read_subfile
 //       Access: Public
@@ -2337,10 +2337,10 @@ open_read_subfile(Subfile *subfile) {
   // Return an ISubStream object that references into the open
   // Multifile istream.
   nassertr(subfile->_data_start != (streampos)0, NULL);
-  istream *stream = 
+  istream *stream =
     new ISubStream(_read, _offset + subfile->_data_start,
-                   _offset + subfile->_data_start + (streampos)subfile->_data_length); 
-  
+                   _offset + subfile->_data_start + (streampos)subfile->_data_length);
+
   if ((subfile->_flags & SF_encrypted) != 0) {
 #ifndef HAVE_OPENSSL
     express_cat.error()
@@ -2350,7 +2350,7 @@ open_read_subfile(Subfile *subfile) {
 #else  // HAVE_OPENSSL
     // The subfile is encrypted.  So actually, return an
     // IDecryptStream that wraps around the ISubStream.
-    IDecryptStream *wrapper = 
+    IDecryptStream *wrapper =
       new IDecryptStream(stream, true, _encryption_password);
     stream = wrapper;
 
@@ -2529,11 +2529,11 @@ read_index() {
   }
 
   if (_file_major_ver != _current_major_ver ||
-      (_file_major_ver == _current_major_ver && 
+      (_file_major_ver == _current_major_ver &&
        _file_minor_ver > _current_minor_ver)) {
     express_cat.info()
       << _multifile_name << " has version " << _file_major_ver << "."
-      << _file_minor_ver << ", expecting version " 
+      << _file_minor_ver << ", expecting version "
       << _current_major_ver << "." << _current_minor_ver << ".\n";
     _read->release();
     close();
@@ -2555,7 +2555,7 @@ read_index() {
 
   // Now read the index out.
   _next_index = read->tellg() - _offset;
-  _next_index = normalize_streampos(_next_index);  
+  _next_index = normalize_streampos(_next_index);
   read->seekg(_next_index + _offset);
   _last_index = 0;
   _last_data_byte = 0;
@@ -2623,7 +2623,7 @@ read_index() {
     size_t before_size = _subfiles.size();
     _subfiles.sort();
     size_t after_size = _subfiles.size();
-    
+
     // If these don't match, the same filename appeared twice in the
     // index, which shouldn't be possible.
     nassertr(before_size == after_size, true);
@@ -2632,7 +2632,7 @@ read_index() {
   delete subfile;
   _read->release();
   return true;
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::write_header
@@ -2732,15 +2732,15 @@ check_signatures() {
         x509 = d2i_X509(NULL, &bp, bp_end - bp);
       }
       if (num_certs != 0 || x509 != NULL) {
-        express_cat.warning() 
+        express_cat.warning()
           << "Extra data in signature record.\n";
       }
     }
-    
+
     if (!chain.empty()) {
       pkey = X509_get_pubkey(chain[0]._cert);
     }
-    
+
     if (pkey != NULL) {
       EVP_MD_CTX *md_ctx;
 #ifdef SSL_097
@@ -2749,11 +2749,11 @@ check_signatures() {
       md_ctx = new EVP_MD_CTX;
 #endif
       EVP_VerifyInit(md_ctx, EVP_sha1());
-      
+
       nassertv(_read != NULL);
       _read->acquire();
       istream *read = _read->get_istream();
-      
+
       // Read and hash the multifile contents, but only up till
       // _last_data_byte.
       read->seekg(_offset);
@@ -2771,11 +2771,11 @@ check_signatures() {
       }
       nassertv(bytes_remaining == (streampos)0);
       _read->release();
-      
+
       // Now check that the signature matches the hash.
-      int verify_result = 
-        EVP_VerifyFinal(md_ctx, 
-                        (unsigned char *)sig_string.data(), 
+      int verify_result =
+        EVP_VerifyFinal(md_ctx,
+                        (unsigned char *)sig_string.data(),
                         sig_string.size(), pkey);
       if (verify_result == 1) {
         // The signature matches; save the certificate and its chain.
@@ -2822,7 +2822,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
 
   _index_start = fpos;
   _index_length = 0;
-  
+
   _data_start = multifile->word_to_streampos(reader.get_uint32());
   _data_length = reader.get_uint32();
   _flags = reader.get_uint16();
@@ -2908,7 +2908,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   size_t this_index_size = 4 + dg.get_length();
 
   // Plus, we will write out the next index address first.
-  streampos next_index = fpos + (streampos)this_index_size; 
+  streampos next_index = fpos + (streampos)this_index_size;
 
   Datagram idg;
   idg.add_uint32(multifile->streampos_to_word(next_index));
@@ -3086,7 +3086,7 @@ write_data(ostream &write, istream *read, streampos fpos,
       _uncompressed_length += 4 + sig_size;
 
       delete[] sig_data;
-      
+
 #ifdef SSL_097
       EVP_MD_CTX_destroy(md_ctx);
 #else
@@ -3098,7 +3098,7 @@ write_data(ostream &write, istream *read, streampos fpos,
     // Finally, we can write out the data itself.
     static const size_t buffer_size = 4096;
     char buffer[buffer_size];
-    
+
     source->read(buffer, buffer_size);
     size_t count = source->gcount();
     while (count != 0) {
@@ -3183,7 +3183,7 @@ rewrite_index_flags(ostream &write) {
     size_t flags_pos = _index_start + (streampos)flags_offset;
     write.seekp(flags_pos);
     nassertv(!write.fail());
-    
+
     StreamWriter writer(write);
     writer.add_uint16(_flags);
   }

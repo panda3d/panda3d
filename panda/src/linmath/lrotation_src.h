@@ -12,20 +12,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : LRotation
 // Description : This is a unit quaternion representing a rotation.
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation)();
-  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &c);
   INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
-  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LVector3) &, FLOATTYPE);
-  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &);
-  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &);
-  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &m);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m);
+  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r);
 
   INLINE_LINMATH FLOATNAME(LRotation) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LRotation) operator / (FLOATTYPE scalar) const;

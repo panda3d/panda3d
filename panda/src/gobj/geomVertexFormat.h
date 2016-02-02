@@ -71,27 +71,29 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexFormat *format);
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexArrayFormat *format);
+  MAKE_PROPERTY(registered, is_registered);
 
   INLINE const GeomVertexAnimationSpec &get_animation() const;
   INLINE void set_animation(const GeomVertexAnimationSpec &animation);
+  MAKE_PROPERTY(animation, get_animation, set_animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
   CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;
 
-  INLINE int get_num_arrays() const;
-  INLINE const GeomVertexArrayFormat *get_array(int array) const;
+  INLINE size_t get_num_arrays() const;
+  INLINE const GeomVertexArrayFormat *get_array(size_t array) const;
   MAKE_SEQ(get_arrays, get_num_arrays, get_array);
-  GeomVertexArrayFormat *modify_array(int array);
-  void set_array(int array, const GeomVertexArrayFormat *format);
-  void remove_array(int array);
-  int add_array(const GeomVertexArrayFormat *array_format);
-  void insert_array(int array, const GeomVertexArrayFormat *array_format);
+  GeomVertexArrayFormat *modify_array(size_t array);
+  void set_array(size_t array, const GeomVertexArrayFormat *format);
+  void remove_array(size_t array);
+  size_t add_array(const GeomVertexArrayFormat *array_format);
+  void insert_array(size_t array, const GeomVertexArrayFormat *array_format);
   void clear_arrays();
   void remove_empty_arrays();
 
-  int get_num_columns() const;
-  int get_array_with(int i) const;
-  const GeomVertexColumn *get_column(int i) const;
+  size_t get_num_columns() const;
+  int get_array_with(size_t i) const;
+  const GeomVertexColumn *get_column(size_t i) const;
 
   int get_array_with(const InternalName *name) const;
   const GeomVertexColumn *get_column(const InternalName *name) const;
@@ -104,22 +106,22 @@ PUBLISHED:
   void align_columns_for_animation();
   void maybe_align_columns_for_animation();
 
-  INLINE int get_num_points() const;
-  INLINE const InternalName *get_point(int n) const;
+  INLINE size_t get_num_points() const;
+  INLINE const InternalName *get_point(size_t n) const;
   MAKE_SEQ(get_points, get_num_points, get_point);
 
-  INLINE int get_num_vectors() const;
-  INLINE const InternalName *get_vector(int n) const;
+  INLINE size_t get_num_vectors() const;
+  INLINE const InternalName *get_vector(size_t n) const;
   MAKE_SEQ(get_vectors, get_num_vectors, get_vector);
 
-  INLINE int get_num_texcoords() const;
-  INLINE const InternalName *get_texcoord(int n) const;
+  INLINE size_t get_num_texcoords() const;
+  INLINE const InternalName *get_texcoord(size_t n) const;
   MAKE_SEQ(get_texcoords, get_num_texcoords, get_texcoord);
 
-  INLINE int get_num_morphs() const;
-  INLINE const InternalName *get_morph_slider(int n) const;
-  INLINE const InternalName *get_morph_base(int n) const;
-  INLINE const InternalName *get_morph_delta(int n) const;
+  INLINE size_t get_num_morphs() const;
+  INLINE const InternalName *get_morph_slider(size_t n) const;
+  INLINE const InternalName *get_morph_base(size_t n) const;
+  INLINE const InternalName *get_morph_delta(size_t n) const;
   MAKE_SEQ(get_morph_sliders, get_num_morphs, get_morph_slider);
   MAKE_SEQ(get_morph_bases, get_num_morphs, get_morph_base);
   MAKE_SEQ(get_morph_deltas, get_num_morphs, get_morph_delta);

@@ -52,6 +52,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPSimpleType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPSimpleType::
+is_default_constructible() const {
+  return (_type != T_void);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPSimpleType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPSimpleType::
+is_copy_constructible() const {
+  return (_type != T_void);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter
@@ -150,8 +170,16 @@ output(ostream &out, int, CPPScope *, bool) const {
     out << "void";
     break;
 
+  case T_nullptr:
+    out << "decltype(nullptr)";
+    break;
+
   case T_parameter:
     out << "parameter";
+    break;
+
+  case T_auto:
+    out << "auto";
     break;
 
   default:

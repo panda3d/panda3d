@@ -15,9 +15,9 @@
 #include "orientedParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : OrientedParticle
-//      Access : public
-// Description : simple constructor
+//     Function: OrientedParticle
+//       Access: Public
+//  Description: simple constructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticle::
 OrientedParticle(int lifespan, bool alive) :
@@ -26,9 +26,9 @@ OrientedParticle(int lifespan, bool alive) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : OrientedParticle
-//      Access : public
-// Description : copy constructor
+//     Function: OrientedParticle
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticle::
 OrientedParticle(const OrientedParticle &copy) :
@@ -36,18 +36,18 @@ OrientedParticle(const OrientedParticle &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~OrientedParticle
-//      Access : public
-// Description : simple destructor
+//     Function: ~OrientedParticle
+//       Access: Public
+//  Description: simple destructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticle::
 ~OrientedParticle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : public, virtual
-// Description : simple destructor
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: simple destructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *OrientedParticle::
 make_copy() const {
@@ -55,27 +55,27 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init
-//      Access : Public
-// Description : particle init routine
+//     Function: init
+//       Access: Public
+//  Description: particle init routine
 ////////////////////////////////////////////////////////////////////
 void OrientedParticle::
 init() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : die
-//      Access : public
-// Description : particle death routine
+//     Function: die
+//       Access: Public
+//  Description: particle death routine
 ////////////////////////////////////////////////////////////////////
 void OrientedParticle::
 die() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : update
-//      Access : public
-// Description : particle update routine.
+//     Function: update
+//       Access: Public
+//  Description: particle update routine.
 //               This NEEDS to be filled in with quaternion slerp
 //               stuff, or oriented particles will not rotate.
 ////////////////////////////////////////////////////////////////////
@@ -84,10 +84,10 @@ update() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void OrientedParticle::
 output(ostream &out) const {
@@ -97,10 +97,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void OrientedParticle::
 write(ostream &out, int indent) const {

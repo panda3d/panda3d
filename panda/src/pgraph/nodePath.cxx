@@ -71,7 +71,6 @@
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 #include "modelNode.h"
-#include "py_panda.h"
 #include "bam.h"
 #include "bamWriter.h"
 
@@ -82,68 +81,6 @@ TypeHandle NodePath::_type_handle;
 
 PStatCollector NodePath::_get_transform_pcollector("*:NodePath:get_transform");
 PStatCollector NodePath::_verify_complete_pcollector("*:NodePath:verify_complete");
-
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#ifndef CPPPARSER
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamWriter;
-extern EXPCL_PANDA_PUTIL Dtool_PyTypedObject Dtool_BamReader;
-#endif  // CPPPARSER
-#endif  // HAVE_PYTHON
-
-// ***Begin temporary transition code for operator bool
-enum EmptyNodePathType {
-  ENP_future,
-  ENP_transition,
-  ENP_deprecated,
-  ENP_notify,
-};
-
-ostream &operator << (ostream &out, EmptyNodePathType enp) {
-  switch (enp) {
-  case ENP_future:
-    return out << "future";
-  case ENP_transition:
-    return out << "transition";
-  case ENP_deprecated:
-    return out << "deprecated";
-  case ENP_notify:
-    return out << "notify";
-  }
-  return out << "**invalid EmptyNodePathType value (" << (int)enp << ")**";
-}
-
-istream &operator >> (istream &in, EmptyNodePathType &enp) {
-  string word;
-  in >> word;
-  if (word == "future") {
-    enp = ENP_future;
-  } else if (word == "transition") {
-    enp = ENP_transition;
-  } else if (word == "deprecated") {
-    enp = ENP_deprecated;
-  } else if (word == "notify") {
-    enp = ENP_notify;
-  } else {
-    pgraph_cat.warning()
-      << "Invalid EmptyNodePathType value (\"" << word << "\")\n";
-    enp = ENP_transition;
-  }
-  return in;
-}
-
-static ConfigVariableEnum<EmptyNodePathType> empty_node_path
-("empty-node-path", ENP_future,
- PRC_DESC("This is a temporary transition variable to control the behavior "
-          "of a NodePath when it is used as a boolean false.  Set this to "
-          "'deprecated' to preserve the original behavior: every NodePath "
-          "evaluates true, even an empty NodePath.  Set it to 'future' to "
-          "support the new behavior: non-empty NodePaths evaluate true, "
-          "and empty NodePaths evaluate false.  Set it to 'transition' to "
-          "raise an exception if an empty NodePath is used as a boolean."));
-
-// ***End temporary transition code for operator bool
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
@@ -185,41 +122,7 @@ NodePath(const NodePath &parent, PandaNode *child_node,
 ////////////////////////////////////////////////////////////////////
 NodePath::
 operator bool () const {
-  switch (empty_node_path) {
-  case ENP_future:
-    return !is_empty();
-
-  case ENP_deprecated:
-    return true;
-
-  case ENP_notify:
-    {
-      const char *msg = "NodePath being used as a Boolean (talk to Zac)";
-#ifdef HAVE_PYTHON
-      PyErr_Warn(PyExc_FutureWarning, (char *)msg);
-#endif
-      return !is_empty();
-    }
-
-
-  case ENP_transition:
-    if (!is_empty()) {
-      return true;
-    }
-
-    {
-      const char *message = "Using an empty NodePath as a boolean value.  Because the meaning of this operation is changing, you should avoid doing this to avoid ambiguity, or set the config variable empty-node-path to 'future' or 'deprecated' to specify the desired behavior.";
-      pgraph_cat.warning()
-        << message << "\n";
-#ifdef HAVE_PYTHON
-      PyErr_Warn(PyExc_FutureWarning, (char *)message);
-#endif
-    }
-    return true;
-  }
-
-  nassertr(false, true);
-  return true;
+  return !is_empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -808,6 +711,23 @@ detach_node(Thread *current_thread) {
     int pipeline_stage = current_thread->get_pipeline_stage();
     PandaNode::detach(_head, pipeline_stage, current_thread);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::reverse_ls
+//       Access: Published
+//  Description: Lists the hierarchy at and above the referenced node.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+reverse_ls(ostream &out, int indent_level) const {
+  if (is_empty()) {
+    out << "(empty)\n";
+    return 0;
+  } else if (has_parent()) {
+    indent_level = get_parent().reverse_ls(out, indent_level);
+  }
+  node()->write(out, indent_level);
+  return indent_level + 2;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4803,7 +4723,7 @@ has_material() const {
 //               applied to the geometry at or below this level, as
 //               another material at a higher or lower level may
 //               override.
-
+//
 //               See also find_material().
 ////////////////////////////////////////////////////////////////////
 PT(Material) NodePath::
@@ -4940,9 +4860,9 @@ get_fog() const {
 void NodePath::
 set_render_mode_wireframe(int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, rma->get_thickness(), rma->get_perspective()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4955,9 +4875,9 @@ set_render_mode_wireframe(int priority) {
 void NodePath::
 set_render_mode_filled(int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, rma->get_thickness(), rma->get_perspective()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4971,9 +4891,9 @@ set_render_mode_filled(int priority) {
 void NodePath::
 set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
   nassertv_always(!is_empty());
-  PN_stdfloat thickness = get_render_mode_thickness();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, thickness, perspective, wireframe_color), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_wireframe, rma->get_thickness(), rma->get_perspective(), wireframe_color), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4994,9 +4914,9 @@ set_render_mode_filled_wireframe(const LColor &wireframe_color, int priority) {
 void NodePath::
 set_render_mode_perspective(bool perspective, int priority) {
   nassertv_always(!is_empty());
-  RenderModeAttrib::Mode mode = get_render_mode();
-  PN_stdfloat thickness = get_render_mode_thickness();
-  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(rma->get_mode(), rma->get_thickness(), perspective, rma->get_wireframe_color()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5015,9 +4935,9 @@ set_render_mode_perspective(bool perspective, int priority) {
 void NodePath::
 set_render_mode_thickness(PN_stdfloat thickness, int priority) {
   nassertv_always(!is_empty());
-  RenderModeAttrib::Mode mode = get_render_mode();
-  bool perspective = get_render_mode_perspective();
-  node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
+  const RenderModeAttrib *rma;
+  node()->get_state()->get_attrib_def(rma);
+  node()->set_attrib(RenderModeAttrib::make(rma->get_mode(), thickness, rma->get_perspective(), rma->get_wireframe_color()), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6191,20 +6111,32 @@ write_bounds(ostream &out) const {
 //               than the bounding volume returned by get_bounds()
 //               (but it is more expensive to compute).
 //
+//               The bounding box is computed relative to the parent
+//               node's coordinate system by default.  You can
+//               optionally specify a different NodePath to compute
+//               the bounds relative to.  Note that the box is always
+//               axis-aligned against the given NodePath's coordinate
+//               system, so you might get a differently sized box
+//               depending on which node you pass.
+//
 //               The return value is true if any points are within the
 //               bounding volume, or false if none are.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  Thread *current_thread) const {
+                  const NodePath &other, Thread *current_thread) const {
   min_point.set(0.0f, 0.0f, 0.0f);
   max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
 
+  CPT(TransformState) transform = TransformState::make_identity();
+  if (!other.is_empty()) {
+    transform = get_transform(other)->compose(get_transform()->get_inverse());
+  }
+
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            TransformState::make_identity(),
-                            current_thread);
+                            MOVE(transform), current_thread);
 
   return found_any;
 }
@@ -6413,6 +6345,10 @@ write_bam_file(const Filename &filename) const {
   bool okflag = false;
 
   if (bam_file.open_write(filename)) {
+    // Tell the BamWriter which node is the root node, for making
+    // NodePaths relative to when writing them out to the file.
+    bam_file.get_writer()->set_root_node(node());
+
     if (bam_file.write_object(node())) {
       okflag = true;
     }
@@ -6436,6 +6372,10 @@ write_bam_stream(ostream &out) const {
   bool okflag = false;
 
   if (bam_file.open_write(out)) {
+    // Tell the BamWriter which node is the root node, for making
+    // NodePaths relative to when writing them out to the file.
+    bam_file.get_writer()->set_root_node(node());
+
     if (bam_file.write_object(node())) {
       okflag = true;
     }
@@ -6501,6 +6441,10 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
     // In this case--no BamWriter--we only write the bottom node.
     num_nodes = 1;
   }
+
+  // Tell the BamWriter which node is the root node, for making
+  // NodePaths relative to when writing them out to the file.
+  writer->set_root_node(node());
 
   // Write an initial Datagram to represent the error type and
   // number of nodes.
@@ -7519,3 +7463,125 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  PandaNode *root = DCAST(PandaNode, manager->get_root_node());
+
+  // We have no root node to measure from.
+  if (root == (PandaNode *)NULL || root == node()) {
+    manager->write_pointer(dg, node());
+    manager->write_pointer(dg, NULL);
+    return;
+  }
+
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  // Record the chain of nodes from the root to this node.
+  pvector<PandaNode *> path;
+  NodePathComponent *comp = _head;
+  while (comp != NULL) {
+    PandaNode *node = comp->get_node();
+    path.push_back(node);
+
+    if (node == root) {
+      break;
+    }
+
+    comp = comp->get_next(pipeline_stage, current_thread);
+  }
+
+  if (comp == (NodePathComponent *)NULL) {
+    // We did not encounter the root node.  Not much we can do.
+    manager->write_pointer(dg, node());
+    manager->write_pointer(dg, NULL);
+    return;
+  }
+
+  // Write out the nodes in reverse order, for fast reconstructing.
+  for (int i = path.size() - 1; i >= 0; --i) {
+    manager->write_pointer(dg, path[i]);
+  }
+  manager->write_pointer(dg, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::complete_pointers
+//       Access: Public
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = 0;
+  PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
+  if (node.is_null()) {
+    // An empty NodePath.
+    _head = (NodePathComponent *)NULL;
+    return pi;
+  }
+
+  Thread *current_thread = Thread::get_current_thread();
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  // Take an arbitrary path to the root of the NodePath.  This probably
+  // won't be ambiguous, as this is usually the root of the model or scene
+  // we are currently loading.
+  PT(NodePathComponent) comp = node->get_generic_component(false, pipeline_stage, current_thread);
+  nassertd(!comp.is_null()) {
+    while (p_list[pi++]) {}
+    return pi;
+  }
+
+  // Build up the chain of NodePathComponents leading up to this node.
+  while (p_list[pi] != NULL) {
+    PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
+
+    LightReMutexHolder holder(node->_paths_lock);
+
+    // First, walk through the list of NodePathComponents we already
+    // have on the child, looking for one that already exists,
+    // referencing the indicated parent component.
+    PandaNode::Paths::const_iterator it;
+    for (it = node->_paths.begin(); it != node->_paths.end(); ++it) {
+      if ((*it)->get_next(pipeline_stage, current_thread) == comp) {
+        // If we already have such a component, use that.
+        comp = (*it);
+        break;
+      }
+    }
+
+    if (it == node->_paths.end()) {
+      // We don't already have a NodePathComponent referring to this
+      // parent-child relationship.  Create a new one.  Note that we can't
+      // verify that they are actually related because we may not have
+      // completed the node's pointers yet, so we trust that the .bam is right.
+      comp = new NodePathComponent(node, comp, pipeline_stage, current_thread);
+      node->_paths.insert(comp);
+    }
+  }
+  // One more for the final NULL node.
+  ++pi;
+
+  _head = comp;
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  while(manager->read_pointer(scan)) {};
+}

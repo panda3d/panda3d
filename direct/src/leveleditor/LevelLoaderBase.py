@@ -20,7 +20,7 @@ class LevelLoaderBase:
         del base.objectPalette
         del base.protoPalette
         del base.objectHandler
-        del base.objectMgr        
+        del base.objectMgr
 
     def loadFromFile(self, fileName, filePath=None):
         if filePath is None:
@@ -34,4 +34,4 @@ class LevelLoaderBase:
             return True
         except:
             print 'failed to load %s'%fileName
-            return None        
+            return None

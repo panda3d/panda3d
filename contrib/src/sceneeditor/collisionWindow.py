@@ -32,12 +32,12 @@ class collisionWindow(AppShell):
                      'collisionSphere',
                      'collisionSegment',
                      'collisionRay']
-    
+
     def __init__(self, nodePath, parent = None, **kw):
-        
+
         self.nodePath = nodePath
         self.objType = 'collisionSphere' # set default type to Collision Sphere
-        
+
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',               self.appname,       None),
@@ -77,7 +77,7 @@ class collisionWindow(AppShell):
 
         frame.pack(side=TOP, fill=X, expand=True, padx=3)
         self.collisionTypeEntry.selectitem('collisionSphere', setentry=True)
-        
+
         self.inputZone = Pmw.Group(mainFrame, tag_pyclass = None)
         self.inputZone.pack(fill='both',expand=1)
         settingFrame = self.inputZone.interior()
@@ -101,7 +101,7 @@ class collisionWindow(AppShell):
         label = Label(Interior, text='Attention! All Coordinates Are Related To Its Parent Node!')
         label.pack(side=LEFT,expand=0,fill=X, padx=1)
         Interior.pack(side=TOP, expand=0,fill=X)
-        
+
         self.createPosEntry(PolygonPage, catagory='Polygon', id='Point A')
         self.createPosEntry(PolygonPage, catagory='Polygon', id='Point B')
         self.createPosEntry(PolygonPage, catagory='Polygon', id='Point C')
@@ -112,7 +112,7 @@ class collisionWindow(AppShell):
         label = Label(Interior, text='Attention! All Coordinates Are Related To Its Parent Node!')
         label.pack(side=LEFT,expand=0,fill=X, padx=1)
         Interior.pack(side=TOP, expand=0,fill=X)
-        
+
         self.createPosEntry(SpherePage, catagory='Sphere', id='Center Point')
 
         self.createEntryField(SpherePage,catagory='Sphere', id='Size',
@@ -127,7 +127,7 @@ class collisionWindow(AppShell):
         label = Label(Interior, text='Attention! All Coordinates Are Related To Its Parent Node!')
         label.pack(side=LEFT,expand=0,fill=X, padx=1)
         Interior.pack(side=TOP, expand=0,fill=X)
-        
+
         self.createPosEntry(SegmentPage, catagory='Segment', id='Point A')
         self.createPosEntry(SegmentPage, catagory='Segment', id='Point B')
 
@@ -137,12 +137,12 @@ class collisionWindow(AppShell):
         label = Label(Interior, text='Attention! All Coordinates Are Related To Its Parent Node!')
         label.pack(side=LEFT,expand=0,fill=X, padx=1)
         Interior.pack(side=TOP, expand=0,fill=X)
-        
+
         self.createPosEntry(RayPage, catagory='Ray', id='Origin')
         self.createPosEntry(RayPage, catagory='Ray', id='Direction')
 
 
-           
+
         self.objNotebook.setnaturalsize()
         self.objNotebook.pack(expand = 1, fill = BOTH)
 
@@ -175,7 +175,7 @@ class collisionWindow(AppShell):
             self.objNotebook.selectpage('Segment')
         elif self.objType=='collisionRay':
             self.objNotebook.selectpage('Ray')
-            
+
         return
 
     def updateObjInfo(self, page=None):
@@ -207,13 +207,13 @@ class collisionWindow(AppShell):
                              float(self.widgetDict['PolygonPoint C'][1]._entry.get()),
                              float(self.widgetDict['PolygonPoint C'][2]._entry.get()))
             collisionObject = CollisionPolygon(pointA, pointB, pointC)
-            
+
         elif self.objType=='collisionSphere':
             collisionObject = CollisionSphere(float(self.widgetDict['SphereCenter Point'][0]._entry.get()),
                                               float(self.widgetDict['SphereCenter Point'][1]._entry.get()),
                                               float(self.widgetDict['SphereCenter Point'][2]._entry.get()),
                                               float(self.widgetDict['SphereSize'].getvalue()))
-        
+
         elif self.objType=='collisionSegment':
             pointA =  Point3(float(self.widgetDict['SegmentPoint A'][0]._entry.get()),
                              float(self.widgetDict['SegmentPoint A'][1]._entry.get()),
@@ -221,35 +221,35 @@ class collisionWindow(AppShell):
             pointB =  Point3(float(self.widgetDict['SegmentPoint B'][0]._entry.get()),
                              float(self.widgetDict['SegmentPoint B'][1]._entry.get()),
                              float(self.widgetDict['SegmentPoint B'][2]._entry.get()))
-            
+
             collisionObject = CollisionSegment()
             collisionObject.setPointA(pointA)
             collisionObject.setFromLens(base.cam.node(), Point2( -1, 1 ))  ## You must set up the camera lensNode before you set point B....
             collisionObject.setPointB(pointB)
-        
+
         elif self.objType=='collisionRay':
             point =  Point3(float(self.widgetDict['RayOrigin'][0]._entry.get()),
                             float(self.widgetDict['RayOrigin'][1]._entry.get()),
                             float(self.widgetDict['RayOrigin'][2]._entry.get()))
-            
+
             vector =  Vec3(float(self.widgetDict['RayDirection'][0]._entry.get()),
                            float(self.widgetDict['RayDirection'][1]._entry.get()),
                            float(self.widgetDict['RayDirection'][2]._entry.get()))
 
             print vector, point
-            
+
             collisionObject = CollisionRay()
             collisionObject.setOrigin(point)
             collisionObject.setDirection(vector)
             #collisionObject.setFromLens(base.cam.node(), Point2( -1, 1 ))  ## You must set up the camera lensNode before you set up others...
-            
+
         if self.objType=='collisionPolygon':
             messenger.send('CW_addCollisionObj', [collisionObject, self.nodePath, pointA, pointB, pointC])
         else:
             messenger.send('CW_addCollisionObj', [collisionObject, self.nodePath])
 
         self.quit()
-        
+
         return
 
     def createPosEntry(self, contentFrame, catagory, id):
@@ -261,16 +261,16 @@ class collisionWindow(AppShell):
                                          text = 'X', relief = FLAT,
                                          value = 0.0,
                                          entry_width = 6)
-        
+
         self.posX.pack(side=LEFT,expand=0,fill=X, padx=1)
-        
+
         self.posY = self.createcomponent('posY'+catagory+id, (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Y', relief = FLAT,
                                          value = 0.0,
                                          entry_width = 6)
         self.posY.pack(side=LEFT, expand=0,fill=X, padx=1)
-        
+
         self.posZ = self.createcomponent('posZ'+catagory+id, (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Z', relief = FLAT,
@@ -298,5 +298,5 @@ class collisionWindow(AppShell):
             widget = Button(frame, text=buttonText, font=('MSSansSerif', 10), command = defaultFunction)
             widget.pack(side=LEFT, padx=3)
             self.widgetDict[catagory+id+'-'+'DefaultButton']=widget
-            
+
         frame.pack(side = side, fill = fill, expand = expand,pady=3)

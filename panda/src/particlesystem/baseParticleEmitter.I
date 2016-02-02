@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_emission_type
-//      Access : Public
-// Description : emission type assignment
+//     Function: set_emission_type
+//       Access: Public
+//  Description: emission type assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_emission_type(emissionType et) {
@@ -23,9 +23,9 @@ set_emission_type(emissionType et) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_emission_type
-//      Access : Public
-// Description : emission type query
+//     Function: get_emission_type
+//       Access: Public
+//  Description: emission type query
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleEmitter::emissionType BaseParticleEmitter::
 get_emission_type() const {
@@ -33,9 +33,9 @@ get_emission_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_explicit_launch_vector
-//      Access : Public
-// Description : assignment of explicit emission launch vector
+//     Function: set_explicit_launch_vector
+//       Access: Public
+//  Description: assignment of explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_explicit_launch_vector(const LVector3& elv) {
@@ -43,9 +43,9 @@ set_explicit_launch_vector(const LVector3& elv) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_explicit_launch_vector
-//      Access : Public
-// Description : query for explicit emission launch vector
+//     Function: get_explicit_launch_vector
+//       Access: Public
+//  Description: query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 BaseParticleEmitter::
 get_explicit_launch_vector() const {
@@ -53,9 +53,9 @@ get_explicit_launch_vector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radiate_origin
-//      Access : Public
-// Description : assignment of radiate emission origin point
+//     Function: set_radiate_origin
+//       Access: Public
+//  Description: assignment of radiate emission origin point
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_radiate_origin(const LPoint3& ro) {
@@ -63,9 +63,9 @@ set_radiate_origin(const LPoint3& ro) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radiate_origin
-//      Access : Public
-// Description : query for explicit emission launch vector
+//     Function: get_radiate_origin
+//       Access: Public
+//  Description: query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 BaseParticleEmitter::
 get_radiate_origin() const {
@@ -73,9 +73,9 @@ get_radiate_origin() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_amplitude
-//      Access : Public
-// Description : amplitude assignment
+//     Function: set_amplitude
+//       Access: Public
+//  Description: amplitude assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_amplitude(PN_stdfloat a) {
@@ -83,9 +83,9 @@ set_amplitude(PN_stdfloat a) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_amplitude
-//      Access : Public
-// Description : amplitude query
+//     Function: get_amplitude
+//       Access: Public
+//  Description: amplitude query
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleEmitter::
 get_amplitude() const {
@@ -93,9 +93,9 @@ get_amplitude() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_amplitude_spread
-//      Access : Public
-// Description : amplitude spread assignment
+//     Function: set_amplitude_spread
+//       Access: Public
+//  Description: amplitude spread assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_amplitude_spread(PN_stdfloat as) {
@@ -103,9 +103,9 @@ set_amplitude_spread(PN_stdfloat as) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_amplitude_spread
-//      Access : Public
-// Description : amplitude spread query
+//     Function: get_amplitude_spread
+//       Access: Public
+//  Description: amplitude spread query
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleEmitter::
 get_amplitude_spread() const {
@@ -113,9 +113,9 @@ get_amplitude_spread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_offset_force
-//      Access : Public
-// Description : user-defined force
+//     Function: set_offset_force
+//       Access: Public
+//  Description: user-defined force
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
 set_offset_force(const LVector3& of) {
@@ -123,9 +123,9 @@ set_offset_force(const LVector3& of) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_offset_force
-//      Access : Public
-// Description : user-defined force
+//     Function: get_offset_force
+//       Access: Public
+//  Description: user-defined force
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 BaseParticleEmitter::
 get_offset_force() const {

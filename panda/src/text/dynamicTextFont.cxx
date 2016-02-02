@@ -40,10 +40,10 @@
 #include "renderState.h"
 #include "string_utils.h"
 #include "triangulator.h"
-#include "nurbsCurveEvaluator.h"
-#include "nurbsCurveResult.h"
 //#include "renderModeAttrib.h"
 //#include "antialiasAttrib.h"
+#include "colorAttrib.h"
+#include "textureAttrib.h"
 
 TypeHandle DynamicTextFont::_type_handle;
 
@@ -110,13 +110,11 @@ DynamicTextFont(const DynamicTextFont &copy) :
   FreetypeFont(copy),
   _texture_margin(copy._texture_margin),
   _poly_margin(copy._poly_margin),
-  _page_x_size(copy._page_x_size),
-  _page_y_size(copy._page_y_size),
+  _page_size(copy._page_size),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
   _anisotropic_degree(copy._anisotropic_degree),
   _render_mode(copy._render_mode),
-  _winding_order(copy._winding_order),
   _fg(copy._fg),
   _bg(copy._bg),
   _outline_color(copy._outline_color),
@@ -194,8 +192,8 @@ garbage_collect() {
   Cache new_cache;
   Cache::iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
-    DynamicTextGlyph *glyph = (*ci).second;
-    if (glyph == (DynamicTextGlyph *)NULL || glyph->_geom_count != 0) {
+    const TextGlyph *glyph = (*ci).second;
+    if (glyph == (TextGlyph *)NULL || glyph->get_ref_count() > 1) {
       // Keep this one.
       new_cache.insert(new_cache.end(), (*ci));
     } else {
@@ -252,7 +250,7 @@ write(ostream &out, int indent_level) const {
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     int glyph_index = (*ci).first;
-    DynamicTextGlyph *glyph = (*ci).second;
+    const TextGlyph *glyph = (*ci).second;
     indent(out, indent_level + 2) 
       << glyph_index;
 
@@ -269,7 +267,7 @@ write(ostream &out, int indent_level) const {
     }
     release_face(face);
 
-    out << ", count = " << glyph->_geom_count << "\n";
+    out << '\n';
   }
 }
 
@@ -285,7 +283,7 @@ write(ostream &out, int indent_level) const {
 //               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool DynamicTextFont::
-get_glyph(int character, const TextGlyph *&glyph) {
+get_glyph(int character, CPT(TextGlyph) &glyph) {
   if (!_is_valid) {
     glyph = (TextGlyph *)NULL;
     return false;
@@ -302,16 +300,15 @@ get_glyph(int character, const TextGlyph *&glyph) {
   if (ci != _cache.end()) {
     glyph = (*ci).second;
   } else {
-    DynamicTextGlyph *dynamic_glyph = make_glyph(character, face, glyph_index);
-    _cache.insert(Cache::value_type(glyph_index, dynamic_glyph));
-    glyph = dynamic_glyph;
+    glyph = make_glyph(character, face, glyph_index);
+    _cache.insert(Cache::value_type(glyph_index, glyph.p()));
   }
 
-  if (glyph == (DynamicTextGlyph *)NULL) {
+  if (glyph.is_null()) {
     glyph = get_invalid_glyph();
     glyph_index = 0;
   }
-    
+
   release_face(face);
   return (glyph_index != 0);
 }
@@ -327,8 +324,7 @@ void DynamicTextFont::
 initialize() {
   _texture_margin = text_texture_margin;
   _poly_margin = text_poly_margin;
-  _page_x_size = text_page_size[0];
-  _page_y_size = text_page_size[1];
+  _page_size.set(text_page_size[0], text_page_size[1]);
 
   // We don't necessarily want to use mipmaps, since we don't want to
   // regenerate those every time the texture changes, but we probably
@@ -442,10 +438,10 @@ determine_tex_format() {
 //               newly-created TextGlyph object, or NULL if the
 //               glyph cannot be created for some reason.
 ////////////////////////////////////////////////////////////////////
-DynamicTextGlyph *DynamicTextFont::
+CPT(TextGlyph) DynamicTextFont::
 make_glyph(int character, FT_Face face, int glyph_index) {
   if (!load_glyph(face, glyph_index, false)) {
-    return (DynamicTextGlyph *)NULL;
+    return (TextGlyph *)NULL;
   }
 
   FT_GlyphSlot slot = face->glyph;
@@ -461,6 +457,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   }
 
   PN_stdfloat advance = slot->advance.x / 64.0;
+  advance /= _font_pixels_per_unit;
 
   if (_render_mode != RM_texture && 
       slot->format == ft_glyph_format_outline) {
@@ -489,39 +486,10 @@ make_glyph(int character, FT_Face face, int glyph_index) {
 
     // Ask FreeType to extract the contours out of the outline
     // description.
-    FT_Outline_Funcs funcs;
-    memset(&funcs, 0, sizeof(funcs));
-    funcs.move_to = (FT_Outline_MoveTo_Func)outline_move_to;
-    funcs.line_to = (FT_Outline_LineTo_Func)outline_line_to;
-    funcs.conic_to = (FT_Outline_ConicTo_Func)outline_conic_to;
-    funcs.cubic_to = (FT_Outline_CubicTo_Func)outline_cubic_to;
+    decompose_outline(slot->outline);
 
-    WindingOrder wo = _winding_order;
-    if (wo == WO_default) {
-      // If we weren't told an explicit winding order, ask FreeType to
-      // figure it out.  Sometimes it appears to guess wrong.
-#ifdef FT_ORIENTATION_FILL_RIGHT
-      if (FT_Outline_Get_Orientation(&slot->outline) == FT_ORIENTATION_FILL_RIGHT) {
-        wo = WO_right;
-      } else {
-        wo = WO_left;
-      }
-#else
-      // Hmm.  Assign a right-winding (TTF) orientation if FreeType
-      // can't tell us.
-      wo = WO_right;
-#endif  // FT_ORIENTATION_FILL_RIGHT
-    }
-
-    if (wo != WO_left) {
-      FT_Outline_Reverse(&slot->outline);
-    }
-
-    _contours.clear();
-    FT_Outline_Decompose(&slot->outline, &funcs, (void *)this);
-
-    PT(DynamicTextGlyph) glyph = 
-      new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
+    PT(TextGlyph) glyph =
+      new TextGlyph(character, advance);
     switch (_render_mode) {
     case RM_wireframe:
       render_wireframe_contours(glyph);
@@ -540,38 +508,86 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       return glyph;
 
     case RM_texture:
+    case RM_distance_field:
     default:
       break;
     }
   }
 
-  // Render the glyph if necessary.
-  if (slot->format != ft_glyph_format_bitmap) {
-    FT_Render_Glyph(slot, ft_render_mode_normal);
+  PN_stdfloat tex_x_size, tex_y_size, tex_x_orig, tex_y_orig;
+  FT_BBox bounds;
+  TransparencyAttrib::Mode alpha_mode;
+
+  if (_render_mode == RM_texture) {
+    // Render the glyph if necessary.
+    if (slot->format != ft_glyph_format_bitmap) {
+      FT_Render_Glyph(slot, ft_render_mode_normal);
+    }
+
+    tex_x_size = bitmap.width;
+    tex_y_size = bitmap.rows;
+    tex_x_orig = slot->bitmap_left;
+    tex_y_orig = slot->bitmap_top;
+    alpha_mode = TransparencyAttrib::M_alpha;
+
+  } else {
+    // Calculate suitable texture dimensions for the signed distance field.
+    // This is the same calculation that Freetype uses in its bitmap renderer.
+    FT_Outline_Get_CBox(&slot->outline, &bounds);
+
+    bounds.xMin = bounds.xMin & ~63;
+    bounds.yMin = bounds.yMin & ~63;
+    bounds.xMax = (bounds.xMax + 63) & ~63;
+    bounds.yMax = (bounds.yMax + 63) & ~63;
+
+    tex_x_size = (bounds.xMax - bounds.xMin) >> 6;
+    tex_y_size = (bounds.yMax - bounds.yMin) >> 6;
+    tex_x_orig = (bounds.xMin >> 6);
+    tex_y_orig = (bounds.yMax >> 6);
+    alpha_mode = TransparencyAttrib::M_binary;
   }
 
-  if (bitmap.width == 0 || bitmap.rows == 0) {
+  if (tex_x_size == 0 || tex_y_size == 0) {
     // If we got an empty bitmap, it's a special case.
 
-    PT(DynamicTextGlyph) glyph = 
-      new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
+    PT(TextGlyph) glyph =
+      new DynamicTextGlyph(character, advance);
     _empty_glyphs.push_back(glyph);
     return glyph;
 
   } else {
     DynamicTextGlyph *glyph;
 
-    PN_stdfloat tex_x_size = bitmap.width;
-    PN_stdfloat tex_y_size = bitmap.rows;
-
     int outline = 0;
 
-    if (_tex_pixels_per_unit == _font_pixels_per_unit &&
-        !_needs_image_processing) {
+    if (_render_mode == RM_distance_field) {
+      tex_x_size /= _scale_factor;
+      tex_y_size /= _scale_factor;
+      int int_x_size = (int)ceil(tex_x_size);
+      int int_y_size = (int)ceil(tex_y_size);
+
+      outline = 4;
+      int_x_size += outline * 2;
+      int_y_size += outline * 2;
+      tex_x_size += outline * 2;
+      tex_y_size += outline * 2;
+
+      PNMImage image(int_x_size, int_y_size, PNMImage::CT_grayscale);
+      render_distance_field(image, outline, bounds.xMin, bounds.yMin);
+
+      glyph = slot_glyph(character, int_x_size, int_y_size, advance);
+      if (!_needs_image_processing) {
+        copy_pnmimage_to_texture(image, glyph);
+      } else {
+        blend_pnmimage_to_texture(image, glyph, _fg);
+      }
+
+    } else if (_tex_pixels_per_unit == _font_pixels_per_unit &&
+               !_needs_image_processing) {
       // If the bitmap produced from the font doesn't require scaling
       // or any other processing before it goes to the texture, we can
       // just copy it directly into the texture.
-      glyph = slot_glyph(character, bitmap.width, bitmap.rows);
+      glyph = slot_glyph(character, bitmap.width, bitmap.rows, advance);
       copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
@@ -599,7 +615,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       int_y_size += outline * 2;
       tex_x_size += outline * 2;
       tex_y_size += outline * 2;
-      glyph = slot_glyph(character, int_x_size, int_y_size);
+      glyph = slot_glyph(character, int_x_size, int_y_size, advance);
 
       if (outline != 0) {
         // Pad the glyph image to make room for the outline.
@@ -612,11 +628,43 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       }
     }
 
-    glyph->make_geom((int)floor(slot->bitmap_top + outline * _scale_factor + 0.5f),
-                     (int)floor(slot->bitmap_left - outline * _scale_factor + 0.5f),
-                     advance, _poly_margin,
-                     tex_x_size, tex_y_size,
-                     _font_pixels_per_unit, _tex_pixels_per_unit);
+    DynamicTextPage *page = glyph->get_page();
+    if (page != NULL) {
+      int bitmap_top = (int)floor(tex_y_orig + outline * _scale_factor + 0.5f);
+      int bitmap_left = (int)floor(tex_x_orig - outline * _scale_factor + 0.5f);
+
+      tex_x_size += glyph->_margin * 2;
+      tex_y_size += glyph->_margin * 2;
+
+      // Determine the corners of the rectangle in geometric units.
+      PN_stdfloat tex_poly_margin = _poly_margin / _tex_pixels_per_unit;
+      PN_stdfloat origin_y = bitmap_top / _font_pixels_per_unit;
+      PN_stdfloat origin_x = bitmap_left / _font_pixels_per_unit;
+
+      LVecBase4 dimensions(
+        origin_x - tex_poly_margin,
+        origin_y - tex_y_size / _tex_pixels_per_unit - tex_poly_margin,
+        origin_x + tex_x_size / _tex_pixels_per_unit + tex_poly_margin,
+        origin_y + tex_poly_margin);
+
+      // And the corresponding corners in UV units.  We add 0.5f to center
+      // the UV in the middle of its texel, to minimize roundoff errors
+      // when we are close to 1-to-1 pixel size.
+      LVecBase2i page_size = page->get_size();
+      LVecBase4 texcoords(
+        ((PN_stdfloat)(glyph->_x - _poly_margin) + 0.5f) / page_size[0],
+        1.0f - ((PN_stdfloat)(glyph->_y + _poly_margin + tex_y_size) + 0.5f) / page_size[1],
+        ((PN_stdfloat)(glyph->_x + _poly_margin + tex_x_size) + 0.5f) / page_size[0],
+        1.0f - ((PN_stdfloat)(glyph->_y - _poly_margin) + 0.5f) / page_size[1]);
+
+      CPT(RenderState) state;
+      state = RenderState::make(TextureAttrib::make(page),
+                                TransparencyAttrib::make(alpha_mode));
+      state = state->add_attrib(ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 1.0f)), -1);
+
+      glyph->set_quad(dimensions, texcoords, state);
+    }
+
     return glyph;
   }
 }
@@ -835,7 +883,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 //               filled in yet except with its size.
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
-slot_glyph(int character, int x_size, int y_size) {
+slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
   // Increase the indicated size by the current margin.
   x_size += _texture_margin * 2;
   y_size += _texture_margin * 2;
@@ -850,7 +898,7 @@ slot_glyph(int character, int x_size, int y_size) {
 
     do {
       DynamicTextPage *page = _pages[pi];
-      DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin);
+      DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
       if (glyph != (DynamicTextGlyph *)NULL) {
         // Once we found a page to hold the glyph, that becomes our
         // new preferred page.
@@ -874,7 +922,7 @@ slot_glyph(int character, int x_size, int y_size) {
   // glyphs?
   if (garbage_collect() != 0) {
     // Yes, we just freed up some space.  Try once more, recursively.
-    return slot_glyph(character, x_size, y_size);
+    return slot_glyph(character, x_size, y_size, advance);
 
   } else {
     // No good; all recorded glyphs are actually in use.  We need to
@@ -882,7 +930,7 @@ slot_glyph(int character, int x_size, int y_size) {
     _preferred_page = _pages.size();
     PT(DynamicTextPage) page = new DynamicTextPage(this, _preferred_page);
     _pages.push_back(page);
-    return page->slot_glyph(character, x_size, y_size, _texture_margin);
+    return page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
   }
 }
 
@@ -893,7 +941,7 @@ slot_glyph(int character, int x_size, int y_size) {
 //               geometry, as a wireframe render.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
-render_wireframe_contours(DynamicTextGlyph *glyph) {
+render_wireframe_contours(TextGlyph *glyph) {
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3(),
      Geom::UH_static);
@@ -926,7 +974,7 @@ render_wireframe_contours(DynamicTextGlyph *glyph) {
 //               geometry, as a polygon render.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
-render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
+render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3n3(),
      Geom::UH_static);
@@ -1088,181 +1136,6 @@ render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
   //  glyph->set_geom(vdata, tris, RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_wireframe)));
   //  glyph->set_geom(vdata, tris, RenderState::make(AntialiasAttrib::make(AntialiasAttrib::M_auto)));
   _contours.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::outline_move_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks the
-//               beginning of a new contour.
-////////////////////////////////////////////////////////////////////
-int DynamicTextFont::
-outline_move_to(const FT_Vector *to, void *user) {
-  DynamicTextFont *self = (DynamicTextFont *)user;
-
-  // Convert from 26.6 pixel units to Panda units.
-  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-  LPoint2 p = LPoint2(to->x, to->y) * scale;
-
-  if (self->_contours.empty() ||
-      !self->_contours.back()._points.empty()) {
-    self->_contours.push_back(Contour());
-  }
-  self->_q = p;
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::outline_line_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               straight line in the contour.
-////////////////////////////////////////////////////////////////////
-int DynamicTextFont::
-outline_line_to(const FT_Vector *to, void *user) {
-  DynamicTextFont *self = (DynamicTextFont *)user;
-  nassertr(!self->_contours.empty(), 1);
-
-  // Convert from 26.6 pixel units to Panda units.
-  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-  LPoint2 p = LPoint2(to->x, to->y) * scale;
-
-  // Compute the tangent: this is just the vector from the last point.
-  LVector2 t = (p - self->_q);
-  t.normalize();
-
-  if (self->_contours.back()._points.empty()) {
-    self->_contours.back()._points.push_back(ContourPoint(self->_q, LVector2::zero(), t));
-  } else {
-    self->_contours.back()._points.back().connect_to(t);
-  }
-  
-  self->_contours.back()._points.push_back(ContourPoint(p, t, LVector2::zero()));
-  self->_q = p;
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::outline_conic_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               parabolic (3rd-order) Bezier curve in the contour.
-////////////////////////////////////////////////////////////////////
-int DynamicTextFont::
-outline_conic_to(const FT_Vector *control,
-                 const FT_Vector *to, void *user) {
-  DynamicTextFont *self = (DynamicTextFont *)user;
-  nassertr(!self->_contours.empty(), 1);
-
-  // Convert from 26.6 pixel units to Panda units.
-  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-
-  LPoint2 c = LPoint2(control->x, control->y) * scale;
-  LPoint2 p = LPoint2(to->x, to->y) * scale;
-
-  // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
-  NurbsCurveEvaluator nce;
-  nce.local_object();
-  nce.set_order(3);
-  nce.reset(3);
-  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
-  nce.set_vertex(1, LVecBase3(c[0], c[1], 0.0f));
-  nce.set_vertex(2, LVecBase3(p[0], p[1], 0.0f));
-
-  self->_q = p;
-
-  PT(NurbsCurveResult) ncr = nce.evaluate();
-  return self->outline_nurbs(ncr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::outline_cubic_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               cubic (4th-order) Bezier curve in the contour.
-////////////////////////////////////////////////////////////////////
-int DynamicTextFont::
-outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
-                 const FT_Vector *to, void *user) {
-  DynamicTextFont *self = (DynamicTextFont *)user;
-  nassertr(!self->_contours.empty(), 1);
-
-  // Convert from 26.6 pixel units to Panda units.
-  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-
-  LPoint2 c1 = LPoint2(control1->x, control1->y) * scale;
-  LPoint2 c2 = LPoint2(control2->x, control2->y) * scale;
-  LPoint2 p = LPoint2(to->x, to->y) * scale;
-
-  // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
-  NurbsCurveEvaluator nce;
-  nce.local_object();
-  nce.set_order(4);
-  nce.reset(4);
-  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
-  nce.set_vertex(1, LVecBase3(c1[0], c1[1], 0.0f));
-  nce.set_vertex(2, LVecBase3(c2[0], c2[1], 0.0f));
-  nce.set_vertex(3, LVecBase3(p[0], p[1], 0.0f));
-
-  self->_q = p;
-
-  PT(NurbsCurveResult) ncr = nce.evaluate();
-  return self->outline_nurbs(ncr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::outline_nurbs
-//       Access: Private
-//  Description: Called internally by outline_cubic_to() and
-//               outline_conic_to().
-////////////////////////////////////////////////////////////////////
-int DynamicTextFont::
-outline_nurbs(NurbsCurveResult *ncr) {
-  // Sample it down so that the lines approximate the curve to within
-  // a "pixel."
-  ncr->adaptive_sample(1.0f / _font_pixels_per_unit);
-
-  int num_samples = ncr->get_num_samples();
-
-  bool needs_connect = false;
-  int start = 1;
-  if (_contours.back()._points.empty()) {
-    // If we haven't got the first point of this contour yet, we must
-    // add it now.
-    start = 0;
-  } else {
-    needs_connect = true;
-  }
-
-  for (int i = start; i < num_samples; ++i) {
-    PN_stdfloat st = ncr->get_sample_t(i);
-    const LPoint3 &p = ncr->get_sample_point(i);
-
-    PN_stdfloat st0 = st, st1 = st;
-    if (i > 0) {
-      st0 = ncr->get_sample_t(i - 1) * 0.1f + st * 0.9f;
-    }
-    if (i < num_samples - 1) {
-      st1 = ncr->get_sample_t(i + 1) * 0.1f + st * 0.9f;
-    }
-    // Compute the tangent by deltaing nearby points.  Don't evaluate
-    // the tangent from the NURBS, since that doesn't appear to be
-    // reliable.
-    LPoint3 p0, p1;
-    ncr->eval_point(st0, p0);
-    ncr->eval_point(st1, p1);
-    LVector3 t = p1 - p0;
-    t.normalize();
-
-    if (needs_connect) {
-      _contours.back()._points.back().connect_to(LVector2(t[0], t[1]));
-      needs_connect = false;
-    }
-
-    _contours.back()._points.push_back(ContourPoint(p[0], p[1], t[0], t[1]));
-  }
-
-  return 0;
 }
 
 #endif  // HAVE_FREETYPE

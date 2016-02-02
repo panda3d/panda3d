@@ -14,24 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Default Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4)::
-FLOATNAME(LVecBase4)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4)::
-FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) : _v(copy._v) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Copy Constructor
 //       Access: Public
 //  Description:
@@ -39,40 +21,6 @@ FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) : _v(copy._v) {
 INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy) {
   set(copy[0], copy[1], copy[2], copy[3]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
-operator = (const FLOATNAME(LVecBase4) &copy) {
-  TAU_PROFILE("void LVecBase4::operator = (LVecBase4 &)", " ", TAU_USER);
-  _v = copy._v;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
-operator = (const FLOATNAME(UnalignedLVecBase4) &copy) {
-  set(copy[0], copy[1], copy[2], copy[3]);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Fill Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
-operator = (FLOATTYPE fill_value) {
-  fill(fill_value);
-  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,15 +74,6 @@ FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point) {
 INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector) {
   set(vector[0], vector[1], vector[2], 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4)::
-~FLOATNAME(LVecBase4)() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,7 +153,7 @@ operator [](int i) {
 //       Access: Published, Static
 //  Description: Returns 4: the number of components of a LVecBase4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase4)::
+CONSTEXPR int FLOATNAME(LVecBase4)::
 size() {
   return 4;
 }
@@ -284,6 +223,26 @@ get_z() const {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 get_w() const {
   return _v(3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::get_xyz
+//       Access: Published
+//  Description: Returns the x, y and z component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase4)::
+get_xyz() const {
+  return FLOATNAME(LVecBase3)(_v(0), _v(1), _v(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::get_xy
+//       Access: Published
+//  Description: Returns the x and y component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase4)::
+get_xy() const {
+  return FLOATNAME(LVecBase2)(_v(0), _v(1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,8 +364,8 @@ get_data() const {
 //       Access: Published
 //  Description: Returns the number of elements in the vector, four.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase4)::
-get_num_components() const {
+CONSTEXPR int FLOATNAME(LVecBase4)::
+get_num_components() {
   return 4;
 }
 
@@ -557,6 +516,22 @@ normalize() {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
+normalized() const {
+  FLOATTYPE l2 = length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    return FLOATNAME(LVecBase4)(0.0f);
+  }
+  return (*this) / csqrt(l2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1108,15 +1083,6 @@ read_datagram(DatagramIterator &source) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
-FLOATNAME(UnalignedLVecBase4)() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: UnalignedLVecBase4::Copy Constructor
 //       Access: Public
 //  Description:
@@ -1124,38 +1090,6 @@ FLOATNAME(UnalignedLVecBase4)() {
 INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
 FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy) {
   set(copy[0], copy[1], copy[2], copy[3]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
-FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy) : _v(copy._v) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &FLOATNAME(UnalignedLVecBase4)::
-operator = (const FLOATNAME(LVecBase4) &copy) {
-  set(copy[0], copy[1], copy[2], copy[3]);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4) &FLOATNAME(UnalignedLVecBase4)::
-operator = (const FLOATNAME(UnalignedLVecBase4) &copy) {
-  TAU_PROFILE("void UnalignedLVecBase4::operator =(UnalignedLVecBase4 &)", " ", TAU_USER);
-  _v = copy._v;
-  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1210,7 +1144,7 @@ operator [](int i) {
 //       Access: Public, Static
 //  Description: Returns 4: the number of components of a LVecBase4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(UnalignedLVecBase4)::
+CONSTEXPR int FLOATNAME(UnalignedLVecBase4)::
 size() {
   return 4;
 }
@@ -1232,7 +1166,7 @@ get_data() const {
 //       Access: Public
 //  Description: Returns the number of elements in the vector, 4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(UnalignedLVecBase4)::
-get_num_components() const {
+CONSTEXPR int FLOATNAME(UnalignedLVecBase4)::
+get_num_components() {
   return 4;
 }

@@ -49,14 +49,14 @@ PUBLISHED:
   INLINE bool is_registered() const;
   INLINE static CPT(TransformTable) register_table(const TransformTable *table);
 
-  INLINE int get_num_transforms() const;
-  INLINE const VertexTransform *get_transform(int n) const;
+  INLINE size_t get_num_transforms() const;
+  INLINE const VertexTransform *get_transform(size_t n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
-  void set_transform(int n, const VertexTransform *transform);
-  void remove_transform(int n);
-  int add_transform(const VertexTransform *transform);
+  void set_transform(size_t n, const VertexTransform *transform);
+  void remove_transform(size_t n);
+  size_t add_transform(const VertexTransform *transform);
 
   void write(ostream &out) const;
 

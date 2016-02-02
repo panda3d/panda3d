@@ -169,7 +169,7 @@ get_net_time() const {
 //  Description: Returns the number of individual events stored in the
 //               FrameData.
 ////////////////////////////////////////////////////////////////////
-INLINE int PStatFrameData::
+INLINE size_t PStatFrameData::
 get_num_events() const {
   return _time_data.size();
 }
@@ -181,8 +181,8 @@ get_num_events() const {
 //               the nth event.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatFrameData::
-get_time_collector(int n) const {
-  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+get_time_collector(size_t n) const {
+  nassertr(n < _time_data.size(), 0);
   return _time_data[n]._index & 0x7fff;
 }
 
@@ -193,8 +193,8 @@ get_time_collector(int n) const {
 //               event, or false if it represents a stop event.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatFrameData::
-is_start(int n) const {
-  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+is_start(size_t n) const {
+  nassertr(n < _time_data.size(), 0);
   return (_time_data[n]._index & 0x8000) == 0;
 }
 
@@ -207,8 +207,8 @@ is_start(int n) const {
 //               from a given client).
 ////////////////////////////////////////////////////////////////////
 INLINE double PStatFrameData::
-get_time(int n) const {
-  nassertr(n >= 0 && n < (int)_time_data.size(), 0);
+get_time(size_t n) const {
+  nassertr(n < _time_data.size(), 0);
   return _time_data[n]._value;
 }
 
@@ -218,7 +218,7 @@ get_time(int n) const {
 //  Description: Returns the number of individual level values stored
 //               in the FrameData.
 ////////////////////////////////////////////////////////////////////
-INLINE int PStatFrameData::
+INLINE size_t PStatFrameData::
 get_num_levels() const {
   return _level_data.size();
 }
@@ -230,8 +230,8 @@ get_num_levels() const {
 //               the nth level value.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatFrameData::
-get_level_collector(int n) const {
-  nassertr(n >= 0 && n < (int)_level_data.size(), 0);
+get_level_collector(size_t n) const {
+  nassertr(n < _level_data.size(), 0);
   return _level_data[n]._index;
 }
 
@@ -241,8 +241,8 @@ get_level_collector(int n) const {
 //  Description: Returns the height of the nth level value.
 ////////////////////////////////////////////////////////////////////
 INLINE double PStatFrameData::
-get_level(int n) const {
-  nassertr(n >= 0 && n < (int)_level_data.size(), 0);
+get_level(size_t n) const {
+  nassertr(n < _level_data.size(), 0);
   return _level_data[n]._value;
 }
 
@@ -255,4 +255,3 @@ INLINE bool PStatFrameData::DataPoint::
 operator < (const PStatFrameData::DataPoint &other) const {
   return _value < other._value;
 }
-

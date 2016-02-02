@@ -1,14 +1,16 @@
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // This is a little wrapper to make it easy to run a python
 // program from the command line. Basically, it just interfaces
 // to the Python API and imports the module that was specified
 // by the IMPORT_MODULE preprocessor definition when it was compiled.
 //
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 #include "dtoolbase.h"
 
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3
 #include <wchar.h>
@@ -36,7 +38,7 @@ int main(int argc, char *mb_argv[]) {
     size_t len = mbstowcs(NULL, mb_argv[i], 0);
     argv[i] = new wchar_t[len + 1];
     mbstowcs(argv[i], mb_argv[i], len);
-    argv[i][len] = NULL;
+    argv[i][len] = 0;
   }
   // Just for good measure
   argv[argc] = NULL;

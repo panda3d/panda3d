@@ -1,4 +1,4 @@
-// Filename: P3DAuthSession.cxx
+// Filename: p3dAuthSession.cxx
 // Created by:  drose (17Sep09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DAuthSession::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DAuthSession::
 P3DAuthSession(P3DInstance *inst) :
@@ -62,7 +62,7 @@ P3DAuthSession(P3DInstance *inst) :
   }
 
   if (inst->_mf_reader.get_num_signatures() > 0) {
-    const P3DMultifileReader::CertChain &cert_chain = 
+    const P3DMultifileReader::CertChain &cert_chain =
       inst->_mf_reader.get_signature(0);
 
     if (cert_chain.size() > 0) {
@@ -87,7 +87,7 @@ P3DAuthSession(P3DInstance *inst) :
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DAuthSession::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 P3DAuthSession::
 ~P3DAuthSession() {
@@ -130,7 +130,7 @@ shutdown(bool send_message) {
     int status;
     waitpid(_p3dcert_pid, &status, WNOHANG);
 #endif  // _WIN32
-    
+
     _p3dcert_running = false;
   }
   _p3dcert_started = false;
@@ -163,7 +163,7 @@ start_p3dcert() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _start_dir = inst_mgr->get_root_dir() + "/start";
+  _start_dir = inst_mgr->get_start_dir();
 
   string root_dir = _inst->_p3dcert_package->get_package_dir();
   mkdir_complete(_start_dir, nout);
@@ -183,7 +183,7 @@ start_p3dcert() {
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
   const wchar_t *keep[] = {
-    L"TMP", L"TEMP", L"HOME", L"USER", 
+    L"TMP", L"TEMP", L"HOME", L"USER",
     L"SYSTEMROOT", L"USERPROFILE", L"COMSPEC",
     NULL
   };
@@ -209,7 +209,8 @@ start_p3dcert() {
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
   const char *keep[] = {
-    "TMP", "TEMP", "HOME", "USER", 
+    "TMP", "TEMP", "HOME", "USER",
+    "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG",
 #ifdef HAVE_X11
     "DISPLAY", "XAUTHORITY",
 #endif
@@ -263,7 +264,7 @@ start_p3dcert() {
 
   _p3dcert_started = true;
   _p3dcert_running = true;
-  
+
   spawn_wait_thread();
 }
 
@@ -342,13 +343,13 @@ wt_thread_run() {
   }
   _p3dcert_pid = -1;
   _p3dcert_running = false;
-      
+
   nout << "p3dcert process has successfully stopped.\n";
   if (WIFEXITED(status)) {
     nout << "  exited normally, status = "
          << WEXITSTATUS(status) << "\n";
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -382,7 +383,7 @@ win_create_process() {
 
   STARTUPINFO startup_info;
   ZeroMemory(&startup_info, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info); 
+  startup_info.cb = sizeof(startup_info);
 
   // Make sure the initial window is *shown* for this graphical app.
   startup_info.wShowWindow = SW_SHOW;
@@ -393,7 +394,7 @@ win_create_process() {
   // Construct the command-line string, containing the quoted
   // command-line arguments.
   ostringstream stream;
-  stream << "\"" << _p3dcert_exe << "\" \"" 
+  stream << "\"" << _p3dcert_exe << "\" \""
          << _cert_filename->get_filename() << "\" \"" << _cert_dir << "\"";
 
   // I'm not sure why CreateProcess wants a non-const char pointer for
@@ -409,10 +410,10 @@ win_create_process() {
   // from CreateProcessW().  Something about the way wx parses the
   // command-line parameters?  Well, whatever, we don't really need
   // the Unicode form anyway.
-  PROCESS_INFORMATION process_info; 
+  PROCESS_INFORMATION process_info;
   BOOL result = CreateProcess
     (_p3dcert_exe.c_str(), command_line, NULL, NULL, TRUE,
-     0, (void *)_env.c_str(), 
+     0, (void *)_env.c_str(),
      start_dir_cstr, &startup_info, &process_info);
   bool started_program = (result != 0);
 

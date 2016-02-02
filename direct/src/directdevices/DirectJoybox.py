@@ -280,8 +280,8 @@ class DirectJoybox(DirectObject):
                 self.floatingNP.setHpr(hpr)
                 self.nodePath.wrtReparentTo(parent)
                 hpr = Vec3(0,0,0)
-            
-            
+
+
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
     def joeMode(self):
@@ -382,10 +382,10 @@ class DirectJoybox(DirectObject):
 
         self.nodePath.setH(self.nodePath,dh)
         self.nodePath.setY(self.nodePath,dy)
-                                                
-        
-        
-        
+
+
+
+
 
     def spaceFly(self):
         # Do nothing if no nodePath selected

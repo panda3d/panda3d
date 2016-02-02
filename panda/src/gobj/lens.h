@@ -70,9 +70,12 @@ PUBLISHED:
 
   INLINE void set_change_event(const string &event);
   INLINE const string &get_change_event() const;
+  MAKE_PROPERTY(change_event, get_change_event, set_change_event);
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
+  MAKE_PROPERTY(coordinate_system, get_coordinate_system,
+                                   set_coordinate_system);
 
   void clear();
 
@@ -80,13 +83,16 @@ PUBLISHED:
   INLINE void set_film_size(PN_stdfloat width, PN_stdfloat height);
   INLINE void set_film_size(const LVecBase2 &film_size);
   INLINE const LVecBase2 &get_film_size() const;
+  MAKE_PROPERTY(film_size, get_film_size, set_film_size);
 
   INLINE void set_film_offset(PN_stdfloat x, PN_stdfloat y);
   INLINE void set_film_offset(const LVecBase2 &film_offset);
   INLINE const LVector2 &get_film_offset() const;
+  MAKE_PROPERTY(film_offset, get_film_offset, set_film_offset);
 
   INLINE void set_focal_length(PN_stdfloat focal_length);
   INLINE PN_stdfloat get_focal_length() const;
+  MAKE_PROPERTY(focal_length, get_focal_length, set_focal_length);
 
   void set_min_fov(PN_stdfloat min_fov);
   INLINE void set_fov(PN_stdfloat fov);
@@ -96,45 +102,57 @@ PUBLISHED:
   INLINE PN_stdfloat get_hfov() const;
   INLINE PN_stdfloat get_vfov() const;
   PN_stdfloat get_min_fov() const;
+  MAKE_PROPERTY(fov, get_fov, set_fov);
+  MAKE_PROPERTY(min_fov, get_min_fov, set_min_fov);
 
   INLINE void set_aspect_ratio(PN_stdfloat aspect_ratio);
   INLINE PN_stdfloat get_aspect_ratio() const;
+  MAKE_PROPERTY(aspect_ratio, get_aspect_ratio, set_aspect_ratio);
 
   INLINE void set_near(PN_stdfloat near_distance);
   INLINE PN_stdfloat get_near() const;
   INLINE void set_far(PN_stdfloat far_distance);
   INLINE PN_stdfloat get_far() const;
   INLINE void set_near_far(PN_stdfloat near_distance, PN_stdfloat far_distance);
+  MAKE_PROPERTY(near, get_near, set_near);
+  MAKE_PROPERTY(far, get_far, set_far);
 
   static PN_stdfloat get_default_near();
   static PN_stdfloat get_default_far();
-  
+
   INLINE void set_view_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   void set_view_hpr(const LVecBase3 &view_hpr);
   const LVecBase3 &get_view_hpr() const;
+  MAKE_PROPERTY(view_hpr, get_view_hpr, set_view_hpr);
+
   INLINE void set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_stdfloat j, PN_stdfloat k);
   void set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector);
   const LVector3 &get_view_vector() const;
   const LVector3 &get_up_vector() const;
   LPoint3 get_nodal_point() const;
+  MAKE_PROPERTY(nodal_point, get_nodal_point);
 
   INLINE void set_interocular_distance(PN_stdfloat interocular_distance);
   INLINE PN_stdfloat get_interocular_distance() const;
   INLINE void set_convergence_distance(PN_stdfloat convergence_distance);
   INLINE PN_stdfloat get_convergence_distance() const;
+  MAKE_PROPERTY(interocular_distance, get_interocular_distance, set_interocular_distance);
+  MAKE_PROPERTY(convergence_distance, get_convergence_distance, set_convergence_distance);
 
   INLINE void set_view_mat(const LMatrix4 &view_mat);
   INLINE const LMatrix4 &get_view_mat() const;
   void clear_view_mat();
+  MAKE_PROPERTY(view_mat, get_view_mat, set_view_mat);
 
   void set_keystone(const LVecBase2 &keystone);
   INLINE const LVecBase2 &get_keystone() const;
   void clear_keystone();
+  MAKE_PROPERTY(keystone, get_keystone, set_keystone);
 
   void set_custom_film_mat(const LMatrix4 &custom_film_mat);
   INLINE const LMatrix4 &get_custom_film_mat() const;
   void clear_custom_film_mat();
-  
+
   // These flags are passed in as the last parameter to control the
   // behavior of set_frustum_from_corners().  See the documentation
   // for that method for an explanation of each flag.

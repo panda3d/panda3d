@@ -102,8 +102,8 @@ r_set_character(PartGroup *group, Character *character) {
     return;
   }
 
-  if (group->is_of_type(CharacterJoint::get_class_type())) {
-    DCAST(CharacterJoint, group)->set_character(character);
+  if (group->is_character_joint()) {
+    ((CharacterJoint *)group)->set_character(character);
   }
 
   Children::const_iterator ci;

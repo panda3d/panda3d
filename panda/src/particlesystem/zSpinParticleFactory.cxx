@@ -16,9 +16,9 @@
 #include "zSpinParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ZSpinParticleFactory
-//      Access : public
-// Description : constructor
+//     Function: ZSpinParticleFactory
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticleFactory::
 ZSpinParticleFactory() :
@@ -33,9 +33,9 @@ ZSpinParticleFactory() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ZSpinParticleFactory
-//      Access : public
-// Description : copy constructor
+//     Function: ZSpinParticleFactory
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticleFactory::
 ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
@@ -50,18 +50,18 @@ ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~ZSpinParticleFactory
-//      Access : virtual, public
-// Description : destructor
+//     Function: ~ZSpinParticleFactory
+//       Access: Virtual, Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticleFactory::
 ~ZSpinParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : alloc_particle
-//      Access : private, virtual
-// Description : factory method
+//     Function: alloc_particle
+//       Access: Private, Virtual
+//  Description: factory method
 ////////////////////////////////////////////////////////////////////
 BaseParticle *ZSpinParticleFactory::
 alloc_particle() const {
@@ -69,9 +69,9 @@ alloc_particle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : populate_child_particle
-//      Access : private, virtual
-// Description : factory populator
+//     Function: populate_child_particle
+//       Access: Private, Virtual
+//  Description: factory populator
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticleFactory::
 populate_child_particle(BaseParticle *bp) const {
@@ -84,10 +84,10 @@ populate_child_particle(BaseParticle *bp) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticleFactory::
 output(ostream &out) const {
@@ -97,10 +97,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticleFactory::
 write(ostream &out, int indent) const {

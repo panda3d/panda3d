@@ -981,7 +981,7 @@ transform_vertices(const LMatrix4 &mat) {
   PT(GeomVertexData) new_data = modify_vertex_data();
   CPT(GeomVertexFormat) format = new_data->get_format();
 
-  int ci;
+  size_t ci;
   for (ci = 0; ci < format->get_num_points(); ci++) {
     GeomVertexRewriter data(new_data, format->get_point(ci));
 
@@ -1897,7 +1897,7 @@ check_usage_hint() const {
 #ifdef DO_PIPELINING
       unref_delete((CycleData *)_cdata);
 #endif
-      Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler,
+      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler,
                                  false, _current_thread);
       ((GeomPipelineReader *)this)->_cdata = fresh_cdata;
 #ifdef DO_PIPELINING
@@ -1906,7 +1906,7 @@ check_usage_hint() const {
       if (!fresh_cdata->_got_usage_hint) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
-        ((Geom *)_object.p())->reset_usage_hint(fresh_cdata);
+        ((Geom *)_object)->reset_usage_hint(fresh_cdata);
         nassertv(fresh_cdata->_got_usage_hint);
       }
 

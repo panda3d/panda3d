@@ -45,7 +45,8 @@ PUBLISHED:
   virtual void mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const;
   virtual void accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const;
 
-  INLINE UpdateSeq get_modified(Thread *current_thread) const;
+  INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(modified, get_modified);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

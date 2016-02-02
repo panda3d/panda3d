@@ -65,7 +65,7 @@ PUBLISHED:
   CONSTEXPR static int get_max_num_bits();
 
   CONSTEXPR static int get_num_bits_per_word();
-  INLINE int get_num_bits() const;
+  INLINE size_t get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
@@ -90,9 +90,9 @@ PUBLISHED:
   int get_highest_off_bit() const;
   int get_next_higher_different_bit(int low_bit) const;
 
-  INLINE int get_num_words() const;
-  INLINE MaskType get_word(int n) const;
-  INLINE void set_word(int n, WordType value);
+  INLINE size_t get_num_words() const;
+  INLINE MaskType get_word(size_t n) const;
+  INLINE void set_word(size_t n, WordType value);
 
   void invert_in_place();
   bool has_bits_in_common(const BitArray &other) const;

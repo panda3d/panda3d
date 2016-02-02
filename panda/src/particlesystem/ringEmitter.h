@@ -54,11 +54,9 @@ protected:
   int _uniform_emission;
   PN_stdfloat _theta;
 
-  ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
   PN_stdfloat _sin_theta;
   PN_stdfloat _cos_theta;
-  ///////////////////////////////
 
 private:
   virtual void assign_initial_position(LPoint3& pos);

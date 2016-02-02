@@ -2,9 +2,8 @@
 
 __all__ = ['SfxPlayer']
 
-
 import math
-from pandac.PandaModules import *
+from panda3d.core import *
 
 class SfxPlayer:
     """
@@ -72,7 +71,7 @@ class SfxPlayer:
         if sfx:
             if not cutoff:
                 cutoff = self.cutoffDistance
-            
+
             self.setFinalVolume(sfx, node, volume, listenerNode, cutoff)
 
             # don't start over if it's already playing, unless
@@ -96,6 +95,6 @@ class SfxPlayer:
             if node is not None:
                 finalVolume *= node.getNetAudioVolume()
             sfx.setVolume(finalVolume)
-        
-    
-        
+
+
+

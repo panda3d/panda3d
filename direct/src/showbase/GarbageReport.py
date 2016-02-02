@@ -3,7 +3,7 @@
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
+from direct.showbase.PythonUtil import fastRepr
 from direct.showbase.PythonUtil import AlphabetCounter
 from direct.showbase.Job import Job
 import gc
@@ -165,7 +165,7 @@ class GarbageReport(Job):
                 yield None
                 for result in self._getReferents(self.garbage[i]):
                     yield None
-                byNum, byRef = result                    
+                byNum, byRef = result
                 self.referentsByNumber[i] = byNum
                 self.referentsByReference[i] = byRef
 
@@ -426,7 +426,7 @@ class GarbageReport(Job):
             desc2num.setdefault(cycleBySyntax, 0)
             desc2num[cycleBySyntax] += 1
         return desc2num
-        
+
     def getGarbage(self):
         return self.garbage
 

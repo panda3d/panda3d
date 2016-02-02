@@ -24,7 +24,7 @@
 
 class CPPScope;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPTemplateParameterList
 // Description : This class serves to store the parameter list for a
 //               template function or class, both for the formal

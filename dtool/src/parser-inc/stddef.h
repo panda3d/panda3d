@@ -22,5 +22,9 @@
 
 #include <stdtypedefs.h>
 
+#define offsetof(type,member) ((size_t) &(((type*)0)->member))
+
+typedef decltype(nullptr) nullptr_t;
+
 #endif
 

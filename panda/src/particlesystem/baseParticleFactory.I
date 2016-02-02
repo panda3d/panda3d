@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_lifespan_base
-// Description : public
+//     Function: set_lifespan_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_lifespan_base(PN_stdfloat lb) {
@@ -22,8 +22,8 @@ set_lifespan_base(PN_stdfloat lb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_lifespan_spread
-// Description : public
+//     Function: set_lifespan_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_lifespan_spread(PN_stdfloat ld) {
@@ -31,8 +31,8 @@ set_lifespan_spread(PN_stdfloat ld) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_mass_base
-// Description : public
+//     Function: set_mass_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_mass_base(PN_stdfloat mb) {
@@ -41,8 +41,8 @@ set_mass_base(PN_stdfloat mb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_mass_spread
-// Description : public
+//     Function: set_mass_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_mass_spread(PN_stdfloat md) {
@@ -51,8 +51,8 @@ set_mass_spread(PN_stdfloat md) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_terminal_velocity_base
-// Description : public
+//     Function: set_terminal_velocity_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_terminal_velocity_base(PN_stdfloat tvb) {
@@ -60,8 +60,8 @@ set_terminal_velocity_base(PN_stdfloat tvb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_terminal_velocity_spread
-// Description : public
+//     Function: set_terminal_velocity_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
 set_terminal_velocity_spread(PN_stdfloat tvd) {
@@ -69,8 +69,8 @@ set_terminal_velocity_spread(PN_stdfloat tvd) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_lifespan_base
-// Description : public
+//     Function: get_lifespan_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_lifespan_base() const {
@@ -78,8 +78,8 @@ get_lifespan_base() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_lifespan_spread
-// Description : public
+//     Function: get_lifespan_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_lifespan_spread() const {
@@ -87,8 +87,8 @@ get_lifespan_spread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_mass_base
-// Description : public
+//     Function: get_mass_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_mass_base() const {
@@ -96,8 +96,8 @@ get_mass_base() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_mass_spread
-// Description : public
+//     Function: get_mass_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_mass_spread() const {
@@ -105,8 +105,8 @@ get_mass_spread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_terminal_velocity_base
-// Description : public
+//     Function: get_terminal_velocity_base
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_terminal_velocity_base() const {
@@ -114,8 +114,8 @@ get_terminal_velocity_base() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_terminal_velocity_spread
-// Description : public
+//     Function: get_terminal_velocity_spread
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat BaseParticleFactory::
 get_terminal_velocity_spread() const {

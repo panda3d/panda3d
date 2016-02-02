@@ -6,7 +6,6 @@ from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
 from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notify
 import time
-import types
 import sys
 
 class Notifier:
@@ -236,7 +235,7 @@ class Notifier:
         Prints the string to output followed by a newline.
         """
         if self.streamWriter:
-            self.streamWriter.appendData(string + '\n')
+            self.streamWriter.write(string + '\n')
         else:
             print >> sys.stderr, string
 

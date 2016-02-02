@@ -3,7 +3,7 @@ Contains classes useful for 3D viewports.
 
 Originally written by pro-rsoft,
 Modified by gjeon.
-Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close 
+Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close
 """
 
 __all__ = ["Viewport", "ViewportManager"]
@@ -13,7 +13,7 @@ from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
 from WxPandaWindow import WxPandaWindow
-from pandac.PandaModules import WindowProperties, OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
+from panda3d.core import OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 
 HORIZONTAL = wx.SPLIT_HORIZONTAL
@@ -34,13 +34,13 @@ class ViewportManager:
     """Calls initialize() on all the viewports."""
     for v in ViewportManager.viewports:
       v.initialize(*args, **kwargs)
-  
+
   @staticmethod
   def updateAll(*args, **kwargs):
     """Calls Update() on all the viewports."""
     for v in ViewportManager.viewports:
       v.Update(*args, **kwargs)
-  
+
   @staticmethod
   def layoutAll(*args, **kwargs):
     """Calls Layout() on all the viewports."""
@@ -78,7 +78,7 @@ class Viewport(WxPandaWindow, DirectObject):
     if self.win:
       self.cam2d = base.makeCamera2d(self.win)
       self.cam2d.node().setCameraMask(LE_CAM_MASKS[self.name])
-      
+
     self.cam = base.camList[-1]
     self.camera = render.attachNewNode(self.name)
     #self.camera.setName(self.name)
@@ -89,7 +89,7 @@ class Viewport(WxPandaWindow, DirectObject):
     self.camNode.setCameraMask(LE_CAM_MASKS[self.name])
 
     self.bt = base.setupMouse(self.win, True)
-    self.bt.node().setPrefix('_le_%s_'%self.name[:3])    
+    self.bt.node().setPrefix('_le_%s_'%self.name[:3])
     mw = self.bt.getParent()
     mk = mw.getParent()
     winCtrl = WindowControls(
@@ -122,18 +122,18 @@ class Viewport(WxPandaWindow, DirectObject):
 ##     self.accept("page_up", self.zoomIn)
 ##     self.accept("page_up-repeat", self.zoomIn)
     #self.accept("mouse3", self.onRightDown)
-  
+
   def Close(self):
     """Closes the viewport."""
     if self.initialized:
        wx.Window.Close(self)
     #base.closeWindow(self.win)
     ViewportManager.viewports.remove(self)
-  
+
   def onSize(self, evt):
     """Invoked when the viewport is resized."""
     WxPandaWindow.onSize(self, evt)
-    
+
     if self.win != None:
       newWidth = self.ClientSize.GetWidth()
       newHeight = self.ClientSize.GetHeight()
@@ -143,7 +143,7 @@ class Viewport(WxPandaWindow, DirectObject):
           if dr.camNode == self.camNode:
             dr.updateFilmSize(newWidth, newHeight)
             break
-      
+
   def onRightDown(self, evt = None):
     """Invoked when the viewport is right-clicked."""
     if evt == None:
@@ -154,13 +154,13 @@ class Viewport(WxPandaWindow, DirectObject):
     self.Update()
     #self.PopupMenu(self.menu, mpos)
     #self.menu.Destroy()
-  
+
   def zoomOut(self):
     self.camera.setY(self.camera, -MOUSE_ZOO_SPEED)
-  
+
   def zoomIn(self):
     self.camera.setY(self.camera,  MOUSE_ZOOM_SPEED)
-  
+
   @staticmethod
   def make(parent, vpType = None):
     """Safe constructor that also takes CREATENEW, VPLEFT, VPTOP, etc."""
@@ -172,7 +172,7 @@ class Viewport(WxPandaWindow, DirectObject):
     if vpType == VPTOP:   return Viewport.makeTop(parent)
     if vpType == VPPERSPECTIVE:  return Viewport.makePerspective(parent)
     raise TypeError, "Unknown viewport type: %s" % vpType
-  
+
   @staticmethod
   def makeOrthographic(parent, name, campos):
     v = Viewport(name, parent)
@@ -195,7 +195,7 @@ class Viewport(WxPandaWindow, DirectObject):
       collPlane = CollisionNode('FrontGridCol')
       collPlane.addSolid(CollisionPlane(Plane(0, -1, 0, 0)))
       collPlane.setIntoCollideMask(BitMask32.bit(21))
-      v.collPlane = NodePath(collPlane)      
+      v.collPlane = NodePath(collPlane)
       v.collPlane.wrtReparentTo(v.grid)
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_frontViewGridBack")
       LE_showInOneCam(v.grid, name)
@@ -208,7 +208,7 @@ class Viewport(WxPandaWindow, DirectObject):
       #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_topViewGridBack")
       LE_showInOneCam(v.grid, name)
     return v
-  
+
   @staticmethod
   def makePerspective(parent):
     v = Viewport('persp', parent)
@@ -235,7 +235,7 @@ class Viewport(WxPandaWindow, DirectObject):
     #v.grid.gridBack.findAllMatches("**/+GeomNode")[0].setName("_perspViewGridBack")
     LE_showInOneCam(v.grid, 'persp')
     return v
-  
+
   @staticmethod
   def makeLeft(parent): return Viewport.makeOrthographic(parent, 'left', Point3(600, 0, 0))
   @staticmethod

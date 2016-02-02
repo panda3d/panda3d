@@ -26,6 +26,7 @@ class Datagram;
 class DatagramIterator;
 class FactoryParams;
 class BamCacheRecord;
+class VirtualFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamCacheRecord
@@ -55,19 +56,29 @@ PUBLISHED:
   INLINE time_t get_source_timestamp() const;
   INLINE time_t get_recorded_time() const;
 
+  MAKE_PROPERTY(source_pathname, get_source_pathname);
+  MAKE_PROPERTY(cache_filename, get_cache_filename);
+  MAKE_PROPERTY(source_timestamp, get_source_timestamp);
+  MAKE_PROPERTY(recorded_time, get_recorded_time);
+
   INLINE int get_num_dependent_files() const;
   INLINE const Filename &get_dependent_pathname(int n) const;
 
   bool dependents_unchanged() const;
   void clear_dependent_files();
   void add_dependent_file(const Filename &pathname);
+  void add_dependent_file(const VirtualFile *file);
 
   INLINE bool has_data() const;
   INLINE void clear_data();
   INLINE TypedWritable *get_data() const;
   INLINE bool extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
   INLINE void set_data(TypedWritable *ptr, ReferenceCount *ref_ptr);
+  INLINE void set_data(TypedWritable *ptr);
+  INLINE void set_data(TypedWritableReferenceCount *ptr);
   INLINE void set_data(TypedWritable *ptr, int dummy);
+
+  MAKE_PROPERTY2(data, has_data, get_data, set_data, clear_data);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

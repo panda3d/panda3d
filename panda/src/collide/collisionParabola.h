@@ -63,6 +63,11 @@ PUBLISHED:
   INLINE void set_t2(PN_stdfloat t2);
   INLINE PN_stdfloat get_t2() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(parabola, get_parabola, set_parabola);
+  MAKE_PROPERTY(t1, get_t1, set_t1);
+  MAKE_PROPERTY(t2, get_t2, set_t2);
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

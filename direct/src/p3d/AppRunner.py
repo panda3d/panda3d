@@ -9,27 +9,15 @@ runp3d.py for a command-line tool to invoke this module.
 
 """
 
+__all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]
+
 import sys
 import os
-import types
-import __builtin__
+import __builtin__ as builtins
 
-if 'VFSImporter' in sys.modules:
-    # If we've already got a VFSImporter module defined at the
-    # toplevel, we must have come in here by way of the
-    # p3dPythonRun.cxx program, which starts out by importing a frozen
-    # VFSImporter.  Let's make sure we don't have two VFSImporter
-    # modules.
-    import VFSImporter
-    import direct.showbase
-    direct.showbase.VFSImporter = VFSImporter
-    sys.modules['direct.showbase.VFSImporter'] = VFSImporter
-else:
-    # Otherwise, we can import the VFSImporter normally.
-    from direct.showbase import VFSImporter
-
+from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, Thread, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, ConfigPageManager
+from panda3d.core import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, WindowProperties, ExecutionEnvironment, PandaSystem, Notify, StreamWriter, ConfigVariableString, ConfigPageManager
 from panda3d.direct import init_app_for_gui
 from panda3d import core
 from direct.stdpy import file, glob
@@ -43,7 +31,7 @@ from direct.p3d.InstalledHostData import InstalledHostData
 from direct.p3d.InstalledPackageData import InstalledPackageData
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
-from direct.p3d.JavaScript import UndefinedObject, Undefined, ConcreteStruct, BrowserObject
+from direct.p3d.JavaScript import Undefined, ConcreteStruct
 
 class ArgumentError(AttributeError):
     pass
@@ -436,47 +424,8 @@ class AppRunner(DirectObject):
         it downloads a new version on-the-spot.  Returns true on
         success, false on failure. """
 
-        if fileSpec.quickVerify(pathname = localPathname):
-            # It's good, keep it.
-            return True
-
         assert self.http
-
-        # It's stale, get a new one.
-        doc = None
-        if self.superMirrorUrl:
-            # Use the "super mirror" first.
-            url = core.URLSpec(self.superMirrorUrl + fileSpec.filename)
-            self.notify.info("Freshening %s" % (url))
-            doc = self.http.getDocument(url)
-
-        if not doc or not doc.isValid():
-            # Failing the super mirror, contact the actual host.
-            url = core.URLSpec(host.hostUrlPrefix + fileSpec.filename)
-            self.notify.info("Freshening %s" % (url))
-            doc = self.http.getDocument(url)
-            if not doc.isValid():
-                return False
-
-        file = Filename.temporary('', 'p3d_')
-        if not doc.downloadToFile(file):
-            # Failed to download.
-            file.unlink()
-            return False
-
-        # Successfully downloaded!
-        localPathname.makeDir()
-        if not file.renameTo(localPathname):
-            # Couldn't move it into place.
-            file.unlink()
-            return False
-
-        if not fileSpec.fullVerify(pathname = localPathname):
-            # No good after download.
-            self.notify.info("%s is still no good after downloading." % (url))
-            return False
-
-        return True
+        return host.freshenFile(self.http, fileSpec, localPathname)
 
     def scanInstalledPackages(self):
         """ Scans the hosts and packages already installed locally on
@@ -569,14 +518,14 @@ class AppRunner(DirectObject):
             for packageData in hostData.packages:
                 totalSize += packageData.totalSize
         self.notify.info("Total Panda3D disk space used: %s MB" % (
-            (totalSize + 524288) / 1048576))
+            (totalSize + 524288) // 1048576))
 
         if self.verifyContents == self.P3DVCNever:
             # We're not allowed to delete anything anyway.
             return
 
         self.notify.info("Configured max usage is: %s MB" % (
-            (self.maxDiskUsage + 524288) / 1048576))
+            (self.maxDiskUsage + 524288) // 1048576))
         if totalSize <= self.maxDiskUsage:
             # Still within budget; no need to clean up anything.
             return
@@ -634,13 +583,13 @@ class AppRunner(DirectObject):
         try:
             taskMgr.run()
 
-        except SystemExit:
+        except SystemExit as err:
             # Presumably the window has already been shut down here, but shut
             # it down again for good measure.
-            if hasattr(__builtin__, "base"):
+            if hasattr(builtins, "base"):
                 base.destroy()
 
-            self.notify.info("Normal exit.")
+            self.notify.info("Normal exit with status %s." % repr(err.code))
             raise
 
         except:
@@ -696,9 +645,10 @@ class AppRunner(DirectObject):
             # Replace the builtin open and file symbols so user code will get
             # our versions by default, which can open and read files out of
             # the multifile.
-            __builtin__.file = file.file
-            __builtin__.open = file.open
-            __builtin__.execfile = file.execfile
+            builtins.open = file.open
+            if sys.version_info < (3, 0):
+                builtins.file = file.open
+                builtins.execfile = file.execfile
             os.listdir = file.listdir
             os.walk = file.walk
             os.path.join = file.join

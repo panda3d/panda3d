@@ -23,13 +23,9 @@
 
 #define GLP(name) gl##name
 
-#ifndef STDFLOAT_DOUBLE
+// OpenGL ES does not support double-precision.
 #define GLPf(name) gl ## name ## f
 #define GLPfv(name) gl ## name ## fv
-#else  // STDFLOAT_DOUBLE
-#define GLPf(name) gl ## name ## d
-#define GLPfv(name) gl ## name ## dv
-#endif  // STDFLOAT_DOUBLE
 
 #define CLP(name) GLES##name
 #define GLPREFIX_QUOTED "gl"
@@ -47,6 +43,11 @@
 #endif
 #ifdef OPENGLES_2
   #error OPENGLES_2 should not be defined!
+#endif
+
+// OpenGL ES 1 has only the fixed-function pipeline.
+#ifndef SUPPORT_FIXED_FUNCTION
+#define SUPPORT_FIXED_FUNCTION
 #endif
 
 // This prevents glext.h from getting included by gl.h

@@ -1,7 +1,8 @@
 """ Class used to create and control vrpn devices """
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.vrpn import *
 
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
@@ -22,7 +23,7 @@ class DirectDeviceManager(VrpnClient, DirectObject):
             self.server = server
         else:
             # Check config file, if that fails, use default
-            self.server = myBase.config.GetString('vrpn-server', 'spacedyne')
+            self.server = ConfigVariableString('vrpn-server', 'spacedyne').getValue()
 
         # Create a vrpn client
         VrpnClient.__init__(self, self.server)
@@ -294,18 +295,3 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
     def __repr__(self):
         str = ('%s: %d:%d:%d:%d' % ((self.name,) + self.getTime()[:-1]))
         return str
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

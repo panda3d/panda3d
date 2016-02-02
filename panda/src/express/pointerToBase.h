@@ -55,7 +55,7 @@ protected:
   // vs. non-const later.
 
 PUBLISHED:
-  INLINE void clear();
+  ALWAYS_INLINE void clear();
 
   void output(ostream &out) const;
 };

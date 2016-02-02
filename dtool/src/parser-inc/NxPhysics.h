@@ -32,6 +32,7 @@ class NxCapsuleForceFieldShapeDesc;
 class NxCapsuleShape;
 class NxCapsuleShapeDesc;
 class NxCCDSkeleton;
+class NxContactStreamIterator;
 class NxConvexMesh;
 class NxConvexMeshDesc;
 class NxConvexForceFieldShape;
@@ -121,11 +122,16 @@ class NxSoftBodyDesc;
 class NxSoftBodyMesh;
 class NxSoftBodyMeshDesc;
 
-enum NxSDKCreateError;
-enum NxAssertResponse;
-enum NxErrorCode;
-enum NxTriggerFlag;
-enum NxHeightFieldAxis;
+enum NxAssertResponse {
+  NX_AR_CONTINUE,
+  NX_AR_IGNORE,
+  NX_AR_BREAKPOINT
+};
+
+enum NxControllerType {
+  NX_CONTROLLER_CAPSULE,
+  NX_CONTROLLER_FORCE_DWORD = 0x7fffffff
+};
 
 template<class T> class NxUserEntityReport;
 

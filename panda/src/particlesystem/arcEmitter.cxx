@@ -15,9 +15,9 @@
 #include "arcEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ArcEmitter
-//      Access : Public
-// Description : constructor
+//     Function: ArcEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 ArcEmitter::
 ArcEmitter() :
@@ -26,9 +26,9 @@ ArcEmitter() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ArcEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: ArcEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 ArcEmitter::
 ArcEmitter(const ArcEmitter &copy) :
@@ -38,18 +38,18 @@ ArcEmitter(const ArcEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~ArcEmitter
-//      Access : Public
-// Description : destructor
+//     Function: ~ArcEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 ArcEmitter::
 ~ArcEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *ArcEmitter::
 make_copy() {
@@ -57,9 +57,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ArcEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: ArcEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void ArcEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -68,8 +68,8 @@ assign_initial_position(LPoint3& pos) {
     theta = LERP(NORMALIZED_RAND(), _start_theta, _end_theta);
   } else {
     theta = LERP(NORMALIZED_RAND(), _start_theta, _end_theta + 2.0f * MathNumbers::pi_f);
-  }    
-  
+  }
+
   theta += (MathNumbers::pi_f / 2.0);
   this->_cos_theta = cosf(theta);
   this->_sin_theta = sinf(theta);
@@ -82,10 +82,10 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a starc representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a starc representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ArcEmitter::
 output(ostream &out) const {
@@ -95,10 +95,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a starc representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a starc representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ArcEmitter::
 write(ostream &out, int indent) const {

@@ -117,10 +117,10 @@ class dataHolder:
         # Initialize the basic message formate from CollisionHandler
         self.CollisionHandler.setInPattern("%fnenter%in")
         self.CollisionHandler.setOutPattern("%fnexit%in")
- 
+
         pass
 
-    
+
     def resetAll(self):
         #################################################################
         # resetAll(self)
@@ -149,7 +149,7 @@ class dataHolder:
         self.blendAnimDict.clear()
         self.particleDict.clear()
         self.particleNodes.clear()
-        
+
         self.ModelNum=0
         self.ActorNum=0
         self.theScene=None
@@ -167,8 +167,8 @@ class dataHolder:
 
         ## Check if there is any child node, if so, remove it.
         childrenList = nodePath.getChildren()
-        
-                
+
+
         if self.ModelDic.has_key(name):
             del self.ModelDic[name]
             del self.ModelRefDic[name]
@@ -214,7 +214,7 @@ class dataHolder:
         else:
             print 'You cannot remove this NodePath'
             return
-        
+
         messenger.send('SGE_Update Explorer',[render])
         return
 
@@ -247,11 +247,11 @@ class dataHolder:
         else:
             print '---- DataHolder: Target Obj is not a legal object could be duplicate!'
             return
-            
+
         FilePath = holderRef[name]
         oPos = holder[name].getPos()+cPos
         oHpr = holder[name].getHpr()+cHpr
-        
+
         for i in range(num):
             if isModel:
                 ### copy model node from modelpool
@@ -268,7 +268,7 @@ class dataHolder:
                 holder[newName].setName(newName)
                 oPos = oPos + cPos
                 oHpr = oHpr + cHpr
-                
+
             else:
                 ### copy the actor- not includ its animations
                 '''
@@ -289,7 +289,7 @@ class dataHolder:
                 holder[newName].setName(newName)
                 oPos = oPos + cPos
                 oHpr = oHpr + cHpr
-            
+
         messenger.send('SGE_Update Explorer',[render])
         return
 
@@ -434,7 +434,7 @@ class dataHolder:
         ###########################################################################
         self.lightManager.toggle()
         return
-        
+
     def isLight(self,name):
         ###########################################################################
         # isLight(self, name)
@@ -519,10 +519,10 @@ class dataHolder:
         if oName == nName:
             # If the new name is the same with old name, do nothing.
             return
-        
+
         while self.isInScene(nName):
             nName = nName + '_1'
-       
+
         if self.isActor(oName):
             self.ActorDic[nName]= self.ActorDic[oName]
             self.ActorRefDic[nName]= self.ActorRefDic[oName]
@@ -548,7 +548,7 @@ class dataHolder:
             self.collisionDict[nName]= self.collisionDict[oName]
             self.collisionDict[nName].setName(nName)
             del self.collisionDict[oName]
-            
+
         elif self.particleNodes.has_key(oName):
             self.particleNodes[nName]= self.particleNodes[oName]
             self.particleDict[nName]= self.particleDict[oName]
@@ -588,7 +588,7 @@ class dataHolder:
             return True
 
         return False
-        
+
     def bindCurveToNode(self,node,curveCollection):
         ###########################################################################
         # bindCurveToNode(self,node,curveCollection)
@@ -664,7 +664,7 @@ class dataHolder:
             info['vFov'] = lens.getVfov()
             info['focalLength'] = lens.getFocalLength()
 
-            
+
         elif name == 'SEditor':
             type = 'Special'
         elif self.isActor(name):
@@ -684,7 +684,7 @@ class dataHolder:
             info['collisionNode'] = self.collisionDict[name]
         if self.curveDict.has_key(name):
             info['curveList'] = self.getCurveList(nodePath)
-        
+
         return type, info
 
     def getAnimationDictFromActor(self, actorName):
@@ -754,7 +754,7 @@ class dataHolder:
         base.cTrav.addCollider( self.collisionDict[name], self.CollisionHandler)
 
         messenger.send('SGE_Update Explorer',[render])
-        
+
         return
 
     def toggleCollisionVisable(self, visable):
@@ -888,7 +888,7 @@ class dataHolder:
             return self.particleNodes[name]
         elif self.lightManager.isLight(name):
             return self.lightManager.getLightNode(name)
-        
+
         return None
 
     def getControlSetting(self):
@@ -923,7 +923,7 @@ class dataHolder:
             self.keyboardSpeedDict.clear()
             self.keyboardSpeedDict = data[2].copy()
             return
-  
+
     def loadScene(self):
         ###########################################################################
         # loadScene(self)
@@ -934,9 +934,9 @@ class dataHolder:
         # in the scene file hence reviving the state for the scene
         ###########################################################################
 
-        ### Ask for a filename  
+        ### Ask for a filename
         OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
-        if(not OpenFilename):   
+        if(not OpenFilename):
             return None
         f=Filename.fromOsSpecific(OpenFilename)
         fileName=f.getBasenameWoExtension()
@@ -953,7 +953,7 @@ class dataHolder:
         ############################################################################
         self.theScene=__import__(fileName)
         self.Scene=self.theScene.SavedScene(0,seParticleEffect,seParticles,dirName) # Specify load mode of 0 which will allow us to pass seParticle and seParticleEffect
-        messenger.send('SGE_Update Explorer',[render])    
+        messenger.send('SGE_Update Explorer',[render])
 
 
         # Lets call some important initialization methods on our scene:
@@ -989,7 +989,7 @@ class dataHolder:
         for light in self.Scene.LightDict:
             #print light
             alight=self.Scene.LightDict[light]
-            type=self.Scene.LightTypes[light]   
+            type=self.Scene.LightTypes[light]
             thenode=self.Scene.LightNodes[light]
             #print type
             if type == 'ambient':
@@ -1032,7 +1032,7 @@ class dataHolder:
                 nodeP.removeNode()
                 thenode=render.find("**/"+str(node))
                 self.bindCurveToNode(thenode,curveColl)
-        
+
         ############################################################################
         # Populate Particle related Dictionaries
         ############################################################################
@@ -1049,9 +1049,9 @@ class dataHolder:
             theeffect.enable()
             self.particleDict[effect]=theeffect
             self.particleNodes[effect]=emitter
-            
-        
- 
+
+
+
         # Clean up things added to scene graph by saved file's code execution
         for light in self.Scene.LightDict:
             vestige=render.find('**/'+light)
@@ -1061,11 +1061,11 @@ class dataHolder:
         ############################################################################
         # return the filename and update the scenegraph explorer window
         ############################################################################
-        messenger.send('SGE_Update Explorer',[render])  
+        messenger.send('SGE_Update Explorer',[render])
         if(OpenFilename):
             return OpenFilename
         else:
             return None
 
     def getList(self):
-        return self.lightManager.getList()     
+        return self.lightManager.getList()

@@ -20,7 +20,7 @@
 #include "cppScope.h"
 #include "cppTemplateParameterList.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPTemplateScope
 // Description : This is an implicit scope that is created following
 //               the appearance of a "template<class x, class y>" or

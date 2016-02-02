@@ -27,7 +27,10 @@ DEFAULT_MENU_ITEMS = [
 
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
-    def __init__(self, parent = None, nodePath = render, isItemEditable = True, **kw):
+    def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):
+        if nodePath is None:
+            nodePath = base.render
+
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
@@ -133,7 +136,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Remove hooks
         self.ignore('DIRECT_activeParent')
         self.ignore('SGE_Update Explorer')
-   
+
     def updateSelection(self, searchKey):
         # [gjeon] update SGE selection with directSession
         sceneGraphItem = self._node.find(searchKey)
@@ -155,7 +158,7 @@ class SceneGraphExplorerItem(TreeItem):
         return type + "  " + name
 
     def GetKey(self):
-        return self.nodePath.id()
+        return hash(self.nodePath)
 
     def IsEditable(self):
         # All nodes' names can be edited nowadays.
@@ -188,7 +191,10 @@ class SceneGraphExplorerItem(TreeItem):
         messenger.send('SGE_' + command, [self.nodePath])
 
 
-def explore(nodePath = render):
+def explore(nodePath = None):
+    if nodePath is None:
+        nodePath = base.render
+
     tl = Toplevel()
     tl.title('Explore: ' + nodePath.getName())
     sge = SceneGraphExplorer(parent = tl, nodePath = nodePath)

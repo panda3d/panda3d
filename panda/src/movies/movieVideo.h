@@ -48,7 +48,9 @@ PUBLISHED:
 
   INLINE const Filename &get_filename() const;
   INLINE const SubfileInfo &get_subfile_info() const;
-  
+  MAKE_PROPERTY(filename, get_filename);
+  MAKE_PROPERTY(subfile_info, get_subfile_info);
+
 protected:
   Filename _filename;
   SubfileInfo _subfile_info;

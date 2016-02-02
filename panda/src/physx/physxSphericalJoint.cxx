@@ -20,7 +20,7 @@ TypeHandle PhysxSphericalJoint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphericalJoint::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphericalJoint::
 link(NxJoint *jointPtr) {
@@ -38,7 +38,7 @@ link(NxJoint *jointPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphericalJoint::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphericalJoint::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphericalJoint::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the joint object to a 
-//                descriptor.
+//     Function: PhysxSphericalJoint::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the joint object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphericalJoint::
 save_to_desc(PhysxSphericalJointDesc &jointDesc) const {
@@ -64,10 +64,10 @@ save_to_desc(PhysxSphericalJointDesc &jointDesc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphericalJoint::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the joint from a 
-//                descriptor with a single call.
+//     Function: PhysxSphericalJoint::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the joint from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphericalJoint::
 load_from_desc(const PhysxSphericalJointDesc &jointDesc) {

@@ -18,3 +18,13 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<ReferenceCountedVector<UnalignedLMatrix4f> >;
+template class PointerToArrayBase<UnalignedLMatrix4f>;
+template class PointerToArray<UnalignedLMatrix4f>;
+template class ConstPointerToArray<UnalignedLMatrix4f>;
+
+template class PointerToBase<ReferenceCountedVector<UnalignedLMatrix4d> >;
+template class PointerToArrayBase<UnalignedLMatrix4d>;
+template class PointerToArray<UnalignedLMatrix4d>;
+template class ConstPointerToArray<UnalignedLMatrix4d>;

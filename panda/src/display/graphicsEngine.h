@@ -62,17 +62,22 @@ PUBLISHED:
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
   GraphicsThreadingModel get_threading_model() const;
+  MAKE_PROPERTY(threading_model, get_threading_model, set_threading_model);
 
   INLINE const ReMutex &get_render_lock() const;
+  MAKE_PROPERTY(render_lock, get_render_lock);
 
   INLINE void set_auto_flip(bool auto_flip);
   INLINE bool get_auto_flip() const;
+  MAKE_PROPERTY(auto_flip, get_auto_flip, set_auto_flip);
 
   INLINE void set_portal_cull(bool value);
   INLINE bool get_portal_cull() const;
+  MAKE_PROPERTY(portal_cull, get_portal_cull, set_portal_cull);
 
   INLINE void set_default_loader(Loader *loader);
   INLINE Loader *get_default_loader() const;
+  MAKE_PROPERTY(default_loader, get_default_loader, set_default_loader);
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
                               const string &name, int sort,

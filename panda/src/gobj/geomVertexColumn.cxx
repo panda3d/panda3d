@@ -427,6 +427,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   _name = DCAST(InternalName, p_list[pi++]);
 
+  // Make sure that old .bam files are corrected to have C_normal
+  // normal columns rather than C_vector.
+  if (manager->get_file_minor_ver() < 38 &&
+      _name == InternalName::get_normal() && _contents == C_vector) {
+    _contents = C_normal;
+  }
+
   return pi;
 }
 
@@ -3619,6 +3626,8 @@ get_data3f(const unsigned char *pointer) {
     _v3.set(v4[0], v4[1], v4[2]);
     return _v3;
   }
+
+  return _v3;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3703,6 +3712,8 @@ get_data4f(const unsigned char *pointer) {
       return _v4;
     }
   }
+
+  return _v4;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3838,6 +3849,8 @@ get_data3d(const unsigned char *pointer) {
     _v3d.set(v4[0], v4[1], v4[2]);
     return _v3d;
   }
+
+  return _v3d;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3922,6 +3935,8 @@ get_data4d(const unsigned char *pointer) {
       return _v4d;
     }
   }
+
+  return _v4d;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,10 +41,12 @@
 
 //#define GSG_VERBOSE 1
 
+extern ConfigVariableInt gl_version;
 extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
+extern ConfigVariableBool gl_support_texture_lod;
 extern ConfigVariableBool gl_ignore_filters;
 extern ConfigVariableBool gl_ignore_mipmaps;
 extern ConfigVariableBool gl_force_mipmaps;
@@ -64,7 +66,7 @@ extern ConfigVariableBool gl_debug_object_labels;
 extern ConfigVariableBool gl_debug_buffers;
 extern ConfigVariableBool gl_finish;
 extern ConfigVariableBool gl_force_depth_stencil;
-extern ConfigVariableBool gl_matrix_palette;
+extern ConfigVariableBool gl_force_fbo_color;
 extern ConfigVariableBool gl_check_errors;
 extern ConfigVariableBool gl_force_flush;
 extern ConfigVariableBool gl_separate_specular_color;
@@ -75,6 +77,7 @@ extern ConfigVariableBool gl_immutable_texture_storage;
 extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;
 extern ConfigVariableBool gl_vertex_array_objects;
+extern ConfigVariableBool gl_fixed_vertex_attrib_locations;
 extern ConfigVariableBool gl_support_primitive_restart_index;
 extern ConfigVariableBool gl_support_sampler_objects;
 extern ConfigVariableBool gl_support_shadow_filter;

@@ -18,9 +18,9 @@
 TypeHandle ForceNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ForceNode
-//       Access : public
-//  Description : default constructor
+//     Function: ForceNode
+//       Access: Public
+//  Description: default constructor
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ForceNode(const string &name) :
@@ -28,9 +28,9 @@ ForceNode(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ForceNode
-//       Access : protected
-//  Description : copy constructor
+//     Function: ForceNode
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ForceNode(const ForceNode &copy) :
@@ -38,18 +38,18 @@ ForceNode(const ForceNode &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~ForceNode
-//       Access : public, virtual
-//  Description : destructor
+//     Function: ~ForceNode
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ~ForceNode() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : public, virtual
-//  Description : dynamic child copy
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: dynamic child copy
 ////////////////////////////////////////////////////////////////////
 PandaNode *ForceNode::
 make_copy() const {
@@ -57,9 +57,9 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : add_forces_from
-//       Access : public
-//  Description : append operation
+//     Function: add_forces_from
+//       Access: Public
+//  Description: append operation
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 add_forces_from(const ForceNode &other) {
@@ -76,9 +76,9 @@ add_forces_from(const ForceNode &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_force
-//       Access : public
-//  Description : remove operation
+//     Function: remove_force
+//       Access: Public
+//  Description: remove operation
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 remove_force(BaseForce *f) {
@@ -91,9 +91,9 @@ remove_force(BaseForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_force
-//       Access : public
-//  Description : remove operation
+//     Function: remove_force
+//       Access: Public
+//  Description: remove operation
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 remove_force(int index) {
@@ -108,10 +108,10 @@ remove_force(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 output(ostream &out) const {
@@ -120,10 +120,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_linear_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_linear_forces
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 write_forces(ostream &out, unsigned int indent) const {
@@ -139,10 +139,10 @@ write_forces(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 write(ostream &out, unsigned int indent) const {

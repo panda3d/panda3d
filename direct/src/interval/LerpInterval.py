@@ -12,7 +12,8 @@ __all__ = [
     'LerpFunctionInterval', 'LerpFunc','LerpFunctionNoStateInterval','LerpFuncNS'
     ]
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 import LerpBlendHelpers
@@ -726,7 +727,7 @@ class LerpFunctionNoStateInterval(Interval.Interval):
     happens to get skipped over completely, it will not bother to call
     the function at all.
     """
-    
+
     # Interval counter
     lerpFunctionIntervalNum = 1
     # create LerpFunctionInterval DirectNotify category
@@ -765,7 +766,7 @@ class LerpFunctionNoStateInterval(Interval.Interval):
         ## Evaluate function
         #apply(self.function, [data] + self.extraArgs)
         #self.state = CInterval.SStarted
-        #self.currT = t        
+        #self.currT = t
 
     def privStep(self, t):
         # Evaluate the function

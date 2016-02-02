@@ -15,9 +15,9 @@
 #include "pointEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointEmitter
-//      Access : Public
-// Description : constructor
+//     Function: PointEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
 PointEmitter() :
@@ -26,9 +26,9 @@ PointEmitter() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: PointEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
 PointEmitter(const PointEmitter &copy) :
@@ -37,18 +37,18 @@ PointEmitter(const PointEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~PointEmitter
-//      Access : Public
-// Description : destructor
+//     Function: ~PointEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
 ~PointEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *PointEmitter::
 make_copy() {
@@ -56,9 +56,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: PointEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -66,9 +66,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: PointEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -76,10 +76,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
 output(ostream &out) const {
@@ -89,10 +89,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
 write(ostream &out, int indent) const {

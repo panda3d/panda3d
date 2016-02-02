@@ -27,7 +27,7 @@
 //       Class : AndroidLogStream
 // Description : This is a type of ostream that writes each line
 //               to the Android log.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 class AndroidLogStream : public ostream {
 private:
   class AndroidLogStreamBuf : public streambuf {

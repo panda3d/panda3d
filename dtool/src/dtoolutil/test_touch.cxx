@@ -1,4 +1,4 @@
-// Filename: test_pfstream.cxx
+// Filename: test_touch.cxx
 // Created by:  drose (04Nov02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@
 #include "dtoolbase.h"
 #include "filename.h"
 
-int 
+int
 main(int argc, char *argv[]) {
   if (argc < 2) {
     cout << "test_touch filename [filename ... ]\n";

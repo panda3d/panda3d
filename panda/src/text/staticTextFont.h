@@ -47,7 +47,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual bool get_glyph(int character, const TextGlyph *&glyph);
+  virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
 
 private:
   void find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,

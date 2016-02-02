@@ -37,7 +37,7 @@ TypeHandle PhysxShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::release
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
 release() {
@@ -51,7 +51,7 @@ release() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::factory
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxShape *PhysxShape::
 factory(NxShapeType shapeType) {
@@ -120,7 +120,7 @@ set_name(const char *name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::get_name
 //       Access: Published
-//  Description: Returns the name string. 
+//  Description: Returns the name string.
 ////////////////////////////////////////////////////////////////////
 const char *PhysxShape::
 get_name() const {
@@ -134,16 +134,17 @@ get_name() const {
 //       Access: Published
 //  Description: Sets the specified shape flag.
 //
-//                The shape may be turned into a trigger by setting
-//                one or more of the TriggerFlags to true. A trigger
-//                shape will not collide with other shapes. Instead,
-//                if a shape enters the trigger's volume, a trigger
-//                event will be sent. Trigger events can be listened
-//                to by DirectObjects.
-//                The following trigger events can be sent:
-//                - physx-trigger-enter
-//                - physx-trigger-stay
-//                - physx-trigger-leave
+//               The shape may be turned into a trigger by setting
+//               one or more of the TriggerFlags to true. A trigger
+//               shape will not collide with other shapes. Instead,
+//               if a shape enters the trigger's volume, a trigger
+//               event will be sent. Trigger events can be listened
+//               to by DirectObjects.
+//
+//               The following trigger events can be sent:
+//               - physx-trigger-enter
+//               - physx-trigger-stay
+//               - physx-trigger-leave
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
 set_flag(PhysxShapeFlag flag, bool value) {
@@ -169,7 +170,7 @@ get_flag(PhysxShapeFlag flag) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::set_skin_width
 //       Access: Published
-//  Description: Sets the skin width. 
+//  Description: Sets the skin width.
 //               The skin width must be non-negative.
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
@@ -197,7 +198,7 @@ get_skin_width() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::set_group
 //       Access: Published
-//  Description: Sets which collision group this shape is part of. 
+//  Description: Sets which collision group this shape is part of.
 //
 //               Default group is 0. Maximum possible group is 31.
 //               Collision groups are sets of shapes which may or
@@ -217,7 +218,7 @@ set_group(unsigned short group) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::get_group
 //       Access: Published
-//  Description: Retrieves the collision group set for this shape. 
+//  Description: Retrieves the collision group set for this shape.
 //               The collision group is an integer between 0 and
 //               31.
 ////////////////////////////////////////////////////////////////////
@@ -255,7 +256,7 @@ set_local_pos(const LPoint3f &pos) {
 //     Function: PhysxShape::get_local_pos
 //       Access: Published
 //  Description: Retrieve the position of the shape in actor space,
-//               i.e. relative to the actor it is owned by. 
+//               i.e. relative to the actor it is owned by.
 ////////////////////////////////////////////////////////////////////
 LPoint3f PhysxShape::
 get_local_pos() const {
@@ -291,7 +292,7 @@ set_local_mat(const LMatrix4f &mat) {
 //     Function: PhysxShape::get_local_mat
 //       Access: Published
 //  Description: Retrieve the transform of the shape in actor space,
-//               i.e. relative to the actor it is owned by. 
+//               i.e. relative to the actor it is owned by.
 ////////////////////////////////////////////////////////////////////
 LMatrix4f PhysxShape::
 get_local_mat() const {
@@ -305,7 +306,7 @@ get_local_mat() const {
 //     Function: PhysxShape::get_material_index
 //       Access: Published
 //  Description: Returns the material index currently assigned to
-//               the shape. 
+//               the shape.
 ////////////////////////////////////////////////////////////////////
 unsigned short PhysxShape::
 get_material_index() const {
@@ -330,7 +331,7 @@ set_material(const PhysxMaterial &material) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::set_material_index
 //       Access: Published
-//  Description: Assigns a material index to the shape. 
+//  Description: Assigns a material index to the shape.
 //
 //               The material index can be retrieved by calling
 //               PhysxMaterial::get_material_index(). If the material
@@ -442,7 +443,7 @@ check_overlap_sphere(const PhysxSphere &world_sphere) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::raycast
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxRaycastHit PhysxShape::
 raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const {
@@ -465,7 +466,7 @@ raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::set_ccd_skeleton
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxShape::
 set_ccd_skeleton(PhysxCcdSkeleton *skel) {
@@ -479,7 +480,7 @@ set_ccd_skeleton(PhysxCcdSkeleton *skel) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxShape::get_ccd_skeleton
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxCcdSkeleton *PhysxShape::
 get_ccd_skeleton() const {

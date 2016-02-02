@@ -143,6 +143,35 @@ get_cache_compressed_textures() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCache::set_cache_compiled_shaders
+//       Access: Published
+//  Description: Indicates whether compiled shader programs will be
+//               stored in the cache, as binary .sho files.  This
+//               may not be supported by all shader languages or
+//               graphics renderers.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+set_cache_compiled_shaders(bool flag) {
+  ReMutexHolder holder(_lock);
+  _cache_compiled_shaders = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::get_cache_compiled_shaders
+//       Access: Published
+//  Description: Returns whether compiled shader programs will be
+//               stored in the cache, as binary .txo files.  See
+//               set_cache_compiled_shaders().
+//
+//               This also returns false if get_active() is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCache::
+get_cache_compiled_shaders() const {
+  ReMutexHolder holder(_lock);
+  return _cache_compiled_shaders && _active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCache::get_root
 //       Access: Published
 //  Description: Returns the current root pathname of the cache.  See
@@ -255,6 +284,32 @@ get_global_ptr() {
     make_global();
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::consider_flush_global_index
+//       Access: Published, Static
+//  Description: If there is a global BamCache object, calls
+//               consider_flush_index() on it.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+consider_flush_global_index() {
+  if (_global_ptr != (BamCache *)NULL) {
+    _global_ptr->consider_flush_index();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::flush_global_index
+//       Access: Published, Static
+//  Description: If there is a global BamCache object, calls
+//               flush_index() on it.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+flush_global_index() {
+  if (_global_ptr != (BamCache *)NULL) {
+    _global_ptr->flush_index();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

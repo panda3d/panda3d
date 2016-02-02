@@ -25,9 +25,9 @@
 PStatCollector ParticleSystemManager::_do_particles_collector("App:Particles:Do Particles");
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ParticleSystemManager
-//      Access : public
-// Description : default constructor
+//     Function: ParticleSystemManager
+//       Access: Public
+//  Description: default constructor
 ////////////////////////////////////////////////////////////////////
 ParticleSystemManager::
 ParticleSystemManager(int every_nth_frame) :
@@ -35,18 +35,18 @@ ParticleSystemManager(int every_nth_frame) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ParticleSystemManager
-//      Access : Public, Virtual
-// Description : Destructor
+//     Function: ParticleSystemManager
+//       Access: Public, Virtual
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 ParticleSystemManager::
 ~ParticleSystemManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : remove_particlesystem
-//      Access : public
-// Description : removes a ps from the maintenance list
+//     Function: remove_particlesystem
+//       Access: Public
+//  Description: removes a ps from the maintenance list
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 remove_particlesystem(ParticleSystem *ps) {
@@ -62,9 +62,9 @@ remove_particlesystem(ParticleSystem *ps) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : do_particles
-//      Access : public
-// Description : does an update and render for each ps in the list.
+//     Function: do_particles
+//       Access: Public
+//  Description: does an update and render for each ps in the list.
 //               this is probably the one you want to use.  Rendering
 //               is the expensive operation, and particles REALLY
 //               should at least be updated every frame, so nth_frame
@@ -130,9 +130,9 @@ do_particles(PN_stdfloat dt) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : do_particles
-//      Access : public
-// Description : does an update and an optional render for a specific
+//     Function: do_particles
+//       Access: Public
+//  Description: does an update and an optional render for a specific
 //               ps.  Since rendering is the expensive operation, multiple
 //               updates could be applied before calling the final render.
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
       PN_stdfloat age = ps->get_system_age() + dt;
       ps->set_system_age(age);
     }
-    
+
     // handle render
     if (do_render) {
       ps->render();
@@ -154,10 +154,10 @@ do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 output(ostream &out) const {
@@ -167,10 +167,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_ps_list
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_ps_list
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 write_ps_list(ostream &out, int indent) const {
@@ -186,10 +186,10 @@ write_ps_list(ostream &out, int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
 write(ostream &out, int indent) const {

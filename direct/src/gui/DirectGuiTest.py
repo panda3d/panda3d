@@ -4,10 +4,13 @@ __all__ = []
 
 
 if __name__ == "__main__":
-    from direct.directbase import DirectStart
+    from direct.showbase.ShowBase import ShowBase
+    import DirectGuiGlobals
     from DirectGui import *
     #from whrandom import *
     from random import *
+
+    base = ShowBase()
 
     # EXAMPLE CODE
     # Load a model
@@ -44,7 +47,7 @@ if __name__ == "__main__":
         db.component('geom0').setScale(db.component('geom2').getScale()[0])
         db.component('geom1').setScale(db.component('geom2').getScale()[0])
         db['text2_text'] = 'Ouch!'
-        db['geom2_color'] = Vec4(1, 0, 0, 1)
+        db['geom2_color'] = (1, 0, 0, 1)
         newX = -1.0 + random() * 2.0
         newZ = -1.0 + random() * 2.0
         db.lerpPos(Point3(newX, 0, newZ), 1.0, task = 'runAway',
@@ -64,7 +67,7 @@ if __name__ == "__main__":
                           text = ('Hi!', 'Ouch!', 'Bye!', 'ZZZZ!'),
                           scale = .15, relief = 'raised',
                           # Here we set an option for a component of the button
-                          geom1_color = Vec4(1, 0, 0, 1),
+                          geom1_color = (1, 0, 0, 1),
                           # Here is an example of a component group option
                           text_pos = (.6, -.8),
                           # Set audio characteristics
@@ -138,4 +141,4 @@ if __name__ == "__main__":
     print 'HEIGHT:', de1.getHeight()
     print 'CENTER:', de1.getCenter()
 
-    run()
+    base.run()

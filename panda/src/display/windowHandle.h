@@ -47,6 +47,7 @@ PUBLISHED:
 
   INLINE OSHandle *get_os_handle() const;
   INLINE void set_os_handle(OSHandle *os_handle);
+  MAKE_PROPERTY(os_handle, get_os_handle, set_os_handle);
 
   void send_windows_message(unsigned int msg, int wparam, int lparam);
 

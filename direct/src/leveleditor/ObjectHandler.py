@@ -11,7 +11,7 @@ import ObjectGlobals as OG
 
 class ObjectHandler:
     """ ObjectHandler will create and update objects """
-    
+
     def __init__(self, editor):
         self.editor = editor
 
@@ -33,7 +33,7 @@ class ObjectHandler:
         a.reparentTo(root)
         b.reparentTo(root)
         return root
-    
+
     def updateDoubleSmiley(self, val, obj):
         objNP = obj[OG.OBJ_NP]
         if objNP.find('left'):
@@ -73,4 +73,4 @@ class PandaActor(Actor.Actor):
         self.setScale(0.005)
 
 
-    
+

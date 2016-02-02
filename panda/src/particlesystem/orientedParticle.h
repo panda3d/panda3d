@@ -18,8 +18,8 @@
 #include "baseParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//        Class : OrientedParticle
-//  Description : Describes a particle that has angular
+//       Class : OrientedParticle
+// Description : Describes a particle that has angular
 //                characteristics (velocity, orientation).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS OrientedParticle : public BaseParticle {

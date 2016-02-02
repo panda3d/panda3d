@@ -35,7 +35,7 @@ ParameterRemapToString(CPPType *orig_type) :
     const_char_star_type = parser.parse_type("const char *");
   }
 
-  if (TypeManager::is_const(orig_type)) {
+  if (TypeManager::is_const_char_pointer(orig_type) || TypeManager::is_string(orig_type)) {
     _new_type = const_char_star_type;
   } else {
     _new_type = char_star_type;

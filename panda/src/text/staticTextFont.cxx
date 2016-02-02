@@ -234,7 +234,7 @@ write(ostream &out, int indent_level) const {
 //               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool StaticTextFont::
-get_glyph(int character, const TextGlyph *&glyph) {
+get_glyph(int character, CPT(TextGlyph) &glyph) {
   Glyphs::const_iterator gi = _glyphs.find(character);
   if (gi == _glyphs.end()) {
     // No definition for this character.
@@ -343,7 +343,9 @@ find_characters(PandaNode *root, const RenderState *net_state) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // design size indicator.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
-      _line_height = reader.get_data3()[2];
+      LVecBase3 data = reader.get_data3();
+      _line_height = data[2];
+      _total_poly_margin = data[0];
       _space_advance = 0.25f * _line_height;
     }
 

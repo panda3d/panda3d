@@ -39,11 +39,9 @@ get_reference() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CompassEffect::get_properties
 //       Access: Published
-//  Description: 
-
-//               Returns the bitmask of properties that this
-//               CompassEffect object inherits from its reference node
-//               (or from the root).
+//  Description: Returns the bitmask of properties that this
+//               CompassEffect object inherits from its reference
+//               node (or from the root).
 ////////////////////////////////////////////////////////////////////
 INLINE int CompassEffect::
 get_properties() const {

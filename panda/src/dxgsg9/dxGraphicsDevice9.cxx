@@ -1,4 +1,4 @@
-// Filename: dxGraphicsDevice.cxx
+// Filename: dxGraphicsDevice9.cxx
 // Created by:  masad (22Jul03)
 //
 ////////////////////////////////////////////////////////////////////

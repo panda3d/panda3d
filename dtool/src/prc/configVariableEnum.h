@@ -45,15 +45,17 @@ public:
   INLINE void operator = (EnumType value);
   INLINE operator EnumType () const;
 
-  INLINE int size() const;
-  INLINE EnumType operator [] (int n) const;
+  INLINE size_t size() const;
+  INLINE EnumType operator [] (size_t n) const;
 
   INLINE void set_value(EnumType value);
   INLINE EnumType get_value() const;
   INLINE EnumType get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE EnumType get_word(int n) const;
-  INLINE void set_word(int n, EnumType value);
+  INLINE EnumType get_word(size_t n) const;
+  INLINE void set_word(size_t n, EnumType value);
 
 private:
   INLINE EnumType parse_string(const string &value) const;

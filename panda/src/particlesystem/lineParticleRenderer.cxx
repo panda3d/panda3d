@@ -23,9 +23,9 @@
 PStatCollector LineParticleRenderer::_render_collector("App:Particles:Line:Render");
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Default Constructor
+//     Function: LineParticleRenderer
+//       Access: Public
+//  Description: Default Constructor
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
@@ -39,9 +39,9 @@ LineParticleRenderer() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Constructor
+//     Function: LineParticleRenderer
+//       Access: Public
+//  Description: Constructor
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
@@ -55,9 +55,9 @@ LineParticleRenderer(const LColor& head,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineParticleRenderer
-//      Access : Public
-// Description : Copy Constructor
+//     Function: LineParticleRenderer
+//       Access: Public
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
@@ -70,9 +70,9 @@ LineParticleRenderer(const LineParticleRenderer& copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LineParticleRenderer
-//      Access : Public
-// Description : Destructor
+//     Function: ~LineParticleRenderer
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
@@ -80,9 +80,9 @@ LineParticleRenderer::
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make copy
-//      Access : Public
-// Description : child virtual for spawning systems
+//     Function: make copy
+//       Access: Public
+//  Description: child virtual for spawning systems
 ////////////////////////////////////////////////////////////////////
 
 BaseParticleRenderer *LineParticleRenderer::
@@ -91,9 +91,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : birth_particle
-//      Access : Private, virtual
-// Description : child birth
+//     Function: birth_particle
+//       Access: Private, Virtual
+//  Description: child birth
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
@@ -101,9 +101,9 @@ birth_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : kill_particle
-//      Access : Private, virtual
-// Description : child kill
+//     Function: kill_particle
+//       Access: Private, Virtual
+//  Description: child kill
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
@@ -111,9 +111,9 @@ kill_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : resize_pool
-//      Access : private
-// Description : resizes the render pool.  Reference counting
+//     Function: resize_pool
+//       Access: Private
+//  Description: resizes the render pool.  Reference counting
 //               makes this easy.
 ////////////////////////////////////////////////////////////////////
 
@@ -125,9 +125,9 @@ resize_pool(int new_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init_geoms
-//      Access : private
-// Description : initializes the geomnodes
+//     Function: init_geoms
+//       Access: Private
+//  Description: initializes the geomnodes
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
@@ -146,9 +146,9 @@ init_geoms() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : render
-//      Access : private
-// Description : populates the GeomLine
+//     Function: render
+//       Access: Private
+//  Description: populates the GeomLine
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
@@ -227,7 +227,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // one line from current position to last position
 
     vertex.add_data3(position);
-    LPoint3 last_position = position + 
+    LPoint3 last_position = position +
       (cur_particle->get_last_position() - position) * _line_scale_factor;
     vertex.add_data3(last_position);
     color.add_data4(head_color);
@@ -251,10 +251,10 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LineParticleRenderer::
 output(ostream &out) const {
@@ -264,10 +264,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LineParticleRenderer::
 write(ostream &out, int indent_level) const {

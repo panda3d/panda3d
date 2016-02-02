@@ -289,11 +289,11 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   // Now write the header information to the stream.
   StreamWriter sw(_dest, false);
   nassertv((PN_uint16)nid == nid);
-  sw.add_uint16(nid);
+  sw.add_uint16((PN_uint16)nid);
   nassertv((PN_uint16)key_length == key_length);
-  sw.add_uint16(key_length);
+  sw.add_uint16((PN_uint16)key_length);
   nassertv((PN_uint16)count == count);
-  sw.add_uint16(count);
+  sw.add_uint16((PN_uint16)count);
   sw.append_data(iv, iv_length);
 
   _write_valid = true;
@@ -347,7 +347,7 @@ overflow(int ch) {
 
   if (ch != EOF) {
     // Write one more character.
-    char c = ch;
+    char c = (char)ch;
     write_chars(&c, 1);
   }
 
@@ -364,7 +364,7 @@ int EncryptStreamBuf::
 sync() {
   if (_source != (istream *)NULL) {
     size_t n = egptr() - gptr();
-    gbump(n);
+    gbump((int)n);
   }
 
   if (_dest != (ostream *)NULL) {
@@ -396,7 +396,7 @@ underflow() {
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
-        gbump(num_bytes);
+        gbump((int)num_bytes);
         return EOF;
       }
 
@@ -404,7 +404,7 @@ underflow() {
       nassertr(read_count < num_bytes, EOF);
       size_t delta = num_bytes - read_count;
       memmove(gptr() + delta, gptr(), read_count);
-      gbump(delta);
+      gbump((int)delta);
     }
   }
 

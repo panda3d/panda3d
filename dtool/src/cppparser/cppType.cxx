@@ -80,6 +80,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_default_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPType::
+is_copy_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPType::is_parameter_expr
 //       Access: Public, Virtual
 //  Description: Returns true if the type is a special parameter
@@ -322,6 +342,12 @@ new_type(CPPType *type) {
     assert(*result.first == type);
     return type;
   }
+
+  // If this triggers, we probably messed up by defining is_less()
+  // incorrectly; they provide a relative ordering even though they
+  // are equal to each other.  Or, we provided an is_equal() that
+  // gives false negatives.
+  assert(**result.first == *type);
 
   // The insertion has not taken place; thus, there was previously
   // another equivalent type declared.

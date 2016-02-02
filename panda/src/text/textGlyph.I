@@ -16,14 +16,15 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: TextGlyph::Default constructor
 //       Access: Public
-//  Description: This constructor makes an invalid glyph.
+//  Description: This constructor makes an empty glyph.
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
-TextGlyph(int character) :
-  _character(character)
+TextGlyph(int character, PN_stdfloat advance) :
+  _character(character),
+  _geom((Geom *)NULL),
+  _advance(advance),
+  _has_quad(false)
 {
-  _geom = (Geom *)NULL;
-  _advance = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,8 +38,12 @@ TextGlyph(int character, const Geom *geom,
   _character(character),
   _geom(geom), 
   _state(state),
-  _advance(advance) 
-{ 
+  _advance(advance),
+  _has_quad(false)
+{
+  if (geom != NULL) {
+    check_quad_geom();
+  }
   if (_state == (RenderState *)NULL) {
     _state = RenderState::make_empty();
   }
@@ -54,8 +59,11 @@ TextGlyph(const TextGlyph &copy) :
   _character(copy._character),
   _geom(copy._geom),
   _state(copy._state),
-  _advance(copy._advance) 
-{ 
+  _advance(copy._advance),
+  _has_quad(copy._has_quad),
+  _quad_dimensions(copy._quad_dimensions),
+  _quad_texcoords(copy._quad_texcoords)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,6 +77,9 @@ operator = (const TextGlyph &copy) {
   _geom = copy._geom;
   _state = copy._state;
   _advance = copy._advance;
+  _has_quad = copy._has_quad;
+  _quad_dimensions = copy._quad_dimensions;
+  _quad_texcoords = copy._quad_texcoords;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,28 +94,40 @@ get_character() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_geom
+//     Function: TextGlyph::has_quad
 //       Access: Public
-//  Description: Returns a Geom that renders the particular glyph.
+//  Description: Returns true if this glyph contains the definition
+//               for a simple quad, rather than a more complex piece
+//               of geometry.
+//
+//               You may still call get_geom() even if this returns
+//               true, which will synthesize a Geom for this quad.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Geom) TextGlyph::
-get_geom(Geom::UsageHint usage_hint) const {
-  if (_geom == (Geom *)NULL) {
-    return NULL;
+INLINE bool TextGlyph::
+has_quad() const {
+  return _has_quad;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::get_quad
+//       Access: Public
+//  Description: Assuming that this glyph is representable as a
+//               textured quad, returns its dimensions and UV range.
+//               Returns false if it is not representable as a quad,
+//               or if it is whitespace.
+//
+//               The order of the components is left, bottom,
+//               right, top.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextGlyph::
+get_quad(LVecBase4 &dimensions, LVecBase4 &texcoords) const {
+  if (!_has_quad) {
+    return false;
   }
 
-  // We always return a copy of the geom.  That will allow the caller
-  // to modify its vertices without fear of stomping on other copies;
-  // it is also critical for the DynamicTextGlyph, which depends on
-  // this behavior to properly count references to this glyph.
-  PT(Geom) new_geom = _geom->make_copy();
-  new_geom->set_usage_hint(usage_hint);
-  const GeomVertexData *vdata = new_geom->get_vertex_data();
-  nassertr(vdata != NULL, new_geom);
-  if (vdata->get_usage_hint() != usage_hint) {
-    new_geom->modify_vertex_data()->set_usage_hint(usage_hint);
-  }
-  return new_geom;
+  dimensions = _quad_dimensions;
+  texcoords = _quad_texcoords;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,7 +23,8 @@
 #include "lightMutexHolder.h"
 #include "trueClock.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#if defined(CPPPARSER)
+#elif defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
 #include <Iphlpapi.h> // For GetAdaptersAddresses()
 #elif defined(ANDROID)

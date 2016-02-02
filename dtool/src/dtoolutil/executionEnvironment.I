@@ -80,7 +80,7 @@ clear_shadow(const string &var) {
 //  Description: Returns the number of command-line arguments
 //               available, not counting arg 0, the binary name.
 ////////////////////////////////////////////////////////////////////
-INLINE int ExecutionEnvironment::
+INLINE size_t ExecutionEnvironment::
 get_num_args() {
   return get_ptr()->ns_get_num_args();
 }
@@ -94,7 +94,7 @@ get_num_args() {
 //               parameter, not the binary name.
 ////////////////////////////////////////////////////////////////////
 INLINE string ExecutionEnvironment::
-get_arg(int n) {
+get_arg(size_t n) {
   return get_ptr()->ns_get_arg(n);
 }
 

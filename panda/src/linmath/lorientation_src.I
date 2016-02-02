@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Default Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -23,7 +23,7 @@ FLOATNAME(LOrientation)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Copy Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -33,7 +33,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -43,16 +43,16 @@ FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: vector + twist
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
-FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
-  float radians = deg_2_rad(twist);
-  float theta_over_2 = radians * FLOATCONST(0.5);
-  float sin_to2 = sinf(theta_over_2);
+FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, FLOATTYPE twist) {
+  FLOATTYPE radians = deg_2_rad(twist);
+  FLOATTYPE theta_over_2 = radians * FLOATCONST(0.5);
+  FLOATTYPE sin_to2 = csin(theta_over_2);
 
-  set_r(cosf(theta_over_2));
+  set_r(ccos(theta_over_2));
   set_i(point_at[0] * sin_to2);
   set_j(point_at[1] * sin_to2);
   set_k(point_at[2] * sin_to2);
@@ -60,7 +60,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: matrix3
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -70,7 +70,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: matrix4
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -80,7 +80,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Orientation * rotation = Orientation
 //               Applies a rotation to an orientation.
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ operator * (const FLOATNAME(LRotation) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Orientation * Orientation
 //               This is a meaningless operation, and will always
 //               simply return the rhs.

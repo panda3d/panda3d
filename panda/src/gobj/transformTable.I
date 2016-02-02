@@ -62,7 +62,7 @@ register_table(const TransformTable *table) {
 //       Access: Published
 //  Description: Returns the number of transforms in the table.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformTable::
+INLINE size_t TransformTable::
 get_num_transforms() const {
   return _transforms.size();
 }
@@ -73,8 +73,8 @@ get_num_transforms() const {
 //  Description: Returns the nth transform in the table.
 ////////////////////////////////////////////////////////////////////
 INLINE const VertexTransform *TransformTable::
-get_transform(int n) const {
-  nassertr(n >= 0 && n < (int)_transforms.size(), NULL);
+get_transform(size_t n) const {
+  nassertr(n < _transforms.size(), NULL);
   return _transforms[n];
 }
 

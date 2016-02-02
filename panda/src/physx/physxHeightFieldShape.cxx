@@ -20,7 +20,7 @@ TypeHandle PhysxHeightFieldShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxHeightFieldShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxHeightFieldShape::
 link(NxShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxHeightFieldShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxHeightFieldShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxHeightFieldShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxHeightFieldShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxHeightFieldShape::
 save_to_desc(PhysxHeightFieldShapeDesc &shapeDesc) const {

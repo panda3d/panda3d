@@ -12,13 +12,13 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
     usecommandarea  = 0
     usestatusarea   = 0
     Metatag=""
-    Metanode=None 
+    Metanode=None
     tag_text=None
     def __init__(self,nodePath,parent=None,**kw):
 
         # Initialise superclass
         Pmw.MegaWidget.__init__(self, parent)
-        
+
         # Define the megawidget options.
         optiondefs = (
             ('title',       self.appname,       None),
@@ -31,10 +31,10 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
         if parent == None:
             self.parent = Toplevel()
         AppShell.__init__(self, self.parent)
-        
+
         self.parent.resizable(False,False)
 
-    
+
     def appInit(self):
         print "Metadata Panel"
 
@@ -55,5 +55,5 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
 
     def SetIt(self):
         self.Metanode.setTag("Metadata",self.tag_text.get())
-        
-        
+
+

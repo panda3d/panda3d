@@ -575,7 +575,7 @@ output_binary(ostream &out, int spaces_every) const {
   if (_highest_bits) {
     out << "...1 ";
   }
-  int num_bits = max(get_num_bits(), spaces_every);
+  int num_bits = max((int)get_num_bits(), spaces_every);
   for (int i = num_bits - 1; i >= 0; i--) {
     if (spaces_every != 0 && ((i % spaces_every) == spaces_every - 1)) {
       out << ' ';
@@ -944,11 +944,11 @@ ensure_has_word(int n) {
   copy_on_write();
 
   if (_highest_bits) {
-    while (n >= (int)_array.size()) {
+    while ((size_t)n >= _array.size()) {
       _array.push_back(MaskType::all_on());
     }
   } else {
-    while (n >= (int)_array.size()) {
+    while ((size_t)n >= _array.size()) {
       _array.push_back(MaskType::all_off());
     }
   }

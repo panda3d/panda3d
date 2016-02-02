@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : obstacleAvoidance.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  10 Nov 09
+// Filename: obstacleAvoidance.cxx
+// Created by: Deepak, John, Navin (10Nov09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -15,23 +14,23 @@
 
 #include "obstacleAvoidance.h"
 
-ObstacleAvoidance::ObstacleAvoidance(AICharacter *ai_char, float feeler_length) {
+ObstacleAvoidance::
+ObstacleAvoidance(AICharacter *ai_char, float feeler_length) {
   _ai_char = ai_char;
   _feeler = feeler_length;
 }
 
-ObstacleAvoidance::~ObstacleAvoidance() {
+ObstacleAvoidance::
+~ObstacleAvoidance() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : obstacle_detection
-// Description : This function checks if an obstacle is near to the AICharacter and
+////////////////////////////////////////////////////////////////////
+//     Function: obstacle_detection
+//  Description: This function checks if an obstacle is near to the AICharacter and
 //               if an obstacle is detected returns true
-
-/////////////////////////////////////////////////////////////////////////////////
-
-bool ObstacleAvoidance::obstacle_detection() {
+////////////////////////////////////////////////////////////////////
+bool ObstacleAvoidance::
+obstacle_detection() {
   // Calculate the volume of the AICharacter with respect to render
   PT(BoundingVolume) np_bounds = _ai_char->get_node_path().get_bounds();
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
@@ -51,46 +50,44 @@ bool ObstacleAvoidance::obstacle_detection() {
       expanded_radius = bsphere->get_radius() + np_sphere->get_radius();
     }
   }
-     LVecBase3 feeler = _feeler * _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
-     feeler.normalize();
-     feeler *= (expanded_radius + np_sphere->get_radius()) ;
-     to_obstacle = _nearest_obstacle.get_pos() - _ai_char->get_node_path().get_pos();
-     LVector3 line_vector = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
-     LVecBase3 project = (to_obstacle.dot(line_vector) * line_vector) / line_vector.length_squared();
-     LVecBase3 perp = project - to_obstacle;
-     // If the nearest obstacle will collide with our AICharacter then send obstacle detection as true
-     if((_nearest_obstacle) && (perp.length() < expanded_radius - np_sphere->get_radius()) && (project.length() < feeler.length())) {
-       return true;
-     }
-     return false;
+
+  LVecBase3 feeler = _feeler * _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
+  feeler.normalize();
+  feeler *= (expanded_radius + np_sphere->get_radius()) ;
+  to_obstacle = _nearest_obstacle.get_pos() - _ai_char->get_node_path().get_pos();
+  LVector3 line_vector = _ai_char->get_char_render().get_relative_vector(_ai_char->get_node_path(), LVector3::forward());
+  LVecBase3 project = (to_obstacle.dot(line_vector) * line_vector) / line_vector.length_squared();
+  LVecBase3 perp = project - to_obstacle;
+
+  // If the nearest obstacle will collide with our AICharacter then send obstacle detection as true
+  if (_nearest_obstacle && (perp.length() < expanded_radius - np_sphere->get_radius()) && (project.length() < feeler.length())) {
+    return true;
+  }
+  return false;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : obstacle_avoidance_activate
-// Description : This function activates obstacle_avoidance if a obstacle
+////////////////////////////////////////////////////////////////////
+//     Function: obstacle_avoidance_activate
+//  Description: This function activates obstacle_avoidance if a obstacle
 //               is detected
-
-/////////////////////////////////////////////////////////////////////////////////
-
-void ObstacleAvoidance::obstacle_avoidance_activate() {
-  if(obstacle_detection()) {
+////////////////////////////////////////////////////////////////////
+void ObstacleAvoidance::
+obstacle_avoidance_activate() {
+  if (obstacle_detection()) {
     _ai_char->_steering->turn_off("obstacle_avoidance_activate");
     _ai_char->_steering->turn_on("obstacle_avoidance");
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_obstacle_avoidance
-// Description : This function returns the force necessary by the AICharacter to
+////////////////////////////////////////////////////////////////////
+//     Function: do_obstacle_avoidance
+//  Description: This function returns the force necessary by the AICharacter to
 //               avoid the nearest obstacle detected by obstacle_detection
 //               function
 // NOTE : This assumes the obstacles are spherical
-
-/////////////////////////////////////////////////////////////////////////////////
-
-LVecBase3 ObstacleAvoidance::do_obstacle_avoidance() {
+////////////////////////////////////////////////////////////////////
+LVecBase3 ObstacleAvoidance::
+do_obstacle_avoidance() {
   LVecBase3 offset = _ai_char->get_node_path().get_pos() - _nearest_obstacle.get_pos();
   PT(BoundingVolume) bounds =_nearest_obstacle.get_bounds();
   CPT(BoundingSphere) bsphere = bounds->as_bounding_sphere();

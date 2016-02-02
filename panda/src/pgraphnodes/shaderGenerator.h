@@ -33,6 +33,7 @@ class DirectionalLight;
 class PointLight;
 class Spotlight;
 class LightAttrib;
+class GeomVertexAnimationSpec;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderGenerator
@@ -71,11 +72,11 @@ class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
   ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);
   virtual ~ShaderGenerator();
-  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs);
+  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
+                                              const GeomVertexAnimationSpec &anim);
 
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
-  PT(Texture) update_shadow_buffer(NodePath light_np);
   static const string combine_mode_as_string(CPT(TextureStage) stage,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
@@ -84,6 +85,7 @@ protected:
 
   // Shader register allocation:
 
+  bool _use_generic_attr;
   int _vcregs_used;
   int _fcregs_used;
   int _vtregs_used;
@@ -98,14 +100,8 @@ protected:
   Material *_material;
   int _num_textures;
 
-  pvector <AmbientLight *>     _alights;
-  pvector <DirectionalLight *> _dlights;
-  pvector <PointLight *>       _plights;
-  pvector <Spotlight *>        _slights;
-  pvector <NodePath>           _alights_np;
-  pvector <NodePath>           _dlights_np;
-  pvector <NodePath>           _plights_np;
-  pvector <NodePath>           _slights_np;
+  pvector<LightLensNode *> _lights;
+  pvector<NodePath> _lights_np;
 
   bool _vertex_colors;
   bool _flat_colors;

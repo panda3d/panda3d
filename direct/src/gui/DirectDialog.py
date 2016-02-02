@@ -2,7 +2,7 @@
 
 __all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 from DirectButton import *
@@ -94,8 +94,8 @@ class DirectDialog(DirectFrame):
             ('text',              '',            None),
             ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
-            ('image',             None,          None),
-            ('relief',            DGG.RAISED,     None),
+            ('image',             DGG.getDefaultDialogGeom(), None),
+            ('relief',            DGG.getDefaultDialogRelief(), None),
             ('borderWidth',       (0.01, 0.01),  None),
             ('buttonTextList',    [],            DGG.INITOPT),
             ('buttonGeomList',    [],            DGG.INITOPT),
@@ -316,7 +316,8 @@ class DirectDialog(DirectFrame):
         # reduce bottom by pad, button height and 2*button pad
         b = min(b - self['midPad'] - bpad[1] - bHeight - bpad[1], b) - pad[1]
         t = t + self['topPad'] + pad[1]
-        self['frameSize'] = (l, r, b, t)
+        if self['frameSize'] is None:
+            self['frameSize'] = (l, r, b, t)
         self['image_scale'] = (r - l, 1, t - b)
         # Center frame about text and buttons
         self['image_pos'] = ((l+r)*0.5, 0.0, (b+t)*0.5)

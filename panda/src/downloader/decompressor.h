@@ -43,11 +43,14 @@ PUBLISHED:
 
   PN_stdfloat get_progress() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(progress, get_progress);
+
 private:
   void cleanup();
 
   Filename _source_filename;
-  
+
   istream *_source;
   istream *_decompress;
   ostream *_dest;

@@ -86,54 +86,75 @@ PUBLISHED:
   INLINE void set_dimensions(int i, PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
   INLINE void set_dimensions(const LVecBase4 &dimensions);
   virtual void set_dimensions(int i, const LVecBase4 &dimensions);
+  MAKE_PROPERTY(dimensions, get_dimensions, set_dimensions);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
   virtual bool is_stereo() const;
+  MAKE_PROPERTY(window, get_window);
+  MAKE_PROPERTY(pipe, get_pipe);
+  MAKE_PROPERTY(stereo, is_stereo);
 
   virtual void set_camera(const NodePath &camera);
   INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(camera, get_camera, set_camera);
 
   virtual void set_active(bool active);
   INLINE bool is_active() const;
+  MAKE_PROPERTY(active, is_active, set_active);
 
   virtual void set_sort(int sort);
   INLINE int get_sort() const;
+  MAKE_PROPERTY(sort, get_sort, set_sort);
 
   virtual void set_stereo_channel(Lens::StereoChannel stereo_channel);
   INLINE Lens::StereoChannel get_stereo_channel() const;
+  MAKE_PROPERTY(stereo_channel, get_stereo_channel, set_stereo_channel);
+
   virtual void set_tex_view_offset(int tex_view_offset);
   INLINE int get_tex_view_offset() const;
+  MAKE_PROPERTY(tex_view_offset, get_tex_view_offset, set_tex_view_offset);
 
   virtual void set_incomplete_render(bool incomplete_render);
   INLINE bool get_incomplete_render() const;
+  MAKE_PROPERTY(incomplete_render, get_incomplete_render, set_incomplete_render);
 
   virtual void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
+  MAKE_PROPERTY(texture_reload_priority, get_texture_reload_priority,
+                                         set_texture_reload_priority);
 
   void set_lens_index(int index);
   INLINE int get_lens_index() const;
+  MAKE_PROPERTY(lens_index, get_lens_index, set_lens_index);
 
   virtual void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
+  MAKE_PROPERTY(cull_traverser, get_cull_traverser, set_cull_traverser);
 
   INLINE void set_cube_map_index(int cube_map_index);
   virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
+  MAKE_PROPERTY(target_tex_page, get_target_tex_page, set_target_tex_page);
 
   INLINE void set_scissor_enabled(bool scissor_enabled);
   INLINE bool get_scissor_enabled() const;
+  MAKE_PROPERTY(scissor_enabled, get_scissor_enabled, set_scissor_enabled);
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
+  MAKE_PROPERTY(cull_callback, get_cull_callback, set_cull_callback);
 
   INLINE void set_draw_callback(CallbackObject *object);
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
+  MAKE_PROPERTY(draw_callback, get_draw_callback, set_draw_callback);
 
   INLINE int get_pixel_width(int i = 0) const;
   INLINE int get_pixel_height(int i = 0) const;
+  INLINE LVecBase2i get_pixel_size(int i = 0) const;
+  MAKE_PROPERTY(pixel_size, get_pixel_size);
 
   virtual void output(ostream &out) const;
 
@@ -161,7 +182,7 @@ public:
 
   virtual bool supports_pixel_zoom() const;
 
-  INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
+  INLINE void set_cull_result(PT(CullResult) cull_result, PT(SceneSetup) scene_setup,
                               Thread *current_thread);
   INLINE CullResult *get_cull_result(Thread *current_thread) const;
   INLINE SceneSetup *get_scene_setup(Thread *current_thread) const;

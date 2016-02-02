@@ -14,25 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: compose_matrix_old_hpr
-//  Description: Computes the 3x3 matrix from scale, shear, and
-//               rotation.
-////////////////////////////////////////////////////////////////////
-void
-compose_matrix_old_hpr(FLOATNAME(LMatrix3) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       CoordinateSystem cs) {
-  TAU_PROFILE("void compose_matrix_old_hpr(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
-  mat = 
-    FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::back(cs), cs);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: unwind_yup_rotation_old_hpr
 //  Description: Extracts the rotation about the x, y, and z axes from
 //               the given hpr & scale matrix.  Adjusts the matrix
@@ -307,19 +288,18 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: compose_matrix_new_hpr
+//     Function: compose_matrix
 //  Description: Computes the 3x3 matrix from scale, shear, and
 //               rotation.
 ////////////////////////////////////////////////////////////////////
 void
-compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       CoordinateSystem cs) {
-  TAU_PROFILE("void compose_matrix_new_hpr(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
+compose_matrix(FLOATNAME(LMatrix3) &mat,
+               const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &shear,
+               const FLOATNAME(LVecBase3) &hpr,
+               CoordinateSystem cs) {
+  TAU_PROFILE("void compose_matrix(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
   mat.set_scale_shear_mat(scale, shear, cs);
   if (!IS_NEARLY_ZERO(hpr[2])) {
     FLOATNAME(LMatrix3) r;
@@ -339,7 +319,7 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: unwind_yup_rotation_new_hpr
+//     Function: unwind_yup_rotation
 //  Description: Extracts the rotation about the x, y, and z axes from
 //               the given hpr & scale matrix.  Adjusts the matrix
 //               to eliminate the rotation.
@@ -348,8 +328,8 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
 //               right-handed Y-up coordinate system.
 ////////////////////////////////////////////////////////////////////
 static void
-unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
-  TAU_PROFILE("void unwind_yup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
+unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_yup_rotation(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
 
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
@@ -418,7 +398,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: unwind_zup_rotation_new_hpr
+//     Function: unwind_zup_rotation
 //  Description: Extracts the rotation about the x, y, and z axes from
 //               the given hpr & scale matrix.  Adjusts the matrix
 //               to eliminate the rotation.
@@ -427,8 +407,8 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 //               right-handed Z-up coordinate system.
 ////////////////////////////////////////////////////////////////////
 static void
-unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
-  TAU_PROFILE("void unwind_zup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
+unwind_zup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
+  TAU_PROFILE("void unwind_zup_rotation(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
   mat.get_row(x,0);
@@ -496,7 +476,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix_new_hpr
+//     Function: decompose_matrix
 //  Description: Extracts out the components of a 3x3 rotation matrix.
 //               Returns true if successful, or false if there was an
 //               error.  Since a 3x3 matrix always contains an affine
@@ -504,12 +484,12 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 //               singular transforms are not treated as an error.
 ////////////////////////////////////////////////////////////////////
 bool
-decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
-                         FLOATNAME(LVecBase3) &scale,
-                         FLOATNAME(LVecBase3) &shear,
-                         FLOATNAME(LVecBase3) &hpr,
-                         CoordinateSystem cs) {
-  TAU_PROFILE("bool decompose_matrix_new_hpr(LMatrix3 &, LVecBase3 &, LVecBase3 &, LVecBase3 &)", " ", TAU_USER);
+decompose_matrix(const FLOATNAME(LMatrix3) &mat,
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &shear,
+                 FLOATNAME(LVecBase3) &hpr,
+                 CoordinateSystem cs) {
+  TAU_PROFILE("bool decompose_matrix(LMatrix3 &, LVecBase3 &, LVecBase3 &, LVecBase3 &)", " ", TAU_USER);
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -527,13 +507,13 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
   switch (cs) {
   case CS_zup_right:
     {
-      unwind_zup_rotation_new_hpr(new_mat, hpr);
+      unwind_zup_rotation(new_mat, hpr);
     }
     break;
 
   case CS_yup_right:
     {
-      unwind_yup_rotation_new_hpr(new_mat, hpr);
+      unwind_yup_rotation(new_mat, hpr);
     }
     break;
 
@@ -548,7 +528,7 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
         mat(1, 0), mat(1, 1), -mat(1, 2),
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
-      unwind_zup_rotation_new_hpr(new_mat, hpr);
+      unwind_zup_rotation(new_mat, hpr);
       hpr[0] = -hpr[0];
       hpr[2] = -hpr[2];
     }
@@ -565,7 +545,7 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
         mat(1, 0), mat(1, 1), -mat(1, 2),
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
-      unwind_yup_rotation_new_hpr(new_mat, hpr);
+      unwind_yup_rotation(new_mat, hpr);
     }
     break;
 
@@ -604,7 +584,6 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: old_to_new_hpr
 //  Description: Converts the HPR as represented in the old, broken
@@ -618,43 +597,15 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
 FLOATNAME(LVecBase3)
 old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr) {
   TAU_PROFILE("LVecBase3 old_to_new_hpr(const LVecBase3 &)", " ", TAU_USER);
-  FLOATNAME(LMatrix3) mat;
-  compose_matrix_old_hpr(mat, 
-                         FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
-                         FLOATNAME(LVecBase3)::zero(),
-                         old_hpr);
+  FLOATNAME(LMatrix3) mat =
+    FLOATNAME(LMatrix3)::rotate_mat_normaxis(old_hpr[1], FLOATNAME(LVector3)::right()) *
+    FLOATNAME(LMatrix3)::rotate_mat_normaxis(old_hpr[0], FLOATNAME(LVector3)::up()) *
+    FLOATNAME(LMatrix3)::rotate_mat_normaxis(old_hpr[2], FLOATNAME(LVector3)::back());
 
   FLOATNAME(LVecBase3) new_scale;
   FLOATNAME(LVecBase3) new_shear;
   FLOATNAME(LVecBase3) new_hpr;
-  
-  decompose_matrix_new_hpr(mat, new_scale, new_shear, new_hpr);
+
+  decompose_matrix(mat, new_scale, new_shear, new_hpr);
   return new_hpr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: new_to_old_hpr
-//  Description: Converts the HPR as represented in the new, correct
-//               representation to the old, broken way.  Returns the
-//               old HPR.  Useful only for backporting.
-//
-//               This function is provided to ease transition from new
-//               systems that relied on Panda's original broken HPR
-//               calculation.
-////////////////////////////////////////////////////////////////////
-FLOATNAME(LVecBase3)
-new_to_old_hpr(const FLOATNAME(LVecBase3) &new_hpr) {
-  TAU_PROFILE("LVecBase3 new_to_old_hpr(const LVecBase3 &)", " ", TAU_USER);
-  FLOATNAME(LMatrix3) mat;
-  compose_matrix_new_hpr(mat, 
-                         FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
-                         FLOATNAME(LVecBase3)::zero(),
-                         new_hpr);
-
-  FLOATNAME(LVecBase3) old_scale;
-  FLOATNAME(LVecBase3) old_shear;
-  FLOATNAME(LVecBase3) old_hpr;
-  
-  decompose_matrix_old_hpr(mat, old_scale, old_shear, old_hpr);
-  return old_hpr;
 }

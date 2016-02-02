@@ -27,7 +27,7 @@ class duplicateWindow(AppShell):
     padx            = 0
     pady            = 0
 
-    
+
     def __init__(self, parent = None, nodePath = None, **kw):
         # Define the megawidget options.
         optiondefs = (
@@ -43,10 +43,10 @@ class duplicateWindow(AppShell):
         self.nodePath = nodePath
 
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-        
+
     def appInit(self):
         print '----SideWindow is Initialized!!'
-        
+
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
@@ -90,18 +90,18 @@ class duplicateWindow(AppShell):
         self.numberOfCopy = Pmw.EntryField(settingFrame,label_text='Number of Copy :',labelpos='w',value='1', validate=Pmw.integervalidator)
         self.numberOfCopy.component('entry').config(width=15)
         self.numberOfCopy.place(anchor=NW,x=52,y=150)
-        
+
         settingFrame.pack(fill=BOTH,expand=1,padx=7,pady=7)
 
         self.button_ok = Button(mainFrame, text="OK", command=self.ok_press,width=10)
         self.button_ok.pack(fill=BOTH,expand=0,side=RIGHT)
-        
+
         mainFrame.pack(fill = 'both', expand = 1,padx=7,pady=7)
 
-    
+
     def createMenuBar(self):
         self.menuBar.destroy()
-        
+
     def onDestroy(self, event):
         messenger.send('DW_close')
         '''
@@ -110,7 +110,7 @@ class duplicateWindow(AppShell):
         pass
 
     ###############################
-    
+
     def ok_press(self):
         #################################################################
         # ok_press(self)

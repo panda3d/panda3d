@@ -6,11 +6,11 @@ __all__ = ['ParticleInterval']
 Contains the ParticleInterval class
 """
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from Interval import Interval
 
-from direct.particles import ParticleEffect
 
 class ParticleInterval(Interval):
     """
@@ -57,14 +57,14 @@ class ParticleInterval(Interval):
         name is a string: use this for unique intervals so that
                           they can be easily found in the taskMgr
         """
-        
+
         # Generate unique name
         id = 'Particle-%d' % ParticleInterval.particleNum
         ParticleInterval.particleNum += 1
         if name == None:
             name = id
         # Record instance variables
-        self.particleEffect = particleEffect 
+        self.particleEffect = particleEffect
         self.cleanup = cleanup
 
         if parent != None:
@@ -76,14 +76,14 @@ class ParticleInterval(Interval):
                 particles.setRenderParent(renderParent.node())
 
         self.__softStopped = False
-        
+
         if softStopT == 0.0:
             self.softStopT = duration
         elif softStopT < 0.0:
             self.softStopT = duration+softStopT
         else:
             self.softStopT = softStopT
-            
+
         # Initialize superclass
         Interval.__init__(self, name, duration)
 
@@ -119,7 +119,7 @@ class ParticleInterval(Interval):
     def privInstant(self):
         self.privInitialize(self.getDuration())
         self.privFinalize()
-        
+
     def privStep(self, t):
         if self.state == CInterval.SPaused or t < self.currT:
             # Restarting from a pause.
@@ -138,4 +138,4 @@ class ParticleInterval(Interval):
         if self.cleanup and self.particleEffect:
             self.particleEffect.cleanup()
             self.particleEffect = None
-            
+

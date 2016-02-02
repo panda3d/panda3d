@@ -37,8 +37,8 @@ PUBLISHED:
   typedef BMType BitMaskType;
 
   enum {
-    half_bits = BitMaskType::num_bits,
-    num_bits = BitMaskType::num_bits * 2,
+    half_bits = BMType::num_bits,
+    num_bits = BMType::num_bits * 2,
   };
 
   INLINE DoubleBitMask();

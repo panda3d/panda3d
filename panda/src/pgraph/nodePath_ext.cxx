@@ -240,14 +240,15 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &da
 //               objects.  This is a convenience function for Python
 //               users, among which the use of calc_tight_bounds
 //               may be confusing.
+//
 //               Returns None if calc_tight_bounds returned false.
 ////////////////////////////////////////////////////////////////////
 PyObject *Extension<NodePath>::
-get_tight_bounds() const {
+get_tight_bounds(const NodePath &other) const {
   LPoint3 *min_point = new LPoint3;
   LPoint3 *max_point = new LPoint3;
 
-  if (_this->calc_tight_bounds(*min_point, *max_point)) {
+  if (_this->calc_tight_bounds(*min_point, *max_point, other)) {
 #ifdef STDFLOAT_DOUBLE
     PyObject *min_inst = DTool_CreatePyInstance((void*) min_point, Dtool_LPoint3d, true, false);
     PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3d, true, false);

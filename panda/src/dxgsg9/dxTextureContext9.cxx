@@ -119,6 +119,8 @@ create_texture(DXScreenData &scrn) {
   int num_alpha_bits;     //  number of alpha bits in texture pixfmt
   D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
   bool needs_luminance = false;
+  bool needs_depth = false;
+  bool needs_stencil = false;
   bool compress_texture = false;
 
   Texture *tex = get_texture();
@@ -190,53 +192,76 @@ create_texture(DXScreenData &scrn) {
   DWORD target_bpp = get_bits_per_pixel(tex->get_format(), &num_alpha_bits);
   DWORD num_color_channels = tex->get_num_components();
 
-//  printf ("format = %d \n", tex->get_format());
-//  printf ("target_bpp %d, num_color_channels %d num_alpha_bits %d \n", target_bpp, num_color_channels, num_alpha_bits);
-
-  //PRINT_REFCNT(dxgsg9, scrn._d3d9);
-
-  if ((tex->get_format() == Texture::F_luminance_alpha)||
-      (tex->get_format() == Texture::F_luminance_alphamask) ||
-      (tex->get_format() == Texture::F_luminance) ||
-      (tex->get_format() == Texture::F_sluminance_alpha) ||
-      (tex->get_format() == Texture::F_sluminance)) {
-    needs_luminance = true;
-  }
-
-  if (num_alpha_bits > 0) {
-    if (num_color_channels == 3) {
-      dxgsg9_cat.error()
-        << "texture " << tex->get_name()
-        << " has no inherent alpha channel, but alpha format is requested!\n";
-    }
-  }
-
-  _d3d_format = D3DFMT_UNKNOWN;
-
   // figure out what 'D3DFMT' the Texture is in, so D3DXLoadSurfFromMem knows how to perform copy
-
-  switch (num_color_channels) {
-  case 1:
-    if (num_alpha_bits > 0) {
-      _d3d_format = D3DFMT_A8;
-    } else if (needs_luminance) {
-      _d3d_format = D3DFMT_L8;
-    }
+  switch (tex->get_format()) {
+  case Texture::F_depth_stencil:
+    _d3d_format = D3DFMT_D24S8;
+    needs_depth = true;
+    needs_stencil = true;
     break;
-  case 2:
-    nassertr(needs_luminance && (num_alpha_bits > 0), false);
+
+  case Texture::F_depth_component:
+  case Texture::F_depth_component16:
+    _d3d_format = D3DFMT_D16;
+    needs_depth = true;
+    break;
+
+  case Texture::F_depth_component24:
+    _d3d_format = D3DFMT_D24X8;
+    needs_depth = true;
+    break;
+
+  case Texture::F_depth_component32:
+    _d3d_format = D3DFMT_D32;
+    needs_depth = true;
+    break;
+
+  case Texture::F_luminance:
+  case Texture::F_sluminance:
+    _d3d_format = D3DFMT_L8;
+    needs_luminance = true;
+    break;
+
+  case Texture::F_luminance_alpha:
+  case Texture::F_luminance_alphamask:
+  case Texture::F_sluminance_alpha:
     _d3d_format = D3DFMT_A8L8;
+    needs_luminance = true;
     break;
-  case 3:
-    _d3d_format = D3DFMT_R8G8B8;
-    break;
-  case 4:
-    _d3d_format = D3DFMT_A8R8G8B8;
-    break;
-  }
 
-  // make sure we handled all the possible cases
-  nassertr(_d3d_format != D3DFMT_UNKNOWN, false);
+  default:
+    if (num_alpha_bits > 0) {
+      if (num_color_channels == 3) {
+        dxgsg9_cat.error()
+          << "texture " << tex->get_name()
+          << " has no inherent alpha channel, but alpha format is requested!\n";
+      }
+    }
+
+    _d3d_format = D3DFMT_UNKNOWN;
+
+    switch (num_color_channels) {
+    case 1:
+      if (num_alpha_bits > 0) {
+        _d3d_format = D3DFMT_A8;
+      } else {
+        _d3d_format = D3DFMT_L8;
+      }
+      break;
+    case 2:
+      _d3d_format = D3DFMT_A8L8;
+      break;
+    case 3:
+      _d3d_format = D3DFMT_R8G8B8;
+      break;
+    case 4:
+      _d3d_format = D3DFMT_A8R8G8B8;
+      break;
+    }
+
+    // make sure we handled all the possible cases
+    nassertr(_d3d_format != D3DFMT_UNKNOWN, false);
+  }
 
   DWORD target_width = orig_width;
   DWORD target_height = orig_height;
@@ -393,12 +418,24 @@ create_texture(DXScreenData &scrn) {
     case Texture::CM_dxt5:
       CHECK_FOR_FMT(DXT5);
       break;
+    case Texture::CM_rgtc:
+      if (num_color_channels == 1) {
+        CHECK_FOR_FMT(ATI1);
+      } else {
+        CHECK_FOR_FMT(ATI2);
+      }
+      break;
     }
 
     // We don't support the compressed format.  Fall through.
   }
 
   if (compress_texture) {
+    if (num_color_channels == 1) {
+      CHECK_FOR_FMT(ATI1);
+    } else if (num_alpha_bits == 0 && num_color_channels == 2) {
+      CHECK_FOR_FMT(ATI2);
+    }
     if (num_alpha_bits <= 1) {
       CHECK_FOR_FMT(DXT1);
     } else if (num_alpha_bits <= 4) {
@@ -447,6 +484,14 @@ create_texture(DXScreenData &scrn) {
     goto found_matching_format;
 
   case 32:
+    if (needs_depth) {
+      nassertr(num_alpha_bits == 0, false);
+      nassertr(num_color_channels == 1, false);
+
+      CHECK_FOR_FMT(D32);
+      break;
+    }
+
     if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
 
@@ -494,25 +539,78 @@ create_texture(DXScreenData &scrn) {
     break;
 
   case 24:
-    nassertr(num_color_channels == 3, false);
+    if (needs_depth) {
+      nassertr(num_alpha_bits == 0, false);
+      nassertr(num_color_channels == 1, false);
 
-    CHECK_FOR_FMT(R8G8B8);
+      // In DirectX 9, all built-in depth formats use shadow map filtering.
+      // Some drivers (GeForce 8000+, Radeon HD 4000+, Intel G45+) expose a
+      // FourCC format called "INTZ" that allows access to the actual depth.
+      if (tex->get_minfilter() == Texture::FT_shadow) {
+        if (needs_stencil) {
+          CHECK_FOR_FMT(D24S8);
+        }
+        CHECK_FOR_FMT(D24X8);
+        CHECK_FOR_FMT(D32);
+        CHECK_FOR_FMT(D16);
+      } else {
+        if (scrn._supported_tex_formats_mask & INTZ_FLAG) {
+          target_pixel_format = D3DFMT_INTZ;
+          goto found_matching_format;
+        }
 
-    // no 24-bit fmt.  look for 32 bit fmt (note: this is
-    // memory-hogging choice instead I could look for
-    // memory-conserving 16-bit fmt).
+        // We fall back to a depth format.  Chances are that it is going to
+        // be used for shadow mapping, in which case the depth comparison
+        // will probably still result in a useful value.
+        CHECK_FOR_FMT(D24X8);
+      }
+    } else {
+      nassertr(num_color_channels == 3, false);
 
-    CHECK_FOR_FMT(X8R8G8B8);
-    CHECK_FOR_FMT(A8R8G8B8);
+      CHECK_FOR_FMT(R8G8B8);
 
-    // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
-    CHECK_FOR_FMT(R5G6B5);
-    CHECK_FOR_FMT(X1R5G5B5);
-    CHECK_FOR_FMT(A1R5G5B5);
+      // no 24-bit fmt.  look for 32 bit fmt (note: this is
+      // memory-hogging choice instead I could look for
+      // memory-conserving 16-bit fmt).
+
+      CHECK_FOR_FMT(X8R8G8B8);
+      CHECK_FOR_FMT(A8R8G8B8);
+
+      // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
+      CHECK_FOR_FMT(R5G6B5);
+      CHECK_FOR_FMT(X1R5G5B5);
+      CHECK_FOR_FMT(A1R5G5B5);
+    }
     break;
 
   case 16:
-    if (needs_luminance) {
+    if (needs_depth) {
+      nassertr(num_alpha_bits == 0, false);
+      nassertr(num_color_channels == 1, false);
+
+      // In DirectX 9, all built-in depth formats use shadow map filtering.
+      // Some drivers (GeForce 8000+, Radeon HD 4000+, Intel G45+) expose a
+      // FourCC format called "INTZ" that allows access to the actual depth.
+      if (tex->get_minfilter() == Texture::FT_shadow) {
+        if (needs_stencil) {
+          CHECK_FOR_FMT(D24S8);
+        }
+        CHECK_FOR_FMT(D16);
+        CHECK_FOR_FMT(D24X8);
+        CHECK_FOR_FMT(D32);
+      } else {
+        if (scrn._supported_tex_formats_mask & INTZ_FLAG) {
+          target_pixel_format = D3DFMT_INTZ;
+          goto found_matching_format;
+        }
+
+        // We fall back to a depth format.  Chances are that it is going to
+        // be used for shadow mapping, in which case the depth comparison
+        // will probably still result in a useful value.
+        CHECK_FOR_FMT(D24X8);
+      }
+
+    } else if (needs_luminance) {
       nassertr(num_alpha_bits > 0, false);
       nassertr(num_color_channels == 2, false);
 
@@ -604,7 +702,7 @@ create_texture(DXScreenData &scrn) {
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
-  ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
  found_matching_format:
   // We found a suitable format that matches the texture's format.
@@ -613,11 +711,13 @@ create_texture(DXScreenData &scrn) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
     // format.  Look up what that format is.
-    DWORD render_target_index;
     IDirect3DSurface9 *render_target;
 
-    render_target_index = 0;
-    hr = scrn._d3d_device->GetRenderTarget(render_target_index, &render_target);
+    if (needs_depth) {
+      hr = scrn._d3d_device->GetDepthStencilSurface(&render_target);
+    } else {
+      hr = scrn._d3d_device->GetRenderTarget(0, &render_target);
+    }
     if (FAILED(hr)) {
       dxgsg9_cat.error()
         << "GetRenderTgt failed in create_texture: " << D3DERRORSTRING(hr);
@@ -628,7 +728,8 @@ create_texture(DXScreenData &scrn) {
         dxgsg9_cat.error()
           << "GetDesc failed in create_texture: " << D3DERRORSTRING(hr);
       } else {
-        if (target_pixel_format != surface_desc.Format) {
+        if (target_pixel_format != surface_desc.Format &&
+            target_pixel_format != D3DFMT_INTZ) {
           if (dxgsg9_cat.is_debug()) {
             dxgsg9_cat.debug()
               << "Chose format " << D3DFormatStr(surface_desc.Format)
@@ -773,6 +874,25 @@ create_texture(DXScreenData &scrn) {
           << endl;
       }
     }
+
+    // DirectX will corrupt memory if we try to load mipmaps smaller than
+    // 4x4 for ATI1 or ATI2 textures.
+    if (target_pixel_format == D3DFMT_ATI1 ||
+        target_pixel_format == D3DFMT_ATI2) {
+
+      UINT dimension = min(target_height, target_width);
+      mip_level_count = 0;
+      while (dimension >= 4) {
+        ++mip_level_count;
+        dimension >>= 1;
+      }
+
+      if ((UINT)tex->get_num_ram_mipmap_images() < mip_level_count) {
+        // We also have to generate mipmaps on the CPU for these.
+        tex->generate_ram_mipmap_images();
+        mip_level_count = min(mip_level_count, (UINT)tex->get_num_ram_mipmap_images());
+      }
+    }
   } else {
     mip_level_count = 1;
   }
@@ -786,10 +906,14 @@ create_texture(DXScreenData &scrn) {
     _is_render_target = true;
 
     pool = D3DPOOL_DEFAULT;
-    usage = D3DUSAGE_RENDERTARGET;
-    if (target_bpp <= 32 ) {
-      target_pixel_format = scrn._render_to_texture_d3d_format;
+    if (needs_depth) {
+      usage = D3DUSAGE_DEPTHSTENCIL;
+    } else {
+      usage = D3DUSAGE_RENDERTARGET;
     }
+    //if (target_bpp <= 32) {
+    //  target_pixel_format = scrn._render_to_texture_d3d_format;
+    //}
 
     dxgsg9_cat.debug ()
       << "*** RENDER TO TEXTURE ***: format "
@@ -1126,6 +1250,22 @@ extract_texture_data(DXScreenData &screen) {
     format = Texture::F_luminance_alpha;
     break;
 
+  case D3DFMT_D24S8:
+    format = Texture::F_depth_stencil;
+    break;
+
+  case D3DFMT_D16:
+    format = Texture::F_depth_component16;
+    break;
+
+  case D3DFMT_D24X8:
+    format = Texture::F_depth_component24;
+    break;
+
+  case D3DFMT_D32:
+    format = Texture::F_depth_component32;
+    break;
+
   case D3DFMT_DXT1:
     compression = Texture::CM_dxt1;
     div = 4;
@@ -1144,6 +1284,11 @@ extract_texture_data(DXScreenData &screen) {
     break;
   case D3DFMT_DXT5:
     compression = Texture::CM_dxt5;
+    div = 4;
+    break;
+  case D3DFMT_ATI1:
+  case D3DFMT_ATI2:
+    compression = Texture::CM_rgtc;
     div = 4;
     break;
 
@@ -1561,7 +1706,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: calculate_row_byte_length
-//       Access: Private, hidden
+//       Access: Private, Hidden
 //  Description: local helper function, which calculates the
 //               'row_byte_length' or 'pitch' needed for calling
 //               D3DXLoadSurfaceFromMemory.
@@ -1574,6 +1719,7 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
     // check for compressed textures and adjust source_row_byte_length and source_format accordingly
     switch (tex_format) {
       case D3DFMT_DXT1:
+      case D3DFMT_ATI1:
           // for dxt1 compressed textures, the row_byte_lenght is "the width of one row of cells, in bytes"
           // cells are 4 pixels wide, take up 8 bytes, and at least 1 cell has to be there.
           source_row_byte_length = max(1,width / 4)*8;
@@ -1582,6 +1728,7 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
       case D3DFMT_DXT3:
       case D3DFMT_DXT4:
       case D3DFMT_DXT5:
+      case D3DFMT_ATI2:
           // analogue as above, but cells take up 16 bytes
           source_row_byte_length = max(1,width / 4)*16;
         break;
@@ -1705,15 +1852,27 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
 #ifdef DO_PSTATS
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * height);
 #endif
-  hr = D3DXLoadSurfaceFromMemory
-    (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
-      source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
-      &source_size, mip_filter, (D3DCOLOR)0x0);
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
-      << ", mip_level " << mip_level
-      << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+  if (source_format == D3DFMT_ATI1 || source_format == D3DFMT_ATI2) {
+    // These formats are not supported by D3DXLoadSurfaceFromMemory.
+    D3DLOCKED_RECT rect;
+    _d3d_2d_texture->LockRect(mip_level, &rect, 0, D3DLOCK_DISCARD);
+
+    unsigned char *dest = (unsigned char *)rect.pBits;
+    memcpy(dest, pixels, view_size);
+
+    _d3d_2d_texture->UnlockRect(mip_level);
+
+  } else {
+    hr = D3DXLoadSurfaceFromMemory
+      (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
+        source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
+        &source_size, mip_filter, (D3DCOLOR)0x0);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+        << ", mip_level " << mip_level
+        << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+    }
   }
 
 exit_FillMipmapSurf:
@@ -1841,6 +2000,13 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     break;
   case Texture::CM_dxt5:
     source_format = D3DFMT_DXT5;
+    break;
+  case Texture::CM_rgtc:
+    if (tex->get_num_components() == 1) {
+      source_format = D3DFMT_ATI1;
+    } else {
+      source_format = D3DFMT_ATI2;
+    }
     break;
   default:
     // no known compression format.. no adjustment
@@ -2159,8 +2325,12 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
     *alphbits = 1;
     return 16;
   case Texture::F_depth_component:
+  case Texture::F_depth_component16:
     return 16;
   case Texture::F_depth_stencil:
+  case Texture::F_depth_component24:
+    return 24;
+  case Texture::F_depth_component32:
     return 32;
   case Texture::F_rgb5:
     return 16;
@@ -2233,6 +2403,8 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
     case D3DFMT_A8L8:
     case D3DFMT_A8R3G3B2:
     case D3DFMT_X4R4G4B4:
+    case D3DFMT_D16:
+    case (D3DFORMAT)MAKEFOURCC('D', 'F', '1', '6'):
       bytes_per_pixel = 2.0f;
       break;
 
@@ -2251,6 +2423,11 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
     case D3DFMT_X8B8G8R8:
     case D3DFMT_G16R16:
     case D3DFMT_A2R10G10B10:
+    case D3DFMT_D24X8:
+    case D3DFMT_D24S8:
+    case D3DFMT_D32:
+    case (D3DFORMAT)MAKEFOURCC('D', 'F', '2', '4'):
+    case D3DFMT_INTZ:
       bytes_per_pixel = 4.0f;
       break;
 
@@ -2266,12 +2443,14 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
       break;
 
     case D3DFMT_DXT1:
+    case D3DFMT_ATI1:
       bytes_per_pixel = 0.5f;
       break;
     case D3DFMT_DXT2:
     case D3DFMT_DXT3:
     case D3DFMT_DXT4:
     case D3DFMT_DXT5:
+    case D3DFMT_ATI2:
       bytes_per_pixel = 1.0f;
       break;
   }

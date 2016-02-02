@@ -101,8 +101,8 @@ length() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE char ConfigVariableString::
-operator [] (int n) const {
-  assert(n >= 0 && n < (int)length());
+operator [] (size_t n) const {
+  assert(n < length());
   return get_value()[n];
 }
 
@@ -181,7 +181,7 @@ get_default_value() const {
 //  Description: Returns the variable's nth value.
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableString::
-get_word(int n) const {
+get_word(size_t n) const {
   return get_string_word(n);
 }
 
@@ -192,6 +192,6 @@ get_word(int n) const {
 //               local copy of the variable's overall value.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariableString::
-set_word(int n, const string &value) {
+set_word(size_t n, const string &value) {
   set_string_word(n, value);
 }

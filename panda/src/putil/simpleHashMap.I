@@ -248,7 +248,7 @@ operator [] (const Key &key) {
 //  Description: Returns the total number of slots in the table.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
-INLINE int SimpleHashMap<Key, Value, Compare>::
+INLINE size_t SimpleHashMap<Key, Value, Compare>::
 get_size() const {
   return _table_size;
 }
@@ -359,7 +359,7 @@ remove_element(int n) {
   // Now we have put a hole in the table.  If there was a hash
   // conflict in the slot following this one, we have to move it down
   // to close the hole.
-  size_t i = n;
+  size_t i = (size_t)n;
   i = (i + 1) & (_table_size - 1);
   while (has_element(i)) {
     size_t wants_index = get_hash(_table[i]._key);
@@ -397,7 +397,7 @@ remove_element(int n) {
 //               get_num_entries().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare>
-INLINE int SimpleHashMap<Key, Value, Compare>::
+INLINE size_t SimpleHashMap<Key, Value, Compare>::
 get_num_entries() const {
   return _num_entries;
 }

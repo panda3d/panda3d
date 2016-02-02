@@ -51,14 +51,14 @@ public:
   INLINE double get_end() const;
   INLINE double get_net_time() const;
 
-  INLINE int get_num_events() const;
-  INLINE int get_time_collector(int n) const;
-  INLINE bool is_start(int n) const;
-  INLINE double get_time(int n) const;
+  INLINE size_t get_num_events() const;
+  INLINE int get_time_collector(size_t n) const;
+  INLINE bool is_start(size_t n) const;
+  INLINE double get_time(size_t n) const;
 
-  INLINE int get_num_levels() const;
-  INLINE int get_level_collector(int n) const;
-  INLINE double get_level(int n) const;
+  INLINE size_t get_num_levels() const;
+  INLINE int get_level_collector(size_t n) const;
+  INLINE double get_level(size_t n) const;
 
   bool write_datagram(Datagram &destination, PStatClient *client) const;
   void read_datagram(DatagramIterator &source, PStatClientVersion *version);

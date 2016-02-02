@@ -22,7 +22,7 @@
 
 TypeHandle CollisionHandlerPusher::_type_handle;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : ShoveData
 // Description : The ShoveData class is used within
 //               CollisionHandlerPusher::handle_entries(), to track
@@ -134,8 +134,8 @@ handle_entries() {
               sd._length = (surface_point - interior_point).length();
               sd._valid = true;
               sd._entry = entry;
-              
-              #ifndef NDEBUG          
+
+              #ifndef NDEBUG
               if (collide_cat.is_debug()) {
                 collide_cat.debug()
                   << "Shove on " << from_node_path << " from "
@@ -143,12 +143,12 @@ handle_entries() {
                   << " times " << sd._length << "\n";
               }
               #endif
-              
+
               shoves.push_back(sd);
             }
           }
         }
-        
+
         if (!shoves.empty()) {
           // Now we look for two shoves that are largely in the same
           // direction, so we can combine them into a single shove of
@@ -168,7 +168,7 @@ handle_entries() {
                   collide_cat.debug()
                     << "Considering dot product " << d << "\n";
                 }
-                
+
                 if (d > 0.9) {
                   // These two shoves are largely in the same direction;
                   // save the larger of the two.
@@ -222,7 +222,7 @@ handle_entries() {
               }
             }
           }
-          
+
           // Now we can determine the net shove.
           LVector3 net_shove(0.0f, 0.0f, 0.0f);
           LVector3 force_normal(0.0f, 0.0f, 0.0f);
@@ -234,21 +234,21 @@ handle_entries() {
             }
           }
 
-          #ifndef NDEBUG          
+          #ifndef NDEBUG
           if (collide_cat.is_debug()) {
             collide_cat.debug()
               << "Net shove on " << from_node_path << " is: "
               << net_shove << "\n";
           }
           #endif
-          
+
           // This is the part where the node actually gets moved:
           CPT(TransformState) trans = def._target.get_transform();
           LVecBase3 pos = trans->get_pos();
           pos += net_shove * trans->get_mat();
           def._target.set_transform(trans->set_pos(pos));
           def.updated_transform();
-          
+
           // We call this to allow derived classes to do other
           // fix-ups as they see fit:
           apply_net_shove(def, net_shove, force_normal);
@@ -268,7 +268,7 @@ handle_entries() {
 //               some work with the ColliderDef and the force vector.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPusher::
-apply_net_shove(ColliderDef &def, const LVector3 &net_shove, 
+apply_net_shove(ColliderDef &def, const LVector3 &net_shove,
     const LVector3 &force_normal) {
 }
 

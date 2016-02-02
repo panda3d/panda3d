@@ -57,12 +57,10 @@ private:
   PN_stdfloat _outer_magnitude;
   bool _cubic_lerping;
 
-  ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
   PN_stdfloat _distance_from_center;
   PN_stdfloat _sinf_theta;
   PN_stdfloat _cosf_theta;
-  ///////////////////////////////
 
   virtual void assign_initial_position(LPoint3& pos);
   virtual void assign_initial_velocity(LVector3& vel);

@@ -1,4 +1,4 @@
-// Filename: config_cocoadisplay.cxx
+// Filename: config_cocoadisplay.mm
 // Created by:  rdb (17May12)
 //
 ////////////////////////////////////////////////////////////////////

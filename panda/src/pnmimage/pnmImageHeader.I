@@ -192,6 +192,18 @@ get_y_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::get_size
+//       Access: Published
+//  Description: Returns the number of pixels in each direction.
+//               This is one more than the largest allowable
+//               coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i PNMImageHeader::
+get_size() const {
+  return LVecBase2i(_x_size, _y_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::get_comment
 //       Access: Published
 //  Description: Gets the user comment from the file.

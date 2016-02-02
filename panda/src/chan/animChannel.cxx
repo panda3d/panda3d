@@ -22,6 +22,9 @@
 #pragma implementation
 #endif
 
+template class AnimChannel<ACMatrixSwitchType>;
+template class AnimChannel<ACScalarSwitchType>;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ACMatrixSwitchType::output_value
 //       Access: Public, Static

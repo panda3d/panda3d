@@ -57,6 +57,10 @@ PUBLISHED:
 
   INLINE void flip();
 
+PUBLISHED:
+  MAKE_PROPERTY(normal, get_normal);
+  MAKE_PROPERTY(plane, get_plane, set_plane);
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 
@@ -71,6 +75,8 @@ protected:
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 

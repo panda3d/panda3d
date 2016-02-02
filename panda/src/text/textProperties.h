@@ -21,6 +21,7 @@
 #include "luse.h"
 #include "textFont.h"
 #include "pointerTo.h"
+#include "renderState.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextProperties
@@ -169,6 +170,44 @@ PUBLISHED:
 
   void write(ostream &out, int indent_level = 0) const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(font, has_font, get_font, set_font, clear_font);
+  MAKE_PROPERTY2(small_caps, has_small_caps, get_small_caps,
+                             set_small_caps, clear_small_caps);
+  MAKE_PROPERTY2(small_caps_scale, has_small_caps_scale, get_small_caps_scale,
+                                   set_small_caps_scale, clear_small_caps_scale);
+  MAKE_PROPERTY2(slant, has_slant, get_slant, set_slant, clear_slant);
+  MAKE_PROPERTY2(underscore, has_underscore, get_underscore,
+                                 set_underscore, clear_underscore);
+  MAKE_PROPERTY2(underscore_height, has_underscore_height, get_underscore_height,
+                                    set_underscore_height, clear_underscore_height);
+  MAKE_PROPERTY2(align, has_align, get_align, set_align, clear_align);
+  MAKE_PROPERTY2(indent, has_indent, get_indent, set_indent, clear_indent);
+  MAKE_PROPERTY2(wordwrap, has_wordwrap, get_wordwrap, set_wordwrap, clear_wordwrap);
+  MAKE_PROPERTY2(preserve_trailing_whitespace,
+                 has_preserve_trailing_whitespace, get_preserve_trailing_whitespace,
+                 set_preserve_trailing_whitespace, clear_preserve_trailing_whitespace);
+  MAKE_PROPERTY2(text_color, has_text_color, get_text_color,
+                             set_text_color, clear_text_color);
+  MAKE_PROPERTY2(shadow_color, has_shadow_color, get_shadow_color,
+                               set_shadow_color, clear_shadow_color);
+  MAKE_PROPERTY2(shadow, has_shadow, get_shadow, set_shadow, clear_shadow);
+  MAKE_PROPERTY2(bin, has_bin, get_bin, set_bin, clear_bin);
+  MAKE_PROPERTY2(draw_order, has_draw_order, get_draw_order,
+                             set_draw_order, clear_draw_order);
+  MAKE_PROPERTY2(tab_width, has_tab_width, get_tab_width,
+                            set_tab_width, clear_tab_width);
+  MAKE_PROPERTY2(glyph_scale, has_glyph_scale, get_glyph_scale,
+                              set_glyph_scale, clear_glyph_scale);
+  MAKE_PROPERTY2(glyph_shift, has_glyph_shift, get_glyph_shift,
+                              set_glyph_shift, clear_glyph_shift);
+  MAKE_PROPERTY2(text_scale, has_text_scale, get_text_scale,
+                             set_text_scale, clear_text_scale);
+
+public:
+  const RenderState *get_text_state() const;
+  const RenderState *get_shadow_state() const;
+
 private:
   static void load_default_font();
 
@@ -215,6 +254,9 @@ private:
   PN_stdfloat _glyph_scale;
   PN_stdfloat _glyph_shift;
   PN_stdfloat _text_scale;
+
+  mutable CPT(RenderState) _text_state;
+  mutable CPT(RenderState) _shadow_state;
 
   static PT(TextFont) _default_font;
   static bool _loaded_default_font;

@@ -1,4 +1,4 @@
-// Filename: glCgShaderContext_src.h
+// Filename: glCgShaderContext_src.I
 // Created by: rdb (27Jun14)
 //
 ////////////////////////////////////////////////////////////////////
@@ -49,16 +49,6 @@ uses_standard_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(CgShaderContext)::
 uses_custom_vertex_arrays() {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::uses_custom_texture_bindings
-//       Access: Public
-//  Description: Always true, for now.
-////////////////////////////////////////////////////////////////////
-INLINE bool CLP(CgShaderContext)::
-uses_custom_texture_bindings() {
   return true;
 }
 

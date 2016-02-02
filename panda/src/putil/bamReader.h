@@ -143,9 +143,9 @@ PUBLISHED:
 
   INLINE const LoaderOptions &get_loader_options() const;
   INLINE void set_loader_options(const LoaderOptions &options);
-  
-  TypedWritable *read_object();
-  bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+
+  BLOCKING TypedWritable *read_object();
+  BLOCKING bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
 
   INLINE bool is_eof() const;
   bool resolve();
@@ -159,6 +159,14 @@ PUBLISHED:
 
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(source, get_source, set_source);
+  MAKE_PROPERTY(filename, get_filename);
+  MAKE_PROPERTY(loader_options, get_loader_options, set_loader_options);
+
+  MAKE_PROPERTY(file_endian, get_file_endian);
+  MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
 
 public:
   // Functions to support classes that read themselves from the Bam.

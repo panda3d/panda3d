@@ -36,8 +36,10 @@ class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
   INLINE ShaderContext(Shader *se);
 
+  INLINE virtual void set_state_and_transform(const RenderState *, const TransformState *, const TransformState*) {};
+
   INLINE virtual bool valid() { return false; }
-  INLINE virtual void bind(bool reissue_parameters = true) {};
+  INLINE virtual void bind() {};
   INLINE virtual void unbind() {};
   INLINE virtual void issue_parameters(int altered) {};
   INLINE virtual void disable_shader_vertex_arrays() {};
@@ -47,10 +49,10 @@ public:
 
   INLINE virtual bool uses_standard_vertex_arrays(void) { return true; };
   INLINE virtual bool uses_custom_vertex_arrays(void) { return false; };
-  INLINE virtual bool uses_custom_texture_bindings(void) { return false; };
 
 PUBLISHED:
   INLINE Shader *get_shader() const;
+  MAKE_PROPERTY(shader, get_shader);
 
 public:
   Shader *_shader;

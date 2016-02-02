@@ -391,6 +391,65 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_box
+//       Access: Public, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a box.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_center = box->get_center() * wrt_mat;
+  LVector3 from_extents = box->get_dimensions() * 0.5f;
+  PN_stdfloat dist = _plane.dist_to_plane(from_center);
+
+  // Determine the basis vectors describing the box.
+  LVecBase3 box_x = wrt_mat.get_row3(0) * from_extents[0];
+  LVecBase3 box_y = wrt_mat.get_row3(1) * from_extents[1];
+  LVecBase3 box_z = wrt_mat.get_row3(2) * from_extents[2];
+
+  // Project the box onto the normal vector of the plane to determine
+  // whether there is a separating axis.
+  PN_stdfloat dx = box_x.dot(_plane.get_normal());
+  PN_stdfloat dy = box_y.dot(_plane.get_normal());
+  PN_stdfloat dz = box_z.dot(_plane.get_normal());
+  PN_stdfloat depth = dist - (cabs(dx) + cabs(dy) + cabs(dz));
+
+  if (depth > 0) {
+    // No collision.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  new_entry->set_surface_normal(normal);
+
+  // Determine which point on the cube will be the interior point.  If
+  // the points are equally close, this chooses their center instead.
+  LPoint3 interior_point = from_center +
+    box_x * ((dx < 0) - (dx > 0)) +
+    box_y * ((dy < 0) - (dy > 0)) +
+    box_z * ((dz < 0) - (dz > 0));
+
+  // The surface point is the interior point projected onto the plane.
+  new_entry->set_surface_point(interior_point - get_normal() * depth);
+  new_entry->set_interior_point(interior_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable

@@ -240,7 +240,7 @@ is_empty() const {
 //       Access: Published
 //  Description: Returns the number of directories on the search list.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableSearchPath::
+INLINE size_t ConfigVariableSearchPath::
 get_num_directories() const {
   return get_value().get_num_directories();
 }
@@ -251,7 +251,7 @@ get_num_directories() const {
 //  Description: Returns the nth directory on the search list.
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &ConfigVariableSearchPath::
-get_directory(int n) const {
+get_directory(size_t n) const {
   return get_value().get_directory(n);
 }
 
@@ -280,7 +280,7 @@ find_file(const Filename &filename) const {
 //               the results list first; otherwise, the newly-found
 //               files will be appended to the list.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableSearchPath::
+INLINE size_t ConfigVariableSearchPath::
 find_all_files(const Filename &filename,
                DSearchPath::Results &results) const {
   return get_value().find_all_files(filename, results);

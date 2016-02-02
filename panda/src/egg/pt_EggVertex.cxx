@@ -18,3 +18,7 @@
 #ifdef __GNUC__
 #pragma implementation
 #endif
+
+template class PointerToBase<EggVertex>;
+template class PointerTo<EggVertex>;
+template class ConstPointerTo<EggVertex>;

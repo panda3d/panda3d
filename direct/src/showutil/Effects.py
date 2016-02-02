@@ -1,6 +1,6 @@
 """ Showutil Effects module: contains code for useful showcode effects. """
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.interval.IntervalGlobal import *
 
 # bounce types
@@ -63,26 +63,26 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
         self.notify.warning(
             "createBounceIvals called with invalid parameter")
         return
-    
+
     result = Sequence()
-        
+
     # calculate how long, in seconds, each bounce should last
     bounceTime = totalTime/float(numBounces)
     currTime = bounceTime
     currAmplitude = amplitude
-    
+
     # determine the how much of a change in value the first bounce
-    # will produce based on the given start value and amplitude 
+    # will produce based on the given start value and amplitude
     #
     if ((bounceType == SX_BOUNCE) or (bounceType == TX_BOUNCE) or
         (bounceType == H_BOUNCE)):
-        index = 0        
+        index = 0
     elif ((bounceType == SY_BOUNCE) or (bounceType == TY_BOUNCE) or
           (bounceType == P_BOUNCE)):
-        index = 1        
+        index = 1
     elif ((bounceType == SZ_BOUNCE) or (bounceType == TZ_BOUNCE) or
           (bounceType == R_BOUNCE)):
-        index = 2        
+        index = 2
     currBounceVal = startValues[index]
 
     # create a lerp interval for each bounce, making sure to
@@ -106,7 +106,7 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
         newVec3 = Vec3(startValues)
         newVec3.setCell(index, currBounceVal)
         print "### newVec3 = ", newVec3
-        
+
         # create the right type of lerp
         if ((bounceType == SX_BOUNCE) or (bounceType == SY_BOUNCE) or
             (bounceType == SZ_BOUNCE)):

@@ -72,7 +72,8 @@ parse_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPParser::
 parse_expr(const string &expr) {
-  return CPPPreprocessor::parse_expr(expr, this, this);
+  YYLTYPE loc = {};
+  return CPPPreprocessor::parse_expr(expr, this, this, loc);
 }
 
 ////////////////////////////////////////////////////////////////////

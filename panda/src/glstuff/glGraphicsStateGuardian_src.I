@@ -247,6 +247,71 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 #endif  // OPENGLES
 }
 
+#ifndef OPENGLES_1
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_vertex_attrib_array(GLuint index) {
+  if (!_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glEnableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.set_bit(index);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::disable_vertex_attrib_array
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+disable_vertex_attrib_array(GLuint index) {
+  if (_enabled_vertex_attrib_arrays.get_bit(index)) {
+    _glDisableVertexAttribArray(index);
+    _enabled_vertex_attrib_arrays.clear_bit(index);
+
+    if (_vertex_attrib_divisors[index] != 0) {
+      _glVertexAttribDivisor(index, 0);
+      _vertex_attrib_divisors[index] = 0;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_vertex_attrib_divisor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
+  if (_supports_vertex_attrib_divisor &&
+      _vertex_attrib_divisors[index] != divisor) {
+    _glVertexAttribDivisor(index, divisor);
+    _vertex_attrib_divisors[index] = divisor;
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_active_texture_stage
+//       Access: Protected
+//  Description: Calls glActiveTexture.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+set_active_texture_stage(int i) {
+  if (i != _active_texture_stage) {
+#ifdef OPENGLES_2
+    glActiveTexture(GL_TEXTURE0 + i);
+#else
+    _glActiveTexture(GL_TEXTURE0 + i);
+#endif
+    _active_texture_stage = i;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_multisample_antialias
 //       Access: Protected
@@ -361,7 +426,7 @@ enable_line_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
@@ -539,7 +604,7 @@ enable_depth_test(bool val) {
   }
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_fog
 //       Access:
@@ -566,7 +631,7 @@ enable_fog(bool val) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_alpha_test
 //       Access:
@@ -631,10 +696,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 set_color_write_mask(int mask) {
   if (gl_color_mask && _active_color_write_mask != mask) {
     _active_color_write_mask = mask;
-    glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_green) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
-                (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+    glColorMask((mask & ColorWriteAttrib::C_red) != 0,
+                (mask & ColorWriteAttrib::C_green) != 0,
+                (mask & ColorWriteAttrib::C_blue) != 0,
+                (mask & ColorWriteAttrib::C_alpha) != 0);
   }
 }
 
@@ -651,7 +716,26 @@ clear_color_write_mask() {
   }
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glLoadMatrix
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glLoadMatrix(const LMatrix4 &mat) {
+#if defined(OPENGLES) && defined(STDFLOAT_DOUBLE)
+  LMatrix4f matf = LCAST(float, mat);
+  glLoadMatrixf(matf.get_data());
+#elif defined(STDFLOAT_DOUBLE)
+  glLoadMatrixd(mat.get_data());
+#else
+  glLoadMatrixf(mat.get_data());
+#endif
+}
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glFogfv
 //       Access: Public
@@ -669,7 +753,7 @@ call_glFogfv(GLenum pname, const LColor &color) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glMaterialfv
 //       Access: Public
@@ -687,7 +771,7 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -705,7 +789,7 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightfv
 //       Access: Public
@@ -723,7 +807,7 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glLightModelfv
 //       Access: Public
@@ -741,7 +825,7 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glTexEnvfv
 //       Access: Public
@@ -775,7 +859,7 @@ call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #endif  //  STDFLOAT_DOUBLE
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
@@ -787,7 +871,7 @@ get_light_id(int index) const {
 }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_clip_plane_id
 //       Access: Public

@@ -16,6 +16,7 @@
 #include "interrogateBuilder.h"
 #include "interrogate.h"
 #include "functionRemap.h"
+#include "parameterRemapHandleToInt.h"
 #include "parameterRemapUnchanged.h"
 #include "typeManager.h"
 
@@ -53,6 +54,14 @@ InterfaceMakerC::
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerC::
 write_prototypes(ostream &out,ostream *out_h) {
+  // The 'used' attribute prevents emscripten from optimizing it out.
+  out <<
+    "#if __GNUC__ >= 4\n"
+    "#define EXPORT_FUNC extern \"C\" __attribute__((used, visibility(\"default\")))\n"
+    "#else\n"
+    "#define EXPORT_FUNC extern \"C\"\n"
+    "#endif\n\n";
+
   FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi).second;
@@ -79,6 +88,32 @@ write_functions(ostream &out) {
   }
 
   InterfaceMaker::write_functions(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerC::remap_parameter
+//       Access: Public, Virtual
+//  Description: Allocates a new ParameterRemap object suitable to the
+//               indicated parameter type.  If struct_type is
+//               non-NULL, it is the type of the enclosing class for
+//               the function (method) in question.
+//
+//               The return value is a newly-allocated ParameterRemap
+//               object, if the parameter type is acceptable, or NULL
+//               if the parameter type cannot be handled.
+////////////////////////////////////////////////////////////////////
+ParameterRemap *InterfaceMakerC::
+remap_parameter(CPPType *struct_type, CPPType *param_type) {
+  // Wrap TypeHandle and ButtonHandle, which are practically just
+  // ints, as an integer instead of a pointer.  It makes things easier
+  // on the scripting language, especially if there has to be a
+  // dynamic downcasting system on the scripting language side.
+   if (TypeManager::is_handle(param_type)) {
+    return new ParameterRemapHandleToInt(param_type);
+
+  } else {
+    return InterfaceMaker::remap_parameter(struct_type, param_type);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +175,13 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
 
   for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
+
+    if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
+      continue;
+    }
+
     if (output_function_names) {
-      out << "extern \"C\" ";
+      out << "EXPORT_FUNC ";
     }
     write_function_header(out, func, remap, false);
     out << ";\n";
@@ -173,13 +213,17 @@ write_function_for(ostream &out, InterfaceMaker::Function *func) {
 void InterfaceMakerC::
 write_function_instance(ostream &out, InterfaceMaker::Function *func,
                         FunctionRemap *remap) {
+  if (remap->_extension || (remap->_flags & FunctionRemap::F_explicit_self)) {
+    return;
+  }
+
   out << "/*\n"
       << " * C wrapper for\n"
       << " * ";
   remap->write_orig_prototype(out, 0);
   out << "\n"
       << " */\n";
-    
+
   if (!output_function_names) {
     // If we're not saving the function names, don't export it from
     // the library.
@@ -192,17 +236,17 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
   if (generate_spam) {
     write_spam_message(out, remap);
   }
-    
-  string return_expr = 
+
+  string return_expr =
     remap->call_function(out, 2, true, "param0");
   return_expr = manage_return_value(out, 2, remap, return_expr);
   if (!return_expr.empty()) {
     out << "  return " << return_expr << ";\n";
   }
-  
+
   out << "}\n\n";
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerC::write_function_header
 //       Access: Private

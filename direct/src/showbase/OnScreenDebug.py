@@ -2,9 +2,7 @@
 
 __all__ = ['OnScreenDebug']
 
-
-
-from pandac.PandaModules import *
+from panda3d.core import *
 
 import types
 from direct.gui import OnscreenText
@@ -21,7 +19,7 @@ class OnScreenDebug:
     def load(self):
         if self.onScreenText:
             return
-        
+
         fontPath = config.GetString("on-screen-debug-font", "cmtt12")
         fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
 
@@ -33,7 +31,7 @@ class OnScreenDebug:
         bgColor = color[config.GetString("on-screen-debug-bg-color", "black")]
         fgColor.setW(config.GetFloat("on-screen-debug-fg-alpha", 0.85))
         bgColor.setW(config.GetFloat("on-screen-debug-bg-alpha", 0.85))
-        
+
         font = loader.loadFont(fontPath)
         if not font.isValid():
             print "failed to load OnScreenDebug font", fontPath
@@ -59,7 +57,7 @@ class OnScreenDebug:
                 #isNew = " is"
                 isNew = "="
             else:
-                # This data is not for the current 
+                # This data is not for the current
                 # frame (key roughly equals value):
                 #isNew = "was"
                 isNew = "~"

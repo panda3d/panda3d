@@ -122,8 +122,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 int ColorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const ColorAttrib *ta;
-  DCAST_INTO_R(ta, other, 0);
+  const ColorAttrib *ta = (const ColorAttrib *)other;
+
   if (_type != ta->_type) {
     return (int)_type - (int)ta->_type;
   }

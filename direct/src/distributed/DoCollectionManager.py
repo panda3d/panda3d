@@ -79,10 +79,10 @@ class DoCollectionManager:
             if re.search(str,repr(value)):
                 matches.append(value)
         return matches
-        
+
     def doFindAllOfType(self, query):
         """
-        Useful method for searching through the Distributed Object collection 
+        Useful method for searching through the Distributed Object collection
         for objects of a particular type
         """
         matches = []
@@ -185,7 +185,7 @@ class DoCollectionManager:
             strToReturn = '%s\n== doId2ownerView\n' % (strToReturn)
             strToReturn = '%s%s' % (strToReturn, self._returnObjects(self.getDoTable(ownerView=False)))
         return strToReturn
-        
+
 
     def printObjectCount(self):
         # print object counts by distributed object type
@@ -220,7 +220,7 @@ class DoCollectionManager:
     def hasOwnerViewDoId(self, doId):
         assert self.hasOwnerView()
         return doId in self.doId2ownerView
-    
+
     def getOwnerViewDoList(self, classType):
         assert self.hasOwnerView()
         l = []
@@ -295,7 +295,7 @@ class DoCollectionManager:
                 (doId, parentId, zoneId))
             # Let the object finish the job
             # calls storeObjectLocation()
-            obj.setLocation(parentId, zoneId) 
+            obj.setLocation(parentId, zoneId)
         else:
             self.notify.warning(
                 "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
@@ -322,7 +322,7 @@ class DoCollectionManager:
             if oldParentObj is not None:
                 oldParentObj.handleChildLeave(object, oldZoneId)
             self.deleteObjectLocation(object, oldParentId, oldZoneId)
-            
+
         elif (oldZoneId != zoneId):
             # Remove old location
             oldParentObj = self.doId2do.get(oldParentId)
@@ -367,7 +367,7 @@ class DoCollectionManager:
             elif parentId not in (None, 0, self.getGameDoId()):
                 self.notify.warning('storeObjectLocation(%s): parent %s not present' %
                                     (object.doId, parentId))
-            
+
     def deleteObjectLocation(self, object, parentId, zoneId):
         # Do not worry about null values
         if ((parentId is None) or (zoneId is None) or

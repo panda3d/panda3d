@@ -244,8 +244,13 @@ get_vertices(NurbsCurveEvaluator::Vert3Array &verts, const NodePath &rel_to) con
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
     LVecBase4 vertex = get_vertex(vi, rel_to);
-    LPoint3 v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
-    verts.push_back(v3);
+    // Avoid division by zero
+    if (vertex[3] == 0.0) {
+      verts.push_back(LPoint3(vertex[0], vertex[1], vertex[2]));
+    } else {
+      LPoint3 v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
+      verts.push_back(v3);
+    }
   }
 }
 

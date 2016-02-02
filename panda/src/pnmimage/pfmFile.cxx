@@ -468,6 +468,48 @@ store_mask(PNMImage &pnmimage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::store_mask
+//       Access: Published
+//  Description: Stores 1 or 0 values into the indicated PNMImage,
+//               according to has_point() for each pixel.  Each valid
+//               point gets a 1 value; each nonexistent point gets a 0
+//               value.
+//
+//               This flavor of store_mask also checks whether the
+//               valid points are within the specified min/max range.
+//               Any valid points without the condition min_point[c]
+//               <= value[c] <= max_point[c], for any c, are stored
+//               with a 0 in the mask.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+store_mask(PNMImage &pnmimage, const LVecBase4f &min_point, const LVecBase4f &max_point) const {
+  if (!is_valid()) {
+    pnmimage.clear();
+    return false;
+  }
+
+  pnmimage.clear(get_x_size(), get_y_size(), 1, 255);
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    for (int xi = 0; xi < get_x_size(); ++xi) {
+      if (!has_point(xi, yi)) {
+        pnmimage.set_gray(xi, yi, 0);
+      } else {
+        const float *value = &_table[(yi * _x_size + xi) * _num_channels];
+        bool in_range = true;
+        for (int ci = 0; ci < _num_channels; ++ci) {
+          if (value[ci] < min_point[ci] || value[ci] > max_point[ci]) {
+            in_range = false;
+            break;
+          }
+        }
+        pnmimage.set_gray(xi, yi, (float)in_range);
+      }
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::fill
 //       Access: Published
 //  Description: Fills the table with all of the same value.
@@ -1437,6 +1479,32 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
 
   nassertv(result._table.size() == _table.size());
   _table.swap(result._table);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_1d_lut
+//       Access: Published
+//  Description: Assumes that lut is an X by 1, 1-component PfmFile
+//               whose X axis maps points to target points.  For each
+//               point in this pfm file, computes: p(u, v)[channel] =
+//               lut(p(u, v)[channel] * x_scale, 0)[0]
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale) {
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+
+      PN_float32 v = get_channel(xi, yi, channel);
+      LPoint3f p;
+      if (!lut.calc_bilinear_point(p, v * x_scale, 0.5)) {
+        continue;
+      }
+      set_channel(xi, yi, channel, p[0]);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

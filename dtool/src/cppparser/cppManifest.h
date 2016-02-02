@@ -19,19 +19,21 @@
 
 #include "cppFile.h"
 #include "cppVisibility.h"
+#include "cppBisonDefs.h"
 
 #include "vector_string.h"
 
 class CPPExpression;
 class CPPType;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPManifest
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPManifest {
 public:
-  CPPManifest(const string &args, const CPPFile &file = CPPFile());
+  CPPManifest(const string &args, const cppyyltype &loc);
+  CPPManifest(const string &macro, const string &definition);
   ~CPPManifest();
 
   static string stringify(const string &source);
@@ -45,7 +47,7 @@ public:
   bool _has_parameters;
   int _num_parameters;
   int _variadic_param;
-  CPPFile _file;
+  cppyyltype _loc;
   CPPExpression *_expr;
 
   // Manifests don't have a visibility in the normal sense.  Normally

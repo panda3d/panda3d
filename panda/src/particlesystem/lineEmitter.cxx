@@ -15,9 +15,9 @@
 #include "lineEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineEmitter
-//      Access : Public
-// Description : constructor
+//     Function: LineEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LineEmitter::
 LineEmitter() :
@@ -27,9 +27,9 @@ LineEmitter() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineEmitter
-//      Access : Public
-// Description : constructor
+//     Function: LineEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LineEmitter::
 LineEmitter(const LineEmitter &copy) :
@@ -39,18 +39,18 @@ LineEmitter(const LineEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LineEmitter
-//      Access : Public
-// Description : constructor
+//     Function: ~LineEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LineEmitter::
 ~LineEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *LineEmitter::
 make_copy() {
@@ -58,9 +58,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: LineEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -76,9 +76,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LineEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: LineEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -86,10 +86,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
 output(ostream &out) const {
@@ -99,10 +99,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
 write(ostream &out, int indent) const {

@@ -20,7 +20,7 @@ TypeHandle PhysxConvexShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxConvexShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexShape::
 link(NxShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxConvexShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxConvexShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxConvexShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexShape::
 save_to_desc(PhysxConvexShapeDesc &shapeDesc) const {

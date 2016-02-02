@@ -49,214 +49,236 @@ extern int cppyydebug;
      REAL = 258,
      INTEGER = 259,
      CHAR_TOK = 260,
-     STRING = 261,
+     SIMPLE_STRING = 261,
      SIMPLE_IDENTIFIER = 262,
-     IDENTIFIER = 263,
-     TYPENAME_IDENTIFIER = 264,
-     SCOPING = 265,
-     TYPEDEFNAME = 266,
-     ELLIPSIS = 267,
-     OROR = 268,
-     ANDAND = 269,
-     EQCOMPARE = 270,
-     NECOMPARE = 271,
-     LECOMPARE = 272,
-     GECOMPARE = 273,
-     LSHIFT = 274,
-     RSHIFT = 275,
-     POINTSAT_STAR = 276,
-     DOT_STAR = 277,
-     UNARY = 278,
-     UNARY_NOT = 279,
-     UNARY_NEGATE = 280,
-     UNARY_MINUS = 281,
-     UNARY_STAR = 282,
-     UNARY_REF = 283,
-     POINTSAT = 284,
-     SCOPE = 285,
-     PLUSPLUS = 286,
-     MINUSMINUS = 287,
-     TIMESEQUAL = 288,
-     DIVIDEEQUAL = 289,
-     MODEQUAL = 290,
-     PLUSEQUAL = 291,
-     MINUSEQUAL = 292,
-     OREQUAL = 293,
-     ANDEQUAL = 294,
-     XOREQUAL = 295,
-     LSHIFTEQUAL = 296,
-     RSHIFTEQUAL = 297,
-     KW_BEGIN_PUBLISH = 298,
-     KW_BLOCKING = 299,
-     KW_BOOL = 300,
-     KW_CATCH = 301,
-     KW_CHAR = 302,
-     KW_CHAR16_T = 303,
-     KW_CHAR32_T = 304,
-     KW_CLASS = 305,
-     KW_CONST = 306,
-     KW_DELETE = 307,
-     KW_DOUBLE = 308,
-     KW_DYNAMIC_CAST = 309,
-     KW_ELSE = 310,
-     KW_END_PUBLISH = 311,
-     KW_ENUM = 312,
-     KW_EXTENSION = 313,
-     KW_EXTERN = 314,
-     KW_EXPLICIT = 315,
-     KW_PUBLISHED = 316,
-     KW_FALSE = 317,
-     KW_FLOAT = 318,
-     KW_FRIEND = 319,
-     KW_FOR = 320,
-     KW_GOTO = 321,
-     KW_IF = 322,
-     KW_INLINE = 323,
-     KW_INT = 324,
-     KW_LONG = 325,
-     KW_LONGLONG = 326,
-     KW_MAKE_PROPERTY = 327,
-     KW_MAKE_SEQ = 328,
-     KW_MUTABLE = 329,
-     KW_NAMESPACE = 330,
-     KW_NEW = 331,
-     KW_NOEXCEPT = 332,
-     KW_OPERATOR = 333,
-     KW_PRIVATE = 334,
-     KW_PROTECTED = 335,
-     KW_PUBLIC = 336,
-     KW_REGISTER = 337,
-     KW_RETURN = 338,
-     KW_SHORT = 339,
-     KW_SIGNED = 340,
-     KW_SIZEOF = 341,
-     KW_STATIC = 342,
-     KW_STATIC_CAST = 343,
-     KW_STRUCT = 344,
-     KW_TEMPLATE = 345,
-     KW_THROW = 346,
-     KW_TRUE = 347,
-     KW_TRY = 348,
-     KW_TYPEDEF = 349,
-     KW_TYPENAME = 350,
-     KW_UNION = 351,
-     KW_UNSIGNED = 352,
-     KW_USING = 353,
-     KW_VIRTUAL = 354,
-     KW_VOID = 355,
-     KW_VOLATILE = 356,
-     KW_WCHAR_T = 357,
-     KW_WHILE = 358,
-     START_CPP = 359,
-     START_CONST_EXPR = 360,
-     START_TYPE = 361
+     STRING_LITERAL = 263,
+     CUSTOM_LITERAL = 264,
+     IDENTIFIER = 265,
+     TYPENAME_IDENTIFIER = 266,
+     SCOPING = 267,
+     TYPEDEFNAME = 268,
+     ELLIPSIS = 269,
+     OROR = 270,
+     ANDAND = 271,
+     EQCOMPARE = 272,
+     NECOMPARE = 273,
+     LECOMPARE = 274,
+     GECOMPARE = 275,
+     LSHIFT = 276,
+     RSHIFT = 277,
+     POINTSAT_STAR = 278,
+     DOT_STAR = 279,
+     UNARY = 280,
+     UNARY_NOT = 281,
+     UNARY_NEGATE = 282,
+     UNARY_MINUS = 283,
+     UNARY_STAR = 284,
+     UNARY_REF = 285,
+     POINTSAT = 286,
+     SCOPE = 287,
+     PLUSPLUS = 288,
+     MINUSMINUS = 289,
+     TIMESEQUAL = 290,
+     DIVIDEEQUAL = 291,
+     MODEQUAL = 292,
+     PLUSEQUAL = 293,
+     MINUSEQUAL = 294,
+     OREQUAL = 295,
+     ANDEQUAL = 296,
+     XOREQUAL = 297,
+     LSHIFTEQUAL = 298,
+     RSHIFTEQUAL = 299,
+     KW_ALIGNAS = 300,
+     KW_ALIGNOF = 301,
+     KW_AUTO = 302,
+     KW_BEGIN_PUBLISH = 303,
+     KW_BLOCKING = 304,
+     KW_BOOL = 305,
+     KW_CATCH = 306,
+     KW_CHAR = 307,
+     KW_CHAR16_T = 308,
+     KW_CHAR32_T = 309,
+     KW_CLASS = 310,
+     KW_CONST = 311,
+     KW_CONSTEXPR = 312,
+     KW_DECLTYPE = 313,
+     KW_DEFAULT = 314,
+     KW_DELETE = 315,
+     KW_DOUBLE = 316,
+     KW_DYNAMIC_CAST = 317,
+     KW_ELSE = 318,
+     KW_END_PUBLISH = 319,
+     KW_ENUM = 320,
+     KW_EXTENSION = 321,
+     KW_EXTERN = 322,
+     KW_EXPLICIT = 323,
+     KW_PUBLISHED = 324,
+     KW_FALSE = 325,
+     KW_FLOAT = 326,
+     KW_FRIEND = 327,
+     KW_FOR = 328,
+     KW_GOTO = 329,
+     KW_IF = 330,
+     KW_INLINE = 331,
+     KW_INT = 332,
+     KW_LONG = 333,
+     KW_LONGLONG = 334,
+     KW_MAKE_PROPERTY = 335,
+     KW_MAKE_PROPERTY2 = 336,
+     KW_MAKE_SEQ = 337,
+     KW_MUTABLE = 338,
+     KW_NAMESPACE = 339,
+     KW_NEW = 340,
+     KW_NOEXCEPT = 341,
+     KW_NULLPTR = 342,
+     KW_OPERATOR = 343,
+     KW_PRIVATE = 344,
+     KW_PROTECTED = 345,
+     KW_PUBLIC = 346,
+     KW_REGISTER = 347,
+     KW_RETURN = 348,
+     KW_SHORT = 349,
+     KW_SIGNED = 350,
+     KW_SIZEOF = 351,
+     KW_STATIC = 352,
+     KW_STATIC_ASSERT = 353,
+     KW_STATIC_CAST = 354,
+     KW_STRUCT = 355,
+     KW_TEMPLATE = 356,
+     KW_THROW = 357,
+     KW_TRUE = 358,
+     KW_TRY = 359,
+     KW_TYPEDEF = 360,
+     KW_TYPENAME = 361,
+     KW_UNION = 362,
+     KW_UNSIGNED = 363,
+     KW_USING = 364,
+     KW_VIRTUAL = 365,
+     KW_VOID = 366,
+     KW_VOLATILE = 367,
+     KW_WCHAR_T = 368,
+     KW_WHILE = 369,
+     START_CPP = 370,
+     START_CONST_EXPR = 371,
+     START_TYPE = 372
    };
 #endif
 /* Tokens.  */
 #define REAL 258
 #define INTEGER 259
 #define CHAR_TOK 260
-#define STRING 261
+#define SIMPLE_STRING 261
 #define SIMPLE_IDENTIFIER 262
-#define IDENTIFIER 263
-#define TYPENAME_IDENTIFIER 264
-#define SCOPING 265
-#define TYPEDEFNAME 266
-#define ELLIPSIS 267
-#define OROR 268
-#define ANDAND 269
-#define EQCOMPARE 270
-#define NECOMPARE 271
-#define LECOMPARE 272
-#define GECOMPARE 273
-#define LSHIFT 274
-#define RSHIFT 275
-#define POINTSAT_STAR 276
-#define DOT_STAR 277
-#define UNARY 278
-#define UNARY_NOT 279
-#define UNARY_NEGATE 280
-#define UNARY_MINUS 281
-#define UNARY_STAR 282
-#define UNARY_REF 283
-#define POINTSAT 284
-#define SCOPE 285
-#define PLUSPLUS 286
-#define MINUSMINUS 287
-#define TIMESEQUAL 288
-#define DIVIDEEQUAL 289
-#define MODEQUAL 290
-#define PLUSEQUAL 291
-#define MINUSEQUAL 292
-#define OREQUAL 293
-#define ANDEQUAL 294
-#define XOREQUAL 295
-#define LSHIFTEQUAL 296
-#define RSHIFTEQUAL 297
-#define KW_BEGIN_PUBLISH 298
-#define KW_BLOCKING 299
-#define KW_BOOL 300
-#define KW_CATCH 301
-#define KW_CHAR 302
-#define KW_CHAR16_T 303
-#define KW_CHAR32_T 304
-#define KW_CLASS 305
-#define KW_CONST 306
-#define KW_DELETE 307
-#define KW_DOUBLE 308
-#define KW_DYNAMIC_CAST 309
-#define KW_ELSE 310
-#define KW_END_PUBLISH 311
-#define KW_ENUM 312
-#define KW_EXTENSION 313
-#define KW_EXTERN 314
-#define KW_EXPLICIT 315
-#define KW_PUBLISHED 316
-#define KW_FALSE 317
-#define KW_FLOAT 318
-#define KW_FRIEND 319
-#define KW_FOR 320
-#define KW_GOTO 321
-#define KW_IF 322
-#define KW_INLINE 323
-#define KW_INT 324
-#define KW_LONG 325
-#define KW_LONGLONG 326
-#define KW_MAKE_PROPERTY 327
-#define KW_MAKE_SEQ 328
-#define KW_MUTABLE 329
-#define KW_NAMESPACE 330
-#define KW_NEW 331
-#define KW_NOEXCEPT 332
-#define KW_OPERATOR 333
-#define KW_PRIVATE 334
-#define KW_PROTECTED 335
-#define KW_PUBLIC 336
-#define KW_REGISTER 337
-#define KW_RETURN 338
-#define KW_SHORT 339
-#define KW_SIGNED 340
-#define KW_SIZEOF 341
-#define KW_STATIC 342
-#define KW_STATIC_CAST 343
-#define KW_STRUCT 344
-#define KW_TEMPLATE 345
-#define KW_THROW 346
-#define KW_TRUE 347
-#define KW_TRY 348
-#define KW_TYPEDEF 349
-#define KW_TYPENAME 350
-#define KW_UNION 351
-#define KW_UNSIGNED 352
-#define KW_USING 353
-#define KW_VIRTUAL 354
-#define KW_VOID 355
-#define KW_VOLATILE 356
-#define KW_WCHAR_T 357
-#define KW_WHILE 358
-#define START_CPP 359
-#define START_CONST_EXPR 360
-#define START_TYPE 361
+#define STRING_LITERAL 263
+#define CUSTOM_LITERAL 264
+#define IDENTIFIER 265
+#define TYPENAME_IDENTIFIER 266
+#define SCOPING 267
+#define TYPEDEFNAME 268
+#define ELLIPSIS 269
+#define OROR 270
+#define ANDAND 271
+#define EQCOMPARE 272
+#define NECOMPARE 273
+#define LECOMPARE 274
+#define GECOMPARE 275
+#define LSHIFT 276
+#define RSHIFT 277
+#define POINTSAT_STAR 278
+#define DOT_STAR 279
+#define UNARY 280
+#define UNARY_NOT 281
+#define UNARY_NEGATE 282
+#define UNARY_MINUS 283
+#define UNARY_STAR 284
+#define UNARY_REF 285
+#define POINTSAT 286
+#define SCOPE 287
+#define PLUSPLUS 288
+#define MINUSMINUS 289
+#define TIMESEQUAL 290
+#define DIVIDEEQUAL 291
+#define MODEQUAL 292
+#define PLUSEQUAL 293
+#define MINUSEQUAL 294
+#define OREQUAL 295
+#define ANDEQUAL 296
+#define XOREQUAL 297
+#define LSHIFTEQUAL 298
+#define RSHIFTEQUAL 299
+#define KW_ALIGNAS 300
+#define KW_ALIGNOF 301
+#define KW_AUTO 302
+#define KW_BEGIN_PUBLISH 303
+#define KW_BLOCKING 304
+#define KW_BOOL 305
+#define KW_CATCH 306
+#define KW_CHAR 307
+#define KW_CHAR16_T 308
+#define KW_CHAR32_T 309
+#define KW_CLASS 310
+#define KW_CONST 311
+#define KW_CONSTEXPR 312
+#define KW_DECLTYPE 313
+#define KW_DEFAULT 314
+#define KW_DELETE 315
+#define KW_DOUBLE 316
+#define KW_DYNAMIC_CAST 317
+#define KW_ELSE 318
+#define KW_END_PUBLISH 319
+#define KW_ENUM 320
+#define KW_EXTENSION 321
+#define KW_EXTERN 322
+#define KW_EXPLICIT 323
+#define KW_PUBLISHED 324
+#define KW_FALSE 325
+#define KW_FLOAT 326
+#define KW_FRIEND 327
+#define KW_FOR 328
+#define KW_GOTO 329
+#define KW_IF 330
+#define KW_INLINE 331
+#define KW_INT 332
+#define KW_LONG 333
+#define KW_LONGLONG 334
+#define KW_MAKE_PROPERTY 335
+#define KW_MAKE_PROPERTY2 336
+#define KW_MAKE_SEQ 337
+#define KW_MUTABLE 338
+#define KW_NAMESPACE 339
+#define KW_NEW 340
+#define KW_NOEXCEPT 341
+#define KW_NULLPTR 342
+#define KW_OPERATOR 343
+#define KW_PRIVATE 344
+#define KW_PROTECTED 345
+#define KW_PUBLIC 346
+#define KW_REGISTER 347
+#define KW_RETURN 348
+#define KW_SHORT 349
+#define KW_SIGNED 350
+#define KW_SIZEOF 351
+#define KW_STATIC 352
+#define KW_STATIC_ASSERT 353
+#define KW_STATIC_CAST 354
+#define KW_STRUCT 355
+#define KW_TEMPLATE 356
+#define KW_THROW 357
+#define KW_TRUE 358
+#define KW_TRY 359
+#define KW_TYPEDEF 360
+#define KW_TYPENAME 361
+#define KW_UNION 362
+#define KW_UNSIGNED 363
+#define KW_USING 364
+#define KW_VIRTUAL 365
+#define KW_VOID 366
+#define KW_VOLATILE 367
+#define KW_WCHAR_T 368
+#define KW_WHILE 369
+#define START_CPP 370
+#define START_CONST_EXPR 371
+#define START_TYPE 372
 
 
 

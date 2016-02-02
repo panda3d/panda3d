@@ -68,8 +68,8 @@ class cppyystype {
 public:
   string str;
   union {
-    int integer;
-    double real;
+    unsigned long long integer;
+    long double real;
     CPPScope *scope;
     CPPDeclaration *decl;
     CPPInstance *instance;

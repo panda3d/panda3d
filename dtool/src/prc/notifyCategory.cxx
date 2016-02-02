@@ -108,7 +108,7 @@ out(NotifySeverity severity, bool prefix) const {
 //  Description: Returns the number of child Categories of this
 //               particular Category.
 ////////////////////////////////////////////////////////////////////
-int NotifyCategory::
+size_t NotifyCategory::
 get_num_children() const {
   return _children.size();
 }
@@ -120,8 +120,8 @@ get_num_children() const {
 //               Category.
 ////////////////////////////////////////////////////////////////////
 NotifyCategory *NotifyCategory::
-get_child(int i) const {
-  assert(i >= 0 && i < (int)_children.size());
+get_child(size_t i) const {
+  assert(i < _children.size());
   return _children[i];
 }
 

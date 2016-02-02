@@ -20,7 +20,7 @@ TypeHandle PhysxCapsuleForceFieldShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxCapsuleForceFieldShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxForceFieldShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxCapsuleForceFieldShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleForceFieldShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxCapsuleForceFieldShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxCapsuleForceFieldShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleForceFieldShape::
 save_to_desc(PhysxCapsuleForceFieldShapeDesc &shapeDesc) const {

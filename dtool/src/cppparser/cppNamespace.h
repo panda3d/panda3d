@@ -22,7 +22,7 @@
 class CPPIdentifier;
 class CPPScope;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPNamespace
 // Description :
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +41,10 @@ public:
   virtual SubType get_subtype() const;
 
   virtual CPPNamespace *as_namespace();
+
+  // We can't call this _inline since that would clash with an MSVC
+  // built-in keyword declaration.
+  bool _is_inline;
 
 private:
   CPPIdentifier *_ident;

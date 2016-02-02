@@ -91,9 +91,7 @@ void InterrogateType::EnumValue::
 input(istream &in) {
   idf_input_string(in, _name);
   idf_input_string(in, _scoped_name);
-  if (InterrogateDatabase::get_file_minor_version() >= 3) {
-    idf_input_string(in, _comment);
-  }
+  idf_input_string(in, _comment);
   in >> _value;
 }
 

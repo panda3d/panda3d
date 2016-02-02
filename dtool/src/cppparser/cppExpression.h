@@ -24,15 +24,17 @@ class CPPType;
 class CPPPreprocessor;
 class CPPFunctionGroup;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPExpression
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPExpression : public CPPDeclaration {
 public:
+  CPPExpression(bool value);
+  CPPExpression(unsigned long long value);
   CPPExpression(int value);
   CPPExpression(const string &value);
-  CPPExpression(double value);
+  CPPExpression(long double value);
   CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
                 CPPScope *global_scope, CPPPreprocessor *error_sink = NULL);
   CPPExpression(int unary_operator, CPPExpression *op1);
@@ -43,6 +45,16 @@ public:
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
   static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
   static CPPExpression sizeof_func(CPPType *type);
+  static CPPExpression alignof_func(CPPType *type);
+
+  static CPPExpression literal(unsigned long long value, CPPInstance *lit_op);
+  static CPPExpression literal(long double value, CPPInstance *lit_op);
+  static CPPExpression literal(CPPExpression *value, CPPInstance *lit_op);
+  static CPPExpression raw_literal(const string &raw, CPPInstance *lit_op);
+
+  static const CPPExpression &get_nullptr();
+  static const CPPExpression &get_default();
+  static const CPPExpression &get_delete();
 
   ~CPPExpression();
 
@@ -92,9 +104,15 @@ public:
 
 
   enum Type {
+    T_nullptr,
+    T_boolean,
     T_integer,
     T_real,
     T_string,
+    T_wstring,
+    T_u8string,
+    T_u16string,
+    T_u32string,
     T_variable,
     T_function,
     T_unknown_ident,
@@ -104,16 +122,24 @@ public:
     T_new,
     T_default_new,
     T_sizeof,
+    T_alignof,
     T_unary_operation,
     T_binary_operation,
     T_trinary_operation,
+    T_literal,
+    T_raw_literal,
+
+    // These are used when parsing =default and =delete methods.
+    T_default,
+    T_delete,
   };
 
   Type _type;
   string _str;
   union {
-    int _integer;
-    double _real;
+    bool _boolean;
+    unsigned long long _integer;
+    long double _real;
     CPPInstance *_variable;
     CPPFunctionGroup *_fgroup;
     CPPIdentifier *_ident;
@@ -131,6 +157,11 @@ public:
       CPPExpression *_op2;
       CPPExpression *_op3;
     } _op;
+    class {
+    public:
+      CPPInstance *_operator;
+      CPPExpression *_value;
+    } _literal;
   } _u;
 
 protected:
@@ -146,5 +177,3 @@ operator << (ostream &out, const CPPExpression::Result &result) {
 }
 
 #endif
-
-

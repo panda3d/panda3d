@@ -43,12 +43,16 @@ public:
 PUBLISHED:
   INLINE const LColor &get_specular_color() const FINAL;
   INLINE void set_specular_color(const LColor &color);
+  INLINE void clear_specular_color();
+  MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
   INLINE const LPoint3 &get_point() const;
   INLINE void set_point(const LPoint3 &point);
+  MAKE_PROPERTY(point, get_point, set_point);
 
   INLINE const LVector3 &get_direction() const;
   INLINE void set_direction(const LVector3 &direction);
+  MAKE_PROPERTY(direction, get_direction, set_direction);
 
   virtual int get_class_priority() const;
 
@@ -57,6 +61,8 @@ public:
                     int light_id);
 
 private:
+  bool _has_specular_color;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:

@@ -113,7 +113,7 @@ public:
   void finished();
 
 private:
-  OpenALAudioSound(OpenALAudioManager* manager, 
+  OpenALAudioSound(OpenALAudioManager* manager,
                    MovieAudio *movie,
                    bool positional,
                    int mode);
@@ -202,7 +202,7 @@ private:
   bool _active;
   bool _paused;
 
- public:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -218,12 +218,8 @@ private:
     return get_class_type();
   }
 
- private:
+private:
   static TypeHandle _type_handle;
-
-  ////////////////////////////////////////////////////////////
-  //DONE
-  ////////////////////////////////////////////////////////////
 };
 
 #include "openalAudioSound.I"

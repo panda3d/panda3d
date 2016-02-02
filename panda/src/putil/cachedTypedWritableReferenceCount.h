@@ -50,6 +50,8 @@ PUBLISHED:
   INLINE bool cache_unref() const;
   INLINE bool test_ref_count_integrity() const;
 
+  MAKE_PROPERTY(cache_ref_count, get_cache_ref_count);
+
 protected:
   INLINE void cache_unref_only() const;
   bool do_test_ref_count_integrity() const;
@@ -77,4 +79,4 @@ INLINE void cache_unref_delete(RefCountType *ptr);
 
 #include "cachedTypedWritableReferenceCount.I"
 
-#endif  
+#endif

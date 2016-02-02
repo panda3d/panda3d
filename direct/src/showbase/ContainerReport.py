@@ -1,6 +1,6 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import Queue, fastRepr, invertDictLossless
-from direct.showbase.PythonUtil import itype, safeRepr
+from direct.showbase.PythonUtil import Queue, invertDictLossless
+from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
 import types
 
@@ -86,7 +86,7 @@ class ContainerReport(Job):
 
             if type(parentObj) in (types.StringType, types.UnicodeType):
                 continue
-            
+
             if type(parentObj) in (types.ModuleType, types.InstanceType):
                 child = parentObj.__dict__
                 if self._examine(child):
@@ -176,7 +176,7 @@ class ContainerReport(Job):
             self.printingEnd()
 
         yield Job.Done
-        
+
     def _enqueueContainer(self, obj, pathStr=None):
         # call this to add a container that should be examined before any (other) direct
         # children of __builtins__

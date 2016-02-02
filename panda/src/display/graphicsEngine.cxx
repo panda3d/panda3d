@@ -41,7 +41,6 @@
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"
-#include "omniBoundingVolume.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
 #include "vertexDataPage.h"
@@ -630,8 +629,7 @@ remove_all_windows() {
   // a hack, since it's not really related to removing windows, this
   // would nevertheless be a fine time to ensure the model cache (if
   // any) has been flushed to disk.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->flush_index();
+  BamCache::flush_global_index();
 
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
@@ -716,8 +714,7 @@ render_frame() {
 
   // Since this gets called every frame, we should take advantage of
   // the opportunity to flush the cache if necessary.
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->consider_flush_index();
+  BamCache::consider_flush_global_index();
 
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
@@ -1155,6 +1152,8 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+  nassertv(sattr->get_shader() != (Shader *)NULL);
+
   ReMutexHolder holder(_lock);
 
   CPT(RenderState) state = RenderState::make(sattr);
@@ -1248,12 +1247,12 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     // from the lens.
     PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
-    if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
-        !bv->is_of_type(OmniBoundingVolume::get_class_type())) {
+    if (bv != (BoundingVolume *)NULL && !bv->is_infinite() &&
+        bv->as_geometric_bounding_volume() != NULL) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
-      local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
+      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
+      nassertv(!local_frustum.is_null());
 
       NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
       CPT(TransformState) cull_center_transform =
@@ -1483,7 +1482,8 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
   // Keep track of the cameras we have already used in this thread to
   // render DisplayRegions.
-  typedef pmap<NodePath, DisplayRegion *> AlreadyCulled;
+  typedef pair<NodePath, int> CullKey;
+  typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
   size_t wlist_size = wlist.size();
@@ -1498,7 +1498,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           DisplayRegionPipelineReader *dr_reader =
             new DisplayRegionPipelineReader(dr, current_thread);
           NodePath camera = dr_reader->get_camera();
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(camera, (DisplayRegion *)NULL)).first;
+          int lens_index = dr_reader->get_lens_index();
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(CullKey(camera, lens_index), (DisplayRegion *)NULL)).first;
           if ((*aci).second == NULL) {
             // We have not used this camera already in this thread.
             // Perform the cull operation.
@@ -1580,7 +1582,7 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   }
 
   // Save the results for next frame.
-  dr->set_cull_result(cull_result, scene_setup, current_thread);
+  dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2328,50 +2330,6 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
           << "which are currently enabled, because 'textures_auto_power_2' is\n"
           << "true.  Panda's automatic mechanisms assume that if one\n"
           << "window supports non-power-of-two textures, then they all will.\n"
-          << "This assumption works for most games, but not all.\n"
-          << "In particular, it can fail if the game creates multiple windows\n"
-          << "on multiple displays with different video cards.\n";
-      }
-    }
-  }
-
-  if (shader_auto_utilization && (shader_utilization != SUT_none)) {
-    display_cat.error()
-      << "Invalid panda config file: if you set the config-variable\n"
-      << "shader_auto_utilization to true, you must set the config-variable"
-      << "shader_utilization to 'none'.\n";
-    shader_utilization = SUT_none; // Not a fix.  Just suppresses further error messages.
-  }
-
-  if (shader_auto_utilization && !Shader::have_shader_utilization()) {
-    if (gsg->get_supports_basic_shaders()) {
-      Shader::set_shader_utilization(SUT_basic);
-    } else {
-      Shader::set_shader_utilization(SUT_none);
-    }
-  }
-
-  if ((Shader::get_shader_utilization() != SUT_none) &&
-      (!gsg->get_supports_basic_shaders())) {
-
-    // Overaggressive configuration detected
-
-    display_cat.error()
-      << "The 'shader_utilization' config variable is set, meaning\n"
-      << "that panda may try to generate shaders.  However, the video \n"
-      << "driver I'm trying to use does not support shaders.\n";
-
-    if (shader_utilization == SUT_none) {
-      display_cat.error()
-        << "The 'shader_utilization' setting did not come from the config\n"
-        << "file.  In other words, it was altered procedurally.\n";
-
-      if (shader_auto_utilization) {
-        display_cat.error()
-          << "It is possible that it was set by panda's automatic mechanisms,\n"
-          << "which are currently enabled, because 'shader_auto_utilization' is\n"
-          << "true.  Panda's automatic mechanisms assume that if one\n"
-          << "window supports shaders, then they all will.\n"
           << "This assumption works for most games, but not all.\n"
           << "In particular, it can fail if the game creates multiple windows\n"
           << "on multiple displays with different video cards.\n";

@@ -1,4 +1,4 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 
 class TexViewer(DirectObject):
@@ -30,7 +30,7 @@ class TexViewer(DirectObject):
         ls.drawTo(l, 0, t)
         ls.drawTo(l, 0, b)
         cards.attachNewNode(ls.create())
-        
+
 
         # And the "simple", reduced-resolution version goes on the
         # right.

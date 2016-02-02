@@ -58,7 +58,6 @@ extern EXPCL_PANDA_PGRAPH ConfigVariableBool premunge_data;
 extern ConfigVariableBool preserve_geom_nodes;
 extern ConfigVariableBool flatten_geoms;
 extern EXPCL_PANDA_PGRAPH ConfigVariableInt max_lenses;
-extern ConfigVariableBool default_antialias_enable;
 
 extern ConfigVariableBool polylight_info;
 

@@ -11,9 +11,7 @@ from direct.showbase import ExceptionVarDump
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import messenger
 import types
-import time
 import random
-import string
 
 try:
     import signal
@@ -21,6 +19,7 @@ except ImportError:
     signal = None
 
 from panda3d.core import *
+from direct.extensions_native import HTTPChannel_extensions
 
 def print_exc_plus():
     """
@@ -149,6 +148,8 @@ class TaskManager:
     def setClock(self, clockObject):
         self.mgr.setClock(clockObject)
         self.globalClock = clockObject
+
+    clock = property(lambda self: self.mgr.getClock(), setClock)
 
     def invokeDefaultHandler(self, signalNumber, stackFrame):
         print '*** allowing mid-frame keyboard interrupt.'
@@ -311,6 +312,8 @@ class TaskManager:
         task.setDelay(delayTime)
         self.mgr.add(task)
         return task
+
+    do_method_later = doMethodLater
 
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
@@ -583,7 +586,10 @@ class TaskManager:
         return numFound
 
     def popupControls(self):
-        from direct.tkpanels import TaskManagerPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        TaskManagerPanel = importlib.import_module('direct.tkpanels.TaskManagerPanel')
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def getProfileSession(self, name=None):

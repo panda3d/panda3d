@@ -50,11 +50,14 @@ PUBLISHED:
   BLOCKING bool load(const PNMImage &pnmimage);
   BLOCKING bool store(PNMImage &pnmimage) const;
   BLOCKING bool store_mask(PNMImage &pnmimage) const;
+  BLOCKING bool store_mask(PNMImage &pnmimage, const LVecBase4f &min_point, const LVecBase4f &max_point) const;
 
   INLINE bool is_valid() const;
+  MAKE_PROPERTY(valid, is_valid);
 
   INLINE PN_float32 get_scale() const;
   INLINE void set_scale(PN_float32 scale);
+  MAKE_PROPERTY(scale, get_scale, set_scale);
 
   INLINE bool has_point(int x, int y) const;
   INLINE PN_float32 get_channel(int x, int y, int c) const;
@@ -122,6 +125,8 @@ PUBLISHED:
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void forward_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
+  BLOCKING void apply_1d_lut(int channel, const PfmFile &lut, PN_float32 x_scale = 1.0);
+
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void apply_mask(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);

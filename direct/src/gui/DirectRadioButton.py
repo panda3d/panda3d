@@ -2,7 +2,7 @@
 
 __all__ = ['DirectRadioButton']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectButton import *
 from DirectLabel import *
@@ -190,7 +190,7 @@ class DirectRadioButton(DirectButton):
 
 
     def commandFunc(self, event):
-        if len(self['value']) == len(self['variable']) != 0:            
+        if len(self['value']) == len(self['variable']) != 0:
             for i in range(len(self['value'])):
                 self['variable'][i] = self['value'][i]
         self.check()

@@ -24,8 +24,8 @@
 #include "config_physics.h"
 
 ////////////////////////////////////////////////////////////////////
-//        Class : PhysicalNode
-//  Description : Graph node that encapsulated a series of physical
+//       Class : PhysicalNode
+// Description : Graph node that encapsulated a series of physical
 //                objects
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
@@ -40,7 +40,7 @@ PUBLISHED:
   void add_physicals_from(const PhysicalNode &other);
   void remove_physical(Physical *physical);
   void remove_physical(int index);
-  
+
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:

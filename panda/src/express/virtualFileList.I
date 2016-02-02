@@ -46,7 +46,7 @@ add_file(VirtualFile *file) {
 //       Access: Published
 //  Description: Returns the number of files in the list.
 ////////////////////////////////////////////////////////////////////
-INLINE int VirtualFileList::
+INLINE size_t VirtualFileList::
 get_num_files() const {
   return _files.size();
 }
@@ -57,8 +57,8 @@ get_num_files() const {
 //  Description: Returns the nth file in the list.
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFile *VirtualFileList::
-get_file(int n) const {
-  nassertr(n >= 0 && n < (int)_files.size(), NULL);
+get_file(size_t n) const {
+  nassertr(n < _files.size(), NULL);
   return _files[n];
 }
 
@@ -68,8 +68,8 @@ get_file(int n) const {
 //  Description: Returns the nth file in the list.
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFile *VirtualFileList::
-operator [](int n) const {
-  nassertr(n >= 0 && n < (int)_files.size(), NULL);
+operator [](size_t n) const {
+  nassertr(n < _files.size(), NULL);
   return _files[n];
 }
 
@@ -78,7 +78,7 @@ operator [](int n) const {
 //       Access: Published
 //  Description: Returns the number of files in the list.
 ////////////////////////////////////////////////////////////////////
-INLINE int VirtualFileList::
+INLINE size_t VirtualFileList::
 size() const {
   return _files.size();
 }

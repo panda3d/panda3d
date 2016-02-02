@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
-  INLINE char operator [] (int n) const;
+  INLINE char operator [] (size_t n) const;
 
   INLINE string get_fullpath() const;
   INLINE string get_dirname() const;
@@ -58,9 +58,11 @@ PUBLISHED:
   INLINE void set_value(const Filename &value);
   INLINE Filename get_value() const;
   INLINE Filename get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE Filename get_word(int n) const;
-  INLINE void set_word(int n, const Filename &value);
+  INLINE Filename get_word(size_t n) const;
+  INLINE void set_word(size_t n, const Filename &value);
 
 private:
   void reload_cache();

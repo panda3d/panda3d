@@ -6,7 +6,7 @@ __all__ = ['DirectSessionPanel']
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from Tkinter import *
-from pandac.PandaModules import *
+from panda3d.core import *
 import Pmw, string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
@@ -195,10 +195,10 @@ class DirectSessionPanel(AppShell):
 
         framePane.pack(expand = 1, fill = BOTH)
         mainFrame.pack(fill = 'both', expand = 1)
-        
+
         # Put this here so it isn't called right away
         notebook['raisecommand'] = self.updateInfo
-       
+
     def createEnvPage(self, envPage):
         bkgrdFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
 
@@ -607,7 +607,7 @@ class DirectSessionPanel(AppShell):
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 250)
         self.MemExp.pack(fill = BOTH, expand = 1)
-            
+
     def toggleDirect(self):
         if self.directEnabled.get():
             base.direct.enable()
@@ -724,7 +724,7 @@ class DirectSessionPanel(AppShell):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + repr(nodePath.id())
+            dictName = name + '-' + repr(hash(nodePath))
         if dictName not in dict:
             # Update combo box to include new item
             names.append(dictName)

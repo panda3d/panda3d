@@ -3,7 +3,8 @@
 __all__ = ['MopathInterval']
 
 import LerpInterval
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
 
 # import Mopath
@@ -21,18 +22,18 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
 
         if duration == None:
             duration = abs(toT - fromT)
-        
+
         # Generate unique name if necessary
         if (name == None):
             name = 'Mopath-%d' % MopathInterval.mopathNum
-            MopathInterval.mopathNum += 1        
+            MopathInterval.mopathNum += 1
 
         LerpInterval.LerpFunctionInterval.__init__(
             self, self.__doMopath, fromData = fromT, toData = toT,
             duration = duration, blendType = blendType,
             name = name)
-        
-        self.mopath = mopath 
+
+        self.mopath = mopath
         self.node = node
 
     def destroy(self):

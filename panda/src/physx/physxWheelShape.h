@@ -25,7 +25,7 @@ class PhysxSpringDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxWheelShape
-// Description : A special shape used for simulating a car wheel. 
+// Description : A special shape used for simulating a car wheel.
 //               The -Y axis should be directed toward the ground.
 //
 //               A ray is cast from the shape's origin along the -Y
@@ -33,12 +33,12 @@ class PhysxSpringDesc;
 //               distance is:
 //
 //               - less than wheelRadius from the shape origin:
-//                 a hard contact is created 
+//                 a hard contact is created
 //               - between wheelRadius and (suspensionTravel +
 //                 wheelRadius): a soft suspension contact is
-//                 created 
+//                 created
 //               - greater than (suspensionTravel + wheelRadius):
-//                 no contact is created. 
+//                 no contact is created.
 //
 //               Thus at the point of greatest possible suspension
 //               compression the wheel axle will pass through at
@@ -67,7 +67,6 @@ class PhysxSpringDesc;
 //               on the car.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxWheelShape : public PhysxShape {
-
 PUBLISHED:
   INLINE PhysxWheelShape();
   INLINE ~PhysxWheelShape();
@@ -95,7 +94,6 @@ PUBLISHED:
   float get_axle_speed() const;
   bool get_wheel_flag(PhysxWheelShapeFlag flag) const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -105,14 +103,13 @@ public:
 private:
   NxWheelShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxWheelShape", 
+    register_type(_type_handle, "PhysxWheelShape",
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

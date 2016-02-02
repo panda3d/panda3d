@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : evade.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  24 Oct 09
+// Filename: evade.cxx
+// Created by: Deepak, John, Navin (24Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -31,17 +30,14 @@ Evade::Evade(AICharacter *ai_ch, NodePath target_object, double panic_distance,
 Evade::~Evade() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_evade
-// Description : This function performs the evade and returns an evade force which is used
-//                in the calculate_prioritized function.
-//                In case the AICharacter is past the (panic + relax) distance,
-//                it resets to evade_activate.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: do_evade
+//  Description: This function performs the evade and returns an evade force which is used
+//               in the calculate_prioritized function.
+//               In case the AICharacter is past the (panic + relax) distance,
+//               it resets to evade_activate.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 LVecBase3 Evade::do_evade() {
   assert(_evade_target && "evade target not assigned");
 
@@ -66,15 +62,12 @@ LVecBase3 Evade::do_evade() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : evade_activate
-// Description : This function checks for whether the target is within the panic distance.
-//                When this is true, it calls the do_evade function and sets the evade direction.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: evade_activate
+//  Description: This function checks for whether the target is within the panic distance.
+//               When this is true, it calls the do_evade function and sets the evade direction.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 void Evade::evade_activate() {
     _evade_direction = (_ai_char->_ai_char_np.get_pos(_ai_char->_window_render) - _evade_target.get_pos(_ai_char->_window_render));
   double distance = _evade_direction.length();

@@ -1,12 +1,12 @@
 from direct.showbase.DirectObject import DirectObject
-from direct.directnotify import DirectNotifyGlobal
-from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from panda3d.core import *
 from PhasedObject import PhasedObject
 
 class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     """
     This class defines a PhasedObject,NodePath object that will handle the phasing
-    of an object in the scene graph according to its distance from some 
+    of an object in the scene graph according to its distance from some
     other collider object(such as an avatar).
 
     Since it's a NodePath, you can parent it to another object in the
@@ -38,8 +38,8 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     that this will only be used after a reset or phase change in
     order to fully transition to the correct phase in a single pass.
     Most of the time, it will be reacting to events from the main
-    collision traverser.    
-    
+    collision traverser.
+
     IMPORTANT!: The following only applies when autoCleanup == True:
                 If you unload the last phase, by either calling
                 cleanup() or by exitting the last phase's distance,
@@ -53,7 +53,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     notify = directNotify.newCategory("DistancePhasedObject")
     __InstanceSequence = 0
     __InstanceDeque = []
-        
+
     @staticmethod
     def __allocateId():
         """
@@ -98,7 +98,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         self.cTrav = base.cTrav
         self.fromCollideNode = fromCollideNode
         self._colSpheres = []
-        
+
         self.reset()
 
     def __del__(self):
@@ -115,20 +115,20 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     def __str__(self):
         return '%s in phase \'%s\'' % (NodePath.__str__(self), self.getPhase())
-        
+
 
     def cleanup(self):
         """
         Disables all collisions.
         Ignores all owned event listeners.
-        Unloads all unloaded phases.        
+        Unloads all unloaded phases.
         """
         self.__disableCollisions(cleanup = True)
         for sphere in self._colSpheres:
             sphere.remove()
         self._colSpheres = []
         PhasedObject.cleanup(self)
-        
+
     def setPhaseCollideMask(self, mask):
         """
         Sets the intoCollideMasks for our collision spheres.
@@ -136,14 +136,14 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         self.phaseCollideMask = mask
         for sphere in self._colSpheres:
             self.colSphere.node().setIntoCollideMask(self.phaseCollideMask)
-            
+
     def reset(self):
         """
         Unloads all loaded phases and puts the phase node
         in the startup state is if it had just been initialized.
         """
         self.cleanup()
-        self.__oneTimeCollide()        
+        self.__oneTimeCollide()
         for name, dist in self.phaseParamList:
             cSphere = CollisionSphere(0.0, 0.0, 0.0, dist)
             cSphere.setTangible(0)
@@ -164,7 +164,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
             self.cTrav.addCollider(self.fromCollideNode,cHandler)
 
         self.__enableCollisions(-1)
-        
+
     def setPhase(self, aPhase):
         """
         See PhasedObject.setPhase()
@@ -173,18 +173,18 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         PhasedObject.setPhase(self, aPhase)
         self.__disableCollisions()
         self.__enableCollisions(phase)
-        
+
         if phase == -1 and self.autoCleanup:
             self.cleanup()
         else:
             self.__oneTimeCollide()
-        
+
     def __getEnterEvent(self, phaseName):
         return '%sPhaseNode%s-%d' % (self.enterPrefix, phaseName, self.__id)
 
     def __getExitEvent(self, phaseName):
         return '%sPhaseNode%s-%d' % (self.exitPrefix, phaseName, self.__id)
-    
+
     def __enableCollisions(self, phase):
         """
         Turns on collisions for the spheres bounding this
@@ -222,7 +222,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
             if x > 0 or not self.autoCleanup or cleanup:
                 sphere.stash()
                 self.ignore(self.__getExitEvent(phaseName))
-        
+
     def __handleEnterEvent(self, phaseName, cEntry):
         self.setPhase(phaseName)
 
@@ -248,7 +248,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
                 # Only traverse ourself
                 self.cTrav.traverse(self)
             base.eventMgr.doEvents()
-        
+
 class BufferedDistancePhasedNode(DistancePhasedNode):
     """
     This class is similar to DistancePhasedNode except you can also
@@ -314,7 +314,7 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
             sphere.node().modifySolid(0).setRadius(self.bufferParamList[x+phase+1][1][0])
             sphere.node().markInternalBoundsStale()
 
-    
+
 if __debug__ and 0:
     cSphere = CollisionSphere(0,0,0,0.1)
     cNode = CollisionNode('camCol')
@@ -323,13 +323,13 @@ if __debug__ and 0:
     cNodePath.reparentTo(base.cam)
     # cNodePath.show()
     # cNodePath.setPos(25,0,0)
-    
+
     base.cTrav = CollisionTraverser()
-    
+
     eventHandler = CollisionHandlerEvent()
     eventHandler.addInPattern('enter%in')
     eventHandler.addOutPattern('exit%in')
-    
+
     # messenger.toggleVerbose()
     base.cTrav.addCollider(cNodePath,eventHandler)
 

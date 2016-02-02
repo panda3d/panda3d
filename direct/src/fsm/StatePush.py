@@ -5,7 +5,7 @@ __all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
            'EventArgument', ]
 
 from direct.showbase.DirectObject import DirectObject
-import types
+
 
 class PushesStateChanges:
     # base class for objects that broadcast state changes to a set of subscriber objects
@@ -249,7 +249,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
         if self._initialized:
             self._func(*self._bakedArgs, **self._bakedKargs)
             PushesStateChanges._handleStateChange(self)
-        
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -351,7 +351,7 @@ class Pulse(PushesStateChanges):
     def sendPulse(self):
         self._handlePotentialStateChange(True)
         self._handlePotentialStateChange(False)
-    
+
 if __debug__:
     l = []
     def handler(value, l=l):
@@ -382,24 +382,6 @@ class EventPulse(Pulse, DirectObject):
         self.ignoreAll()
         Pulse.destroy(self)
 
-if __debug__:
-    l = []
-    def handler(value, l=l):
-        l.append(value)
-    ep = EventPulse('testEvent')
-    fc = FunctionCall(handler, ep)
-    assert l == []
-    messenger.send('testEvent')
-    assert l == [True, False, ]
-    messenger.send('testEvent')
-    assert l == [True, False, True, False, ]
-    fc.destroy()
-    ep.destroy()
-    del fc
-    del ep
-    del l
-    del handler
-    
 class EventArgument(PushesStateChanges, DirectObject):
     # tracks a particular argument to a particular messenger event
     def __init__(self, event, index=0):
@@ -411,28 +393,9 @@ class EventArgument(PushesStateChanges, DirectObject):
         self.ignoreAll()
         del self._index
         PushesStateChanges.destroy(self)
-        
+
     def _handleEvent(self, *args):
         self._handlePotentialStateChange(args[self._index])
-
-if __debug__:
-    l = []
-    def handler(value, l=l):
-        l.append(value)
-    ea = EventArgument('testEvent', index=1)
-    fc = FunctionCall(handler, ea)
-    assert l == []
-    fc.pushCurrentState()
-    assert l == [None, ]
-    messenger.send('testEvent', ['a', 'b'])
-    assert l == [None, 'b', ]
-    messenger.send('testEvent', [1, 2, 3, ])
-    assert l == [None, 'b', 2, ]
-    fc.destroy()
-    ea.destroy()
-    del fc
-    del ea
-    del l
 
 class AttrSetter(StateChangeNode):
     def __init__(self, source, object, attrName):

@@ -53,8 +53,10 @@ public:
 
   string get_parameter_name(int n) const;
   string call_function(ostream &out, int indent_level,
+                       bool convert_result, const string &container) const;
+  string call_function(ostream &out, int indent_level,
                        bool convert_result, const string &container,
-                       const vector_string &pexprs = vector_string()) const;
+                       const vector_string &pexprs) const;
 
   void write_orig_prototype(ostream &out, int indent_level, bool local=false,
                             int num_default_args=0) const;
@@ -62,6 +64,9 @@ public:
   FunctionWrapperIndex make_wrapper_entry(FunctionIndex function_index);
 
   string get_call_str(const string &container, const vector_string &pexprs) const;
+
+  int get_min_num_args() const;
+  int get_max_num_args() const;
 
   class Parameter {
   public:
@@ -110,7 +115,7 @@ public:
   bool _blocking;
   bool _extension;
   bool _const_method;
-  int _first_true_parameter;
+  size_t _first_true_parameter;
   int _num_default_parameters;
   Type _type;
   int _flags;
@@ -135,7 +140,7 @@ public:
   bool _is_valid;
 
 private:
-  string get_parameter_expr(int n, const vector_string &pexprs) const;
+  string get_parameter_expr(size_t n, const vector_string &pexprs) const;
   bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };
 

@@ -13,3 +13,17 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stringStream.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringStream::set_data
+//       Access: Public
+//  Description: Replaces the contents of the data stream.  This
+//               implicitly reseeks to 0.
+////////////////////////////////////////////////////////////////////
+void StringStream::
+set_data(const unsigned char *data, size_t size) {
+  _buf.clear();
+  vector_uchar pv;
+  pv.insert(pv.end(), data, data + size);
+  _buf.swap_data(pv);
+}

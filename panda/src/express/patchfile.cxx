@@ -36,14 +36,13 @@
 istream *Patchfile::_tar_istream = NULL;
 #endif  // HAVE_TAR
 
-////////////////////////////////////////////////////////////////////
-
 // this actually slows things down...
 //#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
-// Patch File Format ///////////////////////////////////////////////
-///// IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
 ////////////////////////////////////////////////////////////////////
+// Patch File Format
+// IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
+//
 // [ HEADER ]
 //   4 bytes  0xfeebfaac ("magic number")
 //            (older patch files have a magic number 0xfeebfaab,
@@ -53,14 +52,15 @@ istream *Patchfile::_tar_istream = NULL;
 //  16 bytes  MD5 of starting file    (if version >= 1)
 //   4 bytes  length of resulting patched file
 //  16 bytes  MD5 of resultant patched file
-
+//
 // Note that MD5 hashes are written in the order observed by
 // HashVal::read_stream() and HashVal::write_stream(), which is not
 // the normal linear order.  (Each group of four bytes is reversed.)
+////////////////////////////////////////////////////////////////////
 
 const int _v0_header_length = 4 + 4 + 16;
 const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
-//
+////////////////////////////////////////////////////////////////////
 // [ ADD/COPY pairs; repeated N times ]
 //   2 bytes  AL = ADD length
 //  AL bytes  bytes to add
@@ -73,7 +73,6 @@ const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
 // [ TERMINATOR ]
 //   2 bytes  zero-length ADD
 //   2 bytes  zero-length COPY
-////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -187,14 +186,13 @@ cleanup() {
 
 ////////////////////////////////////////////////////////////////////
 ///// PATCH FILE APPLY MEMBER FUNCTIONS
-/////
-////////////////////
+
+////////////////////////////////////////////////////////////////////
 ///// NOTE: this patch-application functionality unfortunately has to be
 /////       duplicated in the Installer. It is contained in the file
 /////       installerApplyPatch.cxx
 /////       PLEASE MAKE SURE THAT THAT FILE GETS UPDATED IF ANY OF THIS
 /////       LOGIC CHANGES! (i.e. if the patch file format changes)
-////////////////////
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -326,7 +324,6 @@ run() {
   bytes_read = 0;
 
   while (bytes_read < buflen) {
-    ///////////
     // read # of ADD bytes
     nassertr(_buffer->get_length() >= (int)sizeof(ADD_length), false);
     ADD_length = patch_reader.get_uint16();
@@ -364,7 +361,6 @@ run() {
       bytes_left -= bytes_this_time;
     }
 
-    ///////////
     // read # of COPY bytes
     nassertr(_buffer->get_length() >= (int)sizeof(COPY_length), false);
     COPY_length = patch_reader.get_uint16();
@@ -584,9 +580,7 @@ internal_read_header(const Filename &patch_file) {
     return get_write_error();
   }
 
-  /////////////
   // read header, make sure the patch file is valid
-
   StreamReader patch_reader(*_patch_stream);
 
   // check the magic number

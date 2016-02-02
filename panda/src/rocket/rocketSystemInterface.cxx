@@ -1,4 +1,4 @@
-// Filename: rocketSystemInterface.h
+// Filename: rocketSystemInterface.cxx
 // Created by:  rdb (03Nov11)
 //
 ////////////////////////////////////////////////////////////////////

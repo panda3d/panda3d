@@ -52,10 +52,12 @@ PUBLISHED:
   INLINE void set_origin(const LPoint3 &origin);
   INLINE void set_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   INLINE const LPoint3 &get_origin() const;
+  MAKE_PROPERTY(origin, get_origin, set_origin);
 
   INLINE void set_direction(const LVector3 &direction);
   INLINE void set_direction(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   INLINE const LVector3 &get_direction() const;
+  MAKE_PROPERTY(direction, get_direction, set_direction);
 
   bool set_from_lens(LensNode *camera, const LPoint2 &point);
   INLINE bool set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py);

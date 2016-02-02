@@ -72,7 +72,7 @@ PUBLISHED:
   size_t extract_bytes(unsigned char *into, size_t size);
 
   INLINE string get_remaining_bytes() const;
-  INLINE int get_remaining_size() const;
+  INLINE size_t get_remaining_size() const;
 
   INLINE const Datagram &get_datagram() const;
   INLINE size_t get_current_index() const;

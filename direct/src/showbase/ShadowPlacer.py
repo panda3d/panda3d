@@ -17,7 +17,7 @@ import DirectObject
 
 class ShadowPlacer(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ShadowPlacer")
-    
+
     if __debug__:
         count = 0
         activeCount = 0
@@ -71,7 +71,7 @@ class ShadowPlacer(DirectObject.DirectObject):
 
         # activate the collider with the traverser and pusher
         #self.on()
-        
+
         self.lifter.addCollider(self.cRayNodePath, shadowNodePath)
 
     def delete(self):
@@ -145,7 +145,7 @@ class ShadowPlacer(DirectObject.DirectObject):
     def resetToOrigin(self):
         if self.shadowNodePath:
             self.shadowNodePath.setPos(0,0,0)
-        
+
     if __debug__:
         def debugDisplay(self):
             """for debugging"""

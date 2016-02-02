@@ -66,7 +66,7 @@ init_libFmodAudio() {
 //  Description: This function is called when the dynamic library is
 //               loaded; it should return the Create_AudioManager
 //               function appropriate to create a FmodAudioManager.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 Create_AudioManager_proc *
 get_audio_manager_func_fmod_audio() {
   init_libFmodAudio();

@@ -1,3 +1,5 @@
+__all__ = ["SeqValue"]
+
 import types
 
 class SeqValue:
@@ -35,7 +37,7 @@ class SeqValue:
         """ Sets the seq from the indicated string of dot-separated
         integers.  Raises ValueError on error. """
         assert isinstance(value, types.StringTypes)
-        
+
         self.value = ()
         if value:
             value = value.split('.')
@@ -82,4 +84,4 @@ class SeqValue:
 
     def __str__(self):
         return 'SeqValue%s' % (repr(self.value))
-    
+

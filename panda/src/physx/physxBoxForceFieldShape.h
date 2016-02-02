@@ -28,7 +28,6 @@ class PhysxBoxForceFieldShapeDesc;
 // Description : A box shaped region used to define a force field.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSX PhysxBoxForceFieldShape : public PhysxForceFieldShape {
-
 PUBLISHED:
   INLINE PhysxBoxForceFieldShape();
   INLINE ~PhysxBoxForceFieldShape();
@@ -38,7 +37,6 @@ PUBLISHED:
   void set_dimensions(const LVector3f &dimensions);
   LVector3f get_dimensions() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxForceFieldShape *ptr() const { return (NxForceFieldShape *)_ptr; };
 
@@ -48,14 +46,13 @@ public:
 private:
   NxBoxForceFieldShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxForceFieldShape::init_type();
-    register_type(_type_handle, "PhysxBoxForceFieldShape", 
+    register_type(_type_handle, "PhysxBoxForceFieldShape",
                   PhysxForceFieldShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

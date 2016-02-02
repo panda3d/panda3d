@@ -21,7 +21,7 @@ TypeHandle PhysxBoxForceFieldShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxForceFieldShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
@@ -39,7 +39,7 @@ link(NxForceFieldShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxForceFieldShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxForceFieldShape::
 unlink() {
@@ -52,10 +52,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxBoxForceFieldShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxBoxForceFieldShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxForceFieldShape::
 save_to_desc(PhysxBoxForceFieldShapeDesc &shapeDesc) const {
@@ -67,7 +67,7 @@ save_to_desc(PhysxBoxForceFieldShapeDesc &shapeDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxForceFieldShape::set_dimensions
 //       Access: Published
-//  Description: Sets the box dimensions. 
+//  Description: Sets the box dimensions.
 //
 //               The dimensions are the 'radii' of the box,
 //               meaning 1/2 extents in x dimension, 1/2 extents
@@ -83,7 +83,7 @@ set_dimensions(const LVector3f &vec) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxForceFieldShape::get_dimensions
 //       Access: Published
-//  Description: Retrieves the dimensions of the box. 
+//  Description: Retrieves the dimensions of the box.
 //
 //               The dimensions are the 'radii' of the box,
 //               meaning 1/2 extents in x dimension, 1/2 extents

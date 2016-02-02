@@ -76,15 +76,20 @@ PUBLISHED:
 
   virtual PrimitiveType get_primitive_type() const=0;
   virtual int get_geom_rendering() const;
+  MAKE_PROPERTY(primitive_type, get_primitive_type);
+  MAKE_PROPERTY(geom_rendering, get_geom_rendering);
 
   INLINE ShadeModel get_shade_model() const;
   INLINE void set_shade_model(ShadeModel shade_model);
+  MAKE_PROPERTY(shade_model, get_shade_model);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint);
 
   INLINE NumericType get_index_type() const;
   void set_index_type(NumericType index_type);
+  MAKE_PROPERTY(index_type, get_index_type);
 
   // The following published methods are provided for safe, high-level
   // iteration through the vertices and sub-primitives within the
@@ -140,6 +145,9 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  MAKE_PROPERTY(num_bytes, get_num_bytes);
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   bool request_resident() const;
 
@@ -166,13 +174,17 @@ PUBLISHED:
 
   INLINE int get_index_stride() const;
   INLINE int get_strip_cut_index() const;
+  MAKE_PROPERTY(index_stride, get_index_stride);
+  MAKE_PROPERTY(strip_cut_index, get_strip_cut_index);
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
-  void set_ends(CPTA_int ends);
+  void set_ends(PTA_int ends);
 
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;
+  MAKE_PROPERTY(mins, get_mins);
+  MAKE_PROPERTY(maxs, get_maxs);
 
   void set_minmax(int min_vertex, int max_vertex,
                   GeomVertexArrayData *mins, GeomVertexArrayData *maxs);
@@ -181,6 +193,9 @@ PUBLISHED:
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;
   virtual int get_num_unused_vertices_per_primitive() const;
+  MAKE_PROPERTY(num_vertices_per_primitive, get_num_vertices_per_primitive);
+  MAKE_PROPERTY(min_num_vertices_per_primitive, get_min_num_vertices_per_primitive);
+  MAKE_PROPERTY(num_unused_vertices_per_primitive, get_num_unused_vertices_per_primitive);
 
 public:
   void prepare(PreparedGraphicsObjects *prepared_objects);

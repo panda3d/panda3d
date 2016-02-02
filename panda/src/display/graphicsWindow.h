@@ -63,16 +63,25 @@ PUBLISHED:
   virtual bool is_active() const;
   INLINE bool is_fullscreen() const;
 
+  MAKE_PROPERTY(properties, get_properties);
+  MAKE_PROPERTY(requested_properties, get_requested_properties);
+  MAKE_PROPERTY(rejected_properties, get_rejected_properties);
+  MAKE_PROPERTY(closed, is_closed);
+
   void set_window_event(const string &window_event);
   string get_window_event() const;
+  MAKE_PROPERTY(window_event, get_window_event, set_window_event);
 
   void set_close_request_event(const string &close_request_event);
   string get_close_request_event() const;
+  MAKE_PROPERTY(close_request_event, get_close_request_event, set_close_request_event);
 
   INLINE void set_unexposed_draw(bool unexposed_draw);
   INLINE bool get_unexposed_draw() const;
+  MAKE_PROPERTY(unexposed_draw, get_unexposed_draw, set_unexposed_draw);
 
   INLINE WindowHandle *get_window_handle() const;
+  MAKE_PROPERTY(window_handle, get_window_handle);
   
   // Mouse and keyboard routines
   int get_num_input_devices() const;

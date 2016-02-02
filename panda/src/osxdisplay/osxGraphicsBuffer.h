@@ -1,3 +1,5 @@
+// Filename: osxGraphicsBuffer.h
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -28,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsBuffer : public GraphicsBuffer {
 public:
-  osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -46,7 +48,7 @@ protected:
 
 private:
   AGLPbuffer _pbuffer;
-   
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

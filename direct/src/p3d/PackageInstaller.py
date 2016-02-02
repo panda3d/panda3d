@@ -1,3 +1,5 @@
+__all__ = ["PackageInstaller"]
+
 from direct.showbase.DirectObject import DirectObject
 from direct.stdpy.threading import Lock, RLock
 from direct.showbase.MessengerGlobal import messenger

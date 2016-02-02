@@ -17,9 +17,9 @@
 TypeHandle LinearRandomForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearRandomForce
-//      Access : Protected
-// Description : vector constructor
+//     Function: LinearRandomForce
+//       Access: Protected
+//  Description: vector constructor
 ////////////////////////////////////////////////////////////////////
 LinearRandomForce::
 LinearRandomForce(PN_stdfloat a, bool mass) :
@@ -27,9 +27,9 @@ LinearRandomForce(PN_stdfloat a, bool mass) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearRandomForce
-//      Access : Protected
-// Description : copy constructor
+//     Function: LinearRandomForce
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearRandomForce::
 LinearRandomForce(const LinearRandomForce &copy) :
@@ -37,18 +37,18 @@ LinearRandomForce(const LinearRandomForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearRandomForce
-//      Access : public
-// Description : destructor
+//     Function: ~LinearRandomForce
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearRandomForce::
 ~LinearRandomForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : bounded_rand
-//       Access : Protected
-//  Description : Returns a float in [0, 1]
+//     Function: bounded_rand
+//       Access: Protected
+//  Description: Returns a float in [0, 1]
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat LinearRandomForce::
 bounded_rand() {
@@ -56,10 +56,10 @@ bounded_rand() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearRandomForce::
 output(ostream &out) const {
@@ -69,10 +69,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearRandomForce::
 write(ostream &out, unsigned int indent) const {

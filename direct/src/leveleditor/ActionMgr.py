@@ -68,13 +68,13 @@ class ActionBase(Functor):
     def postCall(self):
         # implement post process here
         pass
-        
+
     def undo(self):
         print "undo method is not defined for this action"
 
 class ActionAddNewObj(ActionBase):
     """ Action class for adding new object """
-    
+
     def __init__(self, editor, *args, **kargs):
         self.editor = editor
         function = self.editor.objectMgr.addNewObject
@@ -88,11 +88,11 @@ class ActionAddNewObj(ActionBase):
 
     def redo(self):
         if self.uid is None:
-            print "Can't redo this add"        
+            print "Can't redo this add"
         else:
             self.result = self._do__call__(uid=self.uid)
             return self.result
-            
+
     def undo(self):
         if self.result is None:
             print "Can't undo this add"
@@ -190,7 +190,7 @@ class ActionDeleteObj(ActionBase):
 
             self.selecteUIDs = []
             self.hierarchy = {}
-            self.objInfos = {}            
+            self.objInfos = {}
 
 class ActionDeleteObjById(ActionBase):
     """ Action class for deleting object """
@@ -209,7 +209,7 @@ class ActionDeleteObjById(ActionBase):
             if isUID:
                 obj = self.editor.objectMgr.findObjectById(uid_np)
             else:
-                obj = self.editor.objectMgr.findObjectByNodePath(uid_np)                
+                obj = self.editor.objectMgr.findObjectByNodePath(uid_np)
             if obj:
                 uid = obj[OG.OBJ_UID]
                 objNP = obj[OG.OBJ_NP]
@@ -263,7 +263,7 @@ class ActionDeleteObjById(ActionBase):
                             del self.hierarchy[uid]
 
             self.hierarchy = {}
-            self.objInfos = {}            
+            self.objInfos = {}
 
 class ActionChangeHierarchy(ActionBase):
      """ Action class for changing Scene Graph Hierarchy """
@@ -282,7 +282,7 @@ class ActionChangeHierarchy(ActionBase):
 
 class ActionSelectObj(ActionBase):
     """ Action class for adding new object """
-    
+
     def __init__(self, editor, *args, **kargs):
         self.editor = editor
         function = base.direct.selectCB
@@ -327,7 +327,7 @@ class ActionTransformObj(ActionBase):
         self.result = ActionBase._do__call__(self, *args, **kargs)
         obj = self.editor.objectMgr.findObjectById(self.uid)
         if obj:
-            self.editor.objectMgr.objectsLastXform[self.uid] = Mat4(obj[OG.OBJ_NP].getMat())        
+            self.editor.objectMgr.objectsLastXform[self.uid] = Mat4(obj[OG.OBJ_NP].getMat())
         return self.result
 
     def undo(self):
@@ -344,7 +344,7 @@ class ActionTransformObj(ActionBase):
 
 class ActionDeselectAll(ActionBase):
     """ Action class for adding new object """
-    
+
     def __init__(self, editor, *args, **kargs):
         self.editor = editor
         function = base.direct.deselectAllCB
@@ -387,7 +387,7 @@ class ActionUpdateObjectProp(ActionBase):
     def redo(self):
         self.result = self._do__call__()#uid=self.uid, xformMat=self.xformMat)
         if self.editor and self.fSelectObject:
-            base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)             
+            base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)
         return self.result
 
     def undo(self):
@@ -397,4 +397,4 @@ class ActionUpdateObjectProp(ActionBase):
             if self.undoFunc:
                 self.undoFunc()
                 if self.editor and self.fSelectObject:
-                    base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)        
+                    base.direct.select(self.obj[OG.OBJ_NP], fUndo=0)

@@ -7,7 +7,6 @@ so that I can just type: inspect(anObject) any time."""
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
-import string
 from direct.showbase.TkGlobal import *
 from Tkinter import *
 import Pmw
@@ -23,11 +22,11 @@ def inspect(anObject):
 ### private
 
 def inspectorFor(anObject):
-    typeName = string.capitalize(type(anObject).__name__) + 'Type'
+    typeName = type(anObject).__name__.capitalize() + 'Type'
     if typeName in _InspectorMap:
         inspectorName = _InspectorMap[typeName]
     else:
-        print "Can't find an inspector for " + typeName
+        print("Can't find an inspector for " + typeName)
         inspectorName = 'Inspector'
     inspector = globals()[inspectorName](anObject)
     return inspector
@@ -49,7 +48,7 @@ def initializeInspectorMap():
         'DictionaryType': 'DictionaryInspector',
         'DictType': 'DictionaryInspector',
         'FileType': 'Inspector',
-        'FloatType': 'Inspector', 
+        'FloatType': 'Inspector',
         'FunctionType': 'FunctionInspector',
         'Instance methodType': 'InstanceMethodInspector',
         'InstanceType': 'InstanceInspector',
@@ -69,7 +68,7 @@ def initializeInspectorMap():
     for each in notFinishedTypes:
         _InspectorMap[each] = 'Inspector'
 
-    
+
 ### Classes
 
 class Inspector:
@@ -89,21 +88,21 @@ class Inspector:
         for each in keys:
             self._partsList.append(each)
             #if not callable(getattr(self.object, each)):
-            #    self._partsList.append(each)  
+            #    self._partsList.append(each)
 
     def initializePartNames(self):
         self._partNames = ['up'] + [str(each) for each in self._partsList]
 
     def title(self):
         "Subclasses may override."
-        return string.capitalize(self.objectType().__name__)
+        return self.objectType().__name__.capitalize()
 
     def getLastPartNumber(self):
         return self.lastPartNumber
 
     def selectedPart(self):
         return self.partNumber(self.getLastPartNumber())
-        
+
     def namedParts(self):
         return dir(self.object)
 
@@ -132,16 +131,16 @@ class Inspector:
         return inspectorFor(part)
 
     def privatePartNumber(self, partNumber):
-        return self._partsList[partNumber - 1]        
+        return self._partsList[partNumber - 1]
 
     def partNames(self):
         return self._partNames
-    
+
     def objectType(self):
         return type(self.object)
 
 ###
-    
+
 class ModuleInspector(Inspector):
     def namedParts(self):
         return ['__dict__']
@@ -160,7 +159,7 @@ class InstanceInspector(Inspector):
         return ['__class__'] + dir(self.object)
 
 ###
-    
+
 class FunctionInspector(Inspector):
     def title(self):
         return self.object.__name__ + "()"
@@ -199,7 +198,7 @@ class DictionaryInspector(Inspector):
             return self.object[key]
         else:
             return getattr(self.object, key)
-        
+
 class SequenceInspector(Inspector):
     def initializePartsList(self):
         Inspector.initializePartsList(self)
@@ -215,7 +214,7 @@ class SequenceInspector(Inspector):
             return self.object[index]
         else:
             return getattr(self.object, index)
-    
+
 class SliceInspector(Inspector):
     def namedParts(self):
         return ['start', 'stop', 'step']
@@ -289,7 +288,7 @@ class InspectorWindow:
         self.commandWidget.component('text').bind(
             '<KeyRelease-Return>', self.evalCommand)
         self.textPane.pack(expand = 1, fill = BOTH)
-        
+
     def createMenus(self):
         self.menuBar = Menu(self.top)
         self.top.config(menu=self.menuBar)
@@ -349,8 +348,8 @@ class InspectorWindow:
         inspector = self.inspectorForSelectedPart()
         if inspector == None:
             return
-        InspectorWindow(inspector).open()        
-        
+        InspectorWindow(inspector).open()
+
     def pop(self):
         if len(self.inspectors) > 1:
             self.inspectors = self.inspectors[:-1]
@@ -406,14 +405,14 @@ class InspectorWindow:
         return self.topInspector().inspectorFor(part)
 
     def popupMenu(self, event):
-        print event
+        print(event)
         partNumber = self.selectedIndex()
-        print partNumber
+        print(partNumber)
         if partNumber == None:
             return
         part = self.topInspector().partNumber(partNumber)
-        print part
-        from pandac.PandaModules import NodePath
+        print(part)
+        from panda3d.core import NodePath
         from direct.fsm import ClassicFSM
         popupMenu = None
         if isinstance(part, NodePath):
@@ -427,7 +426,7 @@ class InspectorWindow:
             popupMenu = self.createPopupMenu(
                 part,
                 [('Inspect ClassicFSM', FSMInspector.FSMInspector)])
-        print popupMenu
+        print(popupMenu)
         if popupMenu:
             popupMenu.post(event.widget.winfo_pointerx(),
                            event.widget.winfo_pointery())
@@ -439,7 +438,7 @@ class InspectorWindow:
                 label = item,
                 command = lambda p = part, f = func: f(p))
         return popupMenu
-        
+
 
 
 

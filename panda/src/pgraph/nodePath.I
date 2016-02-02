@@ -518,23 +518,6 @@ reverse_ls() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::reverse_ls
-//       Access: Published
-//  Description: Lists the hierarchy at and above the referenced node.
-////////////////////////////////////////////////////////////////////
-INLINE int NodePath::
-reverse_ls(ostream &out, int indent_level) const {
-  if (is_empty()) {
-    out << "(empty)\n";
-    return 0;
-  } else if (has_parent()) {
-    indent_level = get_parent().reverse_ls(out, indent_level);
-  }
-  node()->write(out, indent_level);
-  return indent_level + 2;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_state
 //       Access: Published
 //  Description: Changes the complete state object on this node.

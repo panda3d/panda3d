@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//  Function : set_geom_node
-//    Access : public
+//     Function: set_geom_node
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 
 // we're forcing a pool resize to remove every node in the vector.
@@ -30,8 +30,8 @@ set_geom_node(PandaNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_x_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::set_x_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_x_scale_flag(bool animate_x_ratio) {
@@ -40,8 +40,8 @@ set_x_scale_flag(bool animate_x_ratio) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_y_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::set_y_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_y_scale_flag(bool animate_y_ratio) {
@@ -50,8 +50,8 @@ set_y_scale_flag(bool animate_y_ratio) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_z_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::set_z_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_z_scale_flag(bool animate_z_ratio) {
@@ -60,8 +60,8 @@ set_z_scale_flag(bool animate_z_ratio) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_initial_x_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_initial_x_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_initial_x_scale(PN_stdfloat initial_x_scale) {
@@ -70,8 +70,8 @@ set_initial_x_scale(PN_stdfloat initial_x_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_final_x_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_final_x_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_final_x_scale(PN_stdfloat final_x_scale) {
@@ -80,8 +80,8 @@ set_final_x_scale(PN_stdfloat final_x_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_initial_y_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_initial_y_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_initial_y_scale(PN_stdfloat initial_y_scale) {
@@ -90,8 +90,8 @@ set_initial_y_scale(PN_stdfloat initial_y_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_final_y_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_final_y_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_final_y_scale(PN_stdfloat final_y_scale) {
@@ -100,8 +100,8 @@ set_final_y_scale(PN_stdfloat final_y_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_initial_z_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_initial_z_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_initial_z_scale(PN_stdfloat initial_z_scale) {
@@ -110,8 +110,8 @@ set_initial_z_scale(PN_stdfloat initial_z_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::set_final_z_scale
-//   Access : public
+//     Function: GeomParticleRenderer::set_final_z_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
 set_final_z_scale(PN_stdfloat final_z_scale) {
@@ -120,8 +120,8 @@ set_final_z_scale(PN_stdfloat final_z_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function : get_geom_node
-//    Access : public
+//     Function: get_geom_node
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *GeomParticleRenderer::
 get_geom_node() {
@@ -129,8 +129,8 @@ get_geom_node() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function : get_color_interpolation_manager
-//    Access : public
+//     Function: get_color_interpolation_manager
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE ColorInterpolationManager* GeomParticleRenderer::
 get_color_interpolation_manager() const {
@@ -138,8 +138,8 @@ get_color_interpolation_manager() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_x_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::get_x_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomParticleRenderer::
 get_x_scale_flag() const {
@@ -147,8 +147,8 @@ get_x_scale_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_y_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::get_y_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomParticleRenderer::
 get_y_scale_flag() const {
@@ -156,8 +156,8 @@ get_y_scale_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_z_scale_flag
-//   Access : public
+//     Function: GeomParticleRenderer::get_z_scale_flag
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomParticleRenderer::
 get_z_scale_flag() const {
@@ -165,8 +165,8 @@ get_z_scale_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_initial_x_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_initial_x_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_x_scale() const {
@@ -174,8 +174,8 @@ get_initial_x_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_final_x_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_final_x_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_final_x_scale() const {
@@ -183,8 +183,8 @@ get_final_x_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_initial_y_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_initial_y_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_y_scale() const {
@@ -192,8 +192,8 @@ get_initial_y_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_final_y_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_final_y_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_final_y_scale() const {
@@ -201,8 +201,8 @@ get_final_y_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_initial_z_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_initial_z_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_z_scale() const {
@@ -210,8 +210,8 @@ get_initial_z_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : GeomParticleRenderer::get_final_z_scale
-//   Access : public
+//     Function: GeomParticleRenderer::get_final_z_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat GeomParticleRenderer::
 get_final_z_scale() const {

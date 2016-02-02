@@ -129,6 +129,8 @@ public:
 
   static const Entry *look_up(wchar_t character);
 
+  static wchar_t get_combining_accent(AccentType accent);
+
 private:
   static void init();
   static bool _initialized;

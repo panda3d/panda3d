@@ -50,7 +50,7 @@ class FrameProfiler:
     def destroy(self):
         self._enableFC.set(False)
         self._enableFC.destroy()
-        
+
     def _setEnabled(self, enabled):
         if enabled:
             self.notify.info('frame profiler started')
@@ -97,7 +97,7 @@ class FrameProfiler:
             time -= jitter
             jitter = None
         self._jitter = jitter
-            
+
         sessionId = serialNum()
         session = taskMgr.getProfileSession('FrameProfile-%s' % sessionId)
         self._id2session[sessionId] = session

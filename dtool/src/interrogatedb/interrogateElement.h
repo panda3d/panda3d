@@ -26,7 +26,7 @@ class IndexRemapper;
 // Description : An internal representation of a data element, like a
 //               data member or a global variable.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG InterrogateElement : public InterrogateComponent {
+class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
   INLINE InterrogateElement(InterrogateModuleDef *def = NULL);
   INLINE InterrogateElement(const InterrogateElement &copy);
@@ -45,6 +45,10 @@ public:
   INLINE FunctionIndex get_getter() const;
   INLINE bool has_setter() const;
   INLINE FunctionIndex get_setter() const;
+  INLINE bool has_has_function() const;
+  INLINE FunctionIndex get_has_function() const;
+  INLINE bool has_clear_function() const;
+  INLINE FunctionIndex get_clear_function() const;
 
   void output(ostream &out) const;
   void input(istream &in);
@@ -55,7 +59,9 @@ private:
   enum Flags {
     F_global          = 0x0001,
     F_has_getter      = 0x0002,
-    F_has_setter      = 0x0004
+    F_has_setter      = 0x0004,
+    F_has_has_function= 0x0008,
+    F_has_clear_function= 0x0010,
   };
 
   int _flags;
@@ -64,6 +70,8 @@ private:
   TypeIndex _type;
   FunctionIndex _getter;
   FunctionIndex _setter;
+  FunctionIndex _has_function;
+  FunctionIndex _clear_function;
 
   friend class InterrogateBuilder;
 };

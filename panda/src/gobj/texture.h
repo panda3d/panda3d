@@ -84,6 +84,7 @@ PUBLISHED:
     TT_2d_texture_array,
     TT_cube_map,
     TT_buffer_texture,
+    TT_cube_map_array,
   };
 
   enum ComponentType {
@@ -92,6 +93,9 @@ PUBLISHED:
     T_float,
     T_unsigned_int_24_8,  // Packed
     T_int,
+    T_byte,
+    T_short,
+    T_half_float,
   };
 
   enum Format {
@@ -155,6 +159,12 @@ PUBLISHED:
     F_rg8i, // 8 integer bits per R,G channel
     F_rgb8i, // 8 integer bits per R,G,B channel
     F_rgba8i, // 8 integer bits per R,G,B,A channel
+
+    F_r11_g11_b10, // unsigned floating-point, 11 Red, 11 Green, 10 Blue Bits
+    F_rgb9_e5,
+    F_rgb10_a2,
+
+    F_rg,
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -195,13 +205,14 @@ PUBLISHED:
     // GSG::get_supports_compressed_texture_format() to query the
     // available compression modes for a particular GSG.
     CM_fxt1,
-    CM_dxt1,
-    CM_dxt2,
-    CM_dxt3,
-    CM_dxt4,
-    CM_dxt5,
+    CM_dxt1, // BC1: RGB with optional binary alpha.
+    CM_dxt2, // Like DXT3, but assumes premultiplied alpha
+    CM_dxt3, // BC2: RGB with uncompressed 4-bit alpha.
+    CM_dxt4, // Like DXT5, but assumes premultiplied alpha
+    CM_dxt5, // BC3: RGB with separately compressed 8-bit alpha.
     CM_pvr1_2bpp,
     CM_pvr1_4bpp,
+    CM_rgtc, // BC4/BC5: 1 or 2 channels, individually compressed.
   };
 
   enum QualityLevel {
@@ -242,6 +253,9 @@ PUBLISHED:
   INLINE void setup_2d_texture_array(int z_size = 1);
   INLINE void setup_2d_texture_array(int x_size, int y_size, int z_size,
                                      ComponentType component_type, Format format);
+  INLINE void setup_cube_map_array(int num_cube_maps);
+  INLINE void setup_cube_map_array(int size, int num_cube_maps,
+                                   ComponentType component_type, Format format);
   INLINE void setup_buffer_texture(int size, ComponentType component_type,
                                    Format format, GeomEnums::UsageHint usage);
   void generate_normalization_cube_map(int size);
@@ -251,7 +265,10 @@ PUBLISHED:
   INLINE bool has_clear_color() const;
   INLINE LColor get_clear_color() const;
   INLINE void set_clear_color(const LColor &color);
+  INLINE void clear_clear_color();
   INLINE string get_clear_data() const;
+  MAKE_PROPERTY2(clear_color, has_clear_color, get_clear_color,
+                              set_clear_color, clear_clear_color);
 
   BLOCKING bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -292,11 +309,15 @@ PUBLISHED:
   INLINE const Filename &get_filename() const;
   INLINE bool has_alpha_filename() const;
   INLINE const Filename &get_alpha_filename() const;
+  MAKE_PROPERTY2(filename, has_filename, get_filename);
+  MAKE_PROPERTY2(alpha_filename, has_alpha_filename, get_alpha_filename);
 
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
   INLINE bool has_alpha_fullpath() const;
   INLINE const Filename &get_alpha_fullpath() const;
+  MAKE_PROPERTY2(fullpath, has_fullpath, get_fullpath);
+  MAKE_PROPERTY2(alpha_fullpath, has_alpha_fullpath, get_alpha_fullpath);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -309,6 +330,14 @@ PUBLISHED:
   INLINE Format get_format() const;
   INLINE ComponentType get_component_type() const;
   INLINE GeomEnums::UsageHint get_usage_hint() const;
+  MAKE_PROPERTY(num_views, get_num_views);
+  MAKE_PROPERTY(num_pages, get_num_pages);
+  MAKE_PROPERTY(num_components, get_num_components);
+  MAKE_PROPERTY(component_width, get_component_width);
+  MAKE_PROPERTY(texture_type, get_texture_type);
+  MAKE_PROPERTY(format, get_format);
+  MAKE_PROPERTY(component_type, get_component_type);
+  MAKE_PROPERTY(usage_hint, get_usage_hint);
 
   INLINE void set_wrap_u(WrapMode wrap);
   INLINE void set_wrap_v(WrapMode wrap);
@@ -336,10 +365,14 @@ PUBLISHED:
   INLINE bool has_compression() const;
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
+  MAKE_PROPERTY(default_sampler, get_default_sampler, set_default_sampler);
+  MAKE_PROPERTY(compression, get_compression, set_compression);
 
   INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
   INLINE QualityLevel get_effective_quality_level() const;
+  MAKE_PROPERTY(quality_level, get_quality_level, set_quality_level);
+  MAKE_PROPERTY(effective_quality_level, get_effective_quality_level);
 
   INLINE int get_expected_num_mipmap_levels() const;
   INLINE int get_expected_mipmap_x_size(int n) const;
@@ -411,10 +444,15 @@ PUBLISHED:
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
   INLINE UpdateSeq get_simple_image_modified() const;
+  MAKE_PROPERTY(properties_modified, get_properties_modified);
+  MAKE_PROPERTY(image_modified, get_image_modified);
+  MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
 
   INLINE void set_auto_texture_scale(AutoTextureScale scale);
   INLINE AutoTextureScale get_auto_texture_scale() const;
   INLINE bool has_auto_texture_scale() const;
+  MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
+                                    set_auto_texture_scale);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
@@ -520,6 +558,7 @@ public:
   static PT(Texture) make_texture();
 
 public:
+  static bool is_unsigned(ComponentType ctype);
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
@@ -534,6 +573,7 @@ public:
 
 protected:
   class CData;
+  class RamImage;
 
   virtual void reconsider_dirty();
 
@@ -590,7 +630,7 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(CData *cdata, int n);
   PTA_uchar do_make_ram_mipmap_image(CData *cdata, int n);
   void do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size);
-  int do_get_clear_data(const CData *cdata, unsigned char *into) const;
+  size_t do_get_clear_data(const CData *cdata, unsigned char *into) const;
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression);
   bool do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
@@ -599,6 +639,15 @@ protected:
                              QualityLevel quality_level,
                              GraphicsStateGuardianBase *gsg);
   bool do_uncompress_ram_image(CData *cdata);
+
+  static void do_compress_ram_image_bc4(const RamImage &src, RamImage &dest,
+                                        int x_size, int y_size, int z_size);
+  static void do_compress_ram_image_bc5(const RamImage &src, RamImage &dest,
+                                        int x_size, int y_size, int z_size);
+  static void do_uncompress_ram_image_bc4(const RamImage &src, RamImage &dest,
+                                          int x_size, int y_size, int z_size);
+  static void do_uncompress_ram_image_bc5(const RamImage &src, RamImage &dest,
+                                          int x_size, int y_size, int z_size);
   bool do_has_all_ram_mipmap_images(const CData *cdata) const;
 
   bool do_reconsider_z_size(CData *cdata, int z, const LoaderOptions &options);
@@ -704,21 +753,31 @@ private:
                                         int n, istream &in);
   static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header,
                                         int n, istream &in);
+  static PTA_uchar read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header,
+                                         int n, istream &in);
+  static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
+                                         int n, istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
                                                        int n, istream &in);
   static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata,
                                                          const DDSHeader &header,
                                                          int n, istream &in);
-  static PTA_uchar read_dds_level_dxt1(Texture *tex, CData *cdata,
-                                       const DDSHeader &header,
-                                       int n, istream &in);
-  static PTA_uchar read_dds_level_dxt23(Texture *tex, CData *cdata,
-                                        const DDSHeader &header,
-                                        int n, istream &in);
-  static PTA_uchar read_dds_level_dxt45(Texture *tex, CData *cdata,
-                                        const DDSHeader &header,
-                                        int n, istream &in);
+  static PTA_uchar read_dds_level_bc1(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc2(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc3(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc4(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc5(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
 
   void clear_prepared(int view, PreparedGraphicsObjects *prepared_objects);
 

@@ -17,7 +17,9 @@
 
 #include "dtoolbase.h"
 
+#include "cppIdentifier.h"
 #include "cppExtensionType.h"
+#include "cppFunctionGroup.h"
 #include "cppVisibility.h"
 
 #include <vector>
@@ -26,7 +28,7 @@
 class CPPScope;
 class CPPTypeProxy;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPStructType
 // Description :
 ////////////////////////////////////////////////////////////////////
@@ -44,11 +46,19 @@ public:
   CPPScope *get_scope() const;
 
   bool is_abstract() const;
-  bool check_virtual();
+  bool check_virtual() const;
   virtual bool is_fully_specified() const;
   virtual bool is_incomplete() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
+  bool is_default_constructible(CPPVisibility min_vis) const;
+  bool is_copy_constructible(CPPVisibility min_vis) const;
 
+  CPPFunctionGroup *get_constructor() const;
+  CPPInstance *get_default_constructor() const;
+  CPPInstance *get_copy_constructor() const;
+  CPPInstance *get_move_constructor() const;
   CPPInstance *get_destructor() const;
 
   virtual CPPDeclaration *

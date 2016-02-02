@@ -42,19 +42,23 @@ PUBLISHED:
   // intervals, but it should not drift substantially over the long
   // haul.
   double get_long_time();
+  MAKE_PROPERTY(long_time, get_long_time);
 
   // get_short_time() returns the most precise timer we have over a
   // short interval.  It may tend to drift over the long haul, but it
   // should have lots of digits to measure short intervals very
   // precisely.
   INLINE double get_short_time();
+  MAKE_PROPERTY(short_time, get_short_time);
 
   // get_short_raw_time() is like get_short_time(), but does not apply
   // any corrections (e.g. paranoid-clock) to the result returned by
   // the OS.
   double get_short_raw_time();
+  MAKE_PROPERTY(short_raw_time, get_short_raw_time);
 
   INLINE int get_error_count() const;
+  MAKE_PROPERTY(error_count, get_error_count);
 
   INLINE static TrueClock *get_global_ptr();
 

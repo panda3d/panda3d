@@ -39,10 +39,7 @@ CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
 ////////////////////////////////////////////////////////////////////
 CLP(SamplerContext)::
 ~CLP(SamplerContext)() {
-  if (_index != 0) {
-    _glgsg->_glDeleteSamplers(1, &_index);
-    _index = 0;
-  }
+  // Don't call glDeleteSamplers; we may not have an active context.
 }
 
 ////////////////////////////////////////////////////////////////////

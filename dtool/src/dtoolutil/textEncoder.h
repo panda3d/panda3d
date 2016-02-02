@@ -63,11 +63,11 @@ PUBLISHED:
   INLINE string get_text(Encoding encoding) const;
   INLINE void append_text(const string &text);
   INLINE void append_unicode_char(int character);
-  INLINE int get_num_chars() const;
-  INLINE int get_unicode_char(int index) const;
-  INLINE void set_unicode_char(int index, int character);
-  INLINE string get_encoded_char(int index) const;
-  INLINE string get_encoded_char(int index, Encoding encoding) const;
+  INLINE size_t get_num_chars() const;
+  INLINE int get_unicode_char(size_t index) const;
+  INLINE void set_unicode_char(size_t index, int character);
+  INLINE string get_encoded_char(size_t index) const;
+  INLINE string get_encoded_char(size_t index, Encoding encoding) const;
   INLINE string get_text_as_ascii() const;
 
   INLINE static string reencode_text(const string &text, Encoding from, Encoding to);

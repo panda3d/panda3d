@@ -1,0 +1,6 @@
+#pragma once
+
+namespace std {
+  template<class Iterator> class iterator;
+  template<class Iterator> class reverse_iterator;
+};

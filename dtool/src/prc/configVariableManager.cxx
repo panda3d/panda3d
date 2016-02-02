@@ -178,8 +178,8 @@ make_variable_template(const string &pattern,
 //               the list.
 ////////////////////////////////////////////////////////////////////
 string ConfigVariableManager::
-get_variable_name(int n) const {
-  if (n >= 0 && n < (int)_variables.size()) {
+get_variable_name(size_t n) const {
+  if (n < _variables.size()) {
     return _variables[n]->get_name();
   }
   return string();
@@ -192,8 +192,8 @@ get_variable_name(int n) const {
 //               the list has been used by code, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ConfigVariableManager::
-is_variable_used(int n) const {
-  if (n >= 0 && n < (int)_variables.size()) {
+is_variable_used(size_t n) const {
+  if (n < _variables.size()) {
     return _variables[n]->is_used();
   }
   return false;
@@ -251,22 +251,22 @@ write_prc_variables(ostream &out) const {
       if (variable->get_value_type() == ConfigVariableCore::VT_list ||
           variable->get_value_type() == ConfigVariableCore::VT_search_path) {
         // List all of the values for a "list" variable.
-        int num_references = variable->get_num_trusted_references();
-        for (int i = 0; i < num_references; i++) {
-          out << variable->get_name() << " " 
+        size_t num_references = variable->get_num_trusted_references();
+        for (size_t i = 0; i < num_references; ++i) {
+          out << variable->get_name() << " "
               << variable->get_trusted_reference(i)->get_string_value()
               << "\n";
         }
       } else {
         // List just the one value for a non-list variable.
-        out << variable->get_name() << " " 
+        out << variable->get_name() << " "
             << variable->get_trusted_reference(0)->get_string_value()
             << "\n";
       }
     }
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableManager::list_unused_variables
 //       Access: Published
@@ -283,8 +283,8 @@ list_unused_variables() const {
     ConfigVariableCore *variable = (*ni).second;
     if (!variable->is_used()) {
       nout << variable->get_name() << "\n";
-      int num_references = variable->get_num_references();
-      for (int i = 0; i < num_references; i++) {
+      size_t num_references = variable->get_num_references();
+      for (size_t i = 0; i < num_references; i++) {
         nout << "  " << variable->get_reference(i)->get_page()->get_name()
              << "\n";
       }
@@ -380,13 +380,13 @@ list_variable(const ConfigVariableCore *variable,
       // We treat a "list" variable as a special case: list all of
       // its values.
       nout << "  current value:\n";
-      int num_references = variable->get_num_trusted_references();
-      for (int i = 0; i < num_references; i++) {
+      size_t num_references = variable->get_num_trusted_references();
+      for (size_t i = 0; i < num_references; ++i) {
         decl = variable->get_trusted_reference(i);
         nout << "    " << decl->get_string_value()
              << "  (from " << decl->get_page()->get_name() << ")\n";
       }
-      
+
     } else {
       // An ordinary, non-list variable gets one line for its
       // current value (if it has one) and another line for its

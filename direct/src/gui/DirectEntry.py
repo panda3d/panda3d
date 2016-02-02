@@ -2,7 +2,7 @@
 
 __all__ = ['DirectEntry']
 
-from pandac.PandaModules import *
+from panda3d.core import *
 import DirectGuiGlobals as DGG
 from DirectFrame import *
 from OnscreenText import OnscreenText
@@ -46,8 +46,8 @@ class DirectEntry(DirectFrame):
             ('numStates',       3,                None),
             ('state',           DGG.NORMAL,       None),
             ('entryFont',       None,             DGG.INITOPT),
-            ('width',           10,               self.setup),
-            ('numLines',        1,                self.setup),
+            ('width',           10,               self.updateWidth),
+            ('numLines',        1,                self.updateNumLines),
             ('focus',           0,                self.setFocus),
             ('cursorKeys',      1,                self.setCursorKeysActive),
             ('obscured',        0,                self.setObscureMode),
@@ -145,6 +145,12 @@ class DirectEntry(DirectFrame):
 
     def setup(self):
         self.guiItem.setupMinimal(self['width'], self['numLines'])
+
+    def updateWidth(self):
+        self.guiItem.setMaxWidth(self['width'])
+
+    def updateNumLines(self):
+        self.guiItem.setNumLines(self['numLines'])
 
     def setFocus(self):
         PGEntry.setFocus(self.guiItem, self['focus'])
@@ -256,7 +262,7 @@ class DirectEntry(DirectFrame):
         """ Changes the text currently showing in the typable region;
         does not change the current cursor position.  Also see
         enterText(). """
-        
+
         self.unicodeText = isinstance(text, types.UnicodeType)
         if self.unicodeText:
             self.guiItem.setWtext(text)

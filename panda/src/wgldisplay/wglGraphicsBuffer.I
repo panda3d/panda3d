@@ -1,4 +1,4 @@
-// Filename: wglGraphicsWindow.I
+// Filename: wglGraphicsBuffer.I
 // Created by:  drose (08Feb04)
 //
 ////////////////////////////////////////////////////////////////////

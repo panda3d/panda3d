@@ -38,7 +38,7 @@ class BulletinBoard:
             BulletinBoard.notify.info('update: posting %s' % (postName))
         self._dict[postName] = value
         messenger.send(self.getEvent(postName))
-        
+
     def remove(self, postName):
         if postName in self._dict:
             del self._dict[postName]

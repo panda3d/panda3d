@@ -4,7 +4,7 @@ from direct.task import Task
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
-        
+
 class TimeManager(DistributedObject.DistributedObject):
     """
     This DistributedObject lives on the AI and on the client side, and
@@ -21,29 +21,29 @@ class TimeManager(DistributedObject.DistributedObject):
     # The number of seconds to wait between automatic
     # synchronizations.  Set to 0 to disable auto sync after
     # startup.
-    updateFreq = base.config.GetFloat('time-manager-freq', 1800)
+    updateFreq = ConfigVariableDouble('time-manager-freq', 1800).getValue()
 
     # The minimum number of seconds to wait between two unrelated
     # synchronization attempts.  Increasing this number cuts down
     # on frivolous synchronizations.
-    minWait = base.config.GetFloat('time-manager-min-wait', 10)
+    minWait = ConfigVariableDouble('time-manager-min-wait', 10).getValue()
 
     # The maximum number of seconds of uncertainty to tolerate in
     # the clock delta without trying again.
-    maxUncertainty = base.config.GetFloat('time-manager-max-uncertainty', 1)
+    maxUncertainty = ConfigVariableDouble('time-manager-max-uncertainty', 1).getValue()
 
     # The maximum number of attempts to try to get a low-latency
     # time measurement before giving up and accepting whatever we
     # get.
-    maxAttempts = base.config.GetInt('time-manager-max-attempts', 5)
+    maxAttempts = ConfigVariableInt('time-manager-max-attempts', 5).getValue()
 
     # A simulated clock skew for debugging, in seconds.
-    extraSkew = base.config.GetInt('time-manager-extra-skew', 0)
+    extraSkew = ConfigVariableInt('time-manager-extra-skew', 0).getValue()
 
     if extraSkew != 0:
         notify.info("Simulating clock skew of %0.3f s" % extraSkew)
 
-    reportFrameRateInterval = base.config.GetDouble('report-frame-rate-interval', 300.0)
+    reportFrameRateInterval = ConfigVariableDouble('report-frame-rate-interval', 300.0).getValue()
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
@@ -113,7 +113,7 @@ class TimeManager(DistributedObject.DistributedObject):
         self.synchronize("clock error")
 
     ### Synchronization methods ###
-        
+
     def synchronize(self, description):
         """synchronize(self, string description)
 
@@ -132,7 +132,7 @@ class TimeManager(DistributedObject.DistributedObject):
         if now - self.lastAttempt < self.minWait:
             self.notify.debug("Not resyncing (too soon): %s" % (description))
             return 0
-            
+
         self.talkResult = 0
         self.thisContext = self.nextContext
         self.attemptCount = 0
@@ -144,7 +144,7 @@ class TimeManager(DistributedObject.DistributedObject):
 
         return 1
 
-    
+
     def serverTime(self, context, timestamp):
         """serverTime(self, int8 context, int32 timestamp)
 
@@ -162,7 +162,7 @@ class TimeManager(DistributedObject.DistributedObject):
         if context != self.thisContext:
             self.notify.info("Ignoring TimeManager response for old context %d" % (context))
             return
-        
+
         elapsed = end - self.start
         self.attemptCount += 1
         self.notify.info("Clock sync roundtrip took %0.3f ms" % (elapsed * 1000.0))
@@ -181,7 +181,7 @@ class TimeManager(DistributedObject.DistributedObject):
                 self.sendUpdate("requestServerTime", [self.thisContext])
                 return
             self.notify.info("Giving up on uncertainty requirement.")
-        
+
         messenger.send("gotTimeSync", taskChain = 'default')
         messenger.send(self.cr.uniqueName("gotTimeSync"), taskChain = 'default')
 

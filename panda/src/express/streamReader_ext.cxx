@@ -17,6 +17,59 @@
 #ifdef HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StreamReader::extract_bytes
+//       Access: Published
+//  Description: Extracts the indicated number of bytes in the
+//               stream and returns them as a string (or bytes,
+//               in Python 3).  Returns empty string at end-of-file.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<StreamReader>::
+extract_bytes(size_t size) {
+  unsigned char *buffer = (unsigned char *)alloca(size);
+  size_t read_bytes = _this->extract_bytes(buffer, size);
+
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize((char *)buffer, read_bytes);
+#else
+  return PyString_FromStringAndSize((char *)buffer, read_bytes);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Extension<StreamReader>::readline
+//       Access: Published
+//  Description: Assumes the stream represents a text file, and
+//               extracts one line up to and including the trailing
+//               newline character.  Returns empty string when the end
+//               of file is reached.
+//
+//               The interface here is intentionally designed to be
+//               similar to that for Python's File.readline()
+//               function.
+////////////////////////////////////////////////////////////////////
+PyObject *Extension<StreamReader>::
+readline() {
+  istream *in = _this->get_istream();
+
+  string line;
+  int ch = in->get();
+  while (!in->eof() && !in->fail()) {
+    line += ch;
+    if (ch == '\n') {
+      // Here's the newline character.
+      break;
+    }
+    ch = in->get();
+  }
+
+#if PY_MAJOR_VERSION >= 3
+  return PyBytes_FromStringAndSize(line.data(), line.size());
+#else
+  return PyString_FromStringAndSize(line.data(), line.size());
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::readlines
 //       Access: Published
 //  Description: Reads all the lines at once and returns a list.
@@ -29,16 +82,17 @@ readlines() {
     return NULL;
   }
 
-  string line = _this->readline();
-  while (!line.empty()) {
-#if PY_MAJOR_VERSION >= 3
-    PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-    PyObject *py_line = PyString_FromStringAndSize(line.data(), line.size());
-#endif
+  PyObject *py_line = readline();
 
+#if PY_MAJOR_VERSION >= 3
+  while (PyBytes_GET_SIZE(py_line) > 0) {
+#else
+  while (PyString_GET_SIZE(py_line) > 0) {
+#endif
     PyList_Append(lst, py_line);
     Py_DECREF(py_line);
+
+    py_line = readline();
   }
 
   return lst;

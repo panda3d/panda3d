@@ -78,9 +78,11 @@ PUBLISHED:
   int compare_to(const GeomVertexArrayData &other) const;
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
+  MAKE_PROPERTY(array_format, get_array_format);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -90,8 +92,10 @@ PUBLISHED:
   INLINE bool reserve_num_rows(int n);
   INLINE void clear_rows();
 
-  INLINE int get_data_size_bytes() const;
+  INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -274,9 +278,12 @@ public:
 PUBLISHED:
   INLINE const GeomVertexArrayData *get_object() const;
   INLINE GeomVertexArrayData *get_object();
+  MAKE_PROPERTY(object, get_object);
 
   INLINE const GeomVertexArrayFormat *get_array_format() const;
   INLINE UsageHint get_usage_hint() const;
+  MAKE_PROPERTY(array_format, get_array_format);
+  MAKE_PROPERTY(usage_hint, get_usage_hint);
 
   INLINE int get_num_rows() const;
   bool set_num_rows(int n);
@@ -284,8 +291,10 @@ PUBLISHED:
   bool reserve_num_rows(int n);
   INLINE void clear_rows();
 
-  INLINE int get_data_size_bytes() const;
+  INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   INLINE bool request_resident() const;
 

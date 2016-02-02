@@ -17,9 +17,9 @@
 TypeHandle AngularVectorForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularVectorForce
-//      Access : public
-// Description : constructor
+//     Function: AngularVectorForce
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
 AngularVectorForce(const LRotation &vec) :
@@ -27,9 +27,9 @@ AngularVectorForce(const LRotation &vec) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularVectorForce
-//      Access : public
-// Description : constructor
+//     Function: AngularVectorForce
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
 AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) :
@@ -38,9 +38,9 @@ AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularVectorForce
-//      Access : public
-// Description : copy constructor
+//     Function: AngularVectorForce
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
 AngularVectorForce(const AngularVectorForce &copy) :
@@ -49,18 +49,18 @@ AngularVectorForce(const AngularVectorForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~AngularVectorForce
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~AngularVectorForce
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
 ~AngularVectorForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : private, virtual
-// Description : dynamic copier
+//     Function: make_copy
+//       Access: Private, Virtual
+//  Description: dynamic copier
 ////////////////////////////////////////////////////////////////////
 AngularForce *AngularVectorForce::
 make_copy() const {
@@ -68,9 +68,9 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_quat
-//      Access : private, virtual
-// Description : query
+//     Function: get_child_quat
+//       Access: Private, Virtual
+//  Description: query
 ////////////////////////////////////////////////////////////////////
 LRotation AngularVectorForce::
 get_child_quat(const PhysicsObject *) {
@@ -78,10 +78,10 @@ get_child_quat(const PhysicsObject *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularVectorForce::
 output(ostream &out) const {
@@ -91,10 +91,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularVectorForce::
 write(ostream &out, unsigned int indent) const {

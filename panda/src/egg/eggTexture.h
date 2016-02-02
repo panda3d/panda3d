@@ -312,6 +312,54 @@ PUBLISHED:
   static TexGen string_tex_gen(const string &string);
   static QualityLevel string_quality_level(const string &string);
 
+PUBLISHED:
+  MAKE_PROPERTY(texture_type, get_texture_type, set_texture_type);
+  MAKE_PROPERTY(format, get_format, set_format);
+  MAKE_PROPERTY(compression_mode, get_compression_mode, set_compression_mode);
+  MAKE_PROPERTY(wrap_mode, get_wrap_mode, set_wrap_mode);
+  MAKE_PROPERTY(wrap_u, get_wrap_u, set_wrap_u);
+  MAKE_PROPERTY(wrap_v, get_wrap_v, set_wrap_v);
+  MAKE_PROPERTY(wrap_w, get_wrap_w, set_wrap_w);
+  MAKE_PROPERTY(minfilter, get_minfilter, set_minfilter);
+  MAKE_PROPERTY(magfilter, get_magfilter, set_magfilter);
+  MAKE_PROPERTY2(anisotropic_degree, has_anisotropic_degree, get_anisotropic_degree,
+                                     set_anisotropic_degree, clear_anisotropic_degree);
+  MAKE_PROPERTY(env_type, get_env_type, set_env_type);
+  MAKE_PROPERTY(saved_result, get_saved_result, set_saved_result);
+  MAKE_PROPERTY(tex_gen, get_tex_gen, set_tex_gen);
+  MAKE_PROPERTY(quality_level, get_quality_level, set_quality_level);
+  MAKE_PROPERTY2(stage_name, has_stage_name, get_stage_name,
+                             set_stage_name, clear_stage_name);
+  MAKE_PROPERTY2(priority, has_priority, get_priority,
+                           set_priority, clear_priority);
+  MAKE_PROPERTY2(color, has_color, get_color,
+                        set_color, clear_color);
+  MAKE_PROPERTY2(border_color, has_border_color, get_border_color,
+                               set_border_color, clear_border_color);
+  MAKE_PROPERTY2(uv_name, has_uv_name, get_uv_name,
+                          set_uv_name, clear_uv_name);
+  MAKE_PROPERTY2(rgb_scale, has_rgb_scale, get_rgb_scale,
+                            set_rgb_scale, clear_rgb_scale);
+  MAKE_PROPERTY2(alpha_scale, has_alpha_scale, get_alpha_scale,
+                              set_alpha_scale, clear_alpha_scale);
+  MAKE_PROPERTY2(alpha_filename, has_alpha_filename, get_alpha_filename,
+                                 set_alpha_filename, clear_alpha_filename);
+  MAKE_PROPERTY(alpha_fullpath, get_alpha_fullpath, set_alpha_fullpath);
+  MAKE_PROPERTY2(alpha_file_channel, has_alpha_file_channel, get_alpha_file_channel,
+                                     set_alpha_file_channel, clear_alpha_file_channel);
+  MAKE_PROPERTY(multiview, get_multiview, set_multiview);
+  MAKE_PROPERTY2(num_views, has_num_views, get_num_views,
+                            set_num_views, clear_num_views);
+  MAKE_PROPERTY(read_mipmaps, get_read_mipmaps, set_read_mipmaps);
+  MAKE_PROPERTY2(min_lod, has_min_lod, get_min_lod,
+                          set_min_lod, clear_min_lod);
+  MAKE_PROPERTY2(max_lod, has_max_lod, get_max_lod,
+                          set_max_lod, clear_max_lod);
+  MAKE_PROPERTY2(lod_bias, has_lod_bias, get_lod_bias,
+                           set_lod_bias, clear_lod_bias);
+
+  MAKE_PROPERTY(multitexture_sort, get_multitexture_sort);
+
 public:
   virtual EggTransform *as_transform();
 

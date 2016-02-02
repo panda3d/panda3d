@@ -19,7 +19,7 @@
 //  Description: Returns the current number of active ConfigVariableCores in
 //               the world.
 ////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableManager::
+INLINE size_t ConfigVariableManager::
 get_num_variables() const {
   return _variables.size();
 }
@@ -30,8 +30,8 @@ get_num_variables() const {
 //  Description: Returns the nth active ConfigVariableCore in the world.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableCore *ConfigVariableManager::
-get_variable(int n) const {
-  nassertr(n >= 0 && n < (int)_variables.size(), (ConfigVariableCore *)NULL);
+get_variable(size_t n) const {
+  nassertr(n < _variables.size(), (ConfigVariableCore *)NULL);
   return _variables[n];
 }
 

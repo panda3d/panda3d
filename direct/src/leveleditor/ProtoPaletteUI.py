@@ -162,12 +162,12 @@ class ProtoPaletteUI(wx.Panel):
 
     def AquireFile(self, filename):
         name = os.path.basename(filename)
-        
+
         if self.editor.protoPalette.findItem(name):
            item = self.tree.traverse(self.tree.root, name)
            if item:
               self.tree.DeleteItem(item)
-        
+
         modelname = Filename.fromOsSpecific(filename).getFullpath()
         if modelname.endswith('.mb') or\
            modelname.endswith('.ma'):
@@ -183,7 +183,7 @@ class ProtoPaletteUI(wx.Panel):
 
     def addNewItem(self, result):
        if len(result) == 2:
-          itemData = ObjectBase(name=result[0], model=result[1], actor=False)          
+          itemData = ObjectBase(name=result[0], model=result[1], actor=False)
        elif len(result) == 3:
           itemData = ObjectBase(name=result[0], model=result[1], anims=[result[2]], actor=True)
        else:

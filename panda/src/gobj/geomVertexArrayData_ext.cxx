@@ -1,4 +1,4 @@
-// Filename: geomVertexArrayData_ext.I
+// Filename: geomVertexArrayData_ext.cxx
 // Created by:  rdb (05Sep13)
 //
 ////////////////////////////////////////////////////////////////////

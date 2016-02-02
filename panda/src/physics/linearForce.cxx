@@ -22,9 +22,9 @@
 TypeHandle LinearForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearForce
-//       Access : Protected
-//  Description : Default/component-based constructor
+//     Function: LinearForce
+//       Access: Protected
+//  Description: Default/component-based constructor
 ////////////////////////////////////////////////////////////////////
 LinearForce::
 LinearForce(PN_stdfloat a, bool mass) :
@@ -34,9 +34,9 @@ LinearForce(PN_stdfloat a, bool mass) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearForce
-//       Access : Protected
-//  Description : copy constructor
+//     Function: LinearForce
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearForce::
 LinearForce(const LinearForce& copy) :
@@ -49,17 +49,17 @@ LinearForce(const LinearForce& copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~LinearForce
-//       Access : Public
-//  Description : Destructor
+//     Function: ~LinearForce
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 LinearForce::
 ~LinearForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_vector
-//      Access : Public
+//     Function: get_vector
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearForce::
 get_vector(const PhysicsObject *po) {
@@ -79,8 +79,8 @@ get_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : is_linear
-//      Access : Public
+//     Function: is_linear
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 bool LinearForce::
 is_linear() const {
@@ -88,10 +88,10 @@ is_linear() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearForce::
 output(ostream &out) const {
@@ -101,10 +101,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearForce::
 write(ostream &out, unsigned int indent) const {

@@ -1,17 +1,22 @@
 #ifndef __SOCKET_PORTABLE_H__
-#define __SOCKET_PORTABLE_H__ 
-//////////////////////////////////////////////////////////////////
+#define __SOCKET_PORTABLE_H__
+////////////////////////////////////////////////////////////////////
 // Lots of stuff to make network socket-based io transparent across multiple
 //  platforms
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;
 
+#if defined(CPPPARSER)
+// Interrogate doesn't need to parse any of this.
+
+typedef unsigned long SOCKET;
+
 /************************************************************************
 * HP SOCKET LIBRARY STUFF
 ************************************************************************/
-#if defined(HP_SOCK)
+#elif defined(HP_SOCK)
 
 #ifndef _INCLUDE_HPUX_SOURCE
 #define _INCLUDE_HPUX_SOURCE
@@ -116,7 +121,7 @@ inline int init_network()
     int answer = WSAStartup(0x0101, &mydata);
     if (answer != 0)
         return BASIC_ERROR;
-    
+
     return ALL_OK;
 }
 
@@ -264,7 +269,7 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <arpa/inet.h>
 #include <unistd.h>
 
-typedef struct sockaddr_in AddressType; 
+typedef struct sockaddr_in AddressType;
 
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = -1;
@@ -279,16 +284,16 @@ inline int DO_CONNECT(const SOCKET a, const sockaddr_in *b)
 }
 inline int DO_SOCKET_READ(const SOCKET a, char * buf, const int size)
 {
-    return recv(a, buf, size, 0);
+    return (int)recv(a, buf, (size_t)size, 0);
 }
 inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
 {
-    return send(a, buff, len, 0);
+    return (int)send(a, buff, (size_t)len, 0);
 }
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
-    return sendto(a, buffer, buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
+    return (int)sendto(a, buffer, (size_t)buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
 }
 inline SOCKET DO_NEWUDP()
 {
@@ -316,7 +321,7 @@ inline int DO_ACCEPT(SOCKET sck, sockaddr_in * adr)
 inline int DO_RECV_FROM(SOCKET sck, char * data, int len, sockaddr_in * addr)
 {
     socklen_t plen = sizeof(sockaddr);
-    return recvfrom(sck, data, len, 0, (sockaddr *)addr, &plen);
+    return (int)recvfrom(sck, data, (size_t)len, 0, (sockaddr *)addr, &plen);
 }
 
 
@@ -340,7 +345,7 @@ inline int GETERROR()
 
 inline int SOCKIOCTL(const SOCKET s, const long flags, void * val)
 {
-    return ioctl(s, flags, val);
+    return ioctl(s, (unsigned long)flags, val);
 }
 
 inline bool do_shutdown_send(SOCKET s)
@@ -358,7 +363,7 @@ const long LOCAL_NONBLOCK = 1;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
-#else 
+#else
 /************************************************************************
 * NO DEFINITION => GIVE COMPILATION ERROR
 ************************************************************************/

@@ -29,7 +29,8 @@ CPPExtensionType(CPPExtensionType::Type type,
                  CPPIdentifier *ident, CPPScope *current_scope,
                  const CPPFile &file) :
   CPPType(file),
-  _type(type), _ident(ident)
+  _type(type), _ident(ident),
+  _alignment(NULL)
 {
   if (_ident != NULL) {
     _ident->_native_scope = current_scope;
@@ -110,6 +111,26 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 bool CPPExtensionType::
 is_trivial() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_default_constructible() const {
+  return (_type == T_enum);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExtensionType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPExtensionType::
+is_copy_constructible() const {
   return (_type == T_enum);
 }
 

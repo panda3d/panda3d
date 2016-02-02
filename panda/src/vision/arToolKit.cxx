@@ -175,7 +175,7 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ARToolKit::cleanup
-//       Access: private
+//       Access: Private
 //  Description: Pre-destructor deallocation and cleanup.
 ////////////////////////////////////////////////////////////////////
 void ARToolKit::

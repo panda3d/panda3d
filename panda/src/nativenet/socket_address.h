@@ -5,13 +5,11 @@
 #include "numeric_types.h"
 #include "socket_portable.h"
 
-///////////////////////////////////
-// Class : Socket_Address
-//
-// Description: A simple place to store and munipulate tcp and port address for
-//    communication layer
-//
-//////////////////////////////
+////////////////////////////////////////////////////////////////////
+//       Class : Socket_Address
+// Description : A simple place to store and munipulate tcp and port
+//               address for communication layer
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_NATIVENET Socket_Address {
 public:
   typedef struct sockaddr_in AddressType;
@@ -25,13 +23,13 @@ PUBLISHED:
 
   INLINE virtual ~Socket_Address();
 
-  INLINE bool set_any_IP(int port);
-  INLINE bool set_port(int port);
-  INLINE bool set_broadcast(int port);
+  INLINE bool set_any_IP(unsigned short port);
+  INLINE bool set_port(unsigned short port);
+  INLINE bool set_broadcast(unsigned short port);
 
-  INLINE bool set_host(const std::string &hostname, int port) ;
+  INLINE bool set_host(const std::string &hostname, unsigned short port) ;
   INLINE bool set_host(const std::string &hostname) ;
-  INLINE bool set_host(unsigned int ip4adr, int port);
+  INLINE bool set_host(unsigned int ip4adr, unsigned short port);
   INLINE void clear();
 
   INLINE unsigned short get_port() const;

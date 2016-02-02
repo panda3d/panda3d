@@ -2,7 +2,6 @@
 
 __all__ = ['findClass', 'rebindClass', 'copyFuncs', 'replaceMessengerFunc', 'replaceTaskMgrFunc', 'replaceStateFunc', 'replaceCRFunc', 'replaceAIRFunc', 'replaceIvalFunc']
 
-import time
 import types
 import os
 import sys
@@ -81,7 +80,7 @@ def rebindClass(filename):
     # not our temp one from the execfile. This will help us preserve
     # class variables and other state on the original class.
     realNameSpace[className] = realClass
-    
+
     # Remove the temp file we made
     file.close()
     os.remove(filename)
@@ -92,7 +91,7 @@ def rebindClass(filename):
 def copyFuncs(fromClass, toClass):
     replaceFuncList = []
     newFuncList = []
-    
+
     # Copy the functions from fromClass into toClass dictionary
     for funcName, newFunc in fromClass.__dict__.items():
         # Filter out for functions
@@ -155,7 +154,7 @@ def replaceMessengerFunc(replaceFuncList):
         messenger
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         res = messenger.replaceMethod(oldFunc, newFunc)
         if res:
             print ('replaced %s messenger function(s): %s' % (res, funcName))
@@ -165,7 +164,7 @@ def replaceTaskMgrFunc(replaceFuncList):
         taskMgr
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if taskMgr.replaceMethod(oldFunc, newFunc):
             print ('replaced taskMgr function: %s' % funcName)
 
@@ -187,7 +186,7 @@ def replaceCRFunc(replaceFuncList):
     # I throw in the isFake check. I still think the fake cr should be eliminated.
     if hasattr(base.cr,'isFake'):
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:        
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if base.cr.replaceMethod(oldFunc, newFunc):
             print ('replaced DistributedObject function: %s' % funcName)
 
@@ -196,7 +195,7 @@ def replaceAIRFunc(replaceFuncList):
         simbase.air
     except:
         return
-    for oldFunc, funcName, newFunc in replaceFuncList:        
+    for oldFunc, funcName, newFunc in replaceFuncList:
         if simbase.air.replaceMethod(oldFunc, newFunc):
             print ('replaced DistributedObject function: %s' % funcName)
 
@@ -206,7 +205,7 @@ def replaceIvalFunc(replaceFuncList):
     if not sys.modules.get('base.direct.interval.IntervalManager'):
         return
     from direct.interval.FunctionInterval import FunctionInterval
-    for oldFunc, funcName, newFunc in replaceFuncList:    
+    for oldFunc, funcName, newFunc in replaceFuncList:
         res = FunctionInterval.replaceMethod(oldFunc, newFunc)
         if res:
             print ('replaced %s interval function(s): %s' % (res, funcName))

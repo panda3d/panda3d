@@ -20,7 +20,7 @@
 #include "filename.h"
 #include "pvector.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : DSearchPath
 // Description : This class stores a list of directories that can be
 //               searched, in order, to locate a particular file.  It
@@ -39,11 +39,11 @@ PUBLISHED:
     ~Results();
 
     void clear();
-    int get_num_files() const;
-    const Filename &get_file(int n) const;
+    size_t get_num_files() const;
+    const Filename &get_file(size_t n) const;
 
-    INLINE Filename operator [] (int n) const;
-    INLINE int size() const;
+    INLINE Filename operator [] (size_t n) const;
+    INLINE size_t size() const;
 
     void output(ostream &out) const;
     void write(ostream &out, int indent_level = 0) const;
@@ -72,12 +72,12 @@ PUBLISHED:
   void prepend_path(const DSearchPath &path);
 
   bool is_empty() const;
-  int get_num_directories() const;
-  const Filename &get_directory(int n) const;
+  size_t get_num_directories() const;
+  const Filename &get_directory(size_t n) const;
   MAKE_SEQ(get_directories, get_num_directories, get_directory);
 
   Filename find_file(const Filename &filename) const;
-  int find_all_files(const Filename &filename, Results &results) const;
+  size_t find_all_files(const Filename &filename, Results &results) const;
   INLINE Results find_all_files(const Filename &filename) const;
 
   INLINE static Filename

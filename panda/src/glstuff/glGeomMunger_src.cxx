@@ -26,8 +26,8 @@ ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
-  _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
+  _texture((const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot())),
+  _tex_gen((const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot()))
 {
   // Set a callback to unregister ourselves when either the Texture or
   // the TexGen object gets deleted.
@@ -158,7 +158,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (animation.get_num_transforms() > 1) {
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column
-        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+        (InternalName::get_transform_weight(), animation.get_num_transforms(),
          NT_stdfloat, C_other);
 
       if (animation.get_indexed_transforms()) {
@@ -475,7 +475,7 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
-  const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
+  const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
   if (_texture != om->_texture) {
     return _texture < om->_texture ? -1 : 1;
   }
@@ -499,7 +499,7 @@ compare_to_impl(const GeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
-  const CLP(GeomMunger) *om = DCAST(CLP(GeomMunger), other);
+  const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
 #ifdef OPENGLES
   if (get_render_mode() != om->get_render_mode()) {
     return get_render_mode() < om->get_render_mode() ? -1 : 1;

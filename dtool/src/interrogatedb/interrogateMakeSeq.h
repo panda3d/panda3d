@@ -26,16 +26,20 @@ class IndexRemapper;
 // Description : Represents a synthetic method created via the
 //               MAKE_SEQ() macro.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG InterrogateMakeSeq : public InterrogateComponent {
+class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
   INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);
   INLINE InterrogateMakeSeq(const InterrogateMakeSeq &copy);
   INLINE void operator = (const InterrogateMakeSeq &copy);
 
-  INLINE TypeIndex get_class() const;
-  INLINE const string &get_seq_name() const;
-  INLINE const string &get_num_name() const;
-  INLINE const string &get_element_name() const;
+  INLINE bool has_scoped_name() const;
+  INLINE const string &get_scoped_name() const;
+
+  INLINE bool has_comment() const;
+  INLINE const string &get_comment() const;
+
+  INLINE FunctionIndex get_length_getter() const;
+  INLINE FunctionIndex get_element_getter() const;
 
   void output(ostream &out) const;
   void input(istream &in);
@@ -43,10 +47,10 @@ public:
   void remap_indices(const IndexRemapper &remap);
 
 private:
-  TypeIndex _class;
-  string _seq_name;
-  string _num_name;
-  string _element_name;
+  string _scoped_name;
+  string _comment;
+  FunctionIndex _length_getter;
+  FunctionIndex _element_getter;
 
   friend class InterrogateBuilder;
 };

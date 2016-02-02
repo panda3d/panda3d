@@ -1,4 +1,4 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 import math
 import copy
@@ -86,7 +86,7 @@ class TexMemWatcher(DirectObject):
         # self.limit) to allocate for packing.  This controls the
         # value assigned to self.quantize in repack().
         self.maxHeight = base.config.GetInt('tex-mem-max-height', 300)
-        
+
         # The total number of texture bytes tracked, including overflow.
         self.totalSize = 0
 
@@ -96,7 +96,7 @@ class TexMemWatcher(DirectObject):
 
         # The total number of Q-units placed, not including overflow.
         self.placedQSize = 0
-        
+
         # If no GSG is specified, use the main GSG.
         if gsg is None:
             gsg = base.win.getGsg()
@@ -134,7 +134,7 @@ class TexMemWatcher(DirectObject):
         # regular pipe.
         if not self.pipe:
             self.pipe = base.pipe
-        
+
         self.win = base.graphicsEngine.makeOutput(self.pipe, name, 0, fbprops,
                                                   props, flags)
         assert self.win
@@ -168,7 +168,7 @@ class TexMemWatcher(DirectObject):
         self.setupCanvas()
 
         # Now start handling up the actual stuff in the scene.
-        
+
         self.background = None
         self.nextTexRecordKey = 0
         self.rollover = None
@@ -191,7 +191,7 @@ class TexMemWatcher(DirectObject):
         self.render2d.setDepthWrite(False)
         self.render2d.setTwoSided(True)
         self.render2d.setBin('unsorted', 0)
-        
+
         # Create a DisplayRegion and an associated camera.
         dr = self.win.makeDisplayRegion()
         cam = Camera('cam2d')
@@ -229,7 +229,7 @@ class TexMemWatcher(DirectObject):
         """ Creates the "canvas", which is the checkerboard area where
         texture memory is laid out.  The canvas has its own
         DisplayRegion. """
-        
+
         self.canvasRoot = NodePath('canvasRoot')
         self.canvasRoot.setDepthTest(False)
         self.canvasRoot.setDepthWrite(False)
@@ -237,7 +237,7 @@ class TexMemWatcher(DirectObject):
         self.canvasRoot.setBin('unsorted', 0)
 
         self.canvas = self.canvasRoot.attachNewNode('canvas')
-        
+
         # Create a DisplayRegion and an associated camera.
         self.canvasDR = self.win.makeDisplayRegion()
         self.canvasDR.setSort(-10)
@@ -281,7 +281,7 @@ class TexMemWatcher(DirectObject):
     def makeCanvasBackground(self):
         if self.canvasBackground:
             self.canvasBackground.removeNode()
-            
+
         self.canvasBackground = self.canvasRoot.attachNewNode('canvasBackground', -100)
 
         cm = CardMaker('background')
@@ -300,16 +300,16 @@ class TexMemWatcher(DirectObject):
         """ Indicates the texture memory limit.  If limit is None or
         unspecified, the limit is taken from the GSG, if any; or there
         is no limit. """
-        
+
         self.__doSetLimit(limit)
         self.reconfigureWindow()
-        
+
     def __doSetLimit(self, limit):
         """ Internal implementation of setLimit(). """
         self.limit = limit
         self.lruLimit = False
         self.dynamicLimit = False
-        
+
         if not limit:
             # If no limit was specified, use the specified graphics
             # memory limit, if any.
@@ -344,7 +344,7 @@ class TexMemWatcher(DirectObject):
         if top != self.top:
             self.top = top
             self.makeCanvasBackground()
-        
+
         self.canvasLens.setFilmSize(1, self.top)
         self.canvasLens.setFilmOffset(0.5, self.top / 2.0)  # lens covers 0..1 in x and y
 
@@ -381,7 +381,7 @@ class TexMemWatcher(DirectObject):
                 # User closed window.
                 self.cleanup()
                 return
-            
+
             size = (props.getXSize(), props.getYSize())
             if size != self.winSize:
                 self.winSize = size
@@ -421,7 +421,7 @@ class TexMemWatcher(DirectObject):
     def setRollover(self, tr, pi):
         """ Sets the highlighted texture (due to mouse rollover) to
         the indicated texture, or None to clear it. """
-        
+
         self.rollover = tr
         if self.rollover:
             self.statusText.setText(tr.tex.getName())
@@ -449,7 +449,7 @@ class TexMemWatcher(DirectObject):
             return
 
         # Now isolate.
-        
+
         self.canvas.hide()
         # Disable the red bar at the top.
         self.canvasBackground.setColor(1, 1, 1, 1, 1)
@@ -583,7 +583,7 @@ class TexMemWatcher(DirectObject):
             # neverVisited list.
             if tex in neverVisited:
                 del neverVisited[tex]
-                
+
             size = 0
             if tex.getResident(pgo):
                 size = tex.getDataSizeBytes(pgo)
@@ -645,7 +645,7 @@ class TexMemWatcher(DirectObject):
                     self.texRecordsByKey[tr.key] = tr
 
         return task.again
-                
+
 
     def repack(self):
         """ Repacks all of the current textures. """
@@ -664,7 +664,7 @@ class TexMemWatcher(DirectObject):
 
         pgo = self.gsg.getPreparedObjects()
         totalSize = 0
-        
+
         for tex in self.gsg.getPreparedTextures():
             if tex.getResident(pgo):
                 size = tex.getDataSizeBytes(pgo)
@@ -695,7 +695,7 @@ class TexMemWatcher(DirectObject):
         # There should be a little buffer on the top so we can see if
         # we overflow.
         y /= self.top
-        
+
         r = float(y) / float(x)
 
         # Region size
@@ -708,7 +708,7 @@ class TexMemWatcher(DirectObject):
             self.quantize = int(math.ceil(h / self.maxHeight))
         else:
             self.quantize = 1
-        
+
         w = max(int(w / self.quantize + 0.5), 1)
         h = max(int(h / self.quantize + 0.5), 1)
         self.w = w
@@ -731,7 +731,7 @@ class TexMemWatcher(DirectObject):
         # packing effectiveness.
         texRecords = self.texRecordsByTex.values()
         texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
-        
+
         for tr in texRecords:
             self.placeTexture(tr)
 
@@ -781,7 +781,7 @@ class TexMemWatcher(DirectObject):
                 # error.  Make it correspondingly smaller, so we can
                 # place it anyway.
                 tr.area = availableQSize
-            
+
         if shouldFit:
             # Look for a single rectangular hole to hold this piece.
             tp = self.findHole(tr.area, tr.w, tr.h)
@@ -872,7 +872,7 @@ class TexMemWatcher(DirectObject):
 
             # Make a new tp that has the right area.
             tp = TexPlacement(l, l + tw, b, b + th)
-            
+
             ta = float(max(tw, th)) / float(min(tw, th))
             if ta == aspect:
                 return tp
@@ -907,7 +907,7 @@ class TexMemWatcher(DirectObject):
             tp = self.findLargestHole()
             if not tp:
                 break
-            
+
             l, r, b, t = tp.p
             tpArea = (r - l) * (t - b)
             if tpArea >= area:
@@ -962,12 +962,12 @@ class TexMemWatcher(DirectObject):
                 continue
 
             lastBitmask = bm
-                
+
             tuples = self.findEmptyRuns(bm)
             newTuples = tuples.difference(lastTuples)
 
             for l, r in newTuples:
-                # Find out how high we can go with this bitmask. 
+                # Find out how high we can go with this bitmask.
                 mask = BitArray.range(l, r - l)
                 t = b + 1
                 while t < self.h and (self.bitmasks[t] & mask).isZero():
@@ -1006,7 +1006,7 @@ class TexMemWatcher(DirectObject):
             b = len(self.bitmasks)
             while b > self.h and self.bitmasks[b - 1].isZero():
                 b -= 1
-                
+
             tp = TexPlacement(0, w, b, b + h)
             return tp
 
@@ -1021,7 +1021,7 @@ class TexMemWatcher(DirectObject):
                 # Off the top.  Just leave it here.
                 tp = TexPlacement(0, w, b, b + h)
                 return tp
-                
+
             # Separate this row into (l, r) tuples.
             bm = self.bitmasks[b]
             if bm == lastBitmask:
@@ -1039,7 +1039,7 @@ class TexMemWatcher(DirectObject):
                 # Is this region wide enough?
                 if r - l < w:
                     continue
-                
+
                 # Is it tall enough?
                 r = l + w
                 mask = BitArray.range(l, r - l)
@@ -1154,13 +1154,13 @@ class TexRecord:
             cx = (l + r) * 0.5
             cy = (b + t) * 0.5
             shrinkMat = Mat4.translateMat(-cx, 0, -cy) * Mat4.scaleMat(0.9) * Mat4.translateMat(cx, 0, cy)
-            
+
             cm = CardMaker('backing')
             cm.setFrame(l, r, b, t)
             cm.setColor(0.1, 0.3, 0.5, 1)
             c = backing.attachNewNode(cm.generate())
             c.setMat(shrinkMat)
-            
+
             cm = CardMaker('card')
             cm.setFrame(l, r, b, t)
             if p.rotated:
@@ -1232,7 +1232,7 @@ class TexPlacement:
 
         l, r, b, t = self.p
         mask = BitArray.range(l, r - l)
-        
+
         for yi in range(b, t):
             assert (bitmasks[yi] & mask).isZero()
             bitmasks[yi] |= mask
@@ -1243,7 +1243,7 @@ class TexPlacement:
 
         l, r, b, t = self.p
         mask = ~BitArray.range(l, r - l)
-        
+
         for yi in range(b, t):
             assert (bitmasks[yi] | mask).isAllOn()
             bitmasks[yi] &= mask
@@ -1254,7 +1254,7 @@ class TexPlacement:
 
         l, r, b, t = self.p
         mask = BitArray.range(l, r - l)
-        
+
         for yi in range(b, t):
             if not (bitmasks[yi] & mask).isZero():
                 return True

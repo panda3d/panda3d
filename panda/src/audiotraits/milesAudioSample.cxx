@@ -37,7 +37,7 @@ TypeHandle MilesAudioSample::_type_handle;
 //               MilesAudioManager.
 ////////////////////////////////////////////////////////////////////
 MilesAudioSample::
-MilesAudioSample(MilesAudioManager *manager, MilesAudioManager::SoundData *sd, 
+MilesAudioSample(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
                  const string &file_name) :
   MilesAudioSound(manager, file_name),
   _sd(sd)
@@ -54,7 +54,7 @@ MilesAudioSample(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MilesAudioSample::
 ~MilesAudioSample() {
@@ -66,7 +66,7 @@ MilesAudioSample::
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::play
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 play() {
@@ -82,12 +82,12 @@ play() {
       nassertv(_sample == 0);
 
       GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
-      if (!mgr->get_sample(_sample, _sample_index, this)){ 
+      if (!mgr->get_sample(_sample, _sample_index, this)){
         milesAudio_cat.warning()
           << "Could not play " << _file_name << ": too many open samples\n";
         _sample = 0;
       } else {
-        AIL_set_named_sample_file(_sample, _sd->_basename.c_str(), 
+        AIL_set_named_sample_file(_sample, _sd->_basename.c_str(),
                                   &_sd->_raw_data[0], _sd->_raw_data.size(),
                                   0);
         _original_playback_rate = AIL_sample_playback_rate(_sample);
@@ -105,7 +105,7 @@ play() {
           AIL_start_sample(_sample);
         }
       }
-      
+
       _got_start_time = false;
     }
   } else {
@@ -118,7 +118,7 @@ play() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::stop
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 stop() {
@@ -136,7 +136,7 @@ stop() {
   // someone calls play on an inactive sound().
 
   // it fixes audio bug, I don't understand the reasoning of the above comment
-  _paused = false; 
+  _paused = false;
 
   if (_sample != 0) {
     AIL_end_sample(_sample);
@@ -152,7 +152,7 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::get_time
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat MilesAudioSample::
 get_time() const {
@@ -173,7 +173,7 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_volume
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 set_volume(PN_stdfloat volume) {
@@ -188,15 +188,15 @@ set_volume(PN_stdfloat volume) {
 
   if (_sample != 0) {
     volume *= _manager->get_volume();
-    
+
     // Change to Miles volume, range 0 to 1.0:
     F32 milesVolume = volume;
     milesVolume = min(milesVolume, 1.0f);
     milesVolume = max(milesVolume, 0.0f);
-    
+
     // Convert balance of -1.0..1.0 to 0-1.0:
     F32 milesBalance = (F32)((_balance + 1.0f) * 0.5f);
-    
+
     AIL_set_sample_volume_pan(_sample, milesVolume, milesBalance);
   }
 }
@@ -204,7 +204,7 @@ set_volume(PN_stdfloat volume) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_balance
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 set_balance(PN_stdfloat balance_right) {
@@ -218,7 +218,7 @@ set_balance(PN_stdfloat balance_right) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_play_rate
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 set_play_rate(PN_stdfloat play_rate) {
@@ -240,7 +240,7 @@ set_play_rate(PN_stdfloat play_rate) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::length
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat MilesAudioSample::
 length() const {
@@ -250,7 +250,7 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::status
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AudioSound::SoundStatus MilesAudioSample::
 status() const {
@@ -294,7 +294,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 output(ostream &out) const {
@@ -306,7 +306,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_3d_attributes
-//       Access: public
+//       Access: Public
 //  Description: Set position and velocity of this sound.  Note that
 //               Y and Z are switched to translate from Miles's
 //               coordinate system.
@@ -324,7 +324,7 @@ void MilesAudioSample::set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdf
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::get_3d_attributes
-//       Access: public
+//       Access: Public
 //  Description: Get position and velocity of this sound.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
@@ -347,7 +347,7 @@ void MilesAudioSample::get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_st
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_3d_min_distance
-//       Access: public
+//       Access: Public
 //  Description: Set the distance that this sound begins to fall
 //               off.  With Miles's default falloff behavior, when
 //               the distance between the sound and the listener is
@@ -362,7 +362,7 @@ void MilesAudioSample::set_3d_min_distance(PN_stdfloat dist) {
     float max_dist;
     int auto_3D_wet_atten;
     AIL_sample_3D_distances(_sample, &max_dist, NULL, &auto_3D_wet_atten);
-  
+
     AIL_set_sample_3D_distances(_sample, max_dist, dist, auto_3D_wet_atten);
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::set_3d_min_distance().");
@@ -371,7 +371,7 @@ void MilesAudioSample::set_3d_min_distance(PN_stdfloat dist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::get_3d_min_distance
-//       Access: public
+//       Access: Public
 //  Description: Get the distance that this sound begins to fall off.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat MilesAudioSample::get_3d_min_distance() const {
@@ -389,7 +389,7 @@ PN_stdfloat MilesAudioSample::get_3d_min_distance() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::set_3d_max_distance
-//       Access: public
+//       Access: Public
 //  Description: Set the distance at which this sound is clipped to
 //               silence.  Note that this value does not affect
 //               the rate at which the sound falls off, but only
@@ -404,7 +404,7 @@ void MilesAudioSample::set_3d_max_distance(PN_stdfloat dist) {
     float min_dist;
     int auto_3D_wet_atten;
     AIL_sample_3D_distances(_sample, NULL, &min_dist, &auto_3D_wet_atten);
-  
+
     AIL_set_sample_3D_distances(_sample, dist, min_dist, auto_3D_wet_atten);
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::set_3d_max_distance().");
@@ -413,7 +413,7 @@ void MilesAudioSample::set_3d_max_distance(PN_stdfloat dist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::get_3d_max_distance
-//       Access: public
+//       Access: Public
 //  Description: Get the distance at which this sound is clipped to
 //               silence.
 ////////////////////////////////////////////////////////////////////
@@ -446,25 +446,25 @@ PN_stdfloat MilesAudioSample::get_3d_max_distance() const {
 //               The order in which speakers appear in the array for
 //               standard speaker setups is defined to be:
 //
-//                  FRONT_LEFT 
-//                  FRONT_RIGHT 
-//                  FRONT_CENTER 
+//                  FRONT_LEFT
+//                  FRONT_RIGHT
+//                  FRONT_CENTER
 //                  LOW_FREQUENCY (sub woofer)
-//                  BACK_LEFT 
-//                  BACK_RIGHT 
-//                  FRONT_LEFT_OF_CENTER 
-//                  FRONT_RIGHT_OF_CENTER 
-//                  BACK_CENTER 
-//                  SIDE_LEFT 
-//                  SIDE_RIGHT 
-//                  TOP_CENTER 
-//                  TOP_FRONT_LEFT 
-//                  TOP_FRONT_CENTER 
-//                  TOP_FRONT_RIGHT 
-//                  TOP_BACK_LEFT 
-//                  TOP_BACK_CENTER 
-//                  TOP_BACK_RIGHT 
-//               
+//                  BACK_LEFT
+//                  BACK_RIGHT
+//                  FRONT_LEFT_OF_CENTER
+//                  FRONT_RIGHT_OF_CENTER
+//                  BACK_CENTER
+//                  SIDE_LEFT
+//                  SIDE_RIGHT
+//                  TOP_CENTER
+//                  TOP_FRONT_LEFT
+//                  TOP_FRONT_CENTER
+//                  TOP_FRONT_RIGHT
+//                  TOP_BACK_LEFT
+//                  TOP_BACK_CENTER
+//                  TOP_BACK_RIGHT
+//
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat MilesAudioSample::
 get_speaker_level(int index) {
@@ -505,25 +505,25 @@ get_speaker_level(int index) {
 //               The order in which speakers appear in the array for
 //               standard speaker setups is defined to be:
 //
-//                  FRONT_LEFT 
-//                  FRONT_RIGHT 
-//                  FRONT_CENTER 
+//                  FRONT_LEFT
+//                  FRONT_RIGHT
+//                  FRONT_CENTER
 //                  LOW_FREQUENCY (sub woofer)
-//                  BACK_LEFT 
-//                  BACK_RIGHT 
-//                  FRONT_LEFT_OF_CENTER 
-//                  FRONT_RIGHT_OF_CENTER 
-//                  BACK_CENTER 
-//                  SIDE_LEFT 
-//                  SIDE_RIGHT 
-//                  TOP_CENTER 
-//                  TOP_FRONT_LEFT 
-//                  TOP_FRONT_CENTER 
-//                  TOP_FRONT_RIGHT 
-//                  TOP_BACK_LEFT 
-//                  TOP_BACK_CENTER 
-//                  TOP_BACK_RIGHT 
-//               
+//                  BACK_LEFT
+//                  BACK_RIGHT
+//                  FRONT_LEFT_OF_CENTER
+//                  FRONT_RIGHT_OF_CENTER
+//                  BACK_CENTER
+//                  SIDE_LEFT
+//                  SIDE_RIGHT
+//                  TOP_CENTER
+//                  TOP_FRONT_LEFT
+//                  TOP_FRONT_CENTER
+//                  TOP_FRONT_RIGHT
+//                  TOP_BACK_LEFT
+//                  TOP_BACK_CENTER
+//                  TOP_BACK_RIGHT
+//
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
 set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2, PN_stdfloat level3, PN_stdfloat level4, PN_stdfloat level5, PN_stdfloat level6, PN_stdfloat level7, PN_stdfloat level8, PN_stdfloat level9) {
@@ -604,11 +604,11 @@ do_set_time(PN_stdfloat time) {
   PN_stdfloat max_time = length();
   if (time > max_time) {
     milesAudio_cat.warning()
-      << "set_time(" << time << ") requested for sound of length " 
+      << "set_time(" << time << ") requested for sound of length "
       << max_time << "\n";
     time = max_time;
   }
-  
+
   S32 time_ms = (S32)(1000.0f * time);
   AIL_set_sample_ms_position(_sample, time_ms);
 }

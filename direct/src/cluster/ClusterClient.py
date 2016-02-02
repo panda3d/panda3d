@@ -1,6 +1,6 @@
 """ClusterClient: Master for mutli-piping or PC clusters.  """
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from ClusterMsgs import *
 from ClusterConfig import *
 from direct.directnotify import DirectNotifyGlobal
@@ -147,7 +147,7 @@ class ClusterClient(DirectObject.DirectObject):
 
         if (serverList == None):
             serverList = range(len(self.serverList))
-        
+
         for server in serverList:
             self.serverList[server].sendNamedMovementDone()
 
@@ -161,7 +161,7 @@ class ClusterClient(DirectObject.DirectObject):
                                                key])
 
         self.sortedControlMappings.sort()
-        
+
     def moveObject(self, nodePath, object, serverList, offset, hasColor = True):
         self.notify.debug('moving object '+object)
         xyz = nodePath.getPos(render) + offset
@@ -222,7 +222,7 @@ class ClusterClient(DirectObject.DirectObject):
                 serverList = range(len(self.serverList))
             if (offset == None):
                 offset = Vec3(0,0,0)
-                
+
             self.controlMappings[objectName] = [controlledName,serverList]
             self.controlOffsets[objectName]  = offset
             self.controlPriorities[objectName] = priority
@@ -247,7 +247,7 @@ class ClusterClient(DirectObject.DirectObject):
 
             if (serverList == None):
                 self.controlMappings.pop(name)
-                self.controlPriorities.pop(name)                
+                self.controlPriorities.pop(name)
             else:
                 list = self.controlMappings[key][1]
                 newList = []
@@ -260,7 +260,7 @@ class ClusterClient(DirectObject.DirectObject):
                     self.controlPriorities.pop(name)
         self.redoSortedPriorities()
 
-        
+
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = repr(nodePath)
@@ -288,14 +288,14 @@ class ClusterClient(DirectObject.DirectObject):
         newTag["selectFunction"] = selectFunction
         newTag["selectArgs"]     = selectArgs
         newTag["deselectFunction"] = deselectFunction
-        newTag["deselectArgs"]     = deselectArgs        
+        newTag["deselectArgs"]     = deselectArgs
         self.taggedObjects[object] = newTag
 
 
     def removeObjectTag(self,object):
 
         self.taggedObjects.pop(object)
-    
+
 
     def selectNodePath(self, nodePath):
         name = self.getNodePathName(nodePath)
@@ -308,14 +308,14 @@ class ClusterClient(DirectObject.DirectObject):
                 function(*args)
         else:
             self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
-        
+
 
     def deselectNodePath(self, nodePath):
         name = self.getNodePathName(nodePath)
         if name in self.taggedObjects:
             tag = self.taggedObjects[name]
             function = tag["deselectFunction"]
-            args     = tag["deselectArgs"]        
+            args     = tag["deselectArgs"]
             if (function != None):
                 function(*args)
             self.startMoveSelectedTask()
@@ -372,12 +372,12 @@ class ClusterClient(DirectObject.DirectObject):
 
         # clear the queue
         self.serverQueues[server] = []
-        
+
 
     def handleNamedMovement(self, data):
         """ Update cameraJig position to reflect latest position """
-    
-        (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data 
+
+        (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data
         #print "name"
         #if (name == "camNode"):
         #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden

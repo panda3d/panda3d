@@ -1,3 +1,5 @@
+// Filename: osxGraphicsBuffer.cxx
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -39,7 +41,7 @@ osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   DCAST_INTO_V(osx_pipe, _pipe);
 
   _pbuffer = NULL;
- 
+
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
@@ -210,7 +212,7 @@ open_buffer() {
   }
   _fb_properties = osxgsg->get_fb_properties();
   */
-  
+
   _is_valid = true;
   return true;
 }

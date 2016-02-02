@@ -62,15 +62,12 @@ LightLensNode::
 LightLensNode::
 LightLensNode(const LightLensNode &copy) :
   Light(copy),
-  Camera(copy)
+  Camera(copy),
+  _shadow_caster(copy._shadow_caster),
+  _sb_xsize(copy._sb_xsize),
+  _sb_ysize(copy._sb_ysize),
+  _sb_sort(-10)
 {
-  _shadow_caster = false;
-  _sb_xsize = 512;
-  _sb_ysize = 512;
-  _sb_sort = -10;
-  // Backface culling helps eliminating artifacts.
-  set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
-                    ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,6 +81,13 @@ void LightLensNode::
 clear_shadow_buffers() {
   ShadowBuffers::iterator it;
   for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
+    PT(Texture) tex = (*it).second->get_texture();
+    if (tex) {
+      // Clear it to all ones, so that any shaders that might still
+      // be using it will see the shadows being disabled.
+      tex->set_clear_color(LColor(1));
+      tex->clear_image();
+    }
     (*it).first->remove_window((*it).second);
   }
   _sbuffers.clear();

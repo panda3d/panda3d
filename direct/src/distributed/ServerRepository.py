@@ -49,7 +49,7 @@ class ServerRepository:
             # or moving objects between zones, might influence this
             # set.
             self.currentInterestZoneIds = set()
-            
+
             # A dictionary of doId -> Object, for distributed objects
             # currently in existence that were created by the client.
             self.objectsByDoId = {}
@@ -76,7 +76,7 @@ class ServerRepository:
             # Note that the server does not store any other data about
             # the distributed objects; in particular, it doesn't
             # record its current fields.  That is left to the clients.
-            
+
 
     def __init__(self, tcpPort, serverAddress = None,
                  udpPort = None, dcFileNames = None,
@@ -137,7 +137,7 @@ class ServerRepository:
         # An allocator object that assigns the next doIdBase to each
         # client.
         self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
-        
+
         self.dcFile = DCFile()
         self.dcSuffix = ''
         self.readDCFile(dcFileNames)
@@ -168,7 +168,7 @@ class ServerRepository:
         """Returns the current setting of TCP header size. See
         setTcpHeaderSize(). """
         return self.qcr.getTcpHeaderSize()
-        
+
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """ Imports the indicated moduleName and all of its symbols
@@ -317,10 +317,10 @@ class ServerRepository:
 
             # Now we can start listening to that new connection.
             self.qcr.addConnection(newConnection)
-            
+
             self.lastConnection = newConnection
             self.sendDoIdRange(client)
-            
+
         return task.cont
 
     def readerPollUntilEmpty(self, task):
@@ -415,7 +415,7 @@ class ServerRepository:
                 self.notify.debug(
                     "Creating object %s of type %s by client %s" % (
                     doId, dclass.getName(), client.doIdBase))
-                    
+
             object = self.Object(doId, zoneId, dclass)
             client.objectsByDoId[doId] = object
             client.objectsByZoneId.setdefault(zoneId, set()).add(object)
@@ -433,7 +433,7 @@ class ServerRepository:
         dg.addUint16(classId)
         dg.addUint32(doId)
         dg.appendData(dgi.getRemainingBytes())
-        
+
         self.sendToZoneExcept(zoneId, dg, [client])
 
     def handleClientObjectUpdateField(self, datagram, dgi, targeted = False):
@@ -454,7 +454,7 @@ class ServerRepository:
                 "Ignoring update for unknown object %s from client %s" % (
                 doId, client.doIdBase))
             return
-        
+
         dcfield = object.dclass.getFieldByIndex(fieldId)
         if dcfield == None:
             self.notify.warning(
@@ -489,16 +489,16 @@ class ServerRepository:
                 return
             self.cw.send(dg, target.connection)
             self.needsFlush.add(target)
-            
+
         elif dcfield.hasKeyword('p2p'):
             # p2p: to object owner only
             self.cw.send(dg, owner.connection)
             self.needsFlush.add(owner)
-                        
+
         elif dcfield.hasKeyword('broadcast'):
             # Broadcast: to everyone except orig sender
             self.sendToZoneExcept(object.zoneId, dg, [client])
-            
+
         elif dcfield.hasKeyword('reflect'):
             # Reflect: broadcast to everyone including orig sender
             self.sendToZoneExcept(object.zoneId, dg, [])
@@ -528,7 +528,7 @@ class ServerRepository:
             return
 
         self.sendToZoneExcept(object.zoneId, datagram, [])
-        
+
         self.objectsByZoneId[object.zoneId].remove(object)
         if not self.objectsByZoneId[object.zoneId]:
             del self.objectsByZoneId[object.zoneId]
@@ -632,7 +632,7 @@ class ServerRepository:
 
         self.qcr.removeConnection(client.connection)
         self.qcm.closeConnection(client.connection)
-        
+
 
     def handleClientSetInterest(self, client, dgi):
         """ The client is specifying a particular set of zones it is
@@ -645,11 +645,11 @@ class ServerRepository:
 
         client.explicitInterestZoneIds = zoneIds
         self.updateClientInterestZones(client)
-        
+
     def updateClientInterestZones(self, client):
         """ Something about the client has caused its set of interest
         zones to potentially change.  Recompute them. """
-        
+
         origZoneIds = client.currentInterestZoneIds
         newZoneIds = client.explicitInterestZoneIds | set(client.objectsByZoneId.keys())
         if origZoneIds == newZoneIds:
@@ -683,7 +683,7 @@ class ServerRepository:
         self.cw.send(datagram, client.connection)
 
         self.needsFlush.add(client)
-            
+
 
     def clientHardDisconnectTask(self, task):
         """ client did not tell us he was leaving but we lost connection to
@@ -696,7 +696,7 @@ class ServerRepository:
     def sendToZoneExcept(self, zoneId, datagram, exceptionList):
         """sends a message to everyone who has interest in the
         indicated zone, except for the clients on exceptionList."""
-        
+
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository sending to all in zone %s except %s:" % (zoneId, [c.doIdBase for c in exceptionList]))
@@ -713,7 +713,7 @@ class ServerRepository:
     def sendToAllExcept(self, datagram, exceptionList):
         """ sends a message to all connected clients, except for
         clients on exceptionList. """
-        
+
         if self.notify.getDebug():
             self.notify.debug(
                 "ServerRepository sending to all except %s:" % ([c.doIdBase for c in exceptionList],))

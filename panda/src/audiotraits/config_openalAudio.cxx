@@ -27,6 +27,12 @@ ConfigureFn(config_openalAudio) {
   init_libOpenALAudio();
 }
 
+ConfigVariableString openal_device
+("openal-device", "",
+ PRC_DESC("Specify the OpenAL device string for audio playback (no quotes).  If this "
+          "is not specified, the OpenAL default device is used."));
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libOpenALAudio
 //  Description: Initializes the library.  This must be called at
@@ -41,7 +47,7 @@ init_libOpenALAudio() {
   if (initialized) {
     return;
   }
-  
+
   initialized = true;
   OpenALAudioManager::init_type();
   OpenALAudioSound::init_type();
@@ -57,7 +63,7 @@ init_libOpenALAudio() {
 //  Description: This function is called when the dynamic library is
 //               loaded; it should return the Create_AudioManager
 //               function appropriate to create an OpenALAudioManager.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 Create_AudioManager_proc *
 get_audio_manager_func_openal_audio() {
   init_libOpenALAudio();

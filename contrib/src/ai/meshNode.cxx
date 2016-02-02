@@ -24,14 +24,11 @@ Node::Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h) {
 Node::~Node() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-// Function : contains
-// Description : This is a handy function which returns true if the passed position is
+////////////////////////////////////////////////////////////////////
+//     Function: contains
+//  Description: This is a handy function which returns true if the passed position is
 //               within the node's dimensions.
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
 bool Node::contains(float x, float y) {
   if(_position.get_x() - _width / 2 <= x && _position.get_x() + _width / 2 >= x &&
     _position.get_y() - _length / 2 <= y && _position.get_y() + _length / 2 >= y) {

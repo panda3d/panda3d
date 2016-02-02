@@ -1,4 +1,4 @@
-// Filename: customGraphicsWindowProc.cxx
+// Filename: pythonGraphicsWindowProc.cxx
 // Created by:  Walt Destler (May 2010)
 //
 ////////////////////////////////////////////////////////////////////

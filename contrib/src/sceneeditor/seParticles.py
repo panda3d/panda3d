@@ -144,7 +144,7 @@ class Particles(ParticleSystem):
             self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
             if (self.renderer.getSourceType() ==
                 SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
-                # Use current default texture 
+                # Use current default texture
                 # See sourceTextureName SpriteParticleRenderer-extensions.py
                 self.renderer.setTextureFromFile()
             else:

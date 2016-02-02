@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dCert.h"
+#include "p3dCert_strings.h"
 #include "wstring_encode.h"
 #include "mkdir_complete.h"
 
@@ -26,8 +27,9 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <limits.h>
+#include <locale.h>
 
-#define BUTTON_WIDTH 120
+#define BUTTON_WIDTH 180 // fit the Russian text
 #define BUTTON_SPACE 10
 
 #include "ca_bundle_data_src.c"
@@ -36,63 +38,152 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
+#include <malloc.h>
 
 #define snprintf sprintf_s
 #endif
 
-static const char
-self_signed_cert_text[] =
-  "This Panda3D application uses a self-signed certificate.  "
-  "This means the author's name can't be verified, and you have "
-  "no way of knowing for sure who wrote it.\n\n"
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
-  "We recommend you click Cancel to avoid running this application.";
+static LanguageIndex li = LI_default;
 
-static const char
-unknown_auth_cert_text[] =
-  "This Panda3D application has been signed, but we don't recognize "
-  "the authority that verifies the signature.  This means the author's "
-  "name can't be trusted, and you have no way of knowing "
-  "for sure who wrote it.\n\n"
+#if defined(_WIN32)
+static LanguageIndex detect_language() {
+  // This function was introduced in Windows Vista; it may not be available
+  // on older systems.
+  typedef BOOL (*GUPL)(DWORD, PULONG, PZZWSTR, PULONG);
+  GUPL pGetUserPreferredUILanguages = (GUPL)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+                                                           TEXT("GetUserPreferredUILanguages"));
+  if (pGetUserPreferredUILanguages != NULL) {
+    ULONG num_langs = 0;
+    ULONG buffer_size = 0;
+    pGetUserPreferredUILanguages(8, &num_langs, NULL, &buffer_size);
+    PZZWSTR buffer = (PZZWSTR)_alloca(buffer_size);
+    if (pGetUserPreferredUILanguages(8, &num_langs, buffer, &buffer_size)) {
+      for (ULONG i = 0; i < num_langs; ++i) {
+        size_t len = wcslen(buffer);
+        if (len >= 2 && (buffer[2] == 0 || buffer[2] == L'-')) {
+          // It may be a two-letter code; match it in our list.
+          for (int j = 0; j < LI_COUNT; ++j) {
+            const char *lang_code = language_codes[j];
+            if (lang_code != NULL && lang_code[0] == buffer[0] &&
+                                     lang_code[1] == buffer[1]) {
+              return (LanguageIndex)j;
+            }
+          }
+        }
+        buffer += len + 1;
+      }
+    }
+  }
 
-  "We recommend you click Cancel to avoid running this application.";
+  // Fall back to the old Windows XP function.
+  LANGID lang = GetUserDefaultUILanguage() & 0x3ff;
+  if (lang == 0) {
+    return LI_default;
+  }
 
-static const char
-verified_cert_text[] =
-  "This Panda3D application has been signed by %s. "
-  "If you trust %s, then click the Run button below "
-  "to run this application on your computer.  This will also "
-  "automatically approve this and any other applications signed by "
-  "%s in the future.\n\n"
+  for (int i = 0; i < LI_COUNT; ++i) {
+    if (language_ids[i] != 0 && language_ids[i] == lang) {
+      return (LanguageIndex)i;
+    }
+  }
+  return LI_default;
+}
 
-  "If you are unsure about this application, "
-  "you should click Cancel instead.";
+#elif defined(__APPLE__)
+static LanguageIndex detect_language() {
+  // Get and iterate through the list of preferred languages.
+  CFArrayRef langs = CFLocaleCopyPreferredLanguages();
+  CFIndex num_langs = CFArrayGetCount(langs);
 
-static const char
-expired_cert_text[] =
-  "This Panda3D application has been signed by %s, "
-  "but the certificate has expired.\n\n"
+  for (long i = 0; i < num_langs; ++i) {
+    CFStringRef lang = (CFStringRef)CFArrayGetValueAtIndex(langs, i);
 
-  "You should check the current date set on your computer's clock "
-  "to make sure it is correct.\n\n"
+    CFIndex length = CFStringGetLength(lang);
+    if (length < 2) {
+      continue;
+    }
 
-  "If your computer's date is correct, we recommend "
-  "you click Cancel to avoid running this application.";
+    CFIndex max_size = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+    char *buffer = (char *)alloca(max_size);
+    if (!CFStringGetCString(lang, buffer, max_size, kCFStringEncodingUTF8)) {
+      continue;
+    }
 
-static const char
-generic_error_cert_text[] =
-  "This Panda3D application has been signed, but there is a problem "
-  "with the certificate (OpenSSL error code %d).\n\n"
+    if (isalnum(buffer[2])) {
+      // It's not a two-letter code.
+      continue;
+    }
 
-  "We recommend you click Cancel to avoid running this application.";
+    // See if we support this language.
+    for (int j = 0; j < LI_COUNT; ++j) {
+      const char *lang_code = language_codes[j];
+      if (lang_code != NULL && strncasecmp(buffer, lang_code, 2) == 0) {
+        CFRelease(langs);
+        return (LanguageIndex)j;
+      }
+    }
+  }
 
-static const char
-no_cert_text[] =
-  "This Panda3D application has not been signed.  This means you have "
-  "no way of knowing for sure who wrote it.\n\n"
+  CFRelease(langs);
+  return LI_default;
+}
 
-  "Click Cancel to avoid running this application.";
+#else
+static LanguageIndex detect_language() {
+  // First consult the LANGUAGE variable, which is a GNU extension that can
+  // contain multiple languages in order of preference.
+  const char *lang = getenv("LANGUAGE");
+  while (lang != NULL && lang[0] != 0) {
+    size_t len;
+    const char *next = strchr(lang, ':');
+    if (next == NULL) {
+      len = strlen(lang);
+    } else {
+      len = (next - lang);
+      ++next;
+    }
 
+    if (len >= 2 && !isalnum(lang[2])) {
+      // It may be a two-letter language code; match it in our list.
+      for (int i = 0; i < LI_COUNT; ++i) {
+        const char *lang_code = language_codes[i];
+        if (lang_code != NULL && strncasecmp(lang, lang_code, 2) == 0) {
+          return (LanguageIndex)i;
+        }
+      }
+    }
+
+    lang = next;
+  }
+
+  // Fall back to the C locale functions.
+  setlocale(LC_ALL, "");
+  lang = setlocale(LC_MESSAGES, NULL);
+
+  if (lang == NULL || lang[0] == 0 || strcmp(lang, "C") == 0) {
+    // Try the LANG variable.
+    lang = getenv("LANG");
+  }
+
+  if (lang == NULL || strlen(lang) < 2 || isalnum(lang[2])) {
+    // Couldn't extract a meaningful two-letter code.
+    return LI_default;
+  }
+
+  // It may be a two-letter language code; match it in our list.
+  for (int i = 0; i < LI_COUNT; ++i) {
+    const char *lang_code = language_codes[i];
+    if (lang_code != NULL && strncasecmp(lang, lang_code, 2) == 0) {
+      return (LanguageIndex)i;
+    }
+  }
+  return LI_default;
+}
+#endif
 
 #ifdef _WIN32
 int WINAPI
@@ -106,6 +197,8 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
     cerr << "usage: p3dcert cert_filename cert_dir\n";
     return 1;
   }
+
+  li = detect_language();
 
   wstring cert_filename (argv[0]);
   wstring cert_dir (argv[1]);
@@ -125,6 +218,8 @@ int main(int argc, char **argv) {
     cerr << "usage: p3dcert cert_filename cert_dir\n";
     return 1;
   }
+
+  li = detect_language();
 
   string cert_filename (argv[1]);
   string cert_dir (argv[2]);
@@ -148,7 +243,7 @@ AuthDialog(const wstring &cert_filename, const wstring &cert_dir) :
 AuthDialog::
 AuthDialog(const string &cert_filename, const string &cert_dir) :
 #endif
-  Fl_Window(435, 242, "New Panda3D Application"),
+  Fl_Window(435, 242, new_application_title[li]),
   _cert_dir(cert_dir)
 {
   _view_cert_dialog = NULL;
@@ -315,12 +410,20 @@ read_cert_file(const string &cert_filename) {
 #endif  // _WIN32
 
   if (fp == NULL) {
+#ifdef _WIN32
+    wcerr << L"Couldn't read " << cert_filename.c_str() << L"\n";
+#else
     cerr << "Couldn't read " << cert_filename.c_str() << "\n";
+#endif
     return;
   }
   _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
   if (_cert == NULL) {
+#ifdef _WIN32
+    wcerr << L"Could not read certificate in " << cert_filename.c_str() << L".\n";
+#else
     cerr << "Could not read certificate in " << cert_filename.c_str() << ".\n";
+#endif
     fclose(fp);
     return;
   }
@@ -510,19 +613,19 @@ layout() {
   short bx = (w() - nbuttons * BUTTON_WIDTH - (nbuttons - 1) * BUTTON_SPACE) / 2;
 
   if (_verify_result == 0 && _cert != NULL) {
-    Fl_Return_Button *run_button = new Fl_Return_Button(bx, next_y, BUTTON_WIDTH, 25, "Run");
+    Fl_Return_Button *run_button = new Fl_Return_Button(bx, next_y, BUTTON_WIDTH, 25, run_title[li]);
     run_button->callback(this->run_clicked, this);
     bx += BUTTON_WIDTH + BUTTON_SPACE;
   }
 
   if (_cert != NULL) {
-    Fl_Button *view_button = new Fl_Button(bx, next_y, BUTTON_WIDTH, 25, "View Certificate");
+    Fl_Button *view_button = new Fl_Button(bx, next_y, BUTTON_WIDTH, 25, show_cert_title[li]);
     view_button->callback(this->view_cert_clicked, this);
     bx += BUTTON_WIDTH + BUTTON_SPACE;
   }
 
   Fl_Button *cancel_button;
-  cancel_button = new Fl_Button(bx, next_y, BUTTON_WIDTH, 25, "Cancel");
+  cancel_button = new Fl_Button(bx, next_y, BUTTON_WIDTH, 25, cancel_title[li]);
   cancel_button->callback(this->cancel_clicked, this);
 
   next_y += 42;
@@ -542,12 +645,12 @@ void AuthDialog::
 get_text(char *header, size_t hlen, char *text, size_t tlen) {
   switch (_verify_result) {
   case -1:
-    strncpy(header, "No signature!", hlen);
-    strncpy(text, no_cert_text, tlen);
+    strncpy(header, no_cert_title[li], hlen);
+    strncpy(text, no_cert_text[li], tlen);
     break;
 
   case 0:
-    snprintf(text, tlen, verified_cert_text, _friendly_name.c_str(),
+    snprintf(text, tlen, verified_cert_text[li], _friendly_name.c_str(),
                         _friendly_name.c_str(), _friendly_name.c_str());
     break;
 
@@ -555,24 +658,24 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
   case X509_V_ERR_CERT_HAS_EXPIRED:
   case X509_V_ERR_CRL_NOT_YET_VALID:
   case X509_V_ERR_CRL_HAS_EXPIRED:
-    strncpy(header, "Expired signature!", hlen);
-    snprintf(text, tlen, expired_cert_text, _friendly_name.c_str());
+    strncpy(header, expired_cert_title[li], hlen);
+    snprintf(text, tlen, expired_cert_text[li], _friendly_name.c_str());
     break;
 
   case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-    strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, unknown_auth_cert_text);
+    strncpy(header, unverified_cert_title[li], hlen);
+    strncpy(text, unknown_auth_cert_text[li], tlen);
     break;
 
   case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
   case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-    strncpy(header, "Unverified signature!", hlen);
-    strncpy(text, self_signed_cert_text, tlen);
+    strncpy(header, unverified_cert_title[li], hlen);
+    strncpy(text, self_signed_cert_text[li], tlen);
     break;
 
   default:
-    strncpy(header, "Unverified signature!", hlen);
-    snprintf(text, tlen, generic_error_cert_text, _verify_result);
+    strncpy(header, unverified_cert_title[li], hlen);
+    snprintf(text, tlen, generic_error_cert_text[li], _verify_result);
   }
 }
 
@@ -583,7 +686,7 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
 ////////////////////////////////////////////////////////////////////
 ViewCertDialog::
 ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
-  Fl_Window(600, 400, "View Certificate"),
+  Fl_Window(600, 400, show_cert_title[li]),
   _auth_dialog(auth_dialog),
   _cert(cert)
 {
@@ -660,12 +763,12 @@ layout() {
 
   short bx = (w() - BUTTON_WIDTH * 2 - BUTTON_SPACE) / 2;
 
-  Fl_Return_Button *run_button = new Fl_Return_Button(bx, 360, BUTTON_WIDTH, 25, "Run");
+  Fl_Return_Button *run_button = new Fl_Return_Button(bx, 360, BUTTON_WIDTH, 25, run_title[li]);
   run_button->callback(this->run_clicked, this);
 
   bx += BUTTON_WIDTH + BUTTON_SPACE;
 
-  Fl_Button *cancel_button = new Fl_Button(bx, 360, BUTTON_WIDTH, 25, "Cancel");
+  Fl_Button *cancel_button = new Fl_Button(bx, 360, BUTTON_WIDTH, 25, cancel_title[li]);
   cancel_button->callback(this->cancel_clicked, this);
 
   end();

@@ -64,6 +64,7 @@
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
 #include "samplerState.h"
+#include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 #include "Cg/cgGL.h"
@@ -83,7 +84,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Upda
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 
-#ifdef OPENGLES_2
+#ifndef OPENGLES_1
 PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
 #endif
 
@@ -111,6 +112,14 @@ null_glDrawRangeElements(GLenum mode, GLuint start, GLuint end,
 }
 #endif
 
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+static void APIENTRY
+null_glVertexAttrib4dv(GLuint index, const GLdouble *v) {
+  GLfloat vf[4] = {(GLfloat)v[0], (GLfloat)v[1], (GLfloat)v[2], (GLfloat)v[3]};
+  glVertexAttrib4fv(index, vf);
+}
+#endif
+
 static void APIENTRY
 null_glActiveTexture(GLenum gl_texture_stage) {
   // If we don't support multitexture, we'd better not try to request
@@ -126,31 +135,56 @@ static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
 
-#ifdef OPENGLES_2
+#ifndef OPENGLES_1
 // We have a default shader that will be applied when there isn't any
 // shader applied (e.g. if it failed to compile).  We need this because
-// OpenGL ES 2.x does not have a fixed-function pipeline.
-// This default shader just applies a single texture.
+// OpenGL ES 2.x and OpenGL 3.2+ core don't have a fixed-function pipeline.
+// This default shader just applies a single texture, which is good enough
+// for drawing GUIs and such.
 static const string default_vshader =
+#ifndef OPENGLES
+  "#version 130\n"
+  "in vec4 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in vec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+#else
   "precision mediump float;\n"
-  "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
   "attribute vec4 p3d_Vertex;\n"
+  "attribute vec4 p3d_Color;\n"
   "attribute vec2 p3d_MultiTexCoord0;\n"
   "varying vec2 texcoord;\n"
+  "varying vec4 color;\n"
+#endif
+  "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
 static const string default_fshader =
+#ifndef OPENGLES
+  "#version 130\n"
+  "in vec2 texcoord;\n"
+  "in vec4 color;\n"
+  "out vec4 p3d_FragColor;"
+#else
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
-  "uniform vec4 p3d_Color;\n"
-  "uniform vec4 p3d_ColorScale;\n"
+  "varying vec4 color;\n"
+#endif
   "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
+#ifndef OPENGLES
+  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor *= color;\n"
+#else
   "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
-  "  gl_FragColor *= p3d_Color * p3d_ColorScale;\n"
+  "  gl_FragColor *= color;\n"
+#endif
   "}\n";
 #endif
 
@@ -250,12 +284,14 @@ fix_component_ordering(PTA_uchar &new_image,
   case GL_RGB:
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
+    case Texture::T_byte:
       new_image = PTA_uchar::empty_array(orig_image_size);
       uchar_bgr_to_rgb(new_image, orig_image, orig_image_size / 3);
       result = new_image;
       break;
 
     case Texture::T_unsigned_short:
+    case Texture::T_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgr_to_rgb((unsigned short *)new_image.p(),
                         (const unsigned short *)orig_image,
@@ -271,12 +307,14 @@ fix_component_ordering(PTA_uchar &new_image,
   case GL_RGBA:
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
+    case Texture::T_byte:
       new_image = PTA_uchar::empty_array(orig_image_size);
       uchar_bgra_to_rgba(new_image, orig_image, orig_image_size / 4);
       result = new_image;
       break;
 
     case Texture::T_unsigned_short:
+    case Texture::T_short:
       new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgra_to_rgba((unsigned short *)new_image.p(),
                           (const unsigned short *)orig_image,
@@ -317,6 +355,14 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
 {
   _error_count = 0;
+  _last_error_check = -1.0;
+
+  // calling glGetError() forces a sync, this turns it on if you want to.
+  _check_errors = gl_check_errors;
+  _force_flush = gl_force_flush;
+
+  _gl_shadlang_ver_major = 0;
+  _gl_shadlang_ver_minor = 0;
 
   // Hack.  Turn on the flag that we turned off at a higher level,
   // since we know this works properly in OpenGL, and we want the
@@ -327,14 +373,14 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // the window tells us otherwise.
   _is_hardware = true;
 
-  // calling glGetError() forces a sync, this turns it on if you want to.
-  _check_errors = gl_check_errors;
-  _force_flush = gl_force_flush;
-
   _scissor_enabled = false;
   _scissor_attrib_active = false;
 
   _white_texture = 0;
+
+#ifndef OPENGLES
+  _shader_point_size = false;
+#endif
 
 #ifdef HAVE_CG
   _cg_context = 0;
@@ -416,6 +462,8 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 reset() {
+  _last_error_check = -1.0;
+
   free_pointers();
   GraphicsStateGuardian::reset();
 
@@ -458,8 +506,53 @@ reset() {
 
   // Save the extensions tokens.
   _extensions.clear();
-  save_extensions((const char *)glGetString(GL_EXTENSIONS));
+
+  // In OpenGL 3.0 and later, glGetString(GL_EXTENSIONS) is deprecated.
+#ifndef OPENGLES
+  if (is_at_least_gl_version(3, 0)) {
+    PFNGLGETSTRINGIPROC _glGetStringi =
+      (PFNGLGETSTRINGIPROC)get_extension_func("glGetStringi");
+
+    if (_glGetStringi != NULL) {
+      GLint n = 0;
+      glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+      for (GLint i = 0; i < n; ++i) {
+        const char *extension = (const char *)_glGetStringi(GL_EXTENSIONS, i);
+        _extensions.insert(string(extension));
+      }
+    } else {
+      GLCAT.error() << "glGetStringi is not available!\n";
+      save_extensions((const char *)glGetString(GL_EXTENSIONS));
+    }
+  } else
+#endif
+  {
+    save_extensions((const char *)glGetString(GL_EXTENSIONS));
+  }
+
   get_extra_extensions();
+
+  // This needs access to the extensions, so put this after save_extensions.
+  query_glsl_version();
+
+#ifndef OPENGLES
+  bool core_profile = is_at_least_gl_version(3, 2) &&
+                      !has_extension("GL_ARB_compatibility");
+
+  if (GLCAT.is_debug()) {
+    if (core_profile) {
+      GLCAT.debug() << "Using core profile\n";
+    } else {
+      GLCAT.debug() << "Using compatibility profile\n";
+    }
+  }
+#elif defined(OPENGLES_1)
+  static const bool core_profile = false;
+#else
+  static const bool core_profile = true;
+#endif
+
+  // Print out a list of all extensions.
   report_extensions();
 
   // Initialize OpenGL debugging output first, if enabled and supported.
@@ -467,19 +560,19 @@ reset() {
   _use_object_labels = false;
 #ifndef OPENGLES_1
   if (gl_debug) {
-    PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback;
+    PFNGLDEBUGMESSAGECALLBACKPROC_P _glDebugMessageCallback;
     PFNGLDEBUGMESSAGECONTROLPROC _glDebugMessageControl;
 
     if (is_at_least_gl_version(4, 3) || has_extension("GL_KHR_debug")) {
 #ifdef OPENGLES
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallbackKHR");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControlKHR");
       _glObjectLabel = (PFNGLOBJECTLABELPROC)
         get_extension_func("glObjectLabelKHR");
 #else
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallback");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControl");
@@ -492,7 +585,7 @@ reset() {
 
 #ifndef OPENGLES
     } else if (has_extension("GL_ARB_debug_output")) {
-      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC_P)
         get_extension_func("glDebugMessageCallbackARB");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControlARB");
@@ -512,22 +605,26 @@ reset() {
                              0, NULL, GLCAT.is_debug());
 
       // Enable the callback.
-      _glDebugMessageCallback((GLDEBUGPROC) &debug_callback, (void*)this);
+      _glDebugMessageCallback((GLDEBUGPROC_P) &debug_callback, (void*)this);
       if (gl_debug_synchronous) {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       }
 
-      GLCAT.debug() << "gl-debug enabled.\n";
+      GLCAT.info() << "gl-debug enabled.\n";
     } else {
-      GLCAT.debug() << "gl-debug enabled, but NOT supported.\n";
+      GLCAT.warning() << "gl-debug enabled, but NOT supported.\n";
     }
   } else {
-    GLCAT.debug() << "gl-debug NOT enabled.\n";
-
     // However, still check if it is supported.
     _supports_debug = is_at_least_gl_version(4, 3)
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
+
+    if (_supports_debug) {
+      GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
+    } else {
+      GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+    }
   }
 #endif  // OPENGLES_1
 
@@ -572,7 +669,8 @@ reset() {
 #elif defined(OPENGLES_1)
   _supports_point_sprite = has_extension("GL_OES_point_sprite");
 #else
-  _supports_point_sprite = has_extension("GL_ARB_point_sprite");
+  _supports_point_sprite = is_at_least_gl_version(2, 0) ||
+                           has_extension("GL_ARB_point_sprite");
 #endif
 
   if (_supports_point_sprite) {
@@ -610,114 +708,16 @@ reset() {
   }
 #endif
 
-#ifdef OPENGLES_2
-  _supports_vertex_blend = false;
-#else
-  _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
+  if (is_at_least_gl_version(1, 4)) {
+    _glSecondaryColorPointer = (PFNGLSECONDARYCOLORPOINTERPROC)
+      get_extension_func("glSecondaryColorPointer");
 
-  if (_supports_vertex_blend) {
-    _glWeightPointer = (PFNGLWEIGHTPOINTERARBPROC)
-      get_extension_func("glWeightPointerARB");
-    _glVertexBlend = (PFNGLVERTEXBLENDARBPROC)
-      get_extension_func("glVertexBlendARB");
-    _glWeightfv = (PFNGLWEIGHTFVARBPROC)
-      get_extension_func("glWeightfvARB");
-    _glWeightdv = (PFNGLWEIGHTDVARBPROC)
-      get_extension_func("glWeightdvARB");
-
-    if (_glWeightPointer == NULL || _glVertexBlend == NULL ||
-        GLfv(_glWeight) == NULL) {
-      GLCAT.warning()
-        << "Vertex blending advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_vertex_blend = false;
-    }
+  } else if (has_extension("GL_EXT_secondary_color")) {
+    _glSecondaryColorPointer = (PFNGLSECONDARYCOLORPOINTERPROC)
+      get_extension_func("glSecondaryColorPointerEXT");
   }
 #endif
-
-#ifndef OPENGLES_2
-  if (_supports_vertex_blend) {
-#ifndef OPENGLES
-    glEnable(GL_WEIGHT_SUM_UNITY_ARB);
-#endif
-
-    GLint max_vertex_units = 0;
-    glGetIntegerv(GL_MAX_VERTEX_UNITS_ARB, &max_vertex_units);
-    _max_vertex_transforms = max_vertex_units;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "max vertex transforms = " << _max_vertex_transforms << "\n";
-    }
-  }
-#endif
-
-  _supports_matrix_palette = false;
-#ifndef OPENGLES
-  if (has_extension("GL_ARB_matrix_palette")) {
-    _supports_matrix_palette = true;
-    _glCurrentPaletteMatrix = (PFNGLCURRENTPALETTEMATRIXARBPROC)
-      get_extension_func("glCurrentPaletteMatrixARB");
-    _glMatrixIndexPointer = (PFNGLMATRIXINDEXPOINTERARBPROC)
-      get_extension_func("glMatrixIndexPointerARB");
-    _glMatrixIndexuiv = (PFNGLMATRIXINDEXUIVARBPROC)
-      get_extension_func("glMatrixIndexuivARB");
-
-    if (_glCurrentPaletteMatrix == NULL ||
-        _glMatrixIndexPointer == NULL ||
-        _glMatrixIndexuiv == NULL) {
-      GLCAT.warning()
-        << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_matrix_palette = false;
-    }
-  }
-#elif defined(OPENGLES_1)
-  if (has_extension("GL_OES_matrix_palette")) {
-    _supports_matrix_palette = true;
-    _glCurrentPaletteMatrix = (PFNGLCURRENTPALETTEMATRIXOESPROC)
-      get_extension_func("glCurrentPaletteMatrixOES");
-    _glMatrixIndexPointer = (PFNGLMATRIXINDEXPOINTEROESPROC)
-      get_extension_func("glMatrixIndexPointerOES");
-
-    if (_glCurrentPaletteMatrix == NULL ||
-        _glMatrixIndexPointer == NULL) {
-      GLCAT.warning()
-        << "Matrix palette advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_matrix_palette = false;
-    }
-  }
-#endif
-
-  /*
-    The matrix_palette support in this module is completely untested
-    (because I don't happen to have a card handy whose driver supports
-    this extension), so I have this ConfigVariable set to
-    unconditionally set this flag off for now, to protect the unwary.
-    When we have shown that the code works, we should remove this bit.
-    In the meantime, you must put both "matrix-palette 1" and
-    "gl-matrix-palette 1" in your Config.prc to exercise the new
-    code. */
-  if (!gl_matrix_palette) {
-    if (_supports_matrix_palette) {
-      if (GLCAT.is_debug()) {
-        GLCAT.debug() << "Forcing off matrix palette support.\n";
-      }
-    }
-    _supports_matrix_palette = false;
-  }
-
-  if (_supports_matrix_palette) {
-    GLint max_palette_matrices = 0;
-#ifdef OPENGLES_1
-    glGetIntegerv(GL_MAX_PALETTE_MATRICES_OES, &max_palette_matrices);
-#endif
-#ifndef OPENGLES
-    glGetIntegerv(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
-#endif
-    _max_vertex_transform_indices = max_palette_matrices;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "max vertex transform indices = " << _max_vertex_transform_indices << "\n";
-    }
-  }
 
 #ifndef OPENGLES
   _glDrawRangeElements = null_glDrawRangeElements;
@@ -831,22 +831,46 @@ reset() {
 
     if (_glClearTexImage == NULL) {
       GLCAT.warning()
-        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
       _supports_clear_texture = true;
     }
   }
 #endif
 
+  _supports_clear_buffer = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_clear_buffer_object")) {
+    _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
+      get_extension_func("glClearBufferData");
+
+    if (_glClearBufferData == NULL) {
+      GLCAT.warning()
+        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    } else {
+      _supports_clear_buffer = true;
+    }
+  }
+#endif
+
   _supports_2d_texture_array = false;
 #ifndef OPENGLES
-  _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
-  if (_supports_2d_texture_array) {
+  if (is_at_least_gl_version(3, 0)) {
+    _supports_2d_texture_array = true;
+
+    _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
+      get_extension_func("glFramebufferTextureLayer");
+
+  } else if (has_extension("GL_EXT_texture_array")) {
+    _supports_2d_texture_array = true;
+
     _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
       get_extension_func("glFramebufferTextureLayerEXT");
-  } else {
-    // ARB_geometry_shader4 also provides a version.
-    _glFramebufferTextureLayer = NULL;
+  }
+
+  if (_supports_2d_texture_array && _glFramebufferTextureLayer == NULL) {
+    GLCAT.warning()
+      << "Texture arrays advertised as supported by OpenGL runtime, but could not get pointer to glFramebufferTextureLayer function.\n";
   }
 #endif
 
@@ -854,7 +878,8 @@ reset() {
   _supports_cube_map = true;
 #else
   _supports_cube_map =
-    has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3) ||
+    is_at_least_gl_version(1, 3) ||
+    has_extension("GL_ARB_texture_cube_map") ||
     has_extension("GL_OES_texture_cube_map");
 #endif
 
@@ -864,6 +889,11 @@ reset() {
       glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
   }
+#endif
+
+#ifndef OPENGLES
+  _supports_cube_map_array = is_at_least_gl_version(4, 0) ||
+                             has_extension("GL_ARB_texture_cube_map_array");
 #endif
 
 #ifndef OPENGLES
@@ -884,8 +914,6 @@ reset() {
   } else if (has_extension("GL_EXT_sRGB")) { // GLES case.
     _supports_texture_srgb = true;
   }
-
-  _supports_compressed_texture = false;
 
 #ifdef OPENGLES
   _supports_compressed_texture = true;
@@ -944,6 +972,9 @@ reset() {
       get_extension_func("glCompressedTexSubImage3DARB");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func("glGetCompressedTexImageARB");
+
+  } else {
+    _supports_compressed_texture = false;
   }
 
   if (_supports_compressed_texture) {
@@ -968,7 +999,7 @@ reset() {
 
     GLint num_compressed_formats = 0;
     glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
-    GLint *formats = (GLint *)PANDA_MALLOC_ARRAY(num_compressed_formats * sizeof(GLint));
+    GLint *formats = (GLint *)alloca(num_compressed_formats * sizeof(GLint));
     glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
     for (int i = 0; i < num_compressed_formats; ++i) {
       switch (formats[i]) {
@@ -1004,7 +1035,16 @@ reset() {
         break;
       }
     }
-    PANDA_FREE_ARRAY(formats);
+
+#ifndef OPENGLES
+    // The OpenGL spec states that these are not reported by the above
+    // mechanism, so we have to check for the extension ourselves.
+    if (is_at_least_gl_version(3, 0) ||
+        has_extension("GL_ARB_texture_compression_rgtc") ||
+        has_extension("GL_EXT_texture_compression_rgtc")) {
+      _compressed_texture_formats.set_bit(Texture::CM_rgtc);
+    }
+#endif
   }
 
 #ifdef OPENGLES_2
@@ -1012,15 +1052,18 @@ reset() {
   _supports_bgr = true;
 #else
   _supports_bgr =
-    has_extension("GL_EXT_bgra") || is_at_least_gl_version(1, 2);
+    is_at_least_gl_version(1, 2) || has_extension("GL_EXT_bgra");
 #endif
 
-#ifdef OPENGLES_2
-  _supports_rescale_normal = true;
-#else
+#ifdef SUPPORT_FIXED_FUNCTION
   _supports_rescale_normal =
-    gl_support_rescale_normal &&
-    (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
+    !core_profile && gl_support_rescale_normal &&
+    (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_rescale_normal"));
+
+#ifndef OPENGLES
+  _use_separate_specular_color = gl_separate_specular_color &&
+    (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_separate_specular_color"));
+#endif
 #endif
 
 #ifdef OPENGLES
@@ -1037,31 +1080,37 @@ reset() {
   _supports_multisample =
     has_extension("GL_ARB_multisample") || is_at_least_gl_version(1, 3);
 
-#ifdef OPENGLES_2
+#ifdef OPENGLES_1
+  _supports_generate_mipmap = is_at_least_gles_version(1, 1);
+#elif defined(OPENGLES)
   _supports_generate_mipmap = true;
 #else
-  _supports_generate_mipmap =
-    has_extension("GL_SGIS_generate_mipmap") || is_at_least_gl_version(1, 4) || is_at_least_gles_version(1, 1);
+  _supports_generate_mipmap = is_at_least_gl_version(1, 4) ||
+                              has_extension("GL_SGIS_generate_mipmap");
 #endif
 
 #ifdef OPENGLES
   _supports_tex_non_pow2 =
     has_extension("GL_OES_texture_npot");
 #else
-  _supports_tex_non_pow2 =
+  _supports_tex_non_pow2 = is_at_least_gl_version(2, 0) ||
     has_extension("GL_ARB_texture_non_power_of_two");
 #endif
 
-#ifdef OPENGLES_2
-  _glActiveTexture = glActiveTexture;
-#else
+#ifndef OPENGLES_2
+  bool supports_multitexture = false;
   if (is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1)) {
-    _supports_multitexture = true;
+    supports_multitexture = true;
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glActiveTexture");
+
+#ifdef SUPPORT_FIXED_FUNCTION
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glClientActiveTexture");
+#endif
+
+#ifdef SUPPORT_IMMEDIATE_MODE
     _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
       get_extension_func("glMultiTexCoord1f");
     _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
@@ -1078,14 +1127,20 @@ reset() {
       get_extension_func("glMultiTexCoord3d");
     _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
       get_extension_func("glMultiTexCoord4d");
+#endif
 
   } else if (has_extension("GL_ARB_multitexture")) {
-    _supports_multitexture = true;
+    supports_multitexture = true;
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glActiveTextureARB");
+
+#ifdef SUPPORT_FIXED_FUNCTION
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func("glClientActiveTextureARB");
+#endif
+
+#ifdef SUPPORT_IMMEDIATE_MODE
     _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)
       get_extension_func("glMultiTexCoord1fARB");
     _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)
@@ -1102,12 +1157,16 @@ reset() {
       get_extension_func("glMultiTexCoord3dARB");
     _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
       get_extension_func("glMultiTexCoord4dARB");
+#endif
   } else {
-    _supports_multitexture = false;
+    supports_multitexture = false;
   }
 
-  if (_supports_multitexture) {
-    if (_glActiveTexture == NULL || _glClientActiveTexture == NULL
+  if (supports_multitexture) {
+    if (_glActiveTexture == NULL
+#ifdef SUPPORT_FIXED_FUNCTION
+        || _glClientActiveTexture == NULL
+#endif
 #ifdef SUPPORT_IMMEDIATE_MODE
         || GLf(_glMultiTexCoord1) == NULL || GLf(_glMultiTexCoord2) == NULL
         || GLf(_glMultiTexCoord3) == NULL || GLf(_glMultiTexCoord4) == NULL
@@ -1115,16 +1174,21 @@ reset() {
         ) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-      _supports_multitexture = false;
+      supports_multitexture = false;
     }
   }
 
-  if (!_supports_multitexture) {
+  if (!supports_multitexture) {
     // Replace with dummy no-op functions.
     _glActiveTexture = null_glActiveTexture;
+  }
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!supports_multitexture || core_profile) {
     _glClientActiveTexture = null_glActiveTexture;
   }
 #endif
+#endif  // OPENGLES_2
 
 #ifdef OPENGLES
 #ifdef __EMSCRIPTEN__
@@ -1160,7 +1224,7 @@ reset() {
 #else
   if (gl_support_shadow_filter &&
       _supports_depth_texture &&
-      has_extension("GL_ARB_shadow") &&
+      (is_at_least_gl_version(1, 4) || has_extension("GL_ARB_shadow")) &&
       has_extension("GL_ARB_fragment_program_shadow")) {
     _supports_shadow_filter = true;
   }
@@ -1173,17 +1237,27 @@ reset() {
     _supports_shadow_filter = false;
   }*/
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   _supports_texture_combine = false;
   _supports_texture_saved_result = false;
   _supports_texture_dot3 = false;
 #else
-  _supports_texture_combine =
-    has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
-  _supports_texture_saved_result =
-    has_extension("GL_ARB_texture_env_crossbar") || has_extension("GL_OES_texture_env_crossbar") || is_at_least_gl_version(1, 4);
-  _supports_texture_dot3 =
-    has_extension("GL_ARB_texture_env_dot3") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
+  if (!core_profile) {
+    _supports_texture_combine =
+      is_at_least_gl_version(1, 3) ||
+      is_at_least_gles_version(1, 1) ||
+      has_extension("GL_ARB_texture_env_combine");
+
+    _supports_texture_saved_result =
+      is_at_least_gl_version(1, 4) ||
+      has_extension("GL_ARB_texture_env_crossbar") ||
+      has_extension("GL_OES_texture_env_crossbar");
+
+    _supports_texture_dot3 =
+      is_at_least_gl_version(1, 3) ||
+      is_at_least_gles_version(1, 1) ||
+      has_extension("GL_ARB_texture_env_dot3");
+  }
 #endif
 
 #ifdef OPENGLES_2
@@ -1209,6 +1283,13 @@ reset() {
       get_extension_func("glBufferSubData");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func("glDeleteBuffers");
+
+#ifndef OPENGLES
+    _glMapBuffer = (PFNGLMAPBUFFERPROC)
+      get_extension_func("glMapBuffer");
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBuffer");
+#endif
   }
 #ifndef OPENGLES_1
   else if (has_extension("GL_ARB_vertex_buffer_object")) {
@@ -1224,6 +1305,10 @@ reset() {
       get_extension_func("glBufferSubDataARB");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func("glDeleteBuffersARB");
+    _glMapBuffer = (PFNGLMAPBUFFERPROC)
+      get_extension_func("glMapBufferARB");
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBufferARB");
   }
 #endif  // OPENGLES_1
 
@@ -1238,52 +1323,154 @@ reset() {
   }
 #endif
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
-      cgGLIsProfileSupported(CG_PROFILE_ARBVP1)) {
-    _supports_basic_shaders = true;
-    if (basic_shaders_only) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
+#ifndef OPENGLES
+  // Check for various advanced buffer management features.
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_map_buffer_range")) {
+    _glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)
+      get_extension_func("glMapBufferRange");
+  } else {
+    _glMapBufferRange = NULL;
+  }
+
+  if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_buffer_storage")) {
+    _glBufferStorage = (PFNGLBUFFERSTORAGEPROC)
+      get_extension_func("glBufferStorage");
+
+    if (_glBufferStorage != NULL) {
+      _supports_buffer_storage = true;
     } else {
-      _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
-      _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
-      _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
-
-      // cgGLGetLatestProfile doesn't seem to return anything other
-      // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
-      // So, if this happens, we set it to GLSL, which is
-      // usually supported on all cards.
-      // The GLSL profiles are horribly broken on non-NVIDIA cards, but
-      // I think I've worked around the issues sufficiently.
-      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
-           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
-
-        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-#if CG_VERSION_NUM >= 2200
-        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
-          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-        }
+      GLCAT.warning()
+        << "Buffer storage advertised as supported by OpenGL runtime, but "
+           "could not get pointers to extension function.\n";
+    }
+  } else {
+    _supports_buffer_storage = false;
+  }
 #endif
+
+  _supports_vao = false;
+
+  if (is_at_least_gl_version(3, 0) || has_extension("GL_ARB_vertex_array_object")) {
+    _supports_vao = true;
+
+    _glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)
+      get_extension_func("glBindVertexArray");
+    _glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)
+      get_extension_func("glDeleteVertexArrays");
+    _glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)
+      get_extension_func("glGenVertexArrays");
+
+  } else if (has_extension("GL_OES_vertex_array_object")) {
+    _supports_vao = true;
+
+    _glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)
+      get_extension_func("glBindVertexArrayOES");
+    _glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)
+      get_extension_func("glDeleteVertexArraysOES");
+    _glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)
+      get_extension_func("glGenVertexArraysOES");
+  }
+
+  if (_supports_vao) {
+    if (_glBindVertexArray == NULL || _glDeleteVertexArrays == NULL ||
+        _glGenVertexArrays == NULL) {
+      GLCAT.warning()
+        << "Vertex array objects advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_vao = false;
+    }
+  }
+
+  // Check for GLSL support.
+#if defined(OPENGLES_1)
+  _supports_glsl = false;
+  _supports_geometry_shaders = false;
+  _supports_tessellation_shaders = false;
+#elif defined(OPENGLES)
+  _supports_glsl = true;
+  _supports_geometry_shaders = false;
+  _supports_tessellation_shaders = false;
+#else
+  _supports_glsl = (_gl_shadlang_ver_major >= 1);
+  _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
+
+  if (is_at_least_gl_version(3, 2)) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTexture");
+
+  } else if (has_extension("GL_ARB_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+      get_extension_func("glFramebufferTextureARB");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriARB");
+
+  } else if (has_extension("GL_EXT_geometry_shader4")) {
+    _supports_geometry_shaders = true;
+    _glFramebufferTexture = NULL;
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteriEXT");
+
+  } else {
+    _supports_geometry_shaders = false;
+    _glFramebufferTexture = NULL;
+  }
+#endif
+  _shader_caps._supports_glsl = _supports_glsl;
+
+  // Check for support for other types of shaders that can be used by Cg.
+  _supports_basic_shaders = false;
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  if (has_extension("GL_ARB_vertex_program") &&
+      has_extension("GL_ARB_fragment_program")) {
+    _supports_basic_shaders = true;
+    _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
+    _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
+
+    if (basic_shaders_only) {
+      // We're happy with ARB programs, thanks.
+    } else if (has_extension("GL_NV_gpu_program5")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GP5VP;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GP5FP;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GP5GP;
+
+    } else if (has_extension("GL_NV_gpu_program4")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GP4VP;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GP4FP;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GP4GP;
+
+    } else if (has_extension("GL_NV_vertex_program3") &&
+               has_extension("GL_NV_fragment_program2")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP40;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP40;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (has_extension("GL_NV_vertex_program2") &&
+               has_extension("GL_NV_fragment_program")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP30;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP30;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (has_extension("GL_NV_vertex_program1_1") &&
+               has_extension("GL_NV_texture_shader2") &&
+               has_extension("GL_NV_register_combiners2")) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_VP20;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_FP20;
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+
+    } else if (_supports_glsl) {
+      // This is what will be available to non-NVIDIA cards.  It is the last
+      // option since it is slower to compile GLSL than the other options.
+      _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+      if (_supports_geometry_shaders) {
+        _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
     _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
-
-    _cg_context = cgCreateContext();
-
-#if CG_VERSION_NUM >= 3100
-    // This just sounds like a good thing to do.
-    cgGLSetContextGLSLVersion(_cg_context, cgGLDetectGLSLVersion());
-    if (_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
-      cgGLSetContextOptimalOptions(_cg_context, CG_PROFILE_GLSLC);
-    }
-#endif
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -1291,26 +1478,18 @@ reset() {
         _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
       }
     }
+
+  } else if (_supports_glsl) {
+    // No, but we do support GLSL...
+    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+    if (_supports_geometry_shaders) {
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+    } else {
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
+    }
   }
-#endif // HAVE_CG
-
-
-#ifdef OPENGLES_2
-  _supports_glsl = true;
-  _supports_geometry_shaders = false;
-  _supports_tessellation_shaders = false;
-#else
-  #ifdef OPENGLES_1
-    _supports_glsl = false;
-    _supports_geometry_shaders = false;
-    _supports_tessellation_shaders = false;
-  #else
-    _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
-    _supports_geometry_shaders = is_at_least_gl_version(3, 2) || has_extension("GL_ARB_geometry_shader4");
-    _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
-  #endif
-#endif
-  _shader_caps._supports_glsl = _supports_glsl;
+#endif  // HAVE_CG
 
   _supports_compute_shaders = false;
 #ifndef OPENGLES
@@ -1407,28 +1586,34 @@ reset() {
     } else {
       _glVertexAttribIPointer = NULL;
     }
-    if (has_extension("GL_ARB_vertex_attrib_64bit")) {
+    if (is_at_least_gl_version(4, 1) ||
+        has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
          get_extension_func("glVertexAttribLPointer");
     } else {
       _glVertexAttribLPointer = NULL;
     }
 
-    if (_supports_geometry_shaders) {
-      _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
-        get_extension_func("glProgramParameteri");
-      _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
-        get_extension_func("glFramebufferTextureARB");
-
-      if (_glFramebufferTextureLayer == NULL) {
-        _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
-          get_extension_func("glFramebufferTextureLayerARB");
-      }
-    }
     if (_supports_tessellation_shaders) {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
     }
+  } else if (_supports_basic_shaders) {
+    // We don't support GLSL, but we support ARB programs.
+    _glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func("glDisableVertexAttribArrayARB");
+    _glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func("glEnableVertexAttribArrayARB");
+
+    _glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC)
+       get_extension_func("glVertexAttrib4fvARB");
+    _glVertexAttrib4dv = (PFNGLVERTEXATTRIB4DVPROC)
+       get_extension_func("glVertexAttrib4dvARB");
+    _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
+       get_extension_func("glVertexAttribPointerARB");
+
+    _glVertexAttribIPointer = NULL;
+    _glVertexAttribLPointer = NULL;
   }
 #endif
 
@@ -1464,16 +1649,44 @@ reset() {
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
   _glVertexAttrib4fv = glVertexAttrib4fv;
-  _glVertexAttrib4dv = NULL;
+  _glVertexAttrib4dv = null_glVertexAttrib4dv;
   _glVertexAttribPointer = glVertexAttribPointer;
   _glVertexAttribIPointer = NULL;
   _glVertexAttribLPointer = NULL;
+#endif
+
+#ifndef OPENGLES
+  _use_vertex_attrib_binding = false;
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_vertex_attrib_binding")) {
+    _glBindVertexBuffer = (PFNGLBINDVERTEXBUFFERPROC)
+      get_extension_func("glBindVertexBuffer");
+    _glVertexAttribFormat = (PFNGLVERTEXATTRIBFORMATPROC)
+      get_extension_func("glVertexAttribFormat");
+    _glVertexAttribIFormat = (PFNGLVERTEXATTRIBIFORMATPROC)
+      get_extension_func("glVertexAttribIFormat");
+    _glVertexAttribLFormat = (PFNGLVERTEXATTRIBLFORMATPROC)
+      get_extension_func("glVertexAttribLFormat");
+    _glVertexAttribBinding = (PFNGLVERTEXATTRIBBINDINGPROC)
+      get_extension_func("glVertexAttribBinding");
+    _glVertexBindingDivisor = (PFNGLVERTEXBINDINGDIVISORPROC)
+      get_extension_func("glVertexBindingDivisor");
+
+    if (gl_fixed_vertex_attrib_locations) {
+      _use_vertex_attrib_binding = true;
+    }
+  }
+#endif
 
   // We need to have a default shader to apply in case
   // something didn't happen to have a shader applied, or
   // if it failed to compile. This default shader just outputs
   // a red color, indicating that something went wrong.
+#ifndef SUPPORT_FIXED_FUNCTION
   if (_default_shader == NULL) {
+    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+  }
+#elif !defined(OPENGLES)
+  if (_default_shader == NULL && core_profile) {
     _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
   }
 #endif
@@ -1488,11 +1701,12 @@ reset() {
        get_extension_func("glGetActiveUniformBlockiv");
     _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
        get_extension_func("glGetActiveUniformBlockName");
+
+    _glBindBufferBase = (PFNGLBINDBUFFERBASEPROC)
+      get_extension_func("glBindBufferBase");
   } else {
     _supports_uniform_buffers = false;
   }
-#else
-  _supports_uniform_buffers = false;
 #endif
 
   // Check whether we support geometry instancing and instanced vertex attribs.
@@ -1588,7 +1802,7 @@ reset() {
     _glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)
       get_extension_func("glDrawElementsInstancedARB");
     _supports_geometry_instancing = true;
-  
+
   } else if (has_extension("GL_EXT_draw_instanced")) {
     _glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)
       get_extension_func("glDrawArraysInstancedEXT");
@@ -1621,6 +1835,24 @@ reset() {
   }
 #endif
 
+  // Check if we support indirect draw.
+  _supports_indirect_draw = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 0) || has_extension("GL_ARB_draw_indirect")) {
+    _glDrawArraysIndirect = (PFNGLDRAWARRAYSINDIRECTPROC)
+      get_extension_func("glDrawArraysIndirect");
+    _glDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECTPROC)
+      get_extension_func("glDrawElementsIndirect");
+
+    if (_glDrawArraysIndirect == NULL || _glDrawElementsIndirect == NULL) {
+      GLCAT.warning()
+        << "Indirect draw advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_indirect_draw = true;
+    }
+  }
+#endif
+
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
   _supports_framebuffer_object = true;
@@ -1641,6 +1873,9 @@ reset() {
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
 #else
+  // Make sure this is properly initialized.
+  _glGenerateMipmap = NULL;
+
   //TODO: add ARB/3.0 version
 
   _supports_framebuffer_object = false;
@@ -1719,8 +1954,17 @@ reset() {
 #endif  // OPENGLES
 #endif
 
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
+    _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
+      get_extension_func("glGenerateTextureMipmap");
+  } else {
+    _glGenerateTextureMipmap = NULL;
+  }
+#endif
+
   _supports_framebuffer_multisample = false;
-  if ( has_extension("GL_EXT_framebuffer_multisample") ) {
+  if (has_extension("GL_EXT_framebuffer_multisample")) {
     _supports_framebuffer_multisample = true;
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
       get_extension_func("glRenderbufferStorageMultisampleEXT");
@@ -1728,7 +1972,7 @@ reset() {
 
 #ifndef OPENGLES
   _supports_framebuffer_multisample_coverage_nv = false;
-  if ( has_extension("GL_NV_framebuffer_multisample_coverage") ) {
+  if (has_extension("GL_NV_framebuffer_multisample_coverage")) {
     _supports_framebuffer_multisample_coverage_nv = true;
     _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
       get_extension_func("glRenderbufferStorageMultisampleCoverageNV");
@@ -1737,7 +1981,7 @@ reset() {
 
 #ifndef OPENGLES_1
   _supports_framebuffer_blit = false;
-  if ( has_extension("GL_EXT_framebuffer_blit") ) {
+  if (has_extension("GL_EXT_framebuffer_blit")) {
     _supports_framebuffer_blit = true;
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
       get_extension_func("glBlitFramebufferEXT");
@@ -1746,7 +1990,6 @@ reset() {
 
 #if defined(OPENGLES_1)
   _glDrawBuffers = NULL;
-  _glClearBufferfv = NULL;
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
@@ -1764,6 +2007,9 @@ reset() {
   } else if (has_extension("GL_NV_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersNV");
+
+  } else {
+    _glDrawBuffers = NULL;
   }
 
 #else
@@ -1774,12 +2020,15 @@ reset() {
   } else if (has_extension("GL_ARB_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersARB");
+
+  } else {
+    _glDrawBuffers = NULL;
   }
 #endif
 
 #ifndef OPENGLES_1
   _max_color_targets = 1;
-  if (_glDrawBuffers != 0) {
+  if (_glDrawBuffers != NULL) {
     GLint max_draw_buffers = 0;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_color_targets = max_draw_buffers;
@@ -1790,8 +2039,15 @@ reset() {
   if (is_at_least_gl_version(3, 0)) {
     _glClearBufferfv = (PFNGLCLEARBUFFERFVPROC)
       get_extension_func("glClearBufferfv");
+    _glClearBufferiv = (PFNGLCLEARBUFFERIVPROC)
+      get_extension_func("glClearBufferiv");
+    _glClearBufferfi = (PFNGLCLEARBUFFERFIPROC)
+      get_extension_func("glClearBufferfi");
+
   } else {
     _glClearBufferfv = NULL;
+    _glClearBufferiv = NULL;
+    _glClearBufferfi = NULL;
   }
 #endif  // !OPENGLES
 
@@ -1952,8 +2208,8 @@ reset() {
   _edge_clamp = GL_CLAMP_TO_EDGE;
 #else
   _edge_clamp = GL_CLAMP;
-  if (has_extension("GL_SGIS_texture_edge_clamp") ||
-      is_at_least_gl_version(1, 2) || is_at_least_gles_version(1, 1)) {
+  if (is_at_least_gl_version(1, 2) || is_at_least_gles_version(1, 1) ||
+      has_extension("GL_SGIS_texture_edge_clamp")) {
     _edge_clamp = GL_CLAMP_TO_EDGE;
   }
 #endif
@@ -1986,6 +2242,20 @@ reset() {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+  }
+#endif
+
+#ifndef OPENGLES
+  _supports_texture_lod = false;
+  _supports_texture_lod_bias = false;
+
+  if (gl_support_texture_lod &&
+      (is_at_least_gl_version(1, 2) || has_extension("GL_SGIS_texture_lod"))) {
+    _supports_texture_lod = true;
+
+    if (is_at_least_gl_version(1, 4) || has_extension("GL_EXT_texture_lod_bias")) {
+      _supports_texture_lod_bias = true;
+    }
   }
 #endif
 
@@ -2044,13 +2314,16 @@ reset() {
 
   GLint max_elements_vertices = 0, max_elements_indices = 0;
 #ifndef OPENGLES
-  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
-  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
-  if (max_elements_vertices > 0) {
-    _max_vertices_per_array = max_elements_vertices;
-  }
-  if (max_elements_indices > 0) {
-    _max_vertices_per_primitive = max_elements_indices;
+  if (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_draw_range_elements")) {
+    glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
+    glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
+
+    if (max_elements_vertices > 0) {
+      _max_vertices_per_array = max_elements_vertices;
+    }
+    if (max_elements_indices > 0) {
+      _max_vertices_per_primitive = max_elements_indices;
+    }
   }
 #endif  // OPENGLES
 
@@ -2094,65 +2367,27 @@ reset() {
         GLCAT.debug()
           << "No specific compressed texture formats are supported.\n";
       } else {
+#ifndef NDEBUG
         GLCAT.debug()
           << "Supported compressed texture formats:\n";
         GLint *formats = (GLint *)alloca(num_compressed_formats * sizeof(GLint));
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
-          switch (formats[i]) {
-          case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT\n";
-            break;
-#ifdef OPENGLES
-          case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG\n";
-            break;
-#endif
-#ifndef OPENGLES_1
-          case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT\n";
-            break;
-#endif
-#ifndef OPENGLES
-          case GL_COMPRESSED_RGB_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGB_FXT1_3DFX\n";
-            break;
-
-          case GL_COMPRESSED_RGBA_FXT1_3DFX:
-            GLCAT.debug(false) << "  GL_COMPRESSED_RGBA_FXT1_3DFX\n";
-            break;
-#endif
-
-          default:
+          const char *format_str = get_compressed_format_string(formats[i]);
+          if (format_str != NULL) {
+            GLCAT.debug(false) << "  " << format_str << '\n';
+          } else {
             GLCAT.debug(false)
               << "  Unknown compressed format 0x" << hex << formats[i]
               << dec << "\n";
           }
         }
+#endif
       }
     }
   }
 
+  _active_texture_stage = -1;
   _num_active_texture_stages = 0;
 
   // Check availability of anisotropic texture filtering.
@@ -2216,18 +2451,22 @@ reset() {
 
   // Check availability of multi-bind functions.
   _supports_multi_bind = false;
+#ifndef OPENGLES
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_multi_bind")) {
     _glBindTextures = (PFNGLBINDTEXTURESPROC)
       get_extension_func("glBindTextures");
     _glBindImageTextures = (PFNGLBINDIMAGETEXTURESPROC)
       get_extension_func("glBindImageTextures");
 
-#ifndef OPENGLES
     if (_supports_sampler_objects) {
       _glBindSamplers = (PFNGLBINDSAMPLERSPROC)
         get_extension_func("glBindSamplers");
     }
-#endif  // OPENGLES
+
+    if (_use_vertex_attrib_binding) {
+      _glBindVertexBuffers = (PFNGLBINDVERTEXBUFFERSPROC)
+        get_extension_func("glBindVertexBuffers");
+    }
 
     if (_glBindTextures != NULL && _glBindImageTextures != NULL) {
       _supports_multi_bind = true;
@@ -2236,6 +2475,7 @@ reset() {
         << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
   }
+#endif  // OPENGLES
 
   if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_internalformat_query2")) {
     _glGetInternalformativ = (PFNGLGETINTERNALFORMATIVPROC)
@@ -2270,24 +2510,49 @@ reset() {
 
 #ifndef OPENGLES
   _supports_get_program_binary = false;
+  _program_binary_formats.clear();
 
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
       get_extension_func("glGetProgramBinary");
+    _glProgramBinary = (PFNGLPROGRAMBINARYPROC)
+      get_extension_func("glProgramBinary");
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func("glProgramParameteri");
 
-    if (_glGetProgramBinary != NULL) {
+    GLint num_binary_formats = 0;
+    if (_glGetProgramBinary != NULL &&
+        _glProgramBinary != NULL &&
+        _glProgramParameteri != NULL) {
+      glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
+    }
+
+    if (num_binary_formats > 0) {
       _supports_get_program_binary = true;
+
+      GLenum *binary_formats = (GLenum *)alloca(sizeof(GLenum) * num_binary_formats);
+      glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, (GLint *)binary_formats);
+
+      for (int i = 0; i < num_binary_formats; ++i) {
+        _program_binary_formats.insert(binary_formats[i]);
+      }
     }
   }
 #endif
 
   report_my_gl_errors();
 
-  if (support_stencil) {
+  if (core_profile) {
+    //TODO: better detection mechanism?
+    _supports_stencil = true;
+  }
+#ifdef SUPPORT_FIXED_FUNCTION
+  else if (support_stencil) {
     GLint num_stencil_bits;
     glGetIntegerv(GL_STENCIL_BITS, &num_stencil_bits);
     _supports_stencil = (num_stencil_bits != 0);
   }
+#endif
 
   _supports_stencil_wrap =
     has_extension("GL_EXT_stencil_wrap") || has_extension("GL_OES_stencil_wrap");
@@ -2311,11 +2576,17 @@ reset() {
   glFrontFace(GL_CCW);
 #ifndef OPENGLES_2
   glDisable(GL_LINE_SMOOTH);
-  glDisable(GL_POINT_SMOOTH);
+#endif
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    glDisable(GL_POINT_SMOOTH);
+  }
+#endif
 #ifndef OPENGLES
   glDisable(GL_POLYGON_SMOOTH);
 #endif  // OPENGLES
 
+#ifndef OPENGLES_2
   if (_supports_multisample) {
     glDisable(GL_MULTISAMPLE);
   }
@@ -2338,6 +2609,11 @@ reset() {
   _active_color_write_mask = ColorWriteAttrib::C_all;
   _tex_gen_point_sprite = false;
 
+#ifndef OPENGLES_1
+  _enabled_vertex_attrib_arrays.clear();
+  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+#endif
+
 #ifndef OPENGLES
   // Dither is on by default in GL; let's turn it off
   glDisable(GL_DITHER);
@@ -2353,38 +2629,39 @@ reset() {
   _texture_binding_shader_context = (ShaderContext *)NULL;
 #endif
 
-#ifdef OPENGLES_2
-  _max_lights = 0;
-#else
   // Count the max number of lights
-  GLint max_lights = 0;
-  glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
-  _max_lights = max_lights;
+  _max_lights = 0;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint max_lights = 0;
+    glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
+    _max_lights = max_lights;
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "max lights = " << _max_lights << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max lights = " << _max_lights << "\n";
+    }
   }
 #endif
 
-#ifdef OPENGLES_2
-  _max_clip_planes = 0;
-#else
   // Count the max number of clipping planes
-  GLint max_clip_planes = 0;
-  glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
-  _max_clip_planes = max_clip_planes;
+  _max_clip_planes = 0;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint max_clip_planes = 0;
+    glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
+    _max_clip_planes = max_clip_planes;
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "max clip planes = " << _max_clip_planes << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max clip planes = " << _max_clip_planes << "\n";
+    }
   }
 #endif
 
-#ifdef OPENGLES_2
-  _max_texture_stages = 0;
-#else
-  if (_supports_multitexture) {
+  _max_texture_stages = 1;
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (supports_multitexture && !core_profile) {
     GLint max_texture_stages = 0;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &max_texture_stages);
     _max_texture_stages = max_texture_stages;
@@ -2398,95 +2675,104 @@ reset() {
 
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
+  _current_vao_index = 0;
   _current_fbo = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
   _point_size = 1.0f;
   _point_perspective = false;
 
-  _vertex_blending_enabled = false;
+#ifndef OPENGLES
+  _current_vertex_buffers.clear();
+  _current_vertex_format.clear();
+  memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+#endif
 
   report_my_gl_errors();
 
-#ifndef OPENGLES_2
-  if (gl_cheap_textures) {
-    GLCAT.info()
-      << "Setting glHint() for fastest textures.\n";
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-  }
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    if (gl_cheap_textures) {
+      GLCAT.info()
+        << "Setting glHint() for fastest textures.\n";
+      glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+    }
 
-  // Use per-vertex fog if per-pixel fog requires SW renderer
-  glHint(GL_FOG_HINT, GL_DONT_CARE);
+    // Use per-vertex fog if per-pixel fog requires SW renderer
+    glHint(GL_FOG_HINT, GL_DONT_CARE);
+  }
 #endif
 
-  GLint num_red_bits = 0;
-  glGetIntegerv(GL_RED_BITS, &num_red_bits);
-  if (num_red_bits < 8) {
-    glEnable(GL_DITHER);
-    _dithering_enabled = true;
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "frame buffer depth = " << num_red_bits
-        << " bits/channel, enabling dithering\n";
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (!core_profile) {
+    GLint num_red_bits = 0;
+    glGetIntegerv(GL_RED_BITS, &num_red_bits);
+    if (num_red_bits < 8) {
+      glEnable(GL_DITHER);
+      _dithering_enabled = true;
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "frame buffer depth = " << num_red_bits
+          << " bits/channel, enabling dithering\n";
+      }
     }
   }
+#endif
 
   _error_count = 0;
 
   report_my_gl_errors();
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
+#ifndef OPENGLES
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Supported shader binary formats:\n";
+    GLCAT.debug() << " ";
 
-  typedef struct {
-    CGprofile cg_profile;
-    int shader_model;
-  } CG_PROFILE_TO_SHADER_MODEL;
+    pset<GLenum>::const_iterator it;
+    for (it = _program_binary_formats.begin();
+         it != _program_binary_formats.end(); ++it) {
+      char number[16];
+      sprintf(number, "0x%04X", *it);
+      GLCAT.debug(false) << " " << number << "";
+    }
+    GLCAT.debug(false) << "\n";
+  }
+#endif
 
-  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array[] = {
+#ifndef OPENGLES
+  if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
-    (CGprofile)7017, /*CG_PROFILE_GP5FP,*/
-    SM_50,
+    _shader_model = SM_50;
 
+  } else if (_gl_shadlang_ver_major >= 3 ||
+             has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
-    (CGprofile)7010, /*CG_PROFILE_GP4FP,*/
-    SM_40,
+    _shader_model = SM_40;
 
+  } else if (has_extension("GL_NV_fragment_program2")) {
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx
     // Series, NV4x-based Quadro FX, etc.)
-    CG_PROFILE_FP40,
-    SM_30,
+    _shader_model = SM_30;
 
+  } else if (has_extension("GL_NV_fragment_program")) {
     // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
-    CG_PROFILE_FP30,
-    SM_2X,
+    _shader_model = SM_2X;
 
+  } else if (_gl_shadlang_ver_major >= 1 ||
+             has_extension("GL_ARB_fragment_program")) {
     // This OpenGL profile corresponds to the per-fragment
-    // functionality introduced by GeForce FX and other DirectX 9
-    // GPUs.
-    CG_PROFILE_ARBFP1,
-    SM_20,
+    // functionality introduced by GeForce FX and other DirectX 9 GPUs.
+    _shader_model = SM_20;
 
+  } else if (has_extension("GL_NV_texture_shader2")) {
     // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti,
     // Quadro DCC, etc.)
-    CG_PROFILE_FP20,
-    SM_11,
+    _shader_model = SM_11;
 
-    // no shader support
-    CG_PROFILE_UNKNOWN,
-    SM_00,
-  };
-
-  int index;
-  CG_PROFILE_TO_SHADER_MODEL *cg_profile_to_shader_model;
-
-  index = 0;
-  cg_profile_to_shader_model = cg_profile_to_shader_model_array;
-  while (cg_profile_to_shader_model->shader_model != SM_00) {
-    if (cgGLIsProfileSupported(cg_profile_to_shader_model->cg_profile)) {
-      _shader_model = cg_profile_to_shader_model->shader_model;
-      break;
-    }
-    cg_profile_to_shader_model++;
+  } else {
+    // No shader support
+    _shader_model = SM_00;
   }
 
   // DisplayInformation may have better shader model detection
@@ -2506,12 +2792,8 @@ reset() {
   }
   _auto_detect_shader_model = _shader_model;
 
-  CGprofile vertex_profile;
-  CGprofile pixel_profile;
-
-  vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
-  pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
+#ifdef HAVE_CG
 #if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
@@ -2524,20 +2806,49 @@ reset() {
 #endif  // CG_VERSION_NUM >= 2200
 
 #if CG_VERSION_NUM >= 3100
-    if (GLCAT.is_debug()) {
-      CGGLglslversion ver = cgGLGetContextGLSLVersion(_cg_context);
-      GLCAT.debug()
-        << "Cg GLSL version: " << cgGLGetGLSLVersionString(ver) << "\n";
-    }
+    GLCAT.debug() << "Cg GLSL version = "
+      << cgGLGetGLSLVersionString(cgGLDetectGLSLVersion()) << "\n";
 #endif
 
     GLCAT.debug()
-      << "\nCg latest vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
-      << "\nCg latest pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
-      << "\nshader model = " << _shader_model
-      << "\n";
-  }
+      << "Cg latest vertex profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_VERTEX)) << "\n";
+    GLCAT.debug()
+      << "Cg latest fragment profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_FRAGMENT)) << "\n";
+#if CG_VERSION_NUM >= 2000
+    GLCAT.debug()
+      << "Cg latest geometry profile = "
+      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_GEOMETRY)) << "\n";
+#endif
+    GLCAT.debug() << "basic-shaders-only " << basic_shaders_only << "\n";
+    GLCAT.debug()
+      << "Cg active vertex profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_vprofile) << "\n";
+    GLCAT.debug()
+      << "Cg active fragment profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_fprofile) << "\n";
+    GLCAT.debug()
+      << "Cg active geometry profile = "
+      << cgGetProfileString((CGprofile)_shader_caps._active_gprofile) << "\n";
+#endif  // HAVE_CG
 
+    GLCAT.debug() << "shader model = " << _shader_model << "\n";
+  }
+#endif  // !OPENGLES
+
+  // OpenGL core profile requires a VAO to be bound.  It's a bit silly,
+  // because we can just bind a VAO and then forget about it.
+#if !defined(OPENGLES)
+  if (core_profile) {
+    if (_supports_vao) {
+      _glGenVertexArrays(1, &_current_vao_index);
+      _glBindVertexArray(_current_vao_index);
+    } else {
+      GLCAT.error()
+        << "Core profile enabled, but vertex array objects not supported!\n";
+    }
+  }
 #endif
 
   // Now that the GSG has been initialized, make it available for
@@ -2587,7 +2898,8 @@ clear(DrawableRegion *clearable) {
     return;
   }
 
-  //XXX rdb: Is this line really necessary?
+  //XXX rdb: Is this line really necessary?  Could we perhaps just
+  // reset the color write mask and other relevant attributes?
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
@@ -2718,25 +3030,27 @@ clear(DrawableRegion *clearable) {
     mask |= GL_STENCIL_BUFFER_BIT;
   }
 
-  glClear(mask);
+  if (mask != 0) {
+    glClear(mask);
 
-  if (GLCAT.is_spam()) {
-    GLCAT.spam() << "glClear(";
-    if (mask & GL_COLOR_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_COLOR_BUFFER_BIT|";
+    if (GLCAT.is_spam()) {
+      string clear_flags;
+      if (mask & GL_COLOR_BUFFER_BIT) {
+        clear_flags += " | GL_COLOR_BUFFER_BIT";
+      }
+      if (mask & GL_DEPTH_BUFFER_BIT) {
+        clear_flags += " | GL_DEPTH_BUFFER_BIT";
+      }
+      if (mask & GL_STENCIL_BUFFER_BIT) {
+        clear_flags += " | GL_STENCIL_BUFFER_BIT";
+      }
+  #ifndef OPENGLES
+      if (mask & GL_ACCUM_BUFFER_BIT) {
+        clear_flags += " | GL_ACCUM_BUFFER_BIT";
+      }
+  #endif
+      GLCAT.spam() << "glClear(" << (clear_flags.c_str() + 3) << ")\n";
     }
-    if (mask & GL_DEPTH_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_DEPTH_BUFFER_BIT|";
-    }
-    if (mask & GL_STENCIL_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
-    }
-#ifndef OPENGLES
-    if (mask & GL_ACCUM_BUFFER_BIT) {
-      GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
-    }
-#endif
-    GLCAT.spam(false) << ")" << endl;
   }
 
   report_my_gl_errors();
@@ -2816,21 +3130,21 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glViewportArrayv(0, " << count << ", [\n";
+        << "glViewportArrayv(0, " << count << ",";
       for (int i = 0; i < count; ++i) {
         GLfloat *vr = viewports + i * 4;
-        GLCAT.spam(false) << vr[0] << ", " << vr[1] << ", " << vr[2] << ", " << vr[3] << ",\n";
+        GLCAT.spam(false) << " [" << vr[0] << " " << vr[1] << " " << vr[2] << " " << vr[3] << "]";
       }
-      GLCAT.spam(false) << "])\n";
+      GLCAT.spam(false) << ")\n";
       if (_scissor_enabled) {
         GLCAT.spam()
-          << "glScissorArrayv(0, " << count << ", [\n";
+          << "glScissorArrayv(0, " << count << ",";
         for (int i = 0; i < count; ++i) {
           const LVecBase4i &sr = _scissor_array[i];
-          GLCAT.spam(false) << sr << ",\n";
+          GLCAT.spam(false) << " [" << sr << "]";
         }
+        GLCAT.spam(false) << ")\n";
       }
-      GLCAT.spam(false) << "])\n";
     }
 
   } else
@@ -2855,7 +3169,6 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   }
 
   report_my_gl_errors();
-  do_point_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2869,16 +3182,23 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
+#endif
+#ifndef OPENGLES_1
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays();
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (ShaderContext *)NULL;
+  }
 #endif
   unbind_buffers();
 
   // Some callbacks may quite reasonably assume that the active
   // texture stage is still set to stage 0.  CEGUI, in particular,
   // makes this assumption.
-  _glActiveTexture(GL_TEXTURE0);
-#ifndef OPENGLES_2
+  set_active_texture_stage(0);
+#ifdef SUPPORT_FIXED_FUNCTION
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
 
@@ -2887,6 +3207,11 @@ clear_before_callback() {
 #ifndef OPENGLES
   if (_supports_sampler_objects) {
     _glBindSampler(0, 0);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindSampler(0, 0)\n";
+    }
   }
 #endif
 }
@@ -2948,17 +3273,23 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glMatrixMode(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
   }
 
   glMatrixMode(GL_PROJECTION);
-  GLPf(LoadMatrix)(_projection_mat->get_mat().get_data());
+  call_glLoadMatrix(_projection_mat->get_mat());
   report_my_gl_errors();
 
   do_point_size();
+#endif
+
+#ifndef OPENGLES_1
+  if (_current_shader_context) {
+    _current_shader_context->issue_parameters(Shader::SSD_transform);
+  }
 #endif
 
   return true;
@@ -3133,6 +3464,9 @@ end_frame(Thread *current_thread) {
   }
 #endif
 
+  // Respecify the active texture next frame, for good measure.
+  _active_texture_stage = -1;
+
   // Calling glFlush() at the end of the frame is particularly
   // necessary if this is a single-buffered visual, so that the frame
   // will be finished drawing before we return to the application.
@@ -3153,6 +3487,7 @@ end_frame(Thread *current_thread) {
 
   // Now is a good time to delete any pending display lists.
 #ifndef OPENGLES
+#ifdef SUPPORT_FIXED_FUNCTION
   if (display_lists) {
     LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
@@ -3169,6 +3504,7 @@ end_frame(Thread *current_thread) {
       _deleted_display_lists.clear();
     }
   }
+#endif
 
   // And deleted queries, too, unless we're using query timers
   // in which case we'll need to reuse lots of them.
@@ -3194,23 +3530,29 @@ end_frame(Thread *current_thread) {
   if (_check_errors || (_supports_debug && gl_debug)) {
     report_my_gl_errors();
   } else {
-    static int frame_counter = -1;
-
     // If _check_errors is false, we still want to check for errors
-    // the first few frames and once every N frames, so that we know if
-    // anything went wrong at all.
-    if (frame_counter++ <= 0) {
+    // once every second, so that we know if anything went wrong at all.
+    double current = ClockObject::get_global_clock()->get_frame_time();
+
+    if (current - _last_error_check >= 1.0) {
+      _last_error_check = current;
       PStatTimer timer(_check_error_pcollector);
 
       GLenum error_code = glGetError();
       if (error_code != GL_NO_ERROR) {
         int error_count = 0;
-        bool deactivate = !report_errors_loop(__LINE__, __FILE__, error_code, error_count);
+
+        do {
+          ++error_count;
+          GLCAT.error()
+            << "GL error 0x" << hex << error_code << dec << " : "
+            << get_error_string(error_code) << "\n";
+          error_code = glGetError();
+        } while (error_code != GL_NO_ERROR);
 
         if (error_count == 1) {
           GLCAT.error()
-            << "An OpenGL error (" << get_error_string(error_code)
-            << ") has occurred.";
+            << "An OpenGL error has occurred.";
         } else {
           GLCAT.error()
             << error_count << " OpenGL errors have occurred.";
@@ -3224,16 +3566,19 @@ end_frame(Thread *current_thread) {
             << "in your PRC file to display more information.\n";
         }
 
-        if (deactivate) {
+        _error_count += error_count;
+        if (_error_count >= gl_max_errors) {
           panic_deactivate();
         }
       }
-    } else if (frame_counter > 100) {
-      // 100 frames have passed.  Check next frame.
-      frame_counter = 0;
     }
   }
 #endif
+
+  // Add in a newline to the spam output for improved legibility.
+  if (GLCAT.is_spam()) {
+    GLCAT.spam(false) << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3255,7 +3600,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif  // NDEBUG
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // We can't draw without a shader bound in OpenGL ES 2.  This shouldn't
   // happen anyway unless the default shader failed to compile somehow.
   if (_current_shader_context == NULL) {
@@ -3299,95 +3644,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-  const GeomVertexAnimationSpec &animation =
-    _data_reader->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
-#ifndef OPENGLES
-  if (hardware_animation) {
-    // Set up the transform matrices for vertex blending.
-    nassertr(_supports_vertex_blend, false);
-    glEnable(GL_VERTEX_BLEND_ARB);
-    _glVertexBlend(animation.get_num_transforms());
-
-    const TransformTable *table = _data_reader->get_transform_table();
-    if (table != (TransformTable *)NULL) {
-      if (animation.get_indexed_transforms()) {
-        nassertr(_supports_matrix_palette, false);
-        // We are loading the indexed matrix palette.  The ARB decided
-        // to change this interface from that for the list of
-        // nonindexed matrices, to make it easier to load an arbitrary
-        // number of matrices.
-        glEnable(GL_MATRIX_PALETTE_ARB);
-
-        glMatrixMode(GL_MATRIX_PALETTE_ARB);
-
-        for (int i = 0; i < table->get_num_transforms(); ++i) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          _glCurrentPaletteMatrix(i);
-          GLPf(LoadMatrix)(mat.get_data());
-        }
-
-        // Presumably loading the matrix palette does not step on the
-        // GL_MODELVIEW matrix?
-
-      } else {
-        // We are loading the list of nonindexed matrices.  This is a
-        // little clumsier.
-
-        if (_supports_matrix_palette) {
-          glDisable(GL_MATRIX_PALETTE_ARB);
-        }
-
-        // GL_MODELVIEW0 and 1 are different than the rest.
-        int i = 0;
-        if (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW0_ARB);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-        if (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW1_ARB);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-        while (i < table->get_num_transforms()) {
-          LMatrix4 mat;
-          table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
-          glMatrixMode(GL_MODELVIEW2_ARB + i - 2);
-          GLPf(LoadMatrix)(mat.get_data());
-          ++i;
-        }
-
-        // Setting the GL_MODELVIEW0 matrix steps on the world matrix,
-        // so we have to set a flag to reload the world matrix later.
-        _transform_stale = true;
-      }
-    }
-    _vertex_blending_enabled = true;
-
-  } else {
-    // We're not using vertex blending.
-    if (_vertex_blending_enabled) {
-      glDisable(GL_VERTEX_BLEND_ARB);
-      if (_supports_matrix_palette) {
-        glDisable(GL_MATRIX_PALETTE_ARB);
-      }
-      _vertex_blending_enabled = false;
-    }
-
-    if (_transform_stale) {
-      glMatrixMode(GL_MODELVIEW);
-      GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
-    }
-  }
-#endif
-
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview
@@ -3401,10 +3658,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-#ifndef OPENGLES  // Display lists not supported by OpenGL ES.
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
   if (geom_reader->get_usage_hint() == Geom::UH_static &&
       _data_reader->get_usage_hint() == Geom::UH_static &&
-      display_lists && (!hardware_animation || display_list_animation)) {
+      display_lists) {
     // If the geom claims to be totally static, try to build it into
     // a display list.
 
@@ -3471,6 +3728,15 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   _use_sender = !vertex_arrays;
 #endif
 
+#ifndef OPENGLES
+  if (_use_vertex_attrib_binding) {
+    const GeomVertexFormat *format = data_reader->get_format();
+    if (format != _current_vertex_format) {
+      update_shader_vertex_format(format);
+    }
+  }
+#endif
+
   {
     //PStatGPUTimer timer(this, _vertex_array_update_pcollector);
 #ifdef OPENGLES_1
@@ -3483,15 +3749,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       if (_vertex_array_shader_context != 0) {
         _vertex_array_shader_context->disable_shader_vertex_arrays();
       }
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       if (!update_standard_vertex_arrays(force)) {
         return false;
       }
 #endif
     } else {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       // Shader.
-      if (_vertex_array_shader_context == 0 || _vertex_array_shader_context->uses_standard_vertex_arrays()) {
+      if (_vertex_array_shader_context == 0 ||
+          _vertex_array_shader_context->uses_standard_vertex_arrays()) {
         // Previous shader used standard arrays.
         if (_current_shader_context->uses_standard_vertex_arrays()) {
           // So does the current, so update them.
@@ -3503,15 +3770,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
           disable_standard_vertex_arrays();
         }
       }
-#endif  // !OPENGLES_2
-      if (_current_shader_context->uses_custom_vertex_arrays()) {
-        // The current shader also uses custom vertex arrays.
-        if (!_current_shader_context->
-            update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
-          return false;
-        }
-      } else {
+#ifdef HAVE_CG
+      else if (_vertex_array_shader_context->is_of_type(CLP(CgShaderContext)::get_class_type())) {
+        // The previous shader was a Cg shader, which can leave a messy
+        // situation.
         _vertex_array_shader_context->disable_shader_vertex_arrays();
+      }
+#endif
+#endif  // SUPPORT_FIXED_FUNCTION
+      // Now update the vertex arrays for the current shader.
+      if (!_current_shader_context->
+          update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
+        return false;
       }
     }
 
@@ -3524,7 +3794,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   return true;
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_vertex_arrays
 //       Access: Protected
@@ -3539,9 +3809,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 update_standard_vertex_arrays(bool force) {
-  const GeomVertexAnimationSpec &animation =
-    _data_reader->get_format()->get_animation();
-  bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
     // We must use immediate mode to render primitives.
@@ -3598,20 +3865,6 @@ update_standard_vertex_arrays(bool force) {
       ++stage_index;
     }
     _last_max_stage_index = max_stage_index;
-
-    if (_supports_vertex_blend) {
-      if (hardware_animation) {
-        // Issue the weights and/or transform indices for vertex blending.
-        _sender.add_vector_column(_data_reader, InternalName::get_transform_weight(),
-                                  GLfv(_glWeight));
-
-        if (animation.get_indexed_transforms()) {
-          // Issue the matrix palette indices.
-          _sender.add_vector_uint_column(_data_reader, InternalName::get_transform_index(),
-                                         _glMatrixIndexuiv);
-        }
-      }
-    }
 
     // We must add vertex last, because glVertex3f() is the key
     // function call that actually issues the vertex.
@@ -3714,48 +3967,6 @@ update_standard_vertex_arrays(bool force) {
     }
     _last_max_stage_index = max_stage_index;
 
-#ifndef OPENGLES
-    if (_supports_vertex_blend) {
-      if (hardware_animation) {
-        // Issue the weights and/or transform indices for vertex blending.
-        if (_data_reader->get_array_info(InternalName::get_transform_weight(),
-                                         array_reader, num_values, numeric_type,
-                                         start, stride)) {
-          if (!setup_array_data(client_pointer, array_reader, force)) {
-            return false;
-          }
-          _glWeightPointer(num_values, get_numeric_type(numeric_type),
-                           stride, client_pointer + start);
-          glEnableClientState(GL_WEIGHT_ARRAY_ARB);
-        } else {
-          glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-        }
-
-        if (animation.get_indexed_transforms()) {
-          // Issue the matrix palette indices.
-          if (_data_reader->get_array_info(InternalName::get_transform_index(),
-                                           array_reader, num_values, numeric_type,
-                                           start, stride)) {
-            if (!setup_array_data(client_pointer, array_reader, force)) {
-              return false;
-            }
-            _glMatrixIndexPointer(num_values, get_numeric_type(numeric_type),
-                                  stride, client_pointer + start);
-            glEnableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-          } else {
-            glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-          }
-        }
-
-      } else {
-        glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-        if (_supports_matrix_palette) {
-          glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-        }
-      }
-    }
-#endif
-
     // There's no requirement that we add vertices last, but we do
     // anyway.
     if (_data_reader->get_vertex_info(array_reader, num_values, numeric_type,
@@ -3770,7 +3981,7 @@ update_standard_vertex_arrays(bool force) {
   }
   return true;
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::unbind_buffers
@@ -3798,12 +4009,25 @@ unbind_buffers() {
     _current_ibuffer_index = 0;
   }
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
+  if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
+    _glBindVertexBuffers(0, _current_vertex_buffers.size(), NULL, NULL, NULL);
+  } else {
+    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+      if (_current_vertex_buffers[i] != 0) {
+        _glBindVertexBuffer(i, 0, 0, 0);
+      }
+    }
+  }
+  _current_vertex_buffers.clear();
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
   disable_standard_vertex_arrays();
 #endif
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_vertex_arrays
 //       Access: Protected
@@ -3830,19 +4054,84 @@ disable_standard_vertex_arrays() {
   }
   _last_max_stage_index = 0;
 
-#ifndef OPENGLES
-  if (_supports_vertex_blend) {
-    glDisableClientState(GL_WEIGHT_ARRAY_ARB);
-    if (_supports_matrix_palette) {
-      glDisableClientState(GL_MATRIX_INDEX_ARRAY_ARB);
-    }
-  }
-#endif
-
   glDisableClientState(GL_VERTEX_ARRAY);
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
+
+#ifndef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_shader_vertex_format
+//       Access: Protected
+//  Description: Updates the vertex format used by the shader.  This
+//               is still an experimental feature.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+update_shader_vertex_format(const GeomVertexFormat *format) {
+  size_t num_columns = format->get_num_columns();
+  for (size_t ci = 0; ci < num_columns; ++ci) {
+    GLuint binding = format->get_array_with(ci);
+    const GeomVertexColumn *column = format->get_column(ci);
+
+    // Needs improvement, obviously.
+    const InternalName *name = column->get_name();
+    GLuint loc;
+    if (name == InternalName::get_vertex()) {
+      loc = 0;
+    } else if (name == InternalName::get_transform_weight()) {
+      loc = 1;
+    } else if (name == InternalName::get_normal()) {
+      loc = 2;
+    } else if (name == InternalName::get_color()) {
+      loc = 3;
+    } else if (name == InternalName::get_transform_index()) {
+      loc = 7;
+    } else if (name == InternalName::get_texcoord()) {
+      loc = 8;
+    } else {
+      // Not yet supported, ignore for now.  This system will be improved.
+      continue;
+    }
+
+    if (_vertex_attrib_columns[loc] != NULL &&
+        _vertex_attrib_columns[loc]->compare_to(*column) == 0) {
+      continue;
+    }
+    _vertex_attrib_columns[loc] = column;
+
+    GLuint offset = column->get_start();
+    GLenum type = get_numeric_type(column->get_numeric_type());
+    GLboolean normalized = (column->get_contents() == GeomEnums::C_color);
+    GLint size = column->get_num_values();
+
+    if (column->get_numeric_type() == GeomEnums::NT_packed_dabc) {
+      // GL_BGRA is a special accepted value available since OpenGL 3.2.
+      // It requires us to pass GL_TRUE for normalized.
+      size = GL_BGRA;
+      normalized = GL_TRUE;
+    }
+
+    for (int i = 0; i < column->get_num_elements(); ++i) {
+      if (loc == 7) { // Temp hack
+        _glVertexAttribIFormat(loc, size, type, offset);
+      } else {
+        _glVertexAttribFormat(loc, size, type, normalized, offset);
+      }
+      _glVertexAttribBinding(loc, binding);
+
+      offset += column->get_element_stride();
+      ++loc;
+    }
+  }
+
+  size_t num_arrays = format->get_num_arrays();
+  for (size_t ai = 0; ai < num_arrays; ++ai) {
+    _glVertexBindingDivisor(ai, format->get_array(ai)->get_divisor());
+  }
+
+  _current_vertex_format = format;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_triangles
@@ -4456,7 +4745,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
-#ifndef OPENGLES  // Display lists not supported by OpenGL ES.
+#if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
   if (_geom_display_list != 0) {
     // If we were building a display list, close it now.
     glEndList();
@@ -4468,21 +4757,12 @@ end_draw_primitives() {
     _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
-
-  // Clean up the vertex blending state.
-  if (_vertex_blending_enabled) {
-    glDisable(GL_VERTEX_BLEND_ARB);
-    if (_supports_matrix_palette) {
-      glDisable(GL_MATRIX_PALETTE_ARB);
-    }
-    _vertex_blending_enabled = false;
-  }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   if (_transform_stale) {
     glMatrixMode(GL_MODELVIEW);
-    GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
+    call_glLoadMatrix(_internal_transform->get_mat());
   }
 
   if (_data_reader->is_vertex_transformed()) {
@@ -4602,6 +4882,14 @@ prepare_texture(Texture *tex, int view) {
     }
     break;
 
+  case Texture::TT_cube_map_array:
+    if (!_supports_cube_map_array) {
+      GLCAT.warning()
+        << "Cube map arrays are not supported by this OpenGL driver.\n";
+      return NULL;
+    }
+    break;
+
   default:
     break;
   }
@@ -4630,13 +4918,14 @@ prepare_texture(Texture *tex, int view) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 update_texture(TextureContext *tc, bool force) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  CLP(TextureContext) *gtc;
+  DCAST_INTO_R(gtc, tc, false);
 
   if (gtc->was_image_modified() || !gtc->_has_storage) {
     PStatGPUTimer timer(this, _texture_update_pcollector);
 
     // If the texture image was modified, reload the texture.
-    apply_texture(tc);
+    apply_texture(gtc);
 
     Texture *tex = tc->get_texture();
     if (gtc->was_properties_modified()) {
@@ -4654,7 +4943,7 @@ update_texture(TextureContext *tc, bool force) {
 
     // If only the properties have been modified, we don't necessarily
     // need to reload the texture.
-    apply_texture(tc);
+    apply_texture(gtc);
 
     Texture *tex = tc->get_texture();
     if (specify_texture(gtc, tex->get_default_sampler())) {
@@ -4691,6 +4980,20 @@ update_texture(TextureContext *tc, bool force) {
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+#ifndef OPENGLES
+  _textures_needing_fetch_barrier.erase(gtc);
+  _textures_needing_image_access_barrier.erase(gtc);
+  _textures_needing_update_barrier.erase(gtc);
+  _textures_needing_framebuffer_barrier.erase(gtc);
+#endif
+
+  glDeleteTextures(1, &gtc->_index);
+
+  if (gtc->_buffer != 0) {
+    _glDeleteBuffers(1, &gtc->_buffer);
+  }
+
   delete gtc;
 }
 
@@ -4802,9 +5105,14 @@ prepare_sampler(const SamplerState &sampler) {
     }
   }
 
-  _glSamplerParameterf(index, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
-  _glSamplerParameterf(index, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
-  _glSamplerParameterf(index, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  if (_supports_texture_lod) {
+    _glSamplerParameterf(index, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+    _glSamplerParameterf(index, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  }
+
+  if (_supports_texture_lod_bias) {
+    _glSamplerParameterf(index, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  }
 
   gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
 
@@ -4824,6 +5132,11 @@ prepare_sampler(const SamplerState &sampler) {
 void CLP(GraphicsStateGuardian)::
 release_sampler(SamplerContext *sc) {
   CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
+
+  if (gsc->_index != 0) {
+    _glDeleteSamplers(1, &gsc->_index);
+  }
+
   delete gsc;
 }
 #endif  // !OPENGLES
@@ -4887,8 +5200,8 @@ prepare_shader(Shader *se) {
       return NULL;
     }
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
   case Shader::SL_Cg:
+#if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
       result = new CLP(CgShaderContext)(this, se);
       break;
@@ -4897,6 +5210,10 @@ prepare_shader(Shader *se) {
         << "Tried to load Cg shader, but basic shaders not supported.\n";
       return NULL;
     }
+#elif defined(OPENGLES)
+    GLCAT.error()
+      << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
+    return NULL;
 #else
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support not compiled in.\n";
@@ -4926,6 +5243,17 @@ prepare_shader(Shader *se) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
+#ifndef OPENGLES_1
+  if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
+    ((CLP(ShaderContext) *)sc)->release_resources();
+  }
+#if defined(HAVE_CG) && !defined(OPENGLES_2)
+  else if (sc->is_of_type(CLP(CgShaderContext)::get_class_type())) {
+    ((CLP(CgShaderContext) *)sc)->release_resources();
+  }
+#endif
+#endif
+
   delete sc;
 }
 
@@ -4972,7 +5300,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     }
 
     report_my_gl_errors();
-    apply_vertex_buffer(gvbc, data->get_handle(), false);
+    update_vertex_buffer(gvbc, data->get_handle(), false);
     return gvbc;
   }
 
@@ -4980,31 +5308,22 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_vertex_buffer
+//     Function: GLGraphicsStateGuardian::update_vertex_buffer
 //       Access: Public
-//  Description: Makes the data the currently available data for
-//               rendering.
+//  Description: Makes sure that the data in the vertex buffer is
+//               up-to-date.  This may bind it to the GL_ARRAY_BUFFER
+//               binding point if necessary.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataHandle *reader, bool force) {
+update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
+                     const GeomVertexArrayDataHandle *reader, bool force) {
   nassertr(_supports_buffers, false);
   if (reader->get_modified() == UpdateSeq::initial()) {
     // No need to re-apply.
     return true;
   }
 
-  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
-
-  if (_current_vbuffer_index != gvbc->_index) {
-    if (GLCAT.is_spam() && gl_debug_buffers) {
-      GLCAT.spam()
-        << "binding vertex buffer " << (int)gvbc->_index << "\n";
-    }
-    _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
-    _current_vbuffer_index = gvbc->_index;
-    gvbc->set_active(true);
-  }
+  gvbc->set_active(true);
 
   if (gvbc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
@@ -5020,6 +5339,15 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       }
 
       PStatGPUTimer timer(this, _load_vertex_buffer_pcollector, reader->get_current_thread());
+      if (_current_vbuffer_index != gvbc->_index) {
+        if (GLCAT.is_spam() && gl_debug_buffers) {
+          GLCAT.spam()
+            << "binding vertex buffer " << (int)gvbc->_index << "\n";
+        }
+        _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+        _current_vbuffer_index = gvbc->_index;
+      }
+
       if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
@@ -5123,10 +5451,21 @@ setup_array_data(const unsigned char *&client_pointer,
   }
 
   // Prepare the buffer object and bind it.
-  VertexBufferContext *vbc = array_reader->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, false);
-  if (!apply_vertex_buffer(vbc, array_reader, force)) {
+  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
+    array_reader->prepare_now(get_prepared_objects(), this));
+
+  nassertr(gvbc != (CLP(VertexBufferContext) *)NULL, false);
+  if (!update_vertex_buffer(gvbc, array_reader, force)) {
     return false;
+  }
+
+  if (_current_vbuffer_index != gvbc->_index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding vertex buffer " << (int)gvbc->_index << "\n";
+    }
+    _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
+    _current_vbuffer_index = gvbc->_index;
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -5661,6 +6000,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   if (new_image && gtc->_immutable) {
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+    }
   }
 
 #ifndef OPENGLES
@@ -5798,7 +6142,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   Texture::TextureType texture_type;
   int z_size;
-  //TODO: should be extended to support 3D textures and 2D arrays.
+  //TODO: should be extended to support 3D textures, 2D arrays and cube map arrays.
   if (z >= 0) {
     texture_type = Texture::TT_cube_map;
     z_size = 6;
@@ -5904,7 +6248,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   return true;
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_fog
 //       Access: Public, Virtual
@@ -5929,7 +6273,7 @@ apply_fog(Fog *fog) {
   call_glFogfv(GL_FOG_COLOR, fog->get_color());
   report_my_gl_errors();
 }
-#endif  // OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_transform
@@ -5942,7 +6286,7 @@ apply_fog(Fog *fog) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_transform() {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   // OpenGL ES 2 does not support glLoadMatrix.
 
   const TransformState *transform = _internal_transform;
@@ -5953,20 +6297,14 @@ do_issue_transform() {
 
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   glMatrixMode(GL_MODELVIEW);
-  GLPf(LoadMatrix)(transform->get_mat().get_data());
+  call_glLoadMatrix(transform->get_mat());
 #endif
   _transform_stale = false;
-
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
-  }
-#endif
 
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shade_model
 //       Access: Protected
@@ -5989,33 +6327,35 @@ do_issue_shade_model() {
     break;
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
+#ifndef OPENGLES_1
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_shader
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-do_issue_shader(bool state_has_changed) {
-#ifndef OPENGLES_1
+do_issue_shader() {
   ShaderContext *context = 0;
-  Shader *shader = (Shader *)(_target_shader->get_shader());
+  Shader *shader = (Shader *)_target_shader->get_shader();
 
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // If we don't have a shader, apply the default shader.
   if (!shader) {
     shader = _default_shader;
+    nassertv(shader != NULL);
   }
 
 #endif
   if (shader) {
     context = shader->prepare_now(get_prepared_objects(), this);
   }
-#ifdef OPENGLES_2
+#ifndef SUPPORT_FIXED_FUNCTION
   // If it failed, try applying the default shader.
   if (shader != _default_shader && (context == 0 || !context->valid())) {
     shader = _default_shader;
+    nassertv(shader != NULL);
     context = shader->prepare_now(get_prepared_objects(), this);
   }
 #endif
@@ -6030,24 +6370,32 @@ do_issue_shader(bool state_has_changed) {
     if (context != _current_shader_context) {
       // Use a completely different shader than before.
       // Unbind old shader, bind the new one.
-      if (_current_shader_context != 0) {
+      if (_current_shader_context != NULL &&
+          _current_shader->get_language() != shader->get_language()) {
         _current_shader_context->unbind();
       }
       context->bind();
       _current_shader = shader;
       _current_shader_context = context;
-      context->issue_parameters(Shader::SSD_shaderinputs);
-    } else {
-      if (state_has_changed) {
-        // Use the same shader as before, but with new input arguments.
-        context->issue_parameters(Shader::SSD_shaderinputs);
-      }
     }
   }
 
-  report_my_gl_errors();
+#ifndef OPENGLES
+  // Is the point size provided by the shader or by OpenGL?
+  bool shader_point_size = _target_shader->get_flag(ShaderAttrib::F_shader_point_size);
+  if (shader_point_size != _shader_point_size) {
+    if (shader_point_size) {
+      glEnable(GL_PROGRAM_POINT_SIZE);
+    } else {
+      glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+    _shader_point_size = shader_point_size;
+  }
 #endif
+
+  report_my_gl_errors();
 }
+#endif  // !OPENGLES_1
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_render_mode
@@ -6087,9 +6435,13 @@ do_issue_render_mode() {
 
   // The thickness affects both the line width and the point size.
   if (thickness != _point_size) {
-    glLineWidth(_point_size);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "setting thickness to " << thickness << "\n";
+    }
+
+    glLineWidth(thickness);
 #ifndef OPENGLES_2
-    glPointSize(_point_size);
+    glPointSize(thickness);
 #endif
     _point_size = thickness;
   }
@@ -6135,37 +6487,38 @@ do_issue_antialias() {
   }
 
 #ifndef OPENGLES_2
+  GLenum quality;
   switch (target_antialias->get_mode_quality()) {
   case AntialiasAttrib::M_faster:
-    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
-#endif  // OPENGLES
+    quality = GL_FASTEST;
     break;
 
   case AntialiasAttrib::M_better:
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-#endif  // OPENGLES
+    quality = GL_NICEST;
     break;
 
   default:
-    glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-    glHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
-#ifndef OPENGLES
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-#endif  // OPENGLES
+    quality = GL_DONT_CARE;
     break;
   }
+
+  if (_line_smooth_enabled) {
+    glHint(GL_LINE_SMOOTH_HINT, quality);
+  }
+  if (_point_smooth_enabled) {
+    glHint(GL_POINT_SMOOTH_HINT, quality);
+  }
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glHint(GL_POLYGON_SMOOTH_HINT, quality);
+  }
+#endif
 #endif  // !OPENGLES_2
 
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
+#ifdef SUPPORT_FIXED_FUNCTION // OpenGL ES 2.0 doesn't support rescaling normals.
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_rescale_normal
 //       Access: Protected
@@ -6210,7 +6563,7 @@ do_issue_rescale_normal() {
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
@@ -6235,7 +6588,7 @@ do_issue_depth_test() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_alpha_test
 //       Access: Protected
@@ -6259,7 +6612,7 @@ do_issue_alpha_test() {
     }
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_depth_write
@@ -6320,7 +6673,7 @@ do_issue_cull_face() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_fog
 //       Access: Protected
@@ -6341,7 +6694,7 @@ do_issue_fog() {
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_depth_offset
@@ -6382,7 +6735,7 @@ do_issue_depth_offset() {
   report_my_gl_errors();
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_material
 //       Access: Protected
@@ -6423,7 +6776,7 @@ do_issue_material() {
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
-  glMaterialf(face, GL_SHININESS, min(material->get_shininess(), (PN_stdfloat)128.0));
+  glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
@@ -6479,7 +6832,7 @@ do_issue_material() {
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
 
-  if (gl_separate_specular_color) {
+  if (_use_separate_specular_color) {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
   } else {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
@@ -6488,7 +6841,7 @@ do_issue_material() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_blending
@@ -6521,6 +6874,11 @@ do_issue_blending() {
       _glBlendEquation(GL_FUNC_ADD);
       glBlendFunc(GL_ZERO, GL_ONE);
     }
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_ZERO, GL_ONE)\n";
+    }
     return;
   } else {
     set_color_write_mask(color_channels);
@@ -6544,16 +6902,23 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(get_blend_equation_type(color_blend_mode));
     glBlendFunc(get_blend_func(color_blend->get_operand_a()),
-                   get_blend_func(color_blend->get_operand_b()));
+                get_blend_func(color_blend->get_operand_b()));
 
+    LColor c;
     if (_color_blend_involves_color_scale) {
       // Apply the current color scale to the blend mode.
-      _glBlendColor(_current_color_scale[0], _current_color_scale[1],
-                    _current_color_scale[2], _current_color_scale[3]);
-
+      c = _current_color_scale;
     } else {
-      LColor c = color_blend->get_color();
-      _glBlendColor(c[0], c[1], c[2], c[3]);
+      c = color_blend->get_color();
+    }
+
+    _glBlendColor(c[0], c[1], c[2], c[3]);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(" << color_blend_mode << ")\n";
+      GLCAT.spam() << "glBlendFunc(" << color_blend->get_operand_a()
+                                     << color_blend->get_operand_b() << ")\n";
+      GLCAT.spam() << "glBlendColor(" << c << ")\n";
     }
     return;
   }
@@ -6571,6 +6936,11 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
     return;
 
   case TransparencyAttrib::M_multisample:
@@ -6600,6 +6970,11 @@ do_issue_blending() {
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
     return;
   }
 
@@ -6619,7 +6994,7 @@ do_issue_blending() {
   enable_blend(false);
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6662,9 +7037,9 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6714,9 +7089,9 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
@@ -6750,7 +7125,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   call_glLightfv(id, GL_POSITION, fpos);
   call_glLightfv(id, GL_SPOT_DIRECTION, dir);
 
-  glLightf(id, GL_SPOT_EXPONENT, light_obj->get_exponent());
+  glLightf(id, GL_SPOT_EXPONENT, max(min(light_obj->get_exponent(), (PN_stdfloat)128), (PN_stdfloat)0));
   glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov() * 0.5f);
 
   const LVecBase3 &att = light_obj->get_attenuation();
@@ -6760,7 +7135,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 ////////////////////////////////////////////////////////////////////
@@ -6903,13 +7278,15 @@ get_error_string(GLenum error_code) {
   // We used to use gluErrorString here, but I (rdb) took it out
   // because that was really the only function we used from GLU.
   // The idea with the error table was taken from SGI's sample implementation.
-  static const char *error_strings[GL_OUT_OF_MEMORY - GL_INVALID_ENUM + 1] = {
+  static const char *error_strings[] = {
     "invalid enumerant",
     "invalid value",
     "invalid operation",
     "stack overflow",
     "stack underflow",
     "out of memory",
+    "invalid framebuffer operation",
+    "context lost",
   };
 
   if (error_code == GL_NO_ERROR) {
@@ -6918,8 +7295,8 @@ get_error_string(GLenum error_code) {
   } else if (error_code == GL_TABLE_TOO_LARGE) {
     return "table too large";
 #endif
-  } else if (error_code >= GL_INVALID_ENUM && error_code <= GL_OUT_OF_MEMORY) {
-    return error_strings[error_code - GL_INVALID_ENUM];
+  } else if (error_code >= 0x0500 && error_code <= 0x0507) {
+    return error_strings[error_code - 0x0500];
   }
 
   // Other error, somehow?  Just display the error code then.
@@ -6942,10 +7319,9 @@ show_gl_string(const string &name, GLenum id) {
   const GLubyte *text = glGetString(id);
 
   if (text == (const GLubyte *)NULL) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Unable to query " << name << "\n";
-    }
+    GLCAT.warning()
+      << "Unable to query " << name << "\n";
+
   } else {
     result = (const char *)text;
     if (GLCAT.is_debug()) {
@@ -6966,21 +7342,60 @@ void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
   _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
+  _gl_version = show_gl_string("GL_VERSION", GL_VERSION);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
-  _gl_shadlang_ver_major = 0;
-  _gl_shadlang_ver_minor = 0;
 
-  const GLubyte *text = glGetString(GL_VERSION);
-  if (text == (const GLubyte *)NULL) {
-    GLCAT.warning()
-      << "Unable to query GL_VERSION\n";
+    // This is the most preposterous driver bug: NVIDIA drivers will claim
+    // that the version is 1.2 as long as the process is named pview.exe!
+#ifndef OPENGLES
+  if (_gl_version.substr(0, 10) == "1.2 NVIDIA") {
+    Filename exec_name = ExecutionEnvironment::get_binary_name();
+    if (cmp_nocase(exec_name.get_basename(), "pview.exe") == 0) {
+      glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+      glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
+
+      if (glGetError() == GL_INVALID_ENUM) {
+        _gl_version_major = 1;
+        _gl_version_minor = 2;
+        GLCAT.warning()
+          << "Driver possibly misreported GL_VERSION!  Unable to detect "
+             "correct OpenGL version.\n";
+
+      } else if (_gl_version_major != 1 || _gl_version_minor != 2) {
+        GLCAT.debug()
+          << "Driver misreported GL_VERSION!  Correct version detected as "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+
+  // If we asked for a GL 3 context, let's first try and see if we
+  // can use the OpenGL 3 way to query version.
+  if (gl_version.get_num_words() > 0 && gl_version[0] >= 3) {
+    glGetIntegerv(GL_MAJOR_VERSION, &_gl_version_major);
+    glGetIntegerv(GL_MINOR_VERSION, &_gl_version_minor);
+
+    if (_gl_version_major >= 1) {
+      // Fair enough, seems to check out.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Detected OpenGL version: "
+          << _gl_version_major << "." << _gl_version_minor << "\n";
+      }
+      return;
+    }
+  }
+#endif  // !OPENGLES
+
+  // Otherwise, parse the GL_VERSION string.
+  if (_gl_version.empty()) {
+    GLCAT.error() << "Unable to detect OpenGL version\n";
+
   } else {
-    string version((const char *)text);
-    _gl_version = version;
-
-    string input = version;
+    string input = _gl_version;
 
     // Skip any initial words that don't begin with a digit.
     while (!input.empty() && !isdigit(input[0])) {
@@ -7012,42 +7427,58 @@ query_gl_version() {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "GL_VERSION = " << version << ", decoded to "
+        << "GL_VERSION decoded to: "
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::query_glsl_version
+//       Access: Protected
+//  Description: Queries the supported GLSL version.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+query_glsl_version() {
+  _gl_shadlang_ver_major = 0;
+  _gl_shadlang_ver_minor = 0;
+#ifndef OPENGLES_1
 
 #ifndef OPENGLES
-    if (_gl_version_major == 1) {
-      // We can't call has_extension at this point yet.
-      const char *extstr = (const char *) glGetString(GL_EXTENSIONS);
-      if (extstr != NULL) {
-        if (strstr(extstr, "GL_ARB_shading_language_100") != NULL) {
-          _gl_shadlang_ver_major = 1;
-          _gl_shadlang_ver_minor = 0;
-        }
-      }
-    } else if (_gl_version_major >= 2) {
-      _gl_shadlang_ver_major = 1;
-      _gl_shadlang_ver_minor = 1;
-      const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-      if (verstr == NULL ||
-          sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major,
-                                  &_gl_shadlang_ver_minor) != 2) {
-        GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
-      }
-    }
-#elif defined(OPENGLES_2)
+  // OpenGL 2.0 introduces GLSL in the core.  In 1.x, it is an extension.
+  if (_gl_version_major >= 2 || has_extension("GL_ARB_shading_language_100")) {
+    string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
     _gl_shadlang_ver_major = 1;
-    _gl_shadlang_ver_minor = 0;
-    const char *verstr = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    if (verstr == NULL ||
-        sscanf(verstr, "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
-                                               &_gl_shadlang_ver_minor) != 2) {
+    _gl_shadlang_ver_minor = (_gl_version_major >= 2) ? 1 : 0;
+    if (ver.empty() ||
+        sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
+                                     &_gl_shadlang_ver_minor) != 2) {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
-#endif
   }
+#else
+  // OpenGL ES 2.0 and above has shader support built-in.
+  string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
+  _gl_shadlang_ver_major = 1;
+  _gl_shadlang_ver_minor = 0;
+  if (ver.empty() ||
+      sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &_gl_shadlang_ver_major,
+                                                     &_gl_shadlang_ver_minor) != 2) {
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+  }
+#endif
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Detected GLSL "
+#ifdef OPENGLES
+         "ES "
+#endif
+         "version: "
+      << _gl_shadlang_ver_major << "." << _gl_shadlang_ver_minor << "\n";
+  }
+#endif  // !OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7091,11 +7522,28 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "GL Extensions:\n";
+    ostream &out = GLCAT.debug();
+    out << "GL Extensions:\n";
+
+    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
-      GLCAT.debug() << (*ei) << "\n";
+      size_t len = (*ei).size();
+      out << "  " << (*ei);
+
+      // Display a second column.
+      if (len <= 38) {
+        if (++ei != _extensions.end()) {
+          for (int i = len; i < 38; ++i) {
+            out.put(' ');
+          }
+          out << ' ' << (*ei);
+        } else {
+          out.put('\n');
+          break;
+        }
+      }
+      out.put('\n');
     }
   }
 }
@@ -7143,6 +7591,7 @@ get_extension_func(const char *name) {
 #endif
 #ifdef EXPECT_GL_VERSION_1_4
     { "glPointParameterfv", (void *)&glPointParameterfv },
+    { "glSecondaryColorPointer", (void *)&glSecondaryColorPointer },
 #endif
 #ifdef EXPECT_GL_VERSION_1_5
     { "glBeginQuery", (void *)&glBeginQuery },
@@ -7478,7 +7927,7 @@ get_texture_target(Texture::TextureType texture_type) const {
   case Texture::TT_2d_texture_array:
 #ifndef OPENGLES
     if (_supports_2d_texture_array) {
-      return GL_TEXTURE_2D_ARRAY_EXT;
+      return GL_TEXTURE_2D_ARRAY;
     }
 #endif
     return GL_NONE;
@@ -7489,6 +7938,14 @@ get_texture_target(Texture::TextureType texture_type) const {
     } else {
       return GL_NONE;
     }
+
+  case Texture::TT_cube_map_array:
+#ifndef OPENGLES
+    if (_supports_cube_map_array) {
+      return GL_TEXTURE_CUBE_MAP_ARRAY;
+    }
+#endif
+    return GL_NONE;
 
   case Texture::TT_buffer_texture:
 #ifndef OPENGLES
@@ -7677,6 +8134,16 @@ get_component_type(Texture::ComponentType component_type) {
 #ifndef OPENGLES_1
     return GL_INT;
 #endif
+  case Texture::T_byte:
+    return GL_BYTE;
+  case Texture::T_short:
+    return GL_SHORT;
+
+#ifndef OPENGLES
+  case Texture::T_half_float:
+    return GL_HALF_FLOAT;
+#endif
+
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -7705,6 +8172,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_depth_component24:
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
+      case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
         break;
@@ -7717,6 +8186,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
@@ -7742,6 +8212,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
+      case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
       case Texture::F_rg32:
@@ -7835,6 +8306,20 @@ get_external_image_format(Texture *tex) const {
       break;
 #endif  // OPENGLES
 
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -7867,9 +8352,16 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_blue:
     return GL_BLUE;
 #endif
+
   case Texture::F_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_ALPHA;
+#else
+    return GL_RED;
+#endif
+
 #ifndef OPENGLES_1
+  case Texture::F_rg:
   case Texture::F_rg16:
   case Texture::F_rg32:
     return GL_RG;
@@ -7882,6 +8374,8 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb16:
   case Texture::F_rgb32:
   case Texture::F_srgb:
+  case Texture::F_r11_g11_b10:
+  case Texture::F_rgb9_e5:
 #ifdef OPENGLES
     return GL_RGB;
 #else
@@ -7896,18 +8390,28 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
+  case Texture::F_rgb10_a2:
 #ifdef OPENGLES_2
     return GL_RGBA;
 #else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
 #endif
+
   case Texture::F_luminance:
   case Texture::F_sluminance:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_LUMINANCE;
+#else
+    return GL_RED;
+#endif
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return GL_LUMINANCE_ALPHA;
+#else
+    return GL_RG;
+#endif
 
 #ifndef OPENGLES
   case Texture::F_r8i:
@@ -7971,10 +8475,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r32i:
+      case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
         break;
 
       case Texture::F_rgbm:
+      case Texture::F_rgb10_a2:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         }
@@ -8056,6 +8563,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
+#ifndef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RED_RGTC1;
+        }
+#endif
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8067,8 +8579,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
         break;
 
+      case Texture::F_rg:
       case Texture::F_rg16:
       case Texture::F_rg32:
+#ifndef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RG_RGTC2;
+        }
+#endif
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8201,6 +8719,20 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
 #endif
 
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else if (tex->get_num_components() == 2) {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -8288,6 +8820,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_RGBA16;
+    } else if (tex->get_component_type() == Texture::T_short) {
+      return GL_RGBA16_SNORM;
+    } else if (tex->get_component_type() == Texture::T_byte) {
+      return GL_RGBA8_SNORM;
     } else
 #endif
     {
@@ -8304,27 +8840,32 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_RGBA8 : GL_RGBA;
 #else
   case Texture::F_rgba8:
-    return GL_RGBA8;
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGBA8;
+    } else {
+      return GL_RGBA8_SNORM;
+    }
+
   case Texture::F_r8i:
-    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+    if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_R8UI;
     } else {
       return GL_R8I;
     }
   case Texture::F_rg8i:
-    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+    if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RG8UI;
     } else {
       return GL_RG8I;
     }
   case Texture::F_rgb8i:
-    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+    if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RGB8UI;
     } else {
       return GL_RGB8I;
     }
   case Texture::F_rgba8i:
-    if (tex->get_component_type() == Texture::T_unsigned_byte) {
+    if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RGBA8UI;
     } else {
       return GL_RGBA8I;
@@ -8336,17 +8877,24 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgba16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGBA16F;
-    } else {
+    } else if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RGBA16;
+    } else {
+      return GL_RGBA16_SNORM;
     }
   case Texture::F_rgba32:
     return GL_RGBA32F;
 #endif  // OPENGLES
 
   case Texture::F_rgb:
-    if (tex->get_component_type() == Texture::T_float) {
-      return GL_RGB16F;
-    } else {
+    switch (tex->get_component_type()) {
+    case Texture::T_float: return GL_RGB16F;
+#ifndef OPENGLES
+    case Texture::T_unsigned_short: return GL_RGB16;
+    case Texture::T_short: return GL_RGB16_SNORM;
+    case Texture::T_byte: return GL_RGB8_SNORM;
+#endif
+    default:
       return force_sized ? GL_RGB8 : GL_RGB;
     }
 
@@ -8369,14 +8917,20 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RGB16F;
 #else
   case Texture::F_rgb8:
-    return GL_RGB8;
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGB8;
+    } else {
+      return GL_RGB8_SNORM;
+    }
   case Texture::F_rgb12:
     return GL_RGB12;
   case Texture::F_rgb16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RGB16F;
-    } else {
+    } else if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RGB16;
+    } else {
+      return GL_RGB16_SNORM;
     }
 #endif  // OPENGLES
   case Texture::F_rgb32:
@@ -8396,14 +8950,18 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_r16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_R16F;
-    } else {
+    } else if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_R16;
+    } else {
+      return GL_R16_SNORM;
     }
   case Texture::F_rg16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RG16F;
-    } else {
+    } else if (Texture::is_unsigned(tex->get_component_type())) {
       return GL_RG16;
+    } else {
+      return GL_RG16_SNORM;
     }
 #endif
 
@@ -8416,16 +8974,30 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_red:
   case Texture::F_green:
   case Texture::F_blue:
-    return force_sized ? GL_R8 : GL_RED;
+#ifndef OPENGLES
+    if (!Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R8_SNORM;
+    } else
+#endif
+    {
+      return force_sized ? GL_R8 : GL_RED;
+    }
 #endif
 
   case Texture::F_alpha:
+#ifdef SUPPORT_FIXED_FUNCTION
     return force_sized ? GL_ALPHA8 : GL_ALPHA;
+#else
+    return force_sized ? GL_R8 : GL_RED;
+#endif
 
   case Texture::F_luminance:
+#ifdef SUPPORT_FIXED_FUNCTION
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
+    } else if (tex->get_component_type() == Texture::T_short) {
+      return GL_LUMINANCE16_SNORM;
     } else if (tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE16;
     } else
@@ -8433,8 +9005,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     {
       return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
     }
+#else
+    return force_sized ? GL_R8 : GL_RED;
+#endif
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
+#ifdef SUPPORT_FIXED_FUNCTION
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
@@ -8443,6 +9019,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     {
       return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
     }
+#else
+    return force_sized ? GL_RG8 : GL_RG;
+#endif
+
+#ifndef OPENGLES
+  case Texture::F_rg:
+    return force_sized ? GL_RG8 : GL_RG;
+#endif
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
@@ -8462,6 +9046,17 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifndef OPENGLES
   case Texture::F_r32i:
     return GL_R32I;
+#endif
+
+#ifndef OPENGLES
+  case Texture::F_r11_g11_b10:
+    return GL_R11F_G11F_B10F;
+
+  case Texture::F_rgb9_e5:
+    return GL_RGB9_E5;
+
+  case Texture::F_rgb10_a2:
+    return GL_RGB10_A2;
 #endif
 
   default:
@@ -8515,8 +9110,19 @@ is_compressed_format(GLenum format) {
   case GL_COMPRESSED_RGB_FXT1_3DFX:
   case GL_COMPRESSED_RGBA_FXT1_3DFX:
 
+  case GL_COMPRESSED_RED_RGTC1:
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+  case GL_COMPRESSED_RG_RGTC2:
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+
   case GL_COMPRESSED_RGB:
+  case GL_COMPRESSED_SRGB_EXT:
   case GL_COMPRESSED_RGBA:
+  case GL_COMPRESSED_SRGB_ALPHA_EXT:
   case GL_COMPRESSED_ALPHA:
   case GL_COMPRESSED_LUMINANCE:
   case GL_COMPRESSED_LUMINANCE_ALPHA:
@@ -8536,7 +9142,7 @@ is_compressed_format(GLenum format) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_apply_mode_type(TextureStage::Mode am) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (am) {
   case TextureStage::M_modulate: return GL_MODULATE;
   case TextureStage::M_decal: return GL_DECAL;
@@ -8568,7 +9174,7 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
 get_texture_combine_type(TextureStage::CombineMode cm) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (cm) {
   case TextureStage::CM_undefined: // fall through
   case TextureStage::CM_replace: return GL_REPLACE;
@@ -8596,7 +9202,7 @@ GLint CLP(GraphicsStateGuardian)::
 get_texture_src_type(TextureStage::CombineSource cs,
                      int last_stage, int last_saved_result,
                      int this_stage) const {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   switch (cs) {
   case TextureStage::CS_undefined: // fall through
   case TextureStage::CS_texture: return GL_TEXTURE;
@@ -8658,6 +9264,7 @@ get_texture_operand_type(TextureStage::CombineOperand co) {
   return GL_SRC_COLOR;
 }
 
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_fog_mode_type
 //       Access: Protected, Static
@@ -8667,23 +9274,18 @@ GLenum CLP(GraphicsStateGuardian)::
 get_fog_mode_type(Fog::Mode m) {
   switch(m) {
   case Fog::M_linear: return GL_LINEAR;
-#ifndef OPENGLES_2
   case Fog::M_exponential: return GL_EXP;
   case Fog::M_exponential_squared: return GL_EXP2;
-#endif
     /*
       case Fog::M_spline: return GL_FOG_FUNC_SGIS;
     */
 
   default:
     GLCAT.error() << "Invalid Fog::Mode value" << endl;
-#ifdef OPENGLES_2
-    return GL_LINEAR;
-#else
     return GL_EXP;
-#endif
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_blend_equation_type
@@ -8832,64 +9434,126 @@ get_usage(Geom::UsageHint usage_hint) {
   return GL_STATIC_DRAW;
 }
 
-
+#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::print_gfx_visual
-//       Access: Public
-//  Description: Prints a description of the current visual selected.
+//     Function: GLGraphicsStateGuardian::get_compressed_format_string
+//       Access: Public, Static
+//  Description: Returns a string describing an compression format.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-print_gfx_visual() {
-  GLint i;
-  GLboolean j;
-  cout << "Graphics Visual Info (# bits of each):" << endl;
-
-  cout << "RGBA: ";
-  glGetIntegerv( GL_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << i << endl;
-
-#ifndef OPENGLES
-  cout << "Accum RGBA: ";
-  glGetIntegerv( GL_ACCUM_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_ALPHA_BITS, &i ); cout << i << endl;
-
-  glGetIntegerv( GL_INDEX_BITS, &i ); cout << "Color Index: " << i << endl;
-#endif
-
-  glGetIntegerv( GL_DEPTH_BITS, &i ); cout << "Depth: " << i << endl;
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
-  glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
-
-#ifndef OPENGLES
-  glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
-                                                << (int)j << endl;
-
-  glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
-#endif
-
-  if (_supports_multisample) {
-#ifndef OPENGLES_2
-    glGetBooleanv( GL_MULTISAMPLE, &j ); cout << "Multisample? " << (int)j << endl;
-#endif
-    glGetIntegerv( GL_SAMPLES, &i ); cout << "Samples: " << i << endl;
+const char *CLP(GraphicsStateGuardian)::
+get_compressed_format_string(GLenum format) {
+  switch (format) {
+  case 0x83F0: return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
+  case 0x83F1: return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
+  case 0x83F2: return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
+  case 0x83F3: return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
+  case 0x86B0: return "GL_COMPRESSED_RGB_FXT1_3DFX";
+  case 0x86B1: return "GL_COMPRESSED_RGBA_FXT1_3DFX";
+  case 0x8A54: return "GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT";
+  case 0x8A55: return "GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT";
+  case 0x8A56: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT";
+  case 0x8A57: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT";
+  case 0x8B90: return "GL_PALETTE4_RGB8_OES";
+  case 0x8B91: return "GL_PALETTE4_RGBA8_OES";
+  case 0x8B92: return "GL_PALETTE4_R5_G6_B5_OES";
+  case 0x8B93: return "GL_PALETTE4_RGBA4_OES";
+  case 0x8B94: return "GL_PALETTE4_RGB5_A1_OES";
+  case 0x8B95: return "GL_PALETTE8_RGB8_OES";
+  case 0x8B96: return "GL_PALETTE8_RGBA8_OES";
+  case 0x8B97: return "GL_PALETTE8_R5_G6_B5_OES";
+  case 0x8B98: return "GL_PALETTE8_RGBA4_OES";
+  case 0x8B99: return "GL_PALETTE8_RGB5_A1_OES";
+  case 0x8C00: return "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG";
+  case 0x8C01: return "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG";
+  case 0x8C02: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG";
+  case 0x8C03: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG";
+  case 0x8C48: return "GL_COMPRESSED_SRGB_EXT";
+  case 0x8C49: return "GL_COMPRESSED_SRGB_ALPHA_EXT";
+  case 0x8C4A: return "GL_COMPRESSED_SLUMINANCE_EXT";
+  case 0x8C4B: return "GL_COMPRESSED_SLUMINANCE_ALPHA_EXT";
+  case 0x8C4C: return "GL_COMPRESSED_SRGB_S3TC_DXT1_EXT";
+  case 0x8C4D: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT";
+  case 0x8C4E: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT";
+  case 0x8C4F: return "GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT";
+  case 0x8C70: return "GL_COMPRESSED_LUMINANCE_LATC1_EXT";
+  case 0x8C71: return "GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT";
+  case 0x8C72: return "GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8C73: return "GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT";
+  case 0x8DBB: return "GL_COMPRESSED_RED_RGTC1";
+  case 0x8DBC: return "GL_COMPRESSED_SIGNED_RED_RGTC1";
+  case 0x8DBD: return "GL_COMPRESSED_RG_RGTC2";
+  case 0x8DBE: return "GL_COMPRESSED_SIGNED_RG_RGTC2";
+  case 0x8E8C: return "GL_COMPRESSED_RGBA_BPTC_UNORM";
+  case 0x8E8D: return "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM";
+  case 0x8E8E: return "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT";
+  case 0x8E8F: return "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT";
+  case 0x9137: return "GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG";
+  case 0x9138: return "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG";
+  case 0x9270: return "GL_COMPRESSED_R11_EAC";
+  case 0x9271: return "GL_COMPRESSED_SIGNED_R11_EAC";
+  case 0x9272: return "GL_COMPRESSED_RG11_EAC";
+  case 0x9273: return "GL_COMPRESSED_SIGNED_RG11_EAC";
+  case 0x9274: return "GL_COMPRESSED_RGB8_ETC2";
+  case 0x9275: return "GL_COMPRESSED_SRGB8_ETC2";
+  case 0x9276: return "GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9277: return "GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
+  case 0x9278: return "GL_COMPRESSED_RGBA8_ETC2_EAC";
+  case 0x9279: return "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
+  case 0x93B0: return "GL_COMPRESSED_RGBA_ASTC_4x4_KHR";
+  case 0x93B1: return "GL_COMPRESSED_RGBA_ASTC_5x4_KHR";
+  case 0x93B2: return "GL_COMPRESSED_RGBA_ASTC_5x5_KHR";
+  case 0x93B3: return "GL_COMPRESSED_RGBA_ASTC_6x5_KHR";
+  case 0x93B4: return "GL_COMPRESSED_RGBA_ASTC_6x6_KHR";
+  case 0x93B5: return "GL_COMPRESSED_RGBA_ASTC_8x5_KHR";
+  case 0x93B6: return "GL_COMPRESSED_RGBA_ASTC_8x6_KHR";
+  case 0x93B7: return "GL_COMPRESSED_RGBA_ASTC_8x8_KHR";
+  case 0x93B8: return "GL_COMPRESSED_RGBA_ASTC_10x5_KHR";
+  case 0x93B9: return "GL_COMPRESSED_RGBA_ASTC_10x6_KHR";
+  case 0x93BA: return "GL_COMPRESSED_RGBA_ASTC_10x8_KHR";
+  case 0x93BB: return "GL_COMPRESSED_RGBA_ASTC_10x10_KHR";
+  case 0x93BC: return "GL_COMPRESSED_RGBA_ASTC_12x10_KHR";
+  case 0x93BD: return "GL_COMPRESSED_RGBA_ASTC_12x12_KHR";
+  case 0x93C0: return "GL_COMPRESSED_RGBA_ASTC_3x3x3_OES";
+  case 0x93C1: return "GL_COMPRESSED_RGBA_ASTC_4x3x3_OES";
+  case 0x93C2: return "GL_COMPRESSED_RGBA_ASTC_4x4x3_OES";
+  case 0x93C3: return "GL_COMPRESSED_RGBA_ASTC_4x4x4_OES";
+  case 0x93C4: return "GL_COMPRESSED_RGBA_ASTC_5x4x4_OES";
+  case 0x93C5: return "GL_COMPRESSED_RGBA_ASTC_5x5x4_OES";
+  case 0x93C6: return "GL_COMPRESSED_RGBA_ASTC_5x5x5_OES";
+  case 0x93C7: return "GL_COMPRESSED_RGBA_ASTC_6x5x5_OES";
+  case 0x93C8: return "GL_COMPRESSED_RGBA_ASTC_6x6x5_OES";
+  case 0x93C9: return "GL_COMPRESSED_RGBA_ASTC_6x6x6_OES";
+  case 0x93D0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR";
+  case 0x93D1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR";
+  case 0x93D2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR";
+  case 0x93D3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR";
+  case 0x93D4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR";
+  case 0x93D5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR";
+  case 0x93D6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR";
+  case 0x93D7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR";
+  case 0x93D8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR";
+  case 0x93D9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR";
+  case 0x93DA: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR";
+  case 0x93DB: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR";
+  case 0x93DC: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR";
+  case 0x93DD: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR";
+  case 0x93E0: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_3x3x3_OES";
+  case 0x93E1: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x3x3_OES";
+  case 0x93E2: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x3_OES";
+  case 0x93E3: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x4_OES";
+  case 0x93E4: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4x4_OES";
+  case 0x93E5: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x4_OES";
+  case 0x93E6: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x5_OES";
+  case 0x93E7: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5x5_OES";
+  case 0x93E8: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x5_OES";
+  case 0x93E9: return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x6_OES";
+  case 0x93F0: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG";
+  case 0x93F1: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG";
+  default:
+    return NULL;
   }
-
-  glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
-#ifndef OPENGLES_2
-  glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
-                                                << (int)j << endl;
-  glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
-                                               << (int)j << endl;
-#endif
-
-#ifndef OPENGLES
-  glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
@@ -8931,9 +9595,17 @@ void CLP(GraphicsStateGuardian)::
 reissue_transforms() {
   prepare_lens();
   do_issue_transform();
+
+  _active_texture_stage = -1;
+
+#ifndef OPENGLES
+  // Might also want to reissue the vertex format, for good measure.
+  _current_vertex_format.clear();
+  memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+#endif
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
@@ -8953,9 +9625,9 @@ enable_lighting(bool enable) {
     glDisable(GL_LIGHTING);
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_ambient_light
 //       Access: Protected, Virtual
@@ -8976,9 +9648,9 @@ set_ambient_light(const LColor &color) {
         c[3] * _light_color_scale[3]);
   call_glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_light
 //       Access: Protected, Virtual
@@ -8997,9 +9669,9 @@ enable_light(int light_id, bool enable) {
     glDisable(get_light_id(light_id));
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_bind_lights
 //       Access: Protected, Virtual
@@ -9029,11 +9701,11 @@ begin_bind_lights() {
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
+  call_glLoadMatrix(render_transform->get_mat());
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::end_bind_lights
 //       Access: Protected, Virtual
@@ -9051,9 +9723,9 @@ end_bind_lights() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_clip_plane
 //       Access: Protected, Virtual
@@ -9070,9 +9742,9 @@ enable_clip_plane(int plane_id, bool enable) {
     glDisable(get_clip_plane_id(plane_id));
   }
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
 //       Access: Protected, Virtual
@@ -9099,11 +9771,11 @@ begin_bind_clip_planes() {
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
+  call_glLoadMatrix(render_transform->get_mat());
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_clip_plane
 //       Access: Protected, Virtual
@@ -9133,9 +9805,9 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::end_bind_clip_planes
 //       Access: Protected, Virtual
@@ -9150,7 +9822,7 @@ end_bind_clip_planes() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_state_and_transform
@@ -9195,13 +9867,30 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
+#ifndef OPENGLES_1
   _target_shader = (const ShaderAttrib *)
     _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
-#ifndef OPENGLES_1
   _instance_count = _target_shader->get_instance_count();
+
+  if (_target_shader != _state_shader) {
+    //PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
+    do_issue_shader();
+    _state_shader = _target_shader;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+  }
+#ifndef SUPPORT_FIXED_FUNCTION
+  else if (_current_shader == NULL) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+    do_issue_shader();
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+  }
 #endif
 
-#ifndef OPENGLES_2
+  if (_current_shader_context != NULL) {
+    _current_shader_context->set_state_and_transform(target, transform, _projection_mat);
+  }
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
       !_state_mask.get_bit(alpha_test_slot) ||
@@ -9227,11 +9916,6 @@ set_state_and_transform(const RenderState *target,
     //PStatGPUTimer timer(this, _draw_set_state_clip_plane_pcollector);
     do_issue_clip_plane();
     _state_mask.set_bit(clip_plane_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_clip_planes);
-    }
-#endif
   }
 
   int color_slot = ColorAttrib::get_class_slot();
@@ -9245,12 +9929,6 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_color);
-      _current_shader_context->issue_parameters(Shader::SSD_colorscale);
-    }
-#endif
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -9293,7 +9971,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(render_mode_slot);
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
   if (_target_rs->get_attrib(rescale_normal_slot) != _state_rs->get_attrib(rescale_normal_slot) ||
       !_state_mask.get_bit(rescale_normal_slot)) {
@@ -9303,7 +9981,7 @@ set_state_and_transform(const RenderState *target,
   }
 #endif
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int shade_model_slot = ShadeModelAttrib::get_class_slot();
   if (_target_rs->get_attrib(shade_model_slot) != _state_rs->get_attrib(shade_model_slot) ||
       !_state_mask.get_bit(shade_model_slot)) {
@@ -9331,20 +10009,6 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
-    //PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
-#ifndef OPENGLES_1
-    do_issue_shader(true);
-#endif
-    _state_shader = _target_shader;
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
-  }
-#ifdef OPENGLES_2
-  else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
-    do_issue_shader(false);
-  }
-#endif
-
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
@@ -9366,7 +10030,6 @@ set_state_and_transform(const RenderState *target,
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
-#ifndef OPENGLES_2
   if (_tex_gen_modifies_mat) {
     int tex_gen_slot = TexGenAttrib::get_class_slot();
     int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
@@ -9383,12 +10046,18 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
       !_state_mask.get_bit(tex_matrix_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_tex_matrix_pcollector);
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_tex_matrix();
-    _state_mask.set_bit(tex_matrix_slot);
-  }
 #endif
+    _state_mask.set_bit(tex_matrix_slot);
+#ifndef OPENGLES_1
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
+    }
+#endif
+  }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   int tex_gen_slot = TexGenAttrib::get_class_slot();
   if (_target_tex_gen != _state_tex_gen ||
       !_state_mask.get_bit(tex_gen_slot)) {
@@ -9403,30 +10072,20 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(material_slot) != _state_rs->get_attrib(material_slot) ||
       !_state_mask.get_bit(material_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_material_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_material();
 #endif
     _state_mask.set_bit(material_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_material);
-    }
-#endif
   }
 
   int light_slot = LightAttrib::get_class_slot();
   if (_target_rs->get_attrib(light_slot) != _state_rs->get_attrib(light_slot) ||
       !_state_mask.get_bit(light_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_light_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_light();
 #endif
     _state_mask.set_bit(light_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_light);
-    }
-#endif
   }
 
   int stencil_slot = StencilAttrib::get_class_slot();
@@ -9441,15 +10100,10 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
       !_state_mask.get_bit(fog_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_fog_pcollector);
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     do_issue_fog();
 #endif
     _state_mask.set_bit(fog_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_fog);
-    }
-#endif
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
@@ -9494,17 +10148,17 @@ do_issue_texture() {
 #ifdef OPENGLES_1
   update_standard_texture_bindings();
 #else
-  if (_current_shader_context == 0 || !_current_shader_context->uses_custom_texture_bindings()) {
+  if (_current_shader_context == 0) {
     // No shader, or a non-Cg shader.
     if (_texture_binding_shader_context != 0) {
       _texture_binding_shader_context->disable_shader_texture_bindings();
     }
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
     update_standard_texture_bindings();
 #endif
   } else {
     if (_texture_binding_shader_context == 0) {
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
       disable_standard_texture_bindings();
 #endif
       _current_shader_context->update_shader_texture_bindings(NULL);
@@ -9519,7 +10173,7 @@ do_issue_texture() {
 #endif
 }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
 //       Access: Private
@@ -9578,7 +10232,7 @@ update_standard_texture_bindings() {
     nassertv(texture != (Texture *)NULL);
 
     // Issue the texture on stage i.
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 
     // First, turn off the previous texture mode.
     glDisable(GL_TEXTURE_2D);
@@ -9607,7 +10261,7 @@ update_standard_texture_bindings() {
       continue;
     }
 #ifndef OPENGLES
-    if (target == GL_TEXTURE_2D_ARRAY_EXT) {
+    if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
       // Cannot be applied via the FFP.
       continue;
     }
@@ -9618,8 +10272,10 @@ update_standard_texture_bindings() {
       glDisable(target);
       continue;
     }
-    apply_texture(tc);
-    apply_sampler(i, _target_texture->get_on_sampler(stage), tc);
+    // Don't DCAST(); we already did the verification in update_texture.
+    CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
+    apply_texture(gtc);
+    apply_sampler(i, _target_texture->get_on_sampler(stage), gtc);
 
     if (stage->involves_color_scale() && _color_scale_enabled) {
       LColor color = stage->get_color();
@@ -9745,7 +10401,7 @@ update_standard_texture_bindings() {
 
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
     glDisable(GL_TEXTURE_2D);
     if (_supports_cube_map) {
       glDisable(GL_TEXTURE_CUBE_MAP);
@@ -9763,7 +10419,7 @@ update_standard_texture_bindings() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_white_texture
@@ -9788,6 +10444,20 @@ apply_white_texture() {
   unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
                GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_white_texture
+//       Access: Private
+//  Description: Returns a white dummy texture.  This is useful to
+//               bind to a texture slot when a texture is missing.
+////////////////////////////////////////////////////////////////////
+GLuint CLP(GraphicsStateGuardian)::
+get_white_texture() {
+  if (_white_texture == 0) {
+    apply_white_texture();
+  }
+  return _white_texture;
 }
 
 #ifndef NDEBUG
@@ -9831,10 +10501,10 @@ update_show_usage_texture_bindings(int show_stage_index) {
     tc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
   }
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
   // Disable all texture stages.
   for (i = 0; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 #ifndef OPENGLES
     glDisable(GL_TEXTURE_1D);
 #endif  // OPENGLES
@@ -9866,16 +10536,16 @@ update_show_usage_texture_bindings(int show_stage_index) {
     nassertv(texture != (Texture *)NULL);
 
     // Choose the corresponding usage texture and apply it.
-    _glActiveTexture(GL_TEXTURE0 + i);
-#ifndef OPENGLES_2
+    set_active_texture_stage(i);
+#ifdef SUPPORT_FIXED_FUNCTION
     glEnable(GL_TEXTURE_2D);
 #endif
 
     UsageTextureKey key(texture->get_x_size(), texture->get_y_size());
     UsageTextures::iterator ui = _usage_textures.find(key);
+    GLuint index;
     if (ui == _usage_textures.end()) {
       // Need to create a new texture for this size.
-      GLuint index;
       glGenTextures(1, &index);
       glBindTexture(GL_TEXTURE_2D, index);
       //TODO: this could be a lot simpler with glTexStorage2D
@@ -9885,8 +10555,13 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     } else {
       // Just bind the previously-created texture.
-      GLuint index = (*ui).second;
+      index = (*ui).second;
       glBindTexture(GL_TEXTURE_2D, index);
+    }
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(GL_TEXTURE_2D, " << index << ")\n";
     }
 
     //TODO: glBindSampler(0) ?
@@ -9968,7 +10643,7 @@ upload_usage_texture(int width, int height) {
 }
 #endif  // NDEBUG
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
 //       Access: Private
@@ -9978,7 +10653,7 @@ void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 #ifndef OPENGLES
     glDisable(GL_TEXTURE_1D);
 #endif  // OPENGLES
@@ -9997,9 +10672,9 @@ disable_standard_texture_bindings() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_matrix
 //       Access: Protected
@@ -10011,7 +10686,7 @@ do_issue_tex_matrix() {
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
 
     glMatrixMode(GL_TEXTURE);
 
@@ -10019,7 +10694,7 @@ do_issue_tex_matrix() {
     _target_rs->get_attrib_def(target_tex_matrix);
 
     if (target_tex_matrix->has_stage(stage)) {
-      GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
+      call_glLoadMatrix(target_tex_matrix->get_mat(stage));
     } else {
       glLoadIdentity();
 
@@ -10029,14 +10704,14 @@ do_issue_tex_matrix() {
       // an identity matrix does work.  But this buggy-driver
       // workaround might have other performance implications, so I
       // leave it out.
-      // GLPf(LoadMatrix)(LMatrix4::ident_mat().get_data());
+      // call_glLoadMatrix(LMatrix4::ident_mat());
     }
   }
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
-#ifndef OPENGLES_2
+#ifdef SUPPORT_FIXED_FUNCTION
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_tex_gen
 //       Access: Protected
@@ -10064,7 +10739,7 @@ do_issue_tex_gen() {
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
-    _glActiveTexture(GL_TEXTURE0 + i);
+    set_active_texture_stage(i);
     if (_supports_point_sprite) {
 #ifdef OPENGLES
       glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, GL_FALSE);
@@ -10204,7 +10879,7 @@ do_issue_tex_gen() {
       // load the coordinate-system transform.
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-      GLPf(LoadMatrix)(_cs_transform->get_mat().get_data());
+      call_glLoadMatrix(_cs_transform->get_mat());
 
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -10233,7 +10908,7 @@ do_issue_tex_gen() {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
-        GLPf(LoadMatrix)(root_transform->get_mat().get_data());
+        call_glLoadMatrix(root_transform->get_mat());
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -10319,7 +10994,7 @@ do_issue_tex_gen() {
 
   report_my_gl_errors();
 }
-#endif  // !OPENGLES_2
+#endif  // SUPPORT_FIXED_FUNCTION
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::specify_texture
@@ -10415,7 +11090,7 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
       tex->get_format() == Texture::F_depth_component16 ||
       tex->get_format() == Texture::F_depth_component24 ||
       tex->get_format() == Texture::F_depth_component32) {
-#ifndef OPENGLES
+#ifdef SUPPORT_FIXED_FUNCTION
     glTexParameteri(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
 #endif
     if (_supports_shadow_filter) {
@@ -10432,9 +11107,14 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 #endif
 
 #ifndef OPENGLES
-  glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
-  glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
-  glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  if (_supports_texture_lod) {
+    glTexParameterf(target, GL_TEXTURE_MIN_LOD, sampler.get_min_lod());
+    glTexParameterf(target, GL_TEXTURE_MAX_LOD, sampler.get_max_lod());
+  }
+
+  if (_supports_texture_lod_bias) {
+    glTexParameterf(target, GL_TEXTURE_LOD_BIAS, sampler.get_lod_bias());
+  }
 #endif
 
   report_my_gl_errors();
@@ -10456,9 +11136,7 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 //               for rendering.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_texture(TextureContext *tc) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
+apply_texture(CLP(TextureContext) *gtc) {
   gtc->set_active(true);
   GLenum target = get_texture_target(gtc->get_texture()->get_texture_type());
   if (target == GL_NONE) {
@@ -10471,7 +11149,12 @@ apply_texture(TextureContext *tc) {
     gtc->reset_data();
     gtc->_target = target;
   }
+
   glBindTexture(target, gtc->_index);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+  }
 
   report_my_gl_errors();
   return true;
@@ -10489,9 +11172,7 @@ apply_texture(TextureContext *tc) {
 //               context instead.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
-  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
+apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
   if (_supports_sampler_objects) {
     // We support sampler objects.  Prepare the sampler object and
@@ -10505,8 +11186,8 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
     _glBindSampler(unit, gsc->_index);
 
     if (GLCAT.is_spam()) {
-      GLCAT.spam()
-        << "bind " << unit << " " << sampler << "\n";
+      GLCAT.spam() << "glBindSampler(" << unit << ", "
+                   << gsc->_index << "): " << sampler << "\n";
     }
 
   } else
@@ -10515,16 +11196,20 @@ apply_sampler(GLuint unit, const SamplerState &sampler, TextureContext *tc) {
     // We don't support sampler objects.  We'll have to bind the
     // texture and change the texture parameters if they don't match.
     if (gtc->_active_sampler != sampler) {
-      _glActiveTexture(GL_TEXTURE0 + unit);
-      apply_texture(tc);
+      set_active_texture_stage(unit);
+      apply_texture(gtc);
       specify_texture(gtc, sampler);
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying
     // to sample it with mipmaps.  We will need to reload it.
-    apply_texture(tc);
+    GLCAT.info()
+      << "reloading texture " << gtc->get_texture()->get_name()
+      << " with mipmaps\n";
+
+    apply_texture(gtc);
     gtc->mark_needs_reload();
     bool okflag = upload_texture(gtc, false, true);
     if (!okflag) {
@@ -10588,6 +11273,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (!get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
+
+    // If this triggers, Panda cannot decompress the texture.  Compile
+    // with libsquish support or precompress the texture.
+    nassertr(!image.is_null(), false);
   }
 
   int mipmap_bias = 0;
@@ -10645,6 +11334,12 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     max_dimension_x = _max_texture_dimension;
     max_dimension_y = _max_texture_dimension;
     max_dimension_z = _max_2d_texture_array_layers;
+    break;
+
+  case Texture::TT_cube_map_array:
+    max_dimension_x = _max_texture_dimension;
+    max_dimension_y = _max_texture_dimension;
+    max_dimension_z = int(_max_2d_texture_array_layers / 6) * 6;
     break;
 
   case Texture::TT_buffer_texture:
@@ -10759,6 +11454,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     GLCAT.warning() << "Attempt to modify texture with immutable storage, recreating texture.\n";
     gtc->reset_data();
     glBindTexture(target, gtc->_index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+    }
   }
 
 #ifndef OPENGLES
@@ -10849,6 +11549,36 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 #endif
 
+#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES_2)
+    // Do we need to apply a swizzle mask to emulate these deprecated
+    // texture formats?
+    switch (tex->get_format()) {
+    case Texture::F_alpha:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
+      break;
+
+    case Texture::F_luminance:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+      break;
+
+    case Texture::F_luminance_alpha:
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+      break;
+
+    default:
+      break;
+    }
+#endif
+
     // Allocate immutable storage for the texture, after which we can subload it.
     // Pre-allocating storage using glTexStorage is more efficient than using glTexImage
     // to load all of the individual images one by one later, but we are not allowed to
@@ -10873,6 +11603,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         break;
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
+      case Texture::TT_cube_map_array:
         _glTexStorage3D(target, num_levels, internal_format, width, height, depth);
         break;
       }
@@ -10884,6 +11615,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_width = width;
       gtc->_height = height;
       gtc->_depth = depth;
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
+
       needs_reload = false;
     }
   } else {
@@ -10980,8 +11713,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_height = height;
       gtc->_depth = depth;
 
-      gtc->update_data_size_bytes(get_texture_memory_size(tex));
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
     }
+
+    nassertr(gtc->_has_storage, false);
 
     if (tex->get_post_load_store_cache()) {
       tex->set_post_load_store_cache(false);
@@ -11126,13 +11861,24 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // The texture has a clear color, so we should fill this mipmap
             // level to a solid color.
 #ifndef OPENGLES
-            if (_supports_clear_texture) {
-              // We can do that with the convenient glClearTexImage function.
-              string clear_data = tex->get_clear_data();
+            if (texture_target != GL_TEXTURE_BUFFER) {
+              if (_supports_clear_texture) {
+                // We can do that with the convenient glClearTexImage function.
+                string clear_data = tex->get_clear_data();
 
-              _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                               component_type, (void *)clear_data.data());
-              continue;
+                _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                                 component_type, (void *)clear_data.data());
+                continue;
+              }
+            } else {
+              if (_supports_clear_buffer) {
+                // For buffer textures we need to clear the underlying storage.
+                string clear_data = tex->get_clear_data();
+
+                _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
+                                   component_type, (const void *)clear_data.data());
+                continue;
+              }
             }
 #endif  // OPENGLES
             // Ask the Texture class to create the mipmap level in RAM.
@@ -11205,7 +11951,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #endif  // OPENGLES
 
 #ifndef OPENGLES
-      case GL_TEXTURE_2D_ARRAY_EXT:
+      case GL_TEXTURE_2D_ARRAY:
+      case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
             _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
@@ -11303,12 +12050,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             GLCAT.warning()
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
-  #ifndef OPENGLES
+#ifndef OPENGLES
             if (is_at_least_gl_version(1, 2)) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
-  #endif
+#endif
             break;
           }
 
@@ -11387,7 +12134,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #endif
 
 #ifndef OPENGLES
-      case GL_TEXTURE_2D_ARRAY_EXT:
+      case GL_TEXTURE_2D_ARRAY:
+      case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
             _glTexImage3D(page_target, n - mipmap_bias, internal_format,
@@ -11448,6 +12196,31 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::generate_mipmaps
+//       Access: Protected
+//  Description: Causes mipmaps to be generated for an uploaded
+//               texture.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+generate_mipmaps(CLP(TextureContext) *gtc) {
+#ifndef OPENGLES
+  if (_glGenerateTextureMipmap != NULL) {
+    // OpenGL 4.5 offers an easy way to do this without binding.
+    _glGenerateTextureMipmap(gtc->_index);
+    return;
+  }
+#endif
+
+  if (_glGenerateMipmap != NULL) {
+    _state_texture = 0;
+    update_texture(gtc, true);
+    apply_texture(gtc);
+    _glGenerateMipmap(gtc->_target);
+    glBindTexture(gtc->_target, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::upload_simple_texture
 //       Access: Protected
 //  Description: This is used as a standin for upload_texture
@@ -11498,10 +12271,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps()) {
-    if (is_at_least_gl_version(1, 2)) {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    }
+  if (tex->uses_mipmaps() && is_at_least_gl_version(1, 2)) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 #endif
 
@@ -11527,7 +12298,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 //               currently-selected texture).
 ////////////////////////////////////////////////////////////////////
 size_t CLP(GraphicsStateGuardian)::
-get_texture_memory_size(Texture *tex) {
+get_texture_memory_size(CLP(TextureContext) *gtc) {
+  Texture *tex = gtc->get_texture();
 #ifdef OPENGLES  // Texture querying not supported on OpenGL ES.
   int width = tex->get_x_size();
   int height = tex->get_y_size();
@@ -11553,10 +12325,6 @@ get_texture_memory_size(Texture *tex) {
     // supported for buffer textures.
     return tex->get_expected_ram_image_size();
   }
-
-  GLint minfilter;
-  glGetTexParameteriv(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-  bool has_mipmaps = is_mipmap_filter(minfilter);
 
   clear_my_gl_errors();
 
@@ -11617,7 +12385,7 @@ get_texture_memory_size(Texture *tex) {
 #endif  // OPENGLES
 
   size_t result = num_bytes * width * height * depth * scale;
-  if (has_mipmaps) {
+  if (gtc->_uses_mipmaps) {
     result = (result * 4) / 3;
   }
 
@@ -11632,7 +12400,7 @@ get_texture_memory_size(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
-#ifndef OPENGLES  // Residency queries not supported by OpenGL ES.
+#if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)  // Residency queries not supported by OpenGL ES.
   size_t num_textures = chain.get_count();
   if (num_textures == 0) {
     return;
@@ -11690,6 +12458,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #endif
 
   glBindTexture(target, gtc->_index);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << ")\n";
+  }
 
   Texture *tex = gtc->get_texture();
 
@@ -11737,7 +12509,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
 #ifndef OPENGLES
-  else if (_supports_2d_texture_array && target == GL_TEXTURE_2D_ARRAY_EXT) {
+  else if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
   }
 #endif
@@ -11853,15 +12625,19 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
 
   case GL_R8I:
+    type = Texture::T_byte;
     format = Texture::F_r8i;
     break;
   case GL_RG8I:
+    type = Texture::T_byte;
     format = Texture::F_rg8i;
     break;
   case GL_RGB8I:
+    type = Texture::T_byte;
     format = Texture::F_rgb8i;
     break;
   case GL_RGBA8I:
+    type = Texture::T_byte;
     format = Texture::F_rgba8i;
     break;
 
@@ -11930,6 +12706,36 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R16:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16;
+    break;
+
+  case GL_RGB16_SNORM:
+    type = Texture::T_short;
+    format = Texture::F_rgb16;
+    break;
+  case GL_RG16_SNORM:
+    type = Texture::T_short;
+    format = Texture::F_rg16;
+    break;
+  case GL_R16_SNORM:
+    type = Texture::T_short;
+    format = Texture::F_r16;
+    break;
+#endif
+
+#ifndef OPENGLES
+  case GL_R11F_G11F_B10F:
+    type = Texture::T_float;
+    format = Texture::F_r11_g11_b10;
+    break;
+
+  case GL_RGB9_E5:
+    type = Texture::T_float;
+    format = Texture::F_rgb9_e5;
+    break;
+
+  case GL_RGB10_A2:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb10_a2;
     break;
 #endif
 
@@ -12101,6 +12907,32 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgba;
     compression = Texture::CM_fxt1;
     break;
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+    format = Texture::F_luminance;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+    format = Texture::F_luminance_alpha;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RED_RGTC1:
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+    type = Texture::T_byte;
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RG_RGTC2:
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+    type = Texture::T_byte;
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
+    break;
 #endif
   default:
     GLCAT.warning()
@@ -12174,6 +13006,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     nassertr(false, false);
     return false;
 #else
+
+  // Make sure the GL driver does not align textures, otherwise we get corrupt
+  // memory, since we don't take alignment into account.
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract

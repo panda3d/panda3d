@@ -21,7 +21,7 @@ TypeHandle PhysxWheelShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxWheelShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 link(NxShape *shapePtr) {
@@ -39,7 +39,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxWheelShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 unlink() {
@@ -52,10 +52,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxWheelShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxWheelShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 save_to_desc(PhysxWheelShapeDesc &shapeDesc) const {
@@ -67,7 +67,7 @@ save_to_desc(PhysxWheelShapeDesc &shapeDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxWheelShape::set_radius
 //       Access: Published
-//  Description: Sets the sphere radius. 
+//  Description: Sets the sphere radius.
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 set_radius(float radius) {
@@ -144,7 +144,7 @@ get_inverse_wheel_mass() const {
 //     Function: PhysxWheelShape::set_motor_torque
 //       Access: Published
 //  Description: Set the sum engine torque on the wheel axle.
-//               Positive or negative depending on direction 
+//               Positive or negative depending on direction
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 set_motor_torque(float torque) {
@@ -249,7 +249,7 @@ get_steer_angle_rad() const {
 //       Access: Published
 //  Description: Set the current axle rotation speed.
 //               Note: WSF_axle_speed_override flag must be raised
-//               for this to have effect! 
+//               for this to have effect!
 ////////////////////////////////////////////////////////////////////
 void PhysxWheelShape::
 set_axle_speed(float speed) {

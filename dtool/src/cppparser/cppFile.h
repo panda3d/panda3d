@@ -18,7 +18,7 @@
 #include "dtoolbase.h"
 #include "filename.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPFile
 // Description : This defines a source file (typically a C++ header
 //               file) that is parsed by the CPPParser.  Each

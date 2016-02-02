@@ -1,9 +1,11 @@
+#pragma once
 
 class bt32BitAxisSweep3;
 class btActionInterface;
 class btAxisSweep3;
 class btBoxShape;
 class btBroadphaseInterface;
+class btBroadphaseProxy;
 class btBulletWorldImporter;
 class btBvhTriangleMeshShape;
 class btCapsuleShape;

@@ -6,11 +6,11 @@ __all__ = ['TestInterval']
 Contains the ParticleInterval class
 """
 
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from Interval import Interval
 
-from direct.particles import ParticleEffect
 
 class TestInterval(Interval):
     # Name counter
@@ -41,7 +41,7 @@ class TestInterval(Interval):
         self.particleEffect = particleEffect
         self.parent = parent
         self.renderParent = renderParent
-                
+
         Interval.__init__(self, name, duration)
 
     def __del__(self):
@@ -54,7 +54,7 @@ class TestInterval(Interval):
         self.particleEffect.clearToInitial()
         self.currT = 0
         Interval.start(self,*args,**kwargs)
-        
+
     def privInitialize(self, t):
         if self.parent != None:
             self.particleEffect.reparentTo(self.parent)
@@ -92,7 +92,7 @@ class TestInterval(Interval):
         self.currT = self.getDuration()
 
         self.state = CInterval.SFinal
-        
+
     def privInstant(self):
         """
         Full jump from Initial state to Final State

@@ -49,8 +49,12 @@ private:
   Parameter _offset;
 };
 
+// I'd love to export these, but it produces a strange linker issue
+// with Mac OS X's version of GCC.  We'll do it only on Windows, then.
+#ifdef _MSC_VER
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector3d>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4>);
+#endif
 
 typedef EggMorph<LVector3d> EggMorphVertex;
 typedef EggMorph<LVector3d> EggMorphNormal;

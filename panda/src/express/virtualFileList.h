@@ -36,12 +36,12 @@ public:
   INLINE void add_file(VirtualFile *file);
 
 PUBLISHED:
-  INLINE int get_num_files() const;
-  INLINE VirtualFile *get_file(int n) const;
+  INLINE size_t get_num_files() const;
+  INLINE VirtualFile *get_file(size_t n) const;
   MAKE_SEQ(get_files, get_num_files, get_file);
 
-  INLINE VirtualFile *operator [](int n) const;
-  INLINE int size() const;
+  INLINE VirtualFile *operator [](size_t n) const;
+  INLINE size_t size() const;
   INLINE void operator += (const VirtualFileList &other);
   INLINE VirtualFileList operator + (const VirtualFileList &other) const;
 

@@ -36,7 +36,7 @@ class BlendAnimPanel(AppShell):
     enableBlend = False
     currentBlendName = None
 
-    
+
     def __init__(self, aNode =  None, blendDict={}, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         self.id = 'BlendAnimPanel '+ aNode.getName()
@@ -95,7 +95,7 @@ class BlendAnimPanel(AppShell):
         self.blendAnimEntry.pack(side=LEFT)
 
         Label(actorFrame, text= "   ", font=('MSSansSerif', 10)).pack(side=LEFT)
-        
+
         button = Button(actorFrame, text="Save", font=('MSSansSerif', 10),width = 12,
                         command = self.saveButtonPushed).pack(side=LEFT)
         button = Button(actorFrame, text="Remove", font=('MSSansSerif', 10),width = 12,
@@ -130,7 +130,7 @@ class BlendAnimPanel(AppShell):
             scrolledlist_items = self['animList'])
         self.AnimEntryB.pack(side=LEFT)
         actorFrame.pack(side = TOP, expand = False, fill = X)
-        
+
         ### Blend Enable checkbox
         actorFrame = Frame(interior, relief = SUNKEN, bd = 1)
         Label(actorFrame, text= "Enable Blending:", font=('MSSansSerif', 10)).pack(side=LEFT,)
@@ -182,7 +182,7 @@ class BlendAnimPanel(AppShell):
         self.playRateEntry.pack(side=LEFT)
         self.playRateEntry.selectitem('1.0')
 
-        ### Loop checkbox        
+        ### Loop checkbox
         Label(actorFrame, text= "   ", font=('MSSansSerif', 10)).pack(side=LEFT,)
         Label(actorFrame, text= "Loop:", font=('MSSansSerif', 10)).pack(side=LEFT,)
 
@@ -193,14 +193,14 @@ class BlendAnimPanel(AppShell):
             Checkbutton, (actorFrame,),
             variable = self.loopVar)
         self.loopButton.pack(side=LEFT)
-        
+
         actorFrame.pack(side = TOP, expand = True, fill = X)
 
-        
-        
+
+
         ### Display Frames/Seconds
         actorFrame = Frame(interior)
-        
+
         Label(actorFrame, text= "Frame/Second:", font=('MSSansSerif', 10)).pack(side=LEFT)
 
         self.unitsVar = IntVar()
@@ -213,7 +213,7 @@ class BlendAnimPanel(AppShell):
         self.displayButton.pack(side=LEFT)
 
         actorFrame.pack(side = TOP, expand = True, fill = X)
-        
+
         ## scale control
         actorFrame = Frame(interior)
         frameFrame = Frame(actorFrame, relief = SUNKEN, bd = 1)
@@ -240,7 +240,7 @@ class BlendAnimPanel(AppShell):
         self.maxLabel.pack(side = LEFT)
         frameFrame.pack(side = LEFT, expand = 1, fill = X)
         actorFrame.pack(side = TOP, expand = True, fill = X)
-        
+
         ## button contorl
         actorFrame = Frame(interior)
         ButtomFrame = Frame(actorFrame, relief = SUNKEN, bd = 1,borderwidth=5)
@@ -251,7 +251,7 @@ class BlendAnimPanel(AppShell):
             width = 8,
             command = self.resetAllToZero)
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
-        
+
         self.playButton = self.createcomponent(
             'playButton', (), None,
             Button, (ButtomFrame,),
@@ -287,7 +287,7 @@ class BlendAnimPanel(AppShell):
         animL = self['actor'].getAnimNames()
         self.AnimEntryA.setlist(animL)
         self.AnimEntryB.setlist(animL)
-            
+
     def play(self):
         #################################################################
         # play(self)
@@ -330,7 +330,7 @@ class BlendAnimPanel(AppShell):
                 self.stopButton.config(state=DISABLED)
                 return Task.done
         else:
-            self.gotoT(self.currTime)    
+            self.gotoT(self.currTime)
         return Task.cont
 
     def stop(self):
@@ -405,7 +405,7 @@ class BlendAnimPanel(AppShell):
         else:
             self.minLabel['text'] = '0.0'
             self.maxLabel['text'] = "%.2f" % self.duration
-            self.frameControl.configure(from_ = 0.0, 
+            self.frameControl.configure(from_ = 0.0,
                                         to = self.duration,
                                         resolution = 0.01)
 
@@ -454,7 +454,7 @@ class BlendAnimPanel(AppShell):
         #################################################################
         self.dragMode = True
         return
-    
+
     def resetAllToZero(self):
         #################################################################
         # resetAllToZero(self)
@@ -559,7 +559,7 @@ class BlendAnimPanel(AppShell):
                 self.blendAnimEntry.clear()
                 self.currentBlendName = None
         return
-    
+
     def saveButtonPushed(self):
         #################################################################
         # saveButtonPushed(self)

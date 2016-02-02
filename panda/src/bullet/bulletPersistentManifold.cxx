@@ -63,7 +63,7 @@ clear_manifold() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const PandaNode *BulletPersistentManifold::
+PandaNode *BulletPersistentManifold::
 get_node0() {
 
 #if BT_BULLET_VERSION >= 281
@@ -72,7 +72,7 @@ get_node0() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody0();
 #endif
 
-  return (obj) ? (const PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ get_node0() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const PandaNode *BulletPersistentManifold::
+PandaNode *BulletPersistentManifold::
 get_node1() {
 
 #if BT_BULLET_VERSION >= 281
@@ -89,7 +89,7 @@ get_node1() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody1();
 #endif
 
-  return (obj) ? (const PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,7 +53,7 @@ make_off() {
 //               set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
-make(const Shader *shader) {
+make(const Shader *shader, int priority) {
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
@@ -63,7 +63,7 @@ make(const Shader *shader) {
   if (shader == NULL) {
     return _null_attrib;
   } else {
-    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader);
+    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader, priority);
   }
 }
 
@@ -526,6 +526,28 @@ get_shader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::output
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ShaderAttrib::
+output(ostream &out) const {
+  out << "ShaderAttrib:";
+
+  if (_has_shader) {
+    if (_shader == NULL) {
+      out << "off";
+    } else {
+      out << _shader->get_filename().get_basename();
+    }
+  } else if (_auto_shader) {
+    out << "auto";
+  }
+
+  out << "," << _inputs.size() << " inputs";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::compare_to_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived ShaderAttrib
@@ -542,8 +564,7 @@ get_shader() const {
 ////////////////////////////////////////////////////////////////////
 int ShaderAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const ShaderAttrib *that;
-  DCAST_INTO_R(that, other, 0);
+  const ShaderAttrib *that = (const ShaderAttrib *)other;
 
   if (this->_shader != that->_shader) {
     return (this->_shader < that->_shader) ? -1 : 1;
@@ -643,8 +664,8 @@ get_hash_impl() const {
 CPT(RenderAttrib) ShaderAttrib::
 compose_impl(const RenderAttrib *other) const {
   ShaderAttrib *attr = new ShaderAttrib(*this);
-  const ShaderAttrib *over;
-  DCAST_INTO_R(over, other, 0);
+  const ShaderAttrib *over = (const ShaderAttrib *)other;
+
   // Update the shader portion.
   if (over->_has_shader) {
     if ((attr->_has_shader == false) ||
@@ -675,8 +696,18 @@ compose_impl(const RenderAttrib *other) const {
       }
     }
   }
-  // Just copy the instance count.
-  attr->_instance_count = over->_instance_count;
+
+  // In case no instance count is set, just copy it.
+  if (attr->_instance_count == 0) {
+    attr->_instance_count = over->_instance_count;
+  } else {
+    // If an instance count is set, check if the other attrib has an instance count set,
+    // if so, override it, otherwise just keep the current instance count
+    if (over->_instance_count > 0) {
+      attr->_instance_count = over->_instance_count;
+    }
+  }
+
   // Update the flags.
   attr->_flags &= ~(over->_has_flags);
   attr->_flags |= over->_flags;
@@ -702,6 +733,7 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
   attrib->_auto_gloss_on = _auto_gloss_on;
   attrib->_auto_ramp_on = _auto_ramp_on;
   attrib->_auto_shadow_on = _auto_shadow_on;
+  attrib->_flags = _flags;
   return return_new(attrib);
 }
 
