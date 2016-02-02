@@ -7454,7 +7454,7 @@ query_glsl_version() {
     if (ver.empty() ||
         sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
                                      &_gl_shadlang_ver_minor) != 2) {
-      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
     }
   }
 #else
@@ -7465,7 +7465,11 @@ query_glsl_version() {
   if (ver.empty() ||
       sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &_gl_shadlang_ver_major,
                                                      &_gl_shadlang_ver_minor) != 2) {
-    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+#ifdef __EMSCRIPTEN__  // See emscripten bug 4070
+    if (sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                                    &_gl_shadlang_ver_minor) != 2)
+#endif
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
   }
 #endif
 
